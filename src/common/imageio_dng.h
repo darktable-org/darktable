@@ -187,17 +187,19 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   dt_imageio_dng_write_buf(buf, 524, den);
 
   // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
-  fwrite ( buf, 1, 584, fp );
+  int k = 0;
+  k = fwrite ( buf, 1, 584, fp );
 }
 
 static inline void
 dt_imageio_write_dng(const char *filename, const float *const pixel, const int wd, const int ht, void *exif, const int exif_len)
 {
   FILE* f = fopen(filename, "wb");
+  int k = 0;
   if(f)
   {
     dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f/100.0f, 1.0f/4.0f, 50.0f, 100.0f);
-    fwrite(pixel, sizeof(float), wd*ht, f);
+    k = fwrite(pixel, sizeof(float), wd*ht, f);
     fclose(f);
     if(exif) dt_exif_write_blob(exif,exif_len,filename);
   }
