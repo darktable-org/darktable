@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-18 11:55+0100\n"
+"POT-Creation-Date: 2011-01-18 12:32+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -386,7 +386,7 @@ msgstr ""
 msgid "pick"
 msgstr "wähle"
 
-#: ../data/darktable.glade.h:46 ../src/libs/image.c:82
+#: ../data/darktable.glade.h:46 ../src/libs/image.c:83
 msgid "remove"
 msgstr "entfernen"
 
@@ -449,7 +449,7 @@ msgstr "verwaistes Bild"
 
 #. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
 #. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
-#: ../src/common/image.c:514
+#: ../src/common/image.c:517
 #, c-format
 msgid "image `%s' is not available"
 msgstr "Bild ‚%s‘ ist nicht verfügbar"
@@ -533,74 +533,99 @@ msgstr ""
 "Fehler beim Erstellen einer Filmrolle für den Kamera-Import, Import der "
 "Bilder abgebrochen"
 
-#: ../src/control/jobs/control_jobs.c:78
+#: ../src/control/jobs/control_jobs.c:80
+#, c-format
+msgid "merging %d image"
+msgid_plural "merging %d images"
+msgstr[0] "%d Bild zusammenfassen"
+msgstr[1] "%d Bilder zusammenfassen"
+
+#: ../src/control/jobs/control_jobs.c:92
+msgid "exposure bracketing only works on raw images"
+msgstr "Belichtungsreihen funktionieren nur mit RAW-Bildern"
+
+#: ../src/control/jobs/control_jobs.c:101
+#, c-format
+msgid "failed to get raw buffer from image `%s'"
+msgstr "Fehler beim Laden der RAW-Daten für Bild ‚%s‘"
+
+#: ../src/control/jobs/control_jobs.c:120
+msgid "images have to be of same size!"
+msgstr "Bilder müssen gleiche Größe haben!"
+
+#: ../src/control/jobs/control_jobs.c:170
+#, c-format
+msgid "wrote merged hdr `%s'"
+msgstr "zusammengefasstes HDR ‚%s‘ geschrieben"
+
+#: ../src/control/jobs/control_jobs.c:194
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "dupliziere %d Bild"
 msgstr[1] "dupliziere %d Bilder"
 
-#: ../src/control/jobs/control_jobs.c:101
+#: ../src/control/jobs/control_jobs.c:217
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "%d Bild spiegeln"
 msgstr[1] "%d Bilder spiegeln"
 
-#: ../src/control/jobs/control_jobs.c:123
+#: ../src/control/jobs/control_jobs.c:239
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "%d Bild entfernen"
 msgstr[1] "%d Bilder entfernen"
 
-#: ../src/control/jobs/control_jobs.c:145
+#: ../src/control/jobs/control_jobs.c:261
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "%d Bild löschen"
 msgstr[1] "%d Bilder löschen"
 
-#: ../src/control/jobs/control_jobs.c:251
+#: ../src/control/jobs/control_jobs.c:381
 msgid "do you really want to remove all selected images from the collection?"
 msgstr ""
 "Sollen wirklich alle ausgewählten Bilder aus der Kollektion entfernt werden?"
 
-#: ../src/control/jobs/control_jobs.c:252
+#: ../src/control/jobs/control_jobs.c:382
 msgid "remove images?"
 msgstr "Bilder entfernen?"
 
-#: ../src/control/jobs/control_jobs.c:272
+#: ../src/control/jobs/control_jobs.c:402
 msgid "do you really want to physically delete all selected images from disk?"
 msgstr ""
 "Sollen wirklich alle ausgewählten Bilder physikalisch von der Festplatte "
 "gelöscht werden?"
 
-#: ../src/control/jobs/control_jobs.c:273
+#: ../src/control/jobs/control_jobs.c:403
 msgid "delete images?"
 msgstr "Bilder löschen?"
 
-#: ../src/control/jobs/control_jobs.c:311
+#: ../src/control/jobs/control_jobs.c:441
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr ""
 "konnte keine Einstellungen vom Speicher-Modul bekommen, breche Export ab …"
 
-#: ../src/control/jobs/control_jobs.c:314
+#: ../src/control/jobs/control_jobs.c:444
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportiere %d Bild …"
 msgstr[1] "exportiere %d Bilder …"
 
-#: ../src/control/jobs/control_jobs.c:316
+#: ../src/control/jobs/control_jobs.c:446
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "%d Bild nach %s exportieren"
 msgstr[1] "%d Bilder nach %s exportieren"
 
-#: ../src/control/jobs/control_jobs.c:355
-#: ../src/control/jobs/control_jobs.c:356 ../src/views/darkroom.c:310
+#: ../src/control/jobs/control_jobs.c:485
+#: ../src/control/jobs/control_jobs.c:486 ../src/views/darkroom.c:310
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
@@ -1666,19 +1691,19 @@ msgid "radius"
 msgstr "Radius"
 
 #: ../src/iop/bilateral.cc:294 ../src/iop/channelmixer.c:328
-#: ../src/iop/channelmixer.c:345 ../src/iop/temperature.c:398
+#: ../src/iop/channelmixer.c:345 ../src/iop/temperature.c:411
 #: ../src/libs/collect.c:96 ../src/libs/collect.c:273
 msgid "red"
 msgstr "Rot"
 
 #: ../src/iop/bilateral.cc:296 ../src/iop/channelmixer.c:329
-#: ../src/iop/channelmixer.c:346 ../src/iop/temperature.c:402
+#: ../src/iop/channelmixer.c:346 ../src/iop/temperature.c:415
 #: ../src/libs/collect.c:98 ../src/libs/collect.c:283
 msgid "green"
 msgstr "Grün"
 
 #: ../src/iop/bilateral.cc:298 ../src/iop/channelmixer.c:330
-#: ../src/iop/channelmixer.c:347 ../src/iop/temperature.c:406
+#: ../src/iop/channelmixer.c:347 ../src/iop/temperature.c:419
 msgid "blue"
 msgstr "Blau"
 
@@ -2699,31 +2724,31 @@ msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:361
+#: ../src/iop/temperature.c:374
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:362
+#: ../src/iop/temperature.c:375
 msgid "temperature out"
 msgstr "Farbtemperatur aus"
 
-#: ../src/iop/temperature.c:383
+#: ../src/iop/temperature.c:396
 msgid "temperature in"
 msgstr "Farbtemperatur ein"
 
-#: ../src/iop/temperature.c:416
+#: ../src/iop/temperature.c:429
 msgid "camera white balance"
 msgstr "Weißabgleich der Kamera"
 
-#: ../src/iop/temperature.c:417
+#: ../src/iop/temperature.c:430
 msgid "spot white balance"
 msgstr "Weißabgleich manuell setzen"
 
-#: ../src/iop/temperature.c:418
+#: ../src/iop/temperature.c:431
 msgid "passthrough"
 msgstr "Durchschleifen"
 
-#: ../src/iop/temperature.c:444
+#: ../src/iop/temperature.c:457
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -3351,49 +3376,57 @@ msgstr "mit aktuellen Einstellungen exportieren (Strg-e)"
 msgid "selected image[s]"
 msgstr "ausgewählte[s] Bild[er]"
 
-#: ../src/libs/image.c:83
+#: ../src/libs/image.c:84
 msgid "remove from the collection"
 msgstr "aus der Kollektion entfernen"
 
-#: ../src/libs/image.c:87 ../src/libs/styles.c:334 ../src/libs/tagging.c:425
+#: ../src/libs/image.c:88 ../src/libs/styles.c:334 ../src/libs/tagging.c:425
 msgid "delete"
 msgstr "löschen"
 
-#: ../src/libs/image.c:88
+#: ../src/libs/image.c:89
 msgid "physically delete from disk"
 msgstr "physikalisch von der Festplatte löschen"
 
-#: ../src/libs/image.c:95
+#: ../src/libs/image.c:96
 msgid "write sidecar files"
 msgstr "Begleitdateien schreiben"
 
-#: ../src/libs/image.c:96
+#: ../src/libs/image.c:97
 msgid "write history stack and tags to xmp sidecar files"
 msgstr "Verlaufsstapel und Tags in xmp-Begleitdatei schreiben"
 
-#: ../src/libs/image.c:100
+#: ../src/libs/image.c:101
 msgid "duplicate"
 msgstr "duplizieren"
 
-#: ../src/libs/image.c:101
+#: ../src/libs/image.c:102
 msgid "add a duplicate to the collection"
 msgstr "füge ein Duplikat zur Kollektion hinzu"
 
-#: ../src/libs/image.c:110
+#: ../src/libs/image.c:111
 msgid "rotate selected images 90 degrees ccw"
 msgstr "Ausgewählte Bilder um 90° gegen den Uhrzeigersinn drehen"
 
-#: ../src/libs/image.c:115
+#: ../src/libs/image.c:116
 msgid "rotate selected images 90 degrees cw"
 msgstr "Ausgewählte Bilder um 90° im Uhrzeigersinn drehen"
 
-#: ../src/libs/image.c:120
+#: ../src/libs/image.c:121
 msgid "reset rotation"
 msgstr "Drehung zurücksetzen"
 
-#: ../src/libs/image.c:121
+#: ../src/libs/image.c:122
 msgid "reset rotation to exif data"
 msgstr "Drehung auf EXIF-Angabe zurücksetzen"
+
+#: ../src/libs/image.c:130
+msgid "create hdr"
+msgstr "HDR erzeugen"
+
+#: ../src/libs/image.c:133
+msgid "create a high dynamic range image from selected shots"
+msgstr "Hochkontrastbild (HDRI) aus ausgewählten Bildern erzeugen"
 
 #: ../src/libs/lib.c:115
 #, c-format
