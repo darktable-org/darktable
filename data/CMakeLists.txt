@@ -70,7 +70,7 @@ else()
   add_custom_command (
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
     COMMAND 
-      join -j 1 -o 1.2 2.2 ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
+      join -1 1 -2 1 -o 1.2 2.2 ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
       sed -e 's/ /=/g' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
       
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values
