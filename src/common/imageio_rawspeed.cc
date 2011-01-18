@@ -99,7 +99,9 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       d->decodeRaw();
       d->decodeMetaData(meta);
       RawImage r = d->mRaw;
-      r->scaleBlackWhite();
+      // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
+      if(r->bpp != 4) r->scaleBlackWhite();
+      img->bpp = r->bpp;
       img->filters = r->cfa.getDcrawFilter();
       if(img->filters)
       {
@@ -123,6 +125,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
     }
     catch (RawDecoderException e)
     {
+      printf("failed decoding raw `%s'\n", e.what());
       if (d) delete d;
       if (m) delete m;
       return DT_IMAGEIO_FILE_CORRUPTED;
@@ -130,12 +133,14 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
   }
   catch (CameraMetadataException e)
   {
+    printf("failed meta data `%s'\n", e.what());
     if (d) delete d;
     if (m) delete m;
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   catch (TiffParserException e)
   {
+    printf("failed decoding tiff `%s'\n", e.what());
     if (d) delete d;
     if (m) delete m;
     return DT_IMAGEIO_FILE_CORRUPTED;
@@ -199,7 +204,9 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
       d->decodeRaw();
       d->decodeMetaData(meta);
       RawImage r = d->mRaw;
-      r->scaleBlackWhite();
+      // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
+      if(r->bpp != 4) r->scaleBlackWhite();
+      img->bpp = r->bpp;
       img->filters = r->cfa.getDcrawFilter();
 
       // also include used override in orient:

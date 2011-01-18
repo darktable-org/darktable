@@ -56,5 +56,6 @@ void dt_control_duplicate_images();
 void dt_control_flip_images(const int32_t cw);
 void dt_control_remove_images();
 void dt_control_export();
+void dt_control_merge_hdr();
 
 #endif

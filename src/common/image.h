@@ -131,6 +131,7 @@ typedef struct dt_image_t
   uint32_t filters;  // demosaic pattern
   float *pixels;
   int32_t mip_buf_size[DT_IMAGE_NONE];
+  int32_t bpp;       // bytes per pixel
 }
 dt_image_t;
 

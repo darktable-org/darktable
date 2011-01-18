@@ -225,7 +225,7 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
     // first input.
     // mipf and non-raw images have 4 floats per pixel
     if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || dev->image->filters == 0) return 4*sizeof(float);
-    else return sizeof(uint16_t);
+    else return dev->image->bpp;
   }
   return module->output_bpp(module, pipe, piece);
 }

@@ -157,7 +157,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   const int filters = dt_image_flipped_filter(self->dev->image);
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters)
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp != 4)
   {
     const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
 #ifdef _OPENMP
@@ -168,7 +168,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const uint16_t *in = ((uint16_t*)ivoid) + j*roi_out->width;
       float *out = ((float*)ovoid) + j*roi_out->width;
       for(int i=0;i<roi_out->width;i++,out++,in++)
-	*out = *in * coeffsi[FC(j+roi_out->x, i+roi_out->y, filters)];
+        *out = *in * coeffsi[FC(j+roi_out->x, i+roi_out->y, filters)];
+    }
+  }
+  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp == 4)
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+#endif
+    for(int j=0;j<roi_out->height;j++)
+    {
+      const float *in = ((float *)ivoid) + j*roi_out->width;
+      float *out = ((float*)ovoid) + j*roi_out->width;
+      for(int i=0;i<roi_out->width;i++,out++,in++)
+        *out = *in * d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)];
     }
   }
   else
@@ -182,7 +195,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *in = ((float*)ivoid) + ch*k*roi_out->width;
       float *out = ((float*)ovoid) + ch*k*roi_out->width;
       for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
-	for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
+        for(int c=0;c<3;c++) out[c] = in[c]*d->coeffs[c];
     }
   }
   for(int k=0;k<3;k++)

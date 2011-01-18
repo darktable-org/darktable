@@ -336,7 +336,10 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   roi_out.scale = fminf(f_wd/(float)raw_wd, f_ht/(float)raw_ht);
   if(img->flags & DT_IMAGE_RAW)
   { // demosaic during downsample
-    dt_iop_clip_and_zoom_demosaic_half_size(img->mipf, (const uint16_t *)raw, &roi_out, &roi_in, p_wd, raw_wd, dt_image_flipped_filter(img));
+    if(img->bpp == sizeof(float))
+      dt_iop_clip_and_zoom_demosaic_half_size_f(img->mipf, (const float *)raw, &roi_out, &roi_in, p_wd, raw_wd, dt_image_flipped_filter(img));
+    else
+      dt_iop_clip_and_zoom_demosaic_half_size(img->mipf, (const uint16_t *)raw, &roi_out, &roi_in, p_wd, raw_wd, dt_image_flipped_filter(img));
   }
   else
   { // downsample
@@ -717,6 +720,7 @@ void dt_image_init(dt_image_t *img)
   img->raw_denoise_threshold = 0.f;
   img->raw_auto_bright_threshold = 0.01f;
   img->filters = 0;
+  img->bpp = 0;
 
   // try to get default raw parameters from db:
   sqlite3_stmt *stmt;
@@ -992,8 +996,8 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   void *ptr = NULL;
   if     ((int)mip <  (int)DT_IMAGE_MIPF) { size *= 4*sizeof(uint8_t); ptr = (void *)(img->mip[mip]); }
   else if(mip == DT_IMAGE_MIPF) { size *= 4*sizeof(float); ptr = (void *)(img->mipf); }
-  else if(mip == DT_IMAGE_FULL ||  (img->flags & DT_IMAGE_RAW)) { size *= 4*sizeof(float);  ptr = (void *)(img->pixels); }
-  else if(mip == DT_IMAGE_FULL || !(img->flags & DT_IMAGE_RAW)) { size *= sizeof(uint16_t); ptr = (void *)(img->pixels); }
+  else if(mip == DT_IMAGE_FULL || (img->filters == 0)) { size *= 4*sizeof(float);  ptr = (void *)(img->pixels); }
+  else if(mip == DT_IMAGE_FULL || (img->filters != 0)) { size *= img->bpp;         ptr = (void *)(img->pixels); }
   else
   {
     dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));

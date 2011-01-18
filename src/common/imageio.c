@@ -170,6 +170,7 @@ all_good:
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
   img->filters = 0;
+  img->bpp = 4*sizeof(float);
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags |=  DT_IMAGE_HDR;
@@ -489,6 +490,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   ret = libraw_unpack(raw);
   img->black   = raw->color.black/65535.0;
   img->maximum = raw->color.maximum/65535.0;
+  img->bpp = sizeof(uint16_t);
   // printf("black, max: %d %d %f %f\n", raw->color.black, raw->color.maximum, img->black, img->maximum);
   HANDLE_ERRORS(ret, 1);
   ret = libraw_dcraw_process(raw);
@@ -679,6 +681,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
     free(tmp);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
+  img->bpp = 4*sizeof(float);
   if(dt_image_alloc(img, DT_IMAGE_FULL))
   {
     free(tmp);
