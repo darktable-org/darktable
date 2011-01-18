@@ -197,7 +197,6 @@ dt_imageio_write_dng(const char *filename, const float *const pixel, const int w
   if(f)
   {
     dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f/100.0f, 1.0f/4.0f, 50.0f, 100.0f);
-    // TODO: byte order reversed??
     fwrite(pixel, sizeof(float), wd*ht, f);
     fclose(f);
     if(exif) dt_exif_write_blob(exif,exif_len,filename);

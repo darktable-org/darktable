@@ -294,7 +294,7 @@ void init(dt_iop_module_t *module)
 	// module->data = malloc(sizeof(dt_iop_highlights_data_t));
 	module->params = malloc(sizeof(dt_iop_highlights_params_t));
 	module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-  if(module->dev->image->filters)
+  if(module->dev->image->filters && module->dev->image->bpp != sizeof(float))
   {
     module->default_enabled = 1;
   }

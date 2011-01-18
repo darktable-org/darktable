@@ -70,7 +70,7 @@ dt_iop_tonemapping_data_t;
 
 const char *name()
 {
-  return _("tonemapping");
+  return _("tone mapping");
 }
 
 
@@ -224,7 +224,10 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_tonemapping_data_t));
   module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
-  module->default_enabled = 0;
+  if((module->dev->image->filters && module->dev->image->bpp == sizeof(float)) || (module->dev->image->flags & DT_IMAGE_HDR))
+    module->default_enabled = 1;
+  else
+    module->default_enabled = 0;
   module->priority = 250;
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;

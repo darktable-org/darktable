@@ -87,7 +87,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    if(img->filters == 0)
+    if(img->filters == 0 || img->bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
       dt_image_cache_release(img, 'r');
@@ -132,8 +132,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     for(int k=0;k<wd*ht;k++)
     {
       const uint16_t in = ((uint16_t *)img->pixels)[k];
-      const float w = (in < 32 || in > 65530 ? 0.001f : 1.0f)*cal;
-      pixels[k] += w * in;
+      const float w = (in < 100 ? 0.01f : (in > 65000 ? 0.001f : 1.0f));
+      pixels[k] += w * in * cal;
       weight[k] += w;
     }
 
@@ -148,7 +148,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 #endif
   for(int k=0;k<wd*ht;k++) pixels[k] /= weight[k];
   float mean = 0.0f;
-  for(int k=0;k<wd*ht;k+=10) mean += pixels[k]/(wd*ht);
+  for(int k=0;k<wd*ht;k+=10) mean += CLAMPS(pixels[k]/(wd*ht), 0.0f, 1000000000.0f);
   mean *= 2.0f;
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, mean)
@@ -167,7 +167,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   dt_gui_background_jobs_set_progress(j, 1.0f);
 
   while(*c != '/' && c > pathname) c--;
-  dt_control_log(_("wrote merged hdr `%s'"), c);
+  dt_control_log(_("wrote merged hdr `%s'"), c+1);
 
   // import new image
   gchar *directory = g_path_get_dirname((const gchar *)pathname);

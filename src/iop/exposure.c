@@ -274,7 +274,7 @@ void gui_init(struct dt_iop_module_t *self)
   widget = dtgtk_reset_label_new(_("exposure"), self, &p->exposure, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.1, 0.1, .001, p->black, 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.5, 0.5, .001, p->black, 3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), (char *)NULL);
   
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure, 3));
