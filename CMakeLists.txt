@@ -8,6 +8,7 @@ option(USE_OPENMP "Use openmp threading support." ON)
 option(USE_DARKTABLE_PROFILING OFF)
 option(DONT_USE_RAWSPEED "Dont compile rawspeed backend." OFF)
 option(DONT_INSTALL_GCONF_SCHEMAS "Dont install gconf schemas, usefull for package creation." OFF)
+option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
 
 #
 # Set platform defaults...
