@@ -83,7 +83,8 @@ RawImage DngDecoder::decodeRaw() {
   try {
     mRaw->dim.x = raw->getEntry(IMAGEWIDTH)->getInt();
     mRaw->dim.y = raw->getEntry(IMAGELENGTH)->getInt();
-    mRaw->bpp = 2;
+    // get bits per pixel and round to next byte multiple:
+    mRaw->bpp = (raw->getEntry(BITSPERSAMPLE)->getShort()+7)/8;
   } catch (TiffParserException) {
     ThrowRDE("DNG Decoder: Could not read basic image information.");
   }
