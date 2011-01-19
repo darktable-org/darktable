@@ -106,9 +106,9 @@ typedef struct dt_iop_basecurve_gui_data_t
   double mouse_x, mouse_y;
   int selected, dragging, x_move;
   double selected_offset, selected_y, selected_min, selected_max;
-  double draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
-  double draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
-  double draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
+  float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
+  float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
+  float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
 }
 dt_iop_basecurve_gui_data_t;
 
@@ -186,10 +186,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     // printf("tmp.tonecurve_y[%d] = %f;\n", k, p->tonecurve_y[k]);
     dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   }
-  for(int k=0;k<0x10000;k++)
-  {
-    d->table[k] = dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k);
-  }
+  dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
 #endif
 }
 

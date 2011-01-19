@@ -80,9 +80,9 @@ typedef struct dt_iop_atrous_gui_data_t
   int x_move;
   dt_draw_curve_t *minmax_curve;
   atrous_channel_t channel, channel2;
-  double draw_xs[RES], draw_ys[RES];
-  double draw_min_xs[RES], draw_min_ys[RES];
-  double draw_max_xs[RES], draw_max_ys[RES];
+  float draw_xs[RES], draw_ys[RES];
+  float draw_min_xs[RES], draw_min_ys[RES];
+  float draw_max_xs[RES], draw_max_ys[RES];
   float band_hist[BANDS];
   float band_max;
 }

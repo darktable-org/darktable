@@ -25,31 +25,19 @@
 
 #include <stdlib.h>
 #include <math.h>
-#ifdef HAVE_GEGL
-  #ifndef USE_GEGL_CURVE
-    #define USE_GEGL_CURVE
-  #endif
-#endif
-#ifdef USE_GEGL_CURVE
-  #include <gegl.h>
-#else // this is a dirty hack, this way nikon_curve will not even be compiled if we don't need it:
-  #ifdef DT_CONTROL_H
-    #include "common/nikon_curve.c"
-  #else
-    #include "common/nikon_curve.h"
-  #endif
+// this is a dirty hack, this way nikon_curve will not even be compiled if we don't need it:
+#ifdef DT_CONTROL_H
+  #include "common/nikon_curve.c"
+#else
+  #include "common/nikon_curve.h"
 #endif
 #include <cairo.h>
 
 /** wrapper around nikon curve or gegl. */
 typedef struct dt_draw_curve_t
 {
-#ifdef USE_GEGL_CURVE
-  GeglCurve *c;
-#else
   CurveData c;
   CurveSample csample;
-#endif
 }
 dt_draw_curve_t;
 
@@ -94,10 +82,6 @@ static inline void dt_draw_endmarker(cairo_t *cr, const int width, const int hei
 static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float max)
 {
   dt_draw_curve_t *c = (dt_draw_curve_t *)malloc(sizeof(dt_draw_curve_t));
-#ifdef USE_GEGL_CURVE
-  c->c = gegl_curve_new(min, max);
-  g_object_ref(c->c);
-#else
   c->csample.m_samplingRes = 0x10000;
   c->csample.m_outputRes = 0x10000;
   c->csample.m_Samples = (uint16_t *)malloc(sizeof(uint16_t)*0x10000);
@@ -109,52 +93,33 @@ static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float ma
   c->c.m_max_x = 1.0;
   c->c.m_min_y = 0.0;
   c->c.m_max_y = 1.0;
-#endif
   return c;
 }
 
 static inline void dt_draw_curve_destroy(dt_draw_curve_t *c)
 {
-#ifdef USE_GEGL_CURVE
-  g_object_unref(c->c);
-  free(c);
-#else
   free(c->csample.m_Samples);
   free(c);
-#endif
 }
 
 static inline void dt_draw_curve_set_point(dt_draw_curve_t *c, const int num, const float x, const float y)
 {
-#ifdef USE_GEGL_CURVE
-  gegl_curve_set_point(c->c, num, x, y);
-#else
   c->c.m_anchors[num].x = x;
   c->c.m_anchors[num].y = y;
-#endif
 }
 
-static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min, const float max, const int res, double *x, double *y)
+static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min, const float max, const int res, float *x, float *y)
 {
-#ifdef USE_GEGL_CURVE
-  gegl_curve_calc_values(c->c, min, max, res, x, y);
-#else
   c->csample.m_samplingRes = res;
   c->csample.m_outputRes = 0x10000;
   CurveDataSample(&c->c, &c->csample);
-  for(int k=0;k<res;k++)
-  {
-    x[k] = k*(1.0/res);
-    y[k] = min + (max-min)*c->csample.m_Samples[k]*(1.0/0x10000);
-  }
-#endif
+  if(x) for(int k=0;k<res;k++) x[k] = k*(1.0f/res);
+  if(y) for(int k=0;k<res;k++)
+    y[k] = min + (max-min)*c->csample.m_Samples[k]*(1.0f/0x10000);
 }
 
 static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
 {
-#ifdef USE_GEGL_CURVE
-  return gegl_curve_calc_value(c->c, x);
-#else
   double xa[20], ya[20];
   for(int i=0; i<c->c.m_numAnchors; i++)
   {
@@ -166,19 +131,14 @@ static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
   double val = spline_cubic_val(c->c.m_numAnchors, xa, x, ya, ypp, &ypval, &yppval);
   free(ypp);
   return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
-#endif
 }
 
 static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const float x, const float y)
 {
-#ifdef USE_GEGL_CURVE
-  return gegl_curve_add_point(c->c, x, y);
-#else
   c->c.m_anchors[c->c.m_numAnchors].x = x;
   c->c.m_anchors[c->c.m_numAnchors].y = y;
   c->c.m_numAnchors++;
   return 0;
-#endif
 }
 
 

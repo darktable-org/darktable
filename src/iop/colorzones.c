@@ -68,9 +68,9 @@ typedef struct dt_iop_colorzones_gui_data_t
   int dragging;
   int x_move;
   dt_iop_colorzones_channel_t channel;
-  double draw_xs[DT_IOP_COLORZONES_RES], draw_ys[DT_IOP_COLORZONES_RES];
-  double draw_min_xs[DT_IOP_COLORZONES_RES], draw_min_ys[DT_IOP_COLORZONES_RES];
-  double draw_max_xs[DT_IOP_COLORZONES_RES], draw_max_ys[DT_IOP_COLORZONES_RES];
+  float draw_xs[DT_IOP_COLORZONES_RES], draw_ys[DT_IOP_COLORZONES_RES];
+  float draw_min_xs[DT_IOP_COLORZONES_RES], draw_min_ys[DT_IOP_COLORZONES_RES];
+  float draw_max_xs[DT_IOP_COLORZONES_RES], draw_max_ys[DT_IOP_COLORZONES_RES];
   float band_hist[DT_IOP_COLORZONES_BANDS];
   float band_max;
   cmsHPROFILE hsRGB;
@@ -83,7 +83,7 @@ typedef struct dt_iop_colorzones_data_t
 {
   dt_draw_curve_t *curve[3];
   dt_iop_colorzones_channel_t channel;
-  double lut[4][DT_IOP_COLORZONES_LUT_RES];
+  float lut[4][DT_IOP_COLORZONES_LUT_RES];
 }
 dt_iop_colorzones_data_t;
 
@@ -106,7 +106,7 @@ groups ()
 
 
 static float
-lookup(const double *lut, const float i)
+lookup(const float *lut, const float i)
 {
   const int bin0 = MIN(0xffff, MAX(0, DT_IOP_COLORZONES_LUT_RES *  i));
   const int bin1 = MIN(0xffff, MAX(0, DT_IOP_COLORZONES_LUT_RES *  i + 1));
