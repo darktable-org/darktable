@@ -58,6 +58,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float white = exp2f(-d->exposure);
   const int ch = piece->colors;
   const float scale = 1.0/(white - black); 
+#if 0
   const float *const in = (float *)i;
   float *const out = (float *)o;
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && self->dev->image->filters)
@@ -69,6 +70,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[k] = fmaxf(0.0f, (in[k]-black)*scale);
   }
   else
+#endif
   { // std float image:
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
@@ -78,8 +80,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *in = ((float *)i) + ch*k*roi_out->width;
       float *out = ((float *)o) + ch*k*roi_out->width;
       for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
-	for(int i=0;i<3;i++)
-	  out[i] = fmaxf(0.0f, (in[i]-black)*scale);
+        for(int i=0;i<3;i++)
+          out[i] = fmaxf(0.0f, (in[i]-black)*scale);
     }
   }
   for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] *= scale;
@@ -139,7 +141,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 170;
+  module->priority = 255;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};
@@ -274,7 +276,7 @@ void gui_init(struct dt_iop_module_t *self)
   widget = dtgtk_reset_label_new(_("exposure"), self, &p->exposure, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.5, 0.5, .001, p->black, 3));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.1, 0.1, .001, p->black, 3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), (char *)NULL);
   
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure, 3));
