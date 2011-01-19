@@ -37,4 +37,4 @@ if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
 	MAKE_TASKS=1
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_USERMANUAL=1 .. && make -j $MAKE_TASKS && sudo make install
+cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. && make -j $MAKE_TASKS && sudo make install
