@@ -124,7 +124,10 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       dt_image_cache_release(img, 'r');
       goto error;
     }
-    const float aperture = M_PI * powf(img->exif_focal_length / (2.0f * img->exif_aperture), 2.0f);
+    // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in the system => f/22
+    const float eap = img->exif_aperture > 0.0f ? img->exif_aperture : 22.0f;
+    const float efl = img->exif_focal_length > 0.0f ? img->exif_focal_length : 8.0f;
+    const float aperture = M_PI * powf(efl / (2.0f * eap), 2.0f);
     const float cal = 100.0f/(aperture*img->exif_exposure*img->exif_iso);
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
@@ -132,7 +135,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     for(int k=0;k<wd*ht;k++)
     {
       const uint16_t in = ((uint16_t *)img->pixels)[k];
-      const float w = (in < 100 ? 0.01f : (in > 65000 ? 0.001f : 1.0f));
+      const float w = .001f + (in < 65000 ? in/65000.0f : 0.0f);
       pixels[k] += w * in * cal;
       weight[k] += w;
     }
@@ -144,16 +147,9 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     dt_image_cache_release(img, 'r');
   }
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(pixels, weight, wd, ht)
+  #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight)
 #endif
-  for(int k=0;k<wd*ht;k++) pixels[k] /= weight[k];
-  float mean = 0.0f;
-  for(int k=0;k<wd*ht;k+=10) mean += CLAMPS(pixels[k]/(wd*ht), 0.0f, 1000000000.0f);
-  mean *= 2.0f;
-#ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, mean)
-#endif
-  for(int k=0;k<wd*ht;k++) pixels[k] = fmaxf(0.0f, fminf(10000000.0f, pixels[k]/mean));
+  for(int k=0;k<wd*ht;k++) pixels[k] = fmaxf(0.0f, fminf(10000000.0f, pixels[k]/(65535.0f*weight[k])));
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
