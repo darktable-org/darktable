@@ -118,6 +118,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   for(int k=0;k<6;k++)
     dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
+  for(int k=0;k<0x10000;k++) d->table[k] *= 100.0f;
   // for(int k=0;k<0x10000;k++)
     // // d->table[k] = (uint16_t)(0xffff*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k));
     // d->table[k] = 100.0*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k);
