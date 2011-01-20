@@ -87,3 +87,6 @@ if(can_build_usermanual)
 else(can_build_usermanual)
 	message("Can NOT build usermanual")
 endif(can_build_usermanual)
+
+add_subdirectory(po)
+
