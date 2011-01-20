@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-18 12:32+0100\n"
+"POT-Creation-Date: 2011-01-20 12:42+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -269,7 +269,7 @@ msgstr "Geräte"
 #. exposure
 #. adding the labels
 #: ../data/darktable.glade.h:16 ../src/gui/presets.c:282
-#: ../src/iop/exposure.c:38 ../src/iop/exposure.c:274 ../src/iop/relight.c:347
+#: ../src/iop/exposure.c:38 ../src/iop/exposure.c:276 ../src/iop/relight.c:346
 msgid "exposure"
 msgstr "Belichtung"
 
@@ -419,7 +419,7 @@ msgstr "zum Dunkelkammer-Modus wechseln"
 msgid "title"
 msgstr "Titel"
 
-#: ../data/darktable.glade.h:53 ../src/iop/relight.c:349
+#: ../data/darktable.glade.h:53 ../src/iop/relight.c:348
 msgid "width"
 msgstr "Breite"
 
@@ -432,13 +432,13 @@ msgstr ""
 "Dateiverwaltung"
 
 #: ../src/common/history.c:168 ../src/common/history.c:197
-#: ../src/common/styles.c:228 ../src/develop/develop.c:918
+#: ../src/common/styles.c:228 ../src/develop/develop.c:906
 #: ../src/gui/styles_dialog.c:319
 msgid "on"
 msgstr "ein"
 
 #: ../src/common/history.c:168 ../src/common/history.c:197
-#: ../src/common/styles.c:228 ../src/develop/develop.c:918
+#: ../src/common/styles.c:228 ../src/develop/develop.c:906
 #: ../src/gui/styles_dialog.c:319
 msgid "off"
 msgstr "aus"
@@ -511,14 +511,13 @@ msgid "%d/%d imported to %s"
 msgstr "%d/%d nach %s importiert"
 
 #: ../src/control/jobs/camera_jobs.c:265
-msgid "starting import job of images from camera"
+msgid "starting to import images from camera"
 msgstr "starte Import der Bilder von der Kamera"
 
 #: ../src/control/jobs/camera_jobs.c:282
 #, c-format
-msgid "failed to create import path %s, import of images aborted."
-msgstr ""
-"Fehler beim Erstellen des Import-Pfades %s, Import der Bilder abgebrochen"
+msgid "failed to create import path `%s', import aborted."
+msgstr "Fehler beim Erstellen des Import-Pfades ‚%s‘, Import abgebrochen"
 
 #: ../src/control/jobs/camera_jobs.c:291
 #, c-format
@@ -528,10 +527,10 @@ msgstr[0] "%d Bild von Kamera importieren"
 msgstr[1] "%d Bilder von Kamera importieren"
 
 #: ../src/control/jobs/camera_jobs.c:317
-msgid "failed to create filmroll for camera import, import of images aborted."
+msgid "failed to create filmroll for camera import, import aborted."
 msgstr ""
-"Fehler beim Erstellen einer Filmrolle für den Kamera-Import, Import der "
-"Bilder abgebrochen"
+"Fehler beim Erstellen einer Filmrolle für den Kamera-Import, Import "
+"abgebrochen"
 
 #: ../src/control/jobs/control_jobs.c:80
 #, c-format
@@ -553,79 +552,79 @@ msgstr "Fehler beim Laden der RAW-Daten für Bild ‚%s‘"
 msgid "images have to be of same size!"
 msgstr "Bilder müssen gleiche Größe haben!"
 
-#: ../src/control/jobs/control_jobs.c:170
+#: ../src/control/jobs/control_jobs.c:166
 #, c-format
 msgid "wrote merged hdr `%s'"
 msgstr "zusammengefasstes HDR ‚%s‘ geschrieben"
 
-#: ../src/control/jobs/control_jobs.c:194
+#: ../src/control/jobs/control_jobs.c:190
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "dupliziere %d Bild"
 msgstr[1] "dupliziere %d Bilder"
 
-#: ../src/control/jobs/control_jobs.c:217
+#: ../src/control/jobs/control_jobs.c:213
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "%d Bild spiegeln"
 msgstr[1] "%d Bilder spiegeln"
 
-#: ../src/control/jobs/control_jobs.c:239
+#: ../src/control/jobs/control_jobs.c:235
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "%d Bild entfernen"
 msgstr[1] "%d Bilder entfernen"
 
-#: ../src/control/jobs/control_jobs.c:261
+#: ../src/control/jobs/control_jobs.c:257
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "%d Bild löschen"
 msgstr[1] "%d Bilder löschen"
 
-#: ../src/control/jobs/control_jobs.c:381
+#: ../src/control/jobs/control_jobs.c:377
 msgid "do you really want to remove all selected images from the collection?"
 msgstr ""
 "Sollen wirklich alle ausgewählten Bilder aus der Kollektion entfernt werden?"
 
-#: ../src/control/jobs/control_jobs.c:382
+#: ../src/control/jobs/control_jobs.c:378
 msgid "remove images?"
 msgstr "Bilder entfernen?"
 
-#: ../src/control/jobs/control_jobs.c:402
+#: ../src/control/jobs/control_jobs.c:398
 msgid "do you really want to physically delete all selected images from disk?"
 msgstr ""
 "Sollen wirklich alle ausgewählten Bilder physikalisch von der Festplatte "
 "gelöscht werden?"
 
-#: ../src/control/jobs/control_jobs.c:403
+#: ../src/control/jobs/control_jobs.c:399
 msgid "delete images?"
 msgstr "Bilder löschen?"
 
-#: ../src/control/jobs/control_jobs.c:441
+#: ../src/control/jobs/control_jobs.c:437
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr ""
 "konnte keine Einstellungen vom Speicher-Modul bekommen, breche Export ab …"
 
-#: ../src/control/jobs/control_jobs.c:444
+#: ../src/control/jobs/control_jobs.c:440
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportiere %d Bild …"
 msgstr[1] "exportiere %d Bilder …"
 
-#: ../src/control/jobs/control_jobs.c:446
+#: ../src/control/jobs/control_jobs.c:442
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "%d Bild nach %s exportieren"
 msgstr[1] "%d Bilder nach %s exportieren"
 
-#: ../src/control/jobs/control_jobs.c:485
-#: ../src/control/jobs/control_jobs.c:486 ../src/views/darkroom.c:310
+#: ../src/control/jobs/control_jobs.c:481
+#: ../src/control/jobs/control_jobs.c:482 ../src/views/darkroom.c:310
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
@@ -635,26 +634,28 @@ msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 msgid "loading image %s"
 msgstr "Bild %s laden"
 
-#: ../src/develop/develop.c:819
+#: ../src/develop/develop.c:807
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: Modul ‚%s‘ hat unpassende Version: %d != %d"
 
-#: ../src/develop/imageop.c:407 ../src/develop/imageop.c:523
+#: ../src/develop/imageop.c:290 ../src/develop/imageop.c:309
+#: ../src/develop/imageop.c:578
 #, c-format
 msgid "%s is switched on"
 msgstr "%s ist eingeschaltet"
 
-#: ../src/develop/imageop.c:407 ../src/develop/imageop.c:523
+#: ../src/develop/imageop.c:290 ../src/develop/imageop.c:309
+#: ../src/develop/imageop.c:578
 #, c-format
 msgid "%s is switched off"
 msgstr "%s ist ausgeschaltet"
 
-#: ../src/develop/imageop.c:542 ../src/libs/lib.c:518
+#: ../src/develop/imageop.c:597 ../src/libs/lib.c:518
 msgid "reset parameters"
 msgstr "Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:543 ../src/libs/lib.c:524
+#: ../src/develop/imageop.c:598 ../src/libs/lib.c:524
 msgid "presets"
 msgstr "Voreinstellungen"
 
@@ -1691,19 +1692,19 @@ msgid "radius"
 msgstr "Radius"
 
 #: ../src/iop/bilateral.cc:294 ../src/iop/channelmixer.c:328
-#: ../src/iop/channelmixer.c:345 ../src/iop/temperature.c:411
+#: ../src/iop/channelmixer.c:345 ../src/iop/temperature.c:406
 #: ../src/libs/collect.c:96 ../src/libs/collect.c:273
 msgid "red"
 msgstr "Rot"
 
 #: ../src/iop/bilateral.cc:296 ../src/iop/channelmixer.c:329
-#: ../src/iop/channelmixer.c:346 ../src/iop/temperature.c:415
+#: ../src/iop/channelmixer.c:346 ../src/iop/temperature.c:410
 #: ../src/libs/collect.c:98 ../src/libs/collect.c:283
 msgid "green"
 msgstr "Grün"
 
 #: ../src/iop/bilateral.cc:298 ../src/iop/channelmixer.c:330
-#: ../src/iop/channelmixer.c:347 ../src/iop/temperature.c:419
+#: ../src/iop/channelmixer.c:347 ../src/iop/temperature.c:414
 msgid "blue"
 msgstr "Blau"
 
@@ -1750,13 +1751,13 @@ msgstr "Stärke der Überstrahlung"
 msgid "chromatic aberrations"
 msgstr "chromatische Aberration"
 
-#: ../src/iop/cacorrect.c:1016
+#: ../src/iop/cacorrect.c:1020
 msgid "automatic chromatic aberration correction"
 msgstr ""
 "Automatische Korrektur der\n"
 "chromatischen Aberration."
 
-#: ../src/iop/cacorrect.c:1018
+#: ../src/iop/cacorrect.c:1022
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
@@ -1773,20 +1774,22 @@ msgstr "Kanalmixer"
 msgid "output channel"
 msgstr "Ausgabekanal"
 
-#: ../src/iop/channelmixer.c:325 ../src/iop/colorzones.c:776
-#: ../src/iop/graduatednd.c:383 ../src/iop/splittoning.c:423
-#: ../src/iop/splittoning.c:455
+#: ../src/iop/channelmixer.c:325 ../src/iop/colorzones.c:780
+#: ../src/iop/colorzones.c:800 ../src/iop/graduatednd.c:382
+#: ../src/iop/splittoning.c:423 ../src/iop/splittoning.c:455
 msgid "hue"
 msgstr "Farbton"
 
 #: ../src/iop/channelmixer.c:326 ../src/iop/colorcorrection.c:187
-#: ../src/iop/colorzones.c:777 ../src/iop/graduatednd.c:384
-#: ../src/iop/splittoning.c:424 ../src/iop/splittoning.c:456
-#: ../src/iop/velvia.c:236 ../src/iop/vignette.c:358
+#: ../src/iop/colorzones.c:781 ../src/iop/colorzones.c:799
+#: ../src/iop/graduatednd.c:383 ../src/iop/splittoning.c:424
+#: ../src/iop/splittoning.c:456 ../src/iop/velvia.c:236
+#: ../src/iop/vignette.c:358
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/channelmixer.c:327 ../src/iop/colorzones.c:778
+#: ../src/iop/channelmixer.c:327 ../src/iop/colorzones.c:782
+#: ../src/iop/colorzones.c:798
 msgid "lightness"
 msgstr "Helligkeit"
 
@@ -2188,41 +2191,29 @@ msgstr "Aussehen des zuvor analysierten Bildes auf dieses Bild anwenden"
 msgid "color zones"
 msgstr "Farbbereiche"
 
-#: ../src/iop/colorzones.c:276
+#: ../src/iop/colorzones.c:277
 msgid "red black white"
 msgstr "Rot-Schwarz-Weiß"
 
-#: ../src/iop/colorzones.c:291
+#: ../src/iop/colorzones.c:292
 msgid "black white and skin tones"
 msgstr "Schwarz-Weiß und Hautfarben"
 
-#: ../src/iop/colorzones.c:307
+#: ../src/iop/colorzones.c:308
 msgid "polarizing filter"
 msgstr "Polarisationsfilter"
 
-#: ../src/iop/colorzones.c:346
+#: ../src/iop/colorzones.c:347
 msgid "natural skin tones"
 msgstr "natürliche Hautfarben"
 
-#: ../src/iop/colorzones.c:772
-msgid "mode"
-msgstr "Modus"
+#: ../src/iop/colorzones.c:776
+msgid "select by"
+msgstr "Auswahl nach"
 
-#: ../src/iop/colorzones.c:783
+#: ../src/iop/colorzones.c:787
 msgid "pick gui color from image"
 msgstr "GUI-Farbe aus dem Bild übernehmen"
-
-#: ../src/iop/colorzones.c:794
-msgid "luma (L)"
-msgstr "Luminanz (L)"
-
-#: ../src/iop/colorzones.c:795
-msgid "colorness (C)"
-msgstr "Buntheit (C)"
-
-#: ../src/iop/colorzones.c:796
-msgid "hue (h)"
-msgstr "Farbton (h)"
 
 #: ../src/iop/demosaic.c:81
 msgid "demosaic"
@@ -2272,23 +2263,23 @@ msgstr "Equalizer (überholt)"
 msgid "null"
 msgstr "nichts"
 
-#: ../src/iop/exposure.c:271
+#: ../src/iop/exposure.c:273
 msgid "black"
 msgstr "Schwarz"
 
-#: ../src/iop/exposure.c:278
+#: ../src/iop/exposure.c:280
 msgid "adjust the black level"
 msgstr "Schwarzwert anpassen"
 
-#: ../src/iop/exposure.c:281
+#: ../src/iop/exposure.c:283
 msgid "adjust the exposure correction [ev]"
 msgstr "Belichtungskorrektur anpassen [ev]"
 
-#: ../src/iop/exposure.c:286
+#: ../src/iop/exposure.c:288
 msgid "auto"
 msgstr "auto"
 
-#: ../src/iop/exposure.c:289
+#: ../src/iop/exposure.c:291
 msgid "percentage of bright values clipped out"
 msgstr "Prozentsatz der hellen Werte, die abgeschnitten werden"
 
@@ -2364,36 +2355,36 @@ msgid "graduated neutral density"
 msgstr "Grauverlauf"
 
 #. adding the labels
-#: ../src/iop/graduatednd.c:379
+#: ../src/iop/graduatednd.c:378
 msgid "density"
 msgstr "Dichte"
 
-#: ../src/iop/graduatednd.c:380
+#: ../src/iop/graduatednd.c:379
 msgid "compression"
 msgstr "Kompression"
 
-#: ../src/iop/graduatednd.c:381
+#: ../src/iop/graduatednd.c:380
 msgid "rotation"
 msgstr "Drehung"
 
 # nicht schön
-#: ../src/iop/graduatednd.c:382
+#: ../src/iop/graduatednd.c:381
 msgid "split"
 msgstr "Teilung"
 
-#: ../src/iop/graduatednd.c:414
+#: ../src/iop/graduatednd.c:413
 msgid "select the hue tone of filter"
 msgstr "Farbton des Filters wählen"
 
-#: ../src/iop/graduatednd.c:423
+#: ../src/iop/graduatednd.c:422
 msgid "select the saturation of filter"
 msgstr "Sättigung des Filters wählen"
 
-#: ../src/iop/graduatednd.c:430
+#: ../src/iop/graduatednd.c:429
 msgid "the density in EV for the filter"
 msgstr "die Dichte in EV für den Filter"
 
-#: ../src/iop/graduatednd.c:432
+#: ../src/iop/graduatednd.c:431
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
@@ -2402,11 +2393,11 @@ msgstr ""
 "Kompression des Verlaufs:\n"
 "0% = weich, 100% = hart"
 
-#: ../src/iop/graduatednd.c:433
+#: ../src/iop/graduatednd.c:432
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "Drehung des Filters -180 bis 180 Grad"
 
-#: ../src/iop/graduatednd.c:434
+#: ../src/iop/graduatednd.c:433
 msgid "offset of filter in angle of rotation"
 msgstr "Versatz des Filters in Drehrichtung"
 
@@ -2430,43 +2421,43 @@ msgstr "Stärke der hinzugefügten Körnung"
 msgid "highlight reconstruction"
 msgstr "Spitzlicht-Rekonstruktion"
 
-#: ../src/iop/highlights.c:332
+#: ../src/iop/highlights.c:334
 msgid "method"
 msgstr "Methode"
 
-#: ../src/iop/highlights.c:335
+#: ../src/iop/highlights.c:337
 msgid "clip highlights"
 msgstr "Spitzlichter abschneiden"
 
-#: ../src/iop/highlights.c:336
+#: ../src/iop/highlights.c:338
 msgid "reconstruct in LCh"
 msgstr "in LCh rekonstruieren"
 
-#: ../src/iop/highlights.c:337
+#: ../src/iop/highlights.c:339
 msgid "highlight reconstruction method"
 msgstr "Methode zur Rekonstruktion der Spitzlichter"
 
-#: ../src/iop/highlights.c:347
+#: ../src/iop/highlights.c:349
 msgid "blend L"
 msgstr "mische L"
 
-#: ../src/iop/highlights.c:349
+#: ../src/iop/highlights.c:351
 msgid "blend C"
 msgstr "mische C"
 
-#: ../src/iop/highlights.c:351
+#: ../src/iop/highlights.c:353
 msgid "blend h"
 msgstr "mische h"
 
-#: ../src/iop/highlights.c:357
+#: ../src/iop/highlights.c:359
 msgid "blend lightness (0 is same as clipping)"
 msgstr "mische Helligkeit (0 ist identisch mit Abschneiden)"
 
-#: ../src/iop/highlights.c:358
+#: ../src/iop/highlights.c:360
 msgid "blend colorness (0 is same as clipping)"
 msgstr "mische Buntheit (0 ist identisch mit Abschneiden)"
 
-#: ../src/iop/highlights.c:359
+#: ../src/iop/highlights.c:361
 msgid "blend hue (0 is same as clipping)"
 msgstr "mische Farbton (0 ist identisch mit Abschneiden)"
 
@@ -2636,31 +2627,29 @@ msgstr "Füllen der Lichter um 0,25EV mit 4 Zonen"
 msgid "Fill-shadow -0.25EV with 4 zones"
 msgstr "Füllen der Schatten um -0,25EV mit 4 Zonen"
 
-# Soll man da "Relight" als Namen nehmen, oder es übersetzen?
-# hanatos hat "Aufhellen" vorgeschlagen. Gefällt.
 #: ../src/iop/relight.c:81
-msgid "relight"
-msgstr "Aufhellen"
+msgid "fill light"
+msgstr "Füllicht"
 
 #. EV
-#: ../src/iop/relight.c:348
+#: ../src/iop/relight.c:347
 msgid "center"
 msgstr "Zentrum"
 
-#: ../src/iop/relight.c:367
+#: ../src/iop/relight.c:366
 msgid "select the center of fill-light"
 msgstr "Zentrum des Fülllichts wählen"
 
-#: ../src/iop/relight.c:379
+#: ../src/iop/relight.c:378
 msgid "toggle tool for picking median lightness in image"
 msgstr "mittlere Helligkeit im Bild wählen"
 
-#: ../src/iop/relight.c:380
+#: ../src/iop/relight.c:379
 msgid "the fill-light in EV"
 msgstr "Füllicht in EV"
 
 # Hä?
-#: ../src/iop/relight.c:382
+#: ../src/iop/relight.c:381
 #, no-c-format
 msgid "width of fill-light area defined in zones"
 msgstr "Breite der Füllicht-Fläche, definiert in Zonen."
@@ -2724,31 +2713,31 @@ msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:374
+#: ../src/iop/temperature.c:369
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:375
+#: ../src/iop/temperature.c:370
 msgid "temperature out"
 msgstr "Farbtemperatur aus"
 
-#: ../src/iop/temperature.c:396
+#: ../src/iop/temperature.c:391
 msgid "temperature in"
 msgstr "Farbtemperatur ein"
 
-#: ../src/iop/temperature.c:429
+#: ../src/iop/temperature.c:424
 msgid "camera white balance"
 msgstr "Weißabgleich der Kamera"
 
-#: ../src/iop/temperature.c:430
+#: ../src/iop/temperature.c:425
 msgid "spot white balance"
 msgstr "Weißabgleich manuell setzen"
 
-#: ../src/iop/temperature.c:431
+#: ../src/iop/temperature.c:426
 msgid "passthrough"
 msgstr "Durchschleifen"
 
-#: ../src/iop/temperature.c:457
+#: ../src/iop/temperature.c:452
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -2765,14 +2754,14 @@ msgid "high contrast"
 msgstr "hoher Kontrast"
 
 #: ../src/iop/tonemap.cc:73
-msgid "tonemapping"
+msgid "tone mapping"
 msgstr "Tonemapping"
 
-#: ../src/iop/tonemap.cc:257
+#: ../src/iop/tonemap.cc:266
 msgid "contrast compression"
 msgstr "Kontrast-Kompression"
 
-#: ../src/iop/tonemap.cc:263
+#: ../src/iop/tonemap.cc:272
 msgid "spatial extent"
 msgstr "räumliche Ausdehnung"
 
@@ -3732,29 +3721,14 @@ msgstr "Filmstreifen"
 msgid "lighttable"
 msgstr "Leuchttisch"
 
-#~ msgid "filter size"
-#~ msgstr "Filtergröße"
+#~ msgid "mode"
+#~ msgstr "Modus"
 
-#~ msgid "select color by"
-#~ msgstr "wähle Farbe nach"
+#~ msgid "luma (L)"
+#~ msgstr "Luminanz (L)"
 
-#~ msgid " (strong)"
-#~ msgstr " (stark)"
+#~ msgid "colorness (C)"
+#~ msgstr "Buntheit (C)"
 
-#~ msgid "denoise (slow)"
-#~ msgstr "entrauschen (langsam)"
-
-#~ msgid "equalizer"
-#~ msgstr "Equalizer"
-
-#~ msgid "single images"
-#~ msgstr "Einzelbilder"
-
-#~ msgid "(needs a restart)"
-#~ msgstr "(erfordert einen Neustart)"
-
-#~ msgid "0 -- append on top of stack, 1 -- replace it."
-#~ msgstr "0 -- oben auf den Stapel hinzufügen, 1 -- ersetze ihn."
-
-#~ msgid "0: mean, 1: min, 2: max"
-#~ msgstr "0: Mittel, 1: Minimum, 2: Maximum"
+#~ msgid "hue (h)"
+#~ msgstr "Farbton (h)"
