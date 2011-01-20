@@ -624,9 +624,9 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 
   // TODO: make mouse sensitive, just as stars!
   { // color labels:
-    const int x = zoom == 1 ? (0.04+5*0.04)*fscale : .7*width;
-    const int y = zoom == 1 ? 0.12*fscale: 0.1*height;
-    const int r = zoom == 1 ? 0.01*fscale : 0.03*width;
+    const float x = zoom == 1 ? (0.04+5*0.04)*fscale : .7*width;
+    const float y = zoom == 1 ? 0.12*fscale: 0.1*height;
+    const float r = zoom == 1 ? 0.01*fscale : 0.03*width;
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -635,7 +635,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       cairo_save(cr);
       int col = sqlite3_column_int(stmt, 0);
       // see src/dtgtk/paint.c
-      dtgtk_cairo_paint_label(cr, x+(3*r*col)-4*r, y-r, r*2, r*2, col);
+      dtgtk_cairo_paint_label(cr, x+(3*r*col)-5*r, y-r, r*2, r*2, col);
       cairo_restore(cr);
     }
     sqlite3_finalize(stmt);
