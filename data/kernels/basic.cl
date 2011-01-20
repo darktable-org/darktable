@@ -180,22 +180,26 @@ lerp_lut(constant float *const lut, const float v)
   const float l2 = lut[t+1];
   return l1*(1.0f-f) + l2*f;
 }
+#endif
 
 /* kernel for the basecurve plugin. */
-__kernel void
-basecurve (read_only image2d_t in, write_only image2d_t out, constant float *table)
+kernel void
+basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  // TODO: lerp_lut?
-  pixel.x = table[(int)clamp(pixel.x*65536.0f, 0.0f, 65535.0f)];
-  pixel.x = table[(int)clamp(pixel.y*65536.0f, 0.0f, 65535.0f)];
-  pixel.x = table[(int)clamp(pixel.z*65536.0f, 0.0f, 65535.0f)];
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y))*65535.0f;
+  int2 p = (((int)pixel.x) & 0xff, ((int)pixel.x) >> 8);
+  pixel.x = read_imagef(table, sampleri, p).x;
+  p = (((int)pixel.y) & 0xff, ((int)pixel.y) >> 8);
+  pixel.y = read_imagef(table, sampleri, p).x;
+  p = (((int)pixel.z) & 0xff, ((int)pixel.z) >> 8);
+  pixel.z = read_imagef(table, sampleri, p).x;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+#if 0
 /* kernel for the plugin colorin */
 __kernel void
 colorin (read_only image2d_t in, write_only image2d_t out, constant float *matrix, constant float *lutr, constant float *lutg, constant float *lutb)
@@ -232,17 +236,18 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *matri
   XYZ_to_Lab(XYZ, (float *)&pixel);
   write_imagef (out, (int2)(x, y), pixel);
 }
+#endif
 
 /* kernel for the tonecurve plugin. */
-__kernel void
-tonecurve (read_only image2d_t in, write_only image2d_t out, constant float *table)
+kernel void
+tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  // TODO: lerp_lut?
-  const float L = table[(int)clamp(pixel.x*65536.0f, 0.0f, 65535.0f)];
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y))*655.35f;
+  int2 p = (((int)pixel.x) & 0xff, ((int)pixel.x) >> 8);
+  const float L = read_imagef(table, sampleri, p).x;
   if(pixel.x > 0.01f)
   {
     pixel.y *= L/pixel.x;
@@ -252,6 +257,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, constant float *tab
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+#if 0
 /* kernel for the colorcorrection plugin. */
 __kernel void
 colorcorrection (read_only image2d_t in, write_only image2d_t out, float saturation, float a_scale, float a_base, float b_scale, float b_base)

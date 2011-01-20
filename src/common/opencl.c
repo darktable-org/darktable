@@ -151,8 +151,15 @@ void dt_opencl_init(dt_opencl_t *cl)
     }
   }
   free(devices);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
-  cl->inited = 1;
+  if(num_devices > 0)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
+    cl->inited = 1;
+  }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] no suitable devices found.\n");
+  }
   return;
 }
 

@@ -27,6 +27,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/debug.h"
+#include "common/opencl.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -119,6 +120,13 @@ typedef struct dt_iop_basecurve_data_t
 }
 dt_iop_basecurve_data_t;
 
+typedef struct dt_iop_basecurve_global_data_t
+{
+  int kernel_basecurve;
+}
+dt_iop_basecurve_global_data_t;
+
+
 const char *name()
 {
   return _("base curve");
@@ -150,6 +158,26 @@ void init_presets (dt_iop_module_so_t *self)
   // sql commit
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
+
+#ifdef HAVE_OPENCL
+void
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
+  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
+
+  cl_int err;
+  const int devid = piece->pipe->devid;
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  cl_mem dev_m = dt_opencl_copy_host_to_device(d->table, 256, 256, devid, sizeof(float));
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 2, sizeof(cl_mem), (void *)&dev_m);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_basecurve, sizes);
+  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue basecurve kernel! %d\n", err);
+  clReleaseMemObject(dev_m);
+}
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -242,17 +270,26 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  // dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)module->data;
-  // gegl_node_remove_child(module->dev->gegl, d->node);
-  // gegl_node_remove_child(module->dev->gegl, d->node_preview);
-  // free(d->curve);
-  // g_unref(d->curve);
-  // free(module->data);
-  // module->data = NULL;
   free(module->gui_data);
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)malloc(sizeof(dt_iop_basecurve_global_data_t));
+  module->data = gd;
+  gd->kernel_basecurve = dt_opencl_create_kernel(darktable.opencl, program, "basecurve");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_basecurve);
+  free(module->data);
+  module->data = NULL;
 }
 
 static gboolean

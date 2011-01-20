@@ -54,6 +54,12 @@ typedef struct dt_iop_tonecurve_data_t
 }
 dt_iop_tonecurve_data_t;
 
+typedef struct dt_iop_tonecurve_global_data_t
+{
+  int kernel_tonecurve;
+}
+dt_iop_tonecurve_global_data_t;
+
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
 
