@@ -734,15 +734,11 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
-#if 1
 static float
 weight (const float c1, const float c2)
 {
-  return dt_fast_expf(-(c1-c2)*(c1-c2)/(0.03f*65535.0f*65535.0f));
-  // const float d = -fabsf(c1-c2)*(6.f/65535.0f) + 2.0f;
-  // return fmaxf(0.0f, d*d*0.25f);
+  return dt_fast_expf(-(c1-c2)*(c1-c2)*(1.0f/(0.03f*65535.0f*65535.0f)));
 }
-#endif
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -774,8 +770,11 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   if(FC(trggby, trggbx+1, filters) != 1) trggbx ++;
   if(FC(trggby, trggbx,   filters) != 0) { trggbx = (trggbx + 1)&1; trggby ++; }
   const int rggbx = trggbx, rggby = trggby;
+  const int maxj = ((roi_in->height-3)&~1u)+rggby;
+  const int maxi = ((roi_in->width -3)&~1u)+rggbx;
 
-
+  const __m128 ff  = _mm_set1_ps(1.0f/65535.0f);
+  const __m128 one = _mm_set1_ps(1.0f);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(out, filter) schedule(static)
 #endif
@@ -795,14 +794,15 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       px = MIN((((roi_in->width -3) & ~1u) + rggbx),  px);
       py = MIN((((roi_in->height-3) & ~1u) + rggby), py);
 
-      const float pc1 = in[px   + in_stride*py];
-      const float pc2 = in[px+1 + in_stride*py];
-      const float pc3 = in[px   + in_stride*(py + 1)];
-      const float pc4 = in[px+1 + in_stride*(py + 1)];
+      const float pc1  = in[px   + in_stride*py];
+      const float pc23 = .5f*(in[px+1 + in_stride*py] + in[px   + in_stride*(py + 1)]);
+      const float pc4  = in[px+1 + in_stride*(py + 1)];
 
       __m128 num = _mm_setzero_ps();
-      for(int j=MAX(rggby, py-2*samples);j<=MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);j+=2)
-      for(int i=MAX(rggbx, px-2*samples);i<=MIN(((roi_in->width -3)&~1u)+rggbx, px+2*samples);i+=2)
+      const int maxjj = MIN(maxj,  py + 2*samples), maxii = MIN(maxi,  px + 2*samples);
+      const int minjj = MAX(rggby, py - 2*samples), minii = MAX(rggbx, px - 2*samples);
+      for(int j=minjj;j<=maxjj;j+=2)
+      for(int i=minii;i<=maxii;i+=2)
       {
         // get four mosaic pattern uint16:
         const float p1 = in[i   + in_stride*j];
@@ -811,12 +811,14 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
         const float p4 = in[i+1 + in_stride*(j + 1)];
 
         const float wr = weight(pc1, p1);
-        const float wg = weight(.5f*(pc2+pc3), .5f*(p2+p3));
+        const float wg = weight(pc23, .5f*(p2+p3));
         const float wb = weight(pc4, p4);
 
-        const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
-        col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*wb, .5f*(p2+p3)*wg, p1*wr), _mm_set1_ps(f/65535.0f)));
-        num = _mm_add_ps(num, _mm_mul_ps(_mm_set_ps(1.0f, wb, wg, wr), _mm_set1_ps(f)));
+        // const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
+        // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*wb, .5f*(p2+p3)*wg, p1*wr), _mm_set1_ps(f/65535.0f)));
+        // num = _mm_add_ps(num, _mm_mul_ps(_mm_set_ps(1.0f, wb, wg, wr), _mm_set1_ps(f)));
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*wb, .5f*(p2+p3)*wg, p1*wr), ff));
+        num = _mm_add_ps(num, _mm_mul_ps(_mm_set_ps(1.0f, wb, wg, wr), one));
       }
       col = _mm_div_ps(col, num);
       _mm_stream_ps(outc, col);
