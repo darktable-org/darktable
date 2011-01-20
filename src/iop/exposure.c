@@ -70,6 +70,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 3, sizeof(float), (void *)&scale);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue exposure kernel! %d\n", err);
+  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] *= scale;
 }
 #endif
 
