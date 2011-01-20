@@ -26,6 +26,7 @@
   #include <gegl.h>
 #endif
 #include "iop/exposure.h"
+#include "common/opencl.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -47,9 +48,30 @@ groups ()
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);
-  else return 4*sizeof(float);
+  return 4*sizeof(float);
 }
+
+#ifdef HAVE_OPENCL
+void
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+  dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
+
+  cl_int err;
+  const float black = d->black;
+  const float white = exp2f(-d->exposure);
+  const float scale = 1.0/(white - black); 
+  const int devid = piece->pipe->devid;
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 2, sizeof(float), (void *)&black);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 3, sizeof(float), (void *)&scale);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_exposure, sizes);
+  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue exposure kernel! %d\n", err);
+}
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -58,31 +80,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float white = exp2f(-d->exposure);
   const int ch = piece->colors;
   const float scale = 1.0/(white - black); 
-#if 0
-  const float *const in = (float *)i;
-  float *const out = (float *)o;
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && self->dev->image->filters)
-  { // raw image which needs demosaic later on.
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out) schedule(static)
-#endif
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
-      out[k] = fmaxf(0.0f, (in[k]-black)*scale);
-  }
-  else
-#endif
-  { // std float image:
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
-    for(int k=0;k<roi_out->height;k++)
-    {
-      const float *in = ((float *)i) + ch*k*roi_out->width;
-      float *out = ((float *)o) + ch*k*roi_out->width;
-      for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
-        for(int i=0;i<3;i++)
-          out[i] = fmaxf(0.0f, (in[i]-black)*scale);
-    }
+  for(int k=0;k<roi_out->height;k++)
+  {
+    const float *in = ((float *)i) + ch*k*roi_out->width;
+    float *out = ((float *)o) + ch*k*roi_out->width;
+    for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
+      for(int i=0;i<3;i++)
+        out[i] = fmaxf(0.0f, (in[i]-black)*scale);
   }
   for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] *= scale;
 }
@@ -91,39 +98,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-  fprintf(stderr, "implement exposure process gegl version! \n");
-#else
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   d->black = p->black;
   d->gain = 2.0 - p->gain;
   d->exposure = p->exposure;
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-  piece->data = NULL;
-  dt_iop_exposure_params_t *default_params = (dt_iop_exposure_params_t *)self->default_params;
-  // piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-gamma", "linear_value", default_params->linear, "gamma_value", default_params->gamma, NULL);
-#else
   piece->data = malloc(sizeof(dt_iop_exposure_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // no free necessary, no data is alloc'ed
-#else
   free(piece->data);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -153,12 +142,28 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
 }
 
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // from programs.conf: basic.cl
+  dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)malloc(sizeof(dt_iop_exposure_global_data_t));
+  module->data = gd;
+  gd->kernel_exposure = dt_opencl_create_kernel(darktable.opencl, program, "exposure");
+}
+
 void cleanup(dt_iop_module_t *module)
 {
   free(module->gui_data);
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_exposure);
+  free(module->data);
+  module->data = NULL;
 }
 
 static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)

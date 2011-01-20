@@ -42,7 +42,6 @@ sharpen (read_only image2d_t in, write_only image2d_t out, constant float *m, co
 }
 
 
-// TODO: basic stuff:
 // TODO: whitebalance needs uint16_t x 1 per pixel, which is incompatible as an opencl texture.
 
 /* kernel for the exposure plugin. should work transparently with float4 and float image2d. */
@@ -57,6 +56,7 @@ exposure (read_only image2d_t in, write_only image2d_t out, const float black, c
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+#if 0
 /* helpers for the highlights plugin: convert to lch. */
 
 constant float xyz_rgb[9] = {  /* XYZ from RGB */
@@ -320,3 +320,4 @@ colorout (read_only image2d_t in, write_only image2d_t out, constant float *matr
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+#endif

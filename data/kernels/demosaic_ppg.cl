@@ -125,6 +125,41 @@ pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned 
   write_imagef (out, (int2)(x, y), color);
 }
 
+#if 0
+__kernel void
+color_smoothing(__read_only image2d_t in, __write_only image2d_t out)
+{
+  // TODO: load image block into shared memory
+  // TODO: median filter this - 1 px border
+  // TODO: output whole block..?
+
+
+  float med[9];
+  // TODO: put to constant memory:
+  const uint8_t opt[] = /* Optimal 9-element median search */
+  { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
+    0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
+
+  // TODO: get 9 nb pixels and store c-g
+  // TODO: sort
+  // TODO: synchthreads (block boundaries: bad luck)
+  // TODO: push median
+      for (int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
+        out[4*(j*roi_out->width + i) + 3] = out[4*(j*roi_out->width + i) + c];
+      for (int j=1;j<roi_out->height-1;j++) for(int i=1;i<roi_out->width-1;i++)
+      {
+        int k = 0;
+        for (int jj=-1;jj<=1;jj++) for(int ii=-1;ii<=1;ii++) med[k++] = out[4*((j+jj)*roi_out->width + i + ii) + 3] - out[4*((j+jj)*roi_out->width + i + ii) + 1];
+        for (int ii=0; ii < sizeof opt; ii+=2)
+          if     (med[opt[ii]] > med[opt[ii+1]])
+            SWAP (med[opt[ii]] , med[opt[ii+1]]);
+        out[4*(j*roi_out->width + i) + c] = CLAMPS(med[4] + out[4*(j*roi_out->width + i) + 1], 0.0f, 1.0f);
+      }
+    }
+  }
+}
+#endif
+
 
 /**
  * downscale and clip a buffer (in) to the given roi (r_*) and write it to out.

@@ -290,12 +290,17 @@ void init(dt_iop_module_t *module)
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){2.0, 0.5, 0.004};
   memcpy(module->params, &tmp, sizeof(dt_iop_sharpen_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_sharpen_params_t));
-  
+}
+
+#if 1
+void init_global(dt_iop_module_so_t *module)
+{
   const int program = 2; // from programs.conf
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)malloc(sizeof(dt_iop_sharpen_global_data_t));
   module->data = gd;
   gd->kernel_sharpen = dt_opencl_create_kernel(darktable.opencl, program, "sharpen");
 }
+#endif
 
 void cleanup(dt_iop_module_t *module)
 {
@@ -303,11 +308,17 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+}
+
+#if 1
+void cleanup_global(dt_iop_module_so_t *module)
+{
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)module->data;
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_sharpen);
   free(module->data);
   module->data = NULL;
 }
+#endif
 
 void gui_init(struct dt_iop_module_t *self)
 {

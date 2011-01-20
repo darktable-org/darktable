@@ -58,9 +58,15 @@ typedef struct dt_iop_module_so_t
   GModule *module;
   /** string identifying this operation. */
   dt_dev_operation_t op;
+  /** other stuff that may be needed by the module, not only in gui mode. inited only once, has to be read-only then. */
+  dt_iop_global_data_t *data;
 
   /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
   void (*init_presets)    (struct dt_iop_module_so_t *self);
+  /** called once per module, at startup. */
+  void (*init_global)     (struct dt_iop_module_so_t *self);
+  /** called once per module, at shutdown. */
+  void (*cleanup_global)  (struct dt_iop_module_so_t *self);
 
   /** callbacks, loaded once, referenced by the instances. */
   int (*version)          ();

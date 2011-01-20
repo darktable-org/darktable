@@ -157,6 +157,7 @@ int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t 
 int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
 {
   strncpy(module->op, op, 20);
+  module->data = NULL;
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
   int (*version)();
@@ -186,6 +187,8 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
   if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                goto error;
+  if(!g_module_symbol(module->module, "init_global",            (gpointer)&(module->init_global)))            module->init_global = NULL;
+  if(!g_module_symbol(module->module, "cleanup_global",         (gpointer)&(module->cleanup_global)))         module->cleanup_global = NULL;
   if(!g_module_symbol(module->module, "init_presets",           (gpointer)&(module->init_presets)))           module->init_presets = NULL;
   if(!g_module_symbol(module->module, "commit_params",          (gpointer)&(module->commit_params)))          goto error;
   if(!g_module_symbol(module->module, "reload_defaults",        (gpointer)&(module->reload_defaults)))        module->reload_defaults = NULL;
@@ -197,6 +200,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
   if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;
   if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
+  if(module->init_global) module->init_global(module);
   return 0;
 error:
   fprintf(stderr, "[iop_load_module] failed to open operation `%s': %s\n", op, g_module_error());
@@ -402,6 +406,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
       continue;
     }
     res = g_list_insert_sorted(res, module, sort_plugins);
+    module->data = module_so->data;
     module->factory_params = malloc(module->params_size);
     // copy factory params first time. reload_defaults will only overwrite
     // if module->reload_defaults exists (else the here copied values
@@ -435,6 +440,7 @@ void dt_iop_unload_modules_so()
   while(darktable.iop)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;
+    if(module->cleanup_global) module->cleanup_global(module);
     if(module->module) g_module_close(module->module);
     free(darktable.iop->data);
     darktable.iop = g_list_delete_link(darktable.iop, darktable.iop);

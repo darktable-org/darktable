@@ -379,9 +379,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #endif
 }
 
-void init(dt_iop_module_t *module)
+void init_global(dt_iop_module_so_t *module)
 {
-  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   lfDatabase *dt_iop_lensfun_db = lf_db_new();
   module->data = (void *)dt_iop_lensfun_db;
 #if defined(__MACH__) || defined(__APPLE__)
@@ -396,17 +395,14 @@ void init(dt_iop_module_t *module)
     sprintf(c, "/lensfun");
     dt_iop_lensfun_db->HomeDataDir = g_strdup(path);
     if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
-    {
       fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
-    }
   }
-  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-  module->params = malloc(sizeof(dt_iop_lensfun_params_t));
-  module->default_params = malloc(sizeof(dt_iop_lensfun_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_lensfun_params_t);
-  module->gui_data = NULL;
-  module->priority = 275;
+}
+
+void reload_presets(dt_iop_module_t *module)
+{
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)module->data;
+  // reload image specific stuff
   // get all we can from exif:
   dt_iop_lensfun_params_t tmp;
   strncpy(tmp.lens, module->dev->image->exif_lens, 52);
@@ -446,14 +442,28 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lensfun_params_t));
 }
 
+void init(dt_iop_module_t *module)
+{
+  module->params = malloc(sizeof(dt_iop_lensfun_params_t));
+  module->default_params = malloc(sizeof(dt_iop_lensfun_params_t));
+  module->default_enabled = 0;
+  module->params_size = sizeof(dt_iop_lensfun_params_t);
+  module->gui_data = NULL;
+  module->priority = 275;
+}
+
 void cleanup(dt_iop_module_t *module)
 {
-  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)module->data;
-  lf_db_destroy(dt_iop_lensfun_db);
   free(module->gui_data);
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)module->data;
+  lf_db_destroy(dt_iop_lensfun_db);
 }
 
 

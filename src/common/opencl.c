@@ -60,16 +60,37 @@ void dt_opencl_init(dt_opencl_t *cl)
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d devices\n", num_devices);
   for(int k=0;k<num_devices;k++)
   {
-    bzero(cl->dev[k].program_used, sizeof(int)*DT_OPENCL_MAX_PROGRAMS);
-    bzero(cl->dev[k].kernel_used,  sizeof(int)*DT_OPENCL_MAX_KERNELS);
-    dt_pthread_mutex_init(&cl->dev[k].lock, NULL);
+    memset(cl->dev[k].program_used, 0x0, sizeof(int)*DT_OPENCL_MAX_PROGRAMS);
+    memset(cl->dev[k].kernel_used,  0x0, sizeof(int)*DT_OPENCL_MAX_KERNELS);
     cl->dev[k].devid = devices[k];
+
+    char infostr[1024];
+    size_t infoint;
+    size_t infointtab[1024];
+    cl_bool image_support = 0;
+    cl_ulong max_global_mem = 0;
+    size_t image_width = 0, image_height = 0;
+
+    // test 1GB mem and image support:
+    clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
+    clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
+    clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &image_height, NULL);
+    clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_IMAGE2D_MAX_WIDTH,  sizeof(size_t), &image_width,  NULL);
+    if(!image_support || image_height < 8192 || image_width < 8192)
+    {
+      cl->num_devs = --num_devices;
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to missing image support.\n", k, infostr);
+      continue;
+    }
+    clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &max_global_mem, NULL);
+    if(max_global_mem < 1000000000ul)
+    {
+      cl->num_devs = --num_devices;
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to insufficient global memory.\n", k, infostr);
+      continue;
+    }
     if(darktable.unmuted & DT_DEBUG_OPENCL)
     {
-      char infostr[1024];
-      size_t infoint;
-      size_t infointtab[1024];
-      clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
       printf("[opencl_init] device %d: %s \n", k, infostr);
       clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
       printf("     MAX_WORK_GROUP_SIZE:      %zd\n", infoint);
@@ -80,6 +101,7 @@ void dt_opencl_init(dt_opencl_t *cl)
       for (int i=0;i<infoint;i++) printf("%zd ", infointtab[i]);
       printf("]\n");
     }
+    dt_pthread_mutex_init(&cl->dev[k].lock, NULL);
 
     cl->dev[k].context = clCreateContext(0, 1, &cl->dev[k].devid, NULL, NULL, &err);
     if(err != CL_SUCCESS)

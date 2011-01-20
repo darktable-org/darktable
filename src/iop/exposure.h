@@ -43,6 +43,12 @@ typedef struct dt_iop_exposure_data_t
 }
 dt_iop_exposure_data_t;
 
+typedef struct dt_iop_exposure_global_data_t
+{
+  int kernel_exposure;
+}
+dt_iop_exposure_global_data_t;
+
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
 

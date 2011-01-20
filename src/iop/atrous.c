@@ -445,7 +445,10 @@ void init(dt_iop_module_t *module)
   }
   memcpy(module->params, &tmp, sizeof(dt_iop_atrous_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_atrous_params_t));
+}
 
+void init_global(dt_iop_module_so_t *module)
+{
   const int program = 1; // from programs.conf
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)malloc(sizeof(dt_iop_atrous_global_data_t));
   module->data = gd;
@@ -459,6 +462,10 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)module->data;
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_decompose);
   dt_opencl_free_kernel(darktable.opencl, gd->kernel_synthesize);
