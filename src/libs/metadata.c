@@ -43,7 +43,7 @@ typedef struct dt_lib_metadata_t
 dt_lib_metadata_t;
 
 const char* name(){
-	return _("metadata");
+	return _("copyright information");
 }
 
 uint32_t views(){
