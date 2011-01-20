@@ -211,6 +211,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
+  module->topwidget = NULL;
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
@@ -274,14 +275,82 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
 }
 
 static void
+dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  if(!darktable.gui->reset)
+  {
+    if(gtk_toggle_button_get_active(togglebutton)) module->enabled = 1;
+    else module->enabled = 0;
+    dt_dev_add_history_item(module->dev, module, FALSE);
+    // close parent expander.
+    gtk_expander_set_expanded(module->expander, module->enabled);
+  }
+  char tooltip[512];
+  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
+}
+
+static void
+update_topwidget(dt_iop_module_t *module)
+{
+  // update/insert/remove module->off:
+  if(!module->hide_enable_button && !module->off)
+  {
+    // insert new 
+    // module->topwidget [evb] -> vbox -> hbox -> leftmost entry
+    GtkWidget *vbox = gtk_bin_get_child(GTK_BIN(module->topwidget));
+    GList *vboxlist = gtk_container_get_children(GTK_CONTAINER(vbox));
+    GtkWidget *hbox = GTK_WIDGET(vboxlist->data);
+
+    GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+    gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
+    char tooltip[512];
+    snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+    gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
+    gtk_box_reorder_child(GTK_BOX(hbox), GTK_WIDGET(button), 0);
+    g_signal_connect (G_OBJECT (button), "toggled",
+                      G_CALLBACK (dt_iop_gui_off_callback), module);
+    module->off = button;
+
+    GtkWidget *w = gtk_expander_get_label_widget (module->expander);
+    gtk_misc_set_padding(GTK_MISC(w), 0, 0);
+  }
+  else if(module->hide_enable_button && module->off)
+  {
+    // remove widget
+    gtk_widget_destroy(GTK_WIDGET(module->off));
+    module->off = NULL;
+
+    GtkWidget *w = gtk_expander_get_label_widget (module->expander);
+    gtk_misc_set_padding(GTK_MISC(w), 13, 0);
+  }
+  else if(module->off)
+  {
+    // just toggle with current module->enabled value.
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+  }
+}
+
+void dt_iop_reload_defaults(dt_iop_module_t *module)
+{
+  if(module->reload_defaults)
+  {
+    module->reload_defaults(module);
+    // factory defaults can only be overwritten if reload_defaults actually exists:
+    memcpy(module->factory_params, module->params, module->params_size);
+    module->factory_enabled = module->default_enabled;
+  }
+  dt_iop_load_default_params(module);
+  if(module->topwidget) update_topwidget(module);
+}
+
+static void
 init_presets(dt_iop_module_so_t *module)
 {
   if(module->init_presets) module->init_presets(module);
-  // sqlite3_stmt *stmt;
-  // DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from presets where operation=?1 and writeprotect=1", -1, &stmt, NULL);
-  // DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  // if(sqlite3_step(stmt) != SQLITE_ROW) 
-  // sqlite3_finalize(stmt);
 }
 
 void dt_iop_load_modules_so()
@@ -334,9 +403,12 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     }
     res = g_list_insert_sorted(res, module, sort_plugins);
     module->factory_params = malloc(module->params_size);
-    memcpy(module->factory_params, module->default_params, module->params_size);
+    // copy factory params first time. reload_defaults will only overwrite
+    // if module->reload_defaults exists (else the here copied values
+    // stay constant for all images).
+    memcpy(module->factory_params, module->params, module->params_size);
     module->factory_enabled = module->default_enabled;
-    dt_iop_load_default_params(module);
+    dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
 
@@ -390,22 +462,6 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   module->gui_update(module);
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   darktable.gui->reset = reset;
-}
-
-void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  if(!darktable.gui->reset)
-  {
-    if(gtk_toggle_button_get_active(togglebutton)) module->enabled = 1;
-    else module->enabled = 0;
-    dt_dev_add_history_item(module->dev, module, FALSE);
-    // close parent expander.
-    gtk_expander_set_expanded(module->expander, module->enabled);
-  }
-  char tooltip[512];
-  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-  gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
 static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
@@ -516,7 +572,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   // colorin/colorout are essential for La/Lb/L conversion.
   if(!module->hide_enable_button)
   {
-    // GtkToggleButton *button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
     GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
     gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
     char tooltip[512];

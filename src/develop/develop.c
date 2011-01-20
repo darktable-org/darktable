@@ -465,18 +465,6 @@ restart:
     // during load, a mipf update could have been issued.
     dev->preview_input_changed = 1;
     dev->preview_dirty = 1;
-    // also reload defaults, as only now exposure/black levels are known:
-    GList *modules = dev->iop;
-    while(modules)
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-      if(module->reload_defaults)
-      {
-        module->reload_defaults(module);    // eval new default
-        dt_iop_load_default_params(module); // and override, maybe.
-      }
-      modules = g_list_next(modules);
-    }
     dev->gui_synch = 1; // notify gui thread we want to synch
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;

@@ -133,6 +133,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
+/** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip mode. */
+void reload_defaults(dt_iop_module_t *module)
+{
+  // change default_enabled depending on type of image, or set new default_params even.
+
+  // if this callback exists, it has to write default_params and default_enabled.
+}
+
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {

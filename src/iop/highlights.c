@@ -289,26 +289,28 @@ void gui_update(struct dt_iop_module_t *self)
 	gtk_combo_box_set_active(g->mode, p->mode);
 }
 
+void reload_defaults(dt_iop_module_t *module)
+{
+  // only on for non-hdr raw images:
+  if(module->dev->image->filters && module->dev->image->bpp != sizeof(float))
+    module->default_enabled = 1;
+	else
+    module->default_enabled = 0;
+
+	dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t){0, 1.0, 0.0, 0.0};
+	memcpy(module->params, &tmp, sizeof(dt_iop_highlights_params_t));
+	memcpy(module->default_params, &tmp, sizeof(dt_iop_highlights_params_t));
+}
+
 void init(dt_iop_module_t *module)
 {
 	// module->data = malloc(sizeof(dt_iop_highlights_data_t));
 	module->params = malloc(sizeof(dt_iop_highlights_params_t));
 	module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-  if(module->dev->image->filters && module->dev->image->bpp != sizeof(float))
-  {
-    module->default_enabled = 1;
-  }
-	else
-  {
-    module->default_enabled = 0;
-    module->hide_enable_button = 1;
-  }
 	module->priority = 256;
+  module->default_enabled = 1;
 	module->params_size = sizeof(dt_iop_highlights_params_t);
 	module->gui_data = NULL;
-	dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t){0, 1.0, 0.0, 0.0};
-	memcpy(module->params, &tmp, sizeof(dt_iop_highlights_params_t));
-	memcpy(module->default_params, &tmp, sizeof(dt_iop_highlights_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)

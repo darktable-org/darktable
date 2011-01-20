@@ -387,13 +387,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
       // re-init and re-gui_init
       module->gui_cleanup(module);
-      module->cleanup(module);
       gtk_container_remove(GTK_CONTAINER(parent), module->widget);
-      // TODO: cleanup/init thread safe with pixelpipe processing?
-      module->init(module);
-      // load default params (dt_iop_)
-      memcpy(module->factory_params, module->params, module->params_size);
-      dt_iop_load_default_params(module);
+      dt_iop_reload_defaults(module);
       module->gui_init(module);
       // copy over already inited stuff:
       module->topwidget = top;

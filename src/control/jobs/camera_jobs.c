@@ -262,7 +262,7 @@ const char *_camera_import_request_image_path(const dt_camera_t *camera,void *da
 int32_t dt_camera_import_job_run(dt_job_t *job)
 {
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
-  dt_control_log(_("starting import job of images from camera"));
+  dt_control_log(_("starting to import images from camera"));
   
   // Setup a new filmroll to import images to....
   t->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
@@ -279,7 +279,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   // Create recursive directories, abort if no access
   if( g_mkdir_with_parents(t->film->dirname,0755) == -1 )
   {
-    dt_control_log(_("failed to create import path %s, import of images aborted."), t->film->dirname);
+    dt_control_log(_("failed to create import path `%s', import aborted."), t->film->dirname);
     return 1;
   }
   
@@ -314,7 +314,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
     dt_gui_filmview_update(gtk_entry_get_text(entry));
   }
   else
-    dt_control_log(_("failed to create filmroll for camera import, import of images aborted."));
+    dt_control_log(_("failed to create filmroll for camera import, import aborted."));
   
   dt_pthread_mutex_lock(&t->film->images_mutex);
   t->film->ref--;

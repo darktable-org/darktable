@@ -247,10 +247,8 @@ void gui_update (struct dt_iop_module_t *self)
   gtk_spin_button_set_value(g->finetune, 0);
 }
 
-void init (dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
   // raw images need wb (to convert from uint16_t to float):
 	if(module->dev->image->flags & DT_IMAGE_RAW)
   {
@@ -258,9 +256,6 @@ void init (dt_iop_module_t *module)
     module->hide_enable_button = 1;
   }
   else module->default_enabled = 0;
-  module->priority = 150;
-  module->params_size = sizeof(dt_iop_temperature_params_t);
-  module->gui_data = NULL;
   dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t){5000.0, {1.0, 1.0, 1.0}};
 
   // get white balance coefficients, as shot
@@ -275,15 +270,6 @@ void init (dt_iop_module_t *module)
     if(tmp.coeffs[0] <= 0.0)
     {
       for(int k=0;k<3;k++) tmp.coeffs[k] = raw->color.pre_mul[k];
-#if 0 // ufraw does some more magic here (but results in same wb coeffs for sony cam)
-      for (int c=0; c<3; c++)
-      {
-        float chanMulInv = 0;
-        for (int cc=0; cc<3; cc++)
-          chanMulInv += 1.0f/raw->color.pre_mul[c] * raw->color.rgb_cam[c][cc];
-        tmp.coeffs[c] = 1.0f/chanMulInv;
-      }
-#endif
     }
     if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
     { // could not get useful info!
@@ -300,6 +286,15 @@ void init (dt_iop_module_t *module)
 
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));
+}
+
+void init (dt_iop_module_t *module)
+{
+  module->params = malloc(sizeof(dt_iop_temperature_params_t));
+  module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
+  module->priority = 150;
+  module->params_size = sizeof(dt_iop_temperature_params_t);
+  module->gui_data = NULL;
 }
 
 void cleanup (dt_iop_module_t *module)

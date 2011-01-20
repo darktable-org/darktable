@@ -949,6 +949,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   CA_correct(self, piece, (float *)i, (float *)o, roi_in, roi_out);
 }
 
+void reload_defaults(dt_iop_module_t *module)
+{
+  // init defaults:
+  dt_iop_cacorrect_params_t tmp = (dt_iop_cacorrect_params_t){50};
+  memcpy(module->params, &tmp, sizeof(dt_iop_cacorrect_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
+
+  // can't be switched on for non-raw images:
+  const uint32_t filters = dt_image_flipped_filter(module->dev->image);
+  if(!filters) module->hide_enable_button = 1;
+}
+
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
@@ -959,19 +971,11 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  // and can't be switched on for non-raw images:
-  const uint32_t filters = dt_image_flipped_filter(module->dev->image);
-  if(!filters) module->hide_enable_button = 1;
 
   // we come just before demosaicing.
   module->priority = 230;
   module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
-  // init defaults:
-  dt_iop_cacorrect_params_t tmp = (dt_iop_cacorrect_params_t){50};
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_cacorrect_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)

@@ -78,7 +78,7 @@ dt_iop_relight_data_t;
 
 const char *name()
 {
-  return _("relight");
+  return _("fill light");
 }
 
 int flags()
@@ -294,7 +294,6 @@ void init(dt_iop_module_t *module)
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t){0.33,0,4};
   memcpy(module->params, &tmp, sizeof(dt_iop_relight_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_relight_params_t));
-  
 }
 
 void cleanup(dt_iop_module_t *module)

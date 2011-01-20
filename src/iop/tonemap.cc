@@ -219,21 +219,27 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->Fsize, p->Fsize);
 }
 
+void reload_defaults(dt_iop_module_t *module)
+{
+  if((module->dev->image->filters && module->dev->image->bpp == sizeof(float)) || (module->dev->image->flags & DT_IMAGE_HDR))
+    module->default_enabled = 1;
+  else
+    module->default_enabled = 0;
+
+  dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t){2.5,0.1};
+  memcpy(module->params, &tmp, sizeof(dt_iop_tonemapping_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_tonemapping_params_t));
+}
+
 void init(dt_iop_module_t *module)
 {
   // module->data = malloc(sizeof(dt_iop_tonemapping_data_t));
   module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
-  if((module->dev->image->filters && module->dev->image->bpp == sizeof(float)) || (module->dev->image->flags & DT_IMAGE_HDR))
-    module->default_enabled = 1;
-  else
-    module->default_enabled = 0;
+  module->default_enabled = 1;
   module->priority = 250;
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
   module->gui_data = NULL;
-  dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t){2.5,0.1};
-  memcpy(module->params, &tmp, sizeof(dt_iop_tonemapping_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_tonemapping_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
