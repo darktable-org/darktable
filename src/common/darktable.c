@@ -379,6 +379,7 @@ void dt_cleanup()
   free(darktable.conf);
   dt_points_cleanup(darktable.points);
   free(darktable.points);
+  dt_iop_unload_modules_so();
   dt_opencl_cleanup(darktable.opencl);
   free(darktable.opencl);
 #ifdef HAVE_GPHOTO2
@@ -386,9 +387,6 @@ void dt_cleanup()
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
   dt_fswatch_destroy(darktable.fswatch);
-
-  // cloanup the darkroom mode plugins once:
-  dt_iop_unload_modules_so();
 
   sqlite3_close(darktable.db);
   dt_pthread_mutex_destroy(&(darktable.db_insert));

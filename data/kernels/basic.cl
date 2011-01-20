@@ -21,7 +21,7 @@ const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 
 /* kernel for the sharpen plugin */
 __kernel void
-sharpen (read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
+sharpen (read_only image2d_t in, write_only image2d_t out, global float *m, const int rad,
     const float sharpen, const float thrs)
 {
   const int x = get_global_id(0);
