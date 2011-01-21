@@ -561,20 +561,20 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     float r1, r2;
     if(zoom != 1) 
     {
-      r1 = 0.06*width;
+      r1 = 0.05*width;
       r2 = 0.025*width;
     }
     else
     {
-      r1 = 0.02*fscale;
+      r1 = 0.015*fscale;
       r2 = 0.0083*fscale;
     }
-    for(int k=0;k<5;k++)
+	for(int k=0;k<6;k++)
     {
       float x, y;
       if(zoom != 1) 
       {
-        x = (0.15+k*0.15)*width;
+        x = (0.15+k*0.12)*width;
         y = 0.88*height;
       }
       else
@@ -582,13 +582,14 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
         x = (.04+k*0.04)*fscale;
         y = .12*fscale;
       }
-      if(k == 4)
+      if(k == 5)
       {
         if(altered) 
         {
           // Align to right
           float s = (r1+r2)*.5;
           if(zoom != 1) x = width*0.85;
+          else x = (.04+(k+1)*0.04)*fscale;
           dt_view_draw_altered(cr, x, y, s);
 //           g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
           if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
@@ -607,8 +608,18 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
           }
         }
       }
-      else
+      else if ((img->flags & 0x7) == 6)
       {
+		if(k == 0)
+		{
+			dt_view_star(cr, x, y, r1, r2);
+			cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
+			cairo_stroke(cr);  
+			cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+		}
+	  }
+	  else
+	  {
         dt_view_star(cr, x, y, r1, r2);
         if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
         {

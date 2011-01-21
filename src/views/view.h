@@ -68,7 +68,9 @@ typedef enum dt_view_image_over_t
   DT_VIEW_STAR_1 = 1,
   DT_VIEW_STAR_2 = 2,
   DT_VIEW_STAR_3 = 3,
-  DT_VIEW_STAR_4 = 4
+  DT_VIEW_STAR_4 = 4,
+  DT_VIEW_STAR_5 = 5,
+  DT_VIEW_REJECT = 6
 }
 dt_view_image_over_t;
 

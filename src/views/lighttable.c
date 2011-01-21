@@ -592,7 +592,7 @@ star_key_accel_callback(void *data)
   long int num = (long int)data;
   switch (num)
   {
-    case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case 666:
+    case DT_VIEW_REJECT: case DT_VIEW_DESERT: case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case DT_VIEW_STAR_5: case 666:
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -604,7 +604,7 @@ star_key_accel_callback(void *data)
         {
           dt_image_t *image = dt_image_cache_get(sqlite3_column_int(stmt, 0), 'r');
           image->dirty = 1;
-          if(num == 666) image->flags &= ~0xf;
+          if(num == 666 || num == DT_VIEW_DESERT) image->flags &= ~0xf;
           else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
           else
           {
@@ -620,7 +620,7 @@ star_key_accel_callback(void *data)
       {
         dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
         image->dirty = 1;
-        if(num == 666) image->flags &= ~0xf;
+        if(num == 666 || num == DT_VIEW_DESERT) image->flags &= ~0xf;
         else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
         else
         {
@@ -692,16 +692,22 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
+  dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
   dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
   dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
   dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
   dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
+  dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
+  dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->stars_registered = 1;
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_0, zoom_key_accel_callback, (void *)0);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel_callback, (void *)1);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel_callback, (void *)2);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel_callback, (void *)3);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, zoom_key_accel_callback, (void *)4);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_5, zoom_key_accel_callback, (void *)5);
+  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_Delete, zoom_key_accel_callback, (void *)6);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_g, go_up_key_accel_callback, (void *)self);
   dt_gui_key_accel_register(GDK_CONTROL_MASK|GDK_SHIFT_MASK, GDK_G, go_down_key_accel_callback, (void *)self);
@@ -753,10 +759,13 @@ void mouse_enter(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   if(!lib->stars_registered)
   {
+	dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
     dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
     dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
     dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
     dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
+    dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
+    dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
     lib->stars_registered = 1;
   }
 }
@@ -805,8 +814,8 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   // image button pressed?
   switch(lib->image_over)
   {
-    case DT_VIEW_DESERT: break;
-    case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4:
+    case DT_VIEW_DESERT: case DT_VIEW_REJECT: break;
+    case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case DT_VIEW_STAR_5:
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);

@@ -683,7 +683,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     int set = 0;
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"))) != xmpData.end() )
     {
-      stars = pos->toLong() + 1;
+      stars = (pos->toLong() == -1) ? 6 : pos->toLong();
       set = 1;
     }
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Label"))) != xmpData.end() )
@@ -917,7 +917,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
       raw_params = sqlite3_column_int(stmt, 1);
     }
     sqlite3_finalize(stmt);
-    xmpData["Xmp.xmp.Rating"] = (stars & 0x7) - 1; // normally stars go from -1 .. 5 or so.
+    xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); //rejected image = -1, others = 0..5
 
     // the meta data
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select key, value from meta_data where id = ?1", -1, &stmt, NULL);

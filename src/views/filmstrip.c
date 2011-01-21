@@ -236,7 +236,7 @@ star_key_accel_callback(void *data)
   long int num = (long int)data;
   switch (num)
   {
-    case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case 666:
+    case DT_VIEW_DESERT: case DT_VIEW_REJECT: case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case DT_VIEW_STAR_5: case 666:
     { 
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -265,10 +265,14 @@ void mouse_enter(dt_view_t *self)
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   if(!strip->stars_registered)
   {
+	dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
     dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
     dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
     dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
     dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
+    dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
+    dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
+   
     strip->stars_registered = 1;
   }
 }
@@ -283,10 +287,13 @@ void mouse_leave(dt_view_t *self)
 void enter(dt_view_t *self)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
+  dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
   dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
   dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
   dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
   dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
+  dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
+  dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
   strip->stars_registered = 1;
   
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, copy_history_key_accel_callback, (void *)strip);
