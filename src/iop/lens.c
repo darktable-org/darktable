@@ -399,7 +399,7 @@ void init_global(dt_iop_module_so_t *module)
   }
 }
 
-void reload_presets(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *module)
 {
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)module->data;
   // reload image specific stuff
@@ -1172,7 +1172,7 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
-  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
+  // lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   g->camera = NULL;
@@ -1219,6 +1219,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->lens_param_box = gtk_hbox_new(TRUE, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->lens_param_box), 0, 3, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
+#if 0
   // if unambigious info is there, use it.
   if(self->dev->image->exif_lens[0] != '\0')
   {
@@ -1233,6 +1234,7 @@ void gui_init(struct dt_iop_module_t *self)
     lf_free (lenslist);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
+#endif
 
   // target geometry
   label = gtk_label_new(_("geometry"));

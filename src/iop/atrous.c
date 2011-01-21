@@ -522,6 +522,7 @@ void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;
+  p.octaves = 7;
   
   for(int k=0;k<BANDS;k++)
   {

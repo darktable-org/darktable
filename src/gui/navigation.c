@@ -46,6 +46,9 @@ void dt_gui_navigation_cleanup(dt_gui_navigation_t *n) {}
 
 gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
+  // avoid accessing cleaned up mem during shutdown:
+  if(!darktable.control->running) return TRUE;
+
   const int inset = DT_NAVIGATION_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
 
