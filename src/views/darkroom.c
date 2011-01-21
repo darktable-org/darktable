@@ -537,9 +537,9 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "library_eventbox");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
   gtk_widget_set_visible(widget, TRUE);
@@ -703,7 +703,7 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "library_eventbox");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
   gtk_widget_set_visible(widget, FALSE);

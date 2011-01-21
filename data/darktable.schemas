@@ -314,19 +314,6 @@
     </schema>
 
     <schema>
-      <key>/schemas/apps/darktable/ui_last/film_roll</key>
-      <applyto>/apps/darktable/ui_last/film_roll</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>1</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
-    <schema>
       <key>/schemas/apps/darktable/ui_last/colorpicker_mean</key>
       <applyto>/apps/darktable/ui_last/colorpicker_mean</applyto>
       <owner>darktable</owner>
@@ -470,8 +457,8 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/ui_last/expander_library</key>
-      <applyto>/apps/darktable/ui_last/expander_library</applyto>
+      <key>/schemas/apps/darktable/ui_last/expander_import</key>
+      <applyto>/apps/darktable/ui_last/expander_import</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>2</default>
@@ -692,8 +679,21 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/plugins/lighttable/collect/item</key>
-      <applyto>/apps/darktable/plugins/lighttable/collect/item</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/num_rules</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/num_rules</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item9</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item1</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>0</default>
@@ -705,11 +705,375 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/plugins/lighttable/collect/string</key>
-      <applyto>/apps/darktable/plugins/lighttable/collect/string</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string0</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string0</applyto>
       <owner>darktable</owner>
       <type>string</type>
       <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item1</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item1</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string1</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string1</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item2</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item2</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string2</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string2</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item3</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item3</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string3</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string3</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item4</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item4</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string4</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string4</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item5</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item5</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string5</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string5</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item6</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item6</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string6</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string6</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item7</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item7</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string7</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string7</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item8</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item8</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string8</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string8</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/item9</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item9</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/string9</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/string9</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode0</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode0</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode1</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode1</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode2</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode2</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode3</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode3</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode4</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode4</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode5</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode5</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode6</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode6</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode7</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode7</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode8</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode8</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/collect/mode9</key>
+      <applyto>/apps/darktable/plugins/lighttable/collect/mode9</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>0</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>

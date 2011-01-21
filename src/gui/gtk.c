@@ -43,7 +43,6 @@
 #include "gui/contrast.h"
 #include "gui/gtk.h"
 #include "gui/metadata.h"
-#include "gui/filmview.h"
 #include "gui/iop_history.h"
 #include "gui/iop_modulegroups.h"
 
@@ -499,7 +498,7 @@ static void
 update_query()
 {
   /* updates query */
-  dt_collection_update (darktable.collection);
+  dt_collection_update_query (darktable.collection);
   
   /* updates visual */
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
@@ -646,15 +645,6 @@ snapshot_toggled (GtkToggleButton *widget, long int which)
   }
 }
 
-static void
-film_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  long int num = (long int)user_data;
-  (void)dt_film_open_recent(num);
-  dt_ctl_switch_mode_to(DT_LIBRARY);
-}
-
-
 void
 preferences_button_clicked (GtkWidget *widget, gpointer user_data)
 {
@@ -720,8 +710,6 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
     if(id)
     {
       dt_film_open(id);
-      GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
-      dt_gui_filmview_update(gtk_entry_get_text(entry));
       dt_ctl_switch_mode_to(DT_LIBRARY);
     }
     g_slist_free (list);
@@ -795,8 +783,6 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
 
     if(id)
     {
-      GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
-      dt_gui_filmview_update(gtk_entry_get_text(entry));
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_image_t *img = dt_image_cache_get(id, 'r');
@@ -1211,8 +1197,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_widget_set_size_request(widget, -1, panel_width*.5);
   dt_gui_histogram_init(&gui->histogram, widget);
 
-  dt_gui_filmview_init();
-
   dt_gui_presets_init();
 
   // image op history
@@ -1221,18 +1205,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* initializes the module groups buttonbar control */
   dt_gui_iop_modulegroups_init ();
  
-  /*for(long int k=0;k<10;k++)
-  {
-    char wdname[20];
-    snprintf(wdname, 20, "history_%02ld", k);
-    GtkWidget *button = dtgtk_togglebutton_new_with_label (wdname,NULL,0);
-    gtk_box_pack_start (GTK_BOX (hvbox),button,FALSE,FALSE,0);
-    g_signal_connect (G_OBJECT (button), "clicked",
-                      G_CALLBACK (history_button_clicked),
-                      (gpointer)k);
-  }*/
-
-
   // image filtering/sorting
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
   g_signal_connect (G_OBJECT (widget), "changed",
@@ -1263,57 +1235,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                       (gpointer)(k-1));
   }
   
- /* 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_1_togglebutton");
-  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)0);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_2_togglebutton");
-  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_3_togglebutton");
-  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)2);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshot_4_togglebutton");
-  g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(snapshot_toggled), (gpointer)3);*/
-  
-  /* add recent filmrolls section label */
-  widget = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
-  GtkWidget *label = dtgtk_label_new (_("recently used film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
-  gtk_widget_show(label);
-  gtk_container_add (GTK_CONTAINER(widget),label);
-  
-   /* setup film history */
-  GtkWidget *recent_film_vbox =  gtk_vbox_new(FALSE,0);
-  for (long k=1;k<5;k++) 
-  {
-    char wdname[20];
-    snprintf (wdname, 20, "recent_film_%ld", k);
-    button = dtgtk_button_new_with_label (wdname,NULL,CPF_STYLE_FLAT);
-    gtk_box_pack_start (GTK_BOX (recent_film_vbox),button,FALSE,FALSE,0);
-    g_signal_connect (G_OBJECT (button), "clicked",
-                      G_CALLBACK (film_button_clicked),
-                      (gpointer)(k-1));
-  }
-  gtk_widget_show_all(GTK_WIDGET (recent_film_vbox));
-  gtk_container_add (GTK_CONTAINER(widget),recent_film_vbox);
-  
-   /* add all filmrolls section label */
-  widget = glade_xml_get_widget (darktable.gui->main_window, "all_film_rolls_section_box");
-  label = dtgtk_label_new (_("all film rolls"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
-  gtk_widget_show(label);
-  gtk_container_add (GTK_CONTAINER(widget),label);
-
   /* add content to toolbar */
   /* top left: color labels */
   dt_create_color_label_buttons(GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox")));
-  /*
-  toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_right_toolbox"));
-  gtk_box_pack_end(toolbox,gtk_label_new("right top toolbox"),FALSE,FALSE,0);
-  gtk_widget_show_all (GTK_WIDGET (toolbox));
-  toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox"));
-  gtk_box_pack_start(toolbox,gtk_label_new("left bottom toolbox"),FALSE,FALSE,0);
-  gtk_widget_show_all (GTK_WIDGET (toolbox));
-   toolbox = GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "bottom_right_toolbox"));
-  gtk_box_pack_end(toolbox,gtk_label_new("right bottom toolbox"),FALSE,FALSE,0);
-  gtk_widget_show_all (GTK_WIDGET (toolbox));
-  */
 
   // color picker
   widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_mean_combobox");

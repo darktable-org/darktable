@@ -24,9 +24,10 @@
 
 #include "control/conf.h"
 #include "control/control.h"
-
 #include "common/collection.h"
 #include "common/debug.h"
+#include "common/metadata.h"
+#include "common/utility.h"
 
 #define SELECT_QUERY "select distinct * from %s"
 #define ORDER_BY_QUERY "order by %s"
@@ -35,6 +36,13 @@
 #define MAX_QUERY_STRING_LENGTH 4096
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
+
+typedef struct dt_collection_listener_t
+{
+  void (*callback)(void *);
+  void *data;
+}
+dt_collection_listener_t;
 
 const dt_collection_t * 
 dt_collection_new (const dt_collection_t *clone)
@@ -147,19 +155,19 @@ dt_collection_reset(const dt_collection_t *collection)
   /* setup defaults */
   params->query_flags = COLLECTION_QUERY_FULL;
   params->filter_flags = COLLECTION_FILTER_FILM_ID | COLLECTION_FILTER_ATLEAST_RATING;
-  params->film_id = dt_conf_get_int("ui_last/film_roll");
+  params->film_id = 1;
   params->rating = 1;
 
   /* check if stored query parameters exist */
   if (dt_conf_key_exists ("plugins/collection/filter_flags"))
   {
-  /* apply stored query parameters from previous darktable session */
-  params->film_id = dt_conf_get_int("plugins/collection/film_id");
-  params->rating = dt_conf_get_int("plugins/collection/rating");
-  params->query_flags = dt_conf_get_int("plugins/collection/query_flags");
-  params->filter_flags= dt_conf_get_int("plugins/collection/filter_flags");
+    /* apply stored query parameters from previous darktable session */
+    params->film_id = dt_conf_get_int("plugins/collection/film_id");
+    params->rating = dt_conf_get_int("plugins/collection/rating");
+    params->query_flags = dt_conf_get_int("plugins/collection/query_flags");
+    params->filter_flags= dt_conf_get_int("plugins/collection/filter_flags");
   }
-  dt_collection_update (collection);
+  dt_collection_update_query (collection);
 }
 
 const gchar *
@@ -298,3 +306,151 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
 
   return list;
 }
+
+static void
+get_query_string(const int property, const gchar *escaped_text, char *query)
+{
+  switch(property)
+  {
+    case 0: // film roll
+      snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%%%s%%'))", escaped_text);
+      break;
+
+    case 5: // colorlabel
+    {
+      int color = 0;
+      if     (strcmp(escaped_text,_("red")   )==0) color=0;
+      else if(strcmp(escaped_text,_("yellow"))==0) color=1;
+      else if(strcmp(escaped_text,_("green") )==0) color=2;
+      else if(strcmp(escaped_text,_("blue")  )==0) color=3;
+      else if(strcmp(escaped_text,_("purple"))==0) color=4;
+      snprintf(query, 1024, "(id in (select imgid from color_labels where color=%d))", color);
+    } break;
+    
+    case 4: // history
+      snprintf(query, 1024, "(id %s in (select imgid from history where imgid=images.id)) ",(strcmp(escaped_text,_("altered"))==0)?"":"not");
+      break;
+      
+    case 1: // camera
+      snprintf(query, 1024, "(maker || ' ' || model like '%%%s%%')", escaped_text);
+      break;
+    case 2: // tag
+      snprintf(query, 1024, "(id in (select imgid from tagged_images as a join "
+                            "tags as b on a.tagid = b.id where name like '%%%s%%'))", escaped_text);
+      break;
+
+    // TODO: How to handle images without metadata? In the moment they are not shown.
+    // TODO: Autogenerate this code?
+    case 6: // title
+      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                            DT_METADATA_XMP_DC_TITLE, escaped_text);
+      break;
+    case 7: // description
+        snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                              DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
+        break;
+    case 8: // creator
+      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                            DT_METADATA_XMP_DC_CREATOR, escaped_text);
+      break;
+    case 9: // publisher
+      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                            DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
+      break;
+    case 10: // rights
+      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+                            DT_METADATA_XMP_DC_RIGHTS, escaped_text);
+      break;
+
+    default: // case 3: // day
+      snprintf(query, 1024, "(datetime_taken like '%%%s%%')", escaped_text);
+      break;
+  }
+}
+
+void
+dt_collection_listener_register(void (*callback)(void *), void *data)
+{
+  dt_collection_listener_t *a = (dt_collection_listener_t *)malloc(sizeof(dt_collection_listener_t));
+  a->callback = callback;
+  a->data = data;
+  darktable.collection_listeners = g_list_append(darktable.collection_listeners, a);
+}
+
+void
+dt_collection_listener_unregister(void (*callback)(void *))
+{
+  GList *i = darktable.collection_listeners;
+  while(i)
+  {
+    dt_collection_listener_t *a = (dt_collection_listener_t *)i->data;
+    GList *ii = g_list_next(i);
+    if(a->callback == callback)
+    {
+      free(a);
+      darktable.collection_listeners = g_list_delete_link(darktable.collection_listeners, i);
+    }
+    i = ii;
+  }
+}
+
+void
+dt_collection_update_query(const dt_collection_t *collection)
+{
+  char query[1024], confname[200];
+  char complete_query[4096];
+  int pos = 0;
+
+  const int num_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
+  char *conj[] = {"and", "or", "and not"};
+  complete_query[pos++] = '(';
+  for(int i=0;i<num_rules;i++)
+  {
+    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+    const int property = dt_conf_get_int(confname);
+    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+    gchar *text = dt_conf_get_string(confname);
+    if(!text) break;
+    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+    const int mode = dt_conf_get_int(confname);
+    gchar *escaped_text = dt_util_str_replace(text, "'", "''");
+
+    get_query_string(property, escaped_text, query);
+
+    if(i > 0) pos += sprintf(complete_query + pos, " %s %s", conj[mode], query);
+    else pos += sprintf(complete_query + pos, "%s", query);
+    
+    g_free(escaped_text);
+    g_free(text);
+  }
+  complete_query[pos++] = ')';
+  complete_query[pos++] = '\0';
+
+  // printf("complete query: `%s'\n", complete_query);
+  
+  /* set the extended where and the use of it in the query */
+  dt_collection_set_extended_where (collection, complete_query);
+  dt_collection_set_query_flags (collection, (dt_collection_get_query_flags (collection) | COLLECTION_QUERY_USE_WHERE_EXT));
+  
+  /* remove film id from default filter */
+  dt_collection_set_filter_flags (collection, (dt_collection_get_filter_flags (collection) & ~COLLECTION_FILTER_FILM_ID));
+  
+  /* update query and at last the visual */
+  dt_collection_update (collection);
+  
+  // dt_control_queue_draw_all();
+
+  // TODO: update list of recent queries
+  // TODO: remove from selected images where not in this query.
+
+  // notify our listeners:
+  GList *i = darktable.collection_listeners;
+  while(i)
+  {
+    dt_collection_listener_t *a = (dt_collection_listener_t *)i->data;
+    a->callback(a->data);
+    i = g_list_next(i);
+  }
+}
+
+

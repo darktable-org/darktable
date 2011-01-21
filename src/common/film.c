@@ -59,20 +59,22 @@ void dt_film_cleanup(dt_film_t *film)
 	{
 		dt_film_remove(film->id);
 	}
-	else
-	{
-		dt_control_update_recent_films();
-	}
 }
 
 void dt_film_set_query(const int32_t id)
 {
 	/* enable film id filter and set film id */
-	dt_collection_set_query_flags (darktable.collection, COLLECTION_QUERY_FULL);
-	dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_FILM_ID) );
-	dt_collection_set_film_id (darktable.collection, id);
-	dt_collection_update (darktable.collection);
-	dt_conf_set_int ("ui_last/film_roll", id);
+  dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+  dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+	sqlite3_stmt *stmt;
+	DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id, folder from film_rolls where id = ?1", -1, &stmt, NULL);
+	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+	if(sqlite3_step(stmt) == SQLITE_ROW)
+	{
+    dt_conf_set_string("plugins/lighttable/collect/string0", (gchar *)sqlite3_column_text (stmt, 1));
+  }
+  sqlite3_finalize (stmt);
+  dt_collection_update_query(darktable.collection);
 }
 
 /** open film with given id. */
@@ -100,12 +102,12 @@ dt_film_open2 (dt_film_t *film)
 		sqlite3_step (stmt);
 		
 		sqlite3_finalize (stmt);
-		dt_control_update_recent_films ();
 		dt_film_set_query (film->id);
 		dt_control_queue_draw_all ();
 		dt_view_manager_reset (darktable.view_manager);
 		return 0;
 	}
+  else sqlite3_finalize (stmt);
 	
 	/* failure */
 	return 1;
@@ -132,13 +134,13 @@ int dt_film_open(const int32_t id)
 	}
 	sqlite3_finalize(stmt);
 	// TODO: prefetch to cache using image_open
-	dt_control_update_recent_films();
 	dt_film_set_query(id);
 	dt_control_queue_draw_all();
 	dt_view_manager_reset(darktable.view_manager);
 	return 0;
 }
 
+// FIXME: needs a rewrite
 int dt_film_open_recent(const int num)
 {
 	sqlite3_stmt *stmt;
@@ -157,7 +159,7 @@ int dt_film_open_recent(const int num)
 		sqlite3_step(stmt);
 	}
 	sqlite3_finalize(stmt);
-	dt_control_update_recent_films();
+	// dt_control_update_recent_films();
 	return 0;
 }
 
@@ -376,6 +378,6 @@ void dt_film_remove(const int id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  dt_control_update_recent_films();
+  // dt_control_update_recent_films();
 }
 

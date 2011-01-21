@@ -614,7 +614,7 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("8-bit jpeg");
+  return _("8-bit jpg");
 }
 
 static void

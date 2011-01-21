@@ -348,7 +348,7 @@ void enter(dt_view_t *self)
 	GtkWidget *widget;
 	widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
 	gtk_widget_set_visible(widget, FALSE);
-	widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
+	widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
 	gtk_widget_set_visible(widget, FALSE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "top");
 	gtk_widget_set_visible(widget, TRUE);
@@ -356,7 +356,7 @@ void enter(dt_view_t *self)
 	gtk_widget_set_visible(widget, FALSE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
 	gtk_widget_set_visible(widget, FALSE);
-	widget = glade_xml_get_widget (darktable.gui->main_window, "library_eventbox");
+	widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
 	gtk_widget_set_visible(widget, FALSE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
 	gtk_widget_set_visible(widget, FALSE);
@@ -442,7 +442,7 @@ void leave(dt_view_t *self)
 	
 	// Restore user interface
 	GtkWidget *widget;
-	widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
+	widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
 	gtk_widget_set_visible(widget, TRUE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
 	gtk_widget_set_visible(widget, FALSE);
@@ -456,7 +456,7 @@ void leave(dt_view_t *self)
 	gtk_widget_set_visible(widget, FALSE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
 	gtk_widget_set_visible(widget, TRUE);
-	widget = glade_xml_get_widget (darktable.gui->main_window, "library_eventbox");
+	widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
 	gtk_widget_set_visible(widget, TRUE);
 	widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
 	gtk_widget_set_visible(widget, FALSE);

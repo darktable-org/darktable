@@ -34,8 +34,15 @@
 #include <glade/glade.h>
 #include <math.h>
 
+static void
+collection_updated(void *d)
+{
+  dt_control_queue_draw_all();
+}
+
 void dt_view_manager_init(dt_view_manager_t *vm)
 {
+  dt_collection_listener_register(collection_updated, NULL);
   vm->film_strip_dragging = 0;
   vm->film_strip_on = 0;
   vm->film_strip_size = dt_conf_get_float("plugins/filmstrip/size");
@@ -64,6 +71,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
 {
+  dt_collection_listener_unregister(collection_updated);
   for(int k=0;k<vm->num_views;k++) dt_view_unload_module(vm->view + k);
 }
 

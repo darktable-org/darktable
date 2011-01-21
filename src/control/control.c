@@ -64,7 +64,6 @@ void dt_ctl_settings_default(dt_control_t *c)
 
   dt_conf_set_bool ("ui_last/fullscreen", FALSE);
   dt_conf_set_int  ("ui_last/view", DT_MODE_NONE);
-  dt_conf_set_int  ("ui_last/film_roll", 1);
 
   dt_conf_set_int  ("ui_last/window_x",      0);
   dt_conf_set_int  ("ui_last/window_y",      0);
@@ -253,7 +252,8 @@ create_tables:
   if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
   else           gtk_window_unfullscreen(GTK_WINDOW(widget));
   dt_control_restore_gui_settings(DT_LIBRARY);
-  dt_control_update_recent_films();
+  // FIXME: should be replaced by query system.
+  // dt_control_update_recent_films();
   return 0;
 }
 
@@ -1157,8 +1157,8 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  bit = dt_conf_get_int("ui_last/expander_library");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
+  bit = dt_conf_get_int("ui_last/expander_import");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "import_expander");
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   bit = dt_conf_get_int("ui_last/expander_snapshots");
@@ -1213,11 +1213,11 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_navigation", bit);
 
-  bit = dt_conf_get_int("ui_last/expander_library");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "library_expander");
+  bit = dt_conf_get_int("ui_last/expander_import");
+  widget = glade_xml_get_widget (darktable.gui->main_window, "import_expander");
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_library", bit);
+  dt_conf_set_int("ui_last/expander_import", bit);
 
   bit = dt_conf_get_int("ui_last/expander_snapshots");
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_expander");
@@ -1376,6 +1376,7 @@ void dt_control_clear_history_items(int32_t num)
   darktable.gui->reset = 0;
 }
 
+#if 0
 void dt_control_update_recent_films()
 {
   int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
@@ -1417,4 +1418,5 @@ void dt_control_update_recent_films()
   
   if(needlock) gdk_threads_leave();
 }
+#endif
 

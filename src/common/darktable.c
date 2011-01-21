@@ -142,6 +142,7 @@ int dt_init(int argc, char *argv[])
   darktable.thumbnail_size *= 16;
 
   // initialize collection query
+  darktable.collection_listeners = NULL;
   darktable.collection = dt_collection_new(NULL);  
 
   // Initialize the password storage engine

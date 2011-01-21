@@ -126,7 +126,7 @@ dt_gui_contrast_init ()
   
   
   /* get clearlooks-brightbg orginal style */
-  window = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
+  window = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
   gtk_widget_realize(window);
   _module_orginal_style = gtk_style_copy (window->style);
   

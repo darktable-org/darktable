@@ -98,4 +98,9 @@ uint32_t dt_collection_get_count (const dt_collection_t *collection);
 /** get selected image ids order as current selection. */
 GList *dt_collection_get_selected (const dt_collection_t *collection);
 
+/** update query by gconf vars */
+void dt_collection_update_query(const dt_collection_t *collection);
+void dt_collection_listener_register(void (*callback)(void *), void *data);
+void dt_collection_listener_unregister(void (*callback)(void *));
+
 #endif

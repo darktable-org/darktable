@@ -83,5 +83,13 @@ void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
 void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint the preferences wheel. */
 void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint and */
+void dtgtk_cairo_paint_and(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint or */
+void dtgtk_cairo_paint_or(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint and not */
+void dtgtk_cairo_paint_andnot(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint dropdown arrow */
+void dtgtk_cairo_paint_dropdown(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 
 #endif

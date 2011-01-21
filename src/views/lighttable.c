@@ -643,10 +643,11 @@ void enter(dt_view_t *self)
 {
   // add expanders
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box_left = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left"));
   GList *modules = g_list_last(darktable.lib->plugins);
   
   // Adjust gui
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "devices_eventbox");
+  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
   gtk_widget_set_visible(widget, TRUE);
 	
   gtk_widget_set_visible(glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), FALSE);
@@ -659,7 +660,8 @@ void enter(dt_view_t *self)
       module->gui_init(module);
       // add the widget created by gui_init to an expander and both to list.
       GtkWidget *expander = dt_lib_gui_get_expander(module);
-      gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+      if(!strcmp(module->plugin_name, "collect")) gtk_box_pack_start(box_left, expander, FALSE, FALSE, 0);
+      else gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     }
     modules = g_list_previous(modules);
   }
@@ -672,6 +674,7 @@ void enter(dt_view_t *self)
   gtk_widget_set_size_request(endmarker, -1, 50);
 
   gtk_widget_show_all(GTK_WIDGET(box));
+  gtk_widget_show_all(GTK_WIDGET(box_left));
 
   // close expanders
   modules = darktable.lib->plugins;
@@ -728,6 +731,8 @@ void leave(dt_view_t *self)
     it = g_list_next(it);
   }
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
+  box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left"));
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 }
 
