@@ -45,8 +45,10 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_histogram_leave_notify), n);
   g_signal_connect (G_OBJECT (widget), "enter-notify-event",
                     G_CALLBACK (dt_gui_histogram_enter_notify), n);
+  g_signal_connect (G_OBJECT (widget), "scroll-event",
+                    G_CALLBACK (dt_gui_histogram_scroll), n);
   
-  gtk_widget_add_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+  gtk_widget_add_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL);
 }
 
 void dt_gui_histogram_cleanup(dt_gui_histogram_t *n) {}
@@ -210,6 +212,16 @@ gboolean dt_gui_histogram_button_press(GtkWidget *widget, GdkEventButton *event,
     n->button_down_x = event->x;
     n->button_down_y = event->y;
   }
+  return TRUE;
+}
+
+gboolean dt_gui_histogram_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_gui_histogram_t *n = (dt_gui_histogram_t *)user_data;
+  if(n->exposure && event->direction == GDK_SCROLL_UP && n->highlight ==2) n->set_white(n->exposure,n->get_white(n->exposure)+0.1);
+  if(n->exposure && event->direction == GDK_SCROLL_DOWN && n->highlight ==2) n->set_white(n->exposure,n->get_white(n->exposure)-0.1);
+  if(n->exposure && event->direction == GDK_SCROLL_UP && n->highlight ==1) n->set_black(n->exposure,n->get_black(n->exposure)+0.005);
+  if(n->exposure && event->direction == GDK_SCROLL_DOWN && n->highlight ==1) n->set_black(n->exposure,n->get_black(n->exposure)-0.005);
   return TRUE;
 }
 
