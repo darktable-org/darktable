@@ -612,7 +612,11 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       {
 		if(k == 0)
 		{
-			dt_view_star(cr, x, y, r1, r2);
+			cairo_move_to(cr, x-r2, y-r2);
+			cairo_line_to(cr, x+r2, y+r2);
+			cairo_move_to(cr, x+r2, y-r2);
+			cairo_line_to(cr, x-r2, y+r2);
+			cairo_close_path(cr);
 			cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
 			cairo_stroke(cr);  
 			cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
