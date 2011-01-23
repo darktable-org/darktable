@@ -40,8 +40,7 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 
-DT_MODULE(2)
-
+DT_MODULE(3)
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
 {
@@ -56,6 +55,30 @@ typedef struct dt_iop_clipping_params_t
 }
 dt_iop_clipping_params_t;
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if(old_version == 2 && new_version == 3) {
+    dt_iop_clipping_params_t *o = (dt_iop_clipping_params_t *)old_params;
+    dt_iop_clipping_params_t *n = (dt_iop_clipping_params_t *)new_params;
+    *n = *o; // only the old k field was split to k_h and k_v, everything else is copied as is
+    uint32_t intk = *(uint32_t *)&o->k_h;
+    int is_horizontal;
+    if(intk & 0x40000000u) is_horizontal = 1;
+    else                   is_horizontal = 0;
+    intk &= ~0x40000000;
+    float floatk = *(float *)&intk;
+    if(is_horizontal) {
+      n->k_h = floatk;
+      n->k_v = 0.0;
+    } else {
+      n->k_h = 0.0;
+      n->k_v = floatk;
+    }
+    return 0;
+  }
+  return 1;
+}
 typedef struct dt_iop_clipping_gui_data_t
 {
   GtkLabel *label5;
