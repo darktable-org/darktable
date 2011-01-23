@@ -681,28 +681,14 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
   const int samples = ((int)px_footprint)/2;
 
   // init gauss with sigma = samples (half footprint)
-  float filter[2*samples + 1];
-  float sum = 0.0f;
-  if(samples)
-  {
-    for(int i=-samples;i<=samples;i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
-    for(int k=0;k<2*samples+1;k++) filter[k] /= sum;
-  }
-  else filter[0] = 1.0f;
-
-  // FIXME: ??
-  const int offx = 0;//MAX(0, samples - roi_out->x);
-  const int offy = 0;//MAX(0, samples - roi_out->y);
-  const int offX = 0;//MAX(0, samples - (roi_in->width  - (roi_out->x + roi_out->width)));
-  const int offY = 0;//MAX(0, samples - (roi_in->height - (roi_out->y + roi_out->height)));
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out, filter)
+  #pragma omp parallel for default(none) shared(out)
 #endif
-  for(int y=offy;y<roi_out->height-offY;y++)
+  for(int y=0;y<roi_out->height;y++)
   {
-    float *outc = out + 4*(out_stride*y + offx);
-    for(int x=offx;x<roi_out->width-offX;x++)
+    float *outc = out + 4*(out_stride*y);
+    for(int x=0;x<roi_out->width;x++)
     {
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
@@ -717,12 +703,8 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
       {
         __m128 p = _mm_load_ps(in + 4*(i + in_stride*j));
 
-        // col = _mm_add_ps(col, p);
-        // num++;
-
-        const float f = filter[i-px]*filter[j-py];
-        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(f), p));
-        num += f;
+        col = _mm_add_ps(col, p);
+        num++;
       }
       // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
       col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
