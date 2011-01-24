@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010 - 2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,23 +63,71 @@ void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char
 int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
-  int total = t->count*t->brackets;
+  int total = t->count * t->brackets;
   char message[512]={0};
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
   double fraction=0;
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
+  /* detect camera ev steps for use with bracketing, 1ev step per bracket 
+    for now it's hardcoded to 0.333 EV per step
+  */
+  int steps = 3;
+ 
+  /* Fetch all values for shutterspeed2 and initialize current value */
+  GList *values=NULL;
+  gconstpointer orginal_value=NULL;
+  
+  const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed2");
+  const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed2");
+  if (value) {
+    do {
+      // Add value to list
+      values = g_list_append(values, g_strdup(value));
+      // Check if current values is the same as orginal value, then lets store item ptr
+      if (strcmp(value,cvalue) == 0) 
+        orginal_value = g_list_last(values)->data;
+    } while ((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed2")) != NULL);
+  }
+    
+  GList *current_value = g_list_find(values,orginal_value);
   for(int i=0;i<t->count;i++)
   {
-    
-    for(int b=0;b<=t->brackets;b++)
+    for(int b=0;b<(t->brackets*2)+1;b++)
     {
-      // if(t->brackets>0 && b==0)
-      //  set starting bracket
-      // else if( t->brackets>0
-      //  set next bracket
+      // If bracket capture, lets set change shutterspeed
+      if (t->brackets) 
+      {
+        if (b == 0)
+        {
+          // First bracket, step down time with (steps*brackets)
+          for(int s=0;s<(steps*t->brackets);s++)
+            if (g_list_next(current_value)) 
+              current_value = g_list_next(current_value);
+        } 
+        else
+        {
+          // Step up with (steps) 
+          for(int s=0;s<steps;s++)
+            if(g_list_previous(current_value)) 
+              current_value = g_list_previous(current_value);
+        }
+      }
+      
+      // set the time property for bracked capture
+      if (t->brackets)
+        dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed2", current_value->data);
+      
+      // Capture image
       dt_camctl_camera_capture(darktable.camctl,NULL);
       fraction+=1.0/total;
       dt_gui_background_jobs_set_progress( j, fraction);
+    }
+    
+    // lets reset to orginal value before continue
+    if (t->brackets)
+    {
+      current_value = g_list_find(values,orginal_value);
+      dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed2", current_value->data);
     }
     
     // Delay if active
@@ -88,6 +136,16 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
    
   }
   dt_gui_background_jobs_destroy (j);
+  
+  // free values
+  if(values)
+  {
+    for(int i=0;i<g_list_length(values);i++)
+      g_free(g_list_nth_data(values,i));
+    
+    g_list_free(values);
+  }
+  
   return 0;
 }
 
