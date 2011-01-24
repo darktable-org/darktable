@@ -126,7 +126,7 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   GtkBox *box = GTK_BOX(gtk_vbox_new(FALSE, 5));
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(box));
   
-  dt_lib_presets_edit_dialog_t *g = (dt_lib_presets_edit_dialog_t *)malloc(sizeof(dt_lib_presets_edit_dialog_t));
+  dt_lib_presets_edit_dialog_t *g = (dt_lib_presets_edit_dialog_t *)g_malloc0(sizeof(dt_lib_presets_edit_dialog_t));
   strncpy(g->plugin_name, minfo->plugin_name, 128);
   g->params_size = minfo->params_size;
   g->params = minfo->params;

@@ -445,7 +445,7 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
   const char *param_c = plugin->op_params->str;
   const int param_c_len = strlen(param_c);
   const int params_len = param_c_len/2;
-  unsigned char *params = (unsigned char *)malloc(params_len);
+  unsigned char *params = (unsigned char *)g_malloc(params_len);
   dt_exif_xmp_decode(param_c, params, param_c_len);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_len, SQLITE_TRANSIENT);
   //

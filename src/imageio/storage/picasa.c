@@ -344,7 +344,9 @@ static int _picasa_api_upload_photo( _picasa_api_context_t *ctx, char *mime , ch
       xmlFree( updateUri );
       xmlFree( writebuffer.data );
       if (response.data != NULL)
-  g_free(response.data);
+        g_free(response.data);
+      if (photo_id != NULL)
+        g_free(photo_id); // FIXME: never used!
 
       curl_slist_free_all( headers );
     }
@@ -793,7 +795,11 @@ gui_init (dt_imageio_module_storage_t *self)
   // If username and password is stored, let's populate the combo
 //   if( _username && _password )
 //     refresh_albums(ui);
-  
+  if( _username )
+    g_free( _username );
+  if( _password )
+    g_free( _password );
+
   gtk_combo_box_set_active( ui->comboBox1, 0);
 }
 

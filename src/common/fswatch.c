@@ -137,7 +137,10 @@ const dt_fswatch_t* dt_fswatch_new()
   dt_fswatch_t *fswatch=g_malloc(sizeof(dt_fswatch_t));
   memset (fswatch, 0, sizeof(dt_fswatch_t));
   if((fswatch->inotify_fd=inotify_init())==-1)
+  {
+    g_free(fswatch);
     return NULL;
+  }
   fswatch->items=NULL;
   dt_pthread_mutex_init(&fswatch->mutex, NULL);
   pthread_create(&fswatch->thread, NULL, &_fswatch_thread, fswatch);

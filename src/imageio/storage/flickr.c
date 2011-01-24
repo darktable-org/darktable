@@ -551,9 +551,10 @@ gui_init (dt_imageio_module_storage_t *self)
   // If username and password is stored, let's populate the combo
   if( _username && _password ) {
     ui->user_token = _password;
-    g_free (_username);
     refresh_albums(ui);
   }
+  if( _username )
+    g_free (_username);
   gtk_combo_box_set_active( ui->comboBox1, 0);
 }
 
