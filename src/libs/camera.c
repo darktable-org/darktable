@@ -412,7 +412,7 @@ gui_init (dt_lib_module_t *self)
   // capture modes buttons
   lib->gui.tb1=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_timer,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   lib->gui.tb2=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  lib->gui.tb3=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  lib->gui.tb3=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb1), TRUE, TRUE, 0);

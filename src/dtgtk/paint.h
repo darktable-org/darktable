@@ -91,5 +91,6 @@ void dtgtk_cairo_paint_or(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 void dtgtk_cairo_paint_andnot(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint dropdown arrow */
 void dtgtk_cairo_paint_dropdown(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
-
+/** paint bracket capture */
+void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 #endif
