@@ -16,7 +16,7 @@ add_library(metadata MODULE "metadata.c")
 if(GPHOTO2_FOUND)
 	add_library(capture MODULE "capture.c")
 	add_library(camera MODULE "camera.c")
-	set(MODULES ${MODULES} camera)
+	set(MODULES ${MODULES} capture camera)
 endif(GPHOTO2_FOUND)
 
 # Add libs references
