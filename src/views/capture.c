@@ -250,8 +250,8 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name) {
 			dt_conf_set_int("plugins/capture/current_filmroll",cv->film->id);
 
 			// update all filmrolls list
-			GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
-			dt_gui_filmview_update(gtk_entry_get_text(entry));
+			//GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
+			//dt_gui_filmview_update(gtk_entry_get_text(entry));
 		}
 
 		dt_control_log(_("new session initiated '%s'"),cv->jobcode,cv->film->id);
