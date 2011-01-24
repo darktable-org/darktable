@@ -539,6 +539,34 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
 double spline_cubic_val ( int n, double t[], double tval, double y[],
     double ypp[], double *ypval, double *yppval );
 
+/*************************************************************
+ * cubic_hermite_set:
+ *      calculates the tangents for the hermite spline curve.
+ *
+ *  input:
+ *      n = number of control points
+ *      x = input x array
+ *      y = input y array
+ *  output:
+ *      pointer to array containing the tangents
+ *************************************************************/
+double *cubic_hermite_set ( int n, double x[], double y[]);
+
+/*************************************************************
+ * cubic_hermite_val:
+ *      calculates the tangents for the hermite spline curve.
+ *
+ *      n = number of control points
+ *      x = input x array
+ *      xval = input value where to interpolate the data
+ *      y = input y array
+ *      tangent = input array of tangents
+ *  output:
+ *      interpolated value at xval
+ *
+ *************************************************************/
+double cubic_hermite_val ( int n, double x[], double xval, double y[],
+        double tangent []);
 
 /*********************************************
 LoadNikonData:
@@ -559,6 +587,16 @@ CurveDataSample:
     sample  - Pointer to sample struct to hold the data.
 **********************************************/
 int CurveDataSample(CurveData *curve, CurveSample *sample);
+
+/************************************************************
+ * CurveDataSample_hermite:
+ *      Samples from a hermite curve constructed from the curve data.
+ *      this is an adjusted CurveDataSample to use the hermite functions
+ *
+ *      curve = Pointer to the curve struct to hold the data
+ *      sample = Pointer to the samples struct to hold the data
+ *************************************************************/
+int CurveDataSample_hermite (CurveData *curve, CurveSample *sample);
 
 /*********************************************
  * CurveDataReset:

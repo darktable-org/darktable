@@ -234,12 +234,12 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
     const float i_in = dt_log2f((supp_in - 1)*.5f) - 1.0f;
     // i_in = max_scale .. .. .. 0
     const float t = 1.0f - (i_in+.5f)/max_scale;
-    boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], t);
-    boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], t);
+    boost[i][3] = boost[i][0] = 2.0f*dt_draw_hermite_curve_calc_value(d->curve[atrous_L], t);
+    boost[i][1] = boost[i][2] = 2.0f*dt_draw_hermite_curve_calc_value(d->curve[atrous_c], t);
     for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
-    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 10.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], t);
-    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 20.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
-    sharp[i]    = 0.0025f*dt_draw_curve_calc_value(d->curve[atrous_s], t);
+    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 10.0f*dt_draw_hermite_curve_calc_value(d->curve[atrous_Lt], t);
+    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 20.0f*dt_draw_hermite_curve_calc_value(d->curve[atrous_ct], t);
+    sharp[i]    = 0.0025f*dt_draw_hermite_curve_calc_value(d->curve[atrous_s], t);
     // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
   }
   return max_scale;
@@ -805,13 +805,13 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     get_params(&p, ch2, c->mouse_x, 1., c->mouse_radius);
     for(int k=0;k<BANDS;k++)
       dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_min_xs, c->draw_min_ys);
+    dt_draw_hermite_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_min_xs, c->draw_min_ys);
 
     p = *(dt_iop_atrous_params_t *)self->params;
     get_params(&p, ch2, c->mouse_x, .0, c->mouse_radius);
     for(int k=0;k<BANDS;k++)
       dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_max_xs, c->draw_max_ys);
+    dt_draw_hermite_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_max_xs, c->draw_max_ys);
   }
 
   // draw grid
@@ -875,13 +875,13 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     if(ch2 >= 0)
     {
       for(int k=0;k<BANDS;k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
-      dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
+      dt_draw_hermite_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
       cairo_move_to(cr, width, -height*p.y[ch2][BANDS-1]);
       for(int k=RES-2;k>=0;k--) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_ys[k]);
     }
     else cairo_move_to(cr, 0, 0);
     for(int k=0;k<BANDS;k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
+    dt_draw_hermite_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
     for(int k=0;k<RES;k++) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_ys[k]);
     if(ch2 < 0) cairo_line_to(cr, width, 0);
     cairo_close_path(cr);
@@ -1066,7 +1066,7 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
     reset_mix(self);
     const int inset = INSET;
     int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
-    c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
+    c->mouse_pick = dt_draw_hermite_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
     c->dragging = 1;
     return TRUE;

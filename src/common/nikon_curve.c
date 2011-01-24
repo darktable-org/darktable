@@ -50,29 +50,29 @@ static const int FileOffsets[2][4] = {
 
 //file header indicating ntc file
 static const unsigned char NTCFileHeader[] = {0x9d,0xdc,0x7d,0x00,0x65,0xd4,
-			0x11,0xd1,0x91,0x94,0x44,0x45,0x53,0x54,0x00,0x00};
+            0x11,0xd1,0x91,0x94,0x44,0x45,0x53,0x54,0x00,0x00};
 
 //file header indicating an ncv file
 static const unsigned char NCVFileHeader[] = {0x40,0xa9,0x86,0x7a,0x1b,0xe9,
-			0xd2,0x11,0xa9,0x0a,0x00,0xaa,0x00,0xb1,0xc1,0xb7};
+            0xd2,0x11,0xa9,0x0a,0x00,0xaa,0x00,0xb1,0xc1,0xb7};
 
 //This is an additional header chunk at the beginning of the file
 //There are some similarities between the headers, but not enough to fully crack.
 //This does not appear to change.
 static const unsigned char NCVSecondFileHeader[] = {0x01,0x32,0xa4,0x76,0xa2,
-			0x17,0xd4,0x11,0xa9,0x0a,0x00,0xaa,0x00,0xb1,0xc1,
-			0xb7,0x01,0x00,0x05,0x00,0x00,0x00,0x01};
+            0x17,0xd4,0x11,0xa9,0x0a,0x00,0xaa,0x00,0xb1,0xc1,
+            0xb7,0x01,0x00,0x05,0x00,0x00,0x00,0x01};
 
 //This is the terminator of an NCV file. Again there are some similarites
 //to other sections, but not enough for to crack what it means. However,
 //it does not appear to change.
 static const unsigned char NCVFileTerminator[] = {0x45,0xd3,0x0d,0x77,0xa3,0x6e,
-			0x1e,0x4e,0xa4,0xbe,0xcf,0xc1,0x8e,0xb5,0xb7,0x47,
-			0x01,0x00,0x05,0x00,0x00,0x00,0x01 };
+            0x1e,0x4e,0xa4,0xbe,0xcf,0xc1,0x8e,0xb5,0xb7,0x47,
+            0x01,0x00,0x05,0x00,0x00,0x00,0x01 };
 
 //File section header. Only a one byte difference between this and an NTC file header
 static const unsigned char FileSectionHeader[] = {0x9d,0xdc,0x7d,0x03,0x65,0xd4,
-			0x11,0xd1,0x91,0x94,0x44,0x45,0x53,0x54,0x00,0x00};
+            0x11,0xd1,0x91,0x94,0x44,0x45,0x53,0x54,0x00,0x00};
 //file type header array
 static const unsigned char *FileTypeHeaders[NUM_FILE_TYPES] = {
     NTCFileHeader,
@@ -103,75 +103,75 @@ int ProcessArgs(int num_args, char *args[])
     int i;
     for(i = 0; i < num_args; i++)
     {
-	if (strcmp(args[i],"-h") == 0 || strcmp(args[i],"-H") == 0 || num_args <= 1)
-	{
-	    printf("NikonCurveGenerator %s %s\n",NC_VERSION, NC_DATE);
-	    printf("Written by Shawn Freeman\n");
-	    printf("Thanks go out to Udi Fuchs, UFRaw, and GIMP :)\n\n");
-	    printf("Usage:\n");
-	    printf("-o     Specify output file.\n");
-	    printf("-sr    Specify sampling resolution. Default is 65536.\n");
-	    printf("-or    Specify output resolution. Default is 256.\n\n");
-	    printf("-nef   Specify an NEF file to get tone curve data from.\n\n");
-	    printf("       The -or and -sr options are ignored for NEF files\n\n");
-	    printf("NOTE: If a resolution is not specified, a default one will be used.\n");
-	    printf("      If the -o option is not specified, default files will be used.\n\n");
-	    printf("Example:\n");
-	    printf("NikonCurveGenerator -sr 65536 -or 256 curveFile -o exportFile\n");
+    if (strcmp(args[i],"-h") == 0 || strcmp(args[i],"-H") == 0 || num_args <= 1)
+    {
+        printf("NikonCurveGenerator %s %s\n",NC_VERSION, NC_DATE);
+        printf("Written by Shawn Freeman\n");
+        printf("Thanks go out to Udi Fuchs, UFRaw, and GIMP :)\n\n");
+        printf("Usage:\n");
+        printf("-o     Specify output file.\n");
+        printf("-sr    Specify sampling resolution. Default is 65536.\n");
+        printf("-or    Specify output resolution. Default is 256.\n\n");
+        printf("-nef   Specify an NEF file to get tone curve data from.\n\n");
+        printf("       The -or and -sr options are ignored for NEF files\n\n");
+        printf("NOTE: If a resolution is not specified, a default one will be used.\n");
+        printf("      If the -o option is not specified, default files will be used.\n\n");
+        printf("Example:\n");
+        printf("NikonCurveGenerator -sr 65536 -or 256 curveFile -o exportFile\n");
 
-	    //signal that processing cannot occur
-	    return NC_ERROR;
-	}
-	else if (strcmp(args[i],"-o") == 0 || strcmp(args[i],"-O") == 0)
-	{
-	    i++;
-	    strncpy(exportFilename, args[i], 1023);
-	    exportFilename[1023] = '\0';
-	}
-	else if (strcmp(args[i],"-sr") == 0)
-	{
-	    i++;
-	    standalone_samplingRes = atoi(args[i]);
+        //signal that processing cannot occur
+        return NC_ERROR;
+    }
+    else if (strcmp(args[i],"-o") == 0 || strcmp(args[i],"-O") == 0)
+    {
+        i++;
+        strncpy(exportFilename, args[i], 1023);
+        exportFilename[1023] = '\0';
+    }
+    else if (strcmp(args[i],"-sr") == 0)
+    {
+        i++;
+        standalone_samplingRes = atoi(args[i]);
 
-	    if (standalone_samplingRes < 1)
-	    {
-	        nc_message(NC_WARNING, "WARNING: Sampling resolution must be"
-				">= 1! Using default of 65535.\n");
-	    }
-	}
-	else if (strcmp(args[i],"-or") == 0)
-	{
-	    i++;
-	    standalone_outputRes = atoi(args[i]);
+        if (standalone_samplingRes < 1)
+        {
+            nc_message(NC_WARNING, "WARNING: Sampling resolution must be"
+                ">= 1! Using default of 65535.\n");
+        }
+    }
+    else if (strcmp(args[i],"-or") == 0)
+    {
+        i++;
+        standalone_outputRes = atoi(args[i]);
 
-	    if (standalone_outputRes < 1)
-	    {
-	        nc_message(NC_WARNING, "WARNING: Output resolution must be"
-				">= 1! Using default of 256.\n");
-	    }
-	}
-	else if (strcmp(args[i],"-nef") == 0)
-	{
-	    i++;
-	    program_mode = NEF_MODE;
-	    strncpy(nikonFilename, args[i], 1023);
-	    nikonFilename[1023] = '\0';
-	}
-	//don't load argument 0
-	else if (i != 0)
-	{
-	    //consider this the file name to load
-	    strncpy(nikonFilename, args[i], 1023);
-	    nikonFilename[1023] = '\0';
-	}
+        if (standalone_outputRes < 1)
+        {
+            nc_message(NC_WARNING, "WARNING: Output resolution must be"
+                ">= 1! Using default of 256.\n");
+        }
+    }
+    else if (strcmp(args[i],"-nef") == 0)
+    {
+        i++;
+        program_mode = NEF_MODE;
+        strncpy(nikonFilename, args[i], 1023);
+        nikonFilename[1023] = '\0';
+    }
+    //don't load argument 0
+    else if (i != 0)
+    {
+        //consider this the file name to load
+        strncpy(nikonFilename, args[i], 1023);
+        nikonFilename[1023] = '\0';
+    }
     }
 
     if (strlen(exportFilename) == 0)
     {
-	//set it to have a default output file name
-	strncpy(exportFilename, nikonFilename, 1023);
-	strncat(exportFilename, "_CURVE_OUTPUT.txt", 1023);
-	exportFilename[1023] = '\0';
+    //set it to have a default output file name
+    strncpy(exportFilename, nikonFilename, 1023);
+    strncat(exportFilename, "_CURVE_OUTPUT.txt", 1023);
+    exportFilename[1023] = '\0';
     }
 
     return NC_SUCCESS;
@@ -208,11 +208,11 @@ void nc_message(int code, char *format, ...)
 
     if (code==NC_SET_ERROR)
     {
-	ufraw_message(UFRAW_SET_ERROR, message);
+    ufraw_message(UFRAW_SET_ERROR, message);
     }
     else
     {
-	ufraw_message(code, message);
+    ufraw_message(code, message);
     }
 
 #else    //else, just print out the errors normally
@@ -254,7 +254,7 @@ size_t nc_fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
     size_t num = fread(ptr, size, nmemb, stream);
     if ( num!=nmemb )
-	nc_message(NC_WARNING, "WARNING: fread %d != %d\n", num, nmemb);
+    nc_message(NC_WARNING, "WARNING: fread %d != %d\n", num, nmemb);
     return num;
 }
 
@@ -262,7 +262,7 @@ size_t nc_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
     size_t num = nc_fwrite(ptr, size, nmemb, stream);
     if ( num!=nmemb )
-	nc_message(NC_WARNING, "WARNING: nc_fwrite %d != %d\n", num, nmemb);
+    nc_message(NC_WARNING, "WARNING: nc_fwrite %d != %d\n", num, nmemb);
     return num;
 }
 
@@ -273,7 +273,7 @@ size_t nc_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
 
 /***********************************************************************
 isBigEndian:
-	Determines if the machine we are running on is big endian or not.
+    Determines if the machine we are running on is big endian or not.
 ************************************************************************/
 int isBigEndian()
 {
@@ -288,90 +288,90 @@ int isBigEndian()
 
 /***********************************************************************
 ShortVal:
-	Convert short int (16 bit) from little endian to machine endianess.
+    Convert short int (16 bit) from little endian to machine endianess.
 ************************************************************************/
 short ShortVal(short s)
 {
     STATIC_ASSERT(sizeof(short)==2);
     if (isBigEndian()) {
-	unsigned char b1, b2;
+    unsigned char b1, b2;
 
-	b1 = s & 255;
-	b2 = (s >> 8) & 255;
+    b1 = s & 255;
+    b2 = (s >> 8) & 255;
 
-	return (b1 << 8) + b2;
+    return (b1 << 8) + b2;
     } else
-	return s;
+    return s;
 }
 
 /***********************************************************************
 LongVal:
-	Convert long int (32 bit) from little endian to machine endianess.
+    Convert long int (32 bit) from little endian to machine endianess.
 ************************************************************************/
 int LongVal(int i)
 {
     STATIC_ASSERT(sizeof(int)==4);
     if (isBigEndian()) {
-	unsigned char b1, b2, b3, b4;
+    unsigned char b1, b2, b3, b4;
 
-	b1 = i & 255;
-	b2 = ( i >> 8 ) & 255;
-	b3 = ( i>>16 ) & 255;
-	b4 = ( i>>24 ) & 255;
+    b1 = i & 255;
+    b2 = ( i >> 8 ) & 255;
+    b3 = ( i>>16 ) & 255;
+    b4 = ( i>>24 ) & 255;
 
-	return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
+    return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
     } else
-	return i;
+    return i;
 }
 
 /***********************************************************************
 FloatVal:
-	Convert float from little endian to machine endianess.
+    Convert float from little endian to machine endianess.
 ************************************************************************/
 float FloatVal(float f)
 {
     STATIC_ASSERT(sizeof(float)==4);
     if (isBigEndian()) {
-	union {
-	    float f;
-	    unsigned char b[4];
-	} dat1, dat2;
+    union {
+        float f;
+        unsigned char b[4];
+    } dat1, dat2;
 
-	dat1.f = f;
-	dat2.b[0] = dat1.b[3];
-	dat2.b[1] = dat1.b[2];
-	dat2.b[2] = dat1.b[1];
-	dat2.b[3] = dat1.b[0];
-	return dat2.f;
+    dat1.f = f;
+    dat2.b[0] = dat1.b[3];
+    dat2.b[1] = dat1.b[2];
+    dat2.b[2] = dat1.b[1];
+    dat2.b[3] = dat1.b[0];
+    return dat2.f;
     } else
-	return f;
+    return f;
 }
 
 /***********************************************************************
 DoubleVal:
-	Convert double from little endian to machine endianess.
+    Convert double from little endian to machine endianess.
 ************************************************************************/
 double DoubleVal(double d)
 {
     STATIC_ASSERT(sizeof(double)==8);
     if (isBigEndian()) {
-	union {
-	    double d;
-	    unsigned char b[8];
-	} dat1, dat2;
+    union {
+        double d;
+        unsigned char b[8];
+    } dat1, dat2;
 
-	dat1.d = d;
-	dat2.b[0] = dat1.b[7];
-	dat2.b[1] = dat1.b[6];
-	dat2.b[2] = dat1.b[5];
-	dat2.b[3] = dat1.b[4];
-	dat2.b[4] = dat1.b[3];
-	dat2.b[5] = dat1.b[2];
-	dat2.b[6] = dat1.b[1];
-	dat2.b[7] = dat1.b[0];
-	return dat2.d;
+    dat1.d = d;
+    dat2.b[0] = dat1.b[7];
+    dat2.b[1] = dat1.b[6];
+    dat2.b[2] = dat1.b[5];
+    dat2.b[3] = dat1.b[4];
+    dat2.b[4] = dat1.b[3];
+    dat2.b[5] = dat1.b[2];
+    dat2.b[6] = dat1.b[1];
+    dat2.b[7] = dat1.b[0];
+    return dat2.d;
     } else
-	return d;
+    return d;
 }
 
 //**********************************************************************
@@ -587,7 +587,7 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
   if ( n <= 1 )
   {
     nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
-	    "The number of data points must be at least 2.\n");
+        "The number of data points must be at least 2.\n");
     return NULL;
   }
 
@@ -596,8 +596,8 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
     if ( t[i+1] <= t[i] )
     {
       nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
-	      "The knots must be strictly increasing, but "
-	      "T(%u) = %e, T(%u) = %e\n",i,t[i],i+1,t[i+1]);
+          "The knots must be strictly increasing, but "
+          "T(%u) = %e, T(%u) = %e\n",i,t[i],i+1,t[i+1]);
       return NULL;
     }
   }
@@ -629,7 +629,7 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
   else
   {
     nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
-	    "IBCBEG must be 0, 1 or 2. The input value is %u.\n", ibcbeg);
+        "IBCBEG must be 0, 1 or 2. The input value is %u.\n", ibcbeg);
     free(a);
     free(b);
     return NULL;
@@ -669,7 +669,7 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
   else
   {
     nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
-	    "IBCEND must be 0, 1 or 2. The input value is %u", ibcend);
+        "IBCEND must be 0, 1 or 2. The input value is %u", ibcend);
     free(a);
     free(b);
     return NULL;
@@ -692,7 +692,7 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
     if ( !ypp )
     {
       nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
-	      "The linear system could not be solved.\n");
+          "The linear system could not be solved.\n");
       free(a);
       free(b);
       return NULL;
@@ -703,6 +703,109 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
   free(a);
   free(b);
   return ypp;
+}
+
+double *cubic_hermite_set ( int n, double x[], double y[])
+{
+  double *delta;
+  double *m;
+  int i;
+  if ( n <= 1 )
+  {
+    nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+        "The number of data points must be at least 2.\n");
+    return NULL;
+  }
+
+  for ( i = 0; i < n - 1; i++ )
+  {
+    if ( x[i+1] <= x[i] )
+    {
+      nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+          "The knots must be strictly increasing, but "
+          "T(%u) = %e, T(%u) = %e\n",i,x[i],i+1,x[i+1]);
+      return NULL;
+    }
+  }
+  delta = (double *)calloc(n,sizeof(double));
+  nc_merror(delta, "spline_cubic_set");
+  m = (double *)calloc(n,sizeof(double));
+  nc_merror(m, "spline_cubic_set");
+  //calculate the slopes
+  for (i = 0;i<n-1;i++)
+  {
+      delta[i] = (y[i+1]-y[i])/(x[i+1]-x[i]);
+  }
+
+  m[0] = delta[0];
+  m[n-1] = delta[n-2];
+
+  for (i=1;i<n-1;i++)
+  {
+      m[i] = (delta[i]+delta[i+1])/2.0;
+  }
+
+  free(delta);
+  return m;
+}
+
+double cubic_hermite_val ( int n, double x[], double xval, double y[],
+    double tangents[])
+{
+  double dx;
+  double h;
+  int i;
+  int ival;
+  double yval;
+  double h00,h01,h10,h11;
+  double m0, m1;
+//
+//  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
+//  Values below T[0] or above T[N-1] use extrapolation.
+//
+  ival = n - 2;
+
+  for ( i = 0; i < n-1; i++ )
+  {
+    if ( xval < x[i+1] )
+    {
+      ival = i;
+      break;
+    }
+  }
+
+  if (ival==0)
+  {
+      m0 = y[1]-y[0];
+      m1 = (y[2]-y[0])/2.0;
+  }
+  else if (ival==n-2)
+  {
+      m0 = (y[ival+1]-y[ival-1])/2.0;
+      m1 = y[ival+1]-y[ival];
+  }
+  else
+  {
+      m0 = (y[ival+1]-y[ival-1])/2.0;
+      m1 = (y[ival+2]-y[ival])/2.0;
+  }
+
+//
+//  In the interval I, the polynomial is in terms of a normalized
+//  coordinate between 0 and 1.
+//
+  h = x[ival+1] - x[ival];
+  dx = (xval-x[ival])/h;
+
+    h00 = ( 2.0 * dx*dx*dx) - (3.0 * dx*dx) + 1.0;
+    h10 = ( 1.0 * dx*dx*dx) - (2.0 * dx*dx) + dx;
+    h01 = (-2.0 * dx*dx*dx) + (3.0 * dx*dx);
+    h11 = ( 1.0 * dx*dx*dx) - (1.0 * dx*dx);
+
+    h = 1;
+    yval = (h00 * y[ival]) + (h10 * h * m0) + (h01 * y[ival+1]) + (h11 * h * m1);
+
+  return yval;
 }
 
 //**********************************************************************
@@ -763,7 +866,7 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
 //    Output, double SPLINE_VAL, the value of the spline at TVAL.
 //
 double spline_cubic_val ( int n, double t[], double tval, double y[],
-	double ypp[], double *ypval, double *yppval )
+    double ypp[], double *ypval, double *yppval )
 {
   double dt;
   double h;
@@ -793,7 +896,7 @@ double spline_cubic_val ( int n, double t[], double tval, double y[],
 
   yval = y[ival]
     + dt * ( ( y[ival+1] - y[ival] ) / h
-	   - ( ypp[ival+1] / 6.0E+00 + ypp[ival] / 3.0E+00 ) * h
+       - ( ypp[ival+1] / 6.0E+00 + ypp[ival] / 3.0E+00 ) * h
     + dt * ( 0.5E+00 * ypp[ival]
     + dt * ( ( ypp[ival+1] - ypp[ival] ) / ( 6.0E+00 * h ) ) ) );
 
@@ -824,23 +927,23 @@ int GetNikonFileType(FILE *file)
 
     for(i = 0; i < NUM_FILE_TYPES; i++)
     {
-	found = 1;
-	for(j = 0; j < HEADER_SIZE; j++)
-	{
-	    if (buff[j] != FileTypeHeaders[i][j])
-	    {
-	        found = 0;
-	        break;
-	    }
-	}
-
-	if (found)
-	{
-	    //return the file type
-	    return i;
-	}
+    found = 1;
+    for(j = 0; j < HEADER_SIZE; j++)
+    {
+        if (buff[j] != FileTypeHeaders[i][j])
+        {
+            found = 0;
+            break;
+        }
     }
-	nc_message(NC_SET_ERROR, "Error, no compatible file types found!\n");
+
+    if (found)
+    {
+        //return the file type
+        return i;
+    }
+    }
+    nc_message(NC_SET_ERROR, "Error, no compatible file types found!\n");
     return -1;
 }
 
@@ -860,9 +963,9 @@ int LoadNikonData(char *fileName, NikonData *data)
 
     if (fileName == NULL || strlen(fileName) == 0)
     {
-	nc_message(NC_SET_ERROR,
-	            "Error, input filename cannot be NULL or empty!\n");
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR,
+                "Error, input filename cannot be NULL or empty!\n");
+    return NC_ERROR;
     }
 
     DEBUG_PRINT("DEBUG: OPENING FILE: %s\n",fileName);
@@ -873,9 +976,9 @@ int LoadNikonData(char *fileName, NikonData *data)
     //make sure we have a valid file
     if (input == NULL)
     {
-	nc_message(NC_SET_ERROR, "Error opening '%s': %s\n",
-	        fileName, strerror(errno));
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR, "Error opening '%s': %s\n",
+            fileName, strerror(errno));
+    return NC_ERROR;
     }
 
     //init the curve;
@@ -886,15 +989,15 @@ int LoadNikonData(char *fileName, NikonData *data)
     // set file seek positions for curve tones depending of file type
     // todo: is it possible to find one common rule?
     long curveFilePos[4][4] = {
-	{FileOffsets[data->m_fileType][BOX_DATA], SEEK_SET, FileOffsets[data->m_fileType][ANCHOR_DATA], SEEK_SET},
-	{NEXT_SECTION_BOX_DATA_OFFSET, SEEK_CUR, NUM_POINTS_TO_ANCHOR_OFFSET, SEEK_CUR},
-	{NEXT_SECTION_BOX_DATA_OFFSET, SEEK_CUR, NUM_POINTS_TO_ANCHOR_OFFSET, SEEK_CUR},
-	{NEXT_SECTION_BOX_DATA_OFFSET, SEEK_CUR, NUM_POINTS_TO_ANCHOR_OFFSET, SEEK_CUR}
+    {FileOffsets[data->m_fileType][BOX_DATA], SEEK_SET, FileOffsets[data->m_fileType][ANCHOR_DATA], SEEK_SET},
+    {NEXT_SECTION_BOX_DATA_OFFSET, SEEK_CUR, NUM_POINTS_TO_ANCHOR_OFFSET, SEEK_CUR},
+    {NEXT_SECTION_BOX_DATA_OFFSET, SEEK_CUR, NUM_POINTS_TO_ANCHOR_OFFSET, SEEK_CUR},
+    {NEXT_SECTION_BOX_DATA_OFFSET, SEEK_CUR, NUM_POINTS_TO_ANCHOR_OFFSET, SEEK_CUR}
     };
 
     //make sure we have a good file type
     if (data->m_fileType == -1)
-	return NC_ERROR;
+    return NC_ERROR;
 
     //advance file pointer to necessary data section
     fseek(input,offset,SEEK_SET);
@@ -914,99 +1017,99 @@ int LoadNikonData(char *fileName, NikonData *data)
     int i;
     for(i = 0; i < NUM_CURVE_TYPES; i++)
     {
-	curve = &data->curves[i];
+    curve = &data->curves[i];
 
-	//set curve type
-	curve->m_curveType = i;
+    //set curve type
+    curve->m_curveType = i;
 
-	//get box data
-	fseek(input, curveFilePos[i][0], curveFilePos[i][1]);
+    //get box data
+    fseek(input, curveFilePos[i][0], curveFilePos[i][1]);
 
-	nc_fread(&curve->m_min_x,sizeof(double),1,input);
-	curve->m_min_x = DoubleVal(curve->m_min_x);
+    nc_fread(&curve->m_min_x,sizeof(double),1,input);
+    curve->m_min_x = DoubleVal(curve->m_min_x);
 
-	nc_fread(&curve->m_max_x,sizeof(double),1,input);
-	curve->m_max_x = DoubleVal(curve->m_max_x);
+    nc_fread(&curve->m_max_x,sizeof(double),1,input);
+    curve->m_max_x = DoubleVal(curve->m_max_x);
 
-	nc_fread(&curve->m_gamma,sizeof(double),1,input);
-	curve->m_gamma = DoubleVal(curve->m_gamma);
+    nc_fread(&curve->m_gamma,sizeof(double),1,input);
+    curve->m_gamma = DoubleVal(curve->m_gamma);
 
-	nc_fread(&curve->m_min_y,sizeof(double),1,input);
-	curve->m_min_y = DoubleVal(curve->m_min_y);
+    nc_fread(&curve->m_min_y,sizeof(double),1,input);
+    curve->m_min_y = DoubleVal(curve->m_min_y);
 
-	nc_fread(&curve->m_max_y,sizeof(double),1,input);
-	curve->m_max_y = DoubleVal(curve->m_max_y);
+    nc_fread(&curve->m_max_y,sizeof(double),1,input);
+    curve->m_max_y = DoubleVal(curve->m_max_y);
 
-	//get number of anchors (always located after box data)
-	nc_fread(&curve->m_numAnchors,1,1,input);
+    //get number of anchors (always located after box data)
+    nc_fread(&curve->m_numAnchors,1,1,input);
 
-	// It seems that if there is no curve then the 62 bytes in the buffer
-	// are either all 0x00 (D70) or 0xFF (D2H).
-	// We therefore switch these values with the default values.
-	if (curve->m_min_x==1.0) {
-	    curve->m_min_x = 0.0;
-	    DEBUG_PRINT("DEBUG: NEF X MIN -> %e (changed)\n",curve->m_min_x);
-	}
-	if (curve->m_max_x==0.0) {
-	    curve->m_max_x = 1.0;
-	    DEBUG_PRINT("DEBUG: NEF X MAX -> %e (changed)\n",curve->m_max_x);
-	}
-	if (curve->m_min_y==1.0) {
-	    curve->m_min_y = 0.0;
-	    DEBUG_PRINT("DEBUG: NEF Y MIN -> %e (changed)\n",curve->m_min_y);
-	}
-	if (curve->m_max_y==0.0) {
-	    curve->m_max_y = 1.0;
-	    DEBUG_PRINT("DEBUG: NEF Y MAX -> %e (changed)\n",curve->m_max_y);
-	}
-	if (curve->m_gamma==0.0 || curve->m_gamma==255.0+255.0/256.0) {
-	    curve->m_gamma = 1.0;
-	    DEBUG_PRINT("DEBUG: NEF GAMMA -> %e (changed)\n",curve->m_gamma);
-	}
-	if (curve->m_numAnchors==255) {
-	    curve->m_numAnchors = 0;
-	    DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u (changed)\n",
-		    curve->m_numAnchors);
-	}
-	if (curve->m_numAnchors > NIKON_MAX_ANCHORS) {
-	    curve->m_numAnchors = NIKON_MAX_ANCHORS;
-	    DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u (changed)\n",
-		    curve->m_numAnchors);
-	}
-	//Move to start of the anchor data
-	fseek(input, curveFilePos[i][2], curveFilePos[i][3]);
+    // It seems that if there is no curve then the 62 bytes in the buffer
+    // are either all 0x00 (D70) or 0xFF (D2H).
+    // We therefore switch these values with the default values.
+    if (curve->m_min_x==1.0) {
+        curve->m_min_x = 0.0;
+        DEBUG_PRINT("DEBUG: NEF X MIN -> %e (changed)\n",curve->m_min_x);
+    }
+    if (curve->m_max_x==0.0) {
+        curve->m_max_x = 1.0;
+        DEBUG_PRINT("DEBUG: NEF X MAX -> %e (changed)\n",curve->m_max_x);
+    }
+    if (curve->m_min_y==1.0) {
+        curve->m_min_y = 0.0;
+        DEBUG_PRINT("DEBUG: NEF Y MIN -> %e (changed)\n",curve->m_min_y);
+    }
+    if (curve->m_max_y==0.0) {
+        curve->m_max_y = 1.0;
+        DEBUG_PRINT("DEBUG: NEF Y MAX -> %e (changed)\n",curve->m_max_y);
+    }
+    if (curve->m_gamma==0.0 || curve->m_gamma==255.0+255.0/256.0) {
+        curve->m_gamma = 1.0;
+        DEBUG_PRINT("DEBUG: NEF GAMMA -> %e (changed)\n",curve->m_gamma);
+    }
+    if (curve->m_numAnchors==255) {
+        curve->m_numAnchors = 0;
+        DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u (changed)\n",
+            curve->m_numAnchors);
+    }
+    if (curve->m_numAnchors > NIKON_MAX_ANCHORS) {
+        curve->m_numAnchors = NIKON_MAX_ANCHORS;
+        DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u (changed)\n",
+            curve->m_numAnchors);
+    }
+    //Move to start of the anchor data
+    fseek(input, curveFilePos[i][2], curveFilePos[i][3]);
 
-	//read in the anchor points
-	int rs = nc_fread(curve->m_anchors, sizeof(CurveAnchorPoint),
-		curve->m_numAnchors, input);
-	if (curve->m_numAnchors != rs) {
-	    nc_message(NC_SET_ERROR, "Error reading all anchor points\n");
-	    return NC_ERROR;
-	}
+    //read in the anchor points
+    int rs = nc_fread(curve->m_anchors, sizeof(CurveAnchorPoint),
+        curve->m_numAnchors, input);
+    if (curve->m_numAnchors != rs) {
+        nc_message(NC_SET_ERROR, "Error reading all anchor points\n");
+        return NC_ERROR;
+    }
 
-	int j;
-	for (j = 0; j < curve->m_numAnchors; j++)
-	{
-	    curve->m_anchors[j].x = DoubleVal(curve->m_anchors[j].x);
-	    curve->m_anchors[j].y = DoubleVal(curve->m_anchors[j].y);
-	}
+    int j;
+    for (j = 0; j < curve->m_numAnchors; j++)
+    {
+        curve->m_anchors[j].x = DoubleVal(curve->m_anchors[j].x);
+        curve->m_anchors[j].y = DoubleVal(curve->m_anchors[j].y);
+    }
 
-	DEBUG_PRINT("DEBUG: Loading Data:\n");
-	DEBUG_PRINT("DEBUG: CURVE_TYPE: %u \n",curve->m_curveType);
-	DEBUG_PRINT("DEBUG: BOX->MIN_X: %f\n",curve->m_min_x);
-	DEBUG_PRINT("DEBUG: BOX->MAX_X: %f\n",curve->m_max_x);
-	DEBUG_PRINT("DEBUG: BOX->GAMMA: %f\n",curve->m_gamma);
-	DEBUG_PRINT("DEBUG: BOX->MIN_Y: %f\n",curve->m_min_y);
-	DEBUG_PRINT("DEBUG: BOX->MAX_Y: %f\n",curve->m_max_x);
+    DEBUG_PRINT("DEBUG: Loading Data:\n");
+    DEBUG_PRINT("DEBUG: CURVE_TYPE: %u \n",curve->m_curveType);
+    DEBUG_PRINT("DEBUG: BOX->MIN_X: %f\n",curve->m_min_x);
+    DEBUG_PRINT("DEBUG: BOX->MAX_X: %f\n",curve->m_max_x);
+    DEBUG_PRINT("DEBUG: BOX->GAMMA: %f\n",curve->m_gamma);
+    DEBUG_PRINT("DEBUG: BOX->MIN_Y: %f\n",curve->m_min_y);
+    DEBUG_PRINT("DEBUG: BOX->MAX_Y: %f\n",curve->m_max_x);
 
 #ifdef _DEBUG
-	int i_dbg;
-	for(i_dbg = 0; i_dbg < curve->m_numAnchors; i_dbg++)
-	{
-	    DEBUG_PRINT("DEBUG: ANCHOR X,Y: %f,%f\n",
-		    curve->m_anchors[i_dbg].x,curve->m_anchors[i_dbg].y);
-	}
-	DEBUG_PRINT("\n");
+    int i_dbg;
+    for(i_dbg = 0; i_dbg < curve->m_numAnchors; i_dbg++)
+    {
+        DEBUG_PRINT("DEBUG: ANCHOR X,Y: %f,%f\n",
+            curve->m_anchors[i_dbg].x,curve->m_anchors[i_dbg].y);
+    }
+    DEBUG_PRINT("\n");
 #endif
     }
     fclose(input);
@@ -1038,21 +1141,21 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
     //build arrays for processing
     if (curve->m_numAnchors == 0)
     {
-	//just a straight line using box coordinates
-	x[0] = curve->m_min_x;
-	y[0] = curve->m_min_y;
-	x[1] = curve->m_max_x;
-	y[1] = curve->m_max_y;
-	n = 2;
+    //just a straight line using box coordinates
+    x[0] = curve->m_min_x;
+    y[0] = curve->m_min_y;
+    x[1] = curve->m_max_x;
+    y[1] = curve->m_max_y;
+    n = 2;
     }
     else
     {
-	for(i = 0; i < curve->m_numAnchors; i++)
-	{
-	    x[i] = curve->m_anchors[i].x*box_width + curve->m_min_x;
-	    y[i] = curve->m_anchors[i].y*box_height + curve->m_min_y;
-	}
-	n = curve->m_numAnchors;
+    for(i = 0; i < curve->m_numAnchors; i++)
+    {
+        x[i] = curve->m_anchors[i].x*box_width + curve->m_min_x;
+        y[i] = curve->m_anchors[i].y*box_height + curve->m_min_y;
+    }
+    n = curve->m_numAnchors;
     }
     //returns an array of second derivatives used to calculate the spline curve.
     //this is a malloc'd array that needs to be freed when done.
@@ -1073,11 +1176,11 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
 
     //allocate enough space for the samples
     DEBUG_PRINT("DEBUG: SAMPLING ALLOCATION: %u bytes\n",
-	        sample->m_samplingRes*sizeof(int));
+            sample->m_samplingRes*sizeof(int));
     DEBUG_PRINT("DEBUG: SAMPLING OUTPUT RANGE: 0 -> %u\n", sample->m_outputRes);
 
     // sample->m_Samples = (unsigned short int *)realloc(sample->m_Samples,
-	    // sample->m_samplingRes * sizeof(short int));
+        // sample->m_samplingRes * sizeof(short int));
     // nc_merror(sample->m_Samples, "CurveDataSample");
 
     int firstPointX = x[0] * (sample->m_samplingRes-1);
@@ -1089,32 +1192,130 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
 
     for(i = 0; i < (int)sample->m_samplingRes; i++)
     {
-	//get the value of the curve at a point
-	//take into account that curves may not necessarily begin at x = 0.0
-	//nor end at x = 1.0
+    //get the value of the curve at a point
+    //take into account that curves may not necessarily begin at x = 0.0
+    //nor end at x = 1.0
 
-	//Before the first point and after the last point, take a strait line
-	if (i < firstPointX) {
-	    sample->m_Samples[i] = firstPointY;
-	} else if (i > lastPointX) {
-	    sample->m_Samples[i] = lastPointY;
-	} else {
-	    //within range, we can sample the curve
-	    if (gamma==1.0)
-		val = spline_cubic_val( n, x, i*res, y,
-			ypp, &ypval, &yppval ) * (sample->m_outputRes-1) + 0.5;
-	    else
-		val = pow(spline_cubic_val( n, x, i*res, y,
-			ypp, &ypval, &yppval ), gamma) *
-			(sample->m_outputRes-1) + 0.5;
+    //Before the first point and after the last point, take a strait line
+    if (i < firstPointX) {
+        sample->m_Samples[i] = firstPointY;
+    } else if (i > lastPointX) {
+        sample->m_Samples[i] = lastPointY;
+    } else {
+        //within range, we can sample the curve
+        if (gamma==1.0)
+        val = spline_cubic_val( n, x, i*res, y,
+            ypp, &ypval, &yppval ) * (sample->m_outputRes-1) + 0.5;
+        else
+        val = pow(spline_cubic_val( n, x, i*res, y,
+            ypp, &ypval, &yppval ), gamma) *
+            (sample->m_outputRes-1) + 0.5;
 
-	    sample->m_Samples[i] = MIN(MAX(val,minY),maxY);
-	}
+        sample->m_Samples[i] = MIN(MAX(val,minY),maxY);
+    }
     }
 
     free(ypp);
     return NC_SUCCESS;
 }
+
+/*********************************************
+CurveDataSample_hermite:
+    Samples from a hermite spline curve constructed from
+    data.
+
+    curve   - Pointer to curve struct to hold the data.
+    sample  - Pointer to sample struct to hold the data.
+**********************************************/
+int CurveDataSample_hermite(CurveData *curve, CurveSample *sample)
+{
+    int i = 0, n;
+
+    double x[20];
+    double y[20];
+
+    //The box points (except the gamma) are what the anchor points are relative
+    //to so...
+
+    double box_width = curve->m_max_x - curve->m_min_x;
+    double box_height = curve->m_max_y - curve->m_min_y;
+    double gamma = 1.0/curve->m_gamma;
+
+    //build arrays for processing
+    if (curve->m_numAnchors == 0)
+    {
+    //just a straight line using box coordinates
+    x[0] = curve->m_min_x;
+    y[0] = curve->m_min_y;
+    x[1] = curve->m_max_x;
+    y[1] = curve->m_max_y;
+    n = 2;
+    }
+    else
+    {
+    for(i = 0; i < curve->m_numAnchors; i++)
+    {
+        x[i] = curve->m_anchors[i].x*box_width + curve->m_min_x;
+        y[i] = curve->m_anchors[i].y*box_height + curve->m_min_y;
+    }
+    n = curve->m_numAnchors;
+    }
+    //returns an array of second derivatives used to calculate the spline curve.
+    //this is a malloc'd array that needs to be freed when done.
+    //The setings currently calculate the natural spline, which closely matches
+    //camera curve output in raw files.
+    double *ypp = cubic_hermite_set(n, x, y);
+    if (ypp==NULL) return NC_ERROR;
+
+    //Now build a table
+    int val;
+    double res = 1.0/(double)(sample->m_samplingRes-1);
+
+    //allocate enough space for the samples
+    DEBUG_PRINT("DEBUG: SAMPLING ALLOCATION: %u bytes\n",
+            sample->m_samplingRes*sizeof(int));
+    DEBUG_PRINT("DEBUG: SAMPLING OUTPUT RANGE: 0 -> %u\n", sample->m_outputRes);
+
+    // sample->m_Samples = (unsigned short int *)realloc(sample->m_Samples,
+        // sample->m_samplingRes * sizeof(short int));
+    // nc_merror(sample->m_Samples, "CurveDataSample");
+
+    int firstPointX = x[0] * (sample->m_samplingRes-1);
+    int firstPointY = pow(y[0], gamma) * (sample->m_outputRes-1);
+    int lastPointX = x[n-1] * (sample->m_samplingRes-1);
+    int lastPointY = pow(y[n-1], gamma) * (sample->m_outputRes-1);
+    int maxY = curve->m_max_y * (sample->m_outputRes-1);
+    int minY = curve->m_min_y * (sample->m_outputRes-1);
+
+    for(i = 0; i < (int)sample->m_samplingRes; i++)
+    {
+    //get the value of the curve at a point
+    //take into account that curves may not necessarily begin at x = 0.0
+    //nor end at x = 1.0
+
+    //Before the first point and after the last point, take a strait line
+    if (i < firstPointX) {
+        sample->m_Samples[i] = firstPointY;
+    } else if (i > lastPointX) {
+        sample->m_Samples[i] = lastPointY;
+    } else {
+        //within range, we can sample the curve
+        if (gamma==1.0)
+        val = cubic_hermite_val( n, x, i*res, y,
+            ypp) * (sample->m_outputRes-1) + 0.5;
+        else
+        val = pow(cubic_hermite_val( n, x, i*res, y,
+            ypp), gamma) *
+            (sample->m_outputRes-1) + 0.5;
+
+        sample->m_Samples[i] = MIN(MAX(val,minY),maxY);
+    }
+    }
+
+    free(ypp);
+    return NC_SUCCESS;
+}
+
 
 /*********************************************
 CurveDataReset:
@@ -1165,15 +1366,15 @@ void CurveDataSetPoint(CurveData *curve, int point, double x, double y)
     double left = curve->m_anchors[0].x;
     double right = curve->m_anchors[curve->m_numAnchors-1].x;
     if (point==0) {
-	for (i=0; i<curve->m_numAnchors; i++)
-	    curve->m_anchors[i].x = x + (curve->m_anchors[i].x-left) *
-		    (right-x) / (right-left);
+    for (i=0; i<curve->m_numAnchors; i++)
+        curve->m_anchors[i].x = x + (curve->m_anchors[i].x-left) *
+            (right-x) / (right-left);
     } else if (point==curve->m_numAnchors-1) {
-	for (i=0; i<curve->m_numAnchors; i++)
-	    curve->m_anchors[i].x = left + (curve->m_anchors[i].x-left) *
-		(x-left) / (right-left);
+    for (i=0; i<curve->m_numAnchors; i++)
+        curve->m_anchors[i].x = left + (curve->m_anchors[i].x-left) *
+        (x-left) / (right-left);
     } else {
-	curve->m_anchors[point].x = x;
+    curve->m_anchors[point].x = x;
     }
     curve->m_anchors[point].y = y;
 }
@@ -1207,8 +1408,8 @@ int SampleToCameraCurve(CurveData *curve, CurveSample *sample)
 
     if (curve->m_numAnchors < 2)
     {
-	nc_message(NC_SET_ERROR, "Not enough anchor points(need at least two)!\n");
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR, "Not enough anchor points(need at least two)!\n");
+    return NC_ERROR;
     }
 
     double x[20];
@@ -1224,19 +1425,19 @@ int SampleToCameraCurve(CurveData *curve, CurveSample *sample)
     //build arrays for processing
     if (curve->m_numAnchors == 0)
     {
-	//just a straight line using box coordinates
-	x[0] = curve->m_min_x;
-	y[0] = curve->m_min_y;
-	x[1] = curve->m_max_x;
-	y[1] = curve->m_max_y;
+    //just a straight line using box coordinates
+    x[0] = curve->m_min_x;
+    y[0] = curve->m_min_y;
+    x[1] = curve->m_max_x;
+    y[1] = curve->m_max_y;
     }
     else
     {
-	for(i = 0; i < (unsigned int)curve->m_numAnchors; i++)
-	{
-	    x[i] = curve->m_anchors[i].x*box_width + curve->m_min_x;
-	    y[i] = curve->m_anchors[i].y*box_height + curve->m_min_y;
-	}
+    for(i = 0; i < (unsigned int)curve->m_numAnchors; i++)
+    {
+        x[i] = curve->m_anchors[i].x*box_width + curve->m_min_x;
+        y[i] = curve->m_anchors[i].y*box_height + curve->m_min_y;
+    }
     }
 
     //returns an array of second derivatives used to calculate the spline curve.
@@ -1257,74 +1458,74 @@ int SampleToCameraCurve(CurveData *curve, CurveSample *sample)
     double res = 1.0/(double)sample->m_samplingRes;
 
     DEBUG_PRINT("DEBUG: SAMPLING RESOLUTION: %u bytes\n",
-	        sample->m_samplingRes*sizeof(int));
+            sample->m_samplingRes*sizeof(int));
     DEBUG_PRINT("DEBUG: SAMPLING OUTPUT RANGE: 0 -> %u\n", sample->m_outputRes);
 
     double outres = sample->m_outputRes;
 
     for(i = 0; i < sample->m_samplingRes; i++)
     {
-	//get the value of the curve at a point
-	//take into account that curves may not necessarily begin at x = 0.0
-	//nor end at x = 1.0
-	if (i*res < curve->m_min_x || i*res > curve->m_max_x)
-	{
-	    val = 0.0;
-	}
-	else
-	{
-	    //within range, okay to sample the curve
-	    val = spline_cubic_val ( curve->m_numAnchors, x, i*res,
-			    y, ypp, &ypval, &yppval );
+    //get the value of the curve at a point
+    //take into account that curves may not necessarily begin at x = 0.0
+    //nor end at x = 1.0
+    if (i*res < curve->m_min_x || i*res > curve->m_max_x)
+    {
+        val = 0.0;
+    }
+    else
+    {
+        //within range, okay to sample the curve
+        val = spline_cubic_val ( curve->m_numAnchors, x, i*res,
+                y, ypp, &ypval, &yppval );
 
-	    //Compensate for gamma.
-	    val = pow(val,gamma);
+        //Compensate for gamma.
+        val = pow(val,gamma);
 
-	    //cap at the high end of the range
-	    if (val > curve->m_max_y)
-	    {
-	        val = curve->m_max_y;
-	    }
-	    //cap at the low end of the range
-	    else if (val < curve->m_min_y)
-	    {
-	        val = curve->m_min_y;
-	    }
+        //cap at the high end of the range
+        if (val > curve->m_max_y)
+        {
+            val = curve->m_max_y;
+        }
+        //cap at the low end of the range
+        else if (val < curve->m_min_y)
+        {
+            val = curve->m_min_y;
+        }
 
-	    //transform "linear curve" to the camera curve
-	    //outres = 4096;
-	    //val *= outres;
+        //transform "linear curve" to the camera curve
+        //outres = 4096;
+        //val *= outres;
 
-	    //this equation is used inside Nikon's program to transform
-	    //the curves into the camera curves.
-	    //FIX LINEAR SECTION
-	    /*if (val < CAMERA_LINEAR_CURVE_SLOPE)
-	    {
-	        //do linear
-	        val = val*4096*CAMERA_LINEAR_CURVE_SLOPE;
+        //this equation is used inside Nikon's program to transform
+        //the curves into the camera curves.
+        //FIX LINEAR SECTION
+        /*if (val < CAMERA_LINEAR_CURVE_SLOPE)
+        {
+            //do linear
+            val = val*4096*CAMERA_LINEAR_CURVE_SLOPE;
 
-	    }
-	    else*/
-	    {
-	        //do real curve??
-	        val = ( log(7*val+1.0) / log(4*val+2.0) )*142.0+104.0*(val);
-	    }
+        }
+        else*/
+        {
+            //do real curve??
+            val = ( log(7*val+1.0) / log(4*val+2.0) )*142.0+104.0*(val);
+        }
 
-	    //cap at the high end of the range
-	    if (val > outres*curve->m_max_y)
-	    {
-	        val = outres;
-	    }
-	    //cap at the low end of the range
-	    else if (val < curve->m_min_y*outres)
-	    {
-	        val = curve->m_min_y*outres;
-	    }
+        //cap at the high end of the range
+        if (val > outres*curve->m_max_y)
+        {
+            val = outres;
+        }
+        //cap at the low end of the range
+        else if (val < curve->m_min_y*outres)
+        {
+            val = curve->m_min_y*outres;
+        }
 
-	}
+    }
 
-	//save the sample
-	sample->m_Samples[i] = (unsigned int)floor(val);
+    //save the sample
+    sample->m_Samples[i] = (unsigned int)floor(val);
     }
 
     free(ypp);
@@ -1357,9 +1558,9 @@ int SaveNikonDataFile(NikonData *data, char *outfile, int filetype, int version)
     output = g_fopen(outfile,"wb+");
     if (!output)
     {
-	nc_message(NC_SET_ERROR, "Error creating curve file '%s': %s\n",
-	        outfile, strerror(errno));
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR, "Error creating curve file '%s': %s\n",
+            outfile, strerror(errno));
+    return NC_ERROR;
     }
 
     //write out file header
@@ -1367,28 +1568,28 @@ int SaveNikonDataFile(NikonData *data, char *outfile, int filetype, int version)
 
     if (filetype == NCV_FILE)
     {
-	//write out unknown header bytes
-	short_tmp = ShortVal(NCV_UNKNOWN_HEADER_DATA);
-	nc_fwrite(&short_tmp, 2, 1, output);
+    //write out unknown header bytes
+    short_tmp = ShortVal(NCV_UNKNOWN_HEADER_DATA);
+    nc_fwrite(&short_tmp, 2, 1, output);
 
-	//write out file size - header
-	//Placeholder.The real filesize is written at the end.
-	//NCV files have two size location, one here and one in the
-	//NTC section of the file
-	long_tmp = 0;
-	nc_fwrite(&long_tmp, 4, 1, output);
+    //write out file size - header
+    //Placeholder.The real filesize is written at the end.
+    //NCV files have two size location, one here and one in the
+    //NTC section of the file
+    long_tmp = 0;
+    nc_fwrite(&long_tmp, 4, 1, output);
 
-	//write second header chunk
-	nc_fwrite(NCVSecondFileHeader,1,NCV_SECOND_HEADER_LENGTH,output);
+    //write second header chunk
+    nc_fwrite(NCVSecondFileHeader,1,NCV_SECOND_HEADER_LENGTH,output);
 
-	//From here until almost the end, the file is an NTC file
-	nc_fwrite(NTCFileHeader,NTC_FILE_HEADER_LENGTH,1,output);
+    //From here until almost the end, the file is an NTC file
+    nc_fwrite(NTCFileHeader,NTC_FILE_HEADER_LENGTH,1,output);
     }
 
     //patch version? (still unsure about this one)
     if (data->m_patch_version < NIKON_PATCH_4)
     {
-	    data->m_patch_version = NIKON_PATCH_5;
+        data->m_patch_version = NIKON_PATCH_5;
     }
     short_tmp = ShortVal(data->m_patch_version);
     nc_fwrite(&short_tmp, 2, 1, output);
@@ -1408,174 +1609,174 @@ int SaveNikonDataFile(NikonData *data, char *outfile, int filetype, int version)
     //now wash and repeat for the four sections of data
     for(i = 0; i < 4; i++)
     {
-	//write out section header (same as NTC file header)
-	nc_fwrite(FileSectionHeader,1,NTC_FILE_HEADER_LENGTH,output);
+    //write out section header (same as NTC file header)
+    nc_fwrite(FileSectionHeader,1,NTC_FILE_HEADER_LENGTH,output);
 
-	//write out section type
-	long_tmp = LongVal(i);
-	nc_fwrite(&long_tmp,4,1,output);
+    //write out section type
+    long_tmp = LongVal(i);
+    nc_fwrite(&long_tmp,4,1,output);
 
-	//write out unknown data
-	short_tmp = ShortVal(NTC_UNKNOWN_DATA);
-	nc_fwrite(&short_tmp,2,1,output);
+    //write out unknown data
+    short_tmp = ShortVal(NTC_UNKNOWN_DATA);
+    nc_fwrite(&short_tmp,2,1,output);
 
-	//write out pad byte
-	nc_fwrite(pad,1,1,output);
+    //write out pad byte
+    nc_fwrite(pad,1,1,output);
 
-	//write out components
-	switch (i)
-	{
-	    case 0:
-	        r = g = b = 0;
-	    break;
+    //write out components
+    switch (i)
+    {
+        case 0:
+            r = g = b = 0;
+        break;
 
-	    case 1:
-	        r = 255;
-	        g = b = 0;
-	    break;
+        case 1:
+            r = 255;
+            g = b = 0;
+        break;
 
-	    case 2:
-	        g = 255;
-	        r = b = 0;
-	    break;
+        case 2:
+            g = 255;
+            r = b = 0;
+        break;
 
-	    case 3:
-	        b = 255;
-	        g = r = 0;
-	    break;
-	}
+        case 3:
+            b = 255;
+            g = r = 0;
+        break;
+    }
 
-	long_tmp = LongVal(r);
-	nc_fwrite(&long_tmp,4,1,output);
+    long_tmp = LongVal(r);
+    nc_fwrite(&long_tmp,4,1,output);
 
-	long_tmp = LongVal(g);
-	nc_fwrite(&long_tmp,4,1,output);
+    long_tmp = LongVal(g);
+    nc_fwrite(&long_tmp,4,1,output);
 
-	long_tmp = LongVal(b);
-	nc_fwrite(&long_tmp,4,1,output);
+    long_tmp = LongVal(b);
+    nc_fwrite(&long_tmp,4,1,output);
 
-	//write out pad (12 byte pad)
-	nc_fwrite(pad,12,1,output);
+    //write out pad (12 byte pad)
+    nc_fwrite(pad,12,1,output);
 
-	//write out rgb weights
-	switch (i)
-	{
-	    case 0:
-	        r = g = b = 255;
-	    break;
+    //write out rgb weights
+    switch (i)
+    {
+        case 0:
+            r = g = b = 255;
+        break;
 
-	    case 1:
-	        r = 255;
-	        g = b = 0;
-	    break;
+        case 1:
+            r = 255;
+            g = b = 0;
+        break;
 
-	    case 2:
-	        g = 255;
-	        r = b = 0;
-	    break;
+        case 2:
+            g = 255;
+            r = b = 0;
+        break;
 
-	    case 3:
-	        b = 255;
-	        g = r = 0;
-	    break;
-	}
+        case 3:
+            b = 255;
+            g = r = 0;
+        break;
+    }
 
-	long_tmp = LongVal(r);
-	nc_fwrite(&long_tmp,4,1,output);
+    long_tmp = LongVal(r);
+    nc_fwrite(&long_tmp,4,1,output);
 
-	long_tmp = LongVal(g);
-	nc_fwrite(&long_tmp,4,1,output);
+    long_tmp = LongVal(g);
+    nc_fwrite(&long_tmp,4,1,output);
 
-	long_tmp = LongVal(b);
-	nc_fwrite(&long_tmp,4,1,output);
+    long_tmp = LongVal(b);
+    nc_fwrite(&long_tmp,4,1,output);
 
-	curve = &data->curves[i];
-	//write out curve data
-	if (curve->m_numAnchors >= 2)
-	{
-	    //we have a legit curve, use the data as is
-	    double_tmp = DoubleVal(curve->m_min_x);
-	    nc_fwrite(&double_tmp,sizeof(double),1,output);
+    curve = &data->curves[i];
+    //write out curve data
+    if (curve->m_numAnchors >= 2)
+    {
+        //we have a legit curve, use the data as is
+        double_tmp = DoubleVal(curve->m_min_x);
+        nc_fwrite(&double_tmp,sizeof(double),1,output);
 
-	    double_tmp = DoubleVal(curve->m_max_x);
-	    nc_fwrite(&double_tmp,sizeof(double),1,output);
+        double_tmp = DoubleVal(curve->m_max_x);
+        nc_fwrite(&double_tmp,sizeof(double),1,output);
 
-	    double_tmp = DoubleVal(curve->m_gamma);
-	    nc_fwrite(&double_tmp,sizeof(double),1,output);
+        double_tmp = DoubleVal(curve->m_gamma);
+        nc_fwrite(&double_tmp,sizeof(double),1,output);
 
-	    double_tmp = DoubleVal(curve->m_min_y);
-	    nc_fwrite(&double_tmp,sizeof(double),1,output);
+        double_tmp = DoubleVal(curve->m_min_y);
+        nc_fwrite(&double_tmp,sizeof(double),1,output);
 
-	    double_tmp = DoubleVal(curve->m_max_y);
-	    nc_fwrite(&double_tmp,sizeof(double),1,output);
+        double_tmp = DoubleVal(curve->m_max_y);
+        nc_fwrite(&double_tmp,sizeof(double),1,output);
 
-	    //write out number of anchor points (minimum is two)
-	    nc_fwrite(&curve->m_numAnchors,1,1,output);
+        //write out number of anchor points (minimum is two)
+        nc_fwrite(&curve->m_numAnchors,1,1,output);
 
-	    //write out pad
-	    nc_fwrite(pad,NUM_POINTS_TO_ANCHOR_OFFSET,1,output);
+        //write out pad
+        nc_fwrite(pad,NUM_POINTS_TO_ANCHOR_OFFSET,1,output);
 
-	    //write out anchor point data
-	    if (curve->m_anchors)
-	    {
-		int i;
-		for (i = 0; i < curve->m_numAnchors; i++)
-		{
-		    double_tmp = DoubleVal(curve->m_anchors[i].x);
-		    nc_fwrite(&double_tmp,sizeof(double),1,output);
-		    double_tmp = DoubleVal(curve->m_anchors[i].y);
-		    nc_fwrite(&double_tmp,sizeof(double),1,output);
-		}
-	    }
-	    else
-	    {
-	        nc_message(NC_SET_ERROR,"Curve anchor data is NULL! Aborting file write!\n");
-	        return NC_ERROR;
-	    }
-	}
-	else
-	{
-	    DEBUG_PRINT("NOTE: There are < 2 anchor points for curve %u! Forcing curve defaults.\n",i);
-	    DEBUG_PRINT("This should not be a concern unless it is happening for curve 0\n");
-	    //This curve either has not been correctly initialized or is empty.
-	    //Force defaults.
-	    double default_val = 0;
-	    nc_fwrite(&default_val,sizeof(double),1,output); //min x
-	    default_val = DoubleVal(1.0);
-	    nc_fwrite(&default_val,sizeof(double),1,output); //max_x
-	    //gamma has a default of 1
-	    default_val = DoubleVal(1.0);
-	    nc_fwrite(&default_val,sizeof(double),1,output); //gamma
-	    default_val = 0;
-	    nc_fwrite(&default_val,sizeof(double),1,output); //min y
-	    default_val = DoubleVal(1.0);
-	    nc_fwrite(&default_val,sizeof(double),1,output); //max y
+        //write out anchor point data
+        if (curve->m_anchors)
+        {
+        int i;
+        for (i = 0; i < curve->m_numAnchors; i++)
+        {
+            double_tmp = DoubleVal(curve->m_anchors[i].x);
+            nc_fwrite(&double_tmp,sizeof(double),1,output);
+            double_tmp = DoubleVal(curve->m_anchors[i].y);
+            nc_fwrite(&double_tmp,sizeof(double),1,output);
+        }
+        }
+        else
+        {
+            nc_message(NC_SET_ERROR,"Curve anchor data is NULL! Aborting file write!\n");
+            return NC_ERROR;
+        }
+    }
+    else
+    {
+        DEBUG_PRINT("NOTE: There are < 2 anchor points for curve %u! Forcing curve defaults.\n",i);
+        DEBUG_PRINT("This should not be a concern unless it is happening for curve 0\n");
+        //This curve either has not been correctly initialized or is empty.
+        //Force defaults.
+        double default_val = 0;
+        nc_fwrite(&default_val,sizeof(double),1,output); //min x
+        default_val = DoubleVal(1.0);
+        nc_fwrite(&default_val,sizeof(double),1,output); //max_x
+        //gamma has a default of 1
+        default_val = DoubleVal(1.0);
+        nc_fwrite(&default_val,sizeof(double),1,output); //gamma
+        default_val = 0;
+        nc_fwrite(&default_val,sizeof(double),1,output); //min y
+        default_val = DoubleVal(1.0);
+        nc_fwrite(&default_val,sizeof(double),1,output); //max y
 
-	    //force the number of anchors to be 2
-	    unsigned char num = 2;
-	    nc_fwrite(&num,1,1,output);
+        //force the number of anchors to be 2
+        unsigned char num = 2;
+        nc_fwrite(&num,1,1,output);
 
-	    //write out pad
-	    nc_fwrite(pad,NUM_POINTS_TO_ANCHOR_OFFSET,1,output);
+        //write out pad
+        nc_fwrite(pad,NUM_POINTS_TO_ANCHOR_OFFSET,1,output);
 
-	    //if the number of anchors was < 2, force default values.
-	    default_val = 0;
-	    nc_fwrite(&default_val,sizeof(double),1,output); //min x
-	    nc_fwrite(&default_val,sizeof(double),1,output); //min y
-	    default_val = DoubleVal(1.0);
-	    nc_fwrite(&default_val,sizeof(double),1,output); //max x
-	    nc_fwrite(&default_val,sizeof(double),1,output); //max y
+        //if the number of anchors was < 2, force default values.
+        default_val = 0;
+        nc_fwrite(&default_val,sizeof(double),1,output); //min x
+        nc_fwrite(&default_val,sizeof(double),1,output); //min y
+        default_val = DoubleVal(1.0);
+        nc_fwrite(&default_val,sizeof(double),1,output); //max x
+        nc_fwrite(&default_val,sizeof(double),1,output); //max y
 
-	}
+    }
 
-	//write out pad
-	nc_fwrite(pad,END_ANCHOR_DATA_PAD_LENGTH,1,output);
+    //write out pad
+    nc_fwrite(pad,END_ANCHOR_DATA_PAD_LENGTH,1,output);
     }
 
     if (filetype == NCV_FILE)
     {
-	//write out the file terminator if this is an NCV file
-	nc_fwrite(NCVFileTerminator,NCV_FILE_TERMINATOR_LENGTH,1,output);
+    //write out the file terminator if this is an NCV file
+    nc_fwrite(NCVFileTerminator,NCV_FILE_TERMINATOR_LENGTH,1,output);
     }
 
     //calculate the file size
@@ -1591,15 +1792,15 @@ int SaveNikonDataFile(NikonData *data, char *outfile, int filetype, int version)
 
     if (filetype == NCV_FILE)
     {
-	    //another size needs to placed in the NTC header inside the file
-	    fseek(output, NCV_SECOND_FILE_SIZE_OFFSET, SEEK_SET);
+        //another size needs to placed in the NTC header inside the file
+        fseek(output, NCV_SECOND_FILE_SIZE_OFFSET, SEEK_SET);
 
-	    //The - 6 is interesting. The last 6 bytes of the terminator must have some special meaning because
-	    //the calculated size in files from the Nikon progs always calculate size bytes short.
-	    //I'm assuming it is more than coincedence that those bytes match the last 6 bytes
-	    //of the NCV second file header. I've yet to determine their significance.
-	    size = LongVal(size - NCV_HEADER_SIZE - 6);
-	    nc_fwrite(&size,4,1,output);
+        //The - 6 is interesting. The last 6 bytes of the terminator must have some special meaning because
+        //the calculated size in files from the Nikon progs always calculate size bytes short.
+        //I'm assuming it is more than coincedence that those bytes match the last 6 bytes
+        //of the NCV second file header. I've yet to determine their significance.
+        size = LongVal(size - NCV_HEADER_SIZE - 6);
+        nc_fwrite(&size,4,1,output);
 
     }
     fclose(output);
@@ -1620,15 +1821,15 @@ SaveNikonCurveFile:
     version        - The version of the Nikon file to write
 
 NOTE:    The only version tested is Nikon 4.1 anything
-	other than this may result in unpredictable behavior.
-	For now, the version passed in is ignored and is forced
-	to 4.1.
+    other than this may result in unpredictable behavior.
+    For now, the version passed in is ignored and is forced
+    to 4.1.
 
-	This function is just a helper function that allows the user
-	to just carry around a single curve.
+    This function is just a helper function that allows the user
+    to just carry around a single curve.
 **************************************************************/
 int SaveNikonCurveFile(CurveData *curve, int curve_type, char *outfile,
-	int filetype, int version)
+    int filetype, int version)
 {
     NikonData data;
     //clear the structure
@@ -1654,40 +1855,40 @@ int SaveSampledNikonCurve(CurveSample *sample, char *outfile)
 
     if (outfile == NULL || strlen(outfile) == 0)
     {
-	nc_message(NC_SET_ERROR,
-	    "Output filename cannot be null or empty!\n");
+    nc_message(NC_SET_ERROR,
+        "Output filename cannot be null or empty!\n");
     }
 
     output = g_fopen(outfile,"wb+");
 
     if (!output)
     {
-	nc_message(NC_SET_ERROR, "Error creating curve file '%s': %s\n",
-	        outfile, strerror(errno));
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR, "Error creating curve file '%s': %s\n",
+            outfile, strerror(errno));
+    return NC_ERROR;
     }
 
     if (!sample->m_Samples)
     {
-	nc_message(NC_SET_ERROR,
-	        "Sample array has not been allocated or is corrupt!\n");
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR,
+            "Sample array has not been allocated or is corrupt!\n");
+    return NC_ERROR;
     }
 
     DEBUG_PRINT("DEBUG: OUTPUT FILENAME: %s\n",outfile);
     fprintf(output,"%u %u\n",0,sample->m_Samples[0]);
     for(i = 1; i < sample->m_samplingRes; i++)
     {
-	// Print sample point only if different than previous one
-	if (sample->m_Samples[i]!=sample->m_Samples[i-1])
-	{
-	    fprintf(output,"%u %u\n",i,sample->m_Samples[i]);
-	}
+    // Print sample point only if different than previous one
+    if (sample->m_Samples[i]!=sample->m_Samples[i-1])
+    {
+        fprintf(output,"%u %u\n",i,sample->m_Samples[i]);
+    }
     }
     // Make sure the last point is also printed
     if (sample->m_Samples[i-1]==sample->m_Samples[i-2])
     {
-	fprintf(output,"%u %u\n",i-1,sample->m_Samples[i-1]);
+    fprintf(output,"%u %u\n",i-1,sample->m_Samples[i-1]);
     }
 
     fclose(output);
@@ -1705,10 +1906,10 @@ CurveSample *CurveSampleInit(unsigned int samplingRes, unsigned int outputRes)
     sample->m_samplingRes = samplingRes;
     sample->m_outputRes = outputRes;
     if (samplingRes>0) {
-	sample->m_Samples = (unsigned short int*)calloc(samplingRes, sizeof(short int));
-	nc_merror(sample->m_Samples, "CurveSampleInit");
+    sample->m_Samples = (unsigned short int*)calloc(samplingRes, sizeof(short int));
+    nc_merror(sample->m_Samples, "CurveSampleInit");
     } else {
-	sample->m_Samples = NULL;
+    sample->m_Samples = NULL;
     }
     return sample;
 }
@@ -1724,8 +1925,8 @@ int CurveSampleFree(CurveSample *sample)
 
     if (sample->m_Samples!=NULL)
     {
-	free(sample->m_Samples);
-	sample->m_Samples = NULL;
+    free(sample->m_Samples);
+    sample->m_Samples = NULL;
     }
 
     free(sample);
@@ -1748,17 +1949,17 @@ int ConvertNikonCurveData(char *inFileName, char *outFileName,
     char tmpstr[1024];
 
     if ( samplingRes <= 1 || outputRes <= 1 || samplingRes > MAX_RESOLUTION
-	    || outputRes > MAX_RESOLUTION )
+        || outputRes > MAX_RESOLUTION )
     {
-	nc_message(NC_SET_ERROR, "Error, sampling and output resolution"
-	            "must be 1 <= res <= %u\n", MAX_RESOLUTION);
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR, "Error, sampling and output resolution"
+                "must be 1 <= res <= %u\n", MAX_RESOLUTION);
+    return NC_ERROR;
     }
 
     //loads all the curve data. Does not allocate sample arrays.
     if (LoadNikonData(inFileName, &data) != NC_SUCCESS)
     {
-	return NC_ERROR;
+    return NC_ERROR;
     }
 
     CurveSample *sample = CurveSampleInit(samplingRes, outputRes);
@@ -1767,51 +1968,51 @@ int ConvertNikonCurveData(char *inFileName, char *outFileName,
     int i;
     for (i = 0; i < NUM_CURVE_TYPES; i++)
     {
-	//Populates the samples array for the given curve
-	if (SampleToCameraCurve( &data.curves[i], sample) != NC_SUCCESS)
-	{
-	    CurveSampleFree(sample);
-	    return NC_ERROR;
-	}
+    //Populates the samples array for the given curve
+    if (SampleToCameraCurve( &data.curves[i], sample) != NC_SUCCESS)
+    {
+        CurveSampleFree(sample);
+        return NC_ERROR;
+    }
 
-	//rename output files
-	strncpy(tmpstr, outFileName, 1023);
-	tmpstr[1023] = '\0';
-	//if the name has an extension, attempt to remove it
-	if (tmpstr[strlen(tmpstr)-4] == '.')
-	{
-	    tmpstr[strlen(tmpstr)-4] = '\0';
-	}
+    //rename output files
+    strncpy(tmpstr, outFileName, 1023);
+    tmpstr[1023] = '\0';
+    //if the name has an extension, attempt to remove it
+    if (tmpstr[strlen(tmpstr)-4] == '.')
+    {
+        tmpstr[strlen(tmpstr)-4] = '\0';
+    }
 
-	switch(i)
-	{
-	    case TONE_CURVE:
-	        strncat(tmpstr, "_TONE.txt", 1023);
-	    break;
+    switch(i)
+    {
+        case TONE_CURVE:
+            strncat(tmpstr, "_TONE.txt", 1023);
+        break;
 
-	    case RED_CURVE:
-	        strncat(tmpstr, "_RED.txt", 1023);
-	    break;
+        case RED_CURVE:
+            strncat(tmpstr, "_RED.txt", 1023);
+        break;
 
-	    case GREEN_CURVE:
-	        strncat(tmpstr, "_GREEN.txt", 1023);
-	    break;
+        case GREEN_CURVE:
+            strncat(tmpstr, "_GREEN.txt", 1023);
+        break;
 
-	    case BLUE_CURVE:
-	        strncat(tmpstr, "_BLUE.txt", 1023);
-	    break;
+        case BLUE_CURVE:
+            strncat(tmpstr, "_BLUE.txt", 1023);
+        break;
 
-	    default:
-	        //should never get here
-	    break;
-	}
+        default:
+            //should never get here
+        break;
+    }
 
-	//print out curve data
-	if (SaveSampledNikonCurve(sample, tmpstr) != NC_SUCCESS)
-	{
-	    CurveSampleFree(sample);
-	    return NC_ERROR;
-	}
+    //print out curve data
+    if (SaveSampledNikonCurve(sample, tmpstr) != NC_SUCCESS)
+    {
+        CurveSampleFree(sample);
+        return NC_ERROR;
+    }
     }
 
     //must be called when finished with a CurveSample structure
@@ -1841,27 +2042,27 @@ int FindTIFFOffset(FILE *file, unsigned short num_entries, unsigned short tiff_t
     int i;
     for(i = 0; i < num_entries; i++)
     {
-	//get tag 2 bytes
-	tag = (fgetc(file)<<8)|fgetc(file);
-	if (tag == tiff_tag)
-	{
-	    //get type 2 bytes
-	    type = (fgetc(file)<<8)|fgetc(file);
-	    if (type == tiff_type)    //Type for length of field
-	    {
-	        //get length (4 bytes)
-	        offset = (fgetc(file)<<24)|(fgetc(file)<<16)|(fgetc(file)<<8)|fgetc(file);
-	        //get value\offset 4 bytes
-	        offset = (fgetc(file)<<24)|(fgetc(file)<<16)|(fgetc(file)<<8)|fgetc(file);
-	        fseek(file,offset,SEEK_SET);
-	        return 1; //true;
-	    }
-	}
-	else
-	{
-	    //advance to next entry
-	    fseek(file,10,SEEK_CUR);
-	}
+    //get tag 2 bytes
+    tag = (fgetc(file)<<8)|fgetc(file);
+    if (tag == tiff_tag)
+    {
+        //get type 2 bytes
+        type = (fgetc(file)<<8)|fgetc(file);
+        if (type == tiff_type)    //Type for length of field
+        {
+            //get length (4 bytes)
+            offset = (fgetc(file)<<24)|(fgetc(file)<<16)|(fgetc(file)<<8)|fgetc(file);
+            //get value\offset 4 bytes
+            offset = (fgetc(file)<<24)|(fgetc(file)<<16)|(fgetc(file)<<8)|fgetc(file);
+            fseek(file,offset,SEEK_SET);
+            return 1; //true;
+        }
+    }
+    else
+    {
+        //advance to next entry
+        fseek(file,10,SEEK_CUR);
+    }
     }
     return 0; //false;
 }
@@ -1871,10 +2072,10 @@ RipNikonNEFData:
     Gets Nikon NEF data. For now, this is just the tone
     curve data.
 
-    infile -	The input file
-    curve  -	data structure to hold data in.
-    sample_p -	pointer to the curve sample reference.
-		can be NULL if curve sample is not needed.
+    infile -    The input file
+    curve  -    data structure to hold data in.
+    sample_p -  pointer to the curve sample reference.
+        can be NULL if curve sample is not needed.
 ********************************************************/
 int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
 {
@@ -1889,9 +2090,9 @@ int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
     //make sure we have a valid file
     if (file == NULL)
     {
-	nc_message(NC_SET_ERROR, "Error opening '%s': %s\n",
-	        infile, strerror(errno));
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR, "Error opening '%s': %s\n",
+            infile, strerror(errno));
+    return NC_ERROR;
     }
 
     //gets the byte order
@@ -1899,10 +2100,10 @@ int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
     byte_order = ShortVal(byte_order);
     if (byte_order != 0x4d4d)
     {
-	//Must be in motorola format if it came from a NIKON
-	nc_message(NC_SET_ERROR,
-	    "NEF file data format is Intel. Data format should be Motorola.\n");
-	return NC_ERROR;
+    //Must be in motorola format if it came from a NIKON
+    nc_message(NC_SET_ERROR,
+        "NEF file data format is Intel. Data format should be Motorola.\n");
+    return NC_ERROR;
     }
 
     //get the version
@@ -1910,10 +2111,10 @@ int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
     version = (fgetc(file)<<8)|fgetc(file);
     if (version != 0x002a)
     {
-	//must be 42 or not a valid TIFF
-	nc_message(NC_SET_ERROR,
-	    "NEF file version is %u. Version should be 42.\n",version);
-	return NC_ERROR;
+    //must be 42 or not a valid TIFF
+    nc_message(NC_SET_ERROR,
+        "NEF file version is %u. Version should be 42.\n",version);
+    return NC_ERROR;
     }
 
     //get offset to first IFD
@@ -1926,10 +2127,10 @@ int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
     //move file pointer to exif offset
     if (!FindTIFFOffset(file,num_entries,TIFF_TAG_EXIF_OFFSET,TIFF_TYPE_LONG))
     {
-	nc_message(NC_SET_ERROR,
-	    "NEF data entry could not be found with tag %u and type %u.\n",
-	    TIFF_TAG_EXIF_OFFSET, TIFF_TYPE_LONG);
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR,
+        "NEF data entry could not be found with tag %u and type %u.\n",
+        TIFF_TAG_EXIF_OFFSET, TIFF_TYPE_LONG);
+    return NC_ERROR;
     }
 
     //get number of entries
@@ -1938,10 +2139,10 @@ int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
     //move file pointer to maker note offset
     if (!FindTIFFOffset(file,num_entries,TIFF_TAG_MAKER_NOTE_OFFSET,TIFF_TYPE_UNDEFINED))
     {
-	nc_message(NC_SET_ERROR,
-	    "NEF data entry could not be found with tag %u and type %u.\n",
-	    TIFF_TAG_MAKER_NOTE_OFFSET, TIFF_TYPE_UNDEFINED);
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR,
+        "NEF data entry could not be found with tag %u and type %u.\n",
+        TIFF_TAG_MAKER_NOTE_OFFSET, TIFF_TYPE_UNDEFINED);
+    return NC_ERROR;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1956,9 +2157,9 @@ int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
     nc_fread(name,6,1,file);
     if (strcmp(name,"Nikon") != 0)
     {
-	nc_message(NC_SET_ERROR,
-	    "NEF string identifier is %s. Should be: Nikon.\n",name);
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR,
+        "NEF string identifier is %s. Should be: Nikon.\n",name);
+    return NC_ERROR;
     }
     fseek(file,4,SEEK_CUR);
 
@@ -1970,21 +2171,21 @@ int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
     byte_order = ShortVal(byte_order);
     if (byte_order != 0x4d4d)
     {
-	//Must be in motorola format or not from a Nikon
-	nc_message(NC_SET_ERROR,
-	    "NEF secondary file data format is Intel. "
-	    "Data format should be Motorola.\n");
-	return NC_ERROR;
+    //Must be in motorola format or not from a Nikon
+    nc_message(NC_SET_ERROR,
+        "NEF secondary file data format is Intel. "
+        "Data format should be Motorola.\n");
+    return NC_ERROR;
     }
 
     //get version
     version = (fgetc(file)<<8)|fgetc(file);
     if (version != 0x002a)
     {
-	nc_message(NC_SET_ERROR,
-	    "NEF secondary file version is %u. Version should be 42.\n",
-	    version);
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR,
+        "NEF secondary file version is %u. Version should be 42.\n",
+        version);
+    return NC_ERROR;
     }
 
     //get offset to first IFD
@@ -1998,10 +2199,10 @@ int RipNikonNEFData(char *infile, CurveData *data, CurveSample **sample_p)
     //move file position to tone curve data
     if (!FindTIFFOffset(file,num_entries,TIFF_TAG_CURVE_OFFSET,TIFF_TYPE_UNDEFINED))
     {
-	nc_message(NC_SET_ERROR,
-	    "NEF data entry could not be found with tag %u and type %u.\n",
-	    TIFF_TAG_CURVE_OFFSET, TIFF_TYPE_UNDEFINED);
-	return NC_ERROR;
+    nc_message(NC_SET_ERROR,
+        "NEF data entry could not be found with tag %u and type %u.\n",
+        TIFF_TAG_CURVE_OFFSET, TIFF_TYPE_UNDEFINED);
+    return NC_ERROR;
     }
 
     offset = ftell(file);
@@ -2017,11 +2218,11 @@ RipNikonNEFCurve:
     file   - The input file.
     infile - Offset to retrieve the data
     curve  - data structure to hold curve in.
-    sample_p -	pointer to the curve sample reference.
-		can be NULL if curve sample is not needed.
+    sample_p -  pointer to the curve sample reference.
+        can be NULL if curve sample is not needed.
 ********************************************************/
 int RipNikonNEFCurve(FILE *file, int offset, CurveData *data,
-	CurveSample **sample_p)
+    CurveSample **sample_p)
 {
     int i;
 
@@ -2051,46 +2252,46 @@ int RipNikonNEFCurve(FILE *file, int offset, CurveData *data,
     // are either all 0x00 (D70) or 0xFF (D2H).
     // We therefore switch these values with the default values.
     if (data->m_min_x==1.0) {
-	data->m_min_x = 0.0;
-	DEBUG_PRINT("DEBUG: NEF X MIN -> %e (changed)\n",data->m_min_x);
+    data->m_min_x = 0.0;
+    DEBUG_PRINT("DEBUG: NEF X MIN -> %e (changed)\n",data->m_min_x);
     }
     if (data->m_max_x==0.0) {
-	data->m_max_x = 1.0;
-	DEBUG_PRINT("DEBUG: NEF X MAX -> %e (changed)\n",data->m_max_x);
+    data->m_max_x = 1.0;
+    DEBUG_PRINT("DEBUG: NEF X MAX -> %e (changed)\n",data->m_max_x);
     }
     if (data->m_min_y==1.0) {
-	data->m_min_y = 0.0;
-	DEBUG_PRINT("DEBUG: NEF Y MIN -> %e (changed)\n",data->m_min_y);
+    data->m_min_y = 0.0;
+    DEBUG_PRINT("DEBUG: NEF Y MIN -> %e (changed)\n",data->m_min_y);
     }
     if (data->m_max_y==0.0) {
-	data->m_max_y = 1.0;
-	DEBUG_PRINT("DEBUG: NEF Y MAX -> %e (changed)\n",data->m_max_y);
+    data->m_max_y = 1.0;
+    DEBUG_PRINT("DEBUG: NEF Y MAX -> %e (changed)\n",data->m_max_y);
     }
     if (data->m_gamma==0.0 || data->m_gamma==255.0+255.0/256.0) {
-	data->m_gamma = 1.0;
-	DEBUG_PRINT("DEBUG: NEF GAMMA -> %e (changed)\n",data->m_gamma);
+    data->m_gamma = 1.0;
+    DEBUG_PRINT("DEBUG: NEF GAMMA -> %e (changed)\n",data->m_gamma);
     }
 
     //get number of anchor points (there should be at least 2
     nc_fread(&data->m_numAnchors,1,1,file);
     DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u\n",data->m_numAnchors);
     if (data->m_numAnchors==255) {
-	data->m_numAnchors = 0;
-	DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u (changed)\n",
-		data->m_numAnchors);
+    data->m_numAnchors = 0;
+    DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u (changed)\n",
+        data->m_numAnchors);
     }
     if (data->m_numAnchors > NIKON_MAX_ANCHORS) {
-	data->m_numAnchors = NIKON_MAX_ANCHORS;
-	DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u (changed)\n",
-		data->m_numAnchors);
+    data->m_numAnchors = NIKON_MAX_ANCHORS;
+    DEBUG_PRINT("DEBUG: NEF NUMBER OF ANCHORS -> %u (changed)\n",
+        data->m_numAnchors);
     }
 
     //convert data to doubles
     for(i = 0; i < data->m_numAnchors; i++)
     {
-	//get anchor points
-	data->m_anchors[i].x = (double)fgetc(file)/255.0;
-	data->m_anchors[i].y = (double)fgetc(file)/255.0;
+    //get anchor points
+    data->m_anchors[i].x = (double)fgetc(file)/255.0;
+    data->m_anchors[i].y = (double)fgetc(file)/255.0;
     }
 
     //The total number of points possible is 25 (50 bytes).
@@ -2102,14 +2303,14 @@ int RipNikonNEFCurve(FILE *file, int offset, CurveData *data,
 
     if (sample_p!=NULL)
     {
-	// Sampling res is always 4096, and output res is alway 256
-	*sample_p = CurveSampleInit(4096, 256);
+    // Sampling res is always 4096, and output res is alway 256
+    *sample_p = CurveSampleInit(4096, 256);
 
-	//get the samples
-	for(i = 0; i < 4096; i++)
-	{
-	    (*sample_p)->m_Samples[i] = (unsigned int)fgetc(file);
-	}
+    //get the samples
+    for(i = 0; i < 4096; i++)
+    {
+        (*sample_p)->m_Samples[i] = (unsigned int)fgetc(file);
+    }
     }
 
     return NC_SUCCESS;
@@ -2127,58 +2328,58 @@ int main(int argc, char* argv[])
     if (ProcessArgs(argc,argv) == NC_SUCCESS)
     {
 
-	//if we are in NEF mode, rip the curve out of the RAW file
-	if (program_mode == NEF_MODE)
-	{
-	    NikonData data;
+    //if we are in NEF mode, rip the curve out of the RAW file
+    if (program_mode == NEF_MODE)
+    {
+        NikonData data;
 
-	    //intiialze the structure to zero
-	    memset(&data,0,sizeof(NikonData));
+        //intiialze the structure to zero
+        memset(&data,0,sizeof(NikonData));
 
-	    if (RipNikonNEFData(nikonFilename, &data.curves[TONE_CURVE], NULL)
-	            != NC_SUCCESS)
-	    {
-	        return NC_ERROR;
-	    }
+        if (RipNikonNEFData(nikonFilename, &data.curves[TONE_CURVE], NULL)
+                != NC_SUCCESS)
+        {
+            return NC_ERROR;
+        }
 
-	    CurveSample *sample = CurveSampleInit(65536, 256);
+        CurveSample *sample = CurveSampleInit(65536, 256);
 
-	    if (CurveDataSample(&data.curves[TONE_CURVE], sample)
-	            != NC_SUCCESS)
-	    {
-		CurveSampleFree(sample);
-	        return NC_ERROR;
-	    }
+        if (CurveDataSample(&data.curves[TONE_CURVE], sample)
+                != NC_SUCCESS)
+        {
+        CurveSampleFree(sample);
+            return NC_ERROR;
+        }
 
-	    if (SaveSampledNikonCurve(sample, exportFilename) != NC_SUCCESS)
-	    {
-		CurveSampleFree(sample);
-	        return NC_ERROR;
-	    }
+        if (SaveSampledNikonCurve(sample, exportFilename) != NC_SUCCESS)
+        {
+        CurveSampleFree(sample);
+            return NC_ERROR;
+        }
 
-	    if (SaveNikonCurveFile(&data.curves[TONE_CURVE], TONE_CURVE,
-				"outcurve.ncv",NCV_FILE, NIKON_VERSION_4_1))
-	    {
-		CurveSampleFree(sample);
-	        return NC_ERROR;
-	    }
+        if (SaveNikonCurveFile(&data.curves[TONE_CURVE], TONE_CURVE,
+                "outcurve.ncv",NCV_FILE, NIKON_VERSION_4_1))
+        {
+        CurveSampleFree(sample);
+            return NC_ERROR;
+        }
 
-	    //This can also be used
-	    if (SaveNikonDataFile(&data,"outcurve2.ncv",NCV_FILE, NIKON_VERSION_4_1))
-	    {
-		CurveSampleFree(sample);
-	        return NC_ERROR;
-	    }
+        //This can also be used
+        if (SaveNikonDataFile(&data,"outcurve2.ncv",NCV_FILE, NIKON_VERSION_4_1))
+        {
+        CurveSampleFree(sample);
+            return NC_ERROR;
+        }
 
-	    CurveSampleFree(sample);
-	}
-	//else, process a nikon curve file
-	else
-	{
-	    //do the deed
-	    ConvertNikonCurveData(nikonFilename,exportFilename,
-	        standalone_samplingRes, standalone_outputRes);
-	}
+        CurveSampleFree(sample);
+    }
+    //else, process a nikon curve file
+    else
+    {
+        //do the deed
+        ConvertNikonCurveData(nikonFilename,exportFilename,
+            standalone_samplingRes, standalone_outputRes);
+    }
     }
     return NC_SUCCESS;
 }

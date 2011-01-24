@@ -133,6 +133,30 @@ static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
   return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
 }
 
+static inline void dt_draw_hermite_curve_calc_values(dt_draw_curve_t *c, const float min, const float max, const int res, float *x, float *y)
+{
+  c->csample.m_samplingRes = res;
+  c->csample.m_outputRes = 0x10000;
+  CurveDataSample_hermite(&c->c, &c->csample);
+  if(x) for(int k=0;k<res;k++) x[k] = k*(1.0f/res);
+  if(y) for(int k=0;k<res;k++)
+    y[k] = min + (max-min)*c->csample.m_Samples[k]*(1.0f/0x10000);
+}
+
+
+static inline float dt_draw_hermite_curve_calc_value(dt_draw_curve_t *c, const float x)
+{
+  double xa[20], ya[20];
+  for(int i=0; i<c->c.m_numAnchors; i++)
+  {
+    xa[i] = c->c.m_anchors[i].x;
+    ya[i] = c->c.m_anchors[i].y;
+  }
+  double *ypp = cubic_hermite_set(c->c.m_numAnchors, xa, ya);
+  double val = cubic_hermite_val(c->c.m_numAnchors, xa, x, ya, ypp);
+  free(ypp);
+  return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
+}
 static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const float x, const float y)
 {
   c->c.m_anchors[c->c.m_numAnchors].x = x;
