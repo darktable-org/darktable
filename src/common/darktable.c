@@ -276,7 +276,7 @@ int dt_init(int argc, char *argv[])
     {
       char* current_dir = g_get_current_dir();
       char* tmp_filename = g_build_filename(current_dir, image_to_load, NULL);
-      filename = (char*)malloc(sizeof(char)*MAXPATHLEN);
+      filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
       if(realpath(tmp_filename, filename) == NULL)
       {
         dt_control_log(_("found strange path `%s'"), tmp_filename);

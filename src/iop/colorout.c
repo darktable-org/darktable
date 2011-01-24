@@ -397,26 +397,26 @@ void gui_init(struct dt_iop_module_t *self)
   // dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
 
   g->profiles = NULL;
-  dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
   int pos;
   prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
 
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "adobergb");
   strcpy(prof->name, "adobergb");
   pos = prof->pos = 1;
   g->profiles = g_list_append(g->profiles, prof);
 
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "X profile");
   strcpy(prof->name, "X profile");
   pos = prof->pos = 2;
   g->profiles = g_list_append(g->profiles, prof);
 
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "linear_rgb");
   strcpy(prof->name, "linear_rgb");
   pos = prof->pos = 3;
@@ -440,7 +440,7 @@ void gui_init(struct dt_iop_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
-        dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+        dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
         cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
         strcpy(prof->name, name);
@@ -549,7 +549,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   while(g->profiles)
   {
-    free(g->profiles->data);
+    g_free(g->profiles->data);
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
   }
   free(self->gui_data);

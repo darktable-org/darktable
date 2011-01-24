@@ -451,26 +451,26 @@ gui_init (dt_lib_module_t *self)
 
   d->profiles = NULL;
 
-  dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+  dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, _("srgb (web-safe)"));
   int pos;
   prof->pos = 1;
   d->profiles = g_list_append(d->profiles, prof);
 
-  prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "adobergb");
   strcpy(prof->name, _("adobe rgb"));
   prof->pos = 2;
   d->profiles = g_list_append(d->profiles, prof);
 
-  prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "X profile");
   strcpy(prof->name, "X profile");
   prof->pos = 3;
   d->profiles = g_list_append(d->profiles, prof);
 
-  prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   strcpy(prof->filename, "linear_rgb");
   strcpy(prof->name, _("linear rgb"));
   pos = prof->pos = 4;
@@ -494,7 +494,7 @@ gui_init (dt_lib_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
-        dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)malloc(sizeof(dt_lib_export_profile_t));
+        dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
         char name[1024];
         cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
         strcpy(prof->name, name);
@@ -586,6 +586,11 @@ gui_cleanup (dt_lib_module_t *self)
   if(old) gtk_container_remove(d->format_box, old);
   old = gtk_bin_get_child(GTK_BIN(d->storage_box));
   if(old) gtk_container_remove(d->storage_box, old);
+  while(d->profiles)
+  {
+    g_free(d->profiles->data);
+    d->profiles = g_list_delete_link(d->profiles, d->profiles);
+  }
   free(self->data);
   self->data = NULL;
 }

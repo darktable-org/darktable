@@ -376,7 +376,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = NULL;
 
   // get color matrix from raw image:
-  dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "cmatrix");
   strcpy(prof->name, "cmatrix");
   g->profiles = g_list_append(g->profiles, prof);
@@ -399,35 +399,35 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   // sRGB for ldr image input
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "sRGB");
   strcpy(prof->name, "sRGB");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
   // adobe rgb built-in
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "adobergb");
   strcpy(prof->name, "adobergb");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
   // add std RGB profile:
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "linear_rgb");
   strcpy(prof->name, "linear_rgb");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
   // XYZ built-in
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "XYZ");
   strcpy(prof->name, "XYZ");
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
   // infrared built-in
-  prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "infrared");
   strcpy(prof->name, "infrared");
   g->profiles = g_list_append(g->profiles, prof);
@@ -452,7 +452,7 @@ void gui_init(struct dt_iop_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
-        dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
+        dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
         cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
         strcpy(prof->name, name);
@@ -515,7 +515,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   while(g->profiles)
   {
-    free(g->profiles->data);
+    g_free(g->profiles->data);
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
   }
   free(self->gui_data);
