@@ -214,28 +214,61 @@ pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
   pre_median_b(out, in, roi_out, roi_in, filters, num_passes, threshold, 1);
 }
 
+#define SWAPmed(I,J) if (med[I] > med[J]) SWAP(med[I], med[J])
+
 static void
 color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const int num_passes)
 {
-  float med[9];
-  const uint8_t opt[] = /* optimal 9-element median search */
-  { 1,2, 4,5, 7,8, 0,1, 3,4, 6,7, 1,2, 4,5, 7,8,
-    0,3, 5,8, 4,7, 3,6, 1,4, 2,5, 4,7, 4,2, 6,4, 4,2 };
+  const int width4 = 4 * roi_out->width;
 
   for (int pass=0; pass < num_passes; pass++)
   {
     for (int c=0; c < 3; c+=2)
     {
-      for (int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-        out[4*(j*roi_out->width + i) + 3] = out[4*(j*roi_out->width + i) + c];
-      for (int j=1;j<roi_out->height-1;j++) for(int i=1;i<roi_out->width-1;i++)
+      float *outp = out;
+      for (int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++,outp+=4)
+        outp[3] = outp[c];
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(out,c)
+#endif
+      for (int j=1;j<roi_out->height-1;j++)
       {
-        int k = 0;
-        for (int jj=-1;jj<=1;jj++) for(int ii=-1;ii<=1;ii++) med[k++] = out[4*((j+jj)*roi_out->width + i + ii) + 3] - out[4*((j+jj)*roi_out->width + i + ii) + 1];
-        for (int ii=0; ii < sizeof opt; ii+=2)
-          if     (med[opt[ii]] > med[opt[ii+1]])
-            SWAP (med[opt[ii]] , med[opt[ii+1]]);
-        out[4*(j*roi_out->width + i) + c] = CLAMPS(med[4] + out[4*(j*roi_out->width + i) + 1], 0.0f, 1.0f);
+	float *outp = out + 4*j*roi_out->width + 4;
+	for(int i=1;i<roi_out->width-1;i++,outp+=4)
+	{
+	  float med[9] = {
+	    outp[-width4-4+3] - outp[-width4-4+1],
+	    outp[-width4+0+3] - outp[-width4+0+1],
+	    outp[-width4+4+3] - outp[-width4+4+1],
+	    outp[-4+3] - outp[-4+1],
+	    outp[+0+3] - outp[+0+1],
+	    outp[+4+3] - outp[+4+1],
+	    outp[+width4-4+3] - outp[+width4-4+1],
+	    outp[+width4+0+3] - outp[+width4+0+1],
+	    outp[+width4+4+3] - outp[+width4+4+1],
+	  };
+	  /* optimal 9-element median search */
+	  SWAPmed(1,2);
+	  SWAPmed(4,5);
+	  SWAPmed(7,8);
+	  SWAPmed(0,1);
+	  SWAPmed(3,4);
+	  SWAPmed(6,7);
+	  SWAPmed(1,2);
+	  SWAPmed(4,5);
+	  SWAPmed(7,8);
+	  SWAPmed(0,3);
+	  SWAPmed(5,8);
+	  SWAPmed(4,7);
+	  SWAPmed(3,6);
+	  SWAPmed(1,4);
+	  SWAPmed(2,5);
+	  SWAPmed(4,7);
+	  SWAPmed(4,2);
+	  SWAPmed(6,4);
+	  SWAPmed(4,2);
+	  outp[c] = CLAMPS(med[4] + outp[1], 0.0f, 1.0f);
+	}
       }
     }
   }
