@@ -76,12 +76,18 @@ void dt_opencl_init(dt_opencl_t *cl)
     clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
     clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &image_height, NULL);
     clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_IMAGE2D_MAX_WIDTH,  sizeof(size_t), &image_width,  NULL);
-    if(!image_support || image_height < 8192 || image_width < 8192)
+    if(!image_support)
     {
       cl->num_devs = --num_devices;
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to missing image support.\n", k, infostr);
       continue;
     }
+    if(image_height < 8192 || image_width < 8192)
+    {
+      fprintf(stderr, "[opencl_init] WARNING: your card only supports image sizes of %d x %d\n", image_width, image_height);
+      fprintf(stderr, "[opencl_init] WARNING: expect random crashes, especially with images larger than that.\n");
+    }
+
     clGetDeviceInfo(cl->dev[k].devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &max_global_mem, NULL);
     if(max_global_mem < 1000000000ul)
     {
