@@ -245,6 +245,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     dt_gui_background_jobs_set_progress(j, fraction);
   }
   dt_gui_background_jobs_destroy (j);
+  dt_film_remove_empty();
   return 0;
 }
 

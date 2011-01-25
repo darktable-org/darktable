@@ -321,6 +321,15 @@ int dt_film_import(const char *dirname)
   return dt_film_import_blocking(dirname, 0);
 }
 
+void dt_film_remove_empty()
+{
+  // remove all empty film rolls from db:
+  DT_DEBUG_SQLITE3_EXEC(darktable.db,
+      "delete from film_rolls where id in (select id from film_rolls as B where "
+      "(select count(A.id) from images as A where A.film_id=B.id)=0)",
+      NULL, NULL, NULL);
+}
+
 int dt_film_is_empty(const int id)
 {
 	int empty=0;

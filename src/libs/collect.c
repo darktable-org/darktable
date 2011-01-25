@@ -63,6 +63,7 @@ typedef enum dt_lib_collect_cols_t
 {
   DT_LIB_COLLECT_COL_TEXT=0,
   DT_LIB_COLLECT_COL_ID,
+  DT_LIB_COLLECT_COL_TOOLTIP,
   DT_LIB_COLLECT_NUM_COLS
 }
 dt_lib_collect_cols_t;
@@ -122,11 +123,13 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
         DT_LIB_COLLECT_COL_TEXT,_("altered"),
         DT_LIB_COLLECT_COL_ID, 0,
+        DT_LIB_COLLECT_COL_TOOLTIP,_("altered"),
         -1);
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
         DT_LIB_COLLECT_COL_TEXT,_("not altered"),
         DT_LIB_COLLECT_COL_ID, 1,
+        DT_LIB_COLLECT_COL_TOOLTIP,_("not altered"),
         -1);
       goto entry_key_press_exit;
     break;
@@ -136,26 +139,31 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
         DT_LIB_COLLECT_COL_TEXT,_("red"),
         DT_LIB_COLLECT_COL_ID, 0,
+        DT_LIB_COLLECT_COL_TOOLTIP, _("red"),
         -1);
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
         DT_LIB_COLLECT_COL_TEXT,_("yellow"),
         DT_LIB_COLLECT_COL_ID, 1,
+        DT_LIB_COLLECT_COL_TOOLTIP, _("yellow"),
         -1);
      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
         DT_LIB_COLLECT_COL_TEXT,_("green"),
         DT_LIB_COLLECT_COL_ID, 2,
+        DT_LIB_COLLECT_COL_TOOLTIP, _("green"),
         -1);
      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
         DT_LIB_COLLECT_COL_TEXT,_("blue"),
         DT_LIB_COLLECT_COL_ID, 3,
+        DT_LIB_COLLECT_COL_TOOLTIP, _("blue"),
         -1);
      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
         DT_LIB_COLLECT_COL_TEXT,_("purple"),
         DT_LIB_COLLECT_COL_ID, 4,
+        DT_LIB_COLLECT_COL_TOOLTIP, _("purple"),
         -1);
       goto entry_key_press_exit;
     break;
@@ -200,10 +208,12 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
     gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                         DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
+                        DT_LIB_COLLECT_COL_TOOLTIP, sqlite3_column_text(stmt, 0),
                         -1);
   }
   sqlite3_finalize(stmt);
 entry_key_press_exit:
+  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
   g_object_unref(model);
   return FALSE;
@@ -268,10 +278,10 @@ gui_reset (dt_lib_module_t *self)
 {
   dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
   dt_conf_set_int("plugins/lighttable/collect/item0", 0);
-  dt_conf_set_string("plugins/lighttable/collect/string0", "");
+  dt_conf_set_string("plugins/lighttable/collect/string0", "%");
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
   gui_update(d);
-  // entry_key_press (NULL, NULL, d->rule + d->active_rule);
+  dt_collection_update_query(darktable.collection);
 }
 
 static void
@@ -293,10 +303,12 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   gchar *text;
-  gtk_tree_model_get (model, &iter, 
-                      DT_LIB_COLLECT_COL_TEXT, &text,
-                      -1);
   const int active = d->active_rule;
+  const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
+  if(item == 0) // get full path for film rolls:
+    gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TOOLTIP, &text, -1);
+  else
+    gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   g_free(text);
   entry_key_press (NULL, NULL, d->rule + active);
@@ -593,8 +605,8 @@ gui_init (dt_lib_module_t *self)
 
     /* xgettext:no-c-format */
     gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
-    gtk_widget_add_events(w, GDK_KEY_RELEASE_MASK);
-    g_signal_connect(G_OBJECT(w), "key-release-event", G_CALLBACK(entry_key_press), d->rule + i);
+    gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
+    g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(entry_key_press), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
@@ -610,7 +622,7 @@ gui_init (dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
   gtk_tree_view_set_headers_visible(view, FALSE);
-  liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT);
+  liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
@@ -619,7 +631,6 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
-  gtk_object_set(GTK_OBJECT(view), "tooltip-text", _("doubleclick to select"), (char *)NULL);
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
 
   gui_update(d);
