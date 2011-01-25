@@ -254,31 +254,90 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   float sharp[MAX_LEVEL];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
 
-  float *detail = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height*max_scale);
-  float *tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height);
-  float *buf2 = tmp;
-  float *buf1 = (float *)i;
+  float *detail = NULL;
+  float *tmp    = NULL;
+  float *tmp2   = NULL;
+  float *buf2   = NULL;
+  float *buf1   = NULL;
 
-  for(int scale=0;scale<max_scale;scale++)
+  int tile_wd_full = DT_IMAGE_WINDOW_SIZE, tile_ht_full = DT_IMAGE_WINDOW_SIZE;
+  const int need_tiles = roi_in->width > tile_wd_full || roi_out->height > tile_ht_full;
+
+  if(need_tiles)
   {
-    eaw_decompose (buf2, buf1, detail + 4*roi_out->width*roi_out->height*scale, scale, sharp[scale], roi_out->width, roi_out->height);
-    if(scale == 0) buf1 = (float *)o;
-    float *buf3 = buf2;
-    buf2 = buf1;
-    buf1 = buf3;
+    tmp2 = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
+    buf1 = tmp2;
   }
-
-  for(int scale=max_scale-1;scale>=0;scale--)
+  else
   {
-    eaw_synthesize (buf2, buf1, detail + 4*roi_out->width*roi_out->height*scale,
-      thrs[scale], boost[scale], roi_out->width, roi_out->height);
-    float *buf3 = buf2;
-    buf2 = buf1;
-    buf1 = buf3;
+    tile_wd_full = roi_out->width;
+    tile_ht_full = roi_out->height;
+    buf1   = (float *)i;
+  }
+  detail = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full*max_scale);
+  tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
+  buf2   = tmp;
+
+  const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
+  const int width = roi_out->width, height = roi_out->height;
+  const int tile_wd = tile_wd_full - 2*max_filter_radius, tile_ht = tile_ht_full - 2*max_filter_radius;
+  const int tiles_x = need_tiles ? ceilf(width /(float)tile_wd) : 1;
+  const int tiles_y = need_tiles ? ceilf(height/(float)tile_ht) : 1;
+
+  // for all tiles:
+  for(int tx=0;tx<tiles_x;tx++)
+  for(int ty=0;ty<tiles_y;ty++)
+  {
+    // size_t orig0[3] = {0, 0, 0};
+    // size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
+    int orig0_x = 0, orig0_y = 0;
+    int origin_x = tx*tile_wd, origin_y = ty*tile_ht;
+    int wd = origin_x + tile_wd_full > width  ? width  - origin_x : tile_wd_full;
+    int ht = origin_y + tile_ht_full > height ? height - origin_y : tile_ht_full;
+    int vwd = wd, vht = ht; // valid region
+    // size_t region[3] = {wd, ht, 1};
+
+    if(need_tiles)
+    {
+      for(int j=0;j<ht;j++)
+        memcpy(tmp2 + j*4*wd, ((float *)i) + ((origin_y + j)*roi_in->width + origin_x)*4, sizeof(float)*4*wd);
+      buf1 = tmp2;
+      buf2 = tmp;
+    }
+    if(tx > 0) { origin_x += max_filter_radius; orig0_x += max_filter_radius; vwd -= max_filter_radius; }
+    if(ty > 0) { origin_y += max_filter_radius; orig0_y += max_filter_radius; vht -= max_filter_radius; }
+
+    // FIXME: can vwd/vht be < 0?
+    if(vwd <= 0 || vht <= 0) continue;
+
+    for(int scale=0;scale<max_scale;scale++)
+    {
+      eaw_decompose (buf2, buf1, detail + 4*wd*ht*scale, scale, sharp[scale], wd, ht);
+      if(!need_tiles && scale == 0) buf1 = (float *)o;
+      float *buf3 = buf2;
+      buf2 = buf1;
+      buf1 = buf3;
+    }
+
+    for(int scale=max_scale-1;scale>=0;scale--)
+    {
+      eaw_synthesize (buf2, buf1, detail + 4*wd*ht*scale,
+        thrs[scale], boost[scale], wd, ht);
+      float *buf3 = buf2;
+      buf2 = buf1;
+      buf1 = buf3;
+    }
+
+    if(need_tiles)
+    {
+      for(int j=0;j<vht;j++)
+        memcpy(((float *)o) + ((origin_y + j)*roi_out->width + origin_x)*4, buf1 + 4*(orig0_x + (orig0_y + j)*wd), sizeof(float)*4*vwd);
+    }
   }
 
   free(detail);
   free(tmp);
+  free(tmp2);
 }
 
 #ifdef HAVE_OPENCL
