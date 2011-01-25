@@ -73,7 +73,7 @@ dt_imageio_dng_convert_rational(float f, int32_t *num, int32_t *den)
 }
 
 static inline void 
-dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av, float f, float iso)
+dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av, float f, float iso, uint32_t filter)
 {
   const uint32_t channels = 1;
   uint8_t *b, *offs1, *offs2;
@@ -109,7 +109,23 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   b = dt_imageio_dng_make_tag(  284, SHORT, 1, (1<<16), b, &cnt ); /* Planar configuration.  */
 
   b = dt_imageio_dng_make_tag(33421, SHORT, 2, (2<<16) | 2, b, &cnt ); /* CFAREPEATEDPATTERNDIM */
-  const uint32_t cfapattern = (0<<24) | (1<<16) | (1<<8) | 2; // rggb
+
+  uint32_t cfapattern = 0;
+  switch(filter)
+  {
+    case 0x94949494:
+      cfapattern = (0<<24) | (1<<16) | (1<<8) | 2; // rggb
+      break;
+    case 0x49494949:
+      cfapattern = (1<<24) | (2<<16) | (0<<8) | 1; // gbrg
+      break;
+    case 0x61616161:
+      cfapattern = (1<<24) | (0<<16) | (2<<8) | 1; // grbg
+      break;
+    default: // case 0x16161616:
+      cfapattern = (2<<24) | (1<<16) | (1<<8) | 0; // bggr
+      break;
+  }
   b = dt_imageio_dng_make_tag(33422, BYTE, 4, cfapattern, b, &cnt ); /* CFAREPEATEDPATTERNDIM */
 
   // b = dt_imageio_dng_make_tag(  306, ASCII, 20, 428, b, &cnt ); // DateTime
@@ -192,13 +208,13 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
 }
 
 static inline void
-dt_imageio_write_dng(const char *filename, const float *const pixel, const int wd, const int ht, void *exif, const int exif_len)
+dt_imageio_write_dng(const char *filename, const float *const pixel, const int wd, const int ht, void *exif, const int exif_len, const uint32_t filter)
 {
   FILE* f = fopen(filename, "wb");
   int k = 0;
   if(f)
   {
-    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f/100.0f, 1.0f/4.0f, 50.0f, 100.0f);
+    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f/100.0f, 1.0f/4.0f, 50.0f, 100.0f, filter);
     k = fwrite(pixel, sizeof(float), wd*ht, f);
     fclose(f);
     if(exif) dt_exif_write_blob(exif,exif_len,filename);

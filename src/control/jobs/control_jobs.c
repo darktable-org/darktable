@@ -82,6 +82,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   float *pixels = NULL;
   float *weight = NULL;
   int wd = 0, ht = 0, first_imgid = -1;
+  uint32_t filter = 0;
   total ++;
   while(t)
   {
@@ -95,6 +96,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       free(weight);
       goto error;
     }
+    filter = img->filters;
     dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
     if(mip != DT_IMAGE_FULL)
     {
@@ -159,7 +161,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   strcpy(c, "-hdr.dng");
-  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len);
+  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter);
   dt_gui_background_jobs_set_progress(j, 1.0f);
 
   while(*c != '/' && c > pathname) c--;
