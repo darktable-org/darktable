@@ -70,9 +70,8 @@ typedef struct dt_iop_atrous_gui_data_t
 {
   GtkWidget *mix;
   GtkDrawingArea *area;
-  GtkHBox *hbox;
   GtkComboBox *presets;
-  GtkRadioButton *channel_button[atrous_none];
+  GtkNotebook* channel_tabs;
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
   dt_iop_atrous_params_t drag_params;
@@ -783,8 +782,11 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  // clear bg
-  cairo_set_source_rgb (cr, .2, .2, .2);
+  // clear bg, match color of the notebook tabs:
+  GtkStyle *style = gtk_widget_get_style(GTK_WIDGET(c->channel_tabs));
+  cairo_set_source_rgb (cr, style->bg[GTK_STATE_NORMAL].red/65535.0f,
+                            style->bg[GTK_STATE_NORMAL].green/65535.0f,
+                            style->bg[GTK_STATE_NORMAL].blue/65535.0f);
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
@@ -1100,19 +1102,13 @@ area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 }
 
 static void
-button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data) 
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(gtk_toggle_button_get_active(togglebutton))
-  {
-    for(int k=0;k<atrous_none;k++) if(c->channel_button[k] == GTK_RADIO_BUTTON(togglebutton))
-    {
-      c->channel = (atrous_channel_t)k;
-      gtk_widget_queue_draw(self->widget);
-      return;
-    }
-  }
+  if(self->dt->gui->reset) return;
+  c->channel = (atrous_channel_t)page_num;
+  gtk_widget_queue_draw(self->widget);
 }
 
 static void
@@ -1150,8 +1146,33 @@ void gui_init (struct dt_iop_module_t *self)
   c->x_move = -1;
   c->mouse_radius = 1.0/BANDS;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+
+  // tabs
+  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));//DT_GUI_IOP_MODULE_CONTROL_SPACING));
+
+  c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("luma")));
+  gtk_object_set(GTK_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change lightness at each feature size"), NULL);
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("chroma")));
+  gtk_object_set(GTK_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change color saturation at each feature size"), NULL);
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("sharpness")));
+  gtk_object_set(GTK_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("sharpness of edges at each feature size"), NULL);
+
+  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
+
+  gtk_object_set(GTK_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
+
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page",
+                   G_CALLBACK (tab_switch), self);
+
+  // graph
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_drawing_area_size(c->area, 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -1167,23 +1188,8 @@ void gui_init (struct dt_iop_module_t *self)
                     G_CALLBACK (area_leave_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (area_scrolled), self);
-  // init gtk stuff
-  c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
 
-  c->channel_button[atrous_L]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("luma")));
-  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_L]), "tooltip-text", _("change lightness at each feature size"), NULL);
-  c->channel_button[atrous_c]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("chroma")));
-  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_c]), "tooltip-text", _("change color saturation at each feature size"), NULL);
-  c->channel_button[atrous_s]  = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("sharpness")));
-  gtk_object_set(GTK_OBJECT(c->channel_button[atrous_s]), "tooltip-text", _("sharpness of edges at each feature size"), NULL);
-
-  for(int k=atrous_s;k>=0;k--)
-  {
-    g_signal_connect (G_OBJECT (c->channel_button[k]), "toggled",
-                      G_CALLBACK (button_toggled), self);
-    gtk_box_pack_end(GTK_BOX(c->hbox), GTK_WIDGET(c->channel_button[k]), FALSE, FALSE, 5);
-  }
+  // mix slider
   c->mix = dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -2.0f, 2.0f, 0.1f, 1.0f, 3);
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
