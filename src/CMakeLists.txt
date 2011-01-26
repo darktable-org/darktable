@@ -42,7 +42,6 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/*.c" 
   "gui/background_jobs.c"  
   "gui/contrast.c"  
-  "gui/filmview.c"  
   "gui/gtk.c"  
   "gui/histogram.c"  
   "gui/iop_history.c"  
