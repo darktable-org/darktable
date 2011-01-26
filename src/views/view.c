@@ -562,12 +562,12 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     if(zoom != 1) 
     {
       r1 = 0.05*width;
-      r2 = 0.025*width;
+      r2 = 0.022*width;
     }
     else
     {
       r1 = 0.015*fscale;
-      r2 = 0.0083*fscale;
+      r2 = 0.007*fscale;
     }
 	for(int k=0;k<6;k++)
     {
