@@ -1139,11 +1139,13 @@ file manager</property>
                               <widget class="GtkComboBox" id="image_filter">
                                 <property name="visible">True</property>
                                 <property name="items" translatable="yes">all
-rejected
+unstarred
 1 star
 2 star
 3 star
-4 star</property>
+4 star
+5 star
+rejected</property>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>

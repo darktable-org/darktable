@@ -104,7 +104,9 @@ typedef enum dt_lib_filter_t
   DT_LIB_FILTER_STAR_1 = 2,
   DT_LIB_FILTER_STAR_2 = 3,
   DT_LIB_FILTER_STAR_3 = 4,
-  DT_LIB_FILTER_STAR_4 = 5
+  DT_LIB_FILTER_STAR_4 = 5,
+  DT_LIB_FILTER_STAR_5 = 6,
+  DT_LIB_FILTER_REJECT = 7
 }
 dt_lib_filter_t;
 
