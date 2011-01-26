@@ -137,7 +137,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     for(int k=0;k<wd*ht;k++)
     {
       const uint16_t in = ((uint16_t *)img->pixels)[k];
-      const float w = .001f + (in < 65000 ? in/65000.0f : 0.0f);
+      const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : img->exif_exposure * 0.01f);
       pixels[k] += w * in * cal;
       weight[k] += w;
     }

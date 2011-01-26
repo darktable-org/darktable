@@ -77,8 +77,8 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   GList *values=NULL;
   gconstpointer orginal_value=NULL;
   
-  const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed2");
-  const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed2");
+  const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
+  const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
   if (value) {
     do {
       // Add value to list
@@ -86,7 +86,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       // Check if current values is the same as orginal value, then lets store item ptr
       if (strcmp(value,cvalue) == 0) 
         orginal_value = g_list_last(values)->data;
-    } while ((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed2")) != NULL);
+    } while ((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed")) != NULL);
   }
     
   GList *current_value = g_list_find(values,orginal_value);
@@ -115,7 +115,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       
       // set the time property for bracked capture
       if (t->brackets)
-        dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed2", current_value->data);
+        dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
       
       // Capture image
       dt_camctl_camera_capture(darktable.camctl,NULL);
@@ -127,7 +127,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
     if (t->brackets)
     {
       current_value = g_list_find(values,orginal_value);
-      dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed2", current_value->data);
+      dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
     }
     
     // Delay if active
