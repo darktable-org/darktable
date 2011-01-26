@@ -28,7 +28,6 @@
 #include "views/view.h"
 #include "gui/gtk.h"
 #include "gui/contrast.h"
-#include "gui/filmview.h"
 #include "gui/draw.h"
 
 #ifdef GDK_WINDOWING_QUARTZ

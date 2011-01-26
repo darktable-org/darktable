@@ -105,7 +105,7 @@ dt_collection_update (const dt_collection_t *collection)
     }
     
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) >= %d", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
     else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
       g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
 

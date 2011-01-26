@@ -38,7 +38,6 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
-#include "gui/filmview.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -302,8 +301,6 @@ int dt_init(int argc, char *argv[])
       if(id)
       {
         dt_film_open(id);
-        GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
-        dt_gui_filmview_update(gtk_entry_get_text(entry));
         dt_ctl_switch_mode_to(DT_LIBRARY);
       }
       else
@@ -320,8 +317,6 @@ int dt_init(int argc, char *argv[])
       g_free (directory);
       if(id)
       {
-        GtkEntry *entry = GTK_ENTRY(glade_xml_get_widget (darktable.gui->main_window, "entry_film"));
-        dt_gui_filmview_update(gtk_entry_get_text(entry));
         dt_film_open(filmid);
         // make sure buffers are loaded (load full for testing)
         dt_image_t *img = dt_image_cache_get(id, 'r');
