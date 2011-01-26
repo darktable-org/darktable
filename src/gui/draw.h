@@ -27,9 +27,9 @@
 #include <math.h>
 // this is a dirty hack, this way nikon_curve will not even be compiled if we don't need it:
 #ifdef DT_CONTROL_H
-  #include "common/nikon_curve.c"
+  #include "common/curve_tools.c"
 #else
-  #include "common/nikon_curve.h"
+  #include "common/curve_tools.h"
 #endif
 #include <cairo.h>
 
@@ -88,7 +88,6 @@ static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float ma
 
   c->c.m_curveType = TONE_CURVE;
   c->c.m_numAnchors = 0;
-  c->c.m_gamma = 1.0;
   c->c.m_min_x = 0.0;
   c->c.m_max_x = 1.0;
   c->c.m_min_y = 0.0;
