@@ -68,11 +68,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
   double fraction=0;
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
-  /* detect camera ev steps for use with bracketing, 1ev step per bracket 
-    for now it's hardcoded to 0.333 EV per step
-  */
-  int steps = 3;
- 
+  
   /* Fetch all values for shutterspeed2 and initialize current value */
   GList *values=NULL;
   gconstpointer orginal_value=NULL;
@@ -88,7 +84,6 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
         orginal_value = g_list_last(values)->data;
     } while ((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed")) != NULL);
   }
-    
   GList *current_value = g_list_find(values,orginal_value);
   for(int i=0;i<t->count;i++)
   {
@@ -99,15 +94,15 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       {
         if (b == 0)
         {
-          // First bracket, step down time with (steps*brackets)
-          for(int s=0;s<(steps*t->brackets);s++)
-            if (g_list_next(current_value)) 
+          // First bracket, step down time with (steps*brackets), also check so we never set the longest shuttertime which would be bulb mode
+          for(int s=0;s<(t->steps*t->brackets);s++)
+            if (g_list_next(current_value) && g_list_next(g_list_next(current_value))) 
               current_value = g_list_next(current_value);
         } 
         else
         {
-          // Step up with (steps) 
-          for(int s=0;s<steps;s++)
+          // Step up with (steps)
+          for(int s=0;s<t->steps;s++)
             if(g_list_previous(current_value)) 
               current_value = g_list_previous(current_value);
         }
@@ -149,7 +144,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets)
+void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps)
 {
   dt_control_job_init(job, "remote capture of image(s)");
   job->execute = &dt_camera_capture_job_run;
@@ -158,6 +153,7 @@ void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, u
   t->delay=delay;
   t->count=count;
   t->brackets=brackets;
+  t->steps=steps;
 }
 
 void dt_camera_get_previews_job_init(dt_job_t *job,dt_camera_t *camera,dt_camctl_listener_t *listener,uint32_t flags)

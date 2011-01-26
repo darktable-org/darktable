@@ -47,9 +47,9 @@ typedef struct dt_lib_camera_t
 {
   /** Gui part of the module */
   struct {
-      GtkWidget *label1,*label2,*label3,*label4;               // Capture modes, delay, sequenced, brackets
+      GtkWidget *label1,*label2,*label3,*label4,*label5;               // Capture modes, delay, sequenced, brackets, steps
       GtkDarktableToggleButton *tb1,*tb2,*tb3;        // Delayed capture, Sequenced capture, brackets
-      GtkWidget *sb1,*sb2,*sb3;                         // delay, sequence, brackets
+      GtkWidget *sb1,*sb2,*sb3,*sb4;                         // delay, sequence, brackets, steps
       GtkWidget *button1;
     
       GtkBox *pvbox1,*pvbox2;                  // propertylabel,widget    
@@ -222,9 +222,10 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
   uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb1))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb1)):0;
   uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):1;
   uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb3)):0;
+  uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb4)):0;
   dt_job_t j;
   uint32_t filmid=dt_capture_view_get_film_id( dt_view_manager_get_current_view( darktable.view_manager ) );
-  dt_camera_capture_job_init(&j,filmid,delay,count,brackets);
+  dt_camera_capture_job_init(&j,filmid,delay,count,brackets,steps);
   dt_control_add_job(darktable.control, &j);
 }
 
@@ -292,7 +293,10 @@ static void _toggle_capture_mode_clicked(GtkWidget *widget, gpointer user_data) 
   else if( widget == GTK_WIDGET(lib->gui.tb2) ) 
     w = lib->gui.sb2;
   else if( widget == GTK_WIDGET(lib->gui.tb3) ) 
-    w = lib->gui.sb3;
+  {
+	gtk_widget_set_sensitive( lib->gui.sb3, gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget) ) );
+	gtk_widget_set_sensitive( lib->gui.sb4, gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget) ) );
+  }
   
   if(w)
     gtk_widget_set_sensitive( w, gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget) ) );
@@ -400,14 +404,17 @@ gui_init (dt_lib_module_t *self)
   lib->gui.label2=gtk_label_new(_("timer (s)"));
   lib->gui.label3=gtk_label_new(_("count"));               
   lib->gui.label4=gtk_label_new(_("brackets"));               
+  lib->gui.label5=gtk_label_new(_("bkt. steps"));               
   gtk_misc_set_alignment(GTK_MISC(lib->gui.label1 ), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(lib->gui.label2 ), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(lib->gui.label3 ), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(lib->gui.label4 ), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(lib->gui.label5 ), 0.0, 0.5);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label2), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label3), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label4), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label5), FALSE, FALSE, 0);
   
   // capture modes buttons
   lib->gui.tb1=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_timer,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
@@ -423,9 +430,11 @@ gui_init (dt_lib_module_t *self)
   lib->gui.sb1=gtk_spin_button_new_with_range(1,60,1);
   lib->gui.sb2=gtk_spin_button_new_with_range(1,500,1);
   lib->gui.sb3=gtk_spin_button_new_with_range(1,5,1);
+  lib->gui.sb4=gtk_spin_button_new_with_range(1,9,1);
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb1), TRUE, TRUE, 0);
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb2), TRUE, TRUE, 0);
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb3), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb4), TRUE, TRUE, 0);
   
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
@@ -440,6 +449,7 @@ gui_init (dt_lib_module_t *self)
   gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), (char *)NULL);
   gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), (char *)NULL);
   gtk_object_set (GTK_OBJECT( lib->gui.sb3), "tooltip-text", _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."), (char *)NULL);
+  gtk_object_set (GTK_OBJECT( lib->gui.sb4), "tooltip-text", _("the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\nwith other words, 3 steps is 1EV exposure step between brackets."), (char *)NULL);
 
   g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
@@ -449,6 +459,7 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_set_sensitive( GTK_WIDGET(lib->gui.sb1),FALSE);
   gtk_widget_set_sensitive( GTK_WIDGET(lib->gui.sb2),FALSE);
   gtk_widget_set_sensitive( GTK_WIDGET(lib->gui.sb3),FALSE);
+  gtk_widget_set_sensitive( GTK_WIDGET(lib->gui.sb4),FALSE);
   
   // Camera settings
   dt_lib_camera_property_t *prop;

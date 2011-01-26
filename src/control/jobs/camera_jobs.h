@@ -44,11 +44,14 @@ typedef struct dt_camera_capture_t
 	/** bracket capture, 0=no bracket */
 	uint32_t brackets;
 	
+	/** steps for each bracket, only used ig bracket capture*/
+	uint32_t steps;
+	
 	uint32_t film_id;
 }
 dt_camera_capture_t;
 int32_t dt_camera_capture_job_run(dt_job_t *job);
-void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets);
+void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps);
 
 /** camera get previews job. */
 typedef struct dt_camera_get_previews_t
