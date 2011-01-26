@@ -1107,7 +1107,7 @@ tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointe
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
-  c->channel = (atrous_channel_t)page_num;
+  c->channel = c->channel2 = (atrous_channel_t)page_num;
   gtk_widget_queue_draw(self->widget);
 }
 
