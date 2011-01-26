@@ -526,7 +526,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
       {
         int rating = GPOINTER_TO_INT(res->data)+1;
         exifData["Exif.Image.Rating"] = rating;
-        exifData["Exif.Image.RatingPercent"] = int(rating/4.*100.);
+        exifData["Exif.Image.RatingPercent"] = int(rating/5.*100.);
 //         xmpData["Xmp.xmp.Rating"] = rating;
         g_list_free(res);
       }
