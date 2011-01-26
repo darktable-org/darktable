@@ -79,14 +79,15 @@ static inline void dt_draw_endmarker(cairo_t *cr, const int width, const int hei
   cairo_stroke(cr);
 }
 
-static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float max)
+static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float max, 
+        unsigned int type)
 {
   dt_draw_curve_t *c = (dt_draw_curve_t *)malloc(sizeof(dt_draw_curve_t));
   c->csample.m_samplingRes = 0x10000;
   c->csample.m_outputRes = 0x10000;
   c->csample.m_Samples = (uint16_t *)malloc(sizeof(uint16_t)*0x10000);
 
-  c->c.m_curveType = TONE_CURVE;
+  c->c.m_spline_type = type;
   c->c.m_numAnchors = 0;
   c->c.m_min_x = 0.0;
   c->c.m_max_x = 1.0;
@@ -120,43 +121,20 @@ static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min
 static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
 {
   float xa[20], ya[20];
+  float val;
+  float *ypp;
   for(int i=0; i<c->c.m_numAnchors; i++)
   {
     xa[i] = c->c.m_anchors[i].x;
     ya[i] = c->c.m_anchors[i].y;
   }
-  float ypval = 0, yppval = 0;
-  float *ypp = spline_cubic_set(c->c.m_numAnchors, xa, ya, 2, 0.0, 2, 0.0);
-  float val = spline_cubic_val(c->c.m_numAnchors, xa, x, ya, ypp, &ypval, &yppval);
+  ypp = interpolate_set(c->c.m_numAnchors, xa, ya, c->c.m_spline_type);
+  val = interpolate_val(c->c.m_numAnchors, xa, x, ya, ypp, c->c.m_spline_type);
   free(ypp);
   return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
 }
 
-static inline void dt_draw_hermite_curve_calc_values(dt_draw_curve_t *c, const float min, const float max, const int res, float *x, float *y)
-{
-  c->csample.m_samplingRes = res;
-  c->csample.m_outputRes = 0x10000;
-  CurveDataSample_hermite(&c->c, &c->csample);
-  if(x) for(int k=0;k<res;k++) x[k] = k*(1.0f/res);
-  if(y) for(int k=0;k<res;k++)
-    y[k] = min + (max-min)*c->csample.m_Samples[k]*(1.0f/0x10000);
-}
-
-
-static inline float dt_draw_hermite_curve_calc_value(dt_draw_curve_t *c, const float x)
-{
-  float xa[20], ya[20];
-  for(int i=0; i<c->c.m_numAnchors; i++)
-  {
-    xa[i] = c->c.m_anchors[i].x;
-    ya[i] = c->c.m_anchors[i].y;
-  }
-  float *ypp = cubic_hermite_set(c->c.m_numAnchors, xa, ya);
-  float val = cubic_hermite_val(c->c.m_numAnchors, xa, x, ya, ypp);
-  free(ypp);
-  return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
-}
-static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const float x, const float y)
+static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const            float x, const float y)
 {
   c->c.m_anchors[c->c.m_numAnchors].x = x;
   c->c.m_anchors[c->c.m_numAnchors].y = y;
@@ -164,6 +142,5 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const float x, con
   return 0;
 }
 
-
-
 #endif
+

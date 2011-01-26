@@ -20,11 +20,8 @@
 */
 
 //Curve Types
-#define TONE_CURVE      0
-#define RED_CURVE       1
-#define GREEN_CURVE     2
-#define BLUE_CURVE      3
-#define NUM_CURVE_TYPES 4
+#define CUBIC_SPLINE      0
+#define HERMITE_SPLINE     1
 
 //Maximum resoltuion allowed due to space considerations.
 #define MAX_RESOLUTION    65536
@@ -55,7 +52,7 @@ typedef struct
 typedef struct
 {
     //Type for this curve
-    unsigned int m_curveType;
+    unsigned int m_spline_type;
 
     //Box data
     float m_min_x;
@@ -83,75 +80,6 @@ typedef struct
 
 } CurveSample;
 
-/*******************************************************************
- d3_np_fs:
-   Helper function for calculating and storing tridiagnol matrices.
-   Cubic spline calculations involve these types of matrices.
-*********************************************************************/
-float *d3_np_fs ( int n, float a[], float b[] );
-
-/*******************************************************************
- spline_cubic_set:
-   spline_cubic_set gets the second derivatives for the curve to be used in
-   spline construction
-
-    n = number of control points
-    t[] = x array
-    y[] = y array
-    ibcbeg = initial point condition (see function notes).
-    ybcbeg = beginning value depending on above flag
-    ibcend = end point condition (see function notes).
-    ybcend = end value depending on above flag
-
-    returns the y value at the given tval point
-*********************************************************************/
-float *spline_cubic_set ( int n, float t[], float y[], int ibcbeg,
-    float ybcbeg, int ibcend, float ybcend );
-/*******************************************************************
- spline_cubic_val:
-   spline_cubic_val gets a value from spline curve.
-
-    n = number of control points
-    t[] = x array
-    tval = x value you're requesting the data for, can be anywhere on the interval.
-    y[] = y array
-    ypp[] = second derivative array calculated by spline_cubic_set
-    ypval = first derivative value of requested point
-    yppval = second derivative value of requested point
-
-    returns the y value at the given tval point
-*********************************************************************/
-float spline_cubic_val ( int n, float t[], float tval, float y[],
-    float ypp[], float *ypval, float *yppval );
- /*************************************************************
- * cubic_hermite_set:
- *      calculates the tangents for the hermite spline curve.
- *
- *  input:
- *      n = number of control points
- *      x = input x array
- *      y = input y array
- *  output:
- *      pointer to array containing the tangents
- *************************************************************/
-float *cubic_hermite_set ( int n, float x[], float y[]);
-
-/*************************************************************
- * cubic_hermite_val:
- *      calculates the tangents for the hermite spline curve.
- *
- *      n = number of control points
- *      x = input x array
- *      xval = input value where to interpolate the data
- *      y = input y array
- *      tangent = input array of tangents
- *  output:
- *      interpolated value at xval
- *
- *************************************************************/
-float cubic_hermite_val ( int n, float x[], float xval, float y[],
-        float tangent []);
-
 /*********************************************
 CurveDataSample:
     Samples from a spline curve constructed from
@@ -162,13 +90,35 @@ CurveDataSample:
 **********************************************/
 int CurveDataSample(CurveData *curve, CurveSample *sample);
 
-/************************************************************
- * CurveDataSample_hermite:
- *      Samples from a hermite curve constructed from the curve data.
- *      this is an adjusted CurveDataSample to use the hermite functions
+/***************************************************************
+ * interpolate_set:
+ *  
+ * convenience function for calculating the necessary parameters for 
+ * interpolation.
  *
- *      curve = Pointer to the curve struct to hold the data
- *      sample = Pointer to the samples struct to hold the data
- *************************************************************/
-int CurveDataSample_hermite (CurveData *curve, CurveSample *sample);
- 
+ * input:
+ *      n    - length of data arrays
+ *      x    - x axis of the data array
+ *      y    - y axis of the data array
+ *      type - type of interpolation currently either CUBIC or HERMITE
+ * output:
+ *      ypp  - pointer to array of parameters
+ *******************************************************************/
+float *interpolate_set( int n, float x[], float y[], unsigned int type);
+
+/***************************************************************
+ * interpolate_val:
+ *  
+ * convenience function for piecewise interpolation 
+ *
+ * input:
+ *      n    - length of data arrays
+ *      x    - x axis of the data array
+ *      xval - point where to interpolate
+ *      y    - y axis of the data array
+ *      tangents - parameters calculated with interpolate_set
+ *      type - type of interpolation currently either CUBIC or HERMITE
+ * output:
+ *      yval  - interpolated value at xval
+ *******************************************************************/ 
+float interpolate_val( int n, float x[], float xval, float y[], float tangents[], unsigned int type);

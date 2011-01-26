@@ -174,7 +174,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = (void *)d;
   for(int ch=0;ch<3;ch++)
   {
-    d->curve[ch] = dt_draw_curve_new(0.0, 1.0);
+    d->curve[ch] = dt_draw_curve_new(0.0, 1.0, HERMITE_SPLINE);
     for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++)
       (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][k], default_params->equalizer_y[ch][k]);
   }
@@ -294,7 +294,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->band_max = 0;
   c->channel = DT_IOP_EQUALIZER_L;
   int ch = (int)c->channel;
-  c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
+  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, HERMITE_SPLINE);
   for(int k=0;k<DT_IOP_EQUALIZER_BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;

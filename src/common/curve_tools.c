@@ -26,6 +26,18 @@
 #include <math.h>
 #include "curve_tools.h"
 
+//declare some functions and so I can use the function pointer
+float spline_cubic_val( int n, float t[], float tval, float y[],
+    float ypp[]);
+float cubic_hermite_val ( int n, float x[], float xval, float y[],
+    float tangents[]);
+float *spline_cubic_set( int n, float t[], float y[]);
+float *cubic_hermite_set ( int n, float x[], float y[]);
+
+float (*spline_val[])(int, float [], float, float [], float []) = {spline_cubic_val, cubic_hermite_val};
+
+float *(*spline_set[])(int, float [], float []) = {spline_cubic_set, cubic_hermite_set};
+ 
 /**********************************************************************
 
   Purpose:
@@ -226,7 +238,7 @@ float *d3_np_fs ( int n, float a[], float b[] )
 
     Output, float SPLINE_CUBIC_SET[N], the second derivatives of the cubic spline.
 **********************************************************************/
-float *spline_cubic_set ( int n, float t[], float y[], int ibcbeg,
+static float *spline_cubic_set_internal ( int n, float t[], float y[], int ibcbeg,
     float ybcbeg, int ibcend, float ybcend )
 {
   float *a;
@@ -356,7 +368,28 @@ float *spline_cubic_set ( int n, float t[], float y[], int ibcbeg,
   free(b);
   return ypp;
 }
+/************************************************************
+ *
+ * This is a convenience wrapper function around spline_cubic_set
+ * 
+ ************************************************************/
+float *spline_cubic_set( int n, float t[], float y[])
+{
+    return spline_cubic_set_internal(n, t, y, 2, 0.0, 2, 0.0);
+}
 
+
+ /*************************************************************
+ * cubic_hermite_set:
+ *      calculates the tangents for the hermite spline curve.
+ *
+ *  input:
+ *      n = number of control points
+ *      x = input x array
+ *      y = input y array
+ *  output:
+ *      pointer to array containing the tangents
+ *************************************************************/
 float *cubic_hermite_set ( int n, float x[], float y[])
 {
   float *delta;
@@ -401,6 +434,30 @@ float *cubic_hermite_set ( int n, float x[], float y[])
   return m;
 }
 
+float *interpolate_set( int n, float x[], float y[], unsigned int type)
+{
+    return (*spline_set[type])(n, x, y);
+}
+ 
+float interpolate_val( int n, float x[], float xval, float y[], float tangents[], 
+        unsigned int type)
+{
+    return (*spline_val[type])(n, x, xval, y, tangents);
+}
+
+/*************************************************************
+ * cubic_hermite_val:
+ *      calculates the tangents for the hermite spline curve.
+ *
+ *      n = number of control points
+ *      x = input x array
+ *      xval = input value where to interpolate the data
+ *      y = input y array
+ *      tangent = input array of tangents
+ *  output:
+ *      interpolated value at xval
+ *
+ *************************************************************/ 
 float cubic_hermite_val ( int n, float x[], float xval, float y[],
     float tangents[])
 {
@@ -511,15 +568,12 @@ float cubic_hermite_val ( int n, float x[], float xval, float y[],
     Input, float YPP[N], the second derivatives of the spline at
     the knots.
 
-    Output, float *YPVAL, the derivative of the spline at TVAL.
-
-    Output, float *YPPVAL, the second derivative of the spline at TVAL.
 
     Output, float SPLINE_VAL, the value of the spline at TVAL.
 
 **********************************************************************/
-float spline_cubic_val ( int n, float t[], float tval, float y[],
-    float ypp[], float *ypval, float *yppval )
+float spline_cubic_val( int n, float t[], float tval, float y[],
+    float ypp[])
 {
   float dt;
   float h;
@@ -553,15 +607,17 @@ float spline_cubic_val ( int n, float t[], float tval, float y[],
     + dt * ( 0.5E+00 * ypp[ival]
     + dt * ( ( ypp[ival+1] - ypp[ival] ) / ( 6.0E+00 * h ) ) ) );
 
-  *ypval = ( y[ival+1] - y[ival] ) / h
+  // we really never need the derivatives so commented this out
+  /**ypval = ( y[ival+1] - y[ival] ) / h
     - ( ypp[ival+1] / 6.0E+00 + ypp[ival] / 3.0E+00 ) * h
     + dt * ( ypp[ival]
     + dt * ( 0.5E+00 * ( ypp[ival+1] - ypp[ival] ) / h ) );
 
-  *yppval = ypp[ival] + dt * ( ypp[ival+1] - ypp[ival] ) / h;
+  *yppval = ypp[ival] + dt * ( ypp[ival+1] - ypp[ival] ) / h;*/
 
   return yval;
 }
+
 
 /*********************************************
 CurveDataSample:
@@ -577,6 +633,7 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
 
     float x[20];
     float y[20];
+    float *ypp;
 
     //The box points  are what the anchor points are relative
     //to so...
@@ -603,39 +660,21 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
     }
     n = curve->m_numAnchors;
     }
-    //returns an array of second derivatives used to calculate the spline curve.
-    //this is a malloc'd array that needs to be freed when done.
-    //The setings currently calculate the natural spline, which closely matches
-    //camera curve output in raw files.
-    float *ypp = spline_cubic_set(n, x, y, 2, 0.0, 2, 0.0);
-    if (ypp==NULL) return CT_ERROR;
-
-    //first derivative at a point
-    float ypval = 0;
-
-    //second derivate at a point
-    float yppval = 0;
-
-    //Now build a table
     int val;
     float res = 1.0/(float)(sample->m_samplingRes-1);
-
-    //allocate enough space for the samples
-    //DEBUG_PRINT("DEBUG: SAMPLING ALLOCATION: %u bytes\n",
-     //       sample->m_samplingRes*sizeof(int));
-    //DEBUG_PRINT("DEBUG: SAMPLING OUTPUT RANGE: 0 -> %u\n", sample->m_outputRes);
-
-    // sample->m_Samples = (unsigned short int *)realloc(sample->m_Samples,
-        // sample->m_samplingRes * sizeof(short int));
-    // nc_merror(sample->m_Samples, "CurveDataSample");
-
     int firstPointX = x[0] * (sample->m_samplingRes-1);
     int firstPointY = y[0] * (sample->m_outputRes-1);
     int lastPointX = x[n-1] * (sample->m_samplingRes-1);
     int lastPointY = y[n-1] * (sample->m_outputRes-1);
     int maxY = curve->m_max_y * (sample->m_outputRes-1);
     int minY = curve->m_min_y * (sample->m_outputRes-1);
-
+     //returns an array of second derivatives used to calculate the spline curve.
+    //this is a malloc'd array that needs to be freed when done.
+    //The setings currently calculate the natural spline, which closely matches
+    //camera curve output in raw files.
+    ypp = interpolate_set(n, x, y, curve->m_spline_type);
+    if (ypp==NULL) return CT_ERROR;
+    
     for(i = 0; i < (int)sample->m_samplingRes; i++)
     {
     //get the value of the curve at a point
@@ -649,8 +688,8 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
         sample->m_Samples[i] = lastPointY;
     } else {
         //within range, we can sample the curve
-        val = spline_cubic_val( n, x, i*res, y,
-            ypp, &ypval, &yppval ) * (sample->m_outputRes-1) + 0.5;
+        val = interpolate_val( n, x, i*res, y,
+            ypp, curve->m_spline_type) * (sample->m_outputRes-1) + 0.5;
         sample->m_Samples[i] = MIN(MAX(val,minY),maxY);
     }
     }
@@ -659,94 +698,5 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
     return CT_SUCCESS;
 }
 
-/*********************************************
-CurveDataSample_hermite:
-    Samples from a hermite spline curve constructed from
-    data.
-
-    curve   - Pointer to curve struct to hold the data.
-    sample  - Pointer to sample struct to hold the data.
-**********************************************/
-int CurveDataSample_hermite(CurveData *curve, CurveSample *sample)
-{
-    int i = 0, n;
-
-    float x[20];
-    float y[20];
-
-    //The box points are what the anchor points are relative
-    //to so...
-
-    float box_width = curve->m_max_x - curve->m_min_x;
-    float box_height = curve->m_max_y - curve->m_min_y;
-
-    //build arrays for processing
-    if (curve->m_numAnchors == 0)
-    {
-    //just a straight line using box coordinates
-    x[0] = curve->m_min_x;
-    y[0] = curve->m_min_y;
-    x[1] = curve->m_max_x;
-    y[1] = curve->m_max_y;
-    n = 2;
-    }
-    else
-    {
-    for(i = 0; i < curve->m_numAnchors; i++)
-    {
-        x[i] = curve->m_anchors[i].x*box_width + curve->m_min_x;
-        y[i] = curve->m_anchors[i].y*box_height + curve->m_min_y;
-    }
-    n = curve->m_numAnchors;
-    }
-    //returns an array of second derivatives used to calculate the spline curve.
-    //this is a malloc'd array that needs to be freed when done.
-    //The setings currently calculate the natural spline, which closely matches
-    //camera curve output in raw files.
-    float *ypp = cubic_hermite_set(n, x, y);
-    if (ypp==NULL) return CT_ERROR;
-
-    //Now build a table
-    int val;
-    float res = 1.0/(float)(sample->m_samplingRes-1);
-
-    //allocate enough space for the samples
-    //DEBUG_PRINT("DEBUG: SAMPLING ALLOCATION: %u bytes\n",
-     //       sample->m_samplingRes*sizeof(int));
-    //DEBUG_PRINT("DEBUG: SAMPLING OUTPUT RANGE: 0 -> %u\n", sample->m_outputRes);
-
-    // sample->m_Samples = (unsigned short int *)realloc(sample->m_Samples,
-        // sample->m_samplingRes * sizeof(short int));
-    // nc_merror(sample->m_Samples, "CurveDataSample");
-
-    int firstPointX = x[0] * (sample->m_samplingRes-1);
-    int firstPointY = y[0] * (sample->m_outputRes-1);
-    int lastPointX = x[n-1] * (sample->m_samplingRes-1);
-    int lastPointY = y[n-1] * (sample->m_outputRes-1);
-    int maxY = curve->m_max_y * (sample->m_outputRes-1);
-    int minY = curve->m_min_y * (sample->m_outputRes-1);
-
-    for(i = 0; i < (int)sample->m_samplingRes; i++)
-    {
-    //get the value of the curve at a point
-    //take into account that curves may not necessarily begin at x = 0.0
-    //nor end at x = 1.0
-
-    //Before the first point and after the last point, take a strait line
-    if (i < firstPointX) {
-        sample->m_Samples[i] = firstPointY;
-    } else if (i > lastPointX) {
-        sample->m_Samples[i] = lastPointY;
-    } else {
-        //within range, we can sample the curve
-        val = cubic_hermite_val( n, x, i*res, y,
-            ypp) * (sample->m_outputRes-1) + 0.5;
-        sample->m_Samples[i] = MIN(MAX(val,minY),maxY);
-    }
-    }
-
-    free(ypp);
-    return CT_SUCCESS;
-}
 
 #endif 

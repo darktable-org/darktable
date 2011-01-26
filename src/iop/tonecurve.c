@@ -150,7 +150,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
   dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
   piece->data = (void *)d;
-  d->curve = dt_draw_curve_new(0.0, 1.0);
+  d->curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
   for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(d->curve, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
 #ifdef HAVE_GEGL
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
@@ -224,7 +224,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
-  c->minmax_curve = dt_draw_curve_new(0.0, 1.0);
+  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
   for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1; c->selected_offset = c->selected_y = c->selected_min = c->selected_max = 0.0;
