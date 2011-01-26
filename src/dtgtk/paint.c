@@ -343,13 +343,23 @@ void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
   
-  cairo_set_line_width(cr, 0.08);
+  cairo_set_line_width(cr, 0.07);
   cairo_arc (cr, 0.2, 0.8, 0.2, 0.0, 2.0*M_PI);
   cairo_stroke(cr);
   cairo_arc (cr, 0.7, 0.7, 0.3, 0.0, 2.0*M_PI);
   cairo_stroke(cr);
   cairo_arc (cr, 0.4, 0.2, 0.25, 0.0, 2.0*M_PI);
   cairo_stroke(cr);
+  
+  /* if its a popup menu */
+  if(flags)
+  {
+    cairo_move_to(cr, 0.9, -0.2);
+    cairo_line_to(cr, 0.7, 0.3);
+    cairo_line_to(cr, 1.1, 0.3);
+    cairo_fill(cr);
+  }
+  
 }
 
 void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
