@@ -48,8 +48,8 @@ CurveData:
 ***********************************************************/
 typedef struct
 {
-    double x;
-    double y;
+    float x;
+    float y;
 } CurveAnchorPoint;
 
 typedef struct
@@ -58,15 +58,15 @@ typedef struct
     unsigned int m_curveType;
 
     //Box data
-    double m_min_x;
-    double m_max_x;
-    double m_min_y;
-    double m_max_y;
+    float m_min_x;
+    float m_max_x;
+    float m_min_y;
+    float m_max_y;
 
     //Number of anchor points
     unsigned char m_numAnchors;
 
-    //contains a list of anchors, 2 doubles per each point, x-y format
+    //contains a list of anchors, 2 floats per each point, x-y format
     //max is 20 points
     CurveAnchorPoint m_anchors[MAX_ANCHORS];
 
@@ -88,7 +88,7 @@ typedef struct
    Helper function for calculating and storing tridiagnol matrices.
    Cubic spline calculations involve these types of matrices.
 *********************************************************************/
-double *d3_np_fs ( int n, double a[], double b[] );
+float *d3_np_fs ( int n, float a[], float b[] );
 
 /*******************************************************************
  spline_cubic_set:
@@ -105,8 +105,8 @@ double *d3_np_fs ( int n, double a[], double b[] );
 
     returns the y value at the given tval point
 *********************************************************************/
-double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
-    double ybcbeg, int ibcend, double ybcend );
+float *spline_cubic_set ( int n, float t[], float y[], int ibcbeg,
+    float ybcbeg, int ibcend, float ybcend );
 /*******************************************************************
  spline_cubic_val:
    spline_cubic_val gets a value from spline curve.
@@ -121,8 +121,8 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
 
     returns the y value at the given tval point
 *********************************************************************/
-double spline_cubic_val ( int n, double t[], double tval, double y[],
-    double ypp[], double *ypval, double *yppval );
+float spline_cubic_val ( int n, float t[], float tval, float y[],
+    float ypp[], float *ypval, float *yppval );
  /*************************************************************
  * cubic_hermite_set:
  *      calculates the tangents for the hermite spline curve.
@@ -134,7 +134,7 @@ double spline_cubic_val ( int n, double t[], double tval, double y[],
  *  output:
  *      pointer to array containing the tangents
  *************************************************************/
-double *cubic_hermite_set ( int n, double x[], double y[]);
+float *cubic_hermite_set ( int n, float x[], float y[]);
 
 /*************************************************************
  * cubic_hermite_val:
@@ -149,8 +149,8 @@ double *cubic_hermite_set ( int n, double x[], double y[]);
  *      interpolated value at xval
  *
  *************************************************************/
-double cubic_hermite_val ( int n, double x[], double xval, double y[],
-        double tangent []);
+float cubic_hermite_val ( int n, float x[], float xval, float y[],
+        float tangent []);
 
 /*********************************************
 CurveDataSample:

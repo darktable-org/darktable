@@ -64,23 +64,23 @@
 
     Input, int N, the order of the linear system.
 
-    Input/output, double A[3*N].
+    Input/output, float A[3*N].
     On input, the nonzero diagonals of the linear system.
     On output, the data in these vectors has been overwritten
     by factorization information.
 
-    Input, double B[N], the right hand side.
+    Input, float B[N], the right hand side.
 
-    Output, double D3_NP_FS[N], the solution of the linear system.
+    Output, float D3_NP_FS[N], the solution of the linear system.
     This is NULL if there was an error because one of the diagonal
     entries was zero.
 **********************************************************************/
-double *d3_np_fs ( int n, double a[], double b[] )
+float *d3_np_fs ( int n, float a[], float b[] )
 
 {
   int i;
-  double *x;
-  double xmult;
+  float *x;
+  float xmult;
 //
 //  Check.
 //
@@ -91,7 +91,7 @@ double *d3_np_fs ( int n, double a[], double b[] )
       return NULL;
     }
   }
-  x = (double *)calloc(n,sizeof(double));
+  x = (float *)calloc(n,sizeof(float));
   //nc_merror(x, "d3_np_fs");
 
   for ( i = 0; i < n; i++ )
@@ -203,17 +203,17 @@ double *d3_np_fs ( int n, double a[], double b[] )
     In the special case where N = 2 and IBCBEG = IBCEND = 0, the
     spline will actually be linear.
 
-    Input, double T[N], the knot values, that is, the points were data is
+    Input, float T[N], the knot values, that is, the points were data is
     specified.  The knot values should be distinct, and increasing.
 
-    Input, double Y[N], the data values to be interpolated.
+    Input, float Y[N], the data values to be interpolated.
 
     Input, int IBCBEG, left boundary condition flag:
       0: the cubic spline should be a quadratic over the first interval;
       1: the first derivative at the left endpoint should be YBCBEG;
       2: the second derivative at the left endpoint should be YBCBEG.
 
-    Input, double YBCBEG, the values to be used in the boundary
+    Input, float YBCBEG, the values to be used in the boundary
     conditions if IBCBEG is equal to 1 or 2.
 
     Input, int IBCEND, right boundary condition flag:
@@ -221,18 +221,18 @@ double *d3_np_fs ( int n, double a[], double b[] )
       1: the first derivative at the right endpoint should be YBCEND;
       2: the second derivative at the right endpoint should be YBCEND.
 
-    Input, double YBCEND, the values to be used in the boundary
+    Input, float YBCEND, the values to be used in the boundary
     conditions if IBCEND is equal to 1 or 2.
 
-    Output, double SPLINE_CUBIC_SET[N], the second derivatives of the cubic spline.
+    Output, float SPLINE_CUBIC_SET[N], the second derivatives of the cubic spline.
 **********************************************************************/
-double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
-    double ybcbeg, int ibcend, double ybcend )
+float *spline_cubic_set ( int n, float t[], float y[], int ibcbeg,
+    float ybcbeg, int ibcend, float ybcend )
 {
-  double *a;
-  double *b;
+  float *a;
+  float *b;
   int i;
-  double *ypp;
+  float *ypp;
 //
 //  Check.
 //
@@ -253,9 +253,9 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
       return NULL;
     }
   }
-  a = (double *)calloc(3*n,sizeof(double));
+  a = (float *)calloc(3*n,sizeof(float));
   //nc_merror(a, "spline_cubic_set");
-  b = (double *)calloc(n,sizeof(double));
+  b = (float *)calloc(n,sizeof(float));
   //nc_merror(b, "spline_cubic_set");
 //
 //  Set up the first equation.
@@ -331,7 +331,7 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
 //
   if ( n == 2 && ibcbeg == 0 && ibcend == 0 )
   {
-    ypp = (double *)calloc(2,sizeof(double));
+    ypp = (float *)calloc(2,sizeof(float));
     //nc_merror(ypp, "spline_cubic_set");
 
     ypp[0] = 0.0E+00;
@@ -357,10 +357,10 @@ double *spline_cubic_set ( int n, double t[], double y[], int ibcbeg,
   return ypp;
 }
 
-double *cubic_hermite_set ( int n, double x[], double y[])
+float *cubic_hermite_set ( int n, float x[], float y[])
 {
-  double *delta;
-  double *m;
+  float *delta;
+  float *m;
   int i;
   if ( n <= 1 )
   {
@@ -379,9 +379,9 @@ double *cubic_hermite_set ( int n, double x[], double y[])
       return NULL;
     }
   }
-  delta = (double *)calloc(n,sizeof(double));
+  delta = (float *)calloc(n,sizeof(float));
   //nc_merror(delta, "spline_cubic_set");
-  m = (double *)calloc(n,sizeof(double));
+  m = (float *)calloc(n,sizeof(float));
   //nc_merror(m, "spline_cubic_set");
   //calculate the slopes
   for (i = 0;i<n-1;i++)
@@ -401,16 +401,16 @@ double *cubic_hermite_set ( int n, double x[], double y[])
   return m;
 }
 
-double cubic_hermite_val ( int n, double x[], double xval, double y[],
-    double tangents[])
+float cubic_hermite_val ( int n, float x[], float xval, float y[],
+    float tangents[])
 {
-  double dx;
-  double h;
+  float dx;
+  float h;
   int i;
   int ival;
-  double yval;
-  double h00,h01,h10,h11;
-  double m0, m1;
+  float yval;
+  float h00,h01,h10,h11;
+  float m0, m1;
 //
 //  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
 //  Values below T[0] or above T[N-1] use extrapolation.
@@ -498,34 +498,34 @@ double cubic_hermite_val ( int n, double x[], double xval, double y[],
 
     Input, int n, the number of knots.
 
-    Input, double Y[N], the data values at the knots.
+    Input, float Y[N], the data values at the knots.
 
-    Input, double T[N], the knot values.
+    Input, float T[N], the knot values.
 
-    Input, double TVAL, a point, typically between T[0] and T[N-1], at
+    Input, float TVAL, a point, typically between T[0] and T[N-1], at
     which the spline is to be evalulated.  If TVAL lies outside
     this range, extrapolation is used.
 
-    Input, double Y[N], the data values at the knots.
+    Input, float Y[N], the data values at the knots.
 
-    Input, double YPP[N], the second derivatives of the spline at
+    Input, float YPP[N], the second derivatives of the spline at
     the knots.
 
-    Output, double *YPVAL, the derivative of the spline at TVAL.
+    Output, float *YPVAL, the derivative of the spline at TVAL.
 
-    Output, double *YPPVAL, the second derivative of the spline at TVAL.
+    Output, float *YPPVAL, the second derivative of the spline at TVAL.
 
-    Output, double SPLINE_VAL, the value of the spline at TVAL.
+    Output, float SPLINE_VAL, the value of the spline at TVAL.
 
 **********************************************************************/
-double spline_cubic_val ( int n, double t[], double tval, double y[],
-    double ypp[], double *ypval, double *yppval )
+float spline_cubic_val ( int n, float t[], float tval, float y[],
+    float ypp[], float *ypval, float *yppval )
 {
-  double dt;
-  double h;
+  float dt;
+  float h;
   int i;
   int ival;
-  double yval;
+  float yval;
 //
 //  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
 //  Values below T[0] or above T[N-1] use extrapolation.
@@ -575,14 +575,14 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
 {
     int i = 0, n;
 
-    double x[20];
-    double y[20];
+    float x[20];
+    float y[20];
 
     //The box points  are what the anchor points are relative
     //to so...
 
-    double box_width = curve->m_max_x - curve->m_min_x;
-    double box_height = curve->m_max_y - curve->m_min_y;
+    float box_width = curve->m_max_x - curve->m_min_x;
+    float box_height = curve->m_max_y - curve->m_min_y;
 
     //build arrays for processing
     if (curve->m_numAnchors == 0)
@@ -607,18 +607,18 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
     //this is a malloc'd array that needs to be freed when done.
     //The setings currently calculate the natural spline, which closely matches
     //camera curve output in raw files.
-    double *ypp = spline_cubic_set(n, x, y, 2, 0.0, 2, 0.0);
+    float *ypp = spline_cubic_set(n, x, y, 2, 0.0, 2, 0.0);
     if (ypp==NULL) return CT_ERROR;
 
     //first derivative at a point
-    double ypval = 0;
+    float ypval = 0;
 
     //second derivate at a point
-    double yppval = 0;
+    float yppval = 0;
 
     //Now build a table
     int val;
-    double res = 1.0/(double)(sample->m_samplingRes-1);
+    float res = 1.0/(float)(sample->m_samplingRes-1);
 
     //allocate enough space for the samples
     //DEBUG_PRINT("DEBUG: SAMPLING ALLOCATION: %u bytes\n",
@@ -671,14 +671,14 @@ int CurveDataSample_hermite(CurveData *curve, CurveSample *sample)
 {
     int i = 0, n;
 
-    double x[20];
-    double y[20];
+    float x[20];
+    float y[20];
 
     //The box points are what the anchor points are relative
     //to so...
 
-    double box_width = curve->m_max_x - curve->m_min_x;
-    double box_height = curve->m_max_y - curve->m_min_y;
+    float box_width = curve->m_max_x - curve->m_min_x;
+    float box_height = curve->m_max_y - curve->m_min_y;
 
     //build arrays for processing
     if (curve->m_numAnchors == 0)
@@ -703,12 +703,12 @@ int CurveDataSample_hermite(CurveData *curve, CurveSample *sample)
     //this is a malloc'd array that needs to be freed when done.
     //The setings currently calculate the natural spline, which closely matches
     //camera curve output in raw files.
-    double *ypp = cubic_hermite_set(n, x, y);
+    float *ypp = cubic_hermite_set(n, x, y);
     if (ypp==NULL) return CT_ERROR;
 
     //Now build a table
     int val;
-    double res = 1.0/(double)(sample->m_samplingRes-1);
+    float res = 1.0/(float)(sample->m_samplingRes-1);
 
     //allocate enough space for the samples
     //DEBUG_PRINT("DEBUG: SAMPLING ALLOCATION: %u bytes\n",
