@@ -84,7 +84,7 @@ void dt_opencl_init(dt_opencl_t *cl)
     }
     if(image_height < 8192 || image_width < 8192)
     {
-      fprintf(stderr, "[opencl_init] WARNING: your card only supports image sizes of %d x %d\n", image_width, image_height);
+      fprintf(stderr, "[opencl_init] WARNING: your card only supports image sizes of %zd x %zd\n", image_width, image_height);
       fprintf(stderr, "[opencl_init] WARNING: expect random crashes, especially with images larger than that.\n");
     }
 
