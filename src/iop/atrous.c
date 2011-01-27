@@ -18,6 +18,7 @@
 #include "develop/imageop.h"
 #include "common/opencl.h"
 #include "common/debug.h"
+#include "control/conf.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "gui/gtk.h"
@@ -1136,8 +1137,9 @@ void gui_init (struct dt_iop_module_t *self)
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
 
   c->band_max = 0;
-  c->channel = atrous_L;
-  c->channel2 = atrous_L;
+//   c->channel = atrous_L;
+//   c->channel2 = atrous_L;
+  c->channel = c->channel2 = dt_conf_get_int("plugins/darkroom/atrous/gui_channel");
   int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, HERMITE_SPLINE);
   for(int k=0;k<BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
@@ -1205,6 +1207,7 @@ void gui_init (struct dt_iop_module_t *self)
 void gui_cleanup  (struct dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
   dt_draw_curve_destroy(c->minmax_curve);
   free(self->gui_data);
   self->gui_data = NULL;

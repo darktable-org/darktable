@@ -28,6 +28,7 @@
 #include "gui/histogram.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "control/conf.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -759,7 +760,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
 
-  c->channel = DT_IOP_COLORZONES_C;
+//   c->channel = DT_IOP_COLORZONES_C;
+  c->channel = dt_conf_get_int("plugins/darkroom/colorzones/gui_channel");
   int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, HERMITE_SPLINE);
   (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][DT_IOP_COLORZONES_BANDS-2]-1.0, p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS-2]);
@@ -839,6 +841,7 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  dt_conf_set_int("plugins/darkroom/colorzones/gui_channel", c->channel);
   dt_colorspaces_cleanup_profile(c->hsRGB);
   dt_colorspaces_cleanup_profile(c->hLab);
   cmsDeleteTransform(c->xform);
