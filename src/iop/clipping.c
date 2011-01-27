@@ -51,7 +51,7 @@ dt_iop_clipping_flags_t;
 
 typedef struct dt_iop_clipping_params_t
 {
-  float angle, cx, cy, cw, ch, k_h,k_v;
+  float angle, cx, cy, cw, ch, k_h, k_v;
 }
 dt_iop_clipping_params_t;
 
@@ -484,7 +484,7 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
 
 void init_presets (dt_iop_module_t *self)
 {
-  dt_iop_clipping_params_t p = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, 0.0};
+  dt_iop_clipping_params_t p = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0};
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   p.angle = 90.0f;
   dt_gui_presets_add_generic(_("rotate by  90"), self->op, &p, sizeof(p), 1);
@@ -578,7 +578,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
   module->priority = 875;
-  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, 0.0};
+  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f};
   memcpy(module->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
 }
