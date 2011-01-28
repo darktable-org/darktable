@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-28 15:07+0100\n"
+"POT-Creation-Date: 2011-01-28 18:56+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -1257,6 +1257,19 @@ msgid "clear all labels of selected images"
 msgstr ""
 "alle Markierungen der\n"
 "ausgewählten Bilder löschen"
+
+#: ../src/imageio/format/copy.c:138 ../src/libs/copy_history.c:193
+msgid "copy"
+msgstr "kopieren"
+
+#: ../src/imageio/format/copy.c:145
+msgid ""
+"do a 1:1 copy of the selected files.\n"
+"the global options below do not apply!"
+msgstr ""
+"Mache eine 1:1-Kopie der ausgewählten Dateien.\n"
+"Die folgenden globalen Optionen werden\n"
+"nicht benutzt!"
 
 #: ../src/imageio/format/exr.cc:149
 msgid "openexr"
@@ -3228,10 +3241,6 @@ msgstr "xmp-Begleitdateien"
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Fehler beim Laden von Datei '%s'"
-
-#: ../src/libs/copy_history.c:193
-msgid "copy"
-msgstr "kopieren"
 
 #: ../src/libs/copy_history.c:195
 msgid ""
