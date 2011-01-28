@@ -319,6 +319,26 @@ static void
 entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
   entry_key_press (NULL, NULL, d);
+  dt_lib_collect_t *c = get_collect(d);
+  GtkTreeView *view = c->view;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+  gint rows = gtk_tree_model_iter_n_children(model, NULL);
+  if(rows == 1)
+  {
+    GtkTreeIter iter;
+    if(gtk_tree_model_get_iter_first(model, &iter))
+    {
+      gchar *text;
+      const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
+      if(item == 0) // get full path for film rolls:
+        gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TOOLTIP, &text, -1);
+      else
+        gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
+      gtk_entry_set_text(GTK_ENTRY(d->text), text);
+      g_free(text);
+      entry_key_press (NULL, NULL, d);
+    }
+  }
   dt_collection_update_query(darktable.collection);
 }
 

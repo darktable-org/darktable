@@ -438,10 +438,15 @@ dt_collection_update_query(const dt_collection_t *collection)
   /* update query and at last the visual */
   dt_collection_update (collection);
   
-  // dt_control_queue_draw_all();
-
-  // TODO: update list of recent queries
-  // TODO: remove from selected images where not in this query.
+  // remove from selected images where not in this query.
+  sqlite3_stmt *stmt = NULL;
+  const gchar *cquery = dt_collection_get_query(collection);
+  snprintf(complete_query, 4096, "delete from selected_images where imgid not in (%s)", cquery);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, complete_query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
   // notify our listeners:
   GList *i = darktable.collection_listeners;

@@ -144,10 +144,6 @@ int dt_init(int argc, char *argv[])
   darktable.thumbnail_size /= 16;
   darktable.thumbnail_size *= 16;
 
-  // initialize collection query
-  darktable.collection_listeners = NULL;
-  darktable.collection = dt_collection_new(NULL);  
-
   // Initialize the password storage engine
   darktable.pwstorage=dt_pwstorage_new();  
 
@@ -232,6 +228,10 @@ int dt_init(int argc, char *argv[])
   
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
+
+  // initialize collection query
+  darktable.collection_listeners = NULL;
+  darktable.collection = dt_collection_new(NULL);  
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, argc, argv);
