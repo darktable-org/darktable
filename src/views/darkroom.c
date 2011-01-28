@@ -264,14 +264,14 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
   if(gtk_toggle_button_get_active(togglebutton))
   {
     dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show_all(GTK_WIDGET(module->topwidget));
+    gtk_widget_show(GTK_WIDGET(module->topwidget));
     dt_conf_set_bool (option, TRUE);
     gtk_expander_set_expanded(module->expander, TRUE);
     snprintf(option, 512, _("hide %s"), module->name());
   }
   else
   {
-    gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
+    gtk_widget_hide(GTK_WIDGET(module->topwidget));
     dt_conf_set_bool (option, FALSE);
     gtk_expander_set_expanded(module->expander, FALSE);
     snprintf(option, 512, _("show %s"), module->name());
@@ -387,7 +387,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
       // re-init and re-gui_init
       module->gui_cleanup(module);
-      gtk_container_remove(GTK_CONTAINER(parent), module->widget);
+      gtk_widget_destroy(GTK_WIDGET(module->widget));
       dt_iop_reload_defaults(module);
       module->gui_init(module);
       // copy over already inited stuff:
