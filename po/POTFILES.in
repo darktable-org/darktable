@@ -18,7 +18,6 @@ src/dtgtk/resetlabel.c
 src/gui/background_jobs.c
 src/gui/camera_import_dialog.c
 src/gui/devices.c
-src/gui/filmview.c
 src/gui/gtk.c
 src/gui/histogram.c
 src/gui/iop_history.c
