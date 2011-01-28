@@ -21,9 +21,11 @@
 #include "common/darktable.h"
 #include "common/opencl.h"
 
-void dt_opencl_init(dt_opencl_t *cl)
+void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
   cl->inited = 0;
+  for(int k=0;k<argc;k++) if(!strcmp(argv[k], "--disable-opencl")) return;
+
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl_int err;
   cl_platform_id all_platforms[5];

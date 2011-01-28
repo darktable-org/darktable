@@ -13,6 +13,7 @@ Options:
     --version
     -d {cache,control,dev,fswatch,perf,all}
     --library override.db
+    --disable-opencl
 
 =head1 DESCRIPTION
 
@@ -64,6 +65,11 @@ Enable all debugging output.
 =item B<--library override.db>
 
 Uses override.db instead of the gconf/darktablerc specified library file. Should be an absolute path.
+
+=item B<--disable-opencl>
+
+For opencl builds only. Disables GPU computing at runtime. Useful to check
+for bugs in our opencl code and to avoid buggy drivers on certain machines.
 
 =back
 

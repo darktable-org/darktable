@@ -64,7 +64,7 @@ typedef struct dt_opencl_t
 dt_opencl_t;
 
 /** inits the opencl subsystem. */
-void dt_opencl_init(dt_opencl_t *cl);
+void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[]);
 
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
@@ -109,7 +109,7 @@ void* dt_opencl_alloc_device(const int width, const int height, const int devid,
 #else
 #include <stdlib.h>
 typedef struct dt_opencl_t {int inited;} dt_opencl_t;
-static inline void dt_opencl_init(dt_opencl_t *cl) { cl->inited = 0; }
+static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[]) { cl->inited = 0; }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}
 static inline int dt_opencl_lock_device(dt_opencl_t *cl, const int dev) {return -1;}
 static inline void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev) {}

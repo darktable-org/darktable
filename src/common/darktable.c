@@ -54,7 +54,11 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,perf,pwstorage,opencl}] [IMG_1234.{RAW,..}|ImageFolder/]\n", argv0);
+  printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,perf,pwstorage,opencl}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
+#ifdef HAVE_OPENCL
+  printf(" [--disable-opencl]");
+#endif
+  printf("\n");
   return 1;
 }
 
@@ -230,7 +234,7 @@ int dt_init(int argc, char *argv[])
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
-  dt_opencl_init(darktable.opencl);
+  dt_opencl_init(darktable.opencl, argc, argv);
 
   darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
