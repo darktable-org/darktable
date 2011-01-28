@@ -812,28 +812,30 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   if(which == 1) dt_control_change_cursor(GDK_HAND1);
   if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
   // image button pressed?
-  switch(lib->image_over)
-  {
-    case DT_VIEW_DESERT: case DT_VIEW_REJECT: break;
-    case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case DT_VIEW_STAR_5:
-    { 
-      int32_t mouse_over_id;
-      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-      dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-      if(!image) return 0;
-      image->dirty = 1;
-      if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
-      else
-      {
-        image->flags &= ~0x7;
-        image->flags |= lib->image_over;
+  if(which == 1) {
+    switch(lib->image_over)
+    {
+      case DT_VIEW_DESERT: case DT_VIEW_REJECT: break;
+      case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case DT_VIEW_STAR_5:
+      { 
+        int32_t mouse_over_id;
+        DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+        dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+        if(!image) return 0;
+        image->dirty = 1;
+        if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+        else
+        {
+          image->flags &= ~0x7;
+          image->flags |= lib->image_over;
+        }
+        dt_image_cache_flush(image);
+        dt_image_cache_release(image, 'r');
+        break;
       }
-      dt_image_cache_flush(image);
-      dt_image_cache_release(image, 'r');
-      break;
+      default:
+        return 0;
     }
-    default:
-      return 0;
   }
   return 1;
 }
