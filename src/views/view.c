@@ -646,8 +646,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 
   // TODO: make mouse sensitive, just as stars!
   { // color labels:
-    const float x = zoom == 1 ? (0.04+5*0.04)*fscale : .7*width;
-    const float y = zoom == 1 ? 0.12*fscale: 0.1*height;
+    const float x = zoom == 1 ? (0.07)*fscale : .7*width;
+    const float y = zoom == 1 ? 0.17*fscale: 0.1*height;
     const float r = zoom == 1 ? 0.01*fscale : 0.03*width;
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
