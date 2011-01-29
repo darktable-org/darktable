@@ -540,35 +540,35 @@ popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_r
   GtkWidget *mi;
   const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
 
-  mi = gtk_menu_item_new_with_label("clear this rule");
+  mi = gtk_menu_item_new_with_label(_("clear this rule"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_clear), d);
   
   if(d->num == active - 1)
   {
-    mi = gtk_menu_item_new_with_label("and new rule");
+    mi = gtk_menu_item_new_with_label(_("and new rule"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_and), d);
 
-    mi = gtk_menu_item_new_with_label("or new rule");
+    mi = gtk_menu_item_new_with_label(_("or new rule"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_or), d);
 
-    mi = gtk_menu_item_new_with_label("and not new rule");
+    mi = gtk_menu_item_new_with_label(_("and not new rule"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_and_not), d);
   }
   else if(d->num < active - 1)
   {
-    mi = gtk_menu_item_new_with_label("change to and");
+    mi = gtk_menu_item_new_with_label(_("change to and"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_and), d);
 
-    mi = gtk_menu_item_new_with_label("change to or");
+    mi = gtk_menu_item_new_with_label(_("change to or"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_or), d);
 
-    mi = gtk_menu_item_new_with_label("change to and not");
+    mi = gtk_menu_item_new_with_label(_("change to and not"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_and_not), d);
   }
