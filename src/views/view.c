@@ -611,9 +611,10 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     }
 	else if ((img->flags & 0x7) == 6)
     {
+	  cairo_set_source_rgb(cr, 1., 0., 0.);
 	  cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
       cairo_stroke(cr);  
-      cairo_set_source_rgb(cr, 1., 0., 0.);
+      cairo_set_line_width(cr, 2.5);
 	}
 	
 	//reject cross: 
@@ -624,6 +625,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     cairo_close_path(cr);
     cairo_stroke(cr);  
     cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol); 
+    cairo_set_line_width(cr, 1.5);
     
     //Image altered?
     if(altered) 
