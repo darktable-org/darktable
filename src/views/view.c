@@ -402,6 +402,7 @@ dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
   cairo_close_path(cr);
 }
 
+
 void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
 {
   cairo_save (cr);
@@ -569,59 +570,17 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       r1 = 0.015*fscale;
       r2 = 0.007*fscale;
     }
-	for(int k=0;k<6;k++)
+    
+    float x, y;
+    if(zoom != 1) y = 0.90*height;
+    else y = .12*fscale;
+    
+	for(int k=0;k<5;k++)
     {
-      float x, y;
-      if(zoom != 1) 
-      {
-        x = (0.15+k*0.12)*width;
-        y = 0.88*height;
-      }
-      else
-      {
-        x = (.04+k*0.04)*fscale;
-        y = .12*fscale;
-      }
-      if(k == 5)
-      {
-        if(altered) 
-        {
-          // Align to right
-          float s = (r1+r2)*.5;
-          if(zoom != 1) x = width*0.85;
-          else x = (.04+(k+1)*0.04)*fscale;
-          dt_view_draw_altered(cr, x, y, s);
-//           g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-          if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
-          {
-            if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
-            {
-              GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-              char* tooltip = dt_history_get_items_as_string(img->id);
-              if(tooltip != NULL)
-              {
-                gtk_object_set(GTK_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
-                g_free(tooltip);
-              }
-            }
-            darktable.gui->center_tooltip = 1;
-          }
-        }
-      }
-      else if ((img->flags & 0x7) == 6)
-      {
-        if(k == 0)
-        {
-          cairo_move_to(cr, x-r2, y-r2);
-          cairo_line_to(cr, x+r2, y+r2);
-          cairo_move_to(cr, x+r2, y-r2);
-          cairo_line_to(cr, x-r2, y+r2);
-          cairo_close_path(cr);
-          cairo_stroke(cr);  
-          cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-        }
-      }
-      else
+      if(zoom != 1) x = (0.41+k*0.12)*width;
+      else x = (.08+k*0.04)*fscale;
+      
+      if((img->flags & 0x7) != 6) //if rejected: draw no stars
       {
         dt_view_star(cr, x, y, r1, r2);
         if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
@@ -639,6 +598,61 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
         else cairo_stroke(cr);
       }
     }
+    
+    //Image rejected?
+    if(zoom !=1) x = 0.11*width;
+	else x = .04*fscale;
+	
+	if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+    {
+      *image_over = DT_VIEW_REJECT; //mouse sensitive
+      cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
+      cairo_stroke(cr);
+    }
+	else if ((img->flags & 0x7) == 6)
+    {
+	  cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
+      cairo_stroke(cr);  
+      cairo_set_source_rgb(cr, 1., 0., 0.);
+	}
+	
+	//reject cross: 
+	cairo_move_to(cr, x-r2, y-r2);
+    cairo_line_to(cr, x+r2, y+r2);
+    cairo_move_to(cr, x+r2, y-r2);
+    cairo_line_to(cr, x-r2, y+r2);
+    cairo_close_path(cr);
+    cairo_stroke(cr);  
+    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol); 
+    
+    //Image altered?
+    if(altered) 
+        {
+          // Align to right
+          float s = (r1+r2)*.5;
+          if(zoom != 1) 
+          {
+			  x = width*0.9;
+			  y = height*0.1;
+		  }
+          else x = (.04+7*0.04)*fscale;
+          dt_view_draw_altered(cr, x, y, s);
+		  //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
+          if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
+          {
+            if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
+            {
+              GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+              char* tooltip = dt_history_get_items_as_string(img->id);
+              if(tooltip != NULL)
+              {
+                gtk_object_set(GTK_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
+                g_free(tooltip);
+              }
+            }
+            darktable.gui->center_tooltip = 1;
+          }
+        }
   }
 
   // kill all paths, in case img was not loaded yet, or is blocked:
@@ -646,7 +660,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 
   // TODO: make mouse sensitive, just as stars!
   { // color labels:
-    const float x = zoom == 1 ? (0.07)*fscale : .7*width;
+    const float x = zoom == 1 ? (0.07)*fscale : .21*width;
     const float y = zoom == 1 ? 0.17*fscale: 0.1*height;
     const float r = zoom == 1 ? 0.01*fscale : 0.03*width;
     sqlite3_stmt *stmt;
