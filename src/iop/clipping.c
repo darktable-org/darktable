@@ -544,13 +544,22 @@ angle_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
 }
 
 static void
-keystone_callback (GtkWidget *widget, dt_iop_module_t *self)
+keystone_callback_h (GtkWidget *widget, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   // we need k to be abs(k) < 2, so the second bit will always be zero (except we set it:).
   p->k_h = fmaxf(-1.9, fminf(1.9, dtgtk_slider_get_value(g->keystone_h)));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+static void
+keystone_callback_v (GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  // we need k to be abs(k) < 2, so the second bit will always be zero (except we set it:).
   p->k_v = fmaxf(-1.9, fminf(1.9, dtgtk_slider_get_value(g->keystone_v)));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -729,7 +738,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->keystone_h = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
   gtk_object_set (GTK_OBJECT(g->keystone_h), "tooltip-text", _("adjust perspective for horizontal keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_h), "value-changed",
-                    G_CALLBACK (keystone_callback), self);
+                    G_CALLBACK (keystone_callback_h), self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_h), 2, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
@@ -739,7 +748,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->keystone_v = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
   gtk_object_set (GTK_OBJECT(g->keystone_v), "tooltip-text", _("adjust perspective for vertical keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_v), "value-changed",
-                    G_CALLBACK (keystone_callback), self);
+                    G_CALLBACK (keystone_callback_v), self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_v), 2, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("aspect"));
