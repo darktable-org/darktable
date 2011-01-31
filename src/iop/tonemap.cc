@@ -86,10 +86,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
    
   int width,height,size;
-  float *B;
   float sigma_s;
   const float sigma_r=0.4;
-  float avgB;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
 
@@ -108,14 +106,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // and splat into the lattice
   for(int j=0;j<height;j++) for(int i=0;i<width;i++)
   {
-      float L= 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
-      if(L<=0.0) L=1e-6;
-      L=logf(L);
-      float pos[3] = {i/sigma_s, j/sigma_s, L/sigma_r};
-      float val[2] = {L,  1.0};
-      lattice.splat(pos, val);
-      in += ch;
-   }
+    float L = fmaxf(0.0f, 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2]);
+    if(L<=0.0) L=1e-6;
+    L = logf(L);
+    float pos[3] = {i/sigma_s, j/sigma_s, L/sigma_r};
+    float val[2] = {L,  1.0};
+    lattice.splat(pos, val);
+    in += ch;
+  }
    
   // blur the lattice
   lattice.blur();
@@ -140,32 +138,23 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   //  after compression we substract 2.0 to have an average intensiy at middle tone.
   //
 
-  B=(float*)malloc(size*sizeof(float));
-  avgB=0;
   lattice.beginSlice();
-  for( int i=0 ; i<size ; i++ )
-  {
-    float val[2];
-
-    lattice.slice(val);
-    B[i] = val[0]/val[1];
-    avgB+=B[i];
-  }
-  avgB/=size;
-
+  const float contr = 1./data->contrast;
   in  = (float *)ivoid;
   for( int i=0 ; i<size ; i++ )
   {
-    const float L = expf((B[i]-avgB)/data->contrast-2.0-B[i]);
+    float val[2];
+    lattice.slice(val);
+    const float B = val[0]/val[1];
+    const float Ln = expf(B*(contr - 1.0f) - 2.0f);
 
-    out[0]=in[0]*L;
-    out[1]=in[1]*L;
-    out[2]=in[2]*L;
+    out[0]=in[0]*Ln;
+    out[1]=in[1]*Ln;
+    out[2]=in[2]*Ln;
 
     out += ch;
     in += ch;
   }
-  free(B);
 }
 
 
