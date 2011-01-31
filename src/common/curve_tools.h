@@ -21,7 +21,8 @@
 
 //Curve Types
 #define CUBIC_SPLINE      0
-#define HERMITE_SPLINE     1
+#define CATMULL_ROM     1
+#define MONOTONE_HERMITE       2
 
 //Maximum resoltuion allowed due to space considerations.
 #define MAX_RESOLUTION    65536

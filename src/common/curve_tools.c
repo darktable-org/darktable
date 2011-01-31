@@ -24,19 +24,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 #include "curve_tools.h"
 
+#define EPSILON 2*FLT_MIN
+#define MAX_ITER 10
 //declare some functions and so I can use the function pointer
 float spline_cubic_val( int n, float t[], float tval, float y[],
     float ypp[]);
-float cubic_hermite_val ( int n, float x[], float xval, float y[],
+float catmull_rom_val ( int n, float x[], float xval, float y[],
     float tangents[]);
+float monotone_hermite_val ( int n, float x[], float xval, float y[],
+    float tangents[]);
+
 float *spline_cubic_set( int n, float t[], float y[]);
-float *cubic_hermite_set ( int n, float x[], float y[]);
+float *catmull_rom_set ( int n, float x[], float y[]);
+float *monotone_hermite_set ( int n, float x[], float y[]);
 
-float (*spline_val[])(int, float [], float, float [], float []) = {spline_cubic_val, cubic_hermite_val};
+float (*spline_val[])(int, float [], float, float [], float []) = {spline_cubic_val, catmull_rom_val, monotone_hermite_val };
 
-float *(*spline_set[])(int, float [], float []) = {spline_cubic_set, cubic_hermite_set};
+float *(*spline_set[])(int, float [], float []) = {spline_cubic_set, catmull_rom_set, monotone_hermite_set};
  
 /**********************************************************************
 
@@ -378,10 +385,10 @@ float *spline_cubic_set( int n, float t[], float y[])
     return spline_cubic_set_internal(n, t, y, 2, 0.0, 2, 0.0);
 }
 
-
  /*************************************************************
- * cubic_hermite_set:
- *      calculates the tangents for the hermite spline curve.
+ * monotone_hermite_set:
+ *      calculates the tangents for a monotonic hermite spline curve.
+ *      see http://en.wikipedia.org/wiki/Monotone_cubic_interpolation 
  *
  *  input:
  *      n = number of control points
@@ -390,9 +397,10 @@ float *spline_cubic_set( int n, float t[], float y[])
  *  output:
  *      pointer to array containing the tangents
  *************************************************************/
-float *cubic_hermite_set ( int n, float x[], float y[])
+float *monotone_hermite_set ( int n, float x[], float y[])
 {
   float *delta;
+  float alpha, beta, tau;
   float *m;
   int i;
   if ( n <= 1 )
@@ -412,9 +420,9 @@ float *cubic_hermite_set ( int n, float x[], float y[])
       return NULL;
     }
   }
-  delta = (float *)calloc(n,sizeof(float));
+  delta = (float *)calloc(n-1,sizeof(float));
   //nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n,sizeof(float));
+  m = (float *)calloc(n-1,sizeof(float));
   //nc_merror(m, "spline_cubic_set");
   //calculate the slopes
   for (i = 0;i<n-1;i++)
@@ -423,14 +431,83 @@ float *cubic_hermite_set ( int n, float x[], float y[])
   }
 
   m[0] = delta[0];
-  m[n-1] = delta[n-2];
+  m[n-2] = delta[n-2];
 
-  for (i=1;i<n-1;i++)
+  for (i=1;i<n-2;i++)
   {
-      m[i] = (delta[i]+delta[i+1])/2.0;
+      m[i] = (delta[i-1]+delta[i])/2.0;
+  }
+  for (i=0;i<n-1;i++)
+  {
+    if (fabs(delta[i]) < EPSILON)
+    {
+      m[i] = 0.0;
+      m[i+1] = 0.0;
+      i++;
+    }
+    else 
+    {
+      alpha = m[i]/delta[i];
+      beta = m[i+1]/delta[i];
+      tau = alpha*alpha+beta*beta;
+      if (tau > 9.0) 
+      {
+        m[i] = 3.0*alpha*delta[i]/sqrtf(tau);
+        m[i+1] = 3.0*beta*delta[i]/sqrtf(tau);
+        i++;
+      }
+    }
+  }
+  free(delta);
+  return m;
+}
+  
+ /*************************************************************
+ * catmull_rom_set:
+ *      calculates the tangents for a catmull_rom spline
+ *      see http://en.wikipedia.org/wiki/Cubic_Hermite_spline
+ *
+ *
+ *  input:
+ *      n = number of control points
+ *      x = input x array
+ *      y = input y array
+ *  output:
+ *      pointer to array containing the tangents
+ *************************************************************/
+float *catmull_rom_set ( int n, float x[], float y[])
+{
+  float *m;
+  int i;
+  if ( n <= 1 )
+  {
+    //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+     //   "The number of data points must be at least 2.\n");
+    return NULL;
   }
 
-  free(delta);
+  for ( i = 0; i < n - 1; i++ )
+  {
+    if ( x[i+1] <= x[i] )
+    {
+      //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+       //   "The knots must be strictly increasing, but "
+        //  "T(%u) = %e, T(%u) = %e\n",i,x[i],i+1,x[i+1]);
+      return NULL;
+    }
+  }
+  //nc_merror(delta, "spline_cubic_set");
+  m = (float *)calloc(n-1,sizeof(float));
+  //nc_merror(m, "spline_cubic_set");
+  
+  //calculate the slopes
+  m[0] = (y[1]-y[0]);///(x[1]-x[0]);
+  for (i=1;i<n-2;i++)
+  {
+      m[i] = (y[i+1]-y[i-1])/2.0;//*(x[i+1]-x[i-1]));
+  }
+  m[n-2] = (y[n-1]-y[n-2]);//(x[n-1]-y[n-2]);
+
   return m;
 }
 
@@ -446,8 +523,8 @@ float interpolate_val( int n, float x[], float xval, float y[], float tangents[]
 }
 
 /*************************************************************
- * cubic_hermite_val:
- *      calculates the tangents for the hermite spline curve.
+ * catmull_rom_val:
+ *      piecewise catmull-rom interpolation 
  *
  *      n = number of control points
  *      x = input x array
@@ -458,7 +535,7 @@ float interpolate_val( int n, float x[], float xval, float y[], float tangents[]
  *      interpolated value at xval
  *
  *************************************************************/ 
-float cubic_hermite_val ( int n, float x[], float xval, float y[],
+float catmull_rom_val ( int n, float x[], float xval, float y[],
     float tangents[])
 {
   float dx;
@@ -474,7 +551,7 @@ float cubic_hermite_val ( int n, float x[], float xval, float y[],
 //
   ival = n - 2;
 
-  for ( i = 0; i < n-1; i++ )
+  for ( i = 0; i < n-2; i++ )
   {
     if ( xval < x[i+1] )
     {
@@ -482,23 +559,9 @@ float cubic_hermite_val ( int n, float x[], float xval, float y[],
       break;
     }
   }
-
-  if (ival==0)
-  {
-      m0 = y[1]-y[0];
-      m1 = (y[2]-y[0])/2.0;
-  }
-  else if (ival==n-2)
-  {
-      m0 = (y[ival+1]-y[ival-1])/2.0;
-      m1 = y[ival+1]-y[ival];
-  }
-  else
-  {
-      m0 = (y[ival+1]-y[ival-1])/2.0;
-      m1 = (y[ival+2]-y[ival])/2.0;
-  }
-
+  
+  m0 = tangents[ival];
+  m1 = tangents[ival+1];
 //
 //  In the interval I, the polynomial is in terms of a normalized
 //  coordinate between 0 and 1.
@@ -516,6 +579,65 @@ float cubic_hermite_val ( int n, float x[], float xval, float y[],
 
   return yval;
 }
+ 
+/*************************************************************
+ * monotone_hermite_val:
+ *      piecewise monotone hermite spline interpolation
+ *
+ *      n = number of control points
+ *      x = input x array
+ *      xval = input value where to interpolate the data
+ *      y = input y array
+ *      tangent = input array of tangents
+ *  output:
+ *      interpolated value at xval
+ *
+ *************************************************************/ 
+float monotone_hermite_val ( int n, float x[], float xval, float y[],
+    float tangents[])
+{
+  float dx;
+  float h;
+  int i;
+  int ival;
+  float yval;
+  float h00,h01,h10,h11;
+  float m0, m1;
+//
+//  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
+//  Values below T[0] or above T[N-1] use extrapolation.
+//
+  ival = n - 2;
+
+  for ( i = 0; i < n-2; i++ )
+  {
+    if ( xval < x[i+1] )
+    {
+      ival = i;
+      break;
+    }
+  }
+  
+  m0 = tangents[ival];
+  m1 = tangents[ival+1];
+//
+//  In the interval I, the polynomial is in terms of a normalized
+//  coordinate between 0 and 1.
+//
+  h = x[ival+1] - x[ival];
+  dx = (xval-x[ival])/h;
+
+    h00 = ( 2.0 * dx*dx*dx) - (3.0 * dx*dx) + 1.0;
+    h10 = ( 1.0 * dx*dx*dx) - (2.0 * dx*dx) + dx;
+    h01 = (-2.0 * dx*dx*dx) + (3.0 * dx*dx);
+    h11 = ( 1.0 * dx*dx*dx) - (1.0 * dx*dx);
+
+    //h = 1;
+    yval = (h00 * y[ival]) + (h10 * h * m0) + (h01 * y[ival+1]) + (h11 * h * m1);
+
+  return yval;
+}
+
 
 /**********************************************************************
 

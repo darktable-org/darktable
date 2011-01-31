@@ -561,7 +561,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   piece->data = (void *)d;
   for(int ch=0;ch<atrous_none;ch++)
   {
-    d->curve[ch] = dt_draw_curve_new(0.0, 1.0, HERMITE_SPLINE);
+    d->curve[ch] = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
     for(int k=0;k<BANDS;k++)
       (void)dt_draw_curve_add_point(d->curve[ch], default_params->x[ch][k], default_params->y[ch][k]);
   }
@@ -1141,7 +1141,7 @@ void gui_init (struct dt_iop_module_t *self)
 //   c->channel2 = atrous_L;
   c->channel = c->channel2 = dt_conf_get_int("plugins/darkroom/atrous/gui_channel");
   int ch = (int)c->channel;
-  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, HERMITE_SPLINE);
+  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
   for(int k=0;k<BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
