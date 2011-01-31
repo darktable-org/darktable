@@ -575,11 +575,11 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     if(zoom != 1) y = 0.90*height;
     else y = .12*fscale;
     
-	for(int k=0;k<5;k++)
+    if(img) for(int k=0;k<5;k++)
     {
       if(zoom != 1) x = (0.41+k*0.12)*width;
       else x = (.08+k*0.04)*fscale;
-      
+
       if((img->flags & 0x7) != 6) //if rejected: draw no stars
       {
         dt_view_star(cr, x, y, r1, r2);
@@ -598,27 +598,27 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
         else cairo_stroke(cr);
       }
     }
-    
+
     //Image rejected?
     if(zoom !=1) x = 0.11*width;
-	else x = .04*fscale;
-	
-	if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+    else x = .04*fscale;
+
+    if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
     {
       *image_over = DT_VIEW_REJECT; //mouse sensitive
       cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
       cairo_stroke(cr);
     }
-	else if ((img->flags & 0x7) == 6)
+    else if ((img->flags & 0x7) == 6)
     {
-	  cairo_set_source_rgb(cr, 1., 0., 0.);
-	  cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
+      cairo_set_source_rgb(cr, 1., 0., 0.);
+      cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
       cairo_stroke(cr);  
       cairo_set_line_width(cr, 2.5);
-	}
-	
-	//reject cross: 
-	cairo_move_to(cr, x-r2, y-r2);
+    }
+
+    //reject cross: 
+    cairo_move_to(cr, x-r2, y-r2);
     cairo_line_to(cr, x+r2, y+r2);
     cairo_move_to(cr, x+r2, y-r2);
     cairo_line_to(cr, x-r2, y+r2);
@@ -626,35 +626,35 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     cairo_stroke(cr);  
     cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol); 
     cairo_set_line_width(cr, 1.5);
-    
-    //Image altered?
+
+    // image altered?
     if(altered) 
+    {
+      // align to right
+      float s = (r1+r2)*.5;
+      if(zoom != 1) 
+      {
+        x = width*0.9;
+        y = height*0.1;
+      }
+      else x = (.04+7*0.04)*fscale;
+      dt_view_draw_altered(cr, x, y, s);
+      //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
+      if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
+      {
+        if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
         {
-          // Align to right
-          float s = (r1+r2)*.5;
-          if(zoom != 1) 
+          GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+          char* tooltip = dt_history_get_items_as_string(img->id);
+          if(tooltip != NULL)
           {
-			  x = width*0.9;
-			  y = height*0.1;
-		  }
-          else x = (.04+7*0.04)*fscale;
-          dt_view_draw_altered(cr, x, y, s);
-		  //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-          if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
-          {
-            if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
-            {
-              GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-              char* tooltip = dt_history_get_items_as_string(img->id);
-              if(tooltip != NULL)
-              {
-                gtk_object_set(GTK_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
-                g_free(tooltip);
-              }
-            }
-            darktable.gui->center_tooltip = 1;
+            gtk_object_set(GTK_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
+            g_free(tooltip);
           }
         }
+        darktable.gui->center_tooltip = 1;
+      }
+    }
   }
 
   // kill all paths, in case img was not loaded yet, or is blocked:
