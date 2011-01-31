@@ -39,13 +39,15 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
     (void) dt_exif_read(img, filename);
 
   TIFF *image;
-  uint32_t width, height, bpp, imagesize, config;
+  uint32_t width, height, imagesize, config;
+  uint16_t spp, bpp;
 
   if((image = TIFFOpen(filename, "rb")) == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
 
   TIFFGetField(image, TIFFTAG_IMAGEWIDTH, &width);
   TIFFGetField(image, TIFFTAG_IMAGELENGTH, &height);
   TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
+  TIFFGetField(image, TIFFTAG_SAMPLESPERPIXEL, &spp);
   if(bpp < 12) imagesize =   4*(height * width + 1);
   else         imagesize = 2*4*(height * width + 1);
 
@@ -62,7 +64,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
 
 	uint32_t imagelength;
   int32_t scanlinesize = TIFFScanlineSize(image);
-  int32_t mul = scanlinesize/width;
 	tdata_t buf;
 	buf = _TIFFmalloc(scanlinesize);
   uint16_t *buf16 = (uint16_t *)buf;
@@ -85,9 +86,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
     {
       TIFFReadScanline(image, buf, row, 0);
       if(bpp < 12) for(int i=0;i<width;i++)
-        for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf8[mul*i + k]*(1.0/255.0);
+        for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf8[spp*i + k]*(1.0/255.0);
       else for(int i=0;i<width;i++)
-        for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf16[mul/2*i + k]*(1.0/65535.0);
+        for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf16[spp*i + k]*(1.0/65535.0);
         // for(int k=0;k<3;k++) img->pixels[3*(width*row + i) + k] = ((buf16[mul*i + k]>>8)|((buf16[mul*i + k]<<8)&0xff00))*(1.0/65535.0);
     }
   }
@@ -103,7 +104,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
   _TIFFfree(buf);
   TIFFClose(image);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
-  img->flags |= DT_IMAGE_LDR;
   return DT_IMAGEIO_OK;
 }
 
@@ -117,23 +117,24 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
     (void) dt_exif_read(img, filename);
 
   TIFF *image;
-  uint32_t width, height, bpp, imagesize, config;
+  uint32_t width, height, imagesize, config;
+  uint16_t spp, bpp;
 
   if((image = TIFFOpen(filename, "rb")) == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
 
   TIFFGetField(image, TIFFTAG_IMAGEWIDTH, &width);
   TIFFGetField(image, TIFFTAG_IMAGELENGTH, &height);
   TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
+  TIFFGetField(image, TIFFTAG_SAMPLESPERPIXEL, &spp);
+
   if(bpp < 12) imagesize =   4*(height * width + 1);
   else         imagesize = 2*4*(height * width + 1);
 
   img->width = width;
   img->height = height;
-  
 
 	uint32_t imagelength;
   int32_t scanlinesize = TIFFScanlineSize(image);
-  int32_t mul = scanlinesize/width;
 	tdata_t buf;
 	buf = _TIFFmalloc(scanlinesize);
 	uint32_t row;
@@ -157,9 +158,9 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
     {
       TIFFReadScanline(image, buf, row, 0);
       if(bpp < 12) for(int i=0;i<width;i++)
-        for(int k=0;k<3;k++) tmp8[3*(width*row + i) + k] = buf8[mul*i + k];
+        for(int k=0;k<3;k++) tmp8[3*(width*row + i) + k] = buf8[spp*i + k];
       else for(int i=0;i<width;i++)
-        for(int k=0;k<3;k++) tmp16[3*(width*row + i) + k] = buf16[mul/2*i + k];
+        for(int k=0;k<3;k++) tmp16[3*(width*row + i) + k] = buf16[spp*i + k];
     }
   }
 
@@ -243,7 +244,6 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
     dt_image_preview_to_raw(img);
   }
   dt_image_release(img, mip, 'r');
-  img->flags |= DT_IMAGE_LDR;
   return DT_IMAGEIO_OK;
 }
 

@@ -169,18 +169,22 @@ all_good:
 
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
 {
-  img->filters = 0;
-  img->bpp = 4*sizeof(float);
-  img->flags &= ~DT_IMAGE_LDR;
-  img->flags &= ~DT_IMAGE_RAW;
-  img->flags |=  DT_IMAGE_HDR;
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_exr(img, filename);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
   ret = dt_imageio_open_rgbe(img, filename);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
   ret = dt_imageio_open_pfm(img, filename);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
+return_label:
+  if(ret == DT_IMAGEIO_OK)
+  {
+    img->filters = 0;
+    img->bpp = 4*sizeof(float);
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags |=  DT_IMAGE_HDR;
+  }
   return ret;
 }
 
@@ -656,7 +660,14 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 {
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_tiff(img, filename);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->filters = 0;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    return ret;
+  }
 
   // jpeg stuff here:
   if(!img->exif_inited)

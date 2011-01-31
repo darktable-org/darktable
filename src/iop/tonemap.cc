@@ -221,7 +221,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  if((module->dev->image->filters && module->dev->image->bpp == sizeof(float)) || (module->dev->image->flags & DT_IMAGE_HDR))
+  if((module->dev->image->filters && (module->dev->image->bpp == sizeof(float))) || (module->dev->image->flags & DT_IMAGE_HDR))
     module->default_enabled = 1;
   else
     module->default_enabled = 0;
