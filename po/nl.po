@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-29 09:15+0100\n"
-"PO-Revision-Date: 2011-01-29 09:39+0100\n"
+"POT-Creation-Date: 2011-01-31 16:24+0100\n"
+"PO-Revision-Date: 2011-01-31 19:00+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: \n"
@@ -299,7 +299,7 @@ msgid "history"
 msgstr "geschiedenis"
 
 #: ../data/darktable.glade.h:30
-#: ../src/iop/clipping.c:751
+#: ../src/iop/clipping.c:760
 msgid "image"
 msgstr "afbeelding"
 
@@ -327,7 +327,6 @@ msgstr "ISO"
 
 #: ../data/darktable.glade.h:35
 #: ../src/gui/presets.c:262
-#: ../src/iop/lens.c:1210
 msgid "lens"
 msgstr "lens"
 
@@ -636,7 +635,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/develop/imageop.c:603
 #: ../src/libs/lib.c:518
 msgid "reset parameters"
-msgstr "herstel parameters"
+msgstr "reset parameters"
 
 #: ../src/develop/imageop.c:604
 #: ../src/libs/lib.c:524
@@ -657,7 +656,7 @@ msgstr "sla parameters op als standaard waarde"
 
 #: ../src/gui/camera_import_dialog.c:223
 msgid "reset value to default"
-msgstr "herstel waarde naar standaard"
+msgstr "reset naar standaard"
 
 #: ../src/gui/camera_import_dialog.c:246
 msgid "import images from camera"
@@ -1467,7 +1466,7 @@ msgid "alpha"
 msgstr "alpha"
 
 #: ../src/iop/anlfyeni.c:276
-#: ../src/iop/lens.c:1271
+#: ../src/iop/lens.c:1347
 #: ../src/iop/vignette.c:353
 #: ../src/iop/watermark.c:574
 msgid "scale"
@@ -1860,83 +1859,83 @@ msgid "rotate by 180"
 msgstr "roteer 180 graden"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:705
-#: ../src/iop/clipping.c:798
+#: ../src/iop/clipping.c:714
+#: ../src/iop/clipping.c:807
 msgid "flip"
 msgstr "spiegelen"
 
-#: ../src/iop/clipping.c:712
+#: ../src/iop/clipping.c:721
 msgid "flip image vertically"
 msgstr "verticale spiegeling"
 
-#: ../src/iop/clipping.c:713
+#: ../src/iop/clipping.c:722
 msgid "flip image horizontally"
 msgstr "horizontale spiegeling"
 
-#: ../src/iop/clipping.c:715
+#: ../src/iop/clipping.c:724
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:720
+#: ../src/iop/clipping.c:729
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "U kunt ook door op de rechter muistoets te klikken\n"
 "een rechte lijn over de afbeelding tekenen.\n"
 "Hiermee kunt u de afbeelding recht te zetten."
 
-#: ../src/iop/clipping.c:725
+#: ../src/iop/clipping.c:734
 msgid "keystone h"
 msgstr "roteren h"
 
-#: ../src/iop/clipping.c:730
+#: ../src/iop/clipping.c:739
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "instelling horizontaal perspectief wijzigen"
 
-#: ../src/iop/clipping.c:736
+#: ../src/iop/clipping.c:745
 msgid "keystone v"
 msgstr "roteren v"
 
-#: ../src/iop/clipping.c:740
+#: ../src/iop/clipping.c:749
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "instelling verticaal perspectief wijzigen"
 
-#: ../src/iop/clipping.c:745
+#: ../src/iop/clipping.c:754
 msgid "aspect"
 msgstr "verhouding"
 
-#: ../src/iop/clipping.c:750
+#: ../src/iop/clipping.c:759
 msgid "free"
 msgstr "vrij"
 
-#: ../src/iop/clipping.c:752
+#: ../src/iop/clipping.c:761
 msgid "golden cut"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:753
+#: ../src/iop/clipping.c:762
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:754
+#: ../src/iop/clipping.c:763
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/clipping.c:755
+#: ../src/iop/clipping.c:764
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:765
 msgid "square"
 msgstr "vierkant"
 
-#: ../src/iop/clipping.c:757
+#: ../src/iop/clipping.c:766
 msgid "din"
 msgstr "din"
 
-#: ../src/iop/clipping.c:758
+#: ../src/iop/clipping.c:767
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/clipping.c:765
+#: ../src/iop/clipping.c:774
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -1947,7 +1946,7 @@ msgstr ""
 "verhoudingen voor de zijden\n"
 "gewisseld."
 
-#: ../src/iop/clipping.c:771
+#: ../src/iop/clipping.c:780
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr ""
 "bepaal in welke verhouding\n"
@@ -1955,80 +1954,80 @@ msgstr ""
 "op de afbeelding (breedte:hoogte)\n"
 "toets ctrl-x om zijden te verruilen"
 
-#: ../src/iop/clipping.c:778
+#: ../src/iop/clipping.c:787
 msgid "guides"
 msgstr "hulplijnen"
 
-#: ../src/iop/clipping.c:781
+#: ../src/iop/clipping.c:790
 msgid "none"
 msgstr "geen"
 
-#: ../src/iop/clipping.c:782
+#: ../src/iop/clipping.c:791
 msgid "grid"
 msgstr "raster"
 
-#: ../src/iop/clipping.c:783
+#: ../src/iop/clipping.c:792
 msgid "rules of thirds"
 msgstr "regel van derden"
 
-#: ../src/iop/clipping.c:784
+#: ../src/iop/clipping.c:793
 msgid "diagonal method"
 msgstr "diagonaal methode"
 
-#: ../src/iop/clipping.c:785
+#: ../src/iop/clipping.c:794
 msgid "harmonious triangles"
 msgstr "harmonieuze driehoeken"
 
-#: ../src/iop/clipping.c:786
+#: ../src/iop/clipping.c:795
 msgid "golden mean"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:788
+#: ../src/iop/clipping.c:797
 msgid "with this option, you can display guide lines to help compose your photograph."
 msgstr "schakel hulplijnen in om composities te verbeteren. "
 
-#: ../src/iop/clipping.c:792
+#: ../src/iop/clipping.c:801
 msgid "type"
 msgstr "type"
 
-#: ../src/iop/clipping.c:805
+#: ../src/iop/clipping.c:814
 msgid "flip guides vertically"
 msgstr "wissel de hulplijnen verticaal "
 
-#: ../src/iop/clipping.c:806
+#: ../src/iop/clipping.c:815
 msgid "flip guides horizontally"
 msgstr "wissel de hulplijnen horizontaal"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:808
+#: ../src/iop/clipping.c:817
 msgid "golden sections"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:810
+#: ../src/iop/clipping.c:819
 msgid "enable this option to show golden sections."
 msgstr "activeer deze optie voor vertoning van de gulden secties."
 
-#: ../src/iop/clipping.c:813
+#: ../src/iop/clipping.c:822
 msgid "spiral sections"
 msgstr "spiraal secties"
 
-#: ../src/iop/clipping.c:814
+#: ../src/iop/clipping.c:823
 msgid "enable this option to show golden spiral sections."
 msgstr "activeer deze optie voor vertoning van de gulden snede"
 
-#: ../src/iop/clipping.c:817
+#: ../src/iop/clipping.c:826
 msgid "golden spiral"
 msgstr "gulden spiraal"
 
-#: ../src/iop/clipping.c:818
+#: ../src/iop/clipping.c:827
 msgid "enable this option to show a golden spiral guide."
 msgstr "activeer deze optie voor vertoning van de gulden snede hulplijnen"
 
-#: ../src/iop/clipping.c:821
+#: ../src/iop/clipping.c:830
 msgid "golden triangles"
 msgstr "gulden driehoeken"
 
-#: ../src/iop/clipping.c:822
+#: ../src/iop/clipping.c:831
 msgid "enable this option to show golden triangles."
 msgstr "activeer deze optie voor vertoning van de gulden driehoeken"
 
@@ -2479,7 +2478,7 @@ msgstr ""
 "koppel:\t\t%s\n"
 "factor bijgesneden:\t%.1f"
 
-#: ../src/iop/lens.c:947
+#: ../src/iop/lens.c:989
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -2498,94 +2497,91 @@ msgstr ""
 "type:\t\t%s\n"
 "koppel:\t\t%s"
 
-#: ../src/iop/lens.c:977
+#: ../src/iop/lens.c:1019
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:977
+#: ../src/iop/lens.c:1019
 msgid "focal length (mm)"
 msgstr "brandpuntsafstand (mm)"
 
-#: ../src/iop/lens.c:987
+#: ../src/iop/lens.c:1025
+#: ../src/iop/lens.c:1040
+msgid "reset from exif data"
+msgstr "herstel naar EXIF data"
+
+#: ../src/iop/lens.c:1034
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:987
+#: ../src/iop/lens.c:1034
 msgid "f-number (aperture)"
 msgstr "f-nummer (diafragma)"
 
-#: ../src/iop/lens.c:993
+#: ../src/iop/lens.c:1045
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:993
+#: ../src/iop/lens.c:1045
 msgid "distance to subject"
 msgstr "afstand tot het onderwerp"
 
-#: ../src/iop/lens.c:1196
-msgid "cam"
-msgstr "camera"
+#: ../src/iop/lens.c:1273
+msgid "find camera"
+msgstr "vind camera"
 
-#: ../src/iop/lens.c:1197
-msgid ""
-"search for camera using a pattern\n"
-"format: [maker, ][model]"
-msgstr "zoek naar een voor deze camera te gebruiken patroon"
-
-#: ../src/iop/lens.c:1212
-msgid ""
-"search for lens using a pattern\n"
-"format: [maker, ][model]"
-msgstr "zoek naar een voor deze lens te gebruiken patroon"
+#: ../src/iop/lens.c:1288
+msgid "find lens"
+msgstr "vind lens"
 
 #. target geometry
-#: ../src/iop/lens.c:1240
+#: ../src/iop/lens.c:1316
 msgid "geometry"
 msgstr "geometrie"
 
-#: ../src/iop/lens.c:1246
+#: ../src/iop/lens.c:1322
 msgid "target geometry"
 msgstr "doel geometrie"
 
-#: ../src/iop/lens.c:1247
+#: ../src/iop/lens.c:1323
 msgid "rectilinear"
 msgstr "rechtlijnig"
 
-#: ../src/iop/lens.c:1248
+#: ../src/iop/lens.c:1324
 msgid "fish-eye"
 msgstr "fish-eye"
 
-#: ../src/iop/lens.c:1249
+#: ../src/iop/lens.c:1325
 msgid "panoramic"
 msgstr "panorama"
 
-#: ../src/iop/lens.c:1250
+#: ../src/iop/lens.c:1326
 msgid "equirectangular"
 msgstr "equidistante cilinderprojectie"
 
-#: ../src/iop/lens.c:1266
+#: ../src/iop/lens.c:1342
 msgid "auto scale"
 msgstr "automatisch schalen"
 
 #. reverse direction
-#: ../src/iop/lens.c:1275
+#: ../src/iop/lens.c:1351
 msgid "reverse"
 msgstr "keer om"
 
-#: ../src/iop/lens.c:1276
+#: ../src/iop/lens.c:1352
 msgid "apply distortions instead of correcting them"
 msgstr "pas vervorming toe in plaats van het te corrigeren"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1283
+#: ../src/iop/lens.c:1359
 msgid "tca r"
 msgstr "tca r"
 
-#: ../src/iop/lens.c:1285
+#: ../src/iop/lens.c:1361
 msgid "tca b"
 msgstr "tca b"
 
-#: ../src/iop/lens.c:1293
+#: ../src/iop/lens.c:1369
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -2594,7 +2590,7 @@ msgstr ""
 "voor het rode kanaal\n"
 "laat het staan op 1.0 voor een standaard waarde"
 
-#: ../src/iop/lens.c:1294
+#: ../src/iop/lens.c:1370
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
@@ -3175,12 +3171,37 @@ msgstr "paars"
 
 #: ../src/libs/collect.c:254
 #: ../src/libs/collect.c:268
+#: ../src/libs/collect.c:543
 msgid "clear this rule"
-msgstr "verwijder regel"
+msgstr "verwijderen voorwaarde"
 
 #: ../src/libs/collect.c:259
 msgid "clear this rule or add new rules"
-msgstr "verwijder of voeg een regel toe"
+msgstr "voorwaarde toevoegen / verwijderen"
+
+#: ../src/libs/collect.c:549
+msgid "and new rule"
+msgstr "<en>"
+
+#: ../src/libs/collect.c:553
+msgid "or new rule"
+msgstr "<of>"
+
+#: ../src/libs/collect.c:557
+msgid "and not new rule"
+msgstr "<en niet>"
+
+#: ../src/libs/collect.c:563
+msgid "change to and"
+msgstr "<en>"
+
+#: ../src/libs/collect.c:567
+msgid "change to or"
+msgstr "<of>"
+
+#: ../src/libs/collect.c:571
+msgid "change to and not"
+msgstr "<en niet>"
 
 #: ../src/libs/collect.c:608
 msgid "camera"
@@ -3427,11 +3448,11 @@ msgstr ""
 
 #: ../src/libs/image.c:121
 msgid "reset rotation"
-msgstr "herstel draai"
+msgstr "reset draai"
 
 #: ../src/libs/image.c:122
 msgid "reset rotation to exif data"
-msgstr "herstel draaiing naar EXIF waarde"
+msgstr "reset draaiing naar EXIF waarde"
 
 #: ../src/libs/image.c:130
 msgid "create hdr"
@@ -3742,6 +3763,16 @@ msgstr "fotoreeks"
 msgid "lighttable"
 msgstr "lighttable"
 
+#~ msgid "cam"
+#~ msgstr "camera"
+#~ msgid ""
+#~ "search for camera using a pattern\n"
+#~ "format: [maker, ][model]"
+#~ msgstr "zoek naar een voor deze camera te gebruiken patroon"
+#~ msgid ""
+#~ "search for lens using a pattern\n"
+#~ "format: [maker, ][model]"
+#~ msgstr "zoek naar een voor deze lens te gebruiken patroon"
 #~ msgid ""
 #~ "do you really want to remove this film roll and all its images from the "
 #~ "collection?"
