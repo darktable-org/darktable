@@ -22,17 +22,18 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-// TODO: if using GEGL, this needs to be wrapped in color conversion routines of gegl?
 #include "iop/colorout.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 
 DT_MODULE(1)
 
-const char *name()
+const char
+*name()
 {
   return _("output color profile");
 }
@@ -43,8 +44,26 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+void
+init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)malloc(sizeof(dt_iop_colorout_global_data_t));
+  module->data = gd;
+  gd->kernel_colorout = dt_opencl_create_kernel(darktable.opencl, program, "colorout");
+}
 
-static void intent_changed (GtkComboBox *widget, gpointer user_data)
+void
+cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_colorout);
+  free(module->data);
+  module->data = NULL;
+}
+
+static void
+intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -53,7 +72,8 @@ static void intent_changed (GtkComboBox *widget, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void display_intent_changed (GtkComboBox *widget, gpointer user_data)
+static void
+display_intent_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -62,7 +82,8 @@ static void display_intent_changed (GtkComboBox *widget, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void profile_changed (GtkComboBox *widget, gpointer user_data)
+static void
+profile_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -85,7 +106,8 @@ static void profile_changed (GtkComboBox *widget, gpointer user_data)
   fprintf(stderr, "[colorout] color profile %s seems to have disappeared!\n", p->iccprofile);
 }
 
-static void display_profile_changed (GtkComboBox *widget, gpointer user_data)
+static void
+display_profile_changed (GtkComboBox *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -123,7 +145,37 @@ lerp_lut(const float *const lut, const float v)
 }
 #endif
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+#ifdef HAVE_OPENCL
+void
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
+
+  cl_int err;
+  const int devid = piece->pipe->devid;
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*9, devid, d->cmatrix);
+  cl_mem dev_r = dt_opencl_copy_host_to_device(d->lut[0], 256, 256, devid, sizeof(float));
+  cl_mem dev_g = dt_opencl_copy_host_to_device(d->lut[1], 256, 256, devid, sizeof(float));
+  cl_mem dev_b = dt_opencl_copy_host_to_device(d->lut[2], 256, 256, devid, sizeof(float));
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 3, sizeof(cl_mem), (void *)&dev_r);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 4, sizeof(cl_mem), (void *)&dev_g);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 5, sizeof(cl_mem), (void *)&dev_b);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_colorout, sizes);
+  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue colorout kernel! %d\n", err);
+  clReleaseMemObject(dev_m);
+  clReleaseMemObject(dev_r);
+  clReleaseMemObject(dev_g);
+  clReleaseMemObject(dev_b);
+}
+#endif
+
+void
+process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   float *in  = (float *)i;
@@ -199,7 +251,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   #error "gegl version needs some more care!"
 #else
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
-  // dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
@@ -211,6 +262,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->xform[t] = NULL;
   }
   d->cmatrix[0] = -0.666f;
+  piece->process_cl_ready = 1;
 
   if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
   {
@@ -244,6 +296,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       d->cmatrix[0] = -0.666f;
+      piece->process_cl_ready = 0;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
     }
   }
@@ -276,6 +329,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       d->cmatrix[0] = -0.666f;
+      piece->process_cl_ready = 0;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
     }
   }
@@ -288,6 +342,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       d->cmatrix[0] = -0.666f;
+      piece->process_cl_ready = 0;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
     }
   }
@@ -361,10 +416,6 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  // GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-  // module->data = malloc(sizeof(dt_iop_colorout_global_data_t));
-  // dt_iop_colorout_global_data_t *d = (dt_iop_colorout_global_data_t *)module->data;
-  // get_display_profile(widget, &d->data, &d->data_size);
   module->params = malloc(sizeof(dt_iop_colorout_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
@@ -378,11 +429,6 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  // dt_iop_colorout_global_data_t *d = (dt_iop_colorout_global_data_t *)module->data;
-  // g_free(d->data);
-  // d->data = NULL;
-  // free(module->data);
-  // module->data = NULL;
   free(module->gui_data);
   module->gui_data = NULL;
   free(module->params);

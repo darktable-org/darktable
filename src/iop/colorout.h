@@ -26,8 +26,7 @@
 
 typedef struct dt_iop_colorout_global_data_t
 {
-  guint8 *data;
-  gint data_size;
+  int kernel_colorout;
 }
 dt_iop_colorout_global_data_t;
 

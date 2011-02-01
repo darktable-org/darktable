@@ -441,7 +441,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 #ifdef HAVE_OPENCL
-    if(module->process_cl)
+    if(module->process_cl && piece->process_cl_ready)
     {
       // if input is not on the gpu, copy it there.
       // else, if input is on the gpu only, invalidate cpu cache line.
