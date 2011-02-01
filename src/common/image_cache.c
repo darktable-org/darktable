@@ -463,13 +463,15 @@ void dt_image_cache_clear(int32_t id)
   dt_image_cache_t *cache = darktable.image_cache;
   dt_pthread_mutex_lock(&(cache->mutex));
   int32_t res = dt_image_cache_bsearch(id);
-  if(res >= 0 && !cache->line[res].lock.write && !cache->line[res].lock.users++)
+  if(res >= 0 && !cache->line[res].lock.write && !cache->line[res].lock.users)
   {
     // clean out mipmaps
     dt_image_cleanup(&(cache->line[res].image));
     // also clean up metadata etc.
     dt_image_init(&(cache->line[res].image));
   }
+  // if still locked, at least invalidate the data.
+  else if(res >= 0) cache->line[res].image.film_id = -1;
   dt_pthread_mutex_unlock(&(cache->mutex));
 }
 
