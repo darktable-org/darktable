@@ -660,7 +660,7 @@ void enter(dt_view_t *self)
       module->gui_init(module);
       // add the widget created by gui_init to an expander and both to list.
       GtkWidget *expander = dt_lib_gui_get_expander(module);
-      if(!strcmp(module->plugin_name, "collect")) gtk_box_pack_start(box_left, expander, FALSE, FALSE, 0);
+      if(module->views() & DT_LEFT_PANEL_VIEW) gtk_box_pack_start(box_left, expander, FALSE, FALSE, 0);
       else gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     }
     modules = g_list_previous(modules);

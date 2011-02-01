@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,19 +26,11 @@
 #include "libs/lib.h"
 #include "common/metadata.h"
 #include "common/utility.h"
-#include <assert.h>
+#include "libs/collect.h"
 
 DT_MODULE(1)
 
 #define MAX_RULES 10
-
-typedef enum dt_lib_collect_mode_t
-{
-  DT_LIB_COLLECT_MODE_AND=0,
-  DT_LIB_COLLECT_MODE_OR,
-  DT_LIB_COLLECT_MODE_AND_NOT
-}
-dt_lib_collect_mode_t;
 
 typedef struct dt_lib_collect_rule_t
 {
@@ -74,9 +66,10 @@ name ()
   return _("collect images");
 }
 
-uint32_t views() 
+uint32_t
+views() 
 {
-  return DT_LIGHTTABLE_VIEW;
+  return DT_LIGHTTABLE_VIEW | DT_LEFT_PANEL_VIEW;
 }
 
 static dt_lib_collect_t*
@@ -279,8 +272,6 @@ gui_reset (dt_lib_module_t *self)
   dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
   dt_conf_set_int("plugins/lighttable/collect/item0", 0);
   dt_conf_set_string("plugins/lighttable/collect/string0", "%");
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-  gui_update(d);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -397,7 +388,6 @@ menuitem_and (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_lib_collect_t *c = get_collect(d);
     c->active_rule = active;
   }
-  gui_update(get_collect(d));
   dt_collection_update_query(darktable.collection);
 }
 
@@ -415,7 +405,6 @@ menuitem_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
   }
-  gui_update(get_collect(d));
   dt_collection_update_query(darktable.collection);
 }
 
@@ -433,7 +422,6 @@ menuitem_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
   }
-  gui_update(get_collect(d));
   dt_collection_update_query(darktable.collection);
 }
 
@@ -448,7 +436,6 @@ menuitem_change_and (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
   }
-  gui_update(get_collect(d));
   dt_collection_update_query(darktable.collection);
 }
 
@@ -463,7 +450,6 @@ menuitem_change_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_OR);
   }
-  gui_update(get_collect(d));
   dt_collection_update_query(darktable.collection);
 }
 
@@ -478,7 +464,6 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND_NOT);
   }
-  gui_update(get_collect(d));
   dt_collection_update_query(darktable.collection);
 }
 
@@ -527,7 +512,6 @@ menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
       g_free(string);
     }
   }
-  gui_update(c);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -604,17 +588,8 @@ gui_init (dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     w = gtk_combo_box_new_text();
     d->rule[i].combo = GTK_COMBO_BOX(w);
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("film roll"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("camera"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("tag"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("date"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("history"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("colorlabel"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("title"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("description"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("creator"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("publisher"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(w), _("rights"));
+    for(int k=0;k<dt_lib_collect_string_cnt;k++)
+      gtk_combo_box_append_text(GTK_COMBO_BOX(w), _(dt_lib_collect_string[k]));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
     w = gtk_entry_new();
