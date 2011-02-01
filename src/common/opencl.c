@@ -23,10 +23,13 @@
 
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
-  cl->inited = 0;
-  for(int k=0;k<argc;k++) if(!strcmp(argv[k], "--disable-opencl")) return;
-
   dt_pthread_mutex_init(&cl->lock, NULL);
+  cl->inited = 0;
+  for(int k=0;k<argc;k++) if(!strcmp(argv[k], "--disable-opencl"))
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] not using opencl by explicit request\n");
+    return;
+  }
   cl_int err;
   cl_platform_id all_platforms[5];
   cl_platform_id platform = NULL;
@@ -173,7 +176,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
 void dt_opencl_cleanup(dt_opencl_t *cl)
 {
-  for(int i=0;i<cl->num_devs;i++)
+  if(cl->inited) for(int i=0;i<cl->num_devs;i++)
   {
     dt_pthread_mutex_destroy(&cl->dev[i].lock);
     for(int k=0;k<DT_OPENCL_MAX_KERNELS; k++) if(cl->dev[i].kernel_used [k]) clReleaseKernel (cl->dev[i].kernel [k]);
@@ -186,6 +189,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 
 int dt_opencl_lock_device(dt_opencl_t *cl, const int _dev)
 {
+  if(!cl->inited) return -1;
   int dev = _dev;
   if(dev < 0 || dev >= cl->num_devs) dev = 0;
   for(int i=0;i<cl->num_devs;i++)
@@ -201,6 +205,7 @@ int dt_opencl_lock_device(dt_opencl_t *cl, const int _dev)
 
 void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev)
 {
+  if(!cl->inited) return;
   if(dev < 0 || dev >= cl->num_devs) return;
   dt_pthread_mutex_unlock(&cl->dev[dev].lock);
 }
@@ -275,7 +280,6 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int prog)
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
   cl_program program = cl->dev[dev].program[prog];
   cl_int err;
-  // TODO: how to pass sm_23 for fermi?
   err = clBuildProgram(program, 1, &cl->dev[dev].devid, "-cl-fast-relaxed-math -cl-strict-aliasing", 0, 0);
   if(err != CL_SUCCESS)
   {
@@ -304,6 +308,7 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int prog)
 
 int dt_opencl_create_kernel(dt_opencl_t *cl, const int prog, const char *name)
 {
+  if(!cl->inited) return -1;
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
   dt_pthread_mutex_lock(&cl->lock);
   int k = 0;
@@ -341,6 +346,7 @@ error:
 
 void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel)
 {
+  if(!cl->inited) return;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return;
   dt_pthread_mutex_lock(&cl->lock);
   for(int dev=0;dev<cl->num_devs;dev++)
@@ -353,17 +359,20 @@ void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel)
 
 int dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, const int dev, size_t *sizes)
 {
+  if(!cl->inited) return -1;
   return clGetDeviceInfo(cl->dev[dev].devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t)*3, sizes, NULL);
 }
 
 int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, const int num, const size_t size, const void *arg)
 {
+  if(!cl->inited) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   return clSetKernelArg(cl->dev[dev].kernel[kernel], num, size, arg);
 }
 
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes)
 {
+  if(!cl->inited) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   // const size_t local[2] = {16, 16};
   // let the driver choose:
@@ -373,6 +382,7 @@ int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel
 
 void dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp)
 {
+  if(!darktable.opencl->inited) return;
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
   // blocking.
@@ -381,6 +391,7 @@ void dt_opencl_copy_device_to_host(void *host, void *device, const int width, co
 
 void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, void *host)
 {
+  if(!darktable.opencl->inited) return NULL;
   cl_int err;
   cl_mem dev = clCreateBuffer (darktable.opencl->dev[devid].context,
       CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
@@ -392,6 +403,7 @@ void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, vo
 
 void* dt_opencl_copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp)
 {
+  if(!darktable.opencl->inited) return NULL;
   cl_int err;
   cl_image_format fmt;
   // guess pixel format from bytes per pixel
@@ -414,6 +426,7 @@ void* dt_opencl_copy_host_to_device(void *host, const int width, const int heigh
 
 void* dt_opencl_alloc_device(const int width, const int height, const int devid, const int bpp)
 {
+  if(!darktable.opencl->inited) return NULL;
   cl_int err;
   cl_image_format fmt;
   // guess pixel format from bytes per pixel

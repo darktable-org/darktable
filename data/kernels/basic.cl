@@ -188,13 +188,19 @@ basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  int2 p;
+  int px;
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y))*65535.0f;
-  int2 p = (((int)pixel.x) & 0xff, ((int)pixel.x) >> 8);
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y))*65536.0f;
+
+  px = clamp(pixel.x, 0.0f, 65535.0f);
+  p = (int2)((px & 0xff), (px >> 8));
   pixel.x = read_imagef(table, sampleri, p).x;
-  p = (((int)pixel.y) & 0xff, ((int)pixel.y) >> 8);
+  px = clamp(pixel.y, 0.0f, 65535.0f);
+  p = (int2)((px & 0xff), (px >> 8));
   pixel.y = read_imagef(table, sampleri, p).x;
-  p = (((int)pixel.z) & 0xff, ((int)pixel.z) >> 8);
+  px = clamp(pixel.z, 0.0f, 65535.0f);
+  p = (int2)((px & 0xff), (px >> 8));
   pixel.z = read_imagef(table, sampleri, p).x;
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -246,7 +252,8 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y))*655.35f;
-  int2 p = (((int)pixel.x) & 0xff, ((int)pixel.x) >> 8);
+  int px = clamp(pixel.x, 0.0f, 65535.0f);
+  int2 p = (int2)(px & 0xff, px >> 8);
   const float L = read_imagef(table, sampleri, p).x;
   if(pixel.x > 0.01f)
   {
