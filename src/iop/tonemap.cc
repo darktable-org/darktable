@@ -106,7 +106,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // and splat into the lattice
   for(int j=0;j<height;j++) for(int i=0;i<width;i++)
   {
-    float L = fmaxf(0.0f, 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2]);
+    float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
     if(L<=0.0) L=1e-6;
     L = logf(L);
     float pos[3] = {i/sigma_s, j/sigma_s, L/sigma_r};
@@ -145,8 +145,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float val[2];
     lattice.slice(val);
+    float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
+    if(L<=0.0) L=1e-6;
+    L = logf(L);
     const float B = val[0]/val[1];
-    const float Ln = expf(B*(contr - 1.0f) - 2.0f);
+    const float detail = L - B;
+    const float Ln = expf(B*(contr - 1.0f) + detail - 2.0f);
 
     out[0]=in[0]*Ln;
     out[1]=in[1]*Ln;
