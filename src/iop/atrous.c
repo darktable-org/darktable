@@ -237,8 +237,8 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
     boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], t);
     boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], t);
     for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
-    thrs [i][0] = thrs [i][3] = powf(2.0f, -i) * 10.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], t);
-    thrs [i][1] = thrs [i][2] = powf(2.0f, -i) * 20.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
+    thrs [i][0] = thrs [i][3] = powf(2.0f, -7.0f*(1.0f-t)) * 10.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], t);
+    thrs [i][1] = thrs [i][2] = powf(2.0f, -7.0f*(1.0f-t)) * 20.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
     sharp[i]    = 0.0025f*dt_draw_curve_calc_value(d->curve[atrous_s], t);
     // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
   }
