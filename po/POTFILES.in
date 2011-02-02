@@ -83,6 +83,7 @@ src/libs/export.c
 src/libs/image.c
 src/libs/lib.c
 src/libs/metadata.c
+src/libs/recentcollect.c
 src/libs/select.c
 src/libs/styles.c
 src/libs/tagging.c

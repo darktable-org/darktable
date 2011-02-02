@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-28 18:56+0100\n"
+"POT-Creation-Date: 2011-02-02 13:12+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: \n"
@@ -258,8 +258,7 @@ msgstr ""
 msgid "aperture"
 msgstr "Blende"
 
-#: ../data/darktable.glade.h:15 ../src/libs/collect.c:615
-#: ../src/libs/metadata.c:261
+#: ../data/darktable.glade.h:15 ../src/libs/metadata.c:261
 msgid "creator"
 msgstr "Urheber"
 
@@ -296,7 +295,7 @@ msgstr ""
 "ID\n"
 "Farbmarkierung"
 
-#: ../data/darktable.glade.h:25 ../src/libs/collect.c:607
+#: ../data/darktable.glade.h:25
 msgid "film roll"
 msgstr "Filmrolle"
 
@@ -312,11 +311,11 @@ msgstr "Höhe"
 msgid "histogram"
 msgstr "Histogramm"
 
-#: ../data/darktable.glade.h:29 ../src/libs/collect.c:611
+#: ../data/darktable.glade.h:29
 msgid "history"
 msgstr "Verlauf"
 
-#: ../data/darktable.glade.h:30 ../src/iop/clipping.c:751
+#: ../data/darktable.glade.h:30 ../src/iop/clipping.c:760
 msgid "image"
 msgstr "Bild"
 
@@ -341,7 +340,6 @@ msgid "iso"
 msgstr "ISO"
 
 #: ../data/darktable.glade.h:35 ../src/gui/presets.c:262
-#: ../src/iop/lens.c:1210
 msgid "lens"
 msgstr "Objektiv"
 
@@ -380,7 +378,7 @@ msgid "pick"
 msgstr "wähle"
 
 #: ../data/darktable.glade.h:45 ../src/imageio/storage/picasa.c:686
-#: ../src/libs/collect.c:617 ../src/libs/metadata.c:287
+#: ../src/libs/metadata.c:287
 msgid "rights"
 msgstr "Rechte"
 
@@ -401,8 +399,7 @@ msgid "switch to darkroom mode"
 msgstr "zum Dunkelkammer-Modus wechseln"
 
 #: ../data/darktable.glade.h:50 ../src/imageio/storage/flickr.c:440
-#: ../src/imageio/storage/picasa.c:684 ../src/libs/collect.c:613
-#: ../src/libs/metadata.c:235
+#: ../src/imageio/storage/picasa.c:684 ../src/libs/metadata.c:235
 msgid "title"
 msgstr "Titel"
 
@@ -627,22 +624,22 @@ msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: Modul ‚%s‘ hat unpassende Version: %d != %d"
 
 #: ../src/develop/imageop.c:294 ../src/develop/imageop.c:313
-#: ../src/develop/imageop.c:584
+#: ../src/develop/imageop.c:586
 #, c-format
 msgid "%s is switched on"
 msgstr "%s ist eingeschaltet"
 
 #: ../src/develop/imageop.c:294 ../src/develop/imageop.c:313
-#: ../src/develop/imageop.c:584
+#: ../src/develop/imageop.c:586
 #, c-format
 msgid "%s is switched off"
 msgstr "%s ist ausgeschaltet"
 
-#: ../src/develop/imageop.c:603 ../src/libs/lib.c:518
+#: ../src/develop/imageop.c:605 ../src/libs/lib.c:518
 msgid "reset parameters"
 msgstr "Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:604 ../src/libs/lib.c:524
+#: ../src/develop/imageop.c:606 ../src/libs/lib.c:524
 msgid "presets"
 msgstr "Voreinstellungen"
 
@@ -985,29 +982,30 @@ msgstr ""
 
 #: ../src/gui/iop_history.c:96
 #, c-format
-msgid "apply style '%s' on current image"
-msgstr "Stil ‚%s‘ auf aktuelles Bild anwenden"
+msgid "applied style `%s' on current image"
+msgstr "Stil ‚%s‘ auf aktuelles Bild angewandt"
 
-#: ../src/gui/iop_history.c:136
+#: ../src/gui/iop_history.c:128
+msgid "no styles have been created yet"
+msgstr "es wurde noch kein Stil angelegt"
+
+#: ../src/gui/iop_history.c:137
 msgid "compress history stack"
 msgstr "Verlaufsstapel zusammenfassen"
 
-#: ../src/gui/iop_history.c:137
+#: ../src/gui/iop_history.c:138
 msgid "create a minimal history stack which produces the same image"
 msgstr "erstelle einen minimalen Verlaufsstapel, der das gleiche Bild erzeugt"
 
-#: ../src/gui/iop_history.c:145
-msgid "create a style from currently developed image and its history stack"
-msgstr ""
-"Erzeuge einen Stil aus dem derzeit entwickelten Bild und seinem "
-"Verlaufsstapel."
+#: ../src/gui/iop_history.c:146
+msgid "create a style from the current history stack"
+msgstr "erzeuge einen Stil aus dem aktuellen Verlaufsstapel"
 
-# FIXME: Original ergibt keinen Sinn.
-#: ../src/gui/iop_history.c:151
-msgid "applies a style from selected from popup menu"
-msgstr ""
+#: ../src/gui/iop_history.c:152
+msgid "applies a style selected from popup menu"
+msgstr "wendet einen Stil an, der im Popup-Menü ausgewählt wurde"
 
-#: ../src/gui/iop_history.c:176 ../src/gui/iop_history.c:267
+#: ../src/gui/iop_history.c:177 ../src/gui/iop_history.c:268
 msgid "0 - original"
 msgstr "0 - Original"
 
@@ -1508,7 +1506,7 @@ msgstr "lokaler Kontrast 2"
 msgid "alpha"
 msgstr "Alpha"
 
-#: ../src/iop/anlfyeni.c:276 ../src/iop/lens.c:1271 ../src/iop/vignette.c:353
+#: ../src/iop/anlfyeni.c:276 ../src/iop/lens.c:1347 ../src/iop/vignette.c:353
 #: ../src/iop/watermark.c:574
 msgid "scale"
 msgstr "Skalierung"
@@ -1692,20 +1690,20 @@ msgid "radius"
 msgstr "Radius"
 
 #: ../src/iop/bilateral.cc:294 ../src/iop/channelmixer.c:328
-#: ../src/iop/channelmixer.c:345 ../src/iop/temperature.c:406
-#: ../src/libs/collect.c:140 ../src/libs/collect.c:142
+#: ../src/iop/channelmixer.c:345 ../src/iop/temperature.c:466
+#: ../src/libs/collect.c:133 ../src/libs/collect.c:135
 msgid "red"
 msgstr "Rot"
 
 #: ../src/iop/bilateral.cc:296 ../src/iop/channelmixer.c:329
-#: ../src/iop/channelmixer.c:346 ../src/iop/temperature.c:410
-#: ../src/libs/collect.c:152 ../src/libs/collect.c:154
+#: ../src/iop/channelmixer.c:346 ../src/iop/temperature.c:470
+#: ../src/libs/collect.c:145 ../src/libs/collect.c:147
 msgid "green"
 msgstr "Grün"
 
 #: ../src/iop/bilateral.cc:298 ../src/iop/channelmixer.c:330
-#: ../src/iop/channelmixer.c:347 ../src/iop/temperature.c:414
-#: ../src/libs/collect.c:158 ../src/libs/collect.c:160
+#: ../src/iop/channelmixer.c:347 ../src/iop/temperature.c:474
+#: ../src/libs/collect.c:151 ../src/libs/collect.c:153
 msgid "blue"
 msgstr "Blau"
 
@@ -1874,82 +1872,82 @@ msgid "rotate by 180"
 msgstr "Um 180° drehen"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:705 ../src/iop/clipping.c:798
+#: ../src/iop/clipping.c:714 ../src/iop/clipping.c:807
 msgid "flip"
 msgstr "spiegeln"
 
-#: ../src/iop/clipping.c:712
+#: ../src/iop/clipping.c:721
 msgid "flip image vertically"
 msgstr "Bild vertikal spiegeln"
 
-#: ../src/iop/clipping.c:713
+#: ../src/iop/clipping.c:722
 msgid "flip image horizontally"
 msgstr "Bild horizontal spiegeln"
 
-#: ../src/iop/clipping.c:715
+#: ../src/iop/clipping.c:724
 msgid "angle"
 msgstr "Winkel"
 
 # sehr unschön :-(
-#: ../src/iop/clipping.c:720
+#: ../src/iop/clipping.c:729
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "mit Rechts ins Bild klicken und eine Linie ziehen, um eine gerade Kante zu "
 "markieren"
 
-#: ../src/iop/clipping.c:725
+#: ../src/iop/clipping.c:734
 msgid "keystone h"
 msgstr "Trapezkorrektur h"
 
-#: ../src/iop/clipping.c:730
+#: ../src/iop/clipping.c:739
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "Perspektive für horizontale Trapezverzerrung anpassen"
 
-#: ../src/iop/clipping.c:736
+#: ../src/iop/clipping.c:745
 msgid "keystone v"
 msgstr "Trapezkorrektur v"
 
-#: ../src/iop/clipping.c:740
+#: ../src/iop/clipping.c:749
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "Perspektive für vertikale Trapezverzerrung anpassen"
 
-#: ../src/iop/clipping.c:745
+#: ../src/iop/clipping.c:754
 msgid "aspect"
 msgstr "Format"
 
-#: ../src/iop/clipping.c:750
+#: ../src/iop/clipping.c:759
 msgid "free"
 msgstr "frei"
 
-#: ../src/iop/clipping.c:752
+#: ../src/iop/clipping.c:761
 msgid "golden cut"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/clipping.c:753
+#: ../src/iop/clipping.c:762
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:754
+#: ../src/iop/clipping.c:763
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/clipping.c:755
+#: ../src/iop/clipping.c:764
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:765
 msgid "square"
 msgstr "quadratisch"
 
-#: ../src/iop/clipping.c:757
+#: ../src/iop/clipping.c:766
 msgid "din"
 msgstr "DIN"
 
-#: ../src/iop/clipping.c:758
+#: ../src/iop/clipping.c:767
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/clipping.c:765
+#: ../src/iop/clipping.c:774
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -1957,87 +1955,87 @@ msgstr ""
 "Seitenverhältnis setzen (b:h)\n"
 "drücke Strg-x um die Seiten zu tauschen"
 
-#: ../src/iop/clipping.c:771
+#: ../src/iop/clipping.c:780
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "Seitenverhältnis tauschen (Strg-x)"
 
-#: ../src/iop/clipping.c:778
+#: ../src/iop/clipping.c:787
 msgid "guides"
 msgstr "Hilfslinien"
 
-#: ../src/iop/clipping.c:781
+#: ../src/iop/clipping.c:790
 msgid "none"
 msgstr "keine"
 
-#: ../src/iop/clipping.c:782
+#: ../src/iop/clipping.c:791
 msgid "grid"
 msgstr "Gitter"
 
-#: ../src/iop/clipping.c:783
+#: ../src/iop/clipping.c:792
 msgid "rules of thirds"
 msgstr "Drittelregel"
 
-#: ../src/iop/clipping.c:784
+#: ../src/iop/clipping.c:793
 msgid "diagonal method"
 msgstr "Diagonalen"
 
-#: ../src/iop/clipping.c:785
+#: ../src/iop/clipping.c:794
 msgid "harmonious triangles"
 msgstr "harmonische Dreiecke"
 
-#: ../src/iop/clipping.c:786
+#: ../src/iop/clipping.c:795
 msgid "golden mean"
 msgstr "goldener Schnitt"
 
-#: ../src/iop/clipping.c:788
+#: ../src/iop/clipping.c:797
 msgid ""
 "with this option, you can display guide lines to help compose your "
 "photograph."
 msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotographie helfen."
 
-#: ../src/iop/clipping.c:792
+#: ../src/iop/clipping.c:801
 msgid "type"
 msgstr "Typ"
 
-#: ../src/iop/clipping.c:805
+#: ../src/iop/clipping.c:814
 msgid "flip guides vertically"
 msgstr "Hilfslinien vertikal spiegeln"
 
-#: ../src/iop/clipping.c:806
+#: ../src/iop/clipping.c:815
 msgid "flip guides horizontally"
 msgstr "Hilfslinien horizontal spiegeln"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:808
+#: ../src/iop/clipping.c:817
 msgid "golden sections"
 msgstr "Goldener Schnitt"
 
-#: ../src/iop/clipping.c:810
+#: ../src/iop/clipping.c:819
 msgid "enable this option to show golden sections."
 msgstr "diese Option auswählen, um den Goldenen Schnitt anzuzeigen"
 
-#: ../src/iop/clipping.c:813
+#: ../src/iop/clipping.c:822
 msgid "spiral sections"
 msgstr "Rechtecke d. Spirale"
 
-#: ../src/iop/clipping.c:814
+#: ../src/iop/clipping.c:823
 msgid "enable this option to show golden spiral sections."
 msgstr ""
 "diese Option auswählen, um die Bereiche der goldenen Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:817
+#: ../src/iop/clipping.c:826
 msgid "golden spiral"
 msgstr "Goldene Spirale"
 
-#: ../src/iop/clipping.c:818
+#: ../src/iop/clipping.c:827
 msgid "enable this option to show a golden spiral guide."
 msgstr "diese Option auswählen, um eine Goldene Spirale anzuzeigen"
 
-#: ../src/iop/clipping.c:821
+#: ../src/iop/clipping.c:830
 msgid "golden triangles"
 msgstr "Goldene Dreiecke"
 
-#: ../src/iop/clipping.c:822
+#: ../src/iop/clipping.c:831
 msgid "enable this option to show golden triangles."
 msgstr "diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 
@@ -2045,119 +2043,119 @@ msgstr "diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 msgid "color correction"
 msgstr "Farbkorrektur"
 
-#: ../src/iop/colorin.c:38
+#: ../src/iop/colorin.c:46
 msgid "input color profile"
 msgstr "Eingabefarbprofil"
 
-#: ../src/iop/colorin.c:280
+#: ../src/iop/colorin.c:339
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "nicht unterstütztes Eingabeprofil wurde durch lineares RGB ersetzt!"
 
-#: ../src/iop/colorin.c:474 ../src/libs/export.c:510
+#: ../src/iop/colorin.c:534 ../src/libs/export.c:510
 msgid "profile"
 msgstr "Profil"
 
-#: ../src/iop/colorin.c:483
+#: ../src/iop/colorin.c:543
 msgid "standard color matrix"
 msgstr "Standard-Farb-Matrix"
 
-#: ../src/iop/colorin.c:485
+#: ../src/iop/colorin.c:545
 msgid "enhanced color matrix"
 msgstr "erweiterte Farb-Matrix"
 
-#: ../src/iop/colorin.c:487
+#: ../src/iop/colorin.c:547
 msgid "srgb (e.g. jpg)"
 msgstr "sRGB (z.B. JPEG)"
 
-#: ../src/iop/colorin.c:489 ../src/iop/colorout.c:506
-#: ../src/iop/colorout.c:507 ../src/libs/export.c:463
+#: ../src/iop/colorin.c:549 ../src/iop/colorout.c:552
+#: ../src/iop/colorout.c:553 ../src/libs/export.c:463
 msgid "adobe rgb"
 msgstr "Adobe RGB"
 
-#: ../src/iop/colorin.c:491 ../src/iop/colorout.c:496
-#: ../src/iop/colorout.c:497 ../src/libs/export.c:475
+#: ../src/iop/colorin.c:551 ../src/iop/colorout.c:542
+#: ../src/iop/colorout.c:543 ../src/libs/export.c:475
 msgid "linear rgb"
 msgstr "lineares RGB"
 
-#: ../src/iop/colorin.c:493
+#: ../src/iop/colorin.c:553
 msgid "linear infrared bgr"
 msgstr "linears Infrarot BGR"
 
-#: ../src/iop/colorin.c:495
+#: ../src/iop/colorin.c:555
 msgid "linear xyz"
 msgstr "lineares XYZ"
 
-#: ../src/iop/colorin.c:504
+#: ../src/iop/colorin.c:564
 #, c-format
 msgid "icc profiles in %s/color/in or %s/color/in"
 msgstr "ICC-Profile in %s/color/in oder %s/color/in"
 
-#: ../src/iop/colorout.c:37
+#: ../src/iop/colorout.c:38
 msgid "output color profile"
 msgstr "Ausgabefarbprofil"
 
-#: ../src/iop/colorout.c:285
+#: ../src/iop/colorout.c:339
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:461
+#: ../src/iop/colorout.c:507
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:462
+#: ../src/iop/colorout.c:508
 msgid "output profile"
 msgstr "Ausgabeprofil"
 
-#: ../src/iop/colorout.c:463
+#: ../src/iop/colorout.c:509
 msgid "display intent"
 msgstr "Anzeigevorsatz"
 
-#: ../src/iop/colorout.c:464
+#: ../src/iop/colorout.c:510
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
-#: ../src/iop/colorout.c:474 ../src/iop/colorout.c:479
+#: ../src/iop/colorout.c:520 ../src/iop/colorout.c:525
 #: ../src/libs/export.c:446
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:475 ../src/iop/colorout.c:480
+#: ../src/iop/colorout.c:521 ../src/iop/colorout.c:526
 #: ../src/libs/export.c:447
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:476 ../src/iop/colorout.c:481
+#: ../src/iop/colorout.c:522 ../src/iop/colorout.c:527
 #: ../src/libs/export.c:448
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:477 ../src/iop/colorout.c:482
+#: ../src/iop/colorout.c:523 ../src/iop/colorout.c:528
 #: ../src/libs/export.c:449
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
-#: ../src/iop/colorout.c:491 ../src/iop/colorout.c:492
+#: ../src/iop/colorout.c:537 ../src/iop/colorout.c:538
 #: ../src/libs/export.c:521
 msgid "system display profile"
 msgstr "System-Bildschirmprofil"
 
-#: ../src/iop/colorout.c:501 ../src/iop/colorout.c:502
+#: ../src/iop/colorout.c:547 ../src/iop/colorout.c:548
 #: ../src/libs/export.c:456
 msgid "srgb (web-safe)"
 msgstr "sRGB (web-sicher)"
 
 # FIXME: ZU LANG!!1!einself!!
-#: ../src/iop/colorout.c:526
+#: ../src/iop/colorout.c:572
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
 
-#: ../src/iop/colorout.c:527
+#: ../src/iop/colorout.c:573
 #, c-format
 msgid "icc profiles in %s/color/out or %s/color/out"
 msgstr "ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:529
+#: ../src/iop/colorout.c:575
 #, c-format
 msgid "display icc profiles in %s/color/out or %s/color/out"
 msgstr "Anzeige-ICC-Profile in %s/color/out oder %s/color/out"
@@ -2479,7 +2477,7 @@ msgstr ""
 "Anschluss:\t%s\n"
 "Crop-Faktor:\t%.1f"
 
-#: ../src/iop/lens.c:947
+#: ../src/iop/lens.c:989
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -2498,98 +2496,90 @@ msgstr ""
 "Typ:\t\t\t\t%s\n"
 "Anschlüsse:\t\t%s"
 
-#: ../src/iop/lens.c:977
+#: ../src/iop/lens.c:1019
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:977
+#: ../src/iop/lens.c:1019
 msgid "focal length (mm)"
 msgstr "Brennweite (mm)"
 
-#: ../src/iop/lens.c:987
+#: ../src/iop/lens.c:1025 ../src/iop/lens.c:1040
+msgid "reset from exif data"
+msgstr "auf EXIF-Angabe zurücksetzen"
+
+#: ../src/iop/lens.c:1034
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:987
+#: ../src/iop/lens.c:1034
 msgid "f-number (aperture)"
 msgstr "Blendenzahl"
 
-#: ../src/iop/lens.c:993
+#: ../src/iop/lens.c:1045
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:993
+#: ../src/iop/lens.c:1045
 msgid "distance to subject"
 msgstr "Entfernung"
 
-#: ../src/iop/lens.c:1196
-msgid "cam"
-msgstr "Kamera"
+#: ../src/iop/lens.c:1273
+msgid "find camera"
+msgstr "Kamera finden"
 
-#: ../src/iop/lens.c:1197
-msgid ""
-"search for camera using a pattern\n"
-"format: [maker, ][model]"
-msgstr ""
-"nach Kamera mittels Muster suchen\n"
-"Format: [Hersteller, ][Modell]"
-
-#: ../src/iop/lens.c:1212
-msgid ""
-"search for lens using a pattern\n"
-"format: [maker, ][model]"
-msgstr ""
-"nach Objektiv mittels Muster suchen\n"
-"Format: [Hersteller, ][Modell]"
+#: ../src/iop/lens.c:1288
+msgid "find lens"
+msgstr "Objektiv finden"
 
 #. target geometry
-#: ../src/iop/lens.c:1240
+#: ../src/iop/lens.c:1316
 msgid "geometry"
 msgstr "Geometrie"
 
-#: ../src/iop/lens.c:1246
+#: ../src/iop/lens.c:1322
 msgid "target geometry"
 msgstr "Zielgeometrie"
 
-#: ../src/iop/lens.c:1247
+#: ../src/iop/lens.c:1323
 msgid "rectilinear"
 msgstr "geradlinig"
 
-#: ../src/iop/lens.c:1248
+#: ../src/iop/lens.c:1324
 msgid "fish-eye"
 msgstr "Fischauge"
 
-#: ../src/iop/lens.c:1249
+#: ../src/iop/lens.c:1325
 msgid "panoramic"
 msgstr "Panorama"
 
-#: ../src/iop/lens.c:1250
+#: ../src/iop/lens.c:1326
 msgid "equirectangular"
 msgstr "Equirectangular"
 
-#: ../src/iop/lens.c:1266
+#: ../src/iop/lens.c:1342
 msgid "auto scale"
 msgstr "automatisch skalieren"
 
 #. reverse direction
-#: ../src/iop/lens.c:1275
+#: ../src/iop/lens.c:1351
 msgid "reverse"
 msgstr "umkehren"
 
-#: ../src/iop/lens.c:1276
+#: ../src/iop/lens.c:1352
 msgid "apply distortions instead of correcting them"
 msgstr "füge Verzerrung hinzu statt sie zu korrigieren"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1283
+#: ../src/iop/lens.c:1359
 msgid "tca r"
 msgstr "TCA R"
 
-#: ../src/iop/lens.c:1285
+#: ../src/iop/lens.c:1361
 msgid "tca b"
 msgstr "TCA B"
 
-#: ../src/iop/lens.c:1293
+#: ../src/iop/lens.c:1369
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -2598,7 +2588,7 @@ msgstr ""
 "Aberrationskorrektur für den Rot-Kanal.\n"
 "für Standardwert bei 1.0 belassen"
 
-#: ../src/iop/lens.c:1294
+#: ../src/iop/lens.c:1370
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
@@ -2709,36 +2699,36 @@ msgstr ""
 "komprimiere den Effekt in den\n"
 "Schatten/Spitzlichtern und erhalte die Mitten"
 
-#: ../src/iop/temperature.c:77
+#: ../src/iop/temperature.c:85
 msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:369
+#: ../src/iop/temperature.c:429
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:370
+#: ../src/iop/temperature.c:430
 msgid "temperature out"
 msgstr "Farbtemperatur aus"
 
-#: ../src/iop/temperature.c:391
+#: ../src/iop/temperature.c:451
 msgid "temperature in"
 msgstr "Farbtemperatur ein"
 
-#: ../src/iop/temperature.c:424
+#: ../src/iop/temperature.c:484
 msgid "camera white balance"
 msgstr "Weißabgleich der Kamera"
 
-#: ../src/iop/temperature.c:425
+#: ../src/iop/temperature.c:485
 msgid "spot white balance"
 msgstr "Weißabgleich manuell setzen"
 
-#: ../src/iop/temperature.c:426
+#: ../src/iop/temperature.c:486
 msgid "passthrough"
 msgstr "Durchschleifen"
 
-#: ../src/iop/temperature.c:452
+#: ../src/iop/temperature.c:512
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -2758,11 +2748,11 @@ msgstr "hoher Kontrast"
 msgid "tone mapping"
 msgstr "Tonemapping"
 
-#: ../src/iop/tonemap.cc:266
+#: ../src/iop/tonemap.cc:255
 msgid "contrast compression"
 msgstr "Kontrast-Kompression"
 
-#: ../src/iop/tonemap.cc:272
+#: ../src/iop/tonemap.cc:261
 msgid "spatial extent"
 msgstr "räumliche Ausdehnung"
 
@@ -3167,60 +3157,60 @@ msgstr "Sitzung"
 msgid "create"
 msgstr "erzeugen"
 
-#: ../src/libs/collect.c:74
+#: ../src/libs/collect.c:66
 msgid "collect images"
 msgstr "Bilder sammeln"
 
-#: ../src/libs/collect.c:124 ../src/libs/collect.c:126
+#: ../src/libs/collect.c:117 ../src/libs/collect.c:119
 msgid "altered"
 msgstr "geändert"
 
-#: ../src/libs/collect.c:130 ../src/libs/collect.c:132
+#: ../src/libs/collect.c:123 ../src/libs/collect.c:125
 msgid "not altered"
 msgstr "ungeändert"
 
-#: ../src/libs/collect.c:146 ../src/libs/collect.c:148
+#: ../src/libs/collect.c:139 ../src/libs/collect.c:141
 msgid "yellow"
 msgstr "Gelb"
 
-#: ../src/libs/collect.c:164 ../src/libs/collect.c:166
+#: ../src/libs/collect.c:157 ../src/libs/collect.c:159
 msgid "purple"
 msgstr "Violett"
 
-#: ../src/libs/collect.c:254 ../src/libs/collect.c:268
+#: ../src/libs/collect.c:247 ../src/libs/collect.c:261
+#: ../src/libs/collect.c:527
 msgid "clear this rule"
 msgstr "diese Regel löschen"
 
-#: ../src/libs/collect.c:259
+#: ../src/libs/collect.c:252
 msgid "clear this rule or add new rules"
 msgstr "diese Regel löschen oder weitere Regeln hinzufügen"
 
-#: ../src/libs/collect.c:608
-msgid "camera"
-msgstr "Kamera"
+#: ../src/libs/collect.c:533
+msgid "narrow down search"
+msgstr "Suche verfeinern"
 
-#: ../src/libs/collect.c:609
-msgid "tag"
-msgstr "Tag"
+#: ../src/libs/collect.c:537
+msgid "add more images"
+msgstr "mehr Bilder hinzufügen"
 
-#: ../src/libs/collect.c:610
-msgid "date"
-msgstr "Datum"
+#: ../src/libs/collect.c:541
+msgid "exclude images"
+msgstr "Bilder ausschließen"
 
-#: ../src/libs/collect.c:612
-msgid "colorlabel"
-msgstr "Farbmarkierung"
+#: ../src/libs/collect.c:547
+msgid "change to: and"
+msgstr "ändere zu: UND"
 
-#: ../src/libs/collect.c:614 ../src/libs/metadata.c:248
-msgid "description"
-msgstr "Beschreibung"
+#: ../src/libs/collect.c:551
+msgid "change to: or"
+msgstr "ändere zu: ODER"
 
-# Herausgeber? Verlag? oder noch was anderes?
-#: ../src/libs/collect.c:616 ../src/libs/metadata.c:274
-msgid "publisher"
-msgstr "Herausgeber"
+#: ../src/libs/collect.c:555
+msgid "change to: except"
+msgstr "ändere zu: AUSSER"
 
-#: ../src/libs/collect.c:627
+#: ../src/libs/collect.c:602
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "Anfrage eingeben, ‚%‘ als Paltzhalter benutzen"
@@ -3463,6 +3453,15 @@ msgstr "Urheber-Informationen"
 msgid "<leave unchanged>"
 msgstr "<nicht ändern>"
 
+#: ../src/libs/metadata.c:248
+msgid "description"
+msgstr "Beschreibung"
+
+# Herausgeber? Verlag? oder noch was anderes?
+#: ../src/libs/metadata.c:274
+msgid "publisher"
+msgstr "Herausgeber"
+
 #: ../src/libs/metadata.c:305
 msgid "clear"
 msgstr "löschen"
@@ -3537,6 +3536,26 @@ msgstr "alle Rechte vorbehalten"
 #: ../src/libs/metadata.c:347
 msgid "All rights reserved."
 msgstr "Alle Rechte vorbehalten."
+
+#: ../src/libs/recentcollect.c:49
+msgid "recently used collections"
+msgstr "kürzlich benutzte Kollektionen"
+
+#: ../src/libs/recentcollect.c:139
+#, c-format
+msgid " and "
+msgstr " UND "
+
+#: ../src/libs/recentcollect.c:142
+#, c-format
+msgid " or "
+msgstr " ODER "
+
+#. case DT_LIB_COLLECT_MODE_AND_NOT:
+#: ../src/libs/recentcollect.c:145
+#, c-format
+msgid " but not "
+msgstr " ABER NICHT "
 
 #: ../src/libs/select.c:32
 msgid "select"
@@ -3754,6 +3773,47 @@ msgstr "Filmstreifen"
 msgid "lighttable"
 msgstr "Leuchttisch"
 
+#~ msgid "and new rule"
+#~ msgstr "neue UND-Regel"
+
+#~ msgid "or new rule"
+#~ msgstr "neue ODER-Regel"
+
+#~ msgid "and not new rule"
+#~ msgstr "neue UND-NICHT-Regel"
+
+#~ msgid "change to and not"
+#~ msgstr "zu UND-NICHT ändern"
+
+#~ msgid "camera"
+#~ msgstr "Kamera"
+
+#~ msgid "tag"
+#~ msgstr "Tag"
+
+#~ msgid "date"
+#~ msgstr "Datum"
+
+#~ msgid "colorlabel"
+#~ msgstr "Farbmarkierung"
+
+#~ msgid "cam"
+#~ msgstr "Kamera"
+
+#~ msgid ""
+#~ "search for camera using a pattern\n"
+#~ "format: [maker, ][model]"
+#~ msgstr ""
+#~ "nach Kamera mittels Muster suchen\n"
+#~ "Format: [Hersteller, ][Modell]"
+
+#~ msgid ""
+#~ "search for lens using a pattern\n"
+#~ "format: [maker, ][model]"
+#~ msgstr ""
+#~ "nach Objektiv mittels Muster suchen\n"
+#~ "Format: [Hersteller, ][Modell]"
+
 #~ msgid "devices"
 #~ msgstr "Geräte"
 
@@ -3791,9 +3851,6 @@ msgstr "Leuchttisch"
 
 #~ msgid "remove film roll?"
 #~ msgstr "Filmrolle entfernen?"
-
-#~ msgid "recently used film rolls"
-#~ msgstr "kürzlich benutzte Filmrollen"
 
 #~ msgid "all film rolls"
 #~ msgstr "alle Filmrollen"
