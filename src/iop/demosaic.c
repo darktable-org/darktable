@@ -113,15 +113,13 @@ FC(const int row, const int col, const unsigned int filters)
 #define SWAP(a, b) {const float tmp = (b); (b) = (a); (a) = tmp;}
 
 static void
-pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold, const int f4)
+pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, const int filters, const int num_passes, const float threshold)
 {
-  const float thrs  = threshold;
-  if(f4) for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-    out[4*(j*roi_out->width + i) + FC(j, i, filters)] = in[j*roi_out->width + i];
-  else memcpy(out, in, roi_out->width*roi_out->height*sizeof(float));
-#if 0
-  // const float thrsc = 2*threshold;
+#if 1
+  memcpy(out, in, roi->width*roi->height*sizeof(float));
+#else
   // colors:
+  const float thrsc = 2*threshold;
   for (int pass=0; pass < num_passes; pass++)
   {
     for (int c=0; c < 3; c+=2)
@@ -131,17 +129,17 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(rows,c,out) schedule(static)
 #endif
-      for (int row=rows;row<roi_out->height-3;row+=2)
+      for (int row=rows;row<roi->height-3;row+=2)
       {
         float med[9];
         int col = 3;
         if(FC(row,col,filters) != c) col++;
-        float *pixo = out + (f4?4:1)*(roi_out->width * row + col);
-        const float *pixi = in + roi_in->width * row + col;
-        for(;col<roi_out->width-3;col+=2)
+        float *pixo = out + roi->width * row + col;
+        const float *pixi = in + roi->width * row + col;
+        for(;col<roi->width-3;col+=2)
         {
           int cnt = 0;
-          for (int k=0, i = -2*roi_in->width; i <= 2*roi_in->width; i += 2*roi_in->width)
+          for (int k=0, i = -2*roi->width; i <= 2*roi->width; i += 2*roi->width)
           {
             for (int j = i-2; j <= i+2; j+=2)
             {
@@ -154,15 +152,17 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
             }
           }
           for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
+#if 0
           // cnt == 1 and no small edge in greens.
-          if(fabsf(pixi[-roi_in->width] - pixi[+roi_in->width]) + fabsf(pixi[-1] - pixi[+1])
-           + fabsf(pixi[-roi_in->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[+roi_in->width])
-           + fabsf(pixi[+roi_in->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[-roi_in->width])
+          if(fabsf(pixi[-roi->width] - pixi[+roi->width]) + fabsf(pixi[-1] - pixi[+1])
+           + fabsf(pixi[-roi->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[+roi->width])
+           + fabsf(pixi[+roi->width] - pixi[+1]) + fabsf(pixi[-1] - pixi[-roi->width])
            > 0.06)
-            pixo[f4?c:0] = med[(cnt-1)/2];
+            pixo[0] = med[(cnt-1)/2];
           else
-            pixo[f4?c:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
-          pixo += f4?8:2;
+#endif
+            pixo[0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+          pixo += 2;
           pixi += 2;
         }
       }
@@ -177,41 +177,42 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi_ou
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
-    for (int row=3;row<roi_out->height-3;row++)
+    for (int row=3;row<roi->height-3;row++)
     {
       float med[9];
       int col = 3;
       if(FC(row,col,filters) != 1 && FC(row,col,filters) != 3) col++;
-      float *pixo = out + (f4?4:1)*(roi_out->width * row + col);
-      const float *pixi = in + roi_in->width * row + col;
-      for(;col<roi_out->width-3;col+=2)
+      float *pixo = out + roi->width * row + col;
+      const float *pixi = in + roi->width * row + col;
+      for(;col<roi->width-3;col+=2)
       {
         int cnt = 0;
         for (int k=0, i = 0; i < 5; i ++)
         {
           for (int j = -lim[i]; j <= lim[i]; j+=2)
           {
-            if(fabsf(pixi[roi_in->width*(i-2) + j] - pixi[0]) < thrs)
+            if(fabsf(pixi[roi->width*(i-2) + j] - pixi[0]) < threshold)
             {
-              med[k++] = pixi[roi_in->width*(i-2) + j];
+              med[k++] = pixi[roi->width*(i-2) + j];
               cnt++;
             }
-            else med[k++] = 64.0f+pixi[roi_in->width*(i-2)+j];
+            else med[k++] = 64.0f+pixi[roi->width*(i-2)+j];
           }
         }
         for (int i=0;i<8;i++) for(int ii=i+1;ii<9;ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[f4?1:0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
-        // pixo[f4?1:0] = med[(cnt-1)/2];
-        pixo += f4?8:2;
+        pixo[0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt-1)/2]);
+        // pixo[0] = med[(cnt-1)/2];
+        pixo += 2;
         pixi += 2;
       }
     }
   }
 }
+
 static void
-pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const int filters, const int num_passes, const float threshold)
+pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi, const int filters, const int num_passes, const float threshold)
 {
-  pre_median_b(out, in, roi_out, roi_in, filters, num_passes, threshold, 1);
+  pre_median_b(out, in, roi, filters, num_passes, threshold);
 }
 
 #define SWAPmed(I,J) if (med[I] > med[J]) SWAP(med[I], med[J])
@@ -321,7 +322,7 @@ green_equilibration(float *out, const float *const in, const int width, const in
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void
-demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs)
+demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs)
 {
   // snap to start of mosaic block:
   roi_out->x = 0;//MAX(0, roi_out->x & ~1);
@@ -361,10 +362,15 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
   }
   const int median = thrs > 0.0f;
   // if(median) fbdd_green(out, in, roi_out, roi_in, filters);
-  if(median) pre_median(out, in, roi_out, roi_in, filters, 1, thrs);
+  if(median)
+  {
+    float *med_in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
+    pre_median(med_in, in, roi_in, filters, 1, thrs);
+    in = med_in;
+  }
   // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_in, roi_out, out) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, in, out) schedule(static)
 #endif
   for (int j=offy; j < roi_out->height-offY; j++)
   {
@@ -387,7 +393,7 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
       // if(__builtin_expect(c == 0 || c == 2, 1))
       if(c == 0 || c == 2)
       {
-        if(!median) color[c] = pc; 
+        color[c] = pc;
         // get stuff (hopefully from cache)
         const float pym  = buf_in[ - roi_in->width*1];
         const float pym2 = buf_in[ - roi_in->width*2];
@@ -426,7 +432,7 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
           color[1] = fmaxf(fminf(guessx*.25f, M), m);
         }
       }
-      else if(!median) color[1] = pc; 
+      else color[1] = pc;
 
       // write using MOVNTPS (write combine omitting caches)
       // _mm_stream_ps(buf, col);
@@ -510,6 +516,8 @@ demosaic_ppg(float *out, const float *const in, dt_iop_roi_t *roi_out, const dt_
     }
   }
   // _mm_sfence();
+  if (median)
+    free((float*)in);
 }
 
 
@@ -594,7 +602,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
     {
       float *tmp = (float *)dt_alloc_align(16, sizeof(float)*roi_in->width*roi_in->height);
-      pre_median_b(tmp, pixels, roi_in, roi_in, data->filters, 1, data->median_thrs, 0);
+      pre_median_b(tmp, pixels, roi_in, data->filters, 1, data->median_thrs);
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters);
       free(tmp);
     }
