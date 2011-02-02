@@ -189,8 +189,9 @@ collection_updated(void *d)
   if(serialize(buf, bufsize)) return;
 
   int n = -1;
-  for(int k=0;k<NUM_LINES;k++)
+  for(int k=0;k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES);k++)
   {
+    // is it already in the current list?
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
     gchar *line = dt_conf_get_string(confname);
     if(!line) continue;
@@ -203,7 +204,7 @@ collection_updated(void *d)
   }
   if(n < 0)
   {
-    const int num_items = CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, 9);
+    const int num_items = CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES);
     if(num_items < NUM_LINES)
     {
       // new, unused entry
@@ -251,7 +252,7 @@ collection_updated(void *d)
     gtk_widget_set_no_show_all(c->item[k].button, TRUE);
     gtk_widget_set_visible(c->item[k].button, FALSE);
   }
-  for(int k=0;k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, 9);k++)
+  for(int k=0;k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES);k++)
   {
     gtk_widget_set_no_show_all(c->item[k].button, FALSE);
     gtk_widget_set_visible(c->item[k].button, TRUE);
