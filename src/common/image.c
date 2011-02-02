@@ -334,7 +334,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   roi_out.width = p_wd;//f_wd;
   roi_out.height = p_ht;//f_ht;
   roi_out.scale = fminf(f_wd/(float)raw_wd, f_ht/(float)raw_ht);
-  if(img->flags & DT_IMAGE_RAW)
+  if(img->filters)
   { // demosaic during downsample
     if(img->bpp == sizeof(float))
       dt_iop_clip_and_zoom_demosaic_half_size_f(img->mipf, (const float *)raw, &roi_out, &roi_in, p_wd, raw_wd, dt_image_flipped_filter(img));

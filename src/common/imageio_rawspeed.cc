@@ -47,6 +47,8 @@ rawspeed_get_number_of_processor_cores()
 
 using namespace RawSpeed;
 
+dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r);
+dt_imageio_retval_t dt_imageio_open_rawspeed_sraw_preview(dt_image_t *img, RawImage r);
 static CameraMetaData *meta = NULL;
 
 dt_imageio_retval_t
@@ -64,7 +66,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
   snprintf(filen, 1024, "%s", filename);
   FileReader f(filen);
 
-  RawDecoder *d = NULL;
+  RawDecoder *d = NULL; 
   FileMap* m = NULL;
   try
   {
@@ -99,6 +101,19 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       d->decodeRaw();
       d->decodeMetaData(meta);
       RawImage r = d->mRaw;
+
+      img->filters = NULL;
+      if( r->subsampling.x > 1 || r->subsampling.y > 1 )
+      {
+        img->flags &= ~DT_IMAGE_LDR;
+        img->flags |= DT_IMAGE_RAW;
+
+        dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r);
+        if (d) delete d;
+        if (m) delete m;
+        return ret;
+      }
+
       // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
       if(r->bpp != 4) r->scaleBlackWhite();
       img->bpp = r->bpp;
@@ -204,6 +219,19 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
       d->decodeRaw();
       d->decodeMetaData(meta);
       RawImage r = d->mRaw;
+
+      img->filters = NULL;
+      if( r->subsampling.x > 1 || r->subsampling.y > 1 )
+      {
+        img->flags &= ~DT_IMAGE_LDR;
+        img->flags |= DT_IMAGE_RAW;
+
+        dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw_preview(img, r);
+        if (d) delete d;
+        if (m) delete m;
+        return ret;
+      }
+
       // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
       if(r->bpp != 4) r->scaleBlackWhite();
       img->bpp = r->bpp;
@@ -258,3 +286,81 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   return retv;
 }
+
+dt_imageio_retval_t 
+dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r)
+{
+  // this is modelled substantially on dt_imageio_open_tiff
+
+  img->flags &= ~DT_IMAGE_LDR;
+  img->flags |= DT_IMAGE_RAW;
+
+  const int orientation = dt_image_orientation(img);
+  img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
+  img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+
+  int raw_width = r->dim.x;
+  int raw_height = r->dim.y;
+  int raw_width_extra = r->subsampling.y == 2 ? 72 : 0;
+
+  if(dt_image_alloc(img, DT_IMAGE_FULL))
+    return DT_IMAGEIO_CACHE_FULL;
+
+  dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
+
+  int black = r->blackLevel;
+  int white = r->whitePoint;
+  float scale = 1.0 / (white - black);
+
+  ushort16* raw_img = (ushort16*)r->getData();
+
+  // TODO - OMPize this.
+
+  for( int row = 0; row < raw_height; ++row )
+    for( int col = 0; col < raw_width; ++col )
+      for( int k = 0; k < 3; ++k )
+        img->pixels[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] = (float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] * scale;
+
+  dt_image_release(img, DT_IMAGE_FULL, 'w');
+  return DT_IMAGEIO_OK;
+}
+
+dt_imageio_retval_t 
+dt_imageio_open_rawspeed_sraw_preview(dt_image_t *img, RawImage r)
+{
+  img->flags &= ~DT_IMAGE_LDR;
+  img->flags |= DT_IMAGE_RAW;
+
+  const int orientation = dt_image_orientation(img);
+  img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
+  img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+
+  int raw_width = r->dim.x;
+  int raw_height = r->dim.y;
+  int raw_width_extra = r->subsampling.y == 2 ? 72 : 0;
+
+  float *buf = (float*)dt_alloc_align(16, raw_width * raw_height * 4 * sizeof(float) );
+
+  if(!buf)
+      return DT_IMAGEIO_CACHE_FULL;
+
+  int black = r->blackLevel;
+  int white = r->whitePoint;
+  float scale = 1.0 / (white - black);
+
+  ushort16* raw_img = (ushort16*)r->getData();
+
+  // TODO - OMPize this.
+
+  for( int row = 0; row < raw_height; ++row )
+    for( int col = 0; col < raw_width; ++col )
+      for( int k = 0; k < 3; ++k )
+        buf[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] = (float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] * scale;
+
+  dt_image_raw_to_preview(img, buf);
+
+  if(buf) free(buf);
+  dt_image_release(img, DT_IMAGE_FULL, 'w');  
+  return DT_IMAGEIO_OK;
+}
+
