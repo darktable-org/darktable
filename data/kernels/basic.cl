@@ -48,7 +48,7 @@ sharpen (read_only image2d_t in, write_only image2d_t out, global float *m, cons
 }
 
 kernel void
-whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, constant float *coeffs,
+whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, global float *coeffs,
     const unsigned int filters, const int rx, const int ry)
 {
   const int x = get_global_id(0);
@@ -58,15 +58,13 @@ whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, constant floa
 }
 
 kernel void
-whitebalance_4f(read_only image2d_t in, write_only image2d_t out, constant float *coeffs)
+whitebalance_4f(read_only image2d_t in, write_only image2d_t out, global float *coeffs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[0], pixel.y * coeffs[1], pixel.z * coeffs[2], pixel.w));
 }
-
-// TODO: whitebalance needs uint16_t x 1 per pixel, which is incompatible as an opencl texture.
 
 /* kernel for the exposure plugin. should work transparently with float4 and float image2d. */
 __kernel void

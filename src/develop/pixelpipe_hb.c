@@ -445,12 +445,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     {
       // if input is not on the gpu, copy it there.
       // else, if input is on the gpu only, invalidate cpu cache line.
-      printf("for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+      // printf("for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
       if(!cl_mem_input) cl_mem_input = dt_opencl_copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
       else dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
       *cl_mem_output = dt_opencl_alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
 
-      printf("for module `%s', have bufs %d and %d bpp\n", module->op, in_bpp, bpp);
+      // printf("for module `%s', have bufs %d and %d bpp\n", module->op, in_bpp, bpp);
       module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
       clReleaseMemObject(cl_mem_input);
       // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
