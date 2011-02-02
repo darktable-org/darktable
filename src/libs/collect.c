@@ -530,29 +530,29 @@ popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_r
   
   if(d->num == active - 1)
   {
-    mi = gtk_menu_item_new_with_label(_("and new rule"));
+    mi = gtk_menu_item_new_with_label(_("narrow down search"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_and), d);
 
-    mi = gtk_menu_item_new_with_label(_("or new rule"));
+    mi = gtk_menu_item_new_with_label(_("add more images"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_or), d);
 
-    mi = gtk_menu_item_new_with_label(_("and not new rule"));
+    mi = gtk_menu_item_new_with_label(_("exclude images"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_and_not), d);
   }
   else if(d->num < active - 1)
   {
-    mi = gtk_menu_item_new_with_label(_("change to and"));
+    mi = gtk_menu_item_new_with_label(_("change to: and"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_and), d);
 
-    mi = gtk_menu_item_new_with_label(_("change to or"));
+    mi = gtk_menu_item_new_with_label(_("change to: or"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_or), d);
 
-    mi = gtk_menu_item_new_with_label(_("change to and not"));
+    mi = gtk_menu_item_new_with_label(_("change to: except"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_change_and_not), d);
   }

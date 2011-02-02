@@ -93,7 +93,7 @@ create_style_button_clicked (GtkWidget *widget, gpointer user_data)
 
 static void apply_style_activate (gchar *name)
 {
-  dt_control_log(_("apply style '%s' on current image"),name);
+  dt_control_log(_("applied style `%s' on current image"),name);
   dt_styles_apply_to_image (name, FALSE, darktable.develop->image->id);
   dt_dev_raw_reload(darktable.develop);
 }
@@ -125,6 +125,7 @@ apply_style_button_press (GtkWidget *widget, GdkEventButton *event, gpointer use
     gtk_menu_popup (GTK_MENU(menu), NULL, NULL, NULL, NULL,
                         event->button, event->time);
   }
+  else dt_control_log(_("no styles have been created yet"));
 }
 
 void 
@@ -142,13 +143,13 @@ dt_gui_iop_history_init ()
   GtkWidget *hbutton2 = dtgtk_button_new (dtgtk_cairo_paint_styles,0);
   //gtk_widget_set_size_request (hbutton,24,-1);
   g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (create_style_button_clicked),(gpointer)0);
-  g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from currently developed image and its history stack"), (char *)NULL);
+  g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from the current history stack"), (char *)NULL);
   
   /* add toolbar button for applying a style */
   GtkWidget *hbutton3 = dtgtk_button_new (dtgtk_cairo_paint_styles,1);
   //gtk_widget_set_size_request (hbutton,24,-1);
   g_signal_connect (G_OBJECT (hbutton3), "button-press-event", G_CALLBACK (apply_style_button_press),(gpointer)0);
-  g_object_set (G_OBJECT (hbutton3), "tooltip-text", _("applies a style from selected from popup menu"), (char *)NULL);
+  g_object_set (G_OBJECT (hbutton3), "tooltip-text", _("applies a style selected from popup menu"), (char *)NULL);
   
   
   gtk_box_pack_start (GTK_BOX (hhbox),hbutton,TRUE,TRUE,0);

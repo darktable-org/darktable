@@ -40,7 +40,6 @@ typedef struct dt_lib_recentcollect_t
 {
   // 1st is always most recently used entry (buttons stay fixed)
   dt_lib_recentcollect_item_t item[NUM_LINES];
-  int num_items;
 }
 dt_lib_recentcollect_t;
 
@@ -54,14 +53,6 @@ uint32_t
 views() 
 {
   return DT_LIGHTTABLE_VIEW | DT_LEFT_PANEL_VIEW;
-}
-
-void
-gui_reset (dt_lib_module_t *self)
-{
-  // TODO clean everything?
-  // TODO: this breaks things (is called too often, especially before a new query is executed)
-  // dt_conf_set_int("plugins/lighttable/recentcollect/num_items", 0);
 }
 
 int
@@ -265,6 +256,20 @@ collection_updated(void *d)
     gtk_widget_set_no_show_all(c->item[k].button, FALSE);
     gtk_widget_set_visible(c->item[k].button, TRUE);
   }
+}
+
+void
+gui_reset (dt_lib_module_t *self)
+{
+  printf("gui reset\n");
+  dt_conf_set_int("plugins/lighttable/recentcollect/num_items", 0);
+  char confname[200];
+  for(int k=0;k<NUM_LINES;k++)
+  {
+    snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
+    dt_conf_set_string(confname, "");
+  }
+  collection_updated(self->data);
 }
 
 void
