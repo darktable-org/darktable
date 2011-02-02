@@ -106,7 +106,7 @@ dt_iop_atrous_data_t;
 const char *
 name()
 {
-  return _("equalizer II");
+  return _("equalizer");
 }
 
 int 
