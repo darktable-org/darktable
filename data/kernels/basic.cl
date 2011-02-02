@@ -67,7 +67,7 @@ whitebalance_4f(read_only image2d_t in, write_only image2d_t out, global float *
 }
 
 /* kernel for the exposure plugin. should work transparently with float4 and float image2d. */
-__kernel void
+kernel void
 exposure (read_only image2d_t in, write_only image2d_t out, const float black, const float scale)
 {
   const int x = get_global_id(0);
@@ -78,7 +78,6 @@ exposure (read_only image2d_t in, write_only image2d_t out, const float black, c
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-#if 0
 /* helpers for the highlights plugin: convert to lch. */
 
 constant float xyz_rgb[9] = {  /* XYZ from RGB */
@@ -136,7 +135,7 @@ lch_to_rgb(float *lch, float *rgb)
 }
 
 /* kernel for the highlights plugin. */
-__kernel void
+kernel void
 highlights (read_only image2d_t in, write_only image2d_t out, const int mode, const float clip,
             const float blendL, const float blendC, const float blendh)
 {
@@ -166,20 +165,6 @@ highlights (read_only image2d_t in, write_only image2d_t out, const int mode, co
   }
   write_imagef (out, (int2)(x, y), pixel);
 }
-
-/* helper function: linear interpolation for lookup-tables */
-float
-lerp_lut(constant float *const lut, const float v)
-{
-  const float ft = v*0x10000;
-  // NaN-safe clamping:
-  const int t = ft > 0 ? (ft < 0x10000-2 ? ft : 0x10000-2) : 0;
-  const float f = ft - t;
-  const float l1 = lut[t];
-  const float l2 = lut[t+1];
-  return l1*(1.0f-f) + l2*f;
-}
-#endif
 
 float
 lookup(read_only image2d_t lut, const float x)

@@ -31,6 +31,7 @@
 #include "gui/gtk.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "common/opencl.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -66,6 +67,12 @@ typedef struct dt_iop_highlights_data_t
 	float blendL, blendC, blendh;
 }
 dt_iop_highlights_data_t;
+
+typedef struct dt_iop_highlights_global_data_t
+{
+  int kernel_highlights;
+}
+dt_iop_highlights_global_data_t;
 
 const char *name()
 {
@@ -135,6 +142,28 @@ lch_to_rgb(float lch[3], float rgb[3])
 	}
 }
 
+#ifdef HAVE_OPENCL
+void
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->data;
+
+  cl_int err;
+  const int devid = piece->pipe->devid;
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+	const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 2, sizeof(int), (void *)&d->mode);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 3, sizeof(float), (void *)&clip);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 4, sizeof(float), (void *)&d->blendL);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 5, sizeof(float), (void *)&d->blendC);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 6, sizeof(float), (void *)&d->blendh);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highlights, sizes);
+  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue highlights kernel! %d\n", err);
+}
+#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -233,38 +262,38 @@ mode_changed (GtkComboBox *combo, dt_iop_module_t *self)
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 	dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
-#ifdef HAVE_GEGL
-	fprintf(stderr, "[sharpen] TODO: implement gegl version!\n");
-	// pull in new params to gegl
-#else
 	dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
 	d->blendL = p->blendL;
 	d->blendC = p->blendC;
 	d->blendh = p->blendh;
 	d->mode   = p->mode;
-#endif
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)malloc(sizeof(dt_iop_highlights_global_data_t));
+  module->data = gd;
+  gd->kernel_highlights = dt_opencl_create_kernel(darktable.opencl, program, "highlights");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highlights);
+  free(module->data);
+  module->data = NULL;
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-	// create part of the gegl pipeline
-	piece->data = NULL;
-#else
 	piece->data = malloc(sizeof(dt_iop_highlights_data_t));
 	self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-	// clean up everything again.
-	(void)gegl_node_remove_child(pipe->gegl, piece->input);
-	// no free necessary, no data is alloc'ed
-#else
 	free(piece->data);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
