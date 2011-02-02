@@ -93,14 +93,12 @@ serialize(char *buf, int bufsize)
     if(str)
     {
       if(str[0] == '\0') return 1;
-      c = snprintf(buf, bufsize, "%s\r", str);
+      c = snprintf(buf, bufsize, "%s$", str);
       buf += c; bufsize -= c;
       g_free(str);
     }
     else
     {
-      c = snprintf(buf, bufsize, "\r");
-      buf += c; bufsize -= c;
       return 1;
     }
   }
@@ -118,14 +116,14 @@ deserialize(char *buf)
   while(buf[0] != ':') buf++; buf++;
   for(int k=0;k<num_rules;k++)
   {
-    sscanf(buf, "%d:%d:%[^\r]\r", &mode, &item, str);
+    sscanf(buf, "%d:%d:%[^$]", &mode, &item, str);
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
     dt_conf_set_int(confname, mode);
     snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
     dt_conf_set_int(confname, item);
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
     dt_conf_set_string(confname, str);
-    while(buf[0] != '\r' && buf[0] != '\0') buf++; buf++;
+    while(buf[0] != '$' && buf[0] != '\0') buf++; buf++;
   }
   dt_collection_update_query(darktable.collection);
 }
@@ -133,6 +131,7 @@ deserialize(char *buf)
 static void
 pretty_print(char *buf, char *out)
 {
+  if(!buf || buf[0] == '\0') return;
   int num_rules = 0;
   char str[400];
   int mode, item;
@@ -140,7 +139,8 @@ pretty_print(char *buf, char *out)
   while(buf[0] != ':') buf++; buf++;
   for(int k=0;k<num_rules;k++)
   {
-    sscanf(buf, "%d:%d:%[^\r]\r", &mode, &item, str);
+    sscanf(buf, "%d:%d:%[^$]", &mode, &item, str);
+    str[399] = '$';
 
     if(k > 0) switch(mode)
     {
@@ -154,9 +154,12 @@ pretty_print(char *buf, char *out)
         out += sprintf(out, _(" but not "));
         break;
     }
+    int i = 0;
+    while(str[i] != '$') i++;
+    str[i] = '\0';
 
     out += sprintf(out, "%s %s", _(dt_lib_collect_string[item]), item == 0 ? dt_image_film_roll_name(str) : str);
-    while(buf[0] != '\r' && buf[0] != '\0') buf++; buf++;
+    while(buf[0] != '$' && buf[0] != '\0') buf++; buf++;
   }
 }
 
@@ -210,7 +213,7 @@ collection_updated(void *d)
   if(n < 0)
   {
     const int num_items = CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, 9);
-    if(num_items+1 < NUM_LINES)
+    if(num_items < NUM_LINES)
     {
       // new, unused entry
       n = num_items;
@@ -244,7 +247,7 @@ collection_updated(void *d)
     char str[200] = {0};
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
     gchar *buf = dt_conf_get_string(confname);
-    if(buf)
+    if(buf && buf[0] != '\0')
     {
       pretty_print(buf, str);
       g_free(buf);
