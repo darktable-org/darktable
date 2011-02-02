@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-29 15:18+0900\n"
-"PO-Revision-Date: 2011-01-29 19:57+0900\n"
+"POT-Creation-Date: 2011-02-01 19:57+0900\n"
+"PO-Revision-Date: 2011-02-01 20:05+0900\n"
 "Last-Translator: deacon macmillan <deaconmacmillan@gmail.com>\n"
 "Language-Team: deacon macmillan <deaconmacmillan@gmail.com>\n"
 "Language: \n"
@@ -288,7 +288,7 @@ msgid "history"
 msgstr "処理歴"
 
 #: ../data/darktable.glade.h:30
-#: ../src/iop/clipping.c:751
+#: ../src/iop/clipping.c:760
 msgid "image"
 msgstr "画像"
 
@@ -316,7 +316,6 @@ msgstr "iso"
 
 #: ../data/darktable.glade.h:35
 #: ../src/gui/presets.c:262
-#: ../src/iop/lens.c:1210
 msgid "lens"
 msgstr "レンズ"
 
@@ -368,7 +367,6 @@ msgid "select a folder to import as film roll"
 msgstr "フイルムとして取り込むフォルダーを選択してください"
 
 #: ../data/darktable.glade.h:47
-#, fuzzy
 msgid "select one or more images to import"
 msgstr "一つ以上の画像を取り込む"
 
@@ -1204,11 +1202,10 @@ msgid "copy"
 msgstr "コピー"
 
 #: ../src/imageio/format/copy.c:145
-#, fuzzy
 msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
-msgstr "選択画像を1:1コピーグローバル"
+msgstr "選択画像を1:1コピーにするグローバル設定を無視"
 
 #: ../src/imageio/format/exr.cc:149
 msgid "openexr"
@@ -1447,7 +1444,7 @@ msgid "alpha"
 msgstr "アルファ"
 
 #: ../src/iop/anlfyeni.c:276
-#: ../src/iop/lens.c:1271
+#: ../src/iop/lens.c:1347
 #: ../src/iop/vignette.c:353
 #: ../src/iop/watermark.c:574
 msgid "scale"
@@ -1840,80 +1837,80 @@ msgid "rotate by 180"
 msgstr "１８０度回転"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:705
-#: ../src/iop/clipping.c:798
+#: ../src/iop/clipping.c:714
+#: ../src/iop/clipping.c:807
 msgid "flip"
 msgstr "ひっくり返す"
 
-#: ../src/iop/clipping.c:712
+#: ../src/iop/clipping.c:721
 msgid "flip image vertically"
 msgstr "垂直半転換"
 
-#: ../src/iop/clipping.c:713
+#: ../src/iop/clipping.c:722
 msgid "flip image horizontally"
 msgstr "水平半転換"
 
-#: ../src/iop/clipping.c:715
+#: ../src/iop/clipping.c:724
 msgid "angle"
 msgstr "角度"
 
-#: ../src/iop/clipping.c:720
+#: ../src/iop/clipping.c:729
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "右クリックしながら直線を引く"
 
-#: ../src/iop/clipping.c:725
+#: ../src/iop/clipping.c:734
 msgid "keystone h"
 msgstr "キーストン"
 
-#: ../src/iop/clipping.c:730
+#: ../src/iop/clipping.c:739
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "水平のキーストン視点調整"
 
-#: ../src/iop/clipping.c:736
+#: ../src/iop/clipping.c:745
 msgid "keystone v"
 msgstr "キーストーン"
 
-#: ../src/iop/clipping.c:740
+#: ../src/iop/clipping.c:749
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "水直のキーストン視点調整"
 
-#: ../src/iop/clipping.c:745
+#: ../src/iop/clipping.c:754
 msgid "aspect"
 msgstr "比例"
 
-#: ../src/iop/clipping.c:750
+#: ../src/iop/clipping.c:759
 msgid "free"
 msgstr "自由"
 
-#: ../src/iop/clipping.c:752
+#: ../src/iop/clipping.c:761
 msgid "golden cut"
 msgstr "黄金率"
 
-#: ../src/iop/clipping.c:753
+#: ../src/iop/clipping.c:762
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:754
+#: ../src/iop/clipping.c:763
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/clipping.c:755
+#: ../src/iop/clipping.c:764
 msgid "4:3"
 msgstr "4:2"
 
-#: ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:765
 msgid "square"
 msgstr "1:1"
 
-#: ../src/iop/clipping.c:757
+#: ../src/iop/clipping.c:766
 msgid "din"
 msgstr "でぃん"
 
-#: ../src/iop/clipping.c:758
+#: ../src/iop/clipping.c:767
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/clipping.c:765
+#: ../src/iop/clipping.c:774
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -1921,84 +1918,84 @@ msgstr ""
 "比例「x:y」\n"
 "ctrl-x = x y 交換"
 
-#: ../src/iop/clipping.c:771
+#: ../src/iop/clipping.c:780
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "比例交換「ctrl-x」"
 
-#: ../src/iop/clipping.c:778
+#: ../src/iop/clipping.c:787
 msgid "guides"
 msgstr "ガイドを表示する"
 
-#: ../src/iop/clipping.c:781
+#: ../src/iop/clipping.c:790
 msgid "none"
 msgstr "無し"
 
-#: ../src/iop/clipping.c:782
+#: ../src/iop/clipping.c:791
 msgid "grid"
 msgstr "グリッド"
 
-#: ../src/iop/clipping.c:783
+#: ../src/iop/clipping.c:792
 msgid "rules of thirds"
 msgstr "3分の2のルールを表示する"
 
-#: ../src/iop/clipping.c:784
+#: ../src/iop/clipping.c:793
 msgid "diagonal method"
 msgstr "対角方法を表示する"
 
-#: ../src/iop/clipping.c:785
+#: ../src/iop/clipping.c:794
 msgid "harmonious triangles"
 msgstr "調和のとれた三角形を表示する"
 
-#: ../src/iop/clipping.c:786
+#: ../src/iop/clipping.c:795
 msgid "golden mean"
 msgstr "黄金率"
 
-#: ../src/iop/clipping.c:788
+#: ../src/iop/clipping.c:797
 msgid "with this option, you can display guide lines to help compose your photograph."
 msgstr "コンポジションガイド線を表示する"
 
-#: ../src/iop/clipping.c:792
+#: ../src/iop/clipping.c:801
 msgid "type"
 msgstr "タイプ"
 
-#: ../src/iop/clipping.c:805
+#: ../src/iop/clipping.c:814
 msgid "flip guides vertically"
 msgstr "線を垂直反転する"
 
-#: ../src/iop/clipping.c:806
+#: ../src/iop/clipping.c:815
 msgid "flip guides horizontally"
 msgstr "線の水平反転する"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:808
+#: ../src/iop/clipping.c:817
 msgid "golden sections"
 msgstr "黄金分"
 
-#: ../src/iop/clipping.c:810
+#: ../src/iop/clipping.c:819
 msgid "enable this option to show golden sections."
 msgstr "黄金率表示"
 
-#: ../src/iop/clipping.c:813
+#: ../src/iop/clipping.c:822
 msgid "spiral sections"
 msgstr "螺旋を表示"
 
-#: ../src/iop/clipping.c:814
+#: ../src/iop/clipping.c:823
 msgid "enable this option to show golden spiral sections."
 msgstr "黄金螺旋を表示"
 
-#: ../src/iop/clipping.c:817
+#: ../src/iop/clipping.c:826
 msgid "golden spiral"
 msgstr "黄金螺旋"
 
-#: ../src/iop/clipping.c:818
+#: ../src/iop/clipping.c:827
 msgid "enable this option to show a golden spiral guide."
 msgstr "黄金螺旋ガイド表示"
 
-#: ../src/iop/clipping.c:821
+#: ../src/iop/clipping.c:830
 msgid "golden triangles"
 msgstr "黄金三角"
 
-#: ../src/iop/clipping.c:822
+#: ../src/iop/clipping.c:831
 msgid "enable this option to show golden triangles."
 msgstr "黄金三角を表示"
 
@@ -2448,7 +2445,7 @@ msgstr ""
 "レンズマウント:\t\t%s\n"
 "倍率:\t%.1f"
 
-#: ../src/iop/lens.c:947
+#: ../src/iop/lens.c:989
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -2467,98 +2464,91 @@ msgstr ""
 "タイプ:\t\t%s\n"
 "レンズマウント:\t\t%s"
 
-#: ../src/iop/lens.c:977
+#: ../src/iop/lens.c:1019
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:977
+#: ../src/iop/lens.c:1019
 msgid "focal length (mm)"
 msgstr "焦点距離「mm」"
 
-#: ../src/iop/lens.c:987
+#: ../src/iop/lens.c:1025
+#: ../src/iop/lens.c:1040
+msgid "reset from exif data"
+msgstr "exif状態に戻す"
+
+#: ../src/iop/lens.c:1034
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:987
+#: ../src/iop/lens.c:1034
 msgid "f-number (aperture)"
 msgstr "f/値"
 
-#: ../src/iop/lens.c:993
+#: ../src/iop/lens.c:1045
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:993
+#: ../src/iop/lens.c:1045
 msgid "distance to subject"
 msgstr "主題距離"
 
-#: ../src/iop/lens.c:1196
-msgid "cam"
+#: ../src/iop/lens.c:1273
+msgid "find camera"
 msgstr "カメラ"
 
-#: ../src/iop/lens.c:1197
-msgid ""
-"search for camera using a pattern\n"
-"format: [maker, ][model]"
-msgstr ""
-"パターンでカメラを捜す\n"
-"フォーマット:[メーカー][型]"
-
-#: ../src/iop/lens.c:1212
-msgid ""
-"search for lens using a pattern\n"
-"format: [maker, ][model]"
-msgstr ""
-"パターンでレンズを捜す\n"
-"フォーマット:[メーカー][型]"
+#: ../src/iop/lens.c:1288
+msgid "find lens"
+msgstr "レンズ"
 
 #. target geometry
-#: ../src/iop/lens.c:1240
+#: ../src/iop/lens.c:1316
 msgid "geometry"
 msgstr "幾何"
 
-#: ../src/iop/lens.c:1246
+#: ../src/iop/lens.c:1322
 msgid "target geometry"
 msgstr "ターゲット幾何"
 
-#: ../src/iop/lens.c:1247
+#: ../src/iop/lens.c:1323
 msgid "rectilinear"
 msgstr "直線"
 
-#: ../src/iop/lens.c:1248
+#: ../src/iop/lens.c:1324
 msgid "fish-eye"
 msgstr "魚眼"
 
-#: ../src/iop/lens.c:1249
+#: ../src/iop/lens.c:1325
 msgid "panoramic"
 msgstr "パノラマ"
 
-#: ../src/iop/lens.c:1250
+#: ../src/iop/lens.c:1326
 msgid "equirectangular"
 msgstr "直線"
 
-#: ../src/iop/lens.c:1266
+#: ../src/iop/lens.c:1342
 msgid "auto scale"
 msgstr "自動尺度"
 
 #. reverse direction
-#: ../src/iop/lens.c:1275
+#: ../src/iop/lens.c:1351
 msgid "reverse"
 msgstr "逆"
 
-#: ../src/iop/lens.c:1276
+#: ../src/iop/lens.c:1352
 msgid "apply distortions instead of correcting them"
 msgstr "歪みを施す"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1283
+#: ../src/iop/lens.c:1359
 msgid "tca r"
 msgstr "tca r"
 
-#: ../src/iop/lens.c:1285
+#: ../src/iop/lens.c:1361
 msgid "tca b"
 msgstr "tca b"
 
-#: ../src/iop/lens.c:1293
+#: ../src/iop/lens.c:1369
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -2566,7 +2556,7 @@ msgstr ""
 "赤チャネル色収差横断補正オーバライド\n"
 "1.0は既定値"
 
-#: ../src/iop/lens.c:1294
+#: ../src/iop/lens.c:1370
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
@@ -2720,15 +2710,14 @@ msgid "high contrast"
 msgstr "強いコントラスト"
 
 #: ../src/iop/tonemap.cc:73
-#, fuzzy
 msgid "tone mapping"
 msgstr "トーンマッピング"
 
-#: ../src/iop/tonemap.cc:266
+#: ../src/iop/tonemap.cc:255
 msgid "contrast compression"
 msgstr "コントラスト圧縮"
 
-#: ../src/iop/tonemap.cc:272
+#: ../src/iop/tonemap.cc:261
 msgid "spatial extent"
 msgstr "空間範囲"
 
@@ -3147,12 +3136,37 @@ msgstr "紫"
 
 #: ../src/libs/collect.c:254
 #: ../src/libs/collect.c:268
+#: ../src/libs/collect.c:543
 msgid "clear this rule"
 msgstr "ルールを削除"
 
 #: ../src/libs/collect.c:259
 msgid "clear this rule or add new rules"
 msgstr "ルールを削除するか新しいルールを追加する"
+
+#: ../src/libs/collect.c:549
+msgid "and new rule"
+msgstr "ルール追加"
+
+#: ../src/libs/collect.c:553
+msgid "or new rule"
+msgstr "ルール"
+
+#: ../src/libs/collect.c:557
+msgid "and not new rule"
+msgstr "ルールを解消"
+
+#: ../src/libs/collect.c:563
+msgid "change to and"
+msgstr "そしてに変化"
+
+#: ../src/libs/collect.c:567
+msgid "change to or"
+msgstr "かに変化"
+
+#: ../src/libs/collect.c:571
+msgid "change to and not"
+msgstr "じゃなくてに変化"
 
 #: ../src/libs/collect.c:608
 msgid "camera"
@@ -3702,6 +3716,20 @@ msgstr "フイルムストリップ"
 msgid "lighttable"
 msgstr "ライトテーブル"
 
+#~ msgid "cam"
+#~ msgstr "カメラ"
+#~ msgid ""
+#~ "search for camera using a pattern\n"
+#~ "format: [maker, ][model]"
+#~ msgstr ""
+#~ "パターンでカメラを捜す\n"
+#~ "フォーマット:[メーカー][型]"
+#~ msgid ""
+#~ "search for lens using a pattern\n"
+#~ "format: [maker, ][model]"
+#~ msgstr ""
+#~ "パターンでレンズを捜す\n"
+#~ "フォーマット:[メーカー][型]"
 #~ msgid "devices"
 #~ msgstr "デバイス"
 #~ msgid "import film roll"
