@@ -29,8 +29,16 @@
 #include "libraw/libraw.h"
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
+#include "common/opencl.h"
 
 DT_MODULE(1)
+
+typedef struct dt_iop_colorin_global_data_t
+{
+  int kernel_colorin;
+}
+dt_iop_colorin_global_data_t;
+
 
 const char *
 name()
@@ -42,6 +50,24 @@ int
 groups () 
 {
   return IOP_GROUP_COLOR;
+}
+
+void
+init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)malloc(sizeof(dt_iop_colorin_global_data_t));
+  module->data = gd;
+  gd->kernel_colorin = dt_opencl_create_kernel(darktable.opencl, program, "colorin");
+}
+
+void
+cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_colorin);
+  free(module->data);
+  module->data = NULL;
 }
 
 #if 0
@@ -92,6 +118,36 @@ lerp_lut(const float *const lut, const float v)
   const float l2 = lut[t+1];
   return l1*(1.0f-f) + l2*f;
 }
+
+#ifdef HAVE_OPENCL
+void
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
+  dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->data;
+
+  cl_int err;
+  const int devid = piece->pipe->devid;
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*9, devid, d->cmatrix);
+  cl_mem dev_r = dt_opencl_copy_host_to_device(d->lut[0], 256, 256, devid, sizeof(float));
+  cl_mem dev_g = dt_opencl_copy_host_to_device(d->lut[1], 256, 256, devid, sizeof(float));
+  cl_mem dev_b = dt_opencl_copy_host_to_device(d->lut[2], 256, 256, devid, sizeof(float));
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 3, sizeof(cl_mem), (void *)&dev_r);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 4, sizeof(cl_mem), (void *)&dev_g);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 5, sizeof(cl_mem), (void *)&dev_b);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_colorin, sizes);
+  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue colorin kernel! %d\n", err);
+  clReleaseMemObject(dev_m);
+  clReleaseMemObject(dev_r);
+  clReleaseMemObject(dev_g);
+  clReleaseMemObject(dev_b);
+}
+#endif
+
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -200,6 +256,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->xform[t] = NULL;
   }
   d->cmatrix[0] = -666.0f;
+  piece->process_cl_ready = 1;
   char datadir[1024];
   char filename[1024];
   dt_get_datadir(datadir, 1024);
@@ -257,6 +314,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
+      piece->process_cl_ready = 0;
       d->cmatrix[0] = -666.0f;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
@@ -270,6 +328,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
+      piece->process_cl_ready = 0;
       d->cmatrix[0] = -666.0f;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
@@ -282,6 +341,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->input = dt_colorspaces_create_linear_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
+      piece->process_cl_ready = 0;
       d->cmatrix[0] = -666.0f;
       for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
     }

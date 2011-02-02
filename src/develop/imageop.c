@@ -454,6 +454,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
   const char *str = (const char *)params;
   if(piece->enabled)
   {
+    // assume process_cl is ready, commit_params can overwrite this.
+    if(module->process_cl) piece->process_cl_ready = 1;
     module->commit_params(module, params, pipe, piece);
     for(int i=0;i<module->params_size;i++) hash = ((hash << 5) + hash) ^ str[i];
     piece->hash = hash;

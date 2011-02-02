@@ -51,6 +51,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   int bpc;                         // bits per channel, 32 means flat
   int colors;                      // how many colors per pixel
   dt_iop_roi_t buf_in, buf_out;    // theoretical full buffer regions of interest, as passed through modify_roi_out
+  int process_cl_ready;            // set this to 0 in commit_params to temporarily disable the use of process_cl
 }
 dt_dev_pixelpipe_iop_t;
 

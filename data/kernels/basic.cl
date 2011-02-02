@@ -87,16 +87,6 @@ rgb_to_lch (float *rgb, float *lch)
 	lch[2] = atan2(lab[2], lab[1]);
 }
 
-void
-XYZ_to_Lab(float *xyz, float *lab)
-{
-	for (int c=0; c<3; c++)
-		xyz[c] = xyz[c] > 0.008856f ? native_powr(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
-	lab[0] = 116.0f * xyz[1] - 16.0f;
-	lab[1] = 500.0f * (xyz[0] - xyz[1]);
-	lab[2] = 200.0f * (xyz[1] - xyz[2]);
-}
-
 // convert CIE-LCh to linear RGB
 void
 lch_to_rgb(float *lch, float *rgb)
@@ -121,19 +111,6 @@ lch_to_rgb(float *lch, float *rgb)
 			tmpf += rgb_xyz[3*c+cc] * xyz[cc];
 		rgb[c] = fmax(tmpf, 0.0f);
 	}
-}
-
-void
-Lab_to_XYZ(float *lab, float *xyz)
-{
-	const float epsilon = 0.008856f, kappa = 903.3f;
-	xyz[1] = (lab[0]<=kappa*epsilon) ?
-		(lab[0]/kappa) : (native_powr((lab[0]+16.0f)/116.0f, 3.0f));
-	const float fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0f)/116.0f) : ((lab[0]+16.0f)/116.0f);
-	const float fz = fy - lab[2]/200.0f;
-	const float fx = lab[1]/500.0f + fy;
-	xyz[2] = (native_powr(fz, 3.0f)<=epsilon) ? ((116.0f*fz-16.0f)/kappa) : (native_powr(fz, 3.0f));
-	xyz[0] = (native_powr(fx, 3.0f)<=epsilon) ? ((116.0f*fx-16.0f)/kappa) : (native_powr(fx, 3.0f));
 }
 
 /* kernel for the highlights plugin. */
@@ -182,43 +159,59 @@ lerp_lut(constant float *const lut, const float v)
 }
 #endif
 
+float
+lookup(read_only image2d_t lut, const float x)
+{
+  int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+  int2 p = (int2)((xi & 0xff), (xi >> 8));
+  return read_imagef(lut, sampleri, p).x;
+}
+
 /* kernel for the basecurve plugin. */
 kernel void
 basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  int2 p;
-  int px;
-
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y))*65536.0f;
-
-  px = clamp(pixel.x, 0.0f, 65535.0f);
-  p = (int2)((px & 0xff), (px >> 8));
-  pixel.x = read_imagef(table, sampleri, p).x;
-  px = clamp(pixel.y, 0.0f, 65535.0f);
-  p = (int2)((px & 0xff), (px >> 8));
-  pixel.y = read_imagef(table, sampleri, p).x;
-  px = clamp(pixel.z, 0.0f, 65535.0f);
-  p = (int2)((px & 0xff), (px >> 8));
-  pixel.z = read_imagef(table, sampleri, p).x;
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  pixel.x = lookup(table, pixel.x);
+  pixel.y = lookup(table, pixel.y);
+  pixel.z = lookup(table, pixel.z);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-#if 0
+
+void
+XYZ_to_Lab(float *xyz, float *lab)
+{
+  xyz[0] *= (1.0f/0.9642f);
+  xyz[2] *= (1.0f/0.8242f);
+	for (int c=0; c<3; c++)
+		xyz[c] = xyz[c] > 0.008856f ? native_powr(xyz[c], 1.0f/3.0f) : 7.787f*xyz[c] + 16.0f/116.0f;
+	lab[0] = 116.0f * xyz[1] - 16.0f;
+	lab[1] = 500.0f * (xyz[0] - xyz[1]);
+	lab[2] = 200.0f * (xyz[1] - xyz[2]);
+}
+
 /* kernel for the plugin colorin */
-__kernel void
-colorin (read_only image2d_t in, write_only image2d_t out, constant float *matrix, constant float *lutr, constant float *lutg, constant float *lutb)
+kernel void
+colorin (read_only image2d_t in, write_only image2d_t out, global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
+  // load to shared memory:
+  local float matrix[9];
+  const int i = get_local_id(0);
+  if(i < 9) matrix[i] = mat[i];
+  barrier(CLK_LOCAL_MEM_FENCE);
+
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], XYZ[3], Lab[3];
-  cam[0] = lerp_lut(lutr, pixel.x);
-  cam[1] = lerp_lut(lutg, pixel.y);
-  cam[2] = lerp_lut(lutb, pixel.z);
+  cam[0] = lookup(lutr, pixel.x);
+  cam[1] = lookup(lutg, pixel.y);
+  cam[2] = lookup(lutb, pixel.z);
 
   // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
   const float YY = cam[0]+cam[1]+cam[2];
@@ -242,7 +235,6 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *matri
   XYZ_to_Lab(XYZ, (float *)&pixel);
   write_imagef (out, (int2)(x, y), pixel);
 }
-#endif
 
 /* kernel for the tonecurve plugin. */
 kernel void
@@ -251,10 +243,8 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y))*655.35f;
-  int px = clamp(pixel.x, 0.0f, 65535.0f);
-  int2 p = (int2)(px & 0xff, px >> 8);
-  const float L = read_imagef(table, sampleri, p).x;
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  const float L = lookup(table, pixel.x/100.0f);
   if(pixel.x > 0.01f)
   {
     pixel.y *= L/pixel.x;
@@ -277,7 +267,6 @@ colorcorrection (read_only image2d_t in, write_only image2d_t out, float saturat
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-#if 0
 // TODO: 2 crop and rotate
 __kernel void
 clipping (read_only image2d_t in, write_only image2d_t out)
@@ -312,12 +301,33 @@ clipping (read_only image2d_t in, write_only image2d_t out)
 }
 #endif
 
+void
+Lab_to_XYZ(float *lab, float *xyz)
+{
+	const float epsilon = 0.008856f, kappa = 903.3f;
+	xyz[1] = (lab[0]<=kappa*epsilon) ?
+		(lab[0]/kappa) : (native_powr((lab[0]+16.0f)/116.0f, 3.0f));
+	const float fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0f)/116.0f) : ((lab[0]+16.0f)/116.0f);
+	const float fz = fy - lab[2]/200.0f;
+	const float fx = lab[1]/500.0f + fy;
+	xyz[2] = (native_powr(fz, 3.0f)<=epsilon) ? ((116.0f*fz-16.0f)/kappa) : (native_powr(fz, 3.0f));
+	xyz[0] = (native_powr(fx, 3.0f)<=epsilon) ? ((116.0f*fx-16.0f)/kappa) : (native_powr(fx, 3.0f));
+  xyz[0] *= 0.9642;
+  xyz[2] *= 0.8249;
+}
+
 /* kernel for the plugin colorout, fast matrix + shaper path only */
-__kernel void
-colorout (read_only image2d_t in, write_only image2d_t out, constant float *matrix, constant float *lutr, constant float *lutg, constant float *lutb)
+kernel void
+colorout (read_only image2d_t in, write_only image2d_t out, global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  // load to shared memory:
+  local float matrix[9];
+  const int i = get_local_id(0);
+  if(i < 9) matrix[i] = mat[i];
+  barrier(CLK_LOCAL_MEM_FENCE);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float XYZ[3], rgb[3];
@@ -327,10 +337,9 @@ colorout (read_only image2d_t in, write_only image2d_t out, constant float *matr
     rgb[i] = 0.0f;
     for(int j=0;j<3;j++) rgb[i] += matrix[3*i+j]*XYZ[j];
   }
-  pixel.x = lerp_lut(lutr, rgb[0]);
-  pixel.y = lerp_lut(lutg, rgb[1]);
-  pixel.z = lerp_lut(lutb, rgb[2]);
+  pixel.x = lookup(lutr, rgb[0]);
+  pixel.y = lookup(lutg, rgb[1]);
+  pixel.z = lookup(lutb, rgb[2]);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-#endif
