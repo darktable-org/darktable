@@ -112,6 +112,43 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
   }
 }
 
+void
+dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+{
+  const float scale = 1.0f/(white - black);
+  if(!orientation)
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(in, out)
+#endif
+    for(int j=0;j<ht;j++) for(int i=0;i<wd;i++) for(int k=0;k<ch;k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
+    return;
+  }
+  int ii = 0, jj = 0, fw = fwd, fh = fht;
+  int si = 4, sj = wd*4;
+  if(orientation & 4)
+  {
+    sj = 4; si = ht*4;
+    fw = fht; fh = fwd;
+  }
+  if(orientation & 2) { jj = (int)fht - jj - 1; sj = -sj; }
+  if(orientation & 1) { ii = (int)fwd - ii - 1; si = -si; }
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+#endif
+  for(int j=0;j<ht;j++)
+  {
+    float *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
+    const uint16_t *in2  = in + stride*j;
+    for(int i=0;i<wd;i++)
+    {
+      for(int k=0;k<ch;k++) out2[k] = (in2[k] - black)*scale;
+      in2  += ch;
+      out2 += si;
+    }
+  }
+}
+
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
 {
   int ii = i, jj = j, w = wd, h = ht, fw = fwd, fh = fht;
@@ -125,6 +162,7 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
   if(orientation & 1) jj = (int)fh - jj - 1;
   return jj*w + ii;
 }
+
 
 dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
 {

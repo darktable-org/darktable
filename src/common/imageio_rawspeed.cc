@@ -310,16 +310,21 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r)
 
   int black = r->blackLevel;
   int white = r->whitePoint;
-  float scale = 1.0 / (white - black);
 
   ushort16* raw_img = (ushort16*)r->getData();
 
+#if 0
+  dt_imageio_flip_buffers_ui16_to_float(img->pixels, raw_img, black, white, 3, raw_width, raw_height,
+      raw_width, raw_height, raw_width + raw_width_extra, orientation);
+#else
+  
   // TODO - OMPize this.
-
+  float scale = 1.0 / (white - black);
   for( int row = 0; row < raw_height; ++row )
     for( int col = 0; col < raw_width; ++col )
       for( int k = 0; k < 3; ++k )
         img->pixels[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] = (float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] * scale;
+#endif
 
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   return DT_IMAGEIO_OK;
