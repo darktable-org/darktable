@@ -107,6 +107,7 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   b = dt_imageio_dng_make_tag(  278, SHORT, 1, (ys<<16), b, &cnt); /* Rows per strip.  */
   b = dt_imageio_dng_make_tag(  279, LONG, 1, (ys*xs*channels*4), b, &cnt ); // 32 bits/channel /* Strip byte count.  */
   b = dt_imageio_dng_make_tag(  284, SHORT, 1, (1<<16), b, &cnt ); /* Planar configuration.  */
+  b = dt_imageio_dng_make_tag(  339, SHORT, 1, (3<<16), b, &cnt ); /* SampleFormat = 3 => ieee floating point */
 
   b = dt_imageio_dng_make_tag(33421, SHORT, 2, (2<<16) | 2, b, &cnt ); /* CFAREPEATEDPATTERNDIM */
 
