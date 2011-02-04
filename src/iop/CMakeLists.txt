@@ -6,7 +6,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	colorin colorout clipping sharpen monochrome basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain clahe bilateral
 	profile_gamma anlfyeni
-	colortransfer channelmixer graduatednd relight zonesystem demosaic atrous tonemap bloom cacorrect overexposed
+	colortransfer channelmixer graduatednd relight zonesystem demosaic atrous tonemap bloom cacorrect overexposed equalizer
 )
 
 add_library(bloom MODULE "bloom.c")
@@ -16,6 +16,7 @@ add_library(gamma MODULE "gamma.c")
 add_library(temperature MODULE "temperature.c")
 add_library(colorcorrection MODULE "colorcorrection.c")
 add_library(exposure MODULE "exposure.c")
+add_library(equalizer MODULE "equalizer.c")
 add_library(colorin MODULE "colorin.c")
 add_library(colorout MODULE "colorout.c")
 add_library(clipping MODULE "clipping.c")
