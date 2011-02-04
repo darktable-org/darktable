@@ -106,6 +106,19 @@ uchar8* RawImageData::getData(uint32 x, uint32 y) {
   return &data[y*pitch+x*bpp];
 }
 
+uchar8* RawImageData::getDataUncropped(uint32 x, uint32 y) {
+  if ((int)x >= dim.x+mOffset.x)
+    ThrowRDE("RawImageData::getDataUncropped - X Position outside image requested.");
+  if ((int)y >= dim.y+mOffset.y) {
+    ThrowRDE("RawImageData::getDataUncropped - Y Position outside image requested.");
+  }
+
+  if (!data)
+    ThrowRDE("RawImageData::getDataUncropped - Data not yet allocated.");
+
+  return &data[y*pitch+x*bpp];
+}
+
 void RawImageData::subFrame(iPoint2D offset, iPoint2D new_size) {
   if (!new_size.isThisInside(dim - offset)) {
     printf("WARNING: RawImageData::subFrame - Attempted to create new subframe larger than original size. Crop skipped.\n");
@@ -118,6 +131,61 @@ void RawImageData::subFrame(iPoint2D offset, iPoint2D new_size) {
 
   mOffset += offset;
   dim = new_size;
+}
+
+void RawImageData::calculateBlackAreas() {
+  int* histogram = (int*)malloc(4*65536*sizeof(int));
+  memset(histogram, 0, 4*65536*sizeof(int));
+  int totalpixels = 0;
+
+  for (uint32 i = 0; i < blackAreas.size(); i++) {
+    BlackArea area = blackAreas[i];
+    /* Process horizontal area */
+    if (!area.isVertical) {
+      for (uint32 y = area.offset; y < area.offset+area.size; y++) {
+        ushort16 *pixel = (ushort16*)getDataUncropped(mOffset.x, y);
+        int* localhist = &histogram[(y&1)*(65536*2)];
+        for (int x = mOffset.x; x < dim.x; x++) {
+          localhist[((x&1)<<16) + *pixel]++;
+        }
+      }
+      totalpixels += area.size * dim.x;
+    }
+
+    /* Process vertical area */
+    if (area.isVertical) {
+      for (int y = mOffset.y; y < dim.y; y++) {
+        ushort16 *pixel = (ushort16*)getDataUncropped(area.offset, y);
+        int* localhist = &histogram[(y&1)*(65536*2)];
+        for (uint32 x = area.offset; x < area.size; x++) {
+          localhist[((x&1)<<16) + *pixel]++;
+        }
+      }
+    }
+    totalpixels += area.size * dim.y;
+  }
+
+  if (!totalpixels) {
+    for (int i = 0 ; i < 4; i++)
+      blackLevelSeparate[i] = blackLevel;
+    return;
+  }
+
+  /* Calculate median value of black areas for each component */
+  /* Adjust the number of total pixels so it is the same as the median of each histogram */
+  totalpixels /= 4*2;
+
+  for (int i = 0 ; i < 4; i++) {
+    int* localhist = &histogram[i*65536];
+    int acc_pixels = localhist[0];
+    int pixel_value = 0;
+    while (acc_pixels <= totalpixels && pixel_value < 65535) {
+      pixel_value++;
+      acc_pixels += localhist[pixel_value];
+    }
+    blackLevelSeparate[i] = pixel_value;
+  }
+  free(histogram);
 }
 
 void RawImageData::scaleBlackWhite() {
@@ -141,20 +209,13 @@ void RawImageData::scaleBlackWhite() {
     printf("Estimated black:%d, Estimated white: %d\n", blackLevel, whitePoint);
   }
 
-  if (whitePoint <= blackLevel) {
-    printf("WARNING: RawImageData::scaleBlackWhite - Unable to estimate Black/White level, skipping scaling.\n");
-    return;
-  }
-
-  float f = 65535.0f / (float)(whitePoint - blackLevel);
-  if (whitePoint == 65535 && blackLevel == 0)
-    return;
-  scaleValues(f);
+  calculateBlackAreas();
+  scaleValues();
 }
 
 #if _MSC_VER > 1399 || defined(__SSE2__)
 
-void RawImageData::scaleValues(float f) {
+void RawImageData::scaleValues() {
   bool use_sse2;
 #ifdef _MSC_VER 
   int info[4];
@@ -165,26 +226,47 @@ void RawImageData::scaleValues(float f) {
 #endif
 
   // Check SSE2
-  if (f >= 0.0f && use_sse2) {
+  if (use_sse2) {
 
-    __m128i ssescale;
-    __m128i ssesub;
     __m128i sseround;
     __m128i ssesub2;
     __m128i ssesign;
+    uint32* sub_mul = (uint32*)_aligned_malloc(16*4*2, 16);
     uint32 gw = pitch / 16;
-    uint32 i = (int)(1024.0f * f);  // 10 bit fraction
-    i |= i << 16;
-    uint32 b = blackLevel | (blackLevel << 16);
+    // 10 bit fraction
+    uint32 mul = (int)(1024.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[mOffset.x&1]));  
+    mul |= ((int)(1024.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[(mOffset.x+1)&1])))<<16;
+    uint32 b = blackLevelSeparate[mOffset.x&1] | (blackLevelSeparate[(mOffset.x+1)&1]<<16);
 
-    ssescale = _mm_set_epi32(i, i, i, i);
-    ssesub = _mm_set_epi32(b, b, b, b);
+    for (int i = 0; i< 4; i++) {
+      sub_mul[i] = b;     // Subtract even lines
+      sub_mul[4+i] = mul;   // Multiply even lines
+    }
+
+    mul = (int)(1024.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[2+(mOffset.x&1)]));
+    mul |= ((int)(1024.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[2+((mOffset.x+1)&1)])))<<16;
+    b = blackLevelSeparate[2+(mOffset.x&1)] | (blackLevelSeparate[2+((mOffset.x+1)&1)]<<16);
+
+    for (int i = 0; i< 4; i++) {
+      sub_mul[8+i] = b;   // Subtract odd lines
+      sub_mul[12+i] = mul;  // Multiply odd lines
+    }
+
     sseround = _mm_set_epi32(512, 512, 512, 512);
     ssesub2 = _mm_set_epi32(32768, 32768, 32768, 32768);
     ssesign = _mm_set_epi32(0x80008000, 0x80008000, 0x80008000, 0x80008000);
 
     for (int y = 0; y < dim.y; y++) {
       __m128i* pixel = (__m128i*) & data[(mOffset.y+y)*pitch];
+      __m128i ssescale, ssesub;
+      if (((y+mOffset.y)&1) == 0) { 
+        ssesub = _mm_load_si128((__m128i*)&sub_mul[0]);
+        ssescale = _mm_load_si128((__m128i*)&sub_mul[4]);
+      } else {
+        ssesub = _mm_load_si128((__m128i*)&sub_mul[8]);
+        ssescale = _mm_load_si128((__m128i*)&sub_mul[12]);
+      }
+
       for (uint32 x = 0 ; x < gw; x++) {
         __m128i pix_high;
         __m128i temp;
@@ -213,14 +295,27 @@ void RawImageData::scaleValues(float f) {
         pixel++;
       }
     }
+    _aligned_free(sub_mul);
   } else {
     // Not SSE2
     int gw = dim.x * cpp;
-    int scale = (int)(16384.0f * f);  // 14 bit fraction
+    int mul[4];
+    int sub[4];
+    for (int i = 0; i < 4; i++) {
+      int v = i;
+      if ((mOffset.x&1) != 0)
+        v ^= 1;
+      if ((mOffset.y&1) != 0)
+        v ^= 2;
+      mul[i] = (int)(16384.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[v]));
+      sub[i] = blackLevelSeparate[v];
+    }
     for (int y = 0; y < dim.y; y++) {
       ushort16 *pixel = (ushort16*)getData(0, y);
+      int *mul_local = &mul[2*(y&1)];
+      int *sub_local = &sub[2*(y&1)];
       for (int x = 0 ; x < gw; x++) {
-        pixel[x] = clampbits(((pixel[x] - blackLevel) * scale + 8192) >> 14, 16);
+        pixel[x] = clampbits(((pixel[x] - sub_local[x&1]) * mul_local[x&1] + 8192) >> 14, 16);
       }
     }
   }
@@ -228,13 +323,25 @@ void RawImageData::scaleValues(float f) {
 
 #else
 
-void RawImageData::scaleValues(float f) {
+void RawImageData::scaleValues() {
   int gw = dim.x * cpp;
-  int scale = (int)(16384.0f * f);  // 14 bit fraction
+  int mul[4];
+  int sub[4];
+  for (int i = 0; i < 4; i++) {
+    int v = i;
+    if ((mOffset.x&1) != 0)
+      v ^= 1;
+    if ((mOffset.y&1) != 0)
+      v ^= 2;
+    mul[i] = (int)(16384.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[v]));
+    sub[i] = blackLevelSeparate[v];
+  }
   for (int y = 0; y < dim.y; y++) {
     ushort16 *pixel = (ushort16*)getData(0, y);
+    int *mul_local = &mul[2*(y&1)];
+    int *sub_local = &sub[2*(y&1)];
     for (int x = 0 ; x < gw; x++) {
-      pixel[x] = clampbits(((pixel[x] - blackLevel) * scale + 8192) >> 14, 16);
+      pixel[x] = clampbits(((pixel[x] - sub_local[x&1]) * mul_local[x&1] + 8192) >> 14, 16);
     }
   }
 }

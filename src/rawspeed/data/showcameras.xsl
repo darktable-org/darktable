@@ -37,9 +37,10 @@
 			</h2>
 			<div class="text">
          <xsl:for-each select="Aliases/Alias">
-            <p>Also known as: <span class="param">&quot;<xsl:value-of select="."/>&quot;</span></p>
+            Also known as: <span class="param">&quot;<xsl:value-of select="."/>&quot;</span><br/>
          </xsl:for-each>
 
+				<br/>
 				<xsl:variable name = "supported" ><xsl:value-of select="@supported"/></xsl:variable>
 				<xsl:if test ="$supported = 'no'">Supported: <span style="color:red;font-style:italic;">No.</span></xsl:if>
 					<xsl:if test ="not($supported = 'no')">Supported: <span style="color:green;font-style:italic;">Yes.</span>
@@ -65,6 +66,13 @@
 						<xsl:if test ="$color = 'GREEN'"><span class="param" style="color:green;">[<xsl:copy-of select="$color" />]</span></xsl:if>
 						<xsl:if test ="$color = 'BLUE'"><span class="param" style="color:blue;">[<xsl:copy-of select="$color" />]</span></xsl:if>
 					</xsl:for-each>
+					<br/>
+					<xsl:for-each select="BlackAreas/Horizontal">
+						<br/>Horizontal Black Area at Y = <span class="param"><xsl:value-of select="@y"/></span>, height is <span class="param"><xsl:value-of select="@height"/> pixels.</span>
+					</xsl:for-each>					
+					<xsl:for-each select="BlackAreas/Vertical">
+						<br/>Horizontal Black Area at X = <span class="param"><xsl:value-of select="@x"/></span>, width is <span class="param"><xsl:value-of select="@width"/> pixels.</span>
+					</xsl:for-each>					
 					<xsl:for-each select="Hints/Hint">
 					  <br/>
             Decoder Hint: <span class="param">&quot;<xsl:value-of select="@name"/>&quot;</span>:<span class="param">&quot;<xsl:value-of select="@value"/>&quot;</span> 

@@ -94,7 +94,7 @@ void PefDecoder::decodeMetaData(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
   if (data.empty())
-    ThrowRDE("ARW Meta Decoder: Model name found");
+    ThrowRDE("PEF Meta Decoder: Model name found");
 
   TiffIFD* raw = data[0];
 
@@ -102,18 +102,6 @@ void PefDecoder::decodeMetaData(CameraMetaData *meta) {
   string model = raw->getEntry(MODEL)->getString();
 
   setMetaData(meta, make, model, "");
-
-  /* It appears that RAW files from K-5 firmware 1.01 and onwards doesn't compensate for blacklevel */
-  if (raw->hasEntry(MODEL) && raw->hasEntry(SOFTWARE)) {
-    string model = raw->getEntry(MODEL)->getString();
-    string software = raw->getEntry(SOFTWARE)->getString();
-    TrimSpaces(model);
-    TrimSpaces(software);
-
-    if (model.compare("PENTAX K-5") == 0 && software.compare("K-5 Ver 1.00") == 0 ) {
-      mRaw->blackLevel = 0;
-    }
-  }
 }
 
 } // namespace RawSpeed

@@ -11,7 +11,7 @@
 -->
 
 <!DOCTYPE Cameras [
-<!ELEMENT BlackAreas ( Vertical?, Horizontal? ) >
+<!ELEMENT BlackAreas ( Vertical*, Horizontal* ) >
 
 <!ELEMENT Camera ( CFA?, Crop, Sensor+, BlackAreas?, Aliases?, Hints? ) >
 <!ATTLIST Camera make CDATA #REQUIRED >
@@ -70,6 +70,10 @@
     </CFA>
     <Crop x="74" y="12" width="3522" height="2348"/>
     <Sensor black="126" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="72"/>
+		<Horizontal y="2" height="8"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 30D">
     <CFA width="2" height="2">
@@ -80,6 +84,10 @@
     </CFA>
     <Crop x="74" y="12" width="3522" height="2348"/>
     <Sensor black="127" white="3398"/>
+	<BlackAreas>
+		<Vertical x="0" width="72"/>
+		<Horizontal y="2" height="8"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 350D DIGITAL">
     <CFA width="2" height="2">
@@ -90,6 +98,10 @@
     </CFA>
     <Crop x="42" y="14" width="3474" height="2314"/>
     <Sensor black="255" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="40"/>
+		<Horizontal y="0" height="12"/>
+	</BlackAreas>
     <Aliases>
 		<Alias>Canon EOS DIGITAL REBEL XT</Alias>
 		<Alias>Canon EOS Kiss Digital N</Alias>
@@ -105,6 +117,10 @@
     </CFA>
     <Crop x="30" y="18" width="3908" height="2602"/>
     <Sensor black="1021" white="13600"/>
+	<BlackAreas>
+		<Vertical x="0" width="28"/>
+		<Horizontal y="4" height="12"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 40D" mode="sRaw2">
     <Crop x="0" y="0" width="1944" height="1296"/>
@@ -133,6 +149,10 @@
     </CFA>
     <Crop x="64" y="52" width="4752" height="3158"/>
     <Sensor black="1020" white="16383"/>
+	<BlackAreas>
+		<Vertical x="0" width="60"/>
+		<Horizontal y="2" height="46"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 50D" mode="sRaw1">
     <Crop x="0" y="0" width="3272" height="2178"/>
@@ -151,6 +171,10 @@
     </CFA>
     <Crop x="146" y="54" width="0" height="0"/>
     <Sensor black="2026" white="15304"/>
+	<BlackAreas>
+		<Vertical x="0" width="140"/>
+		<Horizontal y="4" height="46"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 60D" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
@@ -169,6 +193,10 @@
     </CFA>
     <Crop x="62" y="30" width="4722" height="3142"/>
     <Sensor black="1020" white="16000"/>
+	<BlackAreas>
+		<Vertical x="0" width="56"/>
+		<Horizontal y="2" height="22"/>
+	</BlackAreas>
     <Aliases>
 		<Alias>Canon EOS REBEL T1i</Alias>
 		<Alias>Canon EOS Kiss X3</Alias>
@@ -183,6 +211,10 @@
     </CFA>
     <Crop x="148" y="54" width="0" height="0"/>
     <Sensor black="2048" white="15831"/>
+	<BlackAreas>
+		<Vertical x="0" width="140"/>
+		<Horizontal y="4" height="44"/>
+	</BlackAreas>
     <Aliases>
 		<Alias>Canon EOS REBEL T2i</Alias>
 		<Alias>Canon EOS Kiss X4</Alias>
@@ -197,6 +229,10 @@
     </CFA>
     <Crop x="90" y="34" width="4386" height="2920"/>
     <Sensor black="127" white="3692"/>
+	<BlackAreas>
+		<Vertical x="0" width="88"/>
+		<Horizontal y="2" height="30"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark II">
     <CFA width="2" height="2">
@@ -207,6 +243,10 @@
     </CFA>
     <Crop x="158" y="51" width="5634" height="3753"/>
     <Sensor black="1024" white="15600"/>
+	<BlackAreas>
+		<Vertical x="0" width="156"/>
+		<Horizontal y="2" height="48"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 5D Mark II" mode="sRaw1">
     <Crop x="0" y="0" width="3872" height="2574"/>
@@ -225,6 +265,10 @@
     </CFA>
     <Crop x="158" y="52" width="5202" height="3464"/>
     <Sensor black="2050" white="16300"/>
+	<BlackAreas>
+		<Vertical x="0" width="156"/>
+		<Horizontal y="2" height="48"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS 7D" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
@@ -243,6 +287,10 @@
     </CFA>
     <Crop x="42" y="18" width="3906" height="2602"/>
     <Sensor black="255" white="4030"/>
+	<BlackAreas>
+		<Vertical x="0" width="41"/>
+		<Horizontal y="2" height="14"/>
+	</BlackAreas>
     <Aliases>
 		<Alias>Canon EOS DIGITAL REBEL XS</Alias>
 		<Alias>Canon EOS Kiss Digital F</Alias>
@@ -257,6 +305,10 @@
     </CFA>
     <Crop x="42" y="18" width="3906" height="2602"/>
     <Sensor black="255" white="3726"/>
+	<BlackAreas>
+		<Vertical x="0" width="40"/>
+		<Horizontal y="4" height="12"/>
+	</BlackAreas>
     <Aliases>
 		<Alias>Canon EOS DIGITAL REBEL XTi</Alias>
 		<Alias>Canon EOS Kiss Digital X</Alias>
@@ -271,6 +323,10 @@
     </CFA>
     <Crop x="74" y="12" width="3522" height="2348"/>
     <Sensor black="127" white="3700"/>
+	<BlackAreas>
+		<Vertical x="0" width="72"/>
+		<Horizontal y="2" height="8"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark II N">
     <CFA width="2" height="2">
@@ -281,6 +337,10 @@
     </CFA>
     <Crop x="74" y="12" width="3522" height="2348"/>
     <Sensor black="127" white="3700"/>
+	<BlackAreas>
+		<Vertical x="0" width="72"/>
+		<Horizontal y="2" height="8"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark III">
     <CFA width="2" height="2">
@@ -291,6 +351,10 @@
     </CFA>
     <Crop x="78" y="20" width="3906" height="2600"/>
     <Sensor black="1023" white="15100"/>
+	<BlackAreas>
+		<Vertical x="2" width="74"/>
+		<Horizontal y="4" height="14"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark III" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
@@ -309,6 +373,10 @@
     </CFA>
     <Crop x="144" y="46" width="-64" height="-2"/>
     <Sensor black="2000" white="15900"/>
+	<BlackAreas>
+		<Vertical x="0" width="140"/>
+		<Horizontal y="26" height="16"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1D Mark IV" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
@@ -327,6 +395,10 @@
     </CFA>
     <Crop x="98" y="13" width="5010" height="3336"/>
     <Sensor black="126" white="4060"/>
+	<BlackAreas>
+		<Vertical x="0" width="96"/>
+		<Horizontal y="2" height="10"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1Ds Mark III">
     <CFA width="2" height="2">
@@ -337,6 +409,10 @@
     </CFA>
     <Crop x="62" y="20" width="5640" height="3752"/>
     <Sensor black="1021" white="15100"/>
+	<BlackAreas>
+		<Vertical x="0" width="60"/>
+		<Horizontal y="4" height="14"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon EOS-1Ds Mark III" mode="sRaw1">
     <Crop x="0" y="0" width="0" height="0"/>
@@ -355,6 +431,10 @@
     </CFA>
     <Crop x="54" y="14" width="-12" height="-18"/>
     <Sensor black="120" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="50"/>
+		<Horizontal y="0" height="10"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon PowerShot G11">
     <CFA width="2" height="2">
@@ -365,6 +445,10 @@
     </CFA>
     <Crop x="10" y="18" width="-56" height="-14"/>
     <Sensor black="120" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="10"/>
+		<Horizontal y="0" height="14"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon PowerShot G10">
     <CFA width="2" height="2">
@@ -375,6 +459,10 @@
     </CFA>
     <Crop x="12" y="13" width="4432" height="3323"/>
     <Sensor black="128" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="10"/>
+		<Horizontal y="0" height="8"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon PowerShot G9">
     <CFA width="2" height="2">
@@ -385,6 +473,10 @@
     </CFA>
     <Crop x="48" y="12" width="4032" height="3024"/>
     <Sensor black="125" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="46"/>
+		<Horizontal y="0" height="8"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon PowerShot SX1 IS">
     <CFA width="2" height="2">
@@ -395,6 +487,10 @@
     </CFA>
     <Crop x="192" y="12" width="3958" height="2760"/>
     <Sensor black="125" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="188"/>
+		<Horizontal y="0" height="10"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon PowerShot S90">
     <CFA width="2" height="2">
@@ -405,6 +501,10 @@
     </CFA>
     <Crop x="10" y="18" width="-54" height="-10"/>
     <Sensor black="125" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="6"/>
+		<Horizontal y="0" height="14"/>
+	</BlackAreas>
   </Camera>
   <Camera make="Canon" model="Canon PowerShot S95">
     <CFA width="2" height="2">
@@ -413,6 +513,12 @@
     </CFA>
     <Crop x="66" y="24" width="-20" height="-24"/>
     <Sensor black="125" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="50"/>
+		<Vertical x="3738" width="6"/>
+		<Horizontal y="0" height="10"/>
+		<Horizontal y="2774" height="10"/>
+	</BlackAreas>
   </Camera>
   <Camera make="NIKON CORPORATION" model="NIKON D100">
     <CFA width="2" height="2">
@@ -471,7 +577,7 @@
       <Color x="0" y="1">RED</Color>
       <Color x="1" y="1">GREEN</Color>
     </CFA>
-    <Crop x="10" y="0" width="2472" height="1648"/>
+    <Crop x="6" y="0" width="-8" height="1648"/>
     <Sensor black="0" white="3880"/>
   </Camera>
   <Camera make="NIKON CORPORATION" model="NIKON D2X">
@@ -930,6 +1036,19 @@
     <Crop x="0" y="0" width="4094" height="3082"/>
     <Sensor black="55" white="4095"/>
   </Camera>
+  <Camera make="OLYMPUS IMAGING CORP." model="E-PL2">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-4" height="0"/>
+    <Sensor black="45" white="4095"/>
+	<BlackAreas>
+		<Vertical x="4097" width="2"/>
+	</BlackAreas>
+  </Camera>
   <Camera make="OLYMPUS IMAGING CORP." model="E-P2">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -1283,6 +1402,9 @@
     </CFA>
     <Crop x="12" y="0" width="-34" height="0"/>
     <Sensor black="512" white="16383"/>
+	<BlackAreas>
+	    <Vertical x="0" width="8"/>
+	</BlackAreas>
   </Camera>
   <Camera make="PENTAX" model="PENTAX K-7">
     <CFA width="2" height="2">
