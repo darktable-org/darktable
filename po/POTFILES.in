@@ -54,13 +54,16 @@ src/iop/colorout.c
 src/iop/colortransfer.c
 src/iop/colorzones.c
 src/iop/demosaic.c
+src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/gamma.c
 src/iop/graduatednd.c
 src/iop/grain.c
 src/iop/highlights.c
 src/iop/lens.c
+src/iop/localc.c
 src/iop/monochrome.c
+src/iop/overexposed.c
 src/iop/profile_gamma.c
 src/iop/relight.c
 src/iop/sharpen.c
@@ -73,7 +76,6 @@ src/iop/vignette.c
 src/iop/watermark.c
 src/iop/wb_presets.c
 src/iop/zonesystem.c
-src/iop/overexposed.c
 src/libs/camera.c
 src/libs/capture.c
 src/libs/collect.c
