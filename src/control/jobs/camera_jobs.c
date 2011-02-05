@@ -74,7 +74,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   
   const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
   const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
-  if (value) {
+  if (value && cvalue) {
     do {
       // Add value to list
       values = g_list_append(values, g_strdup(value));
@@ -82,6 +82,13 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       if (strcmp(value,cvalue) == 0) 
         orginal_value = g_list_last(values)->data;
     } while ((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed")) != NULL);
+  }
+  else
+  {
+    dt_control_log(_("please set your camera to manual mode first!"));
+    dt_gui_background_jobs_set_progress(j, 1.001f);
+    dt_gui_background_jobs_destroy(j);
+    return 1;
   }
   GList *current_value = g_list_find(values,orginal_value);
   for(int i=0;i<t->count;i++)
