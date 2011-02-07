@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-03 11:36+0900\n"
-"PO-Revision-Date: 2011-02-03 13:05+0900\n"
+"POT-Creation-Date: 2011-02-06 09:48+0900\n"
+"PO-Revision-Date: 2011-02-06 13:58+0900\n"
 "Last-Translator: deacon macmillan <deaconmacmillan@gmail.com>\n"
 "Language-Team: deacon macmillan <deaconmacmillan@gmail.com>\n"
 "Language: \n"
@@ -478,28 +478,32 @@ msgid_plural "capturing %d images"
 msgstr[0] "%d画像取り込み中"
 msgstr[1] "%d画像取り込み中"
 
-#: ../src/control/jobs/camera_jobs.c:261
+#: ../src/control/jobs/camera_jobs.c:88
+msgid "please set your camera to manual mode first!"
+msgstr "先にカメラをマニュアルモードに設定して下さい"
+
+#: ../src/control/jobs/camera_jobs.c:268
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d は %s で取り込みました"
 
-#: ../src/control/jobs/camera_jobs.c:318
+#: ../src/control/jobs/camera_jobs.c:325
 msgid "starting to import images from camera"
 msgstr "カメラから画像取り込みが開始しました"
 
-#: ../src/control/jobs/camera_jobs.c:335
+#: ../src/control/jobs/camera_jobs.c:342
 #, c-format
 msgid "failed to create import path `%s', import aborted."
 msgstr "取り込みパス%s, 画像取り込み失敗しました"
 
-#: ../src/control/jobs/camera_jobs.c:344
+#: ../src/control/jobs/camera_jobs.c:351
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "%d画像はカメラから取り込み中"
 msgstr[1] "%d画像はカメラから取り込み中"
 
-#: ../src/control/jobs/camera_jobs.c:366
+#: ../src/control/jobs/camera_jobs.c:373
 msgid "failed to create filmroll for camera import, import aborted."
 msgstr "フイルム作成失敗カメラからインポート不成功"
 
@@ -1440,15 +1444,18 @@ msgstr "%d/%d picasa web albumに書き出しました"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/anlfyeni.c:80
+#: ../src/iop/localc.c:80
 msgid "local contrast 2"
 msgstr "ローカルコントラスト2.0"
 
 #: ../src/iop/anlfyeni.c:274
+#: ../src/iop/localc.c:271
 msgid "alpha"
 msgstr "アルファ"
 
 #: ../src/iop/anlfyeni.c:276
 #: ../src/iop/lens.c:1347
+#: ../src/iop/localc.c:273
 #: ../src/iop/vignette.c:353
 #: ../src/iop/watermark.c:574
 msgid "scale"
@@ -1457,6 +1464,7 @@ msgstr "尺度"
 #: ../src/iop/anlfyeni.c:278
 #: ../src/iop/bloom.c:275
 #: ../src/iop/grain.c:436
+#: ../src/iop/localc.c:275
 #: ../src/iop/vignette.c:355
 msgid "strength"
 msgstr "効果量"
@@ -1478,19 +1486,23 @@ msgid "sharpen and denoise"
 msgstr "シャープとノイス削減"
 
 #: ../src/iop/atrous.c:641
+#: ../src/iop/equalizer.c:251
 msgid "sharpen (strong)"
 msgstr "シャープ「強」"
 
 #: ../src/iop/atrous.c:655
+#: ../src/iop/equalizer.c:261
 #: ../src/iop/sharpen.c:67
 msgid "sharpen"
 msgstr "シャープ"
 
 #: ../src/iop/atrous.c:669
+#: ../src/iop/equalizer.c:277
 msgid "denoise"
 msgstr "ノイズ削減"
 
 #: ../src/iop/atrous.c:685
+#: ../src/iop/equalizer.c:287
 msgid "denoise (strong)"
 msgstr "ノイズ削減「強」"
 
@@ -1540,6 +1552,7 @@ msgid "dull"
 msgstr "ぼんやり"
 
 #: ../src/iop/atrous.c:1157
+#: ../src/iop/equalizer.c:334
 msgid "luma"
 msgstr "輝度"
 
@@ -1548,6 +1561,7 @@ msgid "change lightness at each feature size"
 msgstr "輝度を細かさに変える"
 
 #: ../src/iop/atrous.c:1159
+#: ../src/iop/equalizer.c:335
 msgid "chroma"
 msgstr "彩度"
 
@@ -2219,6 +2233,24 @@ msgstr ""
 "デモザイク事前緑平衡をする。\n"
 "eos kiss X等に必要"
 
+#: ../src/iop/equalizer.c:43
+msgid "legacy equalizer (deprecated)"
+msgstr "等化器「旧」"
+
+#: ../src/iop/equalizer.c:267
+msgid "null"
+msgstr "無し"
+
+#: ../src/iop/equalizer.c:295
+msgid ""
+"this module will be removed in the future\n"
+"and is only here so you can switch it off\n"
+"and move to the new equalizer."
+msgstr ""
+"旧等化器は将来無くなりますので\n"
+"切にし\n"
+"新等化器を使って下さい"
+
 #: ../src/iop/exposure.c:279
 msgid "black"
 msgstr "黒"
@@ -2561,6 +2593,26 @@ msgstr "モノクロ"
 #: ../src/iop/monochrome.c:302
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr "ドラッグとスクロールすると色フイルターを調整出来ます"
+
+#: ../src/iop/overexposed.c:55
+msgid "overexposed"
+msgstr "白飛び/黒つぶれ注意表示"
+
+#: ../src/iop/overexposed.c:238
+msgid "lower threshold"
+msgstr "しきい値を下げる"
+
+#: ../src/iop/overexposed.c:239
+msgid "upper threshold"
+msgstr "しきい値を上げる"
+
+#: ../src/iop/overexposed.c:250
+msgid "threshold of what shall be considered underexposed"
+msgstr "黒つぶれのしきい値"
+
+#: ../src/iop/overexposed.c:251
+msgid "threshold of what shall be considered overexposed"
+msgstr "白とびのしきい値"
 
 #: ../src/iop/profile_gamma.c:37
 msgid "unbreak input profile"
@@ -2951,26 +3003,6 @@ msgstr "自動色温度"
 #: ../src/iop/zonesystem.c:85
 msgid "zone system"
 msgstr "ゾーンシステム"
-
-#: ../src/iop/overexposed.c:55
-msgid "overexposed"
-msgstr "白飛び/黒つぶれ注意表示"
-
-#: ../src/iop/overexposed.c:238
-msgid "lower threshold"
-msgstr "しきい値を下げる"
-
-#: ../src/iop/overexposed.c:239
-msgid "upper threshold"
-msgstr "しきい値を上げる"
-
-#: ../src/iop/overexposed.c:250
-msgid "threshold of what shall be considered underexposed"
-msgstr "黒つぶれのしきい値"
-
-#: ../src/iop/overexposed.c:251
-msgid "threshold of what shall be considered overexposed"
-msgstr "白とびのしきい値"
 
 #: ../src/libs/camera.c:76
 msgid "camera settings"
@@ -3710,10 +3742,6 @@ msgstr "ライトテーブル"
 
 #~ msgid "equalizer II"
 #~ msgstr "等化器II"
-#~ msgid "equalizer (deprecated)"
-#~ msgstr "等化器「旧」"
-#~ msgid "null"
-#~ msgstr "無し"
 #~ msgid "and new rule"
 #~ msgstr "ルール追加"
 #~ msgid "or new rule"
