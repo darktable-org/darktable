@@ -124,7 +124,7 @@ pretty_print(char *buf, char *out)
 {
   if(!buf || buf[0] == '\0') return;
   int num_rules = 0;
-  char str[400];
+  char str[400] = {0};
   int mode, item;
   sscanf(buf, "%d", &num_rules);
   while(buf[0] != ':') buf++; buf++;

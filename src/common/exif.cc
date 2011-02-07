@@ -1,23 +1,23 @@
 /*
-    This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+   This file is part of darktable,
+   copyright (c) 2009--2010 johannes hanika.
 
-    darktable is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+   darktable is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-    darktable is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+   darktable is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
-*/
+   You should have received a copy of the GNU General Public License
+   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 extern "C"
@@ -47,15 +47,15 @@ extern "C"
 
 //this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[DT_XMP_KEYS_NUM] = {
-    "Xmp.dc.subject", "Xmp.darktable.colorlabels", 
-    "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled", 
-    "Xmp.darktable.history_operation", "Xmp.darktable.history_params"
+  "Xmp.dc.subject", "Xmp.darktable.colorlabels", 
+  "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled", 
+  "Xmp.darktable.history_operation", "Xmp.darktable.history_params"
 };
-       
+
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
-  Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
+    Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
 {
   std::string str = pos->print(&exifData);
 
@@ -73,11 +73,11 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
 //this should work because dt first reads all known keys
 static void dt_remove_known_keys(Exiv2::XmpData &xmp)
 {
-     for(int i=0;i<DT_XMP_KEYS_NUM;i++)
-    {    
-        Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
-        xmp.erase(pos); 
-    }
+  for(int i=0;i<DT_XMP_KEYS_NUM;i++)
+  {    
+    Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
+    xmp.erase(pos); 
+  }
 }
 
 
@@ -176,7 +176,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
     else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
-             ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
+        ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
@@ -205,8 +205,8 @@ int dt_exif_read(dt_image_t *img, const char* path)
     }
 #endif
 
-// Also read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
-// FIXME: We should pick a few more from http://www.exiv2.org/iptc.html
+    // Also read IPTC metadata. I'm not sure if dt_exif_read() is the right place for it ...
+    // FIXME: We should pick a few more from http://www.exiv2.org/iptc.html
     Exiv2::IptcData &iptcData = image->iptcData();
     Exiv2::IptcData::iterator iptcPos;
 
@@ -250,7 +250,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
 
-	// FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
+    // FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.UserComment")))
         != exifData.end() ) {
       std::string str = pos->print(&exifData);
@@ -280,10 +280,10 @@ void *dt_exif_data_new(uint8_t *data,uint32_t size)
 {
   Exiv2::ExifData *exifData= new Exiv2::ExifData ;
   Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( (Exiv2::byte *) data, size );
-	image->readMetadata();
-	//_mimeType = image->mimeType();
-	(*exifData) = image->exifData();
-  
+  image->readMetadata();
+  //_mimeType = image->mimeType();
+  (*exifData) = image->exifData();
+
   return exifData;
 }
 
@@ -310,7 +310,7 @@ void *dt_exif_data_new(uint8_t *data,uint32_t size)
   // use libexif to parse the binary exif ifd into a exiv2 metadata
   Exiv2::ExifData *exifData=new Exiv2::ExifData; 
   ::ExifData *ed;
-  
+
   if( (ed = exif_data_new_from_data((unsigned char *)data, size)) != NULL)
   {
     char value[1024]={0};
@@ -323,7 +323,7 @@ void *dt_exif_data_new(uint8_t *data,uint32_t size)
       (*exifData)[key] = value;
     }
   }
-  
+
   return exifData;
 }
 
@@ -365,7 +365,7 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
     if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.ResolutionUnit"))) !=imgExifData.end() ) imgExifData.erase(it);
     if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.JPEGInterchangeFormat"))) !=imgExifData.end() ) imgExifData.erase(it);
     if( (it=imgExifData.findKey(Exiv2::ExifKey("Exif.Thumbnail.JPEGInterchangeFormatLength"))) !=imgExifData.end() ) imgExifData.erase(it);
-    
+
     imgExifData.sortByTag();
     image->writeMetadata();
   }
@@ -387,16 +387,16 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
     assert(image.get() != 0);
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
-//     Exiv2::XmpData &xmpData = image->xmpData();  // TODO: I'm not sure how to embed xmp data into the blob.
+    //     Exiv2::XmpData &xmpData = image->xmpData();  // TODO: I'm not sure how to embed xmp data into the blob.
 
     /* Dont bail, lets return a blob with UserComment and Software
-    if (exifData.empty())
-    {
-      std::string error(path);
-      error += ": no exif data found in ";
-      error += path;
-      throw Exiv2::Error(1, error);
-    }*/
+       if (exifData.empty())
+       {
+       std::string error(path);
+       error += ": no exif data found in ";
+       error += path;
+       throw Exiv2::Error(1, error);
+       }*/
     exifData["Exif.Image.Orientation"] = uint16_t(1);
 
     // ufraw-style exif stripping:
@@ -502,14 +502,14 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
     exifData["Exif.Image.Software"] = PACKAGE_STRING;
 
     // TODO: find a nice place for the missing metadata (tags, publisher, colorlabels?). Additionally find out how to embed XMP data.
-	//       And shall we add a description of the history stack to Exif.Image.ImageHistory?
+    //       And shall we add a description of the history stack to Exif.Image.ImageHistory?
     if(imgid >= 0)
     {
       GList *res = dt_metadata_get(imgid, "Xmp.dc.creator", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.Artist"] = (char*)res->data;
-//         xmpData["Xmp.dc.creator"] = (char*)res->data;
+        //         xmpData["Xmp.dc.creator"] = (char*)res->data;
         g_free(res->data);
         g_list_free(res);
       }
@@ -518,7 +518,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
       if(res != NULL)
       {
         exifData["Exif.Image.ImageDescription"] = (char*)res->data;
-//         xmpData["Xmp.dc.title"] = (char*)res->data;
+        //         xmpData["Xmp.dc.title"] = (char*)res->data;
         g_free(res->data);
         g_list_free(res);
       }
@@ -527,7 +527,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
       if(res != NULL)
       {
         exifData["Exif.Photo.UserComment"] = (char*)res->data;
-//         xmpData["Xmp.dc.description"] = (char*)res->data;
+        //         xmpData["Xmp.dc.description"] = (char*)res->data;
         g_free(res->data);
         g_list_free(res);
       }
@@ -536,7 +536,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
       if(res != NULL)
       {
         exifData["Exif.Image.Copyright"] = (char*)res->data;
-//         xmpData["Xmp.dc.rights"] = (char*)res->data;
+        //         xmpData["Xmp.dc.rights"] = (char*)res->data;
         g_free(res->data);
         g_list_free(res);
       }
@@ -547,7 +547,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
         int rating = GPOINTER_TO_INT(res->data)+1;
         exifData["Exif.Image.Rating"] = rating;
         exifData["Exif.Image.RatingPercent"] = int(rating/5.*100.);
-//         xmpData["Xmp.xmp.Rating"] = rating;
+        //         xmpData["Xmp.xmp.Rating"] = rating;
         g_list_free(res);
       }
     }
@@ -742,7 +742,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
-     
+
       // remove from tagged_images
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
@@ -759,8 +759,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt_upd_tagxtag, NULL);
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
-            "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
-            "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag2, NULL);
+          "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+          "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag2, NULL);
       for(int i=0;i<cnt;i++)
       {
         int tagid = -1;
@@ -835,9 +835,9 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     Exiv2::XmpData::iterator param;
 
     if ( (ver=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_modversion"))) != xmpData.end() &&
-         (en=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled")))     != xmpData.end() &&
-         (op=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_operation")))   != xmpData.end() &&
-         (param=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_params")))   != xmpData.end() )
+        (en=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled")))     != xmpData.end() &&
+        (op=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_operation")))   != xmpData.end() &&
+        (param=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_params")))   != xmpData.end() )
     {
       const int cnt = ver->count();
       if(cnt == en->count() && cnt == op->count() && cnt == param->count())
@@ -919,7 +919,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
   const int xmp_version = 1;
   // refuse to write sidecar for non-existent image:
   char imgfname[1024];
-  
+
   dt_image_full_path(imgid, imgfname, 1024);
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
 
@@ -954,25 +954,25 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-		int key = sqlite3_column_int(stmt, 0);
-		switch(key){
-			case DT_METADATA_XMP_DC_CREATOR:
-				xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
-				break;
-			case DT_METADATA_XMP_DC_PUBLISHER:
-				xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 1);
-				break;
-			case DT_METADATA_XMP_DC_TITLE:
-				xmpData["Xmp.dc.title"] = sqlite3_column_text(stmt, 1);
-				break;
-			case DT_METADATA_XMP_DC_DESCRIPTION:
-				xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 1);
-				break;
-			case DT_METADATA_XMP_DC_RIGHTS:
-				xmpData["Xmp.dc.rights"] = sqlite3_column_text(stmt, 1);
-				break;
+      int key = sqlite3_column_int(stmt, 0);
+      switch(key){
+        case DT_METADATA_XMP_DC_CREATOR:
+          xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
+          break;
+        case DT_METADATA_XMP_DC_PUBLISHER:
+          xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 1);
+          break;
+        case DT_METADATA_XMP_DC_TITLE:
+          xmpData["Xmp.dc.title"] = sqlite3_column_text(stmt, 1);
+          break;
+        case DT_METADATA_XMP_DC_DESCRIPTION:
+          xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 1);
+          break;
+        case DT_METADATA_XMP_DC_RIGHTS:
+          xmpData["Xmp.dc.rights"] = sqlite3_column_text(stmt, 1);
+          break;
 
-		}
+      }
     }
     sqlite3_finalize(stmt);
 

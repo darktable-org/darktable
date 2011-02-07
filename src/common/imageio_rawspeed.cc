@@ -51,6 +51,24 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r);
 dt_imageio_retval_t dt_imageio_open_rawspeed_sraw_preview(dt_image_t *img, RawImage r);
 static CameraMetaData *meta = NULL;
 
+static void
+scale_black_white(uint16_t *const buf, const uint16_t black, const uint16_t white, const int width, const int height, const int stride)
+{
+  const float scale = 65535.0f/(white-black);
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
+  for(int j=0;j<height;j++)
+  {
+    uint16_t *b = buf + j*stride;
+    for(int i=0;i<width;i++)
+    {
+      b[0] = CLAMPS((b[0] - black)*scale, 0, 0xffff);
+      b++;
+    }
+  }
+}
+
 dt_imageio_retval_t
 dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
 {
@@ -115,7 +133,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       }
 
       // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
-      if(r->bpp != 4) r->scaleBlackWhite();
+      if(r->bpp != 4) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->bpp);
       img->bpp = r->bpp;
       img->filters = r->cfa.getDcrawFilter();
       if(img->filters)
@@ -233,7 +251,7 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
       }
 
       // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
-      if(r->bpp != 4) r->scaleBlackWhite();
+      if(r->bpp != 4) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->bpp);
       img->bpp = r->bpp;
       img->filters = r->cfa.getDcrawFilter();
 
