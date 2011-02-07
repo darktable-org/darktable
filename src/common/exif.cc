@@ -43,7 +43,15 @@ extern "C"
 #include <cassert>
 #include <glib.h>
 
+#define DT_XMP_KEYS_NUM 6 // the number of XmpBag XmpSeq keys that dt uses
 
+//this array should contain all XmpBag and XmpSeq keys used by dt
+const char *dt_xmp_keys[DT_XMP_KEYS_NUM] = {
+    "Xmp.dc.subject", "Xmp.darktable.colorlabels", 
+    "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled", 
+    "Xmp.darktable.history_operation", "Xmp.darktable.history_params"
+};
+       
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
@@ -60,6 +68,18 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
     g_strlcpy(dest, str.c_str(), dest_max);
   }
 }
+
+//function to remove known dt keys from xmpdata, so not to append them twice
+//this should work because dt first reads all known keys
+static void dt_remove_known_keys(Exiv2::XmpData &xmp)
+{
+     for(int i=0;i<DT_XMP_KEYS_NUM;i++)
+    {    
+        Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
+        xmp.erase(pos); 
+    }
+}
+
 
 int dt_exif_read(dt_image_t *img, const char* path)
 {
@@ -899,13 +919,23 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
   const int xmp_version = 1;
   // refuse to write sidecar for non-existent image:
   char imgfname[1024];
+  
   dt_image_full_path(imgid, imgfname, 1024);
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
 
   try
   {
     Exiv2::XmpData xmpData;
-
+    std::string xmpPacket;
+    if(g_file_test(filename, G_FILE_TEST_EXISTS))
+    {
+      Exiv2::DataBuf buf = Exiv2::readFile(filename);
+      xmpPacket.assign(reinterpret_cast<char*>(buf.pData_), buf.size_);
+      Exiv2::XmpParser::decode(xmpData, xmpPacket);
+      //because XmpSeq or XmpBag are added to the list, we first have
+      //to remove these so that we don't end up with a string of duplicates
+      dt_remove_known_keys(xmpData);
+    }
     int stars = 1, raw_params = 0;
     // get stars and raw params from db
     sqlite3_stmt *stmt;
@@ -1020,7 +1050,6 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     sqlite3_finalize (stmt);
 
     // serialize the xmp data and output the xmp packet
-    std::string xmpPacket;
     if (0 != Exiv2::XmpParser::encode(xmpPacket, xmpData))
     {
       throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
