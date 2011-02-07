@@ -1,93 +1,265 @@
 # Czech translation for darktable
-# Copyright (C) 2010 darktable's copyright holder
+# Copyright (C) 2011 darktable's copyright holder
 # This file is distributed under the same license as the PACKAGE package.
-# Milan Knížek <knizek@volny.cz>, 2010.
+# Milan Knížek <knizek@volny.cz>, 2010, 2011.
 #
-#: ../src/gui/preferences_gen.h:290 ../src/gui/preferences_gen.h:355
-#: ../src/gui/preferences_gen.h:371
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-20 16:47+0100\n"
-"PO-Revision-Date: 2010-11-12 22:10+0100\n"
+"POT-Creation-Date: 2011-02-07 20:00+0100\n"
+"PO-Revision-Date: 2011-02-07 22:19+0100\n"
 "Last-Translator: Milan Knížek <knizek@volny.cz>\n"
 "Language-Team: Czech\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Poedit-Language: Czech\n"
 "X-Poedit-Country: CZECH REPUBLIC\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../darktable.glade.h:1
+#: ../build/src/preferences_gen.h:300
+msgid "gui options"
+msgstr "volby gui"
+
+#: ../build/src/preferences_gen.h:302
+msgid "filename of your custom theme in share/darktable/"
+msgstr "název souboru s vlastním tématem v share/darktable/"
+
+#: ../build/src/preferences_gen.h:310
+#: ../build/src/preferences_gen.h:327
+#: ../build/src/preferences_gen.h:343
+#: ../build/src/preferences_gen.h:358
+#: ../build/src/preferences_gen.h:374
+#: ../build/src/preferences_gen.h:391
+#: ../build/src/preferences_gen.h:408
+#: ../build/src/preferences_gen.h:425
+#: ../build/src/preferences_gen.h:440
+#: ../build/src/preferences_gen.h:456
+#: ../build/src/preferences_gen.h:473
+#: ../build/src/preferences_gen.h:489
+#: ../build/src/preferences_gen.h:521
+#: ../build/src/preferences_gen.h:537
+#: ../build/src/preferences_gen.h:553
+#: ../build/src/preferences_gen.h:570
+#: ../build/src/preferences_gen.h:587
+#: ../build/src/preferences_gen.h:603
+#: ../build/src/preferences_gen.h:620
+#, c-format
+msgid "double click to reset to `%s'"
+msgstr "dvojitým kliknutím obnovíte `%s'"
+
+#: ../build/src/preferences_gen.h:313
+#: ../build/src/preferences_gen.h:573
+msgid " (needs a restart) "
+msgstr "(vyžaduje opětovné spuštění)"
+
+#: ../build/src/preferences_gen.h:318
+msgid "size of the side panels in pixels"
+msgstr "velikost postranních panelů v pixelech"
+
+#: ../build/src/preferences_gen.h:330
+msgid " (needs a restart)"
+msgstr "(vyžaduje opětovné spuštění)"
+
+#: ../build/src/preferences_gen.h:335
+msgid "don't use embedded preview jpeg, always use half-size raw"
+msgstr "nepoužívat vložený náhled, vždy jej vygenerovat v poloviční rozlišení raw"
+
+#: ../build/src/preferences_gen.h:350
+msgid "ask before removing images"
+msgstr "vyžadovat potvrzení při odstraňování snímků"
+
+#: ../build/src/preferences_gen.h:361
+msgid "always ask the user before any image is removed from db."
+msgstr "vyžadovat potvrzení při odstraňování snímků z databáze."
+
+#: ../build/src/preferences_gen.h:366
+msgid "ask before deleting images"
+msgstr "vyžadovat povrzení při mazání snímků"
+
+#: ../build/src/preferences_gen.h:377
+msgid "always ask the user before any image file is deleted."
+msgstr "vyžadovat potvrzení při mazání snímků."
+
+#: ../build/src/preferences_gen.h:382
+msgid "downsample the preview pixels"
+msgstr "zmenšit pixely náhledu"
+
+#: ../build/src/preferences_gen.h:394
+msgid "this value smaller than 1.0 downsamples the preview pixels in darkroom mode for faster feedback."
+msgstr "hodnoty menší než 1,0 vedou ke zmenšení náhledů v režimu fotokomory, což zrychlí odezvu."
+
+#: ../build/src/preferences_gen.h:399
+msgid "number of folder levels to show in lists"
+msgstr "počet úrovní adresářů pro zobrazení v seznamech"
+
+#: ../build/src/preferences_gen.h:411
+msgid "the number of folder levels to show in film roll names, starting from the right"
+msgstr "počet úrovní adresářů, které se mají zobrazit ve jménech rolí filmu (zprava)."
+
+#: ../build/src/preferences_gen.h:416
+msgid "initial rating when importing filmrolls"
+msgstr "prvotní hodnocení při načítání rolí filmu"
+
+#: ../build/src/preferences_gen.h:432
+msgid "enable filmstrip in darkroom mode"
+msgstr "umožnit filmový pás v režimu fotokomory"
+
+#: ../build/src/preferences_gen.h:447
+msgid "maximum resolution of lighttable thumbnails"
+msgstr "maximální rozlišení náhledů v režimu prosvětlovacího pultu"
+
+#: ../build/src/preferences_gen.h:459
+msgid ""
+"keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
+"(needs a restart and will invalidate current thumbnail caches)."
+msgstr ""
+"aby se náhledy vytvářely rychle, ponechte tuto hodnotu nízkou (povolené: 160-1300)\n"
+"(vyžaduje opětovné spuštění a povede k zneplatnění stávající dočasné paměti s náhledy)."
+
+#: ../build/src/preferences_gen.h:464
+msgid "jpeg quality of on-disk thumbnails"
+msgstr "kvalita јpeg pro náhledy na disku"
+
+#: ../build/src/preferences_gen.h:476
+msgid "affects only the thumbnail cache used for quick startup."
+msgstr "má vliv pouze na dočasnou pamět s náhledy použitou pro rychlé spuštění."
+
+#: ../build/src/preferences_gen.h:481
+msgid "ask before deleting a tag"
+msgstr "vyžadovat potvrzení při mazání štítku"
+
+#: ../build/src/preferences_gen.h:511
+msgid "core options"
+msgstr "základní volby"
+
+#: ../build/src/preferences_gen.h:513
+msgid "database file"
+msgstr "databázový soubor"
+
+#: ../build/src/preferences_gen.h:524
+#: ../build/src/preferences_gen.h:540
+msgid "filename relative to your home directory, or starting with a slash (needs a restart)."
+msgstr "název souboru relativně vůči domovskému adresáři nebo začínající lomítkem (vyžaduje opětovné spuštění)."
+
+#: ../build/src/preferences_gen.h:529
+msgid "image cache file"
+msgstr "dočasný soubor snímku"
+
+#: ../build/src/preferences_gen.h:545
+msgid "image cache file backup"
+msgstr "záloha dočasného souboru snímku"
+
+#: ../build/src/preferences_gen.h:556
+msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
+msgstr "vytvoří zálohu dočasného souboru, aby se zabránilo ztrátě náhledů v případě zhroucení programu (vyžaduje opětovné spuštění)."
+
+#: ../build/src/preferences_gen.h:561
+msgid "memory in bytes to use for mipmap cache"
+msgstr "paměť v bajtech použitá pro dočasnou mipmap"
+
+#: ../build/src/preferences_gen.h:578
+msgid "full resolution image buffers to keep in main memory cache"
+msgstr "udržovat snímek v plném rozlišení v hlavní paměti"
+
+#: ../build/src/preferences_gen.h:590
+msgid "how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum.  set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode).  be warned: every thread will need about 1GB of memory (needs a restart)."
+msgstr "maximálně kolik snímků raw v plném rozlišení má být udržováno v hlavní paměti. pokud chcete vícevláknový export, nastavte tuto proměnnou na počet_vláken + 1 (jedno vlákno je pro režim fotokomory). varování: každé vlákno vyžaduje cca 1 GB paměti. (vyžaduje opětovné spuštění.) "
+
+#: ../build/src/preferences_gen.h:595
+msgid "write a redundant sidecar file for each image"
+msgstr "zapsat dodatečný postranní soubor pro každý snímek"
+
+#: ../build/src/preferences_gen.h:606
+msgid "these files can later be re-imported into a different database, preserving your changes to the image."
+msgstr "tyto soubory mohou být později znovu importovány do jiné databáze, přičemž změny snímku zůstanou zachovány."
+
+#: ../build/src/preferences_gen.h:611
+msgid "password storage backend to use"
+msgstr "použitý mechanismus pro uchování hesel"
+
+#: ../build/src/preferences_gen.h:623
+msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
+msgstr "mechanismus ukládání hesel: 0 - žádný, 1 - gconf (nepoužívejte), 2 - kwallet, 3 - gnome keyring"
+
+#: ../data/darktable.glade.h:1
 msgid "( --- )"
 msgstr "( --- )"
 
-#: ../darktable.glade.h:2
+#: ../data/darktable.glade.h:2
 msgid "-"
 msgstr "-"
 
-#: ../darktable.glade.h:3
+#: ../data/darktable.glade.h:3
 msgid "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
 
-#: ../darktable.glade.h:4
+#: ../data/darktable.glade.h:4
 msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
-msgstr ""
-"<span color=\"#7f7f7f\"><big><b>režim prosvětlovacího pultu</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>režim prosvětlovacího pultu</b></big></span>"
 
-#: ../darktable.glade.h:5
+#: ../data/darktable.glade.h:5
 msgid "about darktable"
 msgstr "o programu darktable"
 
-#: ../darktable.glade.h:6
+#: ../data/darktable.glade.h:6
 msgid ""
 "all\n"
-"no star\n"
+"unstarred\n"
 "1 star\n"
 "2 star\n"
 "3 star\n"
-"4 star"
+"4 star\n"
+"5 star\n"
+"rejected"
 msgstr ""
 "vše\n"
 "bez hvězdy\n"
 "1 hvězda\n"
 "2 hvězdy\n"
 "3 hvězdy\n"
-"4 hvězdy"
+"4 hvězdy\n"
+"5 hvězd\n"
+"zavrhnuto"
 
 #. aperture
-#: ../darktable.glade.h:12 ../src/libs/camera.c:467 ../src/gui/presets.c:278
+#: ../data/darktable.glade.h:14
+#: ../src/gui/presets.c:297
+#: ../src/libs/camera.c:490
 msgid "aperture"
 msgstr "clona"
 
-#: ../darktable.glade.h:13
+#: ../data/darktable.glade.h:15
+#: ../src/libs/metadata.c:261
+msgid "creator"
+msgstr "tvůrce"
+
+#: ../data/darktable.glade.h:16
 msgid "date/time"
 msgstr "datum/čas"
 
-#: ../darktable.glade.h:14
-msgid "devices"
-msgstr "zařízení"
-
-#. adding the labels
 #. exposure
-#: ../darktable.glade.h:15 ../src/iop/exposure.c:39 ../src/iop/exposure.c:321
-#: ../src/iop/relight.c:342 ../src/gui/presets.c:263
+#. adding the labels
+#: ../data/darktable.glade.h:17
+#: ../src/gui/presets.c:282
+#: ../src/iop/exposure.c:39
+#: ../src/iop/exposure.c:282
+#: ../src/iop/relight.c:346
 msgid "exposure"
 msgstr "expozice"
 
-#: ../darktable.glade.h:16
+#: ../data/darktable.glade.h:18
 msgid "f-length"
 msgstr "ohn. vzd."
 
-#: ../darktable.glade.h:17
+#: ../data/darktable.glade.h:19
 msgid "filename"
 msgstr "soubor"
 
-#: ../darktable.glade.h:18
+#: ../data/darktable.glade.h:20
 msgid ""
 "filename\n"
 "time\n"
@@ -101,56 +273,68 @@ msgstr ""
 "id\n"
 "barevná značka"
 
-#: ../darktable.glade.h:23 ../src/libs/collect.c:303
+#: ../data/darktable.glade.h:25
 msgid "film roll"
 msgstr "role filmu"
 
-#: ../darktable.glade.h:24
+#: ../data/darktable.glade.h:26
+msgid "folder"
+msgstr "adresář"
+
+#: ../data/darktable.glade.h:27
 msgid "height"
 msgstr "výška"
 
-#: ../darktable.glade.h:25
+#: ../data/darktable.glade.h:28
 msgid "histogram"
 msgstr "histogram"
 
-#: ../darktable.glade.h:26 ../src/libs/collect.c:307
+#: ../data/darktable.glade.h:29
 msgid "history"
 msgstr "historie"
 
-#: ../darktable.glade.h:27
+#: ../data/darktable.glade.h:30
+#: ../src/iop/clipping.c:760
+msgid "image"
+msgstr "snímek"
+
+#: ../data/darktable.glade.h:31
+msgid "image information"
+msgstr "informace o snímku"
+
+#: ../data/darktable.glade.h:32
 msgid "images sorted by"
 msgstr "snímky řazené dle"
 
-#: ../darktable.glade.h:28
-msgid "import film roll"
-msgstr "importovat roli filmu"
-
-#: ../darktable.glade.h:29
-msgid "import single image"
-msgstr "importovat jeden snímek"
+#. Import Button
+#: ../data/darktable.glade.h:33
+#: ../src/gui/camera_import_dialog.c:246
+#: ../src/libs/styles.c:344
+msgid "import"
+msgstr "importovat"
 
 #. iso
-#: ../darktable.glade.h:30 ../src/libs/camera.c:497 ../src/gui/presets.c:250
+#: ../data/darktable.glade.h:34
+#: ../src/gui/presets.c:269
+#: ../src/libs/camera.c:520
 msgid "iso"
 msgstr "iso"
 
-#: ../darktable.glade.h:31 ../src/iop/lens.c:1181 ../src/gui/presets.c:243
+#: ../data/darktable.glade.h:35
+#: ../src/gui/presets.c:262
 msgid "lens"
 msgstr "objektiv"
 
-#: ../darktable.glade.h:32
-msgid "library"
-msgstr "knihovna"
-
-#: ../darktable.glade.h:33
+#: ../data/darktable.glade.h:36
 msgid "list"
 msgstr "seznam"
 
-#: ../darktable.glade.h:34 ../src/gui/presets.c:236
+#: ../data/darktable.glade.h:37
+#: ../src/gui/presets.c:255
 msgid "maker"
 msgstr "výrobce"
 
-#: ../darktable.glade.h:35
+#: ../data/darktable.glade.h:38
 msgid ""
 "mean\n"
 "min\n"
@@ -160,59 +344,58 @@ msgstr ""
 "min\n"
 "max"
 
-#: ../darktable.glade.h:38
-msgid "metadata"
-msgstr "metadata"
-
-#: ../darktable.glade.h:39 ../src/gui/presets.c:229
+#: ../data/darktable.glade.h:41
+#: ../src/gui/presets.c:248
 msgid "model"
 msgstr "model"
 
-#: ../darktable.glade.h:40
+#: ../data/darktable.glade.h:42
 msgid "more plugins"
 msgstr "více modulů"
 
-#: ../darktable.glade.h:41
+#: ../data/darktable.glade.h:43
 msgid "navigation"
 msgstr "navigace"
 
-#: ../darktable.glade.h:42
-msgid "open"
-msgstr "otevřít"
-
-#: ../darktable.glade.h:43
-msgid "open selected film roll in light table"
-msgstr "otevřít vybranou roli filmu na prosvětlovacím pultu"
-
-#: ../darktable.glade.h:44
+#: ../data/darktable.glade.h:44
 msgid "pick"
 msgstr "vybrat"
 
-#: ../darktable.glade.h:45 ../src/libs/image.c:82
-msgid "remove"
-msgstr "odstranit"
+#: ../data/darktable.glade.h:45
+#: ../src/imageio/storage/picasa.c:686
+#: ../src/libs/metadata.c:287
+msgid "rights"
+msgstr "práva"
 
-#: ../darktable.glade.h:46
-msgid "remove selected film roll from collection"
-msgstr "odstranit vybranou roli filmu ze sbírky"
+#: ../data/darktable.glade.h:46
+msgid "select a folder to import as film roll"
+msgstr "zvolte adresář pro importování role filmu"
 
-#: ../darktable.glade.h:47
-msgid "search film rolls by folder"
-msgstr "hledat role filmu dle složky"
+#: ../data/darktable.glade.h:47
+msgid "select one or more images to import"
+msgstr "zvolte jeden nebo více snímků pro import"
 
-#: ../darktable.glade.h:48
+#: ../data/darktable.glade.h:48
 msgid "snapshots"
 msgstr "časové snímky"
 
-#: ../darktable.glade.h:49
+#: ../data/darktable.glade.h:49
 msgid "switch to darkroom mode"
 msgstr "přepnout do režimu fotokomory"
 
-#: ../darktable.glade.h:50 ../src/iop/relight.c:344
+#: ../data/darktable.glade.h:50
+#: ../src/imageio/storage/flickr.c:440
+#: ../src/imageio/storage/picasa.c:684
+#: ../src/libs/metadata.c:235
+msgid "title"
+msgstr "název"
+
+#: ../data/darktable.glade.h:51
+#: ../src/iop/relight.c:348
 msgid "width"
 msgstr "šířka"
 
-#: ../darktable.glade.h:51
+#: ../data/darktable.glade.h:52
 msgid ""
 "zoomable light table\n"
 "file manager"
@@ -220,337 +403,79 @@ msgstr ""
 "prosvětlovací pult\n"
 "souborový manažer"
 
-#: ../darktable.schemas.in.h:1
-msgid "(needs a restart)"
-msgstr "(vyžaduje opětovné spuštění)"
-
-#: ../darktable.schemas.in.h:2
-msgid "0 -- append on top of stack, 1 -- replace it."
-msgstr "0 -- přidat na začátek štosu, 2 -- nahradit vrstvu."
-
-#: ../darktable.schemas.in.h:3
-msgid "0: mean, 1: min, 2: max"
-msgstr "0: střední, 1: min, 2: max"
-
-#: ../darktable.schemas.in.h:4
-msgid "Capture view mode"
-msgstr "režim pořízení snímků"
-
-#: ../darktable.schemas.in.h:5
-msgid "Default client to use, this overrides detection of default client."
-msgstr "výchozí klient, toto přepíše automatickou detekci klienta."
-
-#: ../darktable.schemas.in.h:6 ../src/gui/preferences_gen.h:322
-msgid "always ask the user before any image file is deleted."
-msgstr "vyžadovat potvrzení při mazání snímků."
-
-#: ../darktable.schemas.in.h:7 ../src/gui/preferences_gen.h:306
-msgid "always ask the user before any image is removed from db."
-msgstr "vyžadovat potvrzení při odstraňování snímků z databáze."
-
-#: ../darktable.schemas.in.h:8
-msgid "append or replace history stack if pasted"
-msgstr "při vložení přidat nebo nahradit štos historie"
-
-#: ../darktable.schemas.in.h:9 ../src/gui/preferences_gen.h:360
-msgid "ask before deleting a tag"
-msgstr "vyžadovat potvrzení při mazání štítku"
-
-#: ../darktable.schemas.in.h:10 ../src/gui/preferences_gen.h:311
-msgid "ask before deleting images"
-msgstr "vyžadovat povrzení při mazání snímků"
-
-#: ../darktable.schemas.in.h:11 ../src/gui/preferences_gen.h:295
-msgid "ask before removing images"
-msgstr "vyžadovat potvrzení při odstraňování snímků"
-
-#: ../darktable.schemas.in.h:12 ../src/gui/preferences_gen.h:436
-msgid ""
-"creates backup of cachefile to prevent loss of thumbnails generated at "
-"crashes etc (needs a restart)."
-msgstr ""
-"vytvoří zálohu dočasného souboru, aby se zabránilo ztrátě náhledů v případě "
-"zhroucení programu (vyžaduje opětovné spuštění)."
-
-#: ../darktable.schemas.in.h:13 ../src/gui/preferences_gen.h:393
-msgid "database file"
-msgstr "databázový soubor"
-
-#: ../darktable.schemas.in.h:14 ../src/gui/preferences_gen.h:279
-msgid "don't use embedded preview jpeg, always use half-size raw"
-msgstr ""
-"nepoužívat vložený náhled, vždy jej vygenerovat v poloviční rozlišení raw"
-
-#: ../darktable.schemas.in.h:15 ../src/gui/preferences_gen.h:327
-msgid "downsample the preview pixels"
-msgstr "zmenšit pixely náhledu"
-
-#: ../darktable.schemas.in.h:16 ../src/gui/preferences_gen.h:344
-msgid "enable filmstrip in darkroom mode"
-msgstr "umožnit filmový pás v režimu fotokomory"
-
-#: ../darktable.schemas.in.h:17 ../src/gui/preferences_gen.h:246
-msgid "filename of your custom theme in share/darktable/"
-msgstr "název souboru s vlastním tématem v share/darktable/"
-
-#: ../darktable.schemas.in.h:18 ../src/gui/preferences_gen.h:404
-#: ../src/gui/preferences_gen.h:420
-msgid ""
-"filename relative to your home directory, or starting with a slash (needs a "
-"restart)."
-msgstr ""
-"název souboru relativně vůči domovskému adresáři nebo začínající lomítkem "
-"(vyžaduje opětovné spuštění)."
-
-#: ../darktable.schemas.in.h:19
-msgid "flag if backup of imported images should be performed"
-msgstr "označit, pokud se má vytvořit záloha importovaných snímků"
-
-#: ../darktable.schemas.in.h:20
-msgid "flag if originals on camera should be deleted"
-msgstr "označit, pokud mají být smazány původní snímky ve fotoaparátu"
-
-#: ../darktable.schemas.in.h:21
-msgid ""
-"flag if user should be interactivly warned about non present backup "
-"destinations"
-msgstr ""
-"označit, pokud má být uživatel interaktivně varován o neexistujícím umístění "
-"pro zálohu"
-
-#: ../darktable.schemas.in.h:22 ../src/gui/preferences_gen.h:458
-msgid "full resolution image buffers to keep in main memory cache"
-msgstr "udržovat snímek v plném rozlišení v hlavní paměti"
-
-#: ../darktable.schemas.in.h:23
-msgid "height of the exported image"
-msgstr "výška exportovaného snímku"
-
-#: ../darktable.schemas.in.h:24
-msgid "height of the exported image, or 0 if no scaling should be done."
-msgstr "výška exportovaného snímku nebo 0 pokud se nemá měnit velikost."
-
-#: ../darktable.schemas.in.h:25 ../src/gui/preferences_gen.h:470
-msgid ""
-"how many full-resolution floating point buffers of loaded raw images to keep "
-"in main memory at maximum. set this variable to num_threads + 1 if you want "
-"multithreaded export (keep one for darkroom mode). be warned: every thread "
-"will need about 1GB of memory (needs a restart)."
-msgstr ""
-"maximálně kolik snímků v plném rozlišení má být udržováno v hlavní paměti. "
-"pokud chcete vícevláknový export, nastavte tuto proměnnou na počet_vláken + "
-"1 (jedno vlákno je pro režim fotokomory). varování: každé vlákno vyžaduje "
-"cca 1 GB paměti. (vyžaduje opětovné spuštění.) "
-
-#: ../darktable.schemas.in.h:26
-msgid "how many images are in one row"
-msgstr "kolik snímků je v jednom řádku"
-
-#: ../darktable.schemas.in.h:27
-msgid ""
-"how many smallest-size thumbnails to keep in main memory at maximum. this "
-"also affects larger mipmap counts, these get fewer by size. only read at "
-"startup."
-msgstr ""
-"maximálně kolik nejmenších náhledů má být udržováno v hlavní paměti. "
-"nastavení též ovlivňuje počet mipmap, jichž je méně při větším počtu. (čteno "
-"pouze při spuštění.)"
-
-#: ../darktable.schemas.in.h:28
-msgid "icc profile to use for export"
-msgstr "profil icc pro export"
-
-#: ../darktable.schemas.in.h:29
-msgid "icc rendering intent"
-msgstr "vykreslovací záměr icc"
-
-#: ../darktable.schemas.in.h:30
-msgid ""
-"if non-negative, this overrides the per-image output color profile rendering "
-"intent on export."
-msgstr ""
-"pokud nezáporné, toto upraví záměr transformace pro výstupní barvový profil "
-"nastavený pro jednotlivé snímky."
-
-#: ../darktable.schemas.in.h:31
-msgid ""
-"if this number is smaller than the darktable internal version number, the "
-"values here will be synched with the new defaults."
-msgstr ""
-"pokud je toto číslo menší než číslo interní verze programu darktable, "
-"hodnoty budou synchronizovány s novými výchozími hodnotami."
-
-#: ../darktable.schemas.in.h:32
-msgid "ignore jpeg images when importing film rolls."
-msgstr "ignorovat snímky jpeg během importu rolí filmu."
-
-#: ../darktable.schemas.in.h:33 ../src/gui/preferences_gen.h:409
-msgid "image cache file"
-msgstr "dočasný soubor snímku"
-
-#: ../darktable.schemas.in.h:34 ../src/gui/preferences_gen.h:425
-msgid "image cache file backup"
-msgstr "záloha dočasného souboru snímku"
-
-#: ../darktable.schemas.in.h:35
-msgid "jobcode of import job"
-msgstr "kód zakázky pro import"
-
-#: ../darktable.schemas.in.h:36
-msgid "jpeg quality of on-disk thumbnails"
-msgstr "kvalita јpeg pro náhledy na disku"
-
-#: ../darktable.schemas.in.h:37 ../src/gui/preferences_gen.h:441
-msgid "memory in bytes to use for mipmap cache"
-msgstr "paměť v bajtech použitá pro dočasnou mipmap"
-
-#: ../darktable.schemas.in.h:38
-msgid "name of capture job"
-msgstr "název zakázky pro pořízené snímky"
-
-#: ../darktable.schemas.in.h:39 ../src/gui/preferences_gen.h:491
-msgid "password storage backend to use"
-msgstr "použitý mechanismus pro uchování hesel"
-
-#: ../darktable.schemas.in.h:40
-msgid "path of storage for captured images"
-msgstr "cesta pro ukládání pořízených snímků"
-
-#: ../darktable.schemas.in.h:41
-msgid "recursive directory traversal when importing filmrolls."
-msgstr "během importu rolí filmu číst i podadresáře."
-
-#: ../darktable.schemas.in.h:42
-msgid "rename pattern for captured images"
-msgstr "maska pro přejmenování pořízených snímků"
-
-#: ../darktable.schemas.in.h:43
-msgid "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
-msgstr ""
-"zvolit vzhled pro prosvětlovací pult: 0 - zvětšitelný nebo 1 - souborový "
-"manažer."
-
-#: ../darktable.schemas.in.h:44 ../src/gui/preferences_gen.h:262
-msgid "size of the side panels in pixels"
-msgstr "velikost postranních panelů v pixelech"
-
-#: ../darktable.schemas.in.h:45
-msgid "small thumbnails to keep in main memory cache"
-msgstr "udržovat malé náhledy v dočasné hlavní paměti"
-
-#: ../darktable.schemas.in.h:46
-msgid "subpath pattern in storage for captured images"
-msgstr "maska podadresáře pro pořízené snímky"
-
-#: ../darktable.schemas.in.h:47
-msgid "the name of backup directory to search for on mounted medias"
-msgstr "jméno adresáře pro zálohy, který má být hledán na připojených médiích"
-
-#: ../darktable.schemas.in.h:48 ../src/gui/preferences_gen.h:503
-msgid ""
-"the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - "
-"kwallet, 3 - gnome keyring"
-msgstr ""
-"mechanismus ukládání hesel: 0 - žádný, 1 - gconf (nepoužívejte), 2 - "
-"kwallet, 3 - gnome keyring"
-
-#: ../darktable.schemas.in.h:49 ../src/gui/preferences_gen.h:486
-msgid ""
-"these files can later be re-imported into a different database, preserving "
-"your changes to the image."
-msgstr ""
-"tyto soubory mohou být později znovu importovány do jiné databáze, přičemž "
-"změny snímku zůstanou zachovány."
-
-#: ../darktable.schemas.in.h:50
-msgid "this overrides the per-image settings, if not set to `image'."
-msgstr ""
-"pokud není nastaveno na \"snímek\", tak toto přepíše nastavení pro "
-"jednotlivé snímky."
-
-#: ../darktable.schemas.in.h:51 ../src/gui/preferences_gen.h:339
-msgid ""
-"this value smaller than 1.0 downsamples the preview pixels for faster "
-"feedback."
-msgstr "hodnoty menší než 1,0 vedou ke zmenšení náhledů, což zrychlí odezvu."
-
-#: ../darktable.schemas.in.h:52
-msgid "version of these dt-gconf entries"
-msgstr "verze těcho klíčů v dt-gconf"
-
-#: ../darktable.schemas.in.h:53
-msgid ""
-"when having raw+jpeg images together in one directory it makes no sense to "
-"import both. with this flag one can ignore all jpegs found."
-msgstr ""
-"v situaci, kdy jsou v jednom adresáři snímky raw i jpeg, nemá smysl "
-"importovat oba dva. tímto lze ignorovat všechny nalezené snímky jpeg."
-
-#: ../darktable.schemas.in.h:54
-msgid "which layout should lighttable mode show"
-msgstr "který vzhled by měl být použit v režimu prosvětlovacího pultu"
-
-#: ../darktable.schemas.in.h:55
-msgid "width of the exported image"
-msgstr "šířka exportovaného snímku"
-
-#: ../darktable.schemas.in.h:56
-msgid "width of the exported image, or 0 if no scaling should be done."
-msgstr "šířka exportovaného snímku nebo 0 pro zachování velikosti."
-
-#: ../darktable.schemas.in.h:57 ../src/gui/preferences_gen.h:475
-msgid "write a redundant sidecar file for each image"
-msgstr "zapsat dodatečný postranní soubor pro každý snímek"
-
-#. single images
-#: ../src/common/image.c:98 ../src/control/control.c:1371
-#: ../src/control/control.c:1372 ../src/libs/collect.c:221
-#: ../src/gui/filmview.c:56 ../src/gui/filmview.c:82 ../src/gui/filmview.c:86
-#: ../src/gui/filmview.c:88
-#, c-format
-msgid "single images"
-msgstr "jednotlivé snímky"
-
-#: ../src/common/history.c:170 ../src/common/styles.c:195
-#: ../src/develop/develop.c:897 ../src/gui/styles_dialog.c:319
+#: ../src/common/history.c:168
+#: ../src/common/history.c:197
+#: ../src/common/styles.c:228
+#: ../src/develop/develop.c:906
+#: ../src/gui/styles_dialog.c:319
 msgid "on"
 msgstr "zapnuto"
 
-#: ../src/common/history.c:170 ../src/common/styles.c:195
-#: ../src/develop/develop.c:897 ../src/gui/styles_dialog.c:319
+#: ../src/common/history.c:168
+#: ../src/common/history.c:197
+#: ../src/common/styles.c:228
+#: ../src/develop/develop.c:906
+#: ../src/gui/styles_dialog.c:319
 msgid "off"
 msgstr "vypnuto"
 
-#: ../src/common/styles.c:44
+#: ../src/common/image.c:149
+msgid "orphaned image"
+msgstr "opuštěný snímek"
+
+#. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
+#. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
+#: ../src/common/image.c:517
+#, c-format
+msgid "image `%s' is not available"
+msgstr "snímek `%s' není dostupný"
+
+#: ../src/common/styles.c:68
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "styl pojmenovaný '%s' již existuje"
 
-#: ../src/common/styles.c:84
+#: ../src/common/styles.c:116
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "styl pojmenovaný '%s' byl úspěšně vytvořen"
 
-#: ../src/control/control.c:879 ../src/control/control.c:882
+#: ../src/common/styles.c:277
+#, c-format
+msgid "style file for %s exists"
+msgstr "soubor se stylem pro '%s' již existuje"
+
+#: ../src/common/styles.c:317
+#, c-format
+msgid "style %s was sucessfully saved"
+msgstr "styl '%s' byl úspěšně uložen"
+
+#: ../src/common/styles.c:469
+#, c-format
+msgid "style %s was sucessfully imported"
+msgstr "styl '%s' byl úspěšně načten"
+
+#: ../src/control/control.c:897
+#: ../src/control/control.c:900
 msgid "working.."
 msgstr "zpracovává se..."
 
-#: ../src/control/control.c:959
+#: ../src/control/control.c:981
 #, c-format
 msgid "switch to %s mode"
 msgstr "přepnout do režimu %s"
 
-#: ../src/control/control.c:967
+#: ../src/control/control.c:989
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>režim %s</b></big></span>"
 
-#: ../src/control/jobs/camera_jobs.c:35
+#: ../src/control/jobs/camera_jobs.c:37
 #, c-format
 msgid "importing image %s"
 msgstr "importování snímku %s"
 
-#: ../src/control/jobs/camera_jobs.c:65
+#: ../src/control/jobs/camera_jobs.c:67
 #, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
@@ -558,21 +483,25 @@ msgstr[0] "pořizování %d snímku"
 msgstr[1] "pořizování %d snímků"
 msgstr[2] "pořizování %d snímků"
 
-#: ../src/control/jobs/camera_jobs.c:205
+#: ../src/control/jobs/camera_jobs.c:88
+msgid "please set your camera to manual mode first!"
+msgstr "prosím nejprve nastavte fotoaparát do manuálního režimu!"
+
+#: ../src/control/jobs/camera_jobs.c:268
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d importováno do %s"
 
-#: ../src/control/jobs/camera_jobs.c:262
-msgid "starting import job of images from camera"
-msgstr "začíná importování snímků z fotoaparátu"
+#: ../src/control/jobs/camera_jobs.c:325
+msgid "starting to import images from camera"
+msgstr "začíná import snímků z fotoaparátu"
 
-#: ../src/control/jobs/camera_jobs.c:279
+#: ../src/control/jobs/camera_jobs.c:342
 #, c-format
-msgid "failed to create import path %s, import of images aborted."
+msgid "failed to create import path `%s', import aborted."
 msgstr "selhalo vytvoření cesty pro import %s, import snímků ukončen."
 
-#: ../src/control/jobs/camera_jobs.c:288
+#: ../src/control/jobs/camera_jobs.c:351
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
@@ -580,12 +509,37 @@ msgstr[0] "importování %d snímku z fotoaparátu"
 msgstr[1] "importování %d snímků z fotoaparátu"
 msgstr[2] "importování %d snímků z fotoaparátu"
 
-#: ../src/control/jobs/camera_jobs.c:311
-msgid "failed to create filmroll for camera import, import of images aborted."
-msgstr ""
-"selhalo vytvoření role filmu pro import z fotoaparátu, import snímků ukončen."
+#: ../src/control/jobs/camera_jobs.c:373
+msgid "failed to create filmroll for camera import, import aborted."
+msgstr "selhalo vytvoření role filmu pro import z fotoaparátu, import snímků ukončen."
 
-#: ../src/control/jobs/control_jobs.c:77
+#: ../src/control/jobs/control_jobs.c:80
+#, c-format
+msgid "merging %d image"
+msgid_plural "merging %d images"
+msgstr[0] "slučování %d snímku"
+msgstr[1] "slučování %d snímků"
+msgstr[2] "slučování %d snímků"
+
+#: ../src/control/jobs/control_jobs.c:93
+msgid "exposure bracketing only works on raw images"
+msgstr "krokování expozice funguje pouze se snímky raw"
+
+#: ../src/control/jobs/control_jobs.c:103
+#, c-format
+msgid "failed to get raw buffer from image `%s'"
+msgstr "selhalo získání raw bufferu ze snímku `%s'"
+
+#: ../src/control/jobs/control_jobs.c:122
+msgid "images have to be of same size!"
+msgstr "snímky musejí být stejně veliké!"
+
+#: ../src/control/jobs/control_jobs.c:168
+#, c-format
+msgid "wrote merged hdr `%s'"
+msgstr "spojený snímek hdr `%s' uložen"
+
+#: ../src/control/jobs/control_jobs.c:192
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
@@ -593,7 +547,7 @@ msgstr[0] "vytváření duplikátu %d snímku"
 msgstr[1] "vytváření duplikátu %d snímků"
 msgstr[2] "vytváření duplikátu %d snímků"
 
-#: ../src/control/jobs/control_jobs.c:100
+#: ../src/control/jobs/control_jobs.c:215
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
@@ -601,7 +555,7 @@ msgstr[0] "převracení %d snímku"
 msgstr[1] "převracení %d snímků"
 msgstr[2] "převracení %d snímků"
 
-#: ../src/control/jobs/control_jobs.c:122
+#: ../src/control/jobs/control_jobs.c:237
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
@@ -609,7 +563,7 @@ msgstr[0] "odstraňování %d snímku"
 msgstr[1] "odstraňování %d snímků"
 msgstr[2] "odstraňování %d snímků"
 
-#: ../src/control/jobs/control_jobs.c:144
+#: ../src/control/jobs/control_jobs.c:260
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
@@ -617,27 +571,27 @@ msgstr[0] "mazání %d snímku"
 msgstr[1] "mazání %d snímků"
 msgstr[2] "mazání %d snímků"
 
-#: ../src/control/jobs/control_jobs.c:254
+#: ../src/control/jobs/control_jobs.c:380
 msgid "do you really want to remove all selected images from the collection?"
 msgstr "opravdu chcete odstranit všechny vybrané snímky ze sbírky?"
 
-#: ../src/control/jobs/control_jobs.c:255
+#: ../src/control/jobs/control_jobs.c:381
 msgid "remove images?"
 msgstr "odstranit snímky?"
 
-#: ../src/control/jobs/control_jobs.c:275
+#: ../src/control/jobs/control_jobs.c:401
 msgid "do you really want to physically delete all selected images from disk?"
 msgstr "opravdu chcete fyzicky smazat všechny vybrané snímky z disku?"
 
-#: ../src/control/jobs/control_jobs.c:276
+#: ../src/control/jobs/control_jobs.c:402
 msgid "delete images?"
 msgstr "smazat snímky?"
 
-#: ../src/control/jobs/control_jobs.c:314
+#: ../src/control/jobs/control_jobs.c:440
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr "selhalo získání parametrů z mechanismu uskladnění, export ukončen."
 
-#: ../src/control/jobs/control_jobs.c:317
+#: ../src/control/jobs/control_jobs.c:443
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
@@ -645,7 +599,7 @@ msgstr[0] "exportování %d snímku..."
 msgstr[1] "exportování %d snímků..."
 msgstr[2] "exportování %d snímků..."
 
-#: ../src/control/jobs/control_jobs.c:319
+#: ../src/control/jobs/control_jobs.c:445
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
@@ -653,763 +607,1343 @@ msgstr[0] "exportování %d snímku do %s"
 msgstr[1] "exportování %d snímků do %s"
 msgstr[2] "exportování %d snímků do %s"
 
-#: ../src/control/jobs/control_jobs.c:358 ../src/views/darkroom.c:309
-msgid "image does no longer exist"
-msgstr "snímek již neexistuje"
+#: ../src/control/jobs/control_jobs.c:484
+#: ../src/control/jobs/control_jobs.c:485
+#: ../src/views/darkroom.c:310
+#, c-format
+msgid "image `%s' is currently unavailable"
+msgstr "snímek `%s' je aktuálně nedostupný"
 
 #: ../src/control/jobs/image_jobs.c:39
 #, c-format
 msgid "loading image %s"
 msgstr "načítání snímku %s"
 
-#: ../src/develop/develop.c:801
+#: ../src/develop/develop.c:807
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: neshoda verze modulu `%s': %d != %d"
 
-#: ../src/develop/imageop.c:324 ../src/develop/imageop.c:440
+#: ../src/develop/imageop.c:294
+#: ../src/develop/imageop.c:313
+#: ../src/develop/imageop.c:586
 #, c-format
 msgid "%s is switched on"
 msgstr "%s je zapnuto"
 
-#: ../src/develop/imageop.c:324 ../src/develop/imageop.c:440
+#: ../src/develop/imageop.c:294
+#: ../src/develop/imageop.c:313
+#: ../src/develop/imageop.c:586
 #, c-format
 msgid "%s is switched off"
 msgstr "%s je vypnuto"
 
-#: ../src/develop/imageop.c:459 ../src/libs/lib.c:497
+#: ../src/develop/imageop.c:605
+#: ../src/libs/lib.c:518
 msgid "reset parameters"
 msgstr "obnovit parametry"
 
-#: ../src/develop/imageop.c:460 ../src/libs/lib.c:503
+#: ../src/develop/imageop.c:606
+#: ../src/libs/lib.c:524
 msgid "presets"
 msgstr "výchozí hodnoty"
 
-#: ../src/libs/copy_history.c:43
-msgid "history stack"
-msgstr "štos historie"
+#: ../src/dtgtk/resetlabel.c:61
+msgid "double-click to reset"
+msgstr "dvojitým kliknutím obnovíte výchozí"
 
-#: ../src/libs/copy_history.c:55
-msgid "open sidecar file"
-msgstr "načíst xmp soubor"
+#: ../src/gui/background_jobs.c:34
+msgid "background jobs"
+msgstr "zpracování na pozadí"
 
-#: ../src/libs/copy_history.c:65
-msgid "xmp sidecar files"
-msgstr "postranní soubory xmp"
+#: ../src/gui/camera_import_dialog.c:216
+msgid "store value as default"
+msgstr "uložit hodnotu jako výchozí"
 
-#: ../src/libs/copy_history.c:70 ../src/gui/gtk.c:752
+#: ../src/gui/camera_import_dialog.c:223
+msgid "reset value to default"
+msgstr "obnovit hodnotu na výchozí"
+
+#: ../src/gui/camera_import_dialog.c:246
+msgid "import images from camera"
+msgstr "importovat snímky z fotoaparátu"
+
+#: ../src/gui/camera_import_dialog.c:246
+msgid "cancel"
+msgstr "zrušit"
+
+#: ../src/gui/camera_import_dialog.c:254
+msgid "My jobcode"
+msgstr "můj kód zakázky"
+
+#. Top info
+#: ../src/gui/camera_import_dialog.c:262
+msgid "please wait while prefetching thumbnails of images from camera..."
+msgstr "prosím čekejte zatímco se načítají náhledy snímků z fotoaparátu..."
+
+#. jobcode
+#: ../src/gui/camera_import_dialog.c:268
+#: ../src/libs/capture.c:102
+msgid "jobcode"
+msgstr "kód zakázky"
+
+#: ../src/gui/camera_import_dialog.c:280
+msgid "thumbnail"
+msgstr "náhled"
+
+#: ../src/gui/camera_import_dialog.c:284
+msgid "storage file"
+msgstr "soubor pro uložení dat"
+
+#. general settings
+#: ../src/gui/camera_import_dialog.c:303
+msgid "general"
+msgstr "obecné"
+
+#: ../src/gui/camera_import_dialog.c:305
+msgid "delete originals after import"
+msgstr "smazat originály po importu"
+
+#: ../src/gui/camera_import_dialog.c:309
+msgid "check this option if you want to delete images on camera after download to computer"
+msgstr "zaškrtněte, pokud chcete smazat snímky z fotoaparátu po jejich stažení do počítače."
+
+#: ../src/gui/camera_import_dialog.c:313
+msgid "override today's date"
+msgstr "upravit dnešní datum"
+
+#: ../src/gui/camera_import_dialog.c:315
+msgid ""
+"check this, if you want to override the timestamp used when expanding variables:\n"
+"$(YEAR), $(MONTH), $(DAY),\n"
+"$(HOUR), $(MINUTE), $(SECONDS)"
+msgstr ""
+"zaškrtněte, pokud chcete upravit časovou značku pomocí těchto proměných:\n"
+"$(YEAR), $(MONTH), $(DAY),\n"
+"$(HOUR), $(MINUTE), $(SECOND)"
+
+#. Storage structure
+#: ../src/gui/camera_import_dialog.c:326
+msgid "storage structure"
+msgstr "ukládání dat"
+
+#: ../src/gui/camera_import_dialog.c:327
+msgid "the following three settings describe the directory structure and file renaming for import storage and images; if you dont know how to use this, keep the default settings."
+msgstr "následující tři volby specifikují adresář pro data importu, strukturu adresářů pro snímky a přejmenování snímků; pokud nevíte, co to znamená, ponechte výchozí nastavení."
+
+#: ../src/gui/camera_import_dialog.c:333
+msgid "storage directory"
+msgstr "adresář pro ukládání dat"
+
+#: ../src/gui/camera_import_dialog.c:336
+msgid "directory structure"
+msgstr "adresářová struktura"
+
+#: ../src/gui/camera_import_dialog.c:340
+msgid "filename structure"
+msgstr "jméno souboru"
+
+#. Add example
+#: ../src/gui/camera_import_dialog.c:344
+msgid "above settings expands to:"
+msgstr "výše uvedené volby jsou interpretovány jako:"
+
+#. External backup
+#: ../src/gui/camera_import_dialog.c:355
+msgid "external backup"
+msgstr "externí záloha"
+
+#: ../src/gui/camera_import_dialog.c:356
+msgid "external backup is an option to automatic do a backup of the imported image(s) to another physical location, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."
+msgstr "externí záloha je volba pro automatické vytvoření zálohy naimportovaných snímků na jiné fyzické médium; pokud je aktivováno, vyhledá specifikovaný adresář na připojeném zařízení ve vašem systému. každý nalezený adresář je použit jako základní adresář ve výše uvedené struktuře ukládání dat a při stahování snímků z fotoaparátu jsou tyto replikovány na nalezená média."
+
+#: ../src/gui/camera_import_dialog.c:362
+msgid "enable backup"
+msgstr "umožnit zálohu"
+
+#: ../src/gui/camera_import_dialog.c:364
+msgid "check this option to enable automatic backup of imported images"
+msgstr "zaškrtněte pro aktivaci automatické zálohy stažených snímků"
+
+#: ../src/gui/camera_import_dialog.c:366
+msgid "warn if no backup destinations are present"
+msgstr "varovat, pokud neexistuje žádná destinace pro zálohy"
+
+#: ../src/gui/camera_import_dialog.c:368
+msgid "check this option to get an interactive warning if no backupdestinations are present"
+msgstr "zaškrtněte pro zobrazení interaktivního varování v případě neexistující destinace pro zálohu."
+
+#: ../src/gui/camera_import_dialog.c:370
+msgid "backup foldername"
+msgstr "jméno adresáře pro zálohu"
+
+#: ../src/gui/camera_import_dialog.c:372
+msgid ""
+"this is the name of folder that indicates a backup destination,\n"
+"if such a folder is found in any mounter media it is used as a backup destination."
+msgstr ""
+"jméno adresáře indikující destinaci pro zálohu,\n"
+"pokud je takový adresář nalezen na jakémkoliv připojeném médiu, je použit jako destinace pro zálohu."
+
+#: ../src/gui/camera_import_dialog.c:388
+msgid "images"
+msgstr "snímky"
+
+#: ../src/gui/camera_import_dialog.c:389
+msgid "settings"
+msgstr "nastavení"
+
+#. Lets run dialog
+#: ../src/gui/camera_import_dialog.c:537
+msgid "select the images from the list below that you want to import into a new filmroll"
+msgstr "z níže uvedeného seznamu zvolte snímky, které chcete importovat do nové role filmu."
+
+#: ../src/gui/camera_import_dialog.c:577
+msgid "please set the basedirectory settings before importing"
+msgstr "před importem prosím nastavte volby pro základní adresář"
+
+#: ../src/gui/camera_import_dialog.c:584
+msgid "please set the subdirectory settings before importing"
+msgstr "před importem prosím nastavte volby podadresářů"
+
+#: ../src/gui/camera_import_dialog.c:591
+msgid "please set the filenamepattern settings before importing"
+msgstr "před importem prosím nastavte masku pro jména souborů"
+
+#. Add the rescan button
+#: ../src/gui/devices.c:136
+msgid "scan for devices"
+msgstr "najít zařízení"
+
+#: ../src/gui/devices.c:138
+msgid "scan for newly attached devices"
+msgstr "najít nově připojená zařízení"
+
+#: ../src/gui/devices.c:163
+#, c-format
+msgid "device \"%s\" connected on port \"%s\"."
+msgstr "zařízení \"%s\" připojeno na portu \"%s\"."
+
+#: ../src/gui/devices.c:171
+msgid "import from camera"
+msgstr "importovat z fotoaparátu"
+
+#: ../src/gui/devices.c:173
+msgid "tethered shoot"
+msgstr "fotografovat přes kabel"
+
+#. No supported devices is detected lets notice user..
+#: ../src/gui/devices.c:189
+msgid "no supported devices found"
+msgstr "žádná podporovaná zařízení"
+
+#. switch(input_color)
+#. {
+#. case 0: // linear rgb
+#. snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
+#. break;
+#. case 1: // Lab
+#: ../src/gui/gtk.c:336
+msgid "Lab"
+msgstr "Lab"
+
+#: ../src/gui/gtk.c:404
+msgid "organize and develop images from digital cameras"
+msgstr "správa a vyvolávání snímků z digitálních fotoaparátů"
+
+#: ../src/gui/gtk.c:408
+msgid "* developers *"
+msgstr "* vývojáři *"
+
+#: ../src/gui/gtk.c:413
+msgid "* ubuntu packaging, color management, video tutorials *"
+msgstr "* balíček pro ubuntu, správa barev, video návody *"
+
+#: ../src/gui/gtk.c:416
+msgid "* networking, battle testing, translation expert *"
+msgstr "* sítě, testování, překlady *"
+
+#: ../src/gui/gtk.c:419
+msgid "* contributors *"
+msgstr "* přispěvatelé *"
+
+#: ../src/gui/gtk.c:449
+msgid "translator-credits"
+msgstr "Milan Knížek <knizek@volny.cz>"
+
+#: ../src/gui/gtk.c:663
+msgid "import film"
+msgstr "importovat film"
+
+#: ../src/gui/gtk.c:682
+msgid "import directories recursively"
+msgstr "importovat včetně podadresářů"
+
+#: ../src/gui/gtk.c:683
+msgid "recursively import subdirectories. each directory goes into a new film roll."
+msgstr "rekurzívně importovat podadresáře. každý adresář vytvoří novou roli filmu."
+
+#: ../src/gui/gtk.c:690
+msgid "ignore jpeg files"
+msgstr "ignorovat soubory jpeg"
+
+#: ../src/gui/gtk.c:691
+msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
+msgstr "nenačítat soubory s příponou .jpg nebo .jpeg. toto je užitečené, pokud jsou v adresáře současně raw+jpeg soubory."
+
+#: ../src/gui/gtk.c:734
+msgid "import image"
+msgstr "importovat snímek"
+
+#: ../src/gui/gtk.c:759
+msgid "supported images"
+msgstr "podporované typy obrázků"
+
+#: ../src/gui/gtk.c:764
+#: ../src/libs/copy_history.c:71
+#: ../src/libs/styles.c:234
 msgid "all files"
 msgstr "všechny soubory"
 
-#: ../src/libs/copy_history.c:84 ../src/gui/gtk.c:772
+#: ../src/gui/gtk.c:783
 #, c-format
-msgid "error loading file '%s'"
+msgid "error loading file `%s'"
 msgstr "chyba při čtení souboru '%s'"
 
+#: ../src/gui/gtk.c:798
+#, c-format
+msgid "file `%s' has unknown format!"
+msgstr "soubor `%s' je neznámého formátu!"
+
+#: ../src/gui/gtk.c:1111
+msgid "show global preferences"
+msgstr "zobrazit globální předvolby"
+
+#: ../src/gui/gtk.c:1226
+msgid "take snapshot"
+msgstr "vytvořit snímek"
+
+#: ../src/gui/histogram.c:35
+#: ../src/gui/histogram.c:189
+msgid ""
+"drag to change exposure,\n"
+"doubleclick resets"
+msgstr ""
+"kliknutí a tah změní expozici,\n"
+"dvojité kliknutí obnoví výchozí stav"
+
+#: ../src/gui/histogram.c:184
+msgid ""
+"drag to change black point,\n"
+"doubleclick resets"
+msgstr ""
+"kliknutí a tah změní černý bod,\n"
+"dvojitý klik obnoví původní stav"
+
+#: ../src/gui/iop_history.c:96
+#, c-format
+msgid "applied style `%s' on current image"
+msgstr "styl `%s' použit na aktuální snímek"
+
+#: ../src/gui/iop_history.c:128
+msgid "no styles have been created yet"
+msgstr "zatím nebyly žádné styly vytvořeny"
+
+#: ../src/gui/iop_history.c:137
+msgid "compress history stack"
+msgstr "zkrátit štos historie"
+
+#: ../src/gui/iop_history.c:138
+msgid "create a minimal history stack which produces the same image"
+msgstr "vytvořit nejmenší štos historie, který vede k vytvoření stejného snímku"
+
+#: ../src/gui/iop_history.c:146
+msgid "create a style from the current history stack"
+msgstr "vytvořit styl z aktuálního štosu historie"
+
+#: ../src/gui/iop_history.c:152
+msgid "applies a style selected from popup menu"
+msgstr "použije styl vybraný z rolovacího menu"
+
+#: ../src/gui/iop_history.c:177
+#: ../src/gui/iop_history.c:268
+msgid "0 - original"
+msgstr "0 - originál"
+
+#. add button for basic plugins
+#. _iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
+#: ../src/gui/iop_modulegroups.c:173
+msgid "basic"
+msgstr "základ"
+
+#: ../src/gui/iop_modulegroups.c:175
+msgid "basic group"
+msgstr "základní moduly"
+
+#. add button for color plugins
+#. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
+#: ../src/gui/iop_modulegroups.c:180
+msgid "color"
+msgstr "barvy"
+
+#: ../src/gui/iop_modulegroups.c:182
+msgid "color group"
+msgstr "moduly úprav barev"
+
+#. add button for correction plugins
+#. _iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
+#: ../src/gui/iop_modulegroups.c:187
+msgid "correct"
+msgstr "opravy"
+
+#: ../src/gui/iop_modulegroups.c:189
+msgid "correction group"
+msgstr "moduly oprav"
+
+#. add buttons for artistic plugins
+#. _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
+#: ../src/gui/iop_modulegroups.c:194
+msgid "effect"
+msgstr "efekty"
+
+#: ../src/gui/iop_modulegroups.c:196
+msgid "effect group"
+msgstr "moduly efektů"
+
+#: ../src/gui/preferences.c:29
+msgid "darktable preferences"
+msgstr "předvolby darktable"
+
+#: ../src/gui/preferences.c:31
+msgid "close"
+msgstr "zavřít"
+
+#: ../src/gui/presets.c:97
+#: ../src/gui/presets.c:509
+#: ../src/gui/presets.c:522
+#: ../src/libs/lib.c:56
+msgid "(default)"
+msgstr "(výchozí)"
+
+#: ../src/gui/presets.c:198
+#, c-format
+msgid "edit `%s' for module `%s'"
+msgstr "upravit `%s' pro modul `%s'"
+
+#: ../src/gui/presets.c:223
+#: ../src/libs/lib.c:136
+msgid "name of the preset"
+msgstr "jméno nastavení"
+
+#: ../src/gui/presets.c:227
+#: ../src/libs/lib.c:140
+msgid "description or further information"
+msgstr "popis nebo další informace"
+
+#: ../src/gui/presets.c:229
+msgid "auto apply this preset to matching images"
+msgstr "automaticky použít toto nastavení na shodné snímky"
+
+#: ../src/gui/presets.c:231
+msgid "only show this preset for matching images"
+msgstr "toto nastavení zobrazit pouze pro shodné snímky"
+
+#: ../src/gui/presets.c:232
+msgid "be very careful with this option. this might be the last time you see your preset."
+msgstr "u této volby buďte velmi opatrní. toto může být poslední moment, kdy vidíte svá nastavení."
+
+#: ../src/gui/presets.c:247
+#, c-format
+msgid "string to match model (use % as wildcard)"
+msgstr "řetězec pro hledání modelu (použijte % jako žolík)"
+
+#: ../src/gui/presets.c:254
+#, c-format
+msgid "string to match maker (use % as wildcard)"
+msgstr "řetězec pro hledání výrobce (použijte % jako žolík)"
+
+#: ../src/gui/presets.c:261
+#, c-format
+msgid "string to match lens (use % as wildcard)"
+msgstr "řetězec pro hledání objektivu (použijte % jako žolík)"
+
+#: ../src/gui/presets.c:273
+msgid "minimum iso value"
+msgstr "nejmenší hodnota iso"
+
+#: ../src/gui/presets.c:277
+msgid "maximum iso value"
+msgstr "největší hodnota iso"
+
+#: ../src/gui/presets.c:287
+msgid "minimum exposure time"
+msgstr "nejmenší exp. čas"
+
+#: ../src/gui/presets.c:288
+msgid "maximum exposure time"
+msgstr "největší exp. čas"
+
+#: ../src/gui/presets.c:302
+msgid "minimum aperture value"
+msgstr "nejmenší clonové číslo"
+
+#: ../src/gui/presets.c:303
+msgid "maximum aperture value"
+msgstr "největší clonové číslo"
+
+#. focal length
+#: ../src/gui/presets.c:312
+#: ../src/libs/camera.c:500
+msgid "focal length"
+msgstr "ohn. vzdálenost"
+
+#: ../src/gui/presets.c:319
+msgid "minimum focal length"
+msgstr "nejmenší ohn. vzdálenost"
+
+#: ../src/gui/presets.c:320
+msgid "maximum focal length"
+msgstr "největší ohn. vzdálenost"
+
+#. then show edit dialog
+#: ../src/gui/presets.c:383
+#: ../src/gui/presets.c:388
+#: ../src/gui/presets.c:395
+#: ../src/libs/lib.c:170
+#: ../src/libs/lib.c:175
+#: ../src/libs/lib.c:181
+msgid "new preset"
+msgstr "nové nastavení"
+
+#: ../src/gui/presets.c:543
+#: ../src/libs/lib.c:301
+msgid "edit this preset.."
+msgstr "editovat toto nastavení..."
+
+#: ../src/gui/presets.c:547
+#: ../src/libs/lib.c:305
+msgid "delete this preset"
+msgstr "smazat toto nastavení"
+
+#. only show if it is not the default already
+#: ../src/gui/presets.c:554
+msgid "use preset as default"
+msgstr "použít nastavení jako výchozí"
+
+#: ../src/gui/presets.c:561
+#: ../src/libs/lib.c:312
+msgid "store new preset.."
+msgstr "uložit nové nastavení..."
+
+#. only show this if presets already contains a default
+#: ../src/gui/presets.c:570
+msgid "remove default"
+msgstr "odstranit výchozí"
+
+#: ../src/gui/styles_dialog.c:181
+#, c-format
+msgid "edit style"
+msgstr "úpravy stylu"
+
+#: ../src/gui/styles_dialog.c:185
+msgid "create new style"
+msgstr "vytvořit nový styl"
+
+#: ../src/gui/styles_dialog.c:205
+msgid "enter a name for the new style"
+msgstr "zadejte jméno pro nový styl"
+
+#: ../src/gui/styles_dialog.c:208
+msgid "enter a description for the new style, this description is searchable"
+msgstr "zadejte popis pro nový styl, tento popis je hledatelný"
+
+#: ../src/gui/styles_dialog.c:227
+msgid "advanced edit of style"
+msgstr "pokročilé úpravy stylu"
+
+#: ../src/gui/styles_dialog.c:247
+msgid "include"
+msgstr "zahrnout"
+
+#: ../src/gui/styles_dialog.c:258
+msgid "item"
+msgstr "položka"
+
+#: ../src/gui/styles_dialog.c:336
+msgid "can't create style out of unaltered image"
+msgstr "nelze vytvořit styl z nezměněného snímku"
+
+#: ../src/gui/tool_colorlabels.c:42
+msgid ""
+"toggle red label\n"
+"of selected images (f1)"
+msgstr ""
+"přepnout červenou značku\n"
+"u vybraných snímků (f1)"
+
+#: ../src/gui/tool_colorlabels.c:47
+msgid ""
+"toggle yellow label\n"
+"of selected images (f2)"
+msgstr ""
+"přepnout žlutou značku\n"
+"u vybraných snímků (f2)"
+
+#: ../src/gui/tool_colorlabels.c:52
+msgid ""
+"toggle green label\n"
+"of selected images (f3)"
+msgstr ""
+"přepnout zelenou značku\n"
+"u vybraných snímků (f3)"
+
+#: ../src/gui/tool_colorlabels.c:57
+msgid ""
+"toggle blue label\n"
+"of selected images (f4)"
+msgstr ""
+"přepnout modrou značku\n"
+"u vybraných snímků (f4)"
+
+#: ../src/gui/tool_colorlabels.c:62
+msgid ""
+"toggle purple label\n"
+"of selected images (f5)"
+msgstr ""
+"přepnout purpurovou značku\n"
+"u vybraných snímků (f5)"
+
+#: ../src/gui/tool_colorlabels.c:67
+msgid "clear all labels of selected images"
+msgstr "odstranit všechny značky u vybraných snímků"
+
+#: ../src/imageio/format/copy.c:138
 #: ../src/libs/copy_history.c:193
 msgid "copy"
 msgstr "kopírovat"
 
-#: ../src/libs/copy_history.c:195
+#: ../src/imageio/format/copy.c:145
 msgid ""
-"copy history stack of\n"
-"first selected image (ctrl-c)"
+"do a 1:1 copy of the selected files.\n"
+"the global options below do not apply!"
 msgstr ""
-"kopírovat štos historie\n"
-"z prvního vybraného snímku (ctrl-c)"
-
-#: ../src/libs/copy_history.c:198
-msgid "discard"
-msgstr "zrušit"
-
-#: ../src/libs/copy_history.c:199
-msgid ""
-"discard history stack of\n"
-"all selected images"
-msgstr ""
-"zrušit štos historie pro\n"
-"všechny vybrané snímky"
-
-#: ../src/libs/copy_history.c:206
-msgid "append"
-msgstr "přidat"
-
-#: ../src/libs/copy_history.c:207
-msgid "overwrite"
-msgstr "přepsat"
-
-#: ../src/libs/copy_history.c:208
-msgid "how to handle existing history"
-msgstr "jak zacházet s existující historií"
-
-#: ../src/libs/copy_history.c:212
-msgid "paste"
-msgstr "vložit"
-
-#: ../src/libs/copy_history.c:214
-msgid ""
-"paste history stack to\n"
-"all selected images (ctrl-v)"
-msgstr ""
-"přilepit štos historie ke\n"
-"všem vybraným snímkům (ctrl+v)"
-
-#: ../src/libs/copy_history.c:222
-msgid "load sidecar file"
-msgstr "načíst xmp soubor"
-
-#: ../src/libs/copy_history.c:223
-msgid ""
-"open an xmp sidecar file\n"
-"and apply it to selected images"
-msgstr ""
-"otevřít postranní soubor xmp\n"
-"a použít jej na vybrané snímky"
-
-#: ../src/libs/lib.c:55 ../src/gui/presets.c:78 ../src/gui/presets.c:490
-#: ../src/gui/presets.c:503
-msgid "(default)"
-msgstr "(výchozí)"
-
-#: ../src/libs/lib.c:114
-#, c-format
-msgid "edit `%s'"
-msgstr "editovat `%s'"
-
-#: ../src/libs/lib.c:135 ../src/gui/presets.c:204
-msgid "name of the preset"
-msgstr "jméno nastavení"
-
-#: ../src/libs/lib.c:139 ../src/gui/presets.c:208
-msgid "description or further information"
-msgstr "popis nebo další informace"
-
-#. then show edit dialog
-#: ../src/libs/lib.c:169 ../src/libs/lib.c:174 ../src/libs/lib.c:180
-#: ../src/gui/presets.c:364 ../src/gui/presets.c:369 ../src/gui/presets.c:376
-msgid "new preset"
-msgstr "nové nastavení"
-
-#: ../src/libs/lib.c:236
-msgid "deleting preset for obsolete module"
-msgstr "smazání nastavení pro zastaralý modul"
-
-#: ../src/libs/lib.c:300 ../src/gui/presets.c:524
-msgid "edit this preset.."
-msgstr "editovat toto nastavení..."
-
-#: ../src/libs/lib.c:304 ../src/gui/presets.c:528
-msgid "delete this preset"
-msgstr "smazat toto nastavení"
-
-#: ../src/libs/lib.c:311 ../src/gui/presets.c:542
-msgid "store new preset.."
-msgstr "uložit nové nastavení..."
-
-#: ../src/libs/export.c:66
-msgid "export selected"
-msgstr "exportovat vybrané"
-
-#: ../src/libs/export.c:379
-msgid "target storage"
-msgstr "destinace"
-
-#: ../src/libs/export.c:399
-msgid "file format"
-msgstr "formát souboru"
-
-#: ../src/libs/export.c:414
-msgid "global options"
-msgstr "globální volby"
-
-#: ../src/libs/export.c:418
-msgid ""
-"maximum output width\n"
-"set to 0 for no scaling"
-msgstr ""
-"maximální výstupní šířka\n"
-"nastavte na 0 pro zachování velikosti"
-
-#: ../src/libs/export.c:420
-msgid ""
-"maximum output height\n"
-"set to 0 for no scaling"
-msgstr ""
-"maximální výstupní šířka\n"
-"nastavte na 0 pro zachování velikosti"
-
-#.
-#. gtk_widget_add_events(GTK_WIDGET(d->width), GDK_FOCUS_CHANGE_MASK);
-#. g_signal_connect (G_OBJECT (d->width), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-#. g_signal_connect (G_OBJECT (d->width), "focus-out-event", G_CALLBACK(focus_out), NULL);
-#. gtk_widget_add_events(GTK_WIDGET(d->height), GDK_FOCUS_CHANGE_MASK);
-#. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-#. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
-#.
-#: ../src/libs/export.c:432
-msgid "max size"
-msgstr "max. vel."
-
-#: ../src/libs/export.c:437
-msgid "x"
-msgstr "x"
-
-#: ../src/libs/export.c:441 ../src/iop/colorin.c:403
-msgid "intent"
-msgstr "záměr"
-
-#: ../src/libs/export.c:445 ../src/libs/export.c:511
-msgid "image settings"
-msgstr "nastavení snímku"
-
-#: ../src/libs/export.c:446 ../src/iop/colorin.c:410 ../src/iop/colorout.c:419
-#: ../src/iop/colorout.c:424
-msgid "perceptual"
-msgstr "perceptuální"
-
-#: ../src/libs/export.c:447 ../src/iop/colorin.c:411 ../src/iop/colorout.c:420
-#: ../src/iop/colorout.c:425
-msgid "relative colorimetric"
-msgstr "rel. kolorimetrický"
-
-#: ../src/libs/export.c:448 ../src/iop/colorin.c:412 ../src/iop/colorout.c:421
-#: ../src/iop/colorout.c:426
-msgctxt "rendering intent"
-msgid "saturation"
-msgstr "sytost"
-
-#: ../src/libs/export.c:449 ../src/iop/colorin.c:413 ../src/iop/colorout.c:422
-#: ../src/iop/colorout.c:427
-msgid "absolute colorimetric"
-msgstr "abs. kolorimetrický"
-
-#: ../src/libs/export.c:456 ../src/iop/colorout.c:446
-#: ../src/iop/colorout.c:447
-msgid "srgb (web-safe)"
-msgstr "srgb (pro web)"
-
-#: ../src/libs/export.c:463 ../src/iop/colorin.c:426 ../src/iop/colorout.c:451
-#: ../src/iop/colorout.c:452
-msgid "adobe rgb"
-msgstr "adobe rgb"
-
-#: ../src/libs/export.c:475 ../src/iop/colorin.c:428 ../src/iop/colorout.c:441
-#: ../src/iop/colorout.c:442
-msgid "linear rgb"
-msgstr "lineární rgb"
-
-#: ../src/libs/export.c:506 ../src/iop/colorin.c:404
-msgid "profile"
-msgstr "profil"
-
-#: ../src/libs/export.c:516 ../src/iop/colorout.c:436
-#: ../src/iop/colorout.c:437
-msgid "system display profile"
-msgstr "syst. profil displeje"
-
-#: ../src/libs/export.c:535
-#, c-format
-msgid "output icc profiles in %s/color/out"
-msgstr "výstupní profil icc v %s/color/out"
-
-#: ../src/libs/export.c:544
-msgid "threads"
-msgstr "vlákna"
-
-#: ../src/libs/export.c:548
-msgid ""
-"export using this number of threads.\n"
-"beware! each thread will use ~1GB of ram."
-msgstr ""
-"exportovat s tímto počtem vláken.\n"
-"pozor! každé vlákno použije ~ 1 GB ram."
-
-#: ../src/libs/export.c:551
-msgid "export"
-msgstr "export"
-
-#: ../src/libs/export.c:552
-msgid "export with current settings (ctrl-e)"
-msgstr "exportovat dle aktuálního nastavení (ctrl+e)"
-
-#: ../src/libs/image.c:39
-msgid "selected image[s]"
-msgstr "vybrané snímky"
-
-#: ../src/libs/image.c:83
-msgid "remove from the collection"
-msgstr "odstranit ze sbírky"
-
-#: ../src/libs/image.c:87 ../src/libs/tagging.c:384 ../src/libs/styles.c:251
-msgid "delete"
-msgstr "smazat"
-
-#: ../src/libs/image.c:88
-msgid "physically delete from disk"
-msgstr "fyzicky smazat z disku"
-
-#: ../src/libs/image.c:95
-msgid "write sidecar files"
-msgstr "uložit xmp soubory"
-
-#: ../src/libs/image.c:96
-msgid "write history stack and tags to xmp sidecar files"
-msgstr "zapsat štos historie a štítky do postranních souborů xmp"
-
-#: ../src/libs/image.c:100
-msgid "duplicate"
-msgstr "duplikovat"
-
-#: ../src/libs/image.c:101
-msgid "add a duplicate to the collection"
-msgstr "přidat duplikát snímku do kolekce"
-
-#: ../src/libs/image.c:110
-msgid "rotate selected images 90 degrees ccw"
-msgstr "otočit vybrané snímky o 90° proti směru hod. ručiček"
-
-#: ../src/libs/image.c:115
-msgid "rotate selected images 90 degrees cw"
-msgstr "otočit vybrané snímky o 90° ve směru hod. ručiček"
-
-#: ../src/libs/image.c:120
-msgid "reset rotation"
-msgstr "obnovit rotaci"
-
-#: ../src/libs/image.c:121
-msgid "reset rotation to exif data"
-msgstr "obnovit otočení dle exif"
-
-#: ../src/libs/tagging.c:50
-msgid "tagging"
-msgstr "štítky"
-
-#: ../src/libs/tagging.c:250
-#, c-format
-msgid ""
-"do you really want to delete the tag `%s'?\n"
-"%d image is assigned this tag!"
-msgid_plural ""
-"do you really want to delete the tag `%s'?\n"
-"%d images are assigned this tag!"
-msgstr[0] ""
-"opravdu chcete smazat štítek`%s'?\n"
-"štítek je přiřazen %d snímku!"
-msgstr[1] ""
-"opravdu chcete smazat štítek`%s'?\n"
-"štítek je přiřazen %d snímkům!"
-msgstr[2] ""
-"opravdu chcete smazat štítek`%s'?\n"
-"štítek je přiřazen %d snímkům!"
-
-#: ../src/libs/tagging.c:253
-msgid "delete tag?"
-msgstr "smazat štítek?"
-
-#: ../src/libs/tagging.c:318
-msgid ""
-"attached tags,\n"
-"doubleclick to detach"
-msgstr ""
-"přiřazené štítky,\n"
-"dvojitým kliknutím je odstraníte"
-
-#: ../src/libs/tagging.c:325
-msgid "attach"
-msgstr "přiřadit"
-
-#: ../src/libs/tagging.c:326
-msgid "attach tag to all selected images"
-msgstr "přiřadit štítek ke všem vybraným snímkům"
-
-#: ../src/libs/tagging.c:331
-msgid "detach"
-msgstr "odstranit"
-
-#: ../src/libs/tagging.c:332
-msgid "detach tag from all selected images"
-msgstr "odstranit štítek ze všech vybraných snímků"
-
-#: ../src/libs/tagging.c:346
-msgid "enter tag name"
-msgstr "zadejte jméno štítku"
-
-#: ../src/libs/tagging.c:371
-msgid ""
-"related tags,\n"
-"doubleclick to attach"
-msgstr ""
-"související štítky,\n"
-"dvojitým kliknutím je přiřadíte"
-
-#: ../src/libs/tagging.c:378
-msgid "new"
-msgstr "nový"
-
-#: ../src/libs/tagging.c:379
-msgid ""
-"create a new tag with the\n"
-"name you entered"
-msgstr ""
-"vytvořit nový štítek\n"
-"se zadaným jménem"
-
-#: ../src/libs/tagging.c:385
-msgid "delete selected tag"
-msgstr "smazat vybrané štítky"
-
-#: ../src/libs/select.c:31
-msgid "select"
-msgstr "vybrat"
-
-#: ../src/libs/select.c:118
-msgid "select all"
-msgstr "vybrat vše"
-
-#: ../src/libs/select.c:119
-msgid "select all images in current collection (ctrl-a)"
-msgstr "vybrat všechny snímky v této sbírce (ctrl+a)"
-
-#: ../src/libs/select.c:124
-msgid "select none"
-msgstr "zrušit výběr"
-
-#: ../src/libs/select.c:125
-msgid "clear selection (ctrl-shift-a)"
-msgstr "zrušit výběr (ctrl+shift+a)"
-
-#: ../src/libs/select.c:133
-msgid "invert selection"
-msgstr "invertovat výběr"
-
-#: ../src/libs/select.c:134
-msgid ""
-"select unselected images\n"
-"in current collection (ctrl-!)"
-msgstr ""
-"vybrat nevybrané snímky\n"
-"v této sbírce (ctrl+!)"
-
-#: ../src/libs/select.c:139
-msgid "select film roll"
-msgstr "vybrat roli filmu"
-
-#: ../src/libs/select.c:140
-msgid ""
-"select all images which are in the same\n"
-"film roll as the selected images"
-msgstr ""
-"vybrat všechny snímky, které jsou ve stejné\n"
-"roli filmu jako vybrané snímky"
-
-#: ../src/libs/select.c:147
-msgid "select untouched"
-msgstr "vybrat nezměněné"
-
-#: ../src/libs/select.c:148
-msgid ""
-"select untouched images in\n"
-"current collection"
-msgstr ""
-"vybrat nezměněné snímky\n"
-"v této sbírce"
-
-#: ../src/libs/collect.c:48
-msgid "collect images"
-msgstr "posbírat snímky"
-
-#: ../src/libs/collect.c:92 ../src/libs/collect.c:193
-#: ../src/iop/temperature.c:375 ../src/iop/bilateral.cc:284
-#: ../src/iop/channelmixer.c:364 ../src/iop/channelmixer.c:381
-msgid "red"
-msgstr "červená"
-
-#: ../src/libs/collect.c:93 ../src/libs/collect.c:198
-msgid "yellow"
-msgstr "žlutá"
-
-#: ../src/libs/collect.c:94 ../src/libs/collect.c:203
-#: ../src/iop/temperature.c:379 ../src/iop/bilateral.cc:286
-#: ../src/iop/channelmixer.c:365 ../src/iop/channelmixer.c:382
-msgid "green"
-msgstr "zelená"
-
-#. history
-#: ../src/libs/collect.c:99 ../src/libs/collect.c:179
-msgid "altered"
-msgstr "změněno"
-
-#: ../src/libs/collect.c:184
-msgid "not altered"
-msgstr "nezměněno"
-
-#: ../src/libs/collect.c:304
-msgid "camera"
-msgstr "fotoaparát"
-
-#: ../src/libs/collect.c:305
-msgid "tag"
-msgstr "štítek"
-
-#: ../src/libs/collect.c:306
-msgid "date"
-msgstr "datum"
-
-#: ../src/libs/collect.c:308
-msgid "colorlabel"
-msgstr "barevná značka"
-
-#: ../src/libs/collect.c:317
-#, no-c-format
-msgid "type your query, use `%' as wildcard"
-msgstr "napište dotaz, použijte `%' jako žolík"
-
-#: ../src/libs/collect.c:325
-msgid "matches selected images"
-msgstr "se shoduje s vybranými snímky"
-
-#: ../src/libs/collect.c:344
-msgid "doubleclick to select"
-msgstr "vyberte dvojitým kliknutím"
-
-#: ../src/libs/capture.c:50
-msgid "session"
-msgstr "sezení"
-
-#. jobcode
-#: ../src/libs/capture.c:102 ../src/gui/camera_import_dialog.c:268
-msgid "jobcode"
-msgstr "kód zakázky"
-
-#: ../src/libs/capture.c:110
-msgid "create"
-msgstr "vytvořit"
-
-#: ../src/libs/camera.c:76
-msgid "camera settings"
-msgstr "nastavení fotoaparátu"
-
-#: ../src/libs/camera.c:119
-msgid "toggle view property in center view"
-msgstr "přepnout vlastnost středního pohledu"
-
-#: ../src/libs/camera.c:190
-msgid "Connection with camera lost, exiting tethering mode"
-msgstr "spojení s fotoaparátem ztraceno, režim fotografování ukončen"
-
-#: ../src/libs/camera.c:324
-msgid "battery"
-msgstr "baterie"
-
-#: ../src/libs/camera.c:324
-msgid "n/a"
-msgstr "neexistuje"
-
-#. Camera control
-#: ../src/libs/camera.c:393
-msgid "camera control"
-msgstr "ovládání fotoaparátu"
-
-#: ../src/libs/camera.c:397
-msgid "modes"
-msgstr "režimy"
-
-#: ../src/libs/camera.c:398
-msgid "timer (s)"
-msgstr "samospoušť"
-
-#: ../src/libs/camera.c:399
-msgid "count"
-msgstr "počet"
-
-#: ../src/libs/camera.c:426
-msgid "capture image(s)"
-msgstr "pořídit snímky"
-
-#: ../src/libs/camera.c:429
-msgid "toggle delayed capture mode"
-msgstr "přepnout režim zpožděného snímání"
-
-#: ../src/libs/camera.c:430
-msgid "toggle sequenced capture mode"
-msgstr "přepnout režim postupného snímání"
-
-#: ../src/libs/camera.c:431
-msgid "the count of seconds before actually doing a capture"
-msgstr "počet sekund před skutečným pořízením snímku"
-
-#: ../src/libs/camera.c:432
-msgid ""
-"the amount of images to capture in a sequence,\n"
-"you can use this in conjuction with delayed mode to create stop-motion "
-"sequences."
-msgstr ""
-"počet snímků k pořízení v postupném snímání,\n"
-"může být kombinováno s režimem zpožděného snímání pro vytvoření pohybových "
-"sekvencí."
-
-#: ../src/libs/camera.c:443
-msgid "properties"
-msgstr "vlastnosti"
-
-#: ../src/libs/camera.c:447
-msgid "program"
-msgstr "program"
-
-#: ../src/libs/camera.c:457
-msgid "focus mode"
-msgstr "režim ostření"
-
-#. focal length
-#: ../src/libs/camera.c:477 ../src/gui/presets.c:293
-msgid "focal length"
-msgstr "ohn. vzdálenost"
-
-#: ../src/libs/camera.c:487
-msgid "shutterspeed2"
-msgstr "rychlost závěrky2"
-
-#: ../src/libs/camera.c:507
-msgid "wb"
-msgstr "vyv. bílé"
-
-#: ../src/libs/camera.c:517 ../src/imageio/format/jpeg.c:638
+"provést kopii 1:1 z vybraných souborů.\n"
+"níže uvedené globální volby se nepoužijí!"
+
+#: ../src/imageio/format/exr.cc:149
+msgid "openexr"
+msgstr "openexr"
+
+#: ../src/imageio/format/jpeg.c:617
+msgid "8-bit jpg"
+msgstr "8-bit jpg"
+
+#: ../src/imageio/format/jpeg.c:637
+#: ../src/libs/camera.c:540
 msgid "quality"
 msgstr "kvalita"
 
-#: ../src/libs/camera.c:527
+#: ../src/imageio/format/pfm.c:141
+msgid "float pfm"
+msgstr "float pfm"
+
+#: ../src/imageio/format/png.c:375
+msgid "8/16-bit png"
+msgstr "8/16-bit png"
+
+#: ../src/imageio/format/png.c:393
+#: ../src/imageio/format/tiff.c:239
+msgid "8-bit"
+msgstr "8-bit"
+
+#: ../src/imageio/format/png.c:398
+#: ../src/imageio/format/tiff.c:244
+msgid "16-bit"
+msgstr "16-bit"
+
+#: ../src/imageio/format/ppm.c:93
+msgid "16-bit ppm"
+msgstr "16-bit ppm"
+
+#: ../src/imageio/format/tiff.c:221
+msgid "8/16-bit tiff"
+msgstr "8/16-bit tiff"
+
+#: ../src/imageio/storage/disk.c:55
+msgid "file on disk"
+msgstr "soubor na disku"
+
+#: ../src/imageio/storage/disk.c:63
+#: ../src/imageio/storage/disk.c:130
+#: ../src/libs/styles.c:196
+msgid "select directory"
+msgstr "vybrat adresář"
+
+#: ../src/imageio/storage/disk.c:106
+msgid ""
+"enter the path where to put exported images:\n"
+"$(ROLL_NAME) - roll of the input image\n"
+"$(FILE_DIRECTORY) - directory of the input image\n"
+"$(FILE_NAME) - basename of the input image\n"
+"$(FILE_EXTENSION) - extension of the input image\n"
+"$(SEQUENCE) - sequence number\n"
+"$(YEAR) - year\n"
+"$(MONTH) - month\n"
+"$(DAY) - day\n"
+"$(HOUR) - hour\n"
+"$(MINUTE) - minute\n"
+"$(SECOND) - second\n"
+"$(EXIF_YEAR) - exif year\n"
+"$(EXIF_MONTH) - exif month\n"
+"$(EXIF_DAY) - exif day\n"
+"$(EXIF_HOUR) - exif hour\n"
+"$(EXIF_MINUTE) - exif minute\n"
+"$(EXIF_SECOND) - exif second\n"
+"$(PICTURES_FOLDER) - pictures folder\n"
+"$(HOME_FOLDER) - home folder\n"
+"$(DESKTOP_FOLDER) - desktop folder"
+msgstr ""
+"zadejte cestu, kam uložit exportované snímky:\n"
+"$(ROLL_NAME) - role vstupního snímku\n"
+"$(FILE_DIRECTORY) - adresář vstupního snímku\n"
+"$(FILE_NAME) - základ jména souboru vst. snímku\n"
+"$(FILE_EXTENSION) - přípona souboru vst. snímku\n"
+"$(SEQUENCE) - číslo pořadí\n"
+"$(YEAR) - rok\n"
+"$(MONTH) - měsíc\n"
+"$(DAY) - den\n"
+"$(HOUR) - hodina\n"
+"$(MINUTE) - minuta\n"
+"$(SECOND) - sekunda\n"
+"$(EXIF_YEAR) - rok dle exif\n"
+"$(EXIF_MONTH) - měsíc dle exif\n"
+"$(EXIF_DAY) - den dle exif\n"
+"$(EXIF_HOUR) - hodina dle exif\n"
+"$(EXIF_MINUTE) - minuta dle exif\n"
+"$(EXIF_SECOND) - sekunda dle exif\n"
+"$(PICTURES_FOLDER) - adresář obrázků\n"
+"$(HOME_FOLDER) - domovský adresář\n"
+"$(DESKTOP_FOLDER) - adresář plochy"
+
+#: ../src/imageio/storage/disk.c:190
+#, c-format
+msgid "could not create directory `%s'!"
+msgstr "nelze vytvořit adresář `%s'!"
+
+#: ../src/imageio/storage/disk.c:225
+#: ../src/imageio/storage/email.c:109
+#, c-format
+msgid "%d/%d exported to `%s%s'"
+msgstr "%d/%d exportováno do `%s%s'"
+
+#: ../src/imageio/storage/email.c:54
+msgid "send as email"
+msgstr "poslat emailem"
+
+#: ../src/imageio/storage/flickr.c:163
+msgid "step 1: a new window or tab of your browser should have been loaded. you have to login into your flickr account there and authorize darktable to upload photos before continuing."
+msgstr "krok 1: mělo by se otevřít nové okno nebo záložka internetového prohlížeče. než budete pokračovat, musíte se přihlásit do svého účtu na flickru a autorizovat darktable k nahrání fotografií."
+
+#: ../src/imageio/storage/flickr.c:164
+msgid "step 2: click the ok button once you are done."
+msgstr "krok 2: klikněte na tlačítko ok, jakmile budete hotovi."
+
+#: ../src/imageio/storage/flickr.c:171
+msgid "flickr authentication"
+msgstr "autentizace flickru"
+
+#: ../src/imageio/storage/flickr.c:293
+msgid "flickr webalbum"
+msgstr "webové album flickru"
+
+#: ../src/imageio/storage/flickr.c:313
+#: ../src/imageio/storage/flickr.c:343
+#: ../src/imageio/storage/flickr.c:718
+#: ../src/imageio/storage/flickr.c:722
+msgid "not authenticated"
+msgstr "identita neověřena"
+
+#: ../src/imageio/storage/flickr.c:341
+#: ../src/imageio/storage/flickr.c:716
+#: ../src/imageio/storage/picasa.c:575
+msgid "authenticated"
+msgstr "identita ověřena"
+
+#. Add standard action
+#: ../src/imageio/storage/flickr.c:357
+msgid "without album"
+msgstr "bez alba"
+
+#. Add standard action
+#: ../src/imageio/storage/flickr.c:358
+#: ../src/imageio/storage/flickr.c:385
+#: ../src/imageio/storage/picasa.c:596
+#: ../src/imageio/storage/picasa.c:629
+msgid "create new album"
+msgstr "vytvořit nové album"
+
+#: ../src/imageio/storage/flickr.c:436
+msgid "flickr user"
+msgstr "uživatel flickru"
+
+#. ui->label2 = GTK_LABEL(  gtk_label_new( _("F_password") ) );
+#: ../src/imageio/storage/flickr.c:438
+msgid "photosets"
+msgstr "foto sety"
+
+#: ../src/imageio/storage/flickr.c:441
+#: ../src/imageio/storage/picasa.c:685
+msgid "summary"
+msgstr "souhrn"
+
+#. gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
+#: ../src/imageio/storage/flickr.c:481
+msgid "my new photoset"
+msgstr "můj nový foto set"
+
+#: ../src/imageio/storage/flickr.c:482
+#: ../src/imageio/storage/picasa.c:726
+msgid "exported from darktable"
+msgstr "exportováno z darktable"
+
+#: ../src/imageio/storage/flickr.c:500
+#: ../src/imageio/storage/picasa.c:744
+msgid "refresh album list"
+msgstr "aktualizovat seznam alb"
+
+#: ../src/imageio/storage/flickr.c:506
+msgid "public images"
+msgstr "zveřejnit snímky"
+
+#: ../src/imageio/storage/flickr.c:507
+#: ../src/imageio/storage/picasa.c:751
+msgid "export tags"
+msgstr "exportovat štítky"
+
+#: ../src/imageio/storage/flickr.c:666
+#, c-format
+msgid "%d/%d exported to flickr webalbum"
+msgstr "%d/%d exportováno do webového alba flickr"
+
+#: ../src/imageio/storage/flickr.c:724
+msgid "Flickr account not authenticated"
+msgstr "účet flickru není autentizován"
+
+#: ../src/imageio/storage/picasa.c:541
+msgid "picasa webalbum"
+msgstr "webové album picasa"
+
+#. Failed to authenticated, let's notify somehow...
+#: ../src/imageio/storage/picasa.c:619
+msgid "authentication failed"
+msgstr "ověření identity selhalo"
+
+#: ../src/imageio/storage/picasa.c:680
+msgid "user"
+msgstr "uživatel"
+
+#: ../src/imageio/storage/picasa.c:681
+msgid "password"
+msgstr "heslo"
+
+#: ../src/imageio/storage/picasa.c:682
+msgid "albums"
+msgstr "alba"
+
+#: ../src/imageio/storage/picasa.c:725
+msgid "my new album"
+msgstr "mé nové album"
+
+#: ../src/imageio/storage/picasa.c:750
+msgid "public album"
+msgstr "veřejné album"
+
+#: ../src/imageio/storage/picasa.c:900
+#, c-format
+msgid "%d/%d exported to picasa webalbum"
+msgstr "%d/%d exportováno do webového alba picasa"
+
+#. make sure you put all your translatable strings into _() !
+#: ../src/iop/anlfyeni.c:80
+#: ../src/iop/localc.c:80
+msgid "local contrast 2"
+msgstr "lokální kontrast II"
+
+#: ../src/iop/anlfyeni.c:274
+#: ../src/iop/localc.c:271
+msgid "alpha"
+msgstr "alfa"
+
+#: ../src/iop/anlfyeni.c:276
+#: ../src/iop/lens.c:1347
+#: ../src/iop/localc.c:273
+#: ../src/iop/vignette.c:353
+#: ../src/iop/watermark.c:574
+msgid "scale"
+msgstr "měřítko"
+
+#: ../src/iop/anlfyeni.c:278
+#: ../src/iop/bloom.c:275
+#: ../src/iop/grain.c:436
+#: ../src/iop/localc.c:275
+#: ../src/iop/vignette.c:355
+msgid "strength"
+msgstr "síla"
+
+#: ../src/iop/atrous.c:109
+msgid "equalizer"
+msgstr "ekvalizér"
+
+#: ../src/iop/atrous.c:599
+msgid "enhance coarse"
+msgstr "zvýraznit hrubost"
+
+#: ../src/iop/atrous.c:613
+msgid "sharpen and denoise (strong)"
+msgstr "doostřit a odstranit šum (silně)"
+
+#: ../src/iop/atrous.c:627
+msgid "sharpen and denoise"
+msgstr "doostřit a odstranit šum"
+
+#: ../src/iop/atrous.c:641
+#: ../src/iop/equalizer.c:251
+msgid "sharpen (strong)"
+msgstr "doostřit (silně)"
+
+#: ../src/iop/atrous.c:655
+#: ../src/iop/equalizer.c:261
+#: ../src/iop/sharpen.c:67
+msgid "sharpen"
+msgstr "doostřit"
+
+#: ../src/iop/atrous.c:669
+#: ../src/iop/equalizer.c:277
+msgid "denoise"
+msgstr "odstranit šum"
+
+#: ../src/iop/atrous.c:685
+#: ../src/iop/equalizer.c:287
+msgid "denoise (strong)"
+msgstr "odstranit šum (silně)"
+
+#: ../src/iop/atrous.c:700
+#: ../src/iop/bloom.c:66
+msgid "bloom"
+msgstr "bloom"
+
+#: ../src/iop/atrous.c:714
+msgid "clarity (subtle)"
+msgstr "zřetelnost (jemně)"
+
+#: ../src/iop/atrous.c:728
+msgid "clarity"
+msgstr "zřetelnost"
+
+#: ../src/iop/atrous.c:949
+#: ../src/iop/atrous.c:953
+msgid "coarse"
+msgstr "hrubý"
+
+#: ../src/iop/atrous.c:955
+#: ../src/iop/atrous.c:959
+msgid "fine"
+msgstr "jemný"
+
+#: ../src/iop/atrous.c:966
+msgid "contrasty"
+msgstr "kontrastní"
+
+#: ../src/iop/atrous.c:967
+#: ../src/iop/atrous.c:971
+msgid "smooth"
+msgstr "hladký"
+
+#: ../src/iop/atrous.c:972
+msgid "noisy"
+msgstr "zašumněný"
+
+#. case atrous_s:
+#: ../src/iop/atrous.c:975
+msgid "bold"
+msgstr "silný"
+
+#: ../src/iop/atrous.c:976
+msgid "dull"
+msgstr "nevýrazný"
+
+#: ../src/iop/atrous.c:1157
+#: ../src/iop/equalizer.c:334
+msgid "luma"
+msgstr "luma"
+
+#: ../src/iop/atrous.c:1158
+msgid "change lightness at each feature size"
+msgstr "změnit jas u každé velikosti struktury"
+
+#: ../src/iop/atrous.c:1159
+#: ../src/iop/equalizer.c:335
+msgid "chroma"
+msgstr "chroma"
+
+#: ../src/iop/atrous.c:1160
+msgid "change color saturation at each feature size"
+msgstr "změnit sytost barev u každé velikosti struktury"
+
+#: ../src/iop/atrous.c:1161
+msgid "sharpness"
+msgstr "ostrost"
+
+#: ../src/iop/atrous.c:1162
+msgid "sharpness of edges at each feature size"
+msgstr "hranová ostrost u každé velikosti struktury"
+
+#: ../src/iop/atrous.c:1198
+msgid "mix"
+msgstr "mix"
+
+#: ../src/iop/atrous.c:1199
+#: ../src/iop/atrous.c:1200
+msgid "make effect stronger or weaker"
+msgstr "zesílit či zeslabit efekt"
+
+#: ../src/iop/basecurve.c:50
+#: ../src/iop/tonecurve.c:109
+msgid "linear"
+msgstr "lineární"
+
+#: ../src/iop/basecurve.c:51
+msgid "dark contrast"
+msgstr "tmavý kontrast"
+
+#: ../src/iop/basecurve.c:52
+msgid "canon eos like"
+msgstr "canon"
+
+#: ../src/iop/basecurve.c:53
+msgid "nikon like"
+msgstr "nikon"
+
+#: ../src/iop/basecurve.c:54
+msgid "sony alpha like"
+msgstr "sony alpha"
+
+#: ../src/iop/basecurve.c:55
+msgid "pentax like"
+msgstr "pentax"
+
+#: ../src/iop/basecurve.c:56
+msgid "olympus like"
+msgstr "olympus"
+
+#: ../src/iop/basecurve.c:57
+msgid "panasonic like"
+msgstr "panasonic"
+
+#: ../src/iop/basecurve.c:58
+msgid "leica like"
+msgstr "leica"
+
+#: ../src/iop/basecurve.c:59
+msgid "kodak easyshare like"
+msgstr "kodak easyshare"
+
+#: ../src/iop/basecurve.c:60
+msgid "konica minolta like"
+msgstr "konica minolta"
+
+#: ../src/iop/basecurve.c:61
+msgid "fotogenetic (point & shoot)"
+msgstr "fotogenetic (kompakt)"
+
+#: ../src/iop/basecurve.c:62
+msgid "fotogenetic (ev3)"
+msgstr "fotogenetic (ev3)"
+
+#: ../src/iop/basecurve.c:132
+msgid "base curve"
+msgstr "základní křivka"
+
+#: ../src/iop/bilateral.cc:70
+msgid "denoise (deprecated)"
+msgstr "odstranit šum (zastaralé)"
+
+#: ../src/iop/bilateral.cc:292
+#: ../src/iop/clahe.c:338
+#: ../src/iop/sharpen.c:333
+msgid "radius"
+msgstr "poloměr"
+
+#: ../src/iop/bilateral.cc:294
+#: ../src/iop/channelmixer.c:328
+#: ../src/iop/channelmixer.c:345
+#: ../src/iop/temperature.c:466
+#: ../src/libs/collect.c:133
+#: ../src/libs/collect.c:135
+msgid "red"
+msgstr "červená"
+
+#: ../src/iop/bilateral.cc:296
+#: ../src/iop/channelmixer.c:329
+#: ../src/iop/channelmixer.c:346
+#: ../src/iop/temperature.c:470
+#: ../src/libs/collect.c:145
+#: ../src/libs/collect.c:147
+msgid "green"
+msgstr "zelená"
+
+#: ../src/iop/bilateral.cc:298
+#: ../src/iop/channelmixer.c:330
+#: ../src/iop/channelmixer.c:347
+#: ../src/iop/temperature.c:474
+#: ../src/libs/collect.c:151
+#: ../src/libs/collect.c:153
+msgid "blue"
+msgstr "modrá"
+
+#: ../src/iop/bilateral.cc:309
+msgid "spatial extent of the gaussian"
+msgstr "prostorová míra gaussian"
+
+#. gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _(""), (char *)NULL);
+#: ../src/iop/bilateral.cc:311
+msgid "how much to blur red"
+msgstr "do jaké míry rozmazat červenou"
+
+#: ../src/iop/bilateral.cc:312
+msgid "how much to blur green"
+msgstr "do jaké míry rozmazat zelenou"
+
+#: ../src/iop/bilateral.cc:313
+msgid "how much to blur blue"
+msgstr "do jaké míry rozmazat modrou"
+
+#: ../src/iop/bloom.c:273
+#: ../src/libs/camera.c:550
 msgid "size"
 msgstr "velikost"
 
-#. user specified properties
-#: ../src/libs/camera.c:574
-msgid "additional properties"
-msgstr "dodatečné vlastnosti"
+#: ../src/iop/bloom.c:274
+#: ../src/iop/sharpen.c:337
+msgid "threshold"
+msgstr "práh"
 
-#: ../src/libs/camera.c:578
-msgid "label"
-msgstr "značka"
+#: ../src/iop/bloom.c:289
+msgid "the size of bloom"
+msgstr "velikost bloomu"
 
-#: ../src/libs/camera.c:584
-msgid "property"
-msgstr "vlastnost"
+#: ../src/iop/bloom.c:290
+msgid "the threshold of light"
+msgstr "práh světla"
 
-#: ../src/libs/camera.c:596
-msgid "add user property"
-msgstr "přidat uživatelskou vlastnost"
+#: ../src/iop/bloom.c:291
+msgid "the strength of bloom"
+msgstr "síla bloomu"
 
-#: ../src/libs/styles.c:44
-msgid "styles"
-msgstr "styly"
+#. make sure you put all your translatable strings into _() !
+#: ../src/iop/cacorrect.c:57
+msgid "chromatic aberrations"
+msgstr "chromatické vady"
 
-#: ../src/libs/styles.c:238
-msgid "create duplicate"
-msgstr "vytvořit duplikát"
+#: ../src/iop/cacorrect.c:1020
+msgid "automatic chromatic aberration correction"
+msgstr "automatická korekce chromatické vady"
 
-#: ../src/libs/styles.c:242
-msgid "creates a duplicate of the image before applying style"
-msgstr "vytvoří duplikát snímku před použitím stylu"
+#: ../src/iop/cacorrect.c:1022
+msgid ""
+"automatic chromatic aberration correction\n"
+"only works for raw images."
+msgstr ""
+"automatická korekce chromatické vady\n"
+"funguje pouze pro snímky raw."
 
-#. TODO: Unfinished stuff
-#: ../src/libs/styles.c:246
-msgid "edit"
-msgstr "upravit"
+#: ../src/iop/channelmixer.c:109
+msgid "channel mixer"
+msgstr "mixér kanálů"
 
-#: ../src/libs/styles.c:253
-msgid "deletes the selected style in list above"
-msgstr "vymaže vybraný styl z horního seznamu"
+#: ../src/iop/channelmixer.c:323
+msgid "output channel"
+msgstr "výstupní kanál"
 
-#: ../src/iop/clipping.c:116
+#: ../src/iop/channelmixer.c:325
+#: ../src/iop/colorzones.c:782
+#: ../src/iop/colorzones.c:802
+#: ../src/iop/graduatednd.c:382
+#: ../src/iop/splittoning.c:423
+#: ../src/iop/splittoning.c:455
+msgid "hue"
+msgstr "odstín"
+
+#: ../src/iop/channelmixer.c:326
+#: ../src/iop/colorcorrection.c:187
+#: ../src/iop/colorzones.c:783
+#: ../src/iop/colorzones.c:801
+#: ../src/iop/graduatednd.c:383
+#: ../src/iop/splittoning.c:424
+#: ../src/iop/splittoning.c:456
+#: ../src/iop/velvia.c:236
+#: ../src/iop/vignette.c:358
+msgid "saturation"
+msgstr "sytost"
+
+#: ../src/iop/channelmixer.c:327
+#: ../src/iop/colorzones.c:784
+#: ../src/iop/colorzones.c:800
+msgid "lightness"
+msgstr "světlost"
+
+#: ../src/iop/channelmixer.c:331
+msgid "gray"
+msgstr "šedá"
+
+#: ../src/iop/channelmixer.c:336
+msgid "source channels"
+msgstr "vstupní kanály"
+
+#: ../src/iop/channelmixer.c:383
+msgid "swap r and b"
+msgstr "zaměnit r a b"
+
+#: ../src/iop/channelmixer.c:384
+msgid "swap g and b"
+msgstr "zaměnit g a b"
+
+#: ../src/iop/channelmixer.c:385
+msgid "color contrast boost"
+msgstr "zesílení barevného kontrastu"
+
+#: ../src/iop/channelmixer.c:386
+msgid "color details boost"
+msgstr "zesílení barevných detailů"
+
+#: ../src/iop/channelmixer.c:387
+msgid "color artifacts boost"
+msgstr "zesílení barevných artefaktů"
+
+#: ../src/iop/channelmixer.c:388
+msgid "b/w"
+msgstr "čb"
+
+#: ../src/iop/channelmixer.c:389
+msgid "b/w artifacts boost"
+msgstr "zesílení čb artefaktů"
+
+#: ../src/iop/channelmixer.c:390
+msgid "b/w smooth skin"
+msgstr "čb vyhlazení pokožky"
+
+#: ../src/iop/channelmixer.c:391
+msgid "b/w blue artifacts reduce"
+msgstr "čb redukce modrých artefaktů"
+
+#: ../src/iop/clahe.c:68
+msgid "local contrast (deprecated)"
+msgstr "lokální kontrast (zastaralé)"
+
+#: ../src/iop/clahe.c:340
+#: ../src/iop/sharpen.c:335
+msgid "amount"
+msgstr "hodnota"
+
+#: ../src/iop/clahe.c:349
+msgid "size of features to preserve"
+msgstr "velikost struktury, která má být zachována"
+
+#: ../src/iop/clahe.c:350
+msgid "strength of the effect"
+msgstr "síla účinku"
+
+#: ../src/iop/clipping.c:140
 msgid "crop and rotate"
 msgstr "oříznout a otočit"
 
-#: ../src/iop/clipping.c:464
+#: ../src/iop/clipping.c:490
 msgid "rotate by  90"
 msgstr "otočit o 90"
 
-#: ../src/iop/clipping.c:466
+#: ../src/iop/clipping.c:492
 msgid "rotate by -90"
 msgstr "otočit o -90"
 
-#: ../src/iop/clipping.c:468
+#: ../src/iop/clipping.c:494
 msgid "rotate by 180"
 msgstr "otočit o 180"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:684 ../src/iop/clipping.c:772
+#: ../src/iop/clipping.c:714
+#: ../src/iop/clipping.c:807
 msgid "flip"
 msgstr "převrátit"
 
-#: ../src/iop/clipping.c:691
+#: ../src/iop/clipping.c:721
 msgid "flip image vertically"
 msgstr "převrátit snímek dle svislé osy"
 
-#: ../src/iop/clipping.c:692
+#: ../src/iop/clipping.c:722
 msgid "flip image horizontally"
 msgstr "převrátit snímek dle vodorovné osy"
 
-#: ../src/iop/clipping.c:694
+#: ../src/iop/clipping.c:724
 msgid "angle"
 msgstr "úhel"
 
-#: ../src/iop/clipping.c:699
+#: ../src/iop/clipping.c:729
 msgid "right-click and drag a line on the image to drag a straight line"
-msgstr ""
-"abyste namalovali přímku, klikněte pravým tlačítkem a táhněte na snímku."
+msgstr "abyste namalovali přímku, klikněte pravým tlačítkem a táhněte na snímku."
 
-#: ../src/iop/clipping.c:704
-msgid "perspective"
-msgstr "perspek."
+#: ../src/iop/clipping.c:734
+msgid "keystone h"
+msgstr "horizontální"
 
-#: ../src/iop/clipping.c:712
-msgid "right"
-msgstr "vpravo"
+#: ../src/iop/clipping.c:739
+msgid "adjust perspective for horizontal keystone distortion"
+msgstr "upravit perspektivu pro horizontální zkreslení"
 
-#: ../src/iop/clipping.c:713
-msgid "up"
-msgstr "nahoře"
+#: ../src/iop/clipping.c:745
+msgid "keystone v"
+msgstr "vertikální"
 
-#: ../src/iop/clipping.c:719
+#: ../src/iop/clipping.c:749
+msgid "adjust perspective for vertical keystone distortion"
+msgstr "upravit perspektivu pro verticální zkreslení"
+
+#: ../src/iop/clipping.c:754
 msgid "aspect"
 msgstr "poměr"
 
-#: ../src/iop/clipping.c:724
+#: ../src/iop/clipping.c:759
 msgid "free"
 msgstr "volný"
 
-#: ../src/iop/clipping.c:725
-msgid "image"
-msgstr "snímek"
-
-#: ../src/iop/clipping.c:726
+#: ../src/iop/clipping.c:761
 msgid "golden cut"
 msgstr "zlatý řez"
 
-#: ../src/iop/clipping.c:727
+#: ../src/iop/clipping.c:762
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:728
+#: ../src/iop/clipping.c:763
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/clipping.c:729
+#: ../src/iop/clipping.c:764
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/clipping.c:730
+#: ../src/iop/clipping.c:765
 msgid "square"
 msgstr "čtverec"
 
-#: ../src/iop/clipping.c:731
+#: ../src/iop/clipping.c:766
 msgid "din"
 msgstr "din"
 
-#: ../src/iop/clipping.c:732
+#: ../src/iop/clipping.c:767
 msgid "16:9"
-msgstr ""
+msgstr "16:9"
 
-#: ../src/iop/clipping.c:739
+#: ../src/iop/clipping.c:774
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -1417,87 +1951,84 @@ msgstr ""
 "nastavte poměr stran (š:v)\n"
 "stlačte ctrl+x pro přehození stran"
 
-#: ../src/iop/clipping.c:745
+#: ../src/iop/clipping.c:780
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "přehodit poměr stran (ctrl+x)"
 
-#: ../src/iop/clipping.c:752
+#: ../src/iop/clipping.c:787
 msgid "guides"
 msgstr "vodítka"
 
-#: ../src/iop/clipping.c:755
+#: ../src/iop/clipping.c:790
 msgid "none"
 msgstr "žádné"
 
-#: ../src/iop/clipping.c:756
+#: ../src/iop/clipping.c:791
 msgid "grid"
 msgstr "síť"
 
-#: ../src/iop/clipping.c:757
+#: ../src/iop/clipping.c:792
 msgid "rules of thirds"
 msgstr "pravidlo třetin"
 
-#: ../src/iop/clipping.c:758
+#: ../src/iop/clipping.c:793
 msgid "diagonal method"
 msgstr "úhlopříčky"
 
-#: ../src/iop/clipping.c:759
+#: ../src/iop/clipping.c:794
 msgid "harmonious triangles"
 msgstr "harmonické trojúhelníky"
 
-#: ../src/iop/clipping.c:760
+#: ../src/iop/clipping.c:795
 msgid "golden mean"
 msgstr "zlatý střed"
 
-#: ../src/iop/clipping.c:762
-msgid ""
-"with this option, you can display guide lines to help compose your "
-"photograph."
-msgstr ""
-"touto volbou můžete zobrazit vodítka, která usnadní kompozici fotografie."
+#: ../src/iop/clipping.c:797
+msgid "with this option, you can display guide lines to help compose your photograph."
+msgstr "touto volbou můžete zobrazit vodítka, která usnadní kompozici fotografie."
 
-#: ../src/iop/clipping.c:766
+#: ../src/iop/clipping.c:801
 msgid "type"
 msgstr "typ"
 
-#: ../src/iop/clipping.c:779
+#: ../src/iop/clipping.c:814
 msgid "flip guides vertically"
 msgstr "převrátit vodítka svisle"
 
-#: ../src/iop/clipping.c:780
+#: ../src/iop/clipping.c:815
 msgid "flip guides horizontally"
 msgstr "převrátit vodítka vodorovně"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:782
+#: ../src/iop/clipping.c:817
 msgid "golden sections"
 msgstr "zlaté oblasti"
 
-#: ../src/iop/clipping.c:784
+#: ../src/iop/clipping.c:819
 msgid "enable this option to show golden sections."
 msgstr "touto volbou zobrazíte zlaté oblasti"
 
-#: ../src/iop/clipping.c:787
+#: ../src/iop/clipping.c:822
 msgid "spiral sections"
 msgstr "spirálové oblasti"
 
-#: ../src/iop/clipping.c:788
+#: ../src/iop/clipping.c:823
 msgid "enable this option to show golden spiral sections."
 msgstr "touto volbou zobrazíte zlaté spirálové oblasti"
 
-#: ../src/iop/clipping.c:791
+#: ../src/iop/clipping.c:826
 msgid "golden spiral"
 msgstr "zlatá spirála"
 
-#: ../src/iop/clipping.c:792
+#: ../src/iop/clipping.c:827
 msgid "enable this option to show a golden spiral guide."
 msgstr "touto volbou zobrazíte vodítko dle zlaté spirály"
 
-#: ../src/iop/clipping.c:795
+#: ../src/iop/clipping.c:830
 msgid "golden triangles"
 msgstr "zlaté trojúhelníky"
 
-#: ../src/iop/clipping.c:796
+#: ../src/iop/clipping.c:831
 msgid "enable this option to show golden triangles."
 msgstr "touto volbou zobrazíte zlaté trojúhelníky"
 
@@ -1505,133 +2036,259 @@ msgstr "touto volbou zobrazíte zlaté trojúhelníky"
 msgid "color correction"
 msgstr "korekce barev"
 
-#: ../src/iop/colorcorrection.c:186 ../src/iop/graduatednd.c:382
-#: ../src/iop/vignette.c:357 ../src/iop/velvia.c:232
-#: ../src/iop/splittoning.c:467 ../src/iop/splittoning.c:499
-#: ../src/iop/channelmixer.c:362
-msgid "saturation"
-msgstr "sytost"
-
-#: ../src/iop/colorin.c:38
+#: ../src/iop/colorin.c:46
 msgid "input color profile"
 msgstr "vstupní barvový profil"
 
-#: ../src/iop/colorin.c:217
+#: ../src/iop/colorin.c:339
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "nepodporovaný typ vstupního profilu byl nahrazen lineárním rgb!"
 
-#: ../src/iop/colorin.c:420
+#: ../src/iop/colorin.c:534
+#: ../src/libs/export.c:510
+msgid "profile"
+msgstr "profil"
+
+#: ../src/iop/colorin.c:543
 msgid "standard color matrix"
 msgstr "standardní matice barev"
 
-#: ../src/iop/colorin.c:422
+#: ../src/iop/colorin.c:545
 msgid "enhanced color matrix"
 msgstr "vylepšená matice barev"
 
-#: ../src/iop/colorin.c:424
+#: ../src/iop/colorin.c:547
 msgid "srgb (e.g. jpg)"
 msgstr "srgb (např. jpg)"
 
-#: ../src/iop/colorin.c:430
+#: ../src/iop/colorin.c:549
+#: ../src/iop/colorout.c:552
+#: ../src/iop/colorout.c:553
+#: ../src/libs/export.c:463
+msgid "adobe rgb"
+msgstr "adobe rgb"
+
+#: ../src/iop/colorin.c:551
+#: ../src/iop/colorout.c:542
+#: ../src/iop/colorout.c:543
+#: ../src/libs/export.c:475
+msgid "linear rgb"
+msgstr "lineární rgb"
+
+#: ../src/iop/colorin.c:553
 msgid "linear infrared bgr"
 msgstr "lineární infračervené bgr"
 
-#: ../src/iop/colorin.c:432
+#: ../src/iop/colorin.c:555
 msgid "linear xyz"
 msgstr "lineární xyz"
 
-#: ../src/iop/colorin.c:443 ../src/iop/colorout.c:471
-msgid "rendering intent"
-msgstr "záměr transformace"
-
-#: ../src/iop/colorin.c:444
+#: ../src/iop/colorin.c:564
 #, c-format
-msgid "icc profiles in %s/color/in"
-msgstr "profily icc v %s/color/in"
+msgid "icc profiles in %s/color/in or %s/color/in"
+msgstr "profily icc v %s/color/in nebo %s/color/in"
 
-#: ../src/iop/colorout.c:37
+#: ../src/iop/colorout.c:38
 msgid "output color profile"
 msgstr "výstupní barvový profil"
 
-#: ../src/iop/colorout.c:238
+#: ../src/iop/colorout.c:339
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "nepodporovaný typ výstupního profilu byl nahrazen srgb!"
 
-#: ../src/iop/colorout.c:406
+#: ../src/iop/colorout.c:507
 msgid "output intent"
 msgstr "výstupní záměr"
 
-#: ../src/iop/colorout.c:407
+#: ../src/iop/colorout.c:508
 msgid "output profile"
 msgstr "výstupní profil"
 
-#: ../src/iop/colorout.c:408
+#: ../src/iop/colorout.c:509
 msgid "display intent"
 msgstr "záměr pro disp."
 
-#: ../src/iop/colorout.c:409
+#: ../src/iop/colorout.c:510
 msgid "display profile"
 msgstr "profil displeje"
 
-#: ../src/iop/colorout.c:472
+#: ../src/iop/colorout.c:520
+#: ../src/iop/colorout.c:525
+#: ../src/libs/export.c:446
+msgid "perceptual"
+msgstr "perceptuální"
+
+#: ../src/iop/colorout.c:521
+#: ../src/iop/colorout.c:526
+#: ../src/libs/export.c:447
+msgid "relative colorimetric"
+msgstr "rel. kolorimetrický"
+
+#: ../src/iop/colorout.c:522
+#: ../src/iop/colorout.c:527
+#: ../src/libs/export.c:448
+msgctxt "rendering intent"
+msgid "saturation"
+msgstr "sytost"
+
+#: ../src/iop/colorout.c:523
+#: ../src/iop/colorout.c:528
+#: ../src/libs/export.c:449
+msgid "absolute colorimetric"
+msgstr "abs. kolorimetrický"
+
+#: ../src/iop/colorout.c:537
+#: ../src/iop/colorout.c:538
+#: ../src/libs/export.c:521
+msgid "system display profile"
+msgstr "syst. profil displeje"
+
+#: ../src/iop/colorout.c:547
+#: ../src/iop/colorout.c:548
+#: ../src/libs/export.c:456
+msgid "srgb (web-safe)"
+msgstr "srgb (pro web)"
+
+#: ../src/iop/colorout.c:572
+msgid "rendering intent"
+msgstr "záměr transformace"
+
+#: ../src/iop/colorout.c:573
 #, c-format
-msgid "icc profiles in %s/color/out"
-msgstr "profily icc v %s/color/out"
+msgid "icc profiles in %s/color/out or %s/color/out"
+msgstr "profily icc v %s/color/out nebo %s/color/out"
 
-#: ../src/iop/colorout.c:474
+#: ../src/iop/colorout.c:575
 #, c-format
-msgid "display icc profiles in %s/color/out"
-msgstr "profily icc displeje v %s/color/out"
+msgid "display icc profiles in %s/color/out or %s/color/out"
+msgstr "profily icc displeje v %s/color/out nebo %s/color/out"
 
-#: ../src/iop/equalizer.c:42
-msgid "equalizer"
-msgstr "ekvalizér"
+#: ../src/iop/colortransfer.c:104
+msgid "color transfer"
+msgstr "převod barev"
 
-#: ../src/iop/equalizer.c:246
-msgid "sharpen (strong)"
-msgstr "doostřit (silně)"
+#: ../src/iop/colortransfer.c:617
+msgid "number of clusters to find in image"
+msgstr "počet skupin, které mají být nalezeny na snímku"
 
-#: ../src/iop/equalizer.c:256 ../src/iop/sharpen.c:62
-msgid "sharpen"
-msgstr "doostřit"
+#: ../src/iop/colortransfer.c:621
+msgid "acquire"
+msgstr "analyzovat"
 
-#: ../src/iop/equalizer.c:262
+#: ../src/iop/colortransfer.c:622
+msgid "analyze this image"
+msgstr "analyzovat tento snímek"
+
+#: ../src/iop/colortransfer.c:626
+#: ../src/libs/metadata.c:311
+msgid "apply"
+msgstr "použít"
+
+#: ../src/iop/colortransfer.c:627
+msgid "apply previously analyzed image look to this image"
+msgstr "použít výsledek předchozí analýzy vzhledu snímku na tento snímek"
+
+#: ../src/iop/colorzones.c:94
+msgid "color zones"
+msgstr "zóny barev"
+
+#: ../src/iop/colorzones.c:278
+msgid "red black white"
+msgstr "červená černá bílá"
+
+#: ../src/iop/colorzones.c:293
+msgid "black white and skin tones"
+msgstr "černá bílá a odstíny pokožky"
+
+#: ../src/iop/colorzones.c:309
+msgid "polarizing filter"
+msgstr "polarizační filtr"
+
+#: ../src/iop/colorzones.c:348
+msgid "natural skin tones"
+msgstr "přirozené odstíny pokožky"
+
+#: ../src/iop/colorzones.c:778
+msgid "select by"
+msgstr "vybrat dle"
+
+#: ../src/iop/colorzones.c:789
+msgid "pick gui color from image"
+msgstr "kliknutím vybrat barvu z obrázku"
+
+#: ../src/iop/demosaic.c:81
+msgid "demosaic"
+msgstr "demosaic"
+
+#: ../src/iop/demosaic.c:886
+msgid "edge threshold"
+msgstr "práh hran"
+
+#: ../src/iop/demosaic.c:889
+msgid ""
+"threshold for edge-aware median.\n"
+"set to 0.0 to switch off.\n"
+"set to 1.0 to ignore edges."
+msgstr ""
+"práh pro medián dle hran.\n"
+"hodnota 0.0 pro vypnutí.\n"
+"hodnota 1.0 pro ignorování hran."
+
+#: ../src/iop/demosaic.c:892
+msgid "color smoothing"
+msgstr "vyhlazení barev"
+
+#: ../src/iop/demosaic.c:897
+msgid "how many color smoothing median steps after demosaicing"
+msgstr "kolik kroků mediánové funkce vyhlazování barev po demosacingu"
+
+#: ../src/iop/demosaic.c:900
+msgid "match greens"
+msgstr "vyrovnat zelenou"
+
+#: ../src/iop/demosaic.c:903
+msgid ""
+"switch on green equilibration before demosaicing.\n"
+"necessary for some mid-range cameras such as the EOS 400D."
+msgstr ""
+"zapnout vyrovnání zelené před demosaicingem.\n"
+"nezbytné pro některé polo-profi fotoaparáty jako např. EOS 400D."
+
+#: ../src/iop/equalizer.c:43
+msgid "legacy equalizer (deprecated)"
+msgstr "původní ekvalizér (zastaralé)"
+
+#: ../src/iop/equalizer.c:267
 msgid "null"
 msgstr "bez úpravy"
 
-#: ../src/iop/equalizer.c:272
-msgid "denoise"
-msgstr "odstranit šum"
+#: ../src/iop/equalizer.c:295
+msgid ""
+"this module will be removed in the future\n"
+"and is only here so you can switch it off\n"
+"and move to the new equalizer."
+msgstr ""
+"modul bude v budoucnosti odstraněn.\n"
+"vypněte jej prosím\n"
+"a použijte nový ekvalizér."
 
-#: ../src/iop/equalizer.c:282
-msgid "denoise (strong)"
-msgstr "odstranit šum (silně)"
-
-#: ../src/iop/equalizer.c:323 ../src/iop/rawimport.c:474
-msgid "luma"
-msgstr "luma"
-
-#: ../src/iop/equalizer.c:324
-msgid "chroma"
-msgstr "chroma"
-
-#: ../src/iop/exposure.c:318
+#: ../src/iop/exposure.c:279
 msgid "black"
 msgstr "černá"
 
-#: ../src/iop/exposure.c:325
+#: ../src/iop/exposure.c:286
 msgid "adjust the black level"
 msgstr "upravit úroveň černé"
 
-#: ../src/iop/exposure.c:328
+#: ../src/iop/exposure.c:289
 msgid "adjust the exposure correction [ev]"
 msgstr "upravit korekci expozice [ev]"
 
-#: ../src/iop/exposure.c:333
+#: ../src/iop/exposure.c:294
 msgid "auto"
 msgstr "auto"
 
-#: ../src/iop/exposure.c:336
+#: ../src/iop/exposure.c:297
 msgid "percentage of bright values clipped out"
 msgstr "procento oříznutých hodnot ve světlech"
 
@@ -1640,107 +2297,104 @@ msgctxt "modulename"
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/gamma.c:163 ../src/iop/profile_gamma.c:175
+#: ../src/iop/gamma.c:168
+#: ../src/iop/profile_gamma.c:176
 msgctxt "gammaslider"
 msgid "linear"
 msgstr "lineární"
 
-#: ../src/iop/gamma.c:164 ../src/iop/profile_gamma.c:176
+#: ../src/iop/gamma.c:169
+#: ../src/iop/profile_gamma.c:177
 msgctxt "gammaslider"
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/graduatednd.c:56
+#: ../src/iop/graduatednd.c:57
 msgid "Neutral Grey ND2 (soft)"
 msgstr "Šedý GD2 (měkký)"
 
-#: ../src/iop/graduatednd.c:57
+#: ../src/iop/graduatednd.c:58
 msgid "Neutral Grey ND4 (soft)"
 msgstr "Šedý GD4 (měkký)"
 
-#: ../src/iop/graduatednd.c:58
+#: ../src/iop/graduatednd.c:59
 msgid "Neutral Grey ND8 (soft)"
 msgstr "Šedý GD8 (měkký)"
 
-#: ../src/iop/graduatednd.c:59
+#: ../src/iop/graduatednd.c:60
 msgid "Neutral Grey ND2 (hard)"
 msgstr "Šedý GD2 (tvrdý)"
 
-#: ../src/iop/graduatednd.c:60
+#: ../src/iop/graduatednd.c:61
 msgid "Neutral Grey ND4 (hard)"
 msgstr "Šedý GD4 (tvrdý)"
 
-#: ../src/iop/graduatednd.c:61
+#: ../src/iop/graduatednd.c:62
 msgid "Neutral Grey ND8 (hard)"
 msgstr "Šedý GD8 (tvrdý)"
 
-#: ../src/iop/graduatednd.c:62
+#: ../src/iop/graduatednd.c:63
 msgid "Orange ND2 (soft)"
 msgstr "Oranžový D2 (měkký)"
 
-#: ../src/iop/graduatednd.c:63
+#: ../src/iop/graduatednd.c:64
 msgid "Yellow ND2 (soft)"
 msgstr "Žlutý D2 (měkký)"
 
-#: ../src/iop/graduatednd.c:64
+#: ../src/iop/graduatednd.c:65
 msgid "Purple ND2 (soft)"
 msgstr "Purpurový D2 (měkký)"
 
-#: ../src/iop/graduatednd.c:65
+#: ../src/iop/graduatednd.c:66
 msgid "Green ND2 (soft)"
 msgstr "Zelený D2 (měkký)"
 
-#: ../src/iop/graduatednd.c:66
+#: ../src/iop/graduatednd.c:67
 msgid "Red ND2 (soft)"
 msgstr "Červený D2 (měkký)"
 
-#: ../src/iop/graduatednd.c:67
+#: ../src/iop/graduatednd.c:68
 msgid "Blue ND2 (soft)"
 msgstr "Modrý D2 (měkký)"
 
-#: ../src/iop/graduatednd.c:68
+#: ../src/iop/graduatednd.c:69
 msgid "Brown ND4 (soft)"
 msgstr "Hnědý D4 (měkký)"
 
-#: ../src/iop/graduatednd.c:95
+#: ../src/iop/graduatednd.c:96
 msgid "graduated neutral density"
 msgstr "přechodový filtr"
 
 #. adding the labels
-#: ../src/iop/graduatednd.c:377
+#: ../src/iop/graduatednd.c:378
 msgid "density"
 msgstr "hustota"
 
-#: ../src/iop/graduatednd.c:378
+#: ../src/iop/graduatednd.c:379
 msgid "compression"
 msgstr "komprese"
 
-#: ../src/iop/graduatednd.c:379
+#: ../src/iop/graduatednd.c:380
 msgid "rotation"
 msgstr "otočení"
 
-#: ../src/iop/graduatednd.c:380
+#: ../src/iop/graduatednd.c:381
 msgid "split"
 msgstr "rozdělení"
 
-#: ../src/iop/graduatednd.c:381 ../src/iop/splittoning.c:466
-#: ../src/iop/splittoning.c:498 ../src/iop/channelmixer.c:361
-msgid "hue"
-msgstr "odstín"
-
-#: ../src/iop/graduatednd.c:412
+#: ../src/iop/graduatednd.c:413
 msgid "select the hue tone of filter"
 msgstr "vyberte odstín barevného tónu filtru"
 
-#: ../src/iop/graduatednd.c:421
+#: ../src/iop/graduatednd.c:422
 msgid "select the saturation of filter"
 msgstr "vyberte sytost filtru"
 
-#: ../src/iop/graduatednd.c:428
+#: ../src/iop/graduatednd.c:429
 msgid "the density in EV for the filter"
 msgstr "hustota v ev pro filtr"
 
-#: ../src/iop/graduatednd.c:430
+#: ../src/iop/graduatednd.c:431
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
@@ -1749,63 +2403,79 @@ msgstr ""
 "komprese odstupňování:\n"
 "0 % = měkký; 100 % = tvrdý"
 
-#: ../src/iop/graduatednd.c:431
+#: ../src/iop/graduatednd.c:432
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "otočení filtru -180° až 180°"
 
-#: ../src/iop/graduatednd.c:432
+#: ../src/iop/graduatednd.c:433
 msgid "offset of filter in angle of rotation"
 msgstr "posunutí filtru ve směru otočení"
 
-#: ../src/iop/highlights.c:72
+#: ../src/iop/grain.c:260
+msgid "grain"
+msgstr "zrno"
+
+#: ../src/iop/grain.c:435
+msgid "coarseness"
+msgstr "hrubost"
+
+#: ../src/iop/grain.c:447
+msgid "the grain size (~iso of the film)"
+msgstr "velikost zrna (~ iso filmu)"
+
+#: ../src/iop/grain.c:448
+msgid "the strength of applied grain"
+msgstr "síla použitého zrna"
+
+#: ../src/iop/highlights.c:79
 msgid "highlight reconstruction"
 msgstr "rekonstrukce světel"
 
-#: ../src/iop/highlights.c:325
+#: ../src/iop/highlights.c:363
 msgid "method"
 msgstr "metoda"
 
-#: ../src/iop/highlights.c:328
+#: ../src/iop/highlights.c:366
 msgid "clip highlights"
 msgstr "oříznout světla"
 
-#: ../src/iop/highlights.c:329
+#: ../src/iop/highlights.c:367
 msgid "reconstruct in LCh"
 msgstr "obnovit v LCh"
 
-#: ../src/iop/highlights.c:330
+#: ../src/iop/highlights.c:368
 msgid "highlight reconstruction method"
 msgstr "metoda rekonstrukce světlých tónů"
 
-#: ../src/iop/highlights.c:340
+#: ../src/iop/highlights.c:378
 msgid "blend L"
 msgstr "smíchání L"
 
-#: ../src/iop/highlights.c:342
+#: ../src/iop/highlights.c:380
 msgid "blend C"
 msgstr "smíchání C"
 
-#: ../src/iop/highlights.c:344
+#: ../src/iop/highlights.c:382
 msgid "blend h"
 msgstr "smíchání h"
 
-#: ../src/iop/highlights.c:350
+#: ../src/iop/highlights.c:388
 msgid "blend lightness (0 is same as clipping)"
 msgstr "smíchat světlost (0 je totéž jako oříznutí)"
 
-#: ../src/iop/highlights.c:351
+#: ../src/iop/highlights.c:389
 msgid "blend colorness (0 is same as clipping)"
 msgstr "smíchat barevnost (0 je totéž jako oříznutí)"
 
-#: ../src/iop/highlights.c:352
+#: ../src/iop/highlights.c:390
 msgid "blend hue (0 is same as clipping)"
 msgstr "smíchat odstín (0 je totéž jako oříznutí)"
 
-#: ../src/iop/lens.c:44
+#: ../src/iop/lens.c:45
 msgid "lens correction"
 msgstr "korekce objektivu"
 
-#: ../src/iop/lens.c:676
+#: ../src/iop/lens.c:707
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1818,7 +2488,7 @@ msgstr ""
 "bajonet:\t\t%s\n"
 "faktor ořezu:\t%.1f"
 
-#: ../src/iop/lens.c:916
+#: ../src/iop/lens.c:989
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -1837,98 +2507,91 @@ msgstr ""
 "typ:\t\t%s\n"
 "bajonety:\t\t%s"
 
-#: ../src/iop/lens.c:946
+#: ../src/iop/lens.c:1019
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:946
+#: ../src/iop/lens.c:1019
 msgid "focal length (mm)"
 msgstr "ohnisková vzd. (mm)"
 
-#: ../src/iop/lens.c:956
+#: ../src/iop/lens.c:1025
+#: ../src/iop/lens.c:1040
+msgid "reset from exif data"
+msgstr "obnovit dle exif"
+
+#: ../src/iop/lens.c:1034
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:956
+#: ../src/iop/lens.c:1034
 msgid "f-number (aperture)"
 msgstr "clonové číslo"
 
-#: ../src/iop/lens.c:962
+#: ../src/iop/lens.c:1045
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:962
+#: ../src/iop/lens.c:1045
 msgid "distance to subject"
 msgstr "předmětná vzdálenost"
 
-#: ../src/iop/lens.c:1167
-msgid "cam"
-msgstr "tělo"
+#: ../src/iop/lens.c:1273
+msgid "find camera"
+msgstr "nalézt fotoaparát"
 
-#: ../src/iop/lens.c:1168
-msgid ""
-"search for camera using a pattern\n"
-"format: [maker, ][model]"
-msgstr ""
-"hledat fotoaparát pomocí masky\n"
-"ve formátu: [výrobce, ][model]"
-
-#: ../src/iop/lens.c:1183
-msgid ""
-"search for lens using a pattern\n"
-"format: [maker, ][model]"
-msgstr ""
-"hledat objektiv pomocí masky\n"
-"ve formátu: [výrobce, ][model]"
+#: ../src/iop/lens.c:1288
+msgid "find lens"
+msgstr "nalézt objektiv"
 
 #. target geometry
-#: ../src/iop/lens.c:1209
+#: ../src/iop/lens.c:1316
 msgid "geometry"
 msgstr "geometrie"
 
-#: ../src/iop/lens.c:1215
+#: ../src/iop/lens.c:1322
 msgid "target geometry"
 msgstr "cílová geometrie"
 
-#: ../src/iop/lens.c:1216
+#: ../src/iop/lens.c:1323
 msgid "rectilinear"
 msgstr "rektilineární"
 
-#: ../src/iop/lens.c:1217
+#: ../src/iop/lens.c:1324
 msgid "fish-eye"
 msgstr "rybí oko"
 
-#: ../src/iop/lens.c:1218
+#: ../src/iop/lens.c:1325
 msgid "panoramic"
 msgstr "panoramatická"
 
-#: ../src/iop/lens.c:1219
+#: ../src/iop/lens.c:1326
 msgid "equirectangular"
 msgstr "ekvirektangulární"
 
-#: ../src/iop/lens.c:1240 ../src/iop/vignette.c:352 ../src/iop/watermark.c:565
-msgid "scale"
-msgstr "měřítko"
+#: ../src/iop/lens.c:1342
+msgid "auto scale"
+msgstr "automatické měřítko"
 
 #. reverse direction
-#: ../src/iop/lens.c:1245
+#: ../src/iop/lens.c:1351
 msgid "reverse"
 msgstr "obrácené"
 
-#: ../src/iop/lens.c:1246
+#: ../src/iop/lens.c:1352
 msgid "apply distortions instead of correcting them"
 msgstr "použít zkreslení namísto jejich opravy"
 
 #. override linear tca (if not 1.0):
-#: ../src/iop/lens.c:1253
+#: ../src/iop/lens.c:1359
 msgid "tca r"
 msgstr "tca r"
 
-#: ../src/iop/lens.c:1255
+#: ../src/iop/lens.c:1361
 msgid "tca b"
 msgstr "tca b"
 
-#: ../src/iop/lens.c:1263
+#: ../src/iop/lens.c:1369
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -1936,7 +2599,7 @@ msgstr ""
 "upravit korekci příčné chromatické vady pro červený kanál\n"
 "ponechte na 1,0 pro výchozí stav"
 
-#: ../src/iop/lens.c:1264
+#: ../src/iop/lens.c:1370
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
@@ -1944,262 +2607,302 @@ msgstr ""
 "upravit korekci příčné chromatické vady pro modrý kanál\n"
 "ponechte na 1,0 pro výchozí stav"
 
-#: ../src/iop/monochrome.c:70
+#: ../src/iop/monochrome.c:65
 msgid "monochrome"
 msgstr "filtr pro čb"
 
-#: ../src/iop/monochrome.c:319
+#: ../src/iop/monochrome.c:302
+msgid "drag and scroll mouse wheel to adjust the virtual color filter"
+msgstr "pro upravení virtuálního barevného filtru klikněte a táhněte nebo rolujte kolečkem myši"
+
+#: ../src/iop/overexposed.c:55
+msgid "overexposed"
+msgstr "přeexponováno"
+
+#: ../src/iop/overexposed.c:238
+msgid "lower threshold"
+msgstr "spodní práh"
+
+#: ../src/iop/overexposed.c:239
+msgid "upper threshold"
+msgstr "horní práh"
+
+#: ../src/iop/overexposed.c:250
+msgid "threshold of what shall be considered underexposed"
+msgstr "práh pro podexpozici"
+
+#: ../src/iop/overexposed.c:251
+msgid "threshold of what shall be considered overexposed"
+msgstr "práh pro přeexpozici"
+
+#: ../src/iop/profile_gamma.c:37
+msgid "unbreak input profile"
+msgstr "upravit vstupní profil"
+
+#: ../src/iop/relight.c:55
+msgid "Fill-light 0.25EV with 4 zones"
+msgstr "přisvětlení 0,25 EV se 4 zónami"
+
+#: ../src/iop/relight.c:56
+msgid "Fill-shadow -0.25EV with 4 zones"
+msgstr "ztmavení -0,25 EV se 4 zónami"
+
+#: ../src/iop/relight.c:81
+msgid "fill light"
+msgstr "přisvětlení"
+
+#. EV
+#: ../src/iop/relight.c:347
+msgid "center"
+msgstr "střed"
+
+#: ../src/iop/relight.c:366
+msgid "select the center of fill-light"
+msgstr "vybrat střed přisvětlení"
+
+#: ../src/iop/relight.c:378
+msgid "toggle tool for picking median lightness in image"
+msgstr "přepnout nástroj pro vybrání středního jasu na snímku"
+
+#: ../src/iop/relight.c:379
+msgid "the fill-light in EV"
+msgstr "přisvětlení v EV"
+
+#: ../src/iop/relight.c:381
+#, no-c-format
+msgid "width of fill-light area defined in zones"
+msgstr "šíře oblasti přisvětlení definovaná v zónách"
+
+#: ../src/iop/splittoning.c:78
+msgid "split toning"
+msgstr "rozdělení tónů"
+
+#: ../src/iop/splittoning.c:272
+msgid "Select tone color"
+msgstr "vybrat barvu tónu"
+
+#. Shadows
+#: ../src/iop/splittoning.c:410
+msgid "shadows"
+msgstr "stíny"
+
+#: ../src/iop/splittoning.c:435
+msgid "select the hue tone for shadows"
+msgstr "vybrat odstín pro stíny"
+
+#: ../src/iop/splittoning.c:439
+msgid "select the saturation shadow tone"
+msgstr "vybrat sytost stínů"
+
+#. Highlights
+#: ../src/iop/splittoning.c:442
+msgid "highlights"
+msgstr "světla"
+
+#: ../src/iop/splittoning.c:468
+msgid "select the hue tone for highlights"
+msgstr "vybrat odstín pro světla"
+
+#: ../src/iop/splittoning.c:472
+msgid "select the saturation highlights tone"
+msgstr "vybrat sytost světel"
+
+#: ../src/iop/splittoning.c:482
+msgid "balance"
+msgstr "vyvážení"
+
+#: ../src/iop/splittoning.c:483
+msgid "compress"
+msgstr "stlačení"
+
+#: ../src/iop/splittoning.c:496
+msgid "the balance of center of splittoning"
+msgstr "vyvážení středu rozdělení tónů"
+
+#: ../src/iop/splittoning.c:497
 msgid ""
-"drag and scroll\n"
-"to adjust the virtual\n"
-"color filter"
+"compress the effect on highlighs/shadows and\n"
+"preserve midtones"
 msgstr ""
-"pro upravení virtuálního\n"
-"barevného filtru klikněte\n"
-"a táhněte nebo rolujte kolečkem"
+"stlačení efektu na světla/stíny a\n"
+"upřednostnit střední tóny"
 
-#: ../src/iop/monochrome.c:341
-msgid "filter size"
-msgstr "velikost filtru"
-
-#: ../src/iop/rawimport.c:75
-msgid "raw import"
-msgstr "import raw"
-
-#: ../src/iop/rawimport.c:422
-msgid ""
-"warning: these are cryptic low level settings!\n"
-"you probably don't have to change them."
-msgstr ""
-"varování: toto jsou kryptická nastavení!\n"
-"pravděpodobně je nemusíte měnit."
-
-#: ../src/iop/rawimport.c:426
-msgid "median passes"
-msgstr "střední průchody"
-
-#: ../src/iop/rawimport.c:429
-msgid ""
-"number of 3x3 median filter passes\n"
-"on R-G and B-G after demosaicing"
-msgstr ""
-"počet průchodů pro 3x3 střední filter\n"
-"na R-G a B-G po demosaicingu"
-
-#: ../src/iop/rawimport.c:433
-msgid "demosaic method"
-msgstr "demosaicing"
-
-#: ../src/iop/rawimport.c:436
-msgctxt "demosaic"
-msgid "linear"
-msgstr "lineární"
-
-#: ../src/iop/rawimport.c:437
-msgid "VNG"
-msgstr "VNG"
-
-#: ../src/iop/rawimport.c:438
-msgid "PPG"
-msgstr "PPG"
-
-#: ../src/iop/rawimport.c:439
-msgid "AHD"
-msgstr "AHD"
-
-#: ../src/iop/rawimport.c:440
-msgid "linear4"
-msgstr "linear4"
-
-#: ../src/iop/rawimport.c:441
-msgid "VNG4"
-msgstr "VNG4"
-
-#: ../src/iop/rawimport.c:442
-msgid "DCB"
-msgstr "DCB"
-
-#: ../src/iop/rawimport.c:443
-msgid "AMaZE"
-msgstr "AMaZE"
-
-#: ../src/iop/rawimport.c:444
-msgid "VCD"
-msgstr "VCD"
-
-#: ../src/iop/rawimport.c:448
-msgid "hot pixels"
-msgstr "hot pixels"
-
-#: ../src/iop/rawimport.c:449
-msgid "median filter before demosaicing"
-msgstr "střední filtr před demosaicingem"
-
-#: ../src/iop/rawimport.c:452
-msgid "green equilibration"
-msgstr "vyrovnání zelené"
-
-#: ../src/iop/rawimport.c:453
-msgid ""
-"work around unequal green channels in some mid-range\n"
-"cameras, e.g. canon eos 400d"
-msgstr ""
-"obejití rozdílných zelených kanálů u některých fotoaparátů\n"
-"střední kategorie, např. canon eos 400d"
-
-#. GtkCheckButton *dcb_enhance;
-#: ../src/iop/rawimport.c:457
-msgid "dcb enhance"
-msgstr "dcb vylepšení"
-
-#: ../src/iop/rawimport.c:458
-msgid ""
-"turns off the default image refinement if edges are jagged or you prefer "
-"softer demosaicing."
-msgstr ""
-"vypne výchozí doladění snímku, pokud jsou hrany schodovité či pokud dáváte "
-"přednost měkčímu demosaicingu."
-
-#. GtkSpinButton *iterations_dcb;
-#: ../src/iop/rawimport.c:462
-msgid "dcb iterations"
-msgstr "dcb iterace"
-
-#. not enough room for number more then 4
-#: ../src/iop/rawimport.c:465
-msgid ""
-"number of DCB correction routines passes(the default is zero)\n"
-"this helps if you see lots of wrong interpolation directions, just remember "
-"that it may produce new artifacts\n"
-"usually 0 or 1 should work fine, in some situations even 10 is not enough."
-msgstr ""
-"počet průchodů opravných rutin DCB (výchozí je nula)\n"
-"toto pomůže, pokud vidíte hodně chybných směrů interpolace, pouze vemte na "
-"vědomí, že to může způsobit nové artifakty\n"
-"obvykle 0 nebo 1 jsou vhodné hodnoty, v některých případech dokonce nestačí "
-"ani 10."
-
-#. GtkComboBox *noiserd_fbdd;
-#: ../src/iop/rawimport.c:470
-msgid "fbdd denoising"
-msgstr "fbdd odstranění šumu"
-
-#: ../src/iop/rawimport.c:473
-msgctxt "fbdd noise"
-msgid "none"
-msgstr "žádné"
-
-#: ../src/iop/rawimport.c:475
-msgid "luma+chroma"
-msgstr "luma+chroma"
-
-#: ../src/iop/rawimport.c:476
-msgid ""
-"fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"
-msgstr ""
-"fbdd zapne redukci odstranění šumu pro pre-demosaicing luma (a volitelně "
-"chroma)"
-
-#. GtkCheckButton *vcd_eeci_refine;
-#: ../src/iop/rawimport.c:481
-msgid "vcd enhance"
-msgstr "vcd vylepšení"
-
-#: ../src/iop/rawimport.c:482
-msgid "refine interpolated pixels"
-msgstr "vylepšit interpolované pixely"
-
-#. GtkSpinButton *vcd_es_med_passes;
-#: ../src/iop/rawimport.c:486
-msgid "edge median passes"
-msgstr "střední průchody pro hrany"
-
-#. not enough room for more then 4
-#: ../src/iop/rawimport.c:489
-msgid ""
-"number of passes an edge-sensitive median filter to differential color planes"
-msgstr ""
-"počet průchodů středního filtru citlivého na hrany vůči rozdílovým rovinám "
-"barev"
-
-#. GtkCheckButton *amaze_ca_correct;
-#: ../src/iop/rawimport.c:494
-msgid "ca autocorrect"
-msgstr "ca auto-korekce"
-
-#: ../src/iop/rawimport.c:495
-msgid "artificial ca autocorrection from AMaZE"
-msgstr "umělá automatická korekce chromatické vady dle AMaZE"
-
-#: ../src/iop/rawimport.c:498
-msgid "reset"
-msgstr "obnovit"
-
-#: ../src/iop/rawimport.c:499
-msgid ""
-"reset raw loading parameters\n"
-"to darktable's defaults"
-msgstr ""
-"obnoví parametry načítání raw\n"
-"na výchozí hodnoty darktable"
-
-#: ../src/iop/rawimport.c:500
-msgid "re-import"
-msgstr "znovu importovat"
-
-#: ../src/iop/rawimport.c:501
-msgid "trigger re-import of the raw image"
-msgstr "spustí opětovné načtení snímku raw"
-
-#: ../src/iop/sharpen.c:269 ../src/iop/bilateral.cc:282 ../src/iop/clahe.c:385
-msgid "radius"
-msgstr "poloměr"
-
-#: ../src/iop/sharpen.c:271 ../src/iop/clahe.c:387
-msgid "amount"
-msgstr "hodnota"
-
-#: ../src/iop/sharpen.c:273
-msgid "threshold"
-msgstr "práh"
-
-#: ../src/iop/temperature.c:78
+#: ../src/iop/temperature.c:85
 msgctxt "modulename"
 msgid "white balance"
 msgstr "vyvážení bílé"
 
-#: ../src/iop/temperature.c:338
+#: ../src/iop/temperature.c:429
 msgid "tint"
 msgstr "zbarvení"
 
-#: ../src/iop/temperature.c:339
+#: ../src/iop/temperature.c:430
 msgid "temperature out"
 msgstr "výstupní teplota"
 
-#: ../src/iop/temperature.c:360
+#: ../src/iop/temperature.c:451
 msgid "temperature in"
 msgstr "vstupní teplota"
 
-#: ../src/iop/temperature.c:383 ../src/iop/bilateral.cc:288
-#: ../src/iop/channelmixer.c:366 ../src/iop/channelmixer.c:383
-msgid "blue"
-msgstr "modrá"
-
-#: ../src/iop/temperature.c:393
+#: ../src/iop/temperature.c:484
 msgid "camera white balance"
 msgstr "dle fotoaparátu"
 
-#: ../src/iop/temperature.c:394
+#: ../src/iop/temperature.c:485
 msgid "spot white balance"
 msgstr "vybrat na snímku"
 
-#: ../src/iop/temperature.c:395
+#: ../src/iop/temperature.c:486
 msgid "passthrough"
 msgstr "průchozí"
 
-#: ../src/iop/temperature.c:418
+#: ../src/iop/temperature.c:512
 msgid "fine tune white balance preset"
 msgstr "jemně doladit přednastavené vyvážení bílé"
+
+#: ../src/iop/tonecurve.c:40
+msgid "tone curve"
+msgstr "tónová křivka"
+
+#: ../src/iop/tonecurve.c:117
+msgid "med contrast"
+msgstr "střední kontrast"
+
+#: ../src/iop/tonecurve.c:125
+msgid "high contrast"
+msgstr "vysoký kontrast"
+
+#: ../src/iop/tonemap.cc:73
+msgid "tone mapping"
+msgstr "mapování tónů"
+
+#: ../src/iop/tonemap.cc:259
+msgid "contrast compression"
+msgstr "komprese kontrastu"
+
+#: ../src/iop/tonemap.cc:265
+msgid "spatial extent"
+msgstr "prostorový rozsah"
+
+#: ../src/iop/velvia.c:68
+msgid "velvia"
+msgstr "velvia"
+
+#: ../src/iop/velvia.c:237
+msgid "vibrance"
+msgstr "živost"
+
+#: ../src/iop/velvia.c:238
+msgid "mid-tones bias"
+msgstr "vliv středních tónů"
+
+#: ../src/iop/velvia.c:253
+msgid "the amount of saturation to apply"
+msgstr "míra sytosti"
+
+#: ../src/iop/velvia.c:254
+msgid "the vibrance amount"
+msgstr "míra živosti"
+
+#: ../src/iop/velvia.c:255
+msgid "how much to spare highlights and shadows"
+msgstr "kolik zachovat světel a stínů"
+
+#: ../src/iop/vignette.c:84
+msgid "vignetting"
+msgstr "vinětace"
+
+#: ../src/iop/vignette.c:354
+msgid "fall-off strength"
+msgstr "síla ztmavení"
+
+#: ../src/iop/vignette.c:356
+msgid "uniformity"
+msgstr "jednotnost"
+
+#: ../src/iop/vignette.c:357
+msgid "b/s ratio"
+msgstr "poměr j/s"
+
+#: ../src/iop/vignette.c:359
+msgid "fall-off"
+msgstr "ztmavení"
+
+#: ../src/iop/vignette.c:373
+#: ../src/iop/vignette.c:374
+msgid "invert"
+msgstr "invertovat"
+
+#: ../src/iop/vignette.c:382
+msgid "the radii scale of vignette for start of fall-off"
+msgstr "měřítko poloměru vinětace pro začátek ztmavení"
+
+#: ../src/iop/vignette.c:383
+msgid "the radii scale of vignette for end of fall-off"
+msgstr "měřítko poloměru vinětace pro konec ztmavení"
+
+#: ../src/iop/vignette.c:384
+msgid "strength of effect"
+msgstr "síla efektu"
+
+#: ../src/iop/vignette.c:385
+msgid "uniformity of vignette"
+msgstr "jednotnost vinětace"
+
+#: ../src/iop/vignette.c:386
+msgid ""
+"brightness/saturation ratio\n"
+"of the result,\n"
+"-1 - only brightness\n"
+" 0 - 50/50 mix of brightness and saturation\n"
+"+1 - only saturation"
+msgstr ""
+"poměr jasu/sytosti\n"
+"dle výsledku,\n"
+"-1 - pouze jas\n"
+"0 - 50:50 poměr jasu a sytosti\n"
+"+1 - pouze sytost "
+
+#: ../src/iop/vignette.c:387
+msgid "inverts effect of saturation..."
+msgstr "invertuje efekt sytosti..."
+
+#: ../src/iop/vignette.c:388
+msgid "inverts effect of fall-off, default is dark fall-off..."
+msgstr "invertuje efekt ztmavení"
+
+#: ../src/iop/watermark.c:90
+msgid "watermark"
+msgstr "vodotisk"
+
+#: ../src/iop/watermark.c:572
+msgid "marker"
+msgstr "popisek"
+
+#: ../src/iop/watermark.c:573
+msgid "opacity"
+msgstr "průhlednost"
+
+#: ../src/iop/watermark.c:575
+msgid "alignment"
+msgstr "zarovnání"
+
+#: ../src/iop/watermark.c:576
+msgid "x offset"
+msgstr "posunutí x"
+
+#: ../src/iop/watermark.c:577
+msgid "y offset"
+msgstr "posunutí y"
+
+#. Let's add some tooltips and hook up some signals...
+#: ../src/iop/watermark.c:621
+msgid "the opacity of the watermark"
+msgstr "průhlednost vodotisku"
+
+#: ../src/iop/watermark.c:622
+msgid "the scale of the watermark"
+msgstr "měřítko vodotisku"
 
 #. Column 1 - "make" of the camera.
 #. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
@@ -2319,1221 +3022,1124 @@ msgstr "dle fotoaparátu"
 msgid "Auto WB"
 msgstr "automatické vyvážení"
 
-#: ../src/iop/tonecurve.c:39
-msgid "tone curve"
-msgstr "tónová křivka"
-
-#: ../src/iop/tonecurve.c:78 ../src/iop/basecurve.c:48
-msgid "linear"
-msgstr "lineární"
-
-#: ../src/iop/tonecurve.c:86
-msgid "med contrast"
-msgstr "střední kontrast"
-
-#: ../src/iop/tonecurve.c:94
-msgid "high contrast"
-msgstr "vysoký kontrast"
-
-#: ../src/iop/basecurve.c:49
-msgid "dark contrast"
-msgstr "tmavý kontrast"
-
-#: ../src/iop/basecurve.c:50
-msgid "canon eos like"
-msgstr "canon"
-
-#: ../src/iop/basecurve.c:51
-msgid "nikon like"
-msgstr "nikon"
-
-#: ../src/iop/basecurve.c:52
-msgid "sony alpha like"
-msgstr "sony alpha"
-
-#: ../src/iop/basecurve.c:53
-msgid "pentax like"
-msgstr "pentax"
-
-#: ../src/iop/basecurve.c:54
-msgid "olympus like"
-msgstr "olympus"
-
-#: ../src/iop/basecurve.c:55
-msgid "panasonic like"
-msgstr "panasonic"
-
-#: ../src/iop/basecurve.c:56
-msgid "leica like"
-msgstr "leica"
-
-#: ../src/iop/basecurve.c:57
-msgid "kodak easyshare like"
-msgstr "kodak easyshare"
-
-#: ../src/iop/basecurve.c:58
-msgid "konica minolta like"
-msgstr ""
-
-#: ../src/iop/basecurve.c:59
-msgid "fotogenetic (point & shoot)"
-msgstr "fotogenetic (kompakt)"
-
-#: ../src/iop/basecurve.c:60
-msgid "fotogenetic (ev3)"
-msgstr "fotogenetic (ev3)"
-
-#: ../src/iop/basecurve.c:123
-msgid "base curve"
-msgstr "základní křivka"
-
-#: ../src/iop/colorzones.c:92
-msgid "color zones"
-msgstr "zóny barev"
-
-#: ../src/iop/colorzones.c:280
-msgid "red black white"
-msgstr "červená černá bílá"
-
-#: ../src/iop/colorzones.c:295
-msgid "black white and skin tones"
-msgstr "černá bílá a odstíny pokožky"
-
-#: ../src/iop/colorzones.c:311
-msgid "polarizing filter"
-msgstr "polarizační filtr"
-
-#: ../src/iop/colorzones.c:350
-msgid "natural skin tones"
-msgstr "přirozené odstíny pokožky"
-
-#: ../src/iop/colorzones.c:808 ../src/iop/colorzones.c:833
-msgid "luma (L)"
-msgstr "luma (L)"
-
-#: ../src/iop/colorzones.c:809 ../src/iop/colorzones.c:834
-msgid "colorness (C)"
-msgstr "barev. (C)"
-
-#: ../src/iop/colorzones.c:810 ../src/iop/colorzones.c:835
-msgid "hue (h)"
-msgstr "odst. (h)"
-
-#: ../src/iop/colorzones.c:826
-msgid "select color by"
-msgstr "vybrat barvu dle"
-
-#: ../src/iop/colorzones.c:849
-msgid "pick gui color from image"
-msgstr "kliknutím vybrat barvu z obrázku"
-
-#: ../src/iop/vignette.c:84
-msgid "vignetting"
-msgstr "vinětace"
-
-#: ../src/iop/vignette.c:353
-msgid "fall-off strength"
-msgstr "síla ztmavení"
-
-#: ../src/iop/vignette.c:354 ../src/iop/grain.c:435
-msgid "strength"
-msgstr "síla"
-
-#: ../src/iop/vignette.c:355
-msgid "uniformity"
-msgstr "jednotnost"
-
-#: ../src/iop/vignette.c:356
-msgid "b/s ratio"
-msgstr "poměr j/s"
-
-#: ../src/iop/vignette.c:358
-msgid "fall-off"
-msgstr "ztmavení"
-
-#: ../src/iop/vignette.c:372 ../src/iop/vignette.c:373
-msgid "invert"
-msgstr "invertovat"
-
-#: ../src/iop/vignette.c:381
-msgid "the radii scale of vignette for start of fall-off"
-msgstr "měřítko poloměru vinětace pro začátek ztmavení"
-
-#: ../src/iop/vignette.c:382
-msgid "the radii scale of vignette for end of fall-off"
-msgstr "měřítko poloměru vinětace pro konec ztmavení"
-
-#: ../src/iop/vignette.c:383
-msgid "strength of effect"
-msgstr "síla efektu"
-
-#: ../src/iop/vignette.c:384
-msgid "uniformity of vignette"
-msgstr "jednotnost vinětace"
-
-#: ../src/iop/vignette.c:385
-msgid ""
-"brightness/saturation ratio\n"
-"of the result,\n"
-"-1 - only brightness\n"
-" 0 - 50/50 mix of brightness and saturation\n"
-"+1 - only saturation"
-msgstr ""
-"poměr jasu/sytosti\n"
-"dle výsledku,\n"
-"-1 - pouze jas\n"
-"0 - 50:50 poměr jasu a sytosti\n"
-"+1 - pouze sytost "
-
-#: ../src/iop/vignette.c:386
-msgid "inverts effect of saturation..."
-msgstr "invertuje efekt sytosti..."
-
-#: ../src/iop/vignette.c:387
-msgid "inverts effect of fall-off, default is dark fall-off..."
-msgstr "invertuje efekt ztmavení"
-
-#: ../src/iop/velvia.c:67
-msgid "velvia"
-msgstr "velvia"
-
-#: ../src/iop/velvia.c:233
-msgid "vibrance"
-msgstr "živost"
-
-#: ../src/iop/velvia.c:234
-msgid "mid-tones bias"
-msgstr "vliv středních tónů"
-
-#: ../src/iop/velvia.c:249
-msgid "the amount of saturation to apply"
-msgstr "míra sytosti"
-
-#: ../src/iop/velvia.c:250
-msgid "the vibrance amount"
-msgstr "míra živosti"
-
-#: ../src/iop/velvia.c:251
-msgid "how much to spare highlights and shadows"
-msgstr "kolik zachovat světel a stínů"
-
-#: ../src/iop/splittoning.c:77
-msgid "split toning"
-msgstr "rozdělení tónů"
-
-#: ../src/iop/splittoning.c:315
-msgid "Select tone color"
-msgstr "vybrat barvu tónu"
-
-#. Shadows
-#: ../src/iop/splittoning.c:453
-msgid "shadows"
-msgstr "stíny"
-
-#: ../src/iop/splittoning.c:478
-msgid "select the hue tone for shadows"
-msgstr "vybrat odstín pro stíny"
-
-#: ../src/iop/splittoning.c:482
-msgid "select the saturation shadow tone"
-msgstr "vybrat sytost stínů"
-
-#. Highlights
-#: ../src/iop/splittoning.c:485
-msgid "highlights"
-msgstr "světla"
-
-#: ../src/iop/splittoning.c:511
-msgid "select the hue tone for highlights"
-msgstr "vybrat odstín pro světla"
-
-#: ../src/iop/splittoning.c:515
-msgid "select the saturation highlights tone"
-msgstr "vybrat sytost světel"
-
-#: ../src/iop/splittoning.c:525
-msgid "balance"
-msgstr "vyvážení"
-
-#: ../src/iop/splittoning.c:526
-msgid "compress"
-msgstr "stlačení"
-
-#: ../src/iop/splittoning.c:539
-msgid "the balance of center of splittoning"
-msgstr "vyvážení středu rozdělení tónů"
-
-#: ../src/iop/splittoning.c:540
-msgid ""
-"compress the effect on highlighs/shadows and\n"
-"preserve midtones"
-msgstr ""
-"stlačení efektu na světla/stíny a\n"
-"upřednostnit střední tóny"
-
-#: ../src/iop/grain.c:260
-msgid "grain"
-msgstr "zrno"
-
-#: ../src/iop/grain.c:434
-msgid "coarseness"
-msgstr "hrubost"
-
-#: ../src/iop/grain.c:446
-msgid "the grain size (~iso of the film)"
-msgstr "velikost zrna (~ iso filmu)"
-
-#: ../src/iop/grain.c:447
-msgid "the strength of applied grain"
-msgstr "síla použitého zrna"
-
-#: ../src/iop/bilateral.cc:70
-msgid "denoise (slow)"
-msgstr "odstranění šumu (pomalé)"
-
-#: ../src/iop/bilateral.cc:299
-msgid "spatial extent of the gaussian"
-msgstr "prostorová míra gaussian"
-
-#. gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _(""), (char *)NULL);
-#: ../src/iop/bilateral.cc:301
-msgid "how much to blur red"
-msgstr "do jaké míry rozmazat červenou"
-
-#: ../src/iop/bilateral.cc:302
-msgid "how much to blur green"
-msgstr "do jaké míry rozmazat zelenou"
-
-#: ../src/iop/bilateral.cc:303
-msgid "how much to blur blue"
-msgstr "do jaké míry rozmazat modrou"
-
-#: ../src/iop/profile_gamma.c:37
-msgid "unbreak input profile"
-msgstr "upravit vstupní profil"
-
-#: ../src/iop/clahe.c:67
-msgid "local contrast (slow)"
-msgstr "lokální kontrast (pomalé)"
-
-#: ../src/iop/clahe.c:396
-msgid "size of features to preserve"
-msgstr "velikost prvků, které mají být zachovány"
-
-#: ../src/iop/clahe.c:397
-msgid "strength of the effect"
-msgstr "síla účinku"
-
-#: ../src/iop/colortransfer.c:104
-msgid "color transfer"
-msgstr "převod barev"
-
-#: ../src/iop/colortransfer.c:618
-msgid "number of clusters to find in image"
-msgstr "počet skupin, které mají být nalezeny na snímku"
-
-#: ../src/iop/colortransfer.c:622
-msgid "acquire"
-msgstr "pořídit"
-
-#: ../src/iop/colortransfer.c:623
-msgid "analyze this image"
-msgstr "analyzovat tento snímek"
-
-#: ../src/iop/colortransfer.c:627
-msgid "apply"
-msgstr "použít"
-
-#: ../src/iop/colortransfer.c:628
-msgid "apply previously analyzed image look to this image"
-msgstr "použít výsledek předchozí analýzy vzhledu snímku na tento snímek"
-
-#: ../src/iop/channelmixer.c:107
-msgid "channel mixer"
-msgstr "mixér kanálů"
-
-#: ../src/iop/channelmixer.c:359
-msgid "output channel"
-msgstr "výstupní kanál"
-
-#: ../src/iop/channelmixer.c:363
-msgid "lightness"
-msgstr "světlost"
-
-#: ../src/iop/channelmixer.c:367
-msgid "gray"
-msgstr "šedá"
-
-#: ../src/iop/channelmixer.c:372
-msgid "source channels"
-msgstr "vstupní kanály"
-
-#: ../src/iop/channelmixer.c:419
-msgid "swap r and b"
-msgstr "zaměnit r a b"
-
-#: ../src/iop/channelmixer.c:420
-msgid "swap g and b"
-msgstr "zaměnit g a b"
-
-#: ../src/iop/channelmixer.c:421
-msgid "color contrast boost"
-msgstr "zesílení barevného kontrastu"
-
-#: ../src/iop/channelmixer.c:422
-msgid "color details boost"
-msgstr "zesílení barevných detailů"
-
-#: ../src/iop/channelmixer.c:423
-msgid "color artifacts boost"
-msgstr "zesílení barevných artefaktů"
-
-#: ../src/iop/channelmixer.c:424
-msgid "b/w"
-msgstr "čb"
-
-#: ../src/iop/channelmixer.c:425
-msgid "b/w artifacts boost"
-msgstr "zesílení čb artefaktů"
-
-#: ../src/iop/channelmixer.c:426
-msgid "b/w smooth skin"
-msgstr "čb vyhlazení pokožky"
-
-#: ../src/iop/channelmixer.c:427
-msgid "b/w blue artifacts reduce"
-msgstr "čb redukce modrých artefaktů"
-
-#: ../src/iop/relight.c:54
-msgid "Fill-light 0.25EV with 4 zones"
-msgstr "přisvětlení 0,25 EV se 4 zónami"
-
-#: ../src/iop/relight.c:55
-msgid "Fill-shadow -0.25EV with 4 zones"
-msgstr "ztmavení -0,25 EV se 4 zónami"
-
-#: ../src/iop/relight.c:80
-msgid "relight"
-msgstr "dosvětlit"
-
-#. EV
-#: ../src/iop/relight.c:343
-msgid "center"
-msgstr "střed"
-
-#: ../src/iop/relight.c:362
-msgid "select the center of fill-light"
-msgstr "vybrat střed přisvětlení"
-
-#: ../src/iop/relight.c:374
-msgid "toggle tool for picking median lightness in image"
-msgstr "přepnout nástroj pro vybrání středního jasu na snímku"
-
-#: ../src/iop/relight.c:375
-msgid "the fill-light in EV"
-msgstr "přisvětlení v EV"
-
-#: ../src/iop/relight.c:377
-#, no-c-format
-msgid "width of fill-light area defined in zones"
-msgstr "šíře oblasti přisvětlení definovaná v zónách"
-
-#: ../src/iop/watermark.c:87
-msgid "watermark"
-msgstr "vodotisk"
-
-#: ../src/iop/watermark.c:563
-msgid "marker"
-msgstr "popisek"
-
-#: ../src/iop/watermark.c:564
-msgid "opacity"
-msgstr "průhlednost"
-
-#: ../src/iop/watermark.c:566
-msgid "alignment"
-msgstr "zarovnání"
-
-#: ../src/iop/watermark.c:567
-msgid "x offset"
-msgstr "posunutí x"
-
-#: ../src/iop/watermark.c:568
-msgid "y offset"
-msgstr "posunutí y"
-
-#. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:612
-msgid "the opacity of the watermark"
-msgstr "průhlednost vodotisku"
-
-#: ../src/iop/watermark.c:613
-msgid "the scale of the watermark"
-msgstr "měřítko vodotisku"
-
-#: ../src/iop/zonesystem.c:84
+#: ../src/iop/zonesystem.c:85
 msgid "zone system"
 msgstr "zónový systém"
 
-#: ../src/imageio/format/jpeg.c:618
-msgid "8-bit jpeg"
-msgstr "8-bit jpeg"
+#: ../src/libs/camera.c:76
+msgid "camera settings"
+msgstr "nastavení fotoaparátu"
 
-#: ../src/imageio/format/png.c:274
-msgid "8-bit png"
-msgstr "8-bit png"
+#: ../src/libs/camera.c:119
+msgid "toggle view property in center view"
+msgstr "přepnout vlastnost středního pohledu"
 
-#: ../src/imageio/format/exr.cc:150
-msgid "openexr"
-msgstr "openexr"
+#: ../src/libs/camera.c:190
+msgid "Connection with camera lost, exiting tethering mode"
+msgstr "spojení s fotoaparátem ztraceno, režim fotografování ukončen"
 
-#: ../src/imageio/format/ppm.c:91
-msgid "16-bit ppm"
-msgstr "16-bit ppm"
+#: ../src/libs/camera.c:330
+msgid "battery"
+msgstr "baterie"
 
-#: ../src/imageio/format/pfm.c:138
-msgid "float pfm"
-msgstr "float pfm"
+#: ../src/libs/camera.c:330
+msgid "n/a"
+msgstr "neexistuje"
 
-#: ../src/imageio/format/tiff.c:204
-msgid "8/16-bit tiff"
-msgstr "8/16-bit tiff"
+#. Camera control
+#: ../src/libs/camera.c:399
+msgid "camera control"
+msgstr "ovládání fotoaparátu"
 
-#: ../src/imageio/format/tiff.c:222
-msgid "8-bit"
-msgstr "8-bit"
+#: ../src/libs/camera.c:403
+msgid "modes"
+msgstr "režimy"
 
-#: ../src/imageio/format/tiff.c:227
-msgid "16-bit"
-msgstr "16-bit"
+#: ../src/libs/camera.c:404
+msgid "timer (s)"
+msgstr "samospoušť"
 
-#: ../src/imageio/storage/disk.c:55
-msgid "file on disk"
-msgstr "soubor na disku"
+#: ../src/libs/camera.c:405
+msgid "count"
+msgstr "počet"
 
-#: ../src/imageio/storage/disk.c:63 ../src/imageio/storage/disk.c:124
-msgid "select directory"
-msgstr "vybrat adresář"
+#: ../src/libs/camera.c:406
+msgid "brackets"
+msgstr "kroky"
 
-#: ../src/imageio/storage/disk.c:106
+#: ../src/libs/camera.c:407
+msgid "bkt. steps"
+msgstr "velikost kroku"
+
+#: ../src/libs/camera.c:443
+msgid "capture image(s)"
+msgstr "pořídit snímky"
+
+#: ../src/libs/camera.c:446
+msgid "toggle delayed capture mode"
+msgstr "přepnout režim zpožděného snímání"
+
+#: ../src/libs/camera.c:447
+msgid "toggle sequenced capture mode"
+msgstr "přepnout režim postupného snímání"
+
+#: ../src/libs/camera.c:448
+msgid "toggle bracketed capture mode"
+msgstr "přepnout režim snímání krokování expozice"
+
+#: ../src/libs/camera.c:449
+msgid "the count of seconds before actually doing a capture"
+msgstr "počet sekund před skutečným pořízením snímku"
+
+#: ../src/libs/camera.c:450
 msgid ""
-"enter the path where to put exported images:\n"
-"$(ROLL_NAME) - roll of the input image\n"
-"$(FILE_DIRECTORY) - directory of the input image\n"
-"$(FILE_NAME) - basename of the input image\n"
-"$(FILE_EXTENSION) - extension of the input image\n"
-"$(SEQUENCE) - sequence number\n"
-"$(YEAR) - year\n"
-"$(MONTH) - month\n"
-"$(DAY) - day\n"
-"$(HOUR) - hour\n"
-"$(MINUTE) - minute\n"
-"$(SECOND) - second\n"
-"$(PICTURES_FOLDER) - pictures folder\n"
-"$(HOME_FOLDER) - home folder\n"
-"$(DESKTOP_FOLDER) - desktop folder"
+"the amount of images to capture in a sequence,\n"
+"you can use this in conjuction with delayed mode to create stop-motion sequences."
 msgstr ""
-"zadejte cestu, kam uložit exportované snímky:\n"
-"$(ROLL_NAME) - role vstupního snímku\n"
-"$(FILE_DIRECTORY) - adresář vstupního snímku\n"
-"$(FILE_NAME) - základ jména souboru vst. snímku\n"
-"$(FILE_EXTENSION) - přípona souboru vst. snímku\n"
-"$(SEQUENCE) - číslo pořadí\n"
-"$(YEAR) - rok\n"
-"$(MONTH) - měsíc\n"
-"$(DAY) - den\n"
-"$(HOUR) - hodina\n"
-"$(MINUTE) - minuta\n"
-"$(SECOND) - sekunda\n"
-"$(PICTURES_FOLDER) - adresář obrázků\n"
-"$(HOME_FOLDER) - domovský adresář\n"
-"$(DESKTOP_FOLDER) - adresář plochy"
+"počet snímků k pořízení v postupném snímání,\n"
+"může být kombinováno s režimem zpožděného snímání pro vytvoření pohybových sekvencí."
 
-#: ../src/imageio/storage/disk.c:184
-#, fuzzy, c-format
-msgid "could not create directory `%s'!"
-msgstr "nelze vytvořit adresář %s!"
+#: ../src/libs/camera.c:451
+msgid "the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."
+msgstr "počet kroků expozice na každé straně středního snímku, počet snímků = (kroky * 2) + 1"
 
-#: ../src/imageio/storage/disk.c:219 ../src/imageio/storage/email.c:109
+#: ../src/libs/camera.c:452
+msgid ""
+"the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\n"
+"with other words, 3 steps is 1EV exposure step between brackets."
+msgstr ""
+"velikost expozičního kroku (obykle 3 kroky na jednu clonu)\n"
+"jinými slovy, 3 kroky představují expoziční rozdíl 1 EV mezi jednotlivými snímky."
+
+#: ../src/libs/camera.c:466
+msgid "properties"
+msgstr "vlastnosti"
+
+#: ../src/libs/camera.c:470
+msgid "program"
+msgstr "program"
+
+#: ../src/libs/camera.c:480
+msgid "focus mode"
+msgstr "režim ostření"
+
+#: ../src/libs/camera.c:510
+msgid "shutterspeed2"
+msgstr "rychlost závěrky2"
+
+#: ../src/libs/camera.c:530
+msgid "wb"
+msgstr "vyv. bílé"
+
+#. user specified properties
+#: ../src/libs/camera.c:597
+msgid "additional properties"
+msgstr "dodatečné vlastnosti"
+
+#: ../src/libs/camera.c:601
+msgid "label"
+msgstr "značka"
+
+#: ../src/libs/camera.c:607
+msgid "property"
+msgstr "vlastnost"
+
+#: ../src/libs/camera.c:619
+msgid "add user property"
+msgstr "přidat uživatelskou vlastnost"
+
+#: ../src/libs/capture.c:50
+msgid "session"
+msgstr "sezení"
+
+#: ../src/libs/capture.c:110
+msgid "create"
+msgstr "vytvořit"
+
+#: ../src/libs/collect.c:66
+msgid "collect images"
+msgstr "posbírat snímky"
+
+#: ../src/libs/collect.c:117
+#: ../src/libs/collect.c:119
+msgid "altered"
+msgstr "změněno"
+
+#: ../src/libs/collect.c:123
+#: ../src/libs/collect.c:125
+msgid "not altered"
+msgstr "nezměněno"
+
+#: ../src/libs/collect.c:139
+#: ../src/libs/collect.c:141
+msgid "yellow"
+msgstr "žlutá"
+
+#: ../src/libs/collect.c:157
+#: ../src/libs/collect.c:159
+msgid "purple"
+msgstr "purpová"
+
+#: ../src/libs/collect.c:247
+#: ../src/libs/collect.c:261
+#: ../src/libs/collect.c:527
+msgid "clear this rule"
+msgstr "smazat toto pravidlo"
+
+#: ../src/libs/collect.c:252
+msgid "clear this rule or add new rules"
+msgstr "smazat toto pravidlo nebo přidal nová pravidla"
+
+#: ../src/libs/collect.c:533
+msgid "narrow down search"
+msgstr "upřesnit vyhledávání"
+
+#: ../src/libs/collect.c:537
+msgid "add more images"
+msgstr "přidat více snímků"
+
+#: ../src/libs/collect.c:541
+msgid "exclude images"
+msgstr "vyloučit snímky"
+
+#: ../src/libs/collect.c:547
+msgid "change to: and"
+msgstr "změnit na: a"
+
+#: ../src/libs/collect.c:551
+msgid "change to: or"
+msgstr "změnit na: nebo"
+
+#: ../src/libs/collect.c:555
+msgid "change to: except"
+msgstr "změnit na: kromě"
+
+#: ../src/libs/collect.c:602
+#, no-c-format
+msgid "type your query, use `%' as wildcard"
+msgstr "napište dotaz, použijte `%' jako žolík"
+
+#: ../src/libs/copy_history.c:44
+msgid "history stack"
+msgstr "štos historie"
+
+#: ../src/libs/copy_history.c:56
+msgid "open sidecar file"
+msgstr "načíst xmp soubor"
+
+#: ../src/libs/copy_history.c:66
+msgid "xmp sidecar files"
+msgstr "postranní soubory xmp"
+
+#: ../src/libs/copy_history.c:85
 #, c-format
-msgid "%d/%d exported to `%s%s'"
-msgstr "%d/%d exportováno do `%s%s'"
+msgid "error loading file '%s'"
+msgstr "chyba při čtení souboru '%s'"
 
-#: ../src/imageio/storage/picasa.c:518
-msgid "picasa webalbum"
-msgstr "webové album picasa"
-
-#: ../src/imageio/storage/picasa.c:552
-msgid "authenticated"
-msgstr "identita ověřena"
-
-#. Add standard action
-#: ../src/imageio/storage/picasa.c:573 ../src/imageio/storage/picasa.c:606
-msgid "create new album"
-msgstr "vytvořit nové album"
-
-#. Failed to authenticated, let's notify somehow...
-#: ../src/imageio/storage/picasa.c:596
-msgid "authentication failed"
-msgstr "ověření identity selhalo"
-
-#: ../src/imageio/storage/picasa.c:657
-msgid "user"
-msgstr "uživatel"
-
-#: ../src/imageio/storage/picasa.c:658
-msgid "password"
-msgstr "heslo"
-
-#: ../src/imageio/storage/picasa.c:659
-msgid "albums"
-msgstr "alba"
-
-#: ../src/imageio/storage/picasa.c:661
-msgid "title"
-msgstr "název"
-
-#: ../src/imageio/storage/picasa.c:662
-msgid "summary"
-msgstr "souhrn"
-
-#: ../src/imageio/storage/picasa.c:663
-msgid "rights"
-msgstr "práva"
-
-#: ../src/imageio/storage/picasa.c:702
-msgid "my new album"
-msgstr "mé nové album"
-
-#: ../src/imageio/storage/picasa.c:703
-msgid "exported from darktable"
-msgstr "exportováno z darktable"
-
-#: ../src/imageio/storage/picasa.c:721
-msgid "refresh album list"
-msgstr "aktualizovat seznam alb"
-
-#: ../src/imageio/storage/picasa.c:727
-msgid "public album"
-msgstr "veřejné album"
-
-#: ../src/imageio/storage/picasa.c:728
-msgid "export tags"
-msgstr "exportovat štítky"
-
-#: ../src/imageio/storage/picasa.c:864
-#, c-format
-msgid "%d/%d exported to picasa webalbum"
-msgstr "%d/%d exportováno do webového alba picasa"
-
-#: ../src/imageio/storage/email.c:54
-msgid "send as email"
-msgstr "poslat emailem"
-
-#. switch(input_color)
-#. {
-#. case 0: // linear rgb
-#. snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
-#. break;
-#. case 1: // Lab
-#: ../src/gui/gtk.c:330
-msgid "Lab"
-msgstr "Lab"
-
-#: ../src/gui/gtk.c:398
-msgid "organize and develop images from digital cameras"
-msgstr "správa a vyvolávání snímků z digitálních fotoaparátů"
-
-#: ../src/gui/gtk.c:402
-msgid "* developers *"
-msgstr "* vývojáři *"
-
-#: ../src/gui/gtk.c:406
-msgid "* ubuntu packaging, color management, video tutorials *"
-msgstr "* balíček pro ubuntu, správa barev, video návody *"
-
-#: ../src/gui/gtk.c:409
-msgid "* networking, battle testing, translation expert *"
-msgstr "* sítě, testování, překlady *"
-
-#: ../src/gui/gtk.c:412
-msgid "* contributors *"
-msgstr "* přispěvatelé *"
-
-#: ../src/gui/gtk.c:443
-msgid "translator-credits"
-msgstr "Milan Knížek <knizek@volny.cz>"
-
-#: ../src/gui/gtk.c:657
-msgid "import film"
-msgstr "importovat film"
-
-#: ../src/gui/gtk.c:676
-msgid "import directories recursively"
-msgstr "importovat včetně podadresářů"
-
-#: ../src/gui/gtk.c:677
+#: ../src/libs/copy_history.c:195
 msgid ""
-"recursively import subdirectories. each directory goes into a new film roll."
+"copy history stack of\n"
+"first selected image (ctrl-c)"
 msgstr ""
-"rekurzívně importovat podadresáře. každý adresář vytvoří novou roli filmu."
+"kopírovat štos historie\n"
+"z prvního vybraného snímku (ctrl-c)"
 
-#: ../src/gui/gtk.c:684
-msgid "ignore jpeg files"
-msgstr "ignorovat soubory jpeg"
-
-#: ../src/gui/gtk.c:685
-msgid ""
-"do not load files with an extension of .jpg or .jpeg. this can be useful "
-"when there are raw+jpeg in a directory."
-msgstr ""
-"nenačítat soubory s příponou .jpg nebo .jpeg. toto je užitečené, pokud jsou "
-"v adresáře současně raw+jpeg soubory."
-
-#: ../src/gui/gtk.c:728
-msgid "import image"
-msgstr "importovat snímek"
-
-#: ../src/gui/gtk.c:747
-msgid "supported images"
-msgstr "podporované typy obrázků"
-
-#: ../src/gui/gtk.c:1076
-msgid "show global preferences"
-msgstr "zobrazit globální předvolby"
-
-#: ../src/gui/gtk.c:1204
-msgid "take snapshot"
-msgstr "vytvořit snímek"
-
-#: ../src/gui/gtk.c:1233
-msgid "recently used film rolls"
-msgstr "nedávno použité role filmu"
-
-#: ../src/gui/gtk.c:1254
-msgid "all film rolls"
-msgstr "všechny role filmu"
-
-#: ../src/gui/histogram.c:35 ../src/gui/histogram.c:187
-msgid ""
-"drag to change exposure,\n"
-"doubleclick resets"
-msgstr ""
-"kliknutí a tah změní expozici,\n"
-"dvojité kliknutí obnoví výchozí stav"
-
-#: ../src/gui/histogram.c:182
-msgid ""
-"drag to change black point,\n"
-"doubleclick resets"
-msgstr ""
-"kliknutí a tah změní černý bod,\n"
-"dvojitý klik obnoví původní stav"
-
-#: ../src/gui/filmview.c:134
-msgid "single images are persistent"
-msgstr "jednotlivé snímky jsou trvalé"
-
-#: ../src/gui/filmview.c:145
-msgid ""
-"do you really want to remove this film roll and all its images from the "
-"collection?"
-msgstr ""
-"opravdu chcete odstranit tuto roli filmu a všechny v ní obsažené snímky ze "
-"sbírky?"
-
-#: ../src/gui/filmview.c:146
-msgid "remove film roll?"
-msgstr "odstranit filmovou roli?"
-
-#: ../src/gui/iop_history.c:98
-msgid "compress history stack"
-msgstr "zkrátit štos historie"
-
-#: ../src/gui/iop_history.c:99
-msgid "create a minimal history stack which produces the same image"
-msgstr ""
-"vytvořit nejmenší štos historie, který vede k vytvoření stejného snímku"
-
-#: ../src/gui/iop_history.c:107
-msgid "create a style from currently developed image and its history stack"
-msgstr "vytvořit styl z právě vyvolávaného snímku a jeho štosu historie"
-
-#: ../src/gui/iop_history.c:130 ../src/gui/iop_history.c:221
-msgid "0 - original"
-msgstr "0 - originál"
-
-#. add button for basic plugins
-#. _iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/gui/iop_modulegroups.c:173
-msgid "basic"
-msgstr "základ"
-
-#: ../src/gui/iop_modulegroups.c:175
-msgid "basic group"
-msgstr "základní moduly"
-
-#. add button for color plugins
-#. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/gui/iop_modulegroups.c:180
-msgid "color"
-msgstr "barvy"
-
-#: ../src/gui/iop_modulegroups.c:182
-msgid "color group"
-msgstr "moduly úprav barev"
-
-#. add button for correction plugins
-#. _iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/gui/iop_modulegroups.c:187
-msgid "correct"
-msgstr "opravy"
-
-#: ../src/gui/iop_modulegroups.c:189
-msgid "correction group"
-msgstr "moduly oprav"
-
-#. add buttons for artistic plugins
-#. _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
-#: ../src/gui/iop_modulegroups.c:194
-msgid "effect"
-msgstr "efekty"
-
-#: ../src/gui/iop_modulegroups.c:196
-msgid "effect group"
-msgstr "moduly efektů"
-
-#. Add the rescan button
-#: ../src/gui/devices.c:136
-msgid "scan for devices"
-msgstr "najít zařízení"
-
-#: ../src/gui/devices.c:137
-msgid "scan for newly attached devices"
-msgstr "najít nově připojená zařízení"
-
-#: ../src/gui/devices.c:164
-#, c-format
-msgid "device \"%s\" connected on port \"%s\"."
-msgstr "zařízení \"%s\" připojeno na portu \"%s\"."
-
-#: ../src/gui/devices.c:172
-msgid "import from camera"
-msgstr "importovat z fotoaparátu"
-
-#: ../src/gui/devices.c:174
-msgid "tethered shoot"
-msgstr "fotografovat přes kabel"
-
-#. No supported devices is detected lets notice user..
-#. gtk_widget_set_sensitive(expander,FALSE);
-#: ../src/gui/devices.c:189 ../src/gui/devices.c:191
-msgid "no supported devices found"
-msgstr "žádná podporovaná zařízení"
-
-#: ../src/gui/camera_import_dialog.c:216
-msgid "store value as default"
-msgstr "uložit hodnotu jako výchozí"
-
-#: ../src/gui/camera_import_dialog.c:223
-msgid "reset value to default"
-msgstr "obnovit hodnotu na výchozí"
-
-#: ../src/gui/camera_import_dialog.c:246
-msgid "import images from camera"
-msgstr "importovat snímky z fotoaparátu"
-
-#: ../src/gui/camera_import_dialog.c:246
-msgid "cancel"
+#: ../src/libs/copy_history.c:198
+msgid "discard"
 msgstr "zrušit"
 
-#: ../src/gui/camera_import_dialog.c:246
-msgid "import"
-msgstr "importovat"
-
-#: ../src/gui/camera_import_dialog.c:254
-msgid "My jobcode"
-msgstr "můj kód zakázky"
-
-#. Top info
-#: ../src/gui/camera_import_dialog.c:262
-msgid "please wait while prefetching thumbnails of images from camera..."
-msgstr "prosím čekejte zatímco se načítají náhledy snímků z fotoaparátu..."
-
-#: ../src/gui/camera_import_dialog.c:280
-msgid "thumbnail"
-msgstr "náhled"
-
-#: ../src/gui/camera_import_dialog.c:284
-msgid "storage file"
-msgstr "soubor pro uložení dat"
-
-#. general settings
-#: ../src/gui/camera_import_dialog.c:303
-msgid "general"
-msgstr "obecné"
-
-#: ../src/gui/camera_import_dialog.c:305
-msgid "delete originals after import"
-msgstr "smazat originály po importu"
-
-#: ../src/gui/camera_import_dialog.c:309
+#: ../src/libs/copy_history.c:199
 msgid ""
-"check this option if you want to delete images on camera after download to "
-"computer"
+"discard history stack of\n"
+"all selected images"
 msgstr ""
-"zaškrtněte, pokud chcete smazat snímky z fotoaparátu po jejich stažení do "
-"počítače."
+"zrušit štos historie pro\n"
+"všechny vybrané snímky"
 
-#: ../src/gui/camera_import_dialog.c:313
-msgid "override today's date"
-msgstr "upravit dnešní datum"
+#: ../src/libs/copy_history.c:206
+msgid "append"
+msgstr "přidat"
 
-#: ../src/gui/camera_import_dialog.c:315
+#: ../src/libs/copy_history.c:207
+msgid "overwrite"
+msgstr "přepsat"
+
+#: ../src/libs/copy_history.c:208
+msgid "how to handle existing history"
+msgstr "jak zacházet s existující historií"
+
+#: ../src/libs/copy_history.c:212
+msgid "paste"
+msgstr "vložit"
+
+#: ../src/libs/copy_history.c:214
 msgid ""
-"check this, if you want to override the timestamp used when expanding "
-"variables:\n"
-"$(YEAR), $(MONTH), $(DAY),\n"
-"$(HOUR), $(MINUTE), $(SECONDS)"
+"paste history stack to\n"
+"all selected images (ctrl-v)"
 msgstr ""
-"zaškrtněte, pokud chcete upravit časovou značku pomocí těchto proměných:\n"
-"$(YEAR), $(MONTH), $(DAY),\n"
-"$(HOUR), $(MINUTE), $(SECOND)"
+"přilepit štos historie ke\n"
+"všem vybraným snímkům (ctrl+v)"
 
-#. Storage structure
-#: ../src/gui/camera_import_dialog.c:326
-msgid "storage structure"
-msgstr "ukládání dat"
+#: ../src/libs/copy_history.c:222
+msgid "load sidecar file"
+msgstr "načíst xmp soubor"
 
-#: ../src/gui/camera_import_dialog.c:327
+#: ../src/libs/copy_history.c:223
 msgid ""
-"the following three settings describe the directory structure and file "
-"renaming for import storage and images; if you dont know how to use this, "
-"keep the default settings."
+"open an xmp sidecar file\n"
+"and apply it to selected images"
 msgstr ""
-"následující tři volby specifikují adresář pro data importu, strukturu "
-"adresářů pro snímky a přejmenování snímků; pokud nevíte, co to znamená, "
-"ponechte výchozí nastavení."
+"otevřít postranní soubor xmp\n"
+"a použít jej na vybrané snímky"
 
-#: ../src/gui/camera_import_dialog.c:333
-msgid "storage directory"
-msgstr "adresář pro ukládání dat"
+#: ../src/libs/export.c:66
+msgid "export selected"
+msgstr "exportovat vybrané"
 
-#: ../src/gui/camera_import_dialog.c:336
-msgid "directory structure"
-msgstr "adresářová struktura"
+#: ../src/libs/export.c:379
+msgid "target storage"
+msgstr "destinace"
 
-#: ../src/gui/camera_import_dialog.c:340
-msgid "filename structure"
-msgstr "jméno souboru"
+#: ../src/libs/export.c:399
+msgid "file format"
+msgstr "formát souboru"
 
-#. Add example
-#: ../src/gui/camera_import_dialog.c:344
-msgid "above settings expands to:"
-msgstr "výše uvedené volby jsou interpretovány jako:"
+#: ../src/libs/export.c:414
+msgid "global options"
+msgstr "globální volby"
 
-#. External backup
-#: ../src/gui/camera_import_dialog.c:355
-msgid "external backup"
-msgstr "externí záloha"
-
-#: ../src/gui/camera_import_dialog.c:356
+#: ../src/libs/export.c:418
 msgid ""
-"external backup is an option to automatic do a backup of the imported image"
-"(s) to another physical location, when activated it does looks for specified "
-"backup foldername of mounted devices on your system... each found folder is "
-"used as basedirectory in the above storage structure and when a image are "
-"downloaded from camera it is replicated to found backup destinations."
+"maximum output width\n"
+"set to 0 for no scaling"
 msgstr ""
-"externí záloha je volba pro automatické vytvoření zálohy naimportovaných "
-"snímků na jiné fyzické médium; pokud je aktivováno, vyhledá specifikovaný "
-"adresář na připojeném zařízení ve vašem systému. každý nalezený adresář je "
-"použit jako základní adresář ve výše uvedené struktuře ukládání dat a při "
-"stahování snímků z fotoaparátu jsou tyto replikovány na nalezená média."
+"maximální výstupní šířka\n"
+"nastavte na 0 pro zachování velikosti"
 
-#: ../src/gui/camera_import_dialog.c:362
-msgid "enable backup"
-msgstr "umožnit zálohu"
-
-#: ../src/gui/camera_import_dialog.c:364
-msgid "check this option to enable automatic backup of imported images"
-msgstr "zaškrtněte pro aktivaci automatické zálohy stažených snímků"
-
-#: ../src/gui/camera_import_dialog.c:366
-msgid "warn if no backup destinations are present"
-msgstr "varovat, pokud neexistuje žádná destinace pro zálohy"
-
-#: ../src/gui/camera_import_dialog.c:368
+#: ../src/libs/export.c:420
 msgid ""
-"check this option to get an interactive warning if no backupdestinations are "
-"present"
+"maximum output height\n"
+"set to 0 for no scaling"
 msgstr ""
-"zaškrtněte pro zobrazení interaktivního varování v případě neexistující "
-"destinace pro zálohu."
+"maximální výstupní šířka\n"
+"nastavte na 0 pro zachování velikosti"
 
-#: ../src/gui/camera_import_dialog.c:370
-msgid "backup foldername"
-msgstr "jméno adresáře pro zálohu"
+#.
+#. gtk_widget_add_events(GTK_WIDGET(d->width), GDK_FOCUS_CHANGE_MASK);
+#. g_signal_connect (G_OBJECT (d->width), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+#. g_signal_connect (G_OBJECT (d->width), "focus-out-event", G_CALLBACK(focus_out), NULL);
+#. gtk_widget_add_events(GTK_WIDGET(d->height), GDK_FOCUS_CHANGE_MASK);
+#. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+#. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
+#.
+#: ../src/libs/export.c:432
+msgid "max size"
+msgstr "max. vel."
 
-#: ../src/gui/camera_import_dialog.c:372
-msgid ""
-"this is the name of folder that indicates a backup destination,\n"
-"if such a folder is found in any mounter media it is used as a backup "
-"destination."
-msgstr ""
-"jméno adresáře indikující destinaci pro zálohu,\n"
-"pokud je takový adresář nalezen na jakémkoliv připojeném médiu, je použit "
-"jako destinace pro zálohu."
+#: ../src/libs/export.c:437
+msgid "x"
+msgstr "x"
 
-#: ../src/gui/camera_import_dialog.c:388
-msgid "images"
-msgstr "snímky"
+#: ../src/libs/export.c:441
+msgid "intent"
+msgstr "záměr"
 
-#: ../src/gui/camera_import_dialog.c:389
-msgid "settings"
-msgstr "nastavení"
+#. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+#: ../src/libs/export.c:445
+#: ../src/libs/export.c:516
+msgid "image settings"
+msgstr "nastavení snímku"
 
-#. Lets run dialog
-#: ../src/gui/camera_import_dialog.c:537
-msgid ""
-"select the images from the list below that you want to import into a new "
-"filmroll"
-msgstr ""
-"z níže uvedeného seznamu zvolte snímky, které chcete importovat do nové role "
-"filmu."
-
-#: ../src/gui/camera_import_dialog.c:577
-msgid "please set the basedirectory settings before importing"
-msgstr "před importem prosím nastavte volby pro základní adresář"
-
-#: ../src/gui/camera_import_dialog.c:584
-msgid "please set the subdirectory settings before importing"
-msgstr "před importem prosím nastavte volby podadresářů"
-
-#: ../src/gui/camera_import_dialog.c:591
-msgid "please set the filenamepattern settings before importing"
-msgstr "před importem prosím nastavte masku pro jména souborů"
-
-#: ../src/gui/presets.c:179
+#: ../src/libs/export.c:543
 #, c-format
-msgid "edit `%s' for module `%s'"
-msgstr "upravit `%s' pro modul `%s'"
+msgid "output icc profiles in %s/color/out or %s/color/out"
+msgstr "výstupní profily icc v %s/color/out nebo %s/color/out"
 
-#: ../src/gui/presets.c:210
-msgid "auto apply this preset to matching images"
-msgstr "automaticky použít toto nastavení na shodné snímky"
+#: ../src/libs/export.c:552
+msgid "threads"
+msgstr "vlákna"
 
-#: ../src/gui/presets.c:212
-msgid "only show this preset for matching images"
-msgstr "toto nastavení zobrazit pouze pro shodné snímky"
-
-#: ../src/gui/presets.c:213
+#: ../src/libs/export.c:556
 msgid ""
-"be very careful with this option. this might be the last time you see your "
-"preset."
+"export using this number of threads.\n"
+"beware! each thread will use ~1GB of ram."
 msgstr ""
-"u této volby buďte velmi opatrní. toto může být poslední moment, kdy vidíte "
-"svá nastavení."
+"exportovat s tímto počtem vláken.\n"
+"pozor! každé vlákno použije ~ 1 GB ram."
 
-#: ../src/gui/presets.c:228
+#. Export Button
+#: ../src/libs/export.c:559
+#: ../src/libs/styles.c:340
+msgid "export"
+msgstr "export"
+
+#: ../src/libs/export.c:560
+msgid "export with current settings (ctrl-e)"
+msgstr "exportovat dle aktuálního nastavení (ctrl+e)"
+
+#: ../src/libs/image.c:39
+msgid "selected image[s]"
+msgstr "vybrané snímky"
+
+#: ../src/libs/image.c:83
+msgid "remove"
+msgstr "odstranit"
+
+#: ../src/libs/image.c:84
+msgid "remove from the collection"
+msgstr "odstranit ze sbírky"
+
+#: ../src/libs/image.c:88
+#: ../src/libs/styles.c:334
+#: ../src/libs/tagging.c:425
+msgid "delete"
+msgstr "smazat"
+
+#: ../src/libs/image.c:89
+msgid "physically delete from disk"
+msgstr "fyzicky smazat z disku"
+
+#: ../src/libs/image.c:96
+msgid "write sidecar files"
+msgstr "uložit xmp soubory"
+
+#: ../src/libs/image.c:97
+msgid "write history stack and tags to xmp sidecar files"
+msgstr "zapsat štos historie a štítky do postranních souborů xmp"
+
+#: ../src/libs/image.c:101
+msgid "duplicate"
+msgstr "duplikovat"
+
+#: ../src/libs/image.c:102
+msgid "add a duplicate to the collection"
+msgstr "přidat duplikát snímku do kolekce"
+
+#: ../src/libs/image.c:111
+msgid "rotate selected images 90 degrees ccw"
+msgstr "otočit vybrané snímky o 90° proti směru hod. ručiček"
+
+#: ../src/libs/image.c:116
+msgid "rotate selected images 90 degrees cw"
+msgstr "otočit vybrané snímky o 90° ve směru hod. ručiček"
+
+#: ../src/libs/image.c:121
+msgid "reset rotation"
+msgstr "obnovit rotaci"
+
+#: ../src/libs/image.c:122
+msgid "reset rotation to exif data"
+msgstr "obnovit otočení dle exif"
+
+#: ../src/libs/image.c:130
+msgid "create hdr"
+msgstr "vytvořit hdr"
+
+#: ../src/libs/image.c:133
+msgid "create a high dynamic range image from selected shots"
+msgstr "vytvořit snímek s vysokým dynamickým rozsahem (hdr) z vybraných snímků"
+
+#: ../src/libs/lib.c:115
 #, c-format
-msgid "string to match model (use % as wildcard)"
-msgstr "řetězec pro hledání modelu (použijte % jako žolík)"
+msgid "edit `%s'"
+msgstr "editovat `%s'"
 
-#: ../src/gui/presets.c:235
+#: ../src/libs/lib.c:237
+msgid "deleting preset for obsolete module"
+msgstr "smazání nastavení pro zastaralý modul"
+
+#: ../src/libs/metadata.c:46
+msgid "meta data editor"
+msgstr "editor metadat"
+
+#: ../src/libs/metadata.c:71
+msgid "<leave unchanged>"
+msgstr "<ponechat nezměněno>"
+
+#: ../src/libs/metadata.c:248
+msgid "description"
+msgstr "popis"
+
+#: ../src/libs/metadata.c:274
+msgid "publisher"
+msgstr "vydavatel"
+
+#: ../src/libs/metadata.c:305
+msgid "clear"
+msgstr "smazat"
+
+#: ../src/libs/metadata.c:306
+msgid "remove metadata from selected images"
+msgstr "odstranit metadata z vybraných snímků"
+
+#: ../src/libs/metadata.c:312
+msgid "write metadata for selected images"
+msgstr "zapsat metadata pro vybrané snímky"
+
+#. <title>\0<description>\0<rights>\0<creator>\0<publisher>
+#: ../src/libs/metadata.c:341
+msgid "CC-by"
+msgstr "CC-by"
+
+#: ../src/libs/metadata.c:341
+msgid "Creative Commons Attribution (CC-BY)"
+msgstr "Creative Commons Attribution (CC-BY)"
+
+#: ../src/libs/metadata.c:342
+msgid "CC-by-sa"
+msgstr "CC-by-sa"
+
+#: ../src/libs/metadata.c:342
+msgid "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
+msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
+
+#: ../src/libs/metadata.c:343
+msgid "CC-by-nd"
+msgstr "CC-by-nd"
+
+#: ../src/libs/metadata.c:343
+msgid "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
+msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
+
+#: ../src/libs/metadata.c:344
+msgid "CC-by-nc"
+msgstr "CC-by-nc"
+
+#: ../src/libs/metadata.c:344
+msgid "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
+msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
+
+#: ../src/libs/metadata.c:345
+msgid "CC-by-nc-sa"
+msgstr "CC-by-nc-sa"
+
+#: ../src/libs/metadata.c:345
+msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
+msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
+
+#: ../src/libs/metadata.c:346
+msgid "CC-by-nc-nd"
+msgstr "CC-by-nc-nd"
+
+#: ../src/libs/metadata.c:346
+msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
+msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
+
+#: ../src/libs/metadata.c:347
+msgid "all rights reserved"
+msgstr "všechna práva vyhrazena"
+
+#: ../src/libs/metadata.c:347
+msgid "All rights reserved."
+msgstr "Všechna práva vyhrazena."
+
+#: ../src/libs/recentcollect.c:49
+msgid "recently used collections"
+msgstr "nedávno použité sbírky"
+
+#: ../src/libs/recentcollect.c:139
 #, c-format
-msgid "string to match maker (use % as wildcard)"
-msgstr "řetězec pro hledání výrobce (použijte % jako žolík)"
+msgid " and "
+msgstr "a"
 
-#: ../src/gui/presets.c:242
+#: ../src/libs/recentcollect.c:142
 #, c-format
-msgid "string to match lens (use % as wildcard)"
-msgstr "řetězec pro hledání objektivu (použijte % jako žolík)"
+msgid " or "
+msgstr "nebo"
 
-#: ../src/gui/presets.c:254
-msgid "minimum iso value"
-msgstr "nejmenší hodnota iso"
+#. case DT_LIB_COLLECT_MODE_AND_NOT:
+#: ../src/libs/recentcollect.c:145
+#, c-format
+msgid " but not "
+msgstr "ale ne"
 
-#: ../src/gui/presets.c:258
-msgid "maximum iso value"
-msgstr "největší hodnota iso"
+#: ../src/libs/select.c:32
+msgid "select"
+msgstr "vybrat"
 
-#: ../src/gui/presets.c:268
-msgid "minimum exposure time"
-msgstr "nejmenší exp. čas"
+#: ../src/libs/select.c:119
+msgid "select all"
+msgstr "vybrat vše"
 
-#: ../src/gui/presets.c:269
-msgid "maximum exposure time"
-msgstr "největší exp. čas"
+#: ../src/libs/select.c:120
+msgid "select all images in current collection (ctrl-a)"
+msgstr "vybrat všechny snímky v této sbírce (ctrl+a)"
 
-#: ../src/gui/presets.c:283
-msgid "minimum aperture value"
-msgstr "nejmenší clonové číslo"
+#: ../src/libs/select.c:125
+msgid "select none"
+msgstr "zrušit výběr"
 
-#: ../src/gui/presets.c:284
-msgid "maximum aperture value"
-msgstr "největší clonové číslo"
+#: ../src/libs/select.c:126
+msgid "clear selection (ctrl-shift-a)"
+msgstr "zrušit výběr (ctrl+shift+a)"
 
-#: ../src/gui/presets.c:300
-msgid "minimum focal length"
-msgstr "nejmenší ohn. vzdálenost"
+#: ../src/libs/select.c:134
+msgid "invert selection"
+msgstr "invertovat výběr"
 
-#: ../src/gui/presets.c:301
-msgid "maximum focal length"
-msgstr "největší ohn. vzdálenost"
-
-#. only show if it is not the default already
-#: ../src/gui/presets.c:535
-msgid "use preset as default"
-msgstr "použít nastavení jako výchozí"
-
-#. only show this if presets already contains a default
-#: ../src/gui/presets.c:551
-msgid "remove default"
-msgstr "odstranit výchozí"
-
-#: ../src/gui/background_jobs.c:34
-msgid "background jobs"
-msgstr "zpracování na pozadí"
-
-#: ../src/gui/tool_colorlabels.c:41
+#: ../src/libs/select.c:135
 msgid ""
-"toggle red label\n"
-"of selected images (f1)"
+"select unselected images\n"
+"in current collection (ctrl-!)"
 msgstr ""
-"přepnout červenou značku\n"
-"u vybraných snímků (f1)"
+"vybrat nevybrané snímky\n"
+"v této sbírce (ctrl+!)"
 
-#: ../src/gui/tool_colorlabels.c:46
+#: ../src/libs/select.c:140
+msgid "select film roll"
+msgstr "vybrat roli filmu"
+
+#: ../src/libs/select.c:141
 msgid ""
-"toggle yellow label\n"
-"of selected images (f2)"
+"select all images which are in the same\n"
+"film roll as the selected images"
 msgstr ""
-"přepnout žlutou značku\n"
-"u vybraných snímků (f2)"
+"vybrat všechny snímky, které jsou ve stejné\n"
+"roli filmu jako vybrané snímky"
 
-#: ../src/gui/tool_colorlabels.c:51
+#: ../src/libs/select.c:148
+msgid "select untouched"
+msgstr "vybrat nezměněné"
+
+#: ../src/libs/select.c:149
 msgid ""
-"toggle green label\n"
-"of selected images (f3)"
+"select untouched images in\n"
+"current collection"
 msgstr ""
-"přepnout zelenou značku\n"
-"u vybraných snímků (f3)"
+"vybrat nezměněné snímky\n"
+"v této sbírce"
 
-#: ../src/gui/tool_colorlabels.c:56
-msgid "clear all labels of selected images"
-msgstr "odstranit všechny značky u vybraných snímků"
+#: ../src/libs/styles.c:44
+msgid "styles"
+msgstr "styly"
 
-#: ../src/gui/preferences.c:29
-msgid "darktable preferences"
-msgstr "předvolby darktable"
+#: ../src/libs/styles.c:216
+msgid "select style"
+msgstr "vybrat styl"
 
-#: ../src/gui/preferences.c:31
-msgid "close"
-msgstr "zavřít"
+#: ../src/libs/styles.c:229
+msgid "darktable style files"
+msgstr "soubory stylu darktable"
 
-#: ../src/gui/preferences_gen.h:244
-msgid "gui options"
-msgstr "volby gui"
+#: ../src/libs/styles.c:302
+msgid ""
+"available styles,\n"
+"doubleclick to apply"
+msgstr ""
+"dostupné styly,\n"
+"dvojitým kliknutím je přiřadíte"
 
-#: ../src/gui/preferences_gen.h:254 ../src/gui/preferences_gen.h:271
-#: ../src/gui/preferences_gen.h:287 ../src/gui/preferences_gen.h:303
-#: ../src/gui/preferences_gen.h:319 ../src/gui/preferences_gen.h:336
-#: ../src/gui/preferences_gen.h:352 ../src/gui/preferences_gen.h:368
-#: ../src/gui/preferences_gen.h:401 ../src/gui/preferences_gen.h:417
-#: ../src/gui/preferences_gen.h:433 ../src/gui/preferences_gen.h:450
-#: ../src/gui/preferences_gen.h:467 ../src/gui/preferences_gen.h:483
-#: ../src/gui/preferences_gen.h:500
+#: ../src/libs/styles.c:308
+msgid "enter style name"
+msgstr "zadejte jméno stylu"
+
+#: ../src/libs/styles.c:321
+msgid "create duplicate"
+msgstr "vytvořit duplikát"
+
+#: ../src/libs/styles.c:325
+msgid "creates a duplicate of the image before applying style"
+msgstr "vytvoří duplikát snímku před použitím stylu"
+
+#. TODO: Unfinished stuff
+#: ../src/libs/styles.c:329
+msgid "edit"
+msgstr "upravit"
+
+#: ../src/libs/styles.c:336
+msgid "deletes the selected style in list above"
+msgstr "vymaže vybraný styl z horního seznamu"
+
+#: ../src/libs/tagging.c:51
+msgid "tagging"
+msgstr "štítky"
+
+#: ../src/libs/tagging.c:274
 #, c-format
-msgid "double click to reset to `%s'"
-msgstr "dvojitým kliknutím obnovíte `%s'"
+msgid ""
+"do you really want to delete the tag `%s'?\n"
+"%d image is assigned this tag!"
+msgid_plural ""
+"do you really want to delete the tag `%s'?\n"
+"%d images are assigned this tag!"
+msgstr[0] ""
+"opravdu chcete smazat štítek`%s'?\n"
+"štítek je přiřazen %d snímku!"
+msgstr[1] ""
+"opravdu chcete smazat štítek`%s'?\n"
+"štítek je přiřazen %d snímkům!"
+msgstr[2] ""
+"opravdu chcete smazat štítek`%s'?\n"
+"štítek je přiřazen %d snímkům!"
 
-#: ../src/gui/preferences_gen.h:257 ../src/gui/preferences_gen.h:453
-msgid " (needs a restart) "
-msgstr "(vyžaduje opětovné spuštění)"
+#: ../src/libs/tagging.c:277
+msgid "delete tag?"
+msgstr "smazat štítek?"
 
-#: ../src/gui/preferences_gen.h:274
-msgid " (needs a restart)"
-msgstr "(vyžaduje opětovné spuštění)"
+#: ../src/libs/tagging.c:359
+msgid ""
+"attached tags,\n"
+"doubleclick to detach"
+msgstr ""
+"přiřazené štítky,\n"
+"dvojitým kliknutím je odstraníte"
 
-#: ../src/gui/preferences_gen.h:391
-msgid "core options"
-msgstr "základní volby"
+#: ../src/libs/tagging.c:366
+msgid "attach"
+msgstr "přiřadit"
 
-#: ../src/gui/styles_dialog.c:181
-#, c-format
-msgid "edit style"
-msgstr "úpravy stylu"
+#: ../src/libs/tagging.c:367
+msgid "attach tag to all selected images"
+msgstr "přiřadit štítek ke všem vybraným snímkům"
 
-#: ../src/gui/styles_dialog.c:185
-msgid "create new style"
-msgstr "vytvořit nový styl"
+#: ../src/libs/tagging.c:372
+msgid "detach"
+msgstr "odstranit"
 
-#: ../src/gui/styles_dialog.c:205
-msgid "enter a name for the new style"
-msgstr "zadejte jméno pro nový styl"
+#: ../src/libs/tagging.c:373
+msgid "detach tag from all selected images"
+msgstr "odstranit štítek ze všech vybraných snímků"
 
-#: ../src/gui/styles_dialog.c:208
-msgid "enter a description for the new style, this description is searchable"
-msgstr "zadejte popis pro nový styl, tento popis je hledatelný"
+#: ../src/libs/tagging.c:387
+msgid "enter tag name"
+msgstr "zadejte jméno štítku"
 
-#: ../src/gui/styles_dialog.c:227
-msgid "advanced edit of style"
-msgstr "pokročilé úpravy stylu"
+#: ../src/libs/tagging.c:412
+msgid ""
+"related tags,\n"
+"doubleclick to attach"
+msgstr ""
+"související štítky,\n"
+"dvojitým kliknutím je přiřadíte"
 
-#: ../src/gui/styles_dialog.c:247
-msgid "include"
-msgstr "zahrnout"
+#: ../src/libs/tagging.c:419
+msgid "new"
+msgstr "nový"
 
-#: ../src/gui/styles_dialog.c:258
-msgid "item"
-msgstr "položka"
+#: ../src/libs/tagging.c:420
+msgid ""
+"create a new tag with the\n"
+"name you entered"
+msgstr ""
+"vytvořit nový štítek\n"
+"se zadaným jménem"
 
-#: ../src/gui/styles_dialog.c:336
-msgid "can't create style out of unaltered image"
-msgstr "nelze vytvořit styl z nezměněného snímku"
-
-#: ../src/dtgtk/resetlabel.c:61
-msgid "double-click to reset"
-msgstr "dvojitým kliknutím obnovíte výchozí"
-
-#: ../src/views/darkroom.c:41
-msgid "darkroom"
-msgstr "fotokomora"
-
-#: ../src/views/darkroom.c:268
-#, c-format
-msgid "hide %s"
-msgstr "skrýt %s"
-
-#: ../src/views/darkroom.c:275
-#, c-format
-msgid "show %s"
-msgstr "zobrazit %s"
-
-#. fail :(
-#: ../src/views/darkroom.c:298
-msgid "no image selected!"
-msgstr "není vybrán žádný snímek!"
-
-#: ../src/views/lighttable.c:74
-msgid "lighttable"
-msgstr "prosvětlovací pult"
-
-#: ../src/views/filmstrip.c:67
-msgid "film strip"
-msgstr "pás filmu"
+#: ../src/libs/tagging.c:426
+msgid "delete selected tag"
+msgstr "smazat vybrané štítky"
 
 #: ../src/views/capture.c:89
 msgid "capture"
 msgstr "fotografování"
 
-#: ../src/views/capture.c:237
+#: ../src/views/capture.c:238
 #, c-format
 msgid "failed to create session path %s."
 msgstr "selhalo vytvoření cesty sezení %s."
 
-#: ../src/views/capture.c:251
+#: ../src/views/capture.c:252
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "nové sezení zahájilo '%s'"
+
+#: ../src/views/darkroom.c:43
+msgid "darkroom"
+msgstr "fotokomora"
+
+#: ../src/views/darkroom.c:270
+#, c-format
+msgid "hide %s"
+msgstr "skrýt %s"
+
+#: ../src/views/darkroom.c:277
+#, c-format
+msgid "show %s"
+msgstr "zobrazit %s"
+
+#. fail :(
+#: ../src/views/darkroom.c:299
+msgid "no image selected!"
+msgstr "není vybrán žádný snímek!"
+
+#: ../src/views/filmstrip.c:68
+msgid "film strip"
+msgstr "pás filmu"
+
+#: ../src/views/lighttable.c:75
+msgid "lighttable"
+msgstr "prosvětlovací pult"
+
+#~ msgid "devices"
+#~ msgstr "zařízení"
+
+#~ msgid "import film roll"
+#~ msgstr "importovat roli filmu"
+
+#~ msgid "import single image"
+#~ msgstr "importovat jeden snímek"
+
+#~ msgid "library"
+#~ msgstr "knihovna"
+
+#~ msgid "open"
+#~ msgstr "otevřít"
+
+#~ msgid "open selected film roll in light table"
+#~ msgstr "otevřít vybranou roli filmu na prosvětlovacím pultu"
+
+#~ msgid "remove selected film roll from collection"
+#~ msgstr "odstranit vybranou roli filmu ze sbírky"
+
+#~ msgid "search film rolls by folder"
+#~ msgstr "hledat role filmu dle složky"
+
+#~ msgid "(needs a restart)"
+#~ msgstr "(vyžaduje opětovné spuštění)"
+
+#~ msgid "0 -- append on top of stack, 1 -- replace it."
+#~ msgstr "0 -- přidat na začátek štosu, 2 -- nahradit vrstvu."
+
+#~ msgid "0: mean, 1: min, 2: max"
+#~ msgstr "0: střední, 1: min, 2: max"
+
+#~ msgid "Capture view mode"
+#~ msgstr "režim pořízení snímků"
+
+#~ msgid "Default client to use, this overrides detection of default client."
+#~ msgstr "výchozí klient, toto přepíše automatickou detekci klienta."
+
+#~ msgid "append or replace history stack if pasted"
+#~ msgstr "při vložení přidat nebo nahradit štos historie"
+
+#~ msgid "flag if backup of imported images should be performed"
+#~ msgstr "označit, pokud se má vytvořit záloha importovaných snímků"
+
+#~ msgid "flag if originals on camera should be deleted"
+#~ msgstr "označit, pokud mají být smazány původní snímky ve fotoaparátu"
+
+#~ msgid ""
+#~ "flag if user should be interactivly warned about non present backup "
+#~ "destinations"
+#~ msgstr ""
+#~ "označit, pokud má být uživatel interaktivně varován o neexistujícím "
+#~ "umístění pro zálohu"
+
+#~ msgid "height of the exported image"
+#~ msgstr "výška exportovaného snímku"
+
+#~ msgid "height of the exported image, or 0 if no scaling should be done."
+#~ msgstr "výška exportovaného snímku nebo 0 pokud se nemá měnit velikost."
+
+#~ msgid "how many images are in one row"
+#~ msgstr "kolik snímků je v jednom řádku"
+
+#~ msgid ""
+#~ "how many smallest-size thumbnails to keep in main memory at maximum. this "
+#~ "also affects larger mipmap counts, these get fewer by size. only read at "
+#~ "startup."
+#~ msgstr ""
+#~ "maximálně kolik nejmenších náhledů má být udržováno v hlavní paměti. "
+#~ "nastavení též ovlivňuje počet mipmap, jichž je méně při větším počtu. "
+#~ "(čteno pouze při spuštění.)"
+
+#~ msgid "icc profile to use for export"
+#~ msgstr "profil icc pro export"
+
+#~ msgid "icc rendering intent"
+#~ msgstr "vykreslovací záměr icc"
+
+#~ msgid ""
+#~ "if non-negative, this overrides the per-image output color profile "
+#~ "rendering intent on export."
+#~ msgstr ""
+#~ "pokud nezáporné, toto upraví záměr transformace pro výstupní barvový "
+#~ "profil nastavený pro jednotlivé snímky."
+
+#~ msgid ""
+#~ "if this number is smaller than the darktable internal version number, the "
+#~ "values here will be synched with the new defaults."
+#~ msgstr ""
+#~ "pokud je toto číslo menší než číslo interní verze programu darktable, "
+#~ "hodnoty budou synchronizovány s novými výchozími hodnotami."
+
+#~ msgid "jobcode of import job"
+#~ msgstr "kód zakázky pro import"
+
+#~ msgid "name of capture job"
+#~ msgstr "název zakázky pro pořízené snímky"
+
+#~ msgid "path of storage for captured images"
+#~ msgstr "cesta pro ukládání pořízených snímků"
+
+#~ msgid "recursive directory traversal when importing filmrolls."
+#~ msgstr "během importu rolí filmu číst i podadresáře."
+
+#~ msgid "rename pattern for captured images"
+#~ msgstr "maska pro přejmenování pořízených snímků"
+
+#~ msgid ""
+#~ "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
+#~ msgstr ""
+#~ "zvolit vzhled pro prosvětlovací pult: 0 - zvětšitelný nebo 1 - souborový "
+#~ "manažer."
+
+#~ msgid "small thumbnails to keep in main memory cache"
+#~ msgstr "udržovat malé náhledy v dočasné hlavní paměti"
+
+#~ msgid "subpath pattern in storage for captured images"
+#~ msgstr "maska podadresáře pro pořízené snímky"
+
+#~ msgid "the name of backup directory to search for on mounted medias"
+#~ msgstr ""
+#~ "jméno adresáře pro zálohy, který má být hledán na připojených médiích"
+
+#~ msgid "this overrides the per-image settings, if not set to `image'."
+#~ msgstr ""
+#~ "pokud není nastaveno na \"snímek\", tak toto přepíše nastavení pro "
+#~ "jednotlivé snímky."
+
+#~ msgid "version of these dt-gconf entries"
+#~ msgstr "verze těcho klíčů v dt-gconf"
+
+#~ msgid ""
+#~ "when having raw+jpeg images together in one directory it makes no sense "
+#~ "to import both. with this flag one can ignore all jpegs found."
+#~ msgstr ""
+#~ "v situaci, kdy jsou v jednom adresáři snímky raw i jpeg, nemá smysl "
+#~ "importovat oba dva. tímto lze ignorovat všechny nalezené snímky jpeg."
+
+#~ msgid "which layout should lighttable mode show"
+#~ msgstr "který vzhled by měl být použit v režimu prosvětlovacího pultu"
+
+#~ msgid "width of the exported image"
+#~ msgstr "šířka exportovaného snímku"
+
+#~ msgid "width of the exported image, or 0 if no scaling should be done."
+#~ msgstr "šířka exportovaného snímku nebo 0 pro zachování velikosti."
+
+#~ msgid "single images"
+#~ msgstr "jednotlivé snímky"
+
+#~ msgid "image does no longer exist"
+#~ msgstr "snímek již neexistuje"
+
+#~ msgid "tag"
+#~ msgstr "štítek"
+
+#~ msgid "date"
+#~ msgstr "datum"
+
+#~ msgid "colorlabel"
+#~ msgstr "barevná značka"
+
+#~ msgid "matches selected images"
+#~ msgstr "se shoduje s vybranými snímky"
+
+#~ msgid "doubleclick to select"
+#~ msgstr "vyberte dvojitým kliknutím"
+
+#~ msgid "perspective"
+#~ msgstr "perspek."
+
+#~ msgid "right"
+#~ msgstr "vpravo"
+
+#~ msgid "up"
+#~ msgstr "nahoře"
+
+#~ msgid "cam"
+#~ msgstr "tělo"
+
+#~ msgid ""
+#~ "search for camera using a pattern\n"
+#~ "format: [maker, ][model]"
+#~ msgstr ""
+#~ "hledat fotoaparát pomocí masky\n"
+#~ "ve formátu: [výrobce, ][model]"
+
+#~ msgid ""
+#~ "search for lens using a pattern\n"
+#~ "format: [maker, ][model]"
+#~ msgstr ""
+#~ "hledat objektiv pomocí masky\n"
+#~ "ve formátu: [výrobce, ][model]"
+
+#~ msgid "filter size"
+#~ msgstr "velikost filtru"
+
+#~ msgid "raw import"
+#~ msgstr "import raw"
+
+#~ msgid ""
+#~ "warning: these are cryptic low level settings!\n"
+#~ "you probably don't have to change them."
+#~ msgstr ""
+#~ "varování: toto jsou kryptická nastavení!\n"
+#~ "pravděpodobně je nemusíte měnit."
+
+#~ msgid "median passes"
+#~ msgstr "střední průchody"
+
+#~ msgid ""
+#~ "number of 3x3 median filter passes\n"
+#~ "on R-G and B-G after demosaicing"
+#~ msgstr ""
+#~ "počet průchodů pro 3x3 střední filter\n"
+#~ "na R-G a B-G po demosaicingu"
+#~ msgctxt "demosaic"
+
+#~ msgid "linear"
+#~ msgstr "lineární"
+
+#~ msgid "VNG"
+#~ msgstr "VNG"
+
+#~ msgid "PPG"
+#~ msgstr "PPG"
+
+#~ msgid "AHD"
+#~ msgstr "AHD"
+
+#~ msgid "linear4"
+#~ msgstr "linear4"
+
+#~ msgid "VNG4"
+#~ msgstr "VNG4"
+
+#~ msgid "DCB"
+#~ msgstr "DCB"
+
+#~ msgid "AMaZE"
+#~ msgstr "AMaZE"
+
+#~ msgid "VCD"
+#~ msgstr "VCD"
+
+#~ msgid "hot pixels"
+#~ msgstr "hot pixels"
+
+#~ msgid "median filter before demosaicing"
+#~ msgstr "střední filtr před demosaicingem"
+
+#~ msgid "green equilibration"
+#~ msgstr "vyrovnání zelené"
+
+#~ msgid ""
+#~ "work around unequal green channels in some mid-range\n"
+#~ "cameras, e.g. canon eos 400d"
+#~ msgstr ""
+#~ "obejití rozdílných zelených kanálů u některých fotoaparátů\n"
+#~ "střední kategorie, např. canon eos 400d"
+
+#~ msgid "dcb enhance"
+#~ msgstr "dcb vylepšení"
+
+#~ msgid ""
+#~ "turns off the default image refinement if edges are jagged or you prefer "
+#~ "softer demosaicing."
+#~ msgstr ""
+#~ "vypne výchozí doladění snímku, pokud jsou hrany schodovité či pokud "
+#~ "dáváte přednost měkčímu demosaicingu."
+
+#~ msgid "dcb iterations"
+#~ msgstr "dcb iterace"
+
+#~ msgid ""
+#~ "number of DCB correction routines passes(the default is zero)\n"
+#~ "this helps if you see lots of wrong interpolation directions, just "
+#~ "remember that it may produce new artifacts\n"
+#~ "usually 0 or 1 should work fine, in some situations even 10 is not enough."
+#~ msgstr ""
+#~ "počet průchodů opravných rutin DCB (výchozí je nula)\n"
+#~ "toto pomůže, pokud vidíte hodně chybných směrů interpolace, pouze vemte "
+#~ "na vědomí, že to může způsobit nové artifakty\n"
+#~ "obvykle 0 nebo 1 jsou vhodné hodnoty, v některých případech dokonce "
+#~ "nestačí ani 10."
+
+#~ msgid "fbdd denoising"
+#~ msgstr "fbdd odstranění šumu"
+#~ msgctxt "fbdd noise"
+
+#~ msgid "none"
+#~ msgstr "žádné"
+
+#~ msgid "luma+chroma"
+#~ msgstr "luma+chroma"
+
+#~ msgid ""
+#~ "fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"
+#~ msgstr ""
+#~ "fbdd zapne redukci odstranění šumu pro pre-demosaicing luma (a volitelně "
+#~ "chroma)"
+
+#~ msgid "vcd enhance"
+#~ msgstr "vcd vylepšení"
+
+#~ msgid "refine interpolated pixels"
+#~ msgstr "vylepšit interpolované pixely"
+
+#~ msgid "edge median passes"
+#~ msgstr "střední průchody pro hrany"
+
+#~ msgid ""
+#~ "number of passes an edge-sensitive median filter to differential color "
+#~ "planes"
+#~ msgstr ""
+#~ "počet průchodů středního filtru citlivého na hrany vůči rozdílovým "
+#~ "rovinám barev"
+
+#~ msgid "ca autocorrect"
+#~ msgstr "ca auto-korekce"
+
+#~ msgid "artificial ca autocorrection from AMaZE"
+#~ msgstr "umělá automatická korekce chromatické vady dle AMaZE"
+
+#~ msgid "reset"
+#~ msgstr "obnovit"
+
+#~ msgid ""
+#~ "reset raw loading parameters\n"
+#~ "to darktable's defaults"
+#~ msgstr ""
+#~ "obnoví parametry načítání raw\n"
+#~ "na výchozí hodnoty darktable"
+
+#~ msgid "re-import"
+#~ msgstr "znovu importovat"
+
+#~ msgid "trigger re-import of the raw image"
+#~ msgstr "spustí opětovné načtení snímku raw"
+
+#~ msgid "luma (L)"
+#~ msgstr "luma (L)"
+
+#~ msgid "colorness (C)"
+#~ msgstr "barev. (C)"
+
+#~ msgid "hue (h)"
+#~ msgstr "odst. (h)"
+
+#~ msgid "select color by"
+#~ msgstr "vybrat barvu dle"
+
+#~ msgid "denoise (slow)"
+#~ msgstr "odstranění šumu (pomalé)"
+
+#~ msgid "relight"
+#~ msgstr "dosvětlit"
+
+#~ msgid "all film rolls"
+#~ msgstr "všechny role filmu"
+
+#~ msgid "single images are persistent"
+#~ msgstr "jednotlivé snímky jsou trvalé"
+
+#~ msgid ""
+#~ "do you really want to remove this film roll and all its images from the "
+#~ "collection?"
+#~ msgstr ""
+#~ "opravdu chcete odstranit tuto roli filmu a všechny v ní obsažené snímky "
+#~ "ze sbírky?"
+
+#~ msgid "remove film roll?"
+#~ msgstr "odstranit filmovou roli?"
