@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-05 00:11+0100\n"
-"PO-Revision-Date: 2011-02-05 00:54+0100\n"
-"Last-Translator: Jose Carlos Garcia Sogo <jcsogo@gmail.com>\n"
+"POT-Creation-Date: 2011-02-06 12:52+0100\n"
+"PO-Revision-Date: 2011-02-06 12:54+0100\n"
+"Last-Translator: Roberto Quintero <roberto.quintero.lopez@gmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -217,7 +217,7 @@ msgstr ""
 "3 estrellas\n"
 "4 estrellas\n"
 "5 estrellas\n"
-"rechazadas"
+"rechazada"
 
 #. aperture
 #: ../data/darktable.glade.h:14
@@ -294,7 +294,7 @@ msgstr "imagen"
 
 #: ../data/darktable.glade.h:31
 msgid "image information"
-msgstr "formato imagen"
+msgstr "información de imagen"
 
 #: ../data/darktable.glade.h:32
 msgid "images sorted by"
@@ -345,7 +345,7 @@ msgstr "modelo"
 
 #: ../data/darktable.glade.h:42
 msgid "more plugins"
-msgstr "más complementos"
+msgstr "más añadidos"
 
 #: ../data/darktable.glade.h:43
 msgid "navigation"
@@ -363,7 +363,7 @@ msgstr "derechos"
 
 #: ../data/darktable.glade.h:46
 msgid "select a folder to import as film roll"
-msgstr "seleccione una carpeta para importar como sesión"
+msgstr "seleccionar una carpeta para importar como sesión"
 
 #: ../data/darktable.glade.h:47
 msgid "select one or more images to import"
@@ -476,55 +476,59 @@ msgid_plural "capturing %d images"
 msgstr[0] "capturando %d imagen"
 msgstr[1] "capturando %d imágenes"
 
-#: ../src/control/jobs/camera_jobs.c:261
+#: ../src/control/jobs/camera_jobs.c:88
+msgid "please set your camera to manual mode first!"
+msgstr "por favor poner primero la cámara en modo manual!"
+
+#: ../src/control/jobs/camera_jobs.c:268
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d importado a %s"
 
-#: ../src/control/jobs/camera_jobs.c:318
+#: ../src/control/jobs/camera_jobs.c:325
 msgid "starting to import images from camera"
-msgstr "comenzando a importar imágenes de la cámara"
+msgstr "comenzando a importar imágenes de cámara"
 
-#: ../src/control/jobs/camera_jobs.c:335
+#: ../src/control/jobs/camera_jobs.c:342
 #, c-format
 msgid "failed to create import path `%s', import aborted."
-msgstr "fallo al crear carpeta '%s', abortada importación."
+msgstr "fallo al crear carpeta %s, de importado, abortada importación."
 
-#: ../src/control/jobs/camera_jobs.c:344
+#: ../src/control/jobs/camera_jobs.c:351
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "importando %d imagen desde cámara"
 msgstr[1] "importando %d imágenes desde cámara"
 
-#: ../src/control/jobs/camera_jobs.c:366
+#: ../src/control/jobs/camera_jobs.c:373
 msgid "failed to create filmroll for camera import, import aborted."
-msgstr "fallo al crear sesión al importar desde la cámara, abortada importación."
+msgstr "fallo al crear sesión desde importado de cámara, abortada importación."
 
 #: ../src/control/jobs/control_jobs.c:80
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
-msgstr[0] "fusionada %d imagen"
-msgstr[1] "fusionadas %d imágenes"
+msgstr[0] "fusionando %d imagen"
+msgstr[1] "fusionando %d imágenes"
 
 #: ../src/control/jobs/control_jobs.c:93
 msgid "exposure bracketing only works on raw images"
-msgstr "el horquillado sólo funciona en imágenes raw"
+msgstr "la exposicion con horquillado solo funciona con imágenes raw"
 
 #: ../src/control/jobs/control_jobs.c:103
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "fallo al obtener el buffer raw de la imagen '%s'"
+msgstr "fallo al obtener buffer raw de la imagen `%s'"
 
 #: ../src/control/jobs/control_jobs.c:122
 msgid "images have to be of same size!"
-msgstr "las imágenes tienen que tener el mismo tamaño!"
+msgstr "las imágenes deben tener el mismo tamaño!"
 
 #: ../src/control/jobs/control_jobs.c:168
 #, c-format
 msgid "wrote merged hdr `%s'"
-msgstr "se escribió el HDR  fusionado '%s'"
+msgstr "escribir hdr fusionado `%s'"
 
 #: ../src/control/jobs/control_jobs.c:192
 #, c-format
@@ -794,7 +798,7 @@ msgstr "por favor fije la configuración del patrón de nombre de archivos antes
 #. Add the rescan button
 #: ../src/gui/devices.c:136
 msgid "scan for devices"
-msgstr "escaneando perifericos"
+msgstr "escanear periféricos"
 
 #: ../src/gui/devices.c:138
 msgid "scan for newly attached devices"
@@ -816,7 +820,7 @@ msgstr "disparo conectado"
 #. No supported devices is detected lets notice user..
 #: ../src/gui/devices.c:189
 msgid "no supported devices found"
-msgstr "no se encuentran dispositivos soportados"
+msgstr "no se encuentran periféricos soportados"
 
 #. switch(input_color)
 #. {
@@ -850,7 +854,7 @@ msgstr "* contribuidores*"
 
 #: ../src/gui/gtk.c:449
 msgid "translator-credits"
-msgstr "créditos-traductores"
+msgstr "creditos-traductores"
 
 #: ../src/gui/gtk.c:663
 msgid "import film"
@@ -924,11 +928,11 @@ msgstr ""
 #: ../src/gui/iop_history.c:96
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "se aplicó el estilo '%s' a la imagen"
+msgstr "aplicado estilo '%s' en la imagen actual"
 
 #: ../src/gui/iop_history.c:128
 msgid "no styles have been created yet"
-msgstr "no se ha creado ningún estilo aún"
+msgstr "no se han creado estilos todavia"
 
 #: ../src/gui/iop_history.c:137
 msgid "compress history stack"
@@ -940,11 +944,11 @@ msgstr "generar un histórico de acciones mínimo que produzca la misma imagen"
 
 #: ../src/gui/iop_history.c:146
 msgid "create a style from the current history stack"
-msgstr "crear un estilo a partir de la historia actual"
+msgstr "crear un estilo de su histórico de acciones actual"
 
 #: ../src/gui/iop_history.c:152
 msgid "applies a style selected from popup menu"
-msgstr "aplica un estilo desde el menú contextual"
+msgstr "aplica un estilo seleccionado de un menu emergente"
 
 #: ../src/gui/iop_history.c:177
 #: ../src/gui/iop_history.c:268
@@ -1184,15 +1188,15 @@ msgid ""
 "of selected images (f4)"
 msgstr ""
 "alternar marca azul\n"
-"de las imágenes seleccionadas (f4)"
+"de las imágenes seleccionadas (f1)"
 
 #: ../src/gui/tool_colorlabels.c:62
 msgid ""
 "toggle purple label\n"
 "of selected images (f5)"
 msgstr ""
-"alternar marca púrpura\n"
-"de las imágenes seleccionadas (f5)"
+"alternar marca purpura\n"
+"de las imágenes seleccionadas (f1)"
 
 #: ../src/gui/tool_colorlabels.c:67
 msgid "clear all labels of selected images"
@@ -1208,8 +1212,8 @@ msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
 msgstr ""
-"hacer una copia de los ficheros seleccionados.\n"
-"no se aplicarán las opciones globales siguientes!"
+"hacer una copia 1:1 de los archivos seleccionados.\n"
+"las opciones globales de abajo no se aplican!"
 
 #: ../src/imageio/format/exr.cc:149
 msgid "openexr"
@@ -1285,26 +1289,26 @@ msgid ""
 "$(DESKTOP_FOLDER) - desktop folder"
 msgstr ""
 "introduzca la ruta donde poner las imágenes exportadas:\n"
-"$(NOMBRE_SESION) - sesión de la imagen de entrada\n"
+"$(NOMBRE_SESION) - sesion de la imagen de entrada\n"
 "$(DIRECTORIO_ARCHIVOS) - directorio de la imagen de entrada\n"
 "$(NOMBRE_ARCHIVO) - nombre base de la imagen de entrada\n"
-"$(EXTENSION_ARCHIVO) - extensión de la imagen de entrada\n"
-"$(SECUENCIA) - secuencia numero\n"
+"$(EXTENSION_ARCHIVO) - extension de la imagen de entrada\n"
+"$(SECUENCIA) - sequencia numero\n"
 "$(AÑO) - año\n"
 "$(MES) - mes\n"
 "$(DIA) - dia\n"
 "$(HORA) - hora\n"
 "$(MINUTO) - minuto\n"
 "$(SEGUNDO) - segundo\n"
-"$(EXIF_AÑO) - año de datos exif\n"
-"$(EXIF_MES) - mes de datos exif\n"
-"$(EXIF_DIA) - dia de datos exif\n"
-"$(EXIF_HORA) - hora de datos exif\n"
-"$(EXIF_MINUTO) - minuto de datos exif\n"
-"$(EXIF_SEGUNDO) - segundo de datos exif\n"
-"$(CARPETA_IMAGENES) - carpeta de imágenes\n"
-"$(CARPETA_HOME) - carpeta de usuario\n"
-"$(CARPETA_ESCRITORIO) - escritorio"
+"$(EXIF_AÑO) - exif año\n"
+"$(EXIF_MES) - exif mes\n"
+"$(EXIF_DIA) - exif dia\n"
+"$(EXIF_HORa) - exif hora\n"
+"$(EXIF_MINUTO) - exif minuto\n"
+"$(EXIF_SEGUNDO) - exif segundo\n"
+"$(CARPETA_IMAGENES) - carpeta imágenes\n"
+"$(CARPETA_HOME) - home carpeta\n"
+"$(CARPETA_ESCRITORIO) - carpeta de escritorio"
 
 #: ../src/imageio/storage/disk.c:190
 #, c-format
@@ -1485,7 +1489,7 @@ msgstr "enfocar y reducción ruido (fuerte)"
 
 #: ../src/iop/atrous.c:627
 msgid "sharpen and denoise"
-msgstr "enfoque y reducción ruido"
+msgstr "enfoque y reducción de ruido"
 
 #: ../src/iop/atrous.c:641
 #: ../src/iop/equalizer.c:251
@@ -1560,7 +1564,7 @@ msgstr "luma"
 
 #: ../src/iop/atrous.c:1158
 msgid "change lightness at each feature size"
-msgstr "cambiar luminosidad en cada tamaño"
+msgstr "cambiar luminosidad en cada parte"
 
 #: ../src/iop/atrous.c:1159
 #: ../src/iop/equalizer.c:335
@@ -1569,7 +1573,7 @@ msgstr "croma"
 
 #: ../src/iop/atrous.c:1160
 msgid "change color saturation at each feature size"
-msgstr "cambiar saturación de color en cada tamaño"
+msgstr "cambiar saturación de color en cada parte"
 
 #: ../src/iop/atrous.c:1161
 msgid "sharpness"
@@ -1577,7 +1581,7 @@ msgstr "enfoque"
 
 #: ../src/iop/atrous.c:1162
 msgid "sharpness of edges at each feature size"
-msgstr "enfoque de los borde en cada tamaño"
+msgstr "enfoque de los bordes en cada parte"
 
 #: ../src/iop/atrous.c:1198
 msgid "mix"
@@ -1874,19 +1878,19 @@ msgstr "click derecho y arrastrar ratón en la imagen para crear una linea recta
 
 #: ../src/iop/clipping.c:734
 msgid "keystone h"
-msgstr ""
+msgstr "trapezoide h"
 
 #: ../src/iop/clipping.c:739
 msgid "adjust perspective for horizontal keystone distortion"
-msgstr ""
+msgstr "ajustar perspectiva para la distorsión trapezoidal horizontal"
 
 #: ../src/iop/clipping.c:745
 msgid "keystone v"
-msgstr "keystone v"
+msgstr "trapezoide v"
 
 #: ../src/iop/clipping.c:749
 msgid "adjust perspective for vertical keystone distortion"
-msgstr ""
+msgstr "ajustar perspectiva para la distorsión trapezoidal vertical"
 
 #: ../src/iop/clipping.c:754
 msgid "aspect"
@@ -2237,7 +2241,7 @@ msgstr ""
 
 #: ../src/iop/equalizer.c:43
 msgid "legacy equalizer (deprecated)"
-msgstr "ecualizador (obsoleto)"
+msgstr "equalizador antiguo (obsoleto)"
 
 #: ../src/iop/equalizer.c:267
 msgid "null"
@@ -2249,9 +2253,9 @@ msgid ""
 "and is only here so you can switch it off\n"
 "and move to the new equalizer."
 msgstr ""
-"este módulo será eliminado en el futuro\n"
-"y está solamente aquí para que pueda deshabilitarlo\n"
-"y usar el nuevo ecualizador en su lugar."
+"este modulo sera eliminado en el futuro\n"
+"y solo está aqui, asi que puede desactivarlo\n"
+"y moverse al nuevo equalizador."
 
 #: ../src/iop/exposure.c:279
 msgid "black"
@@ -2292,55 +2296,55 @@ msgstr "gamma"
 
 #: ../src/iop/graduatednd.c:57
 msgid "Neutral Grey ND2 (soft)"
-msgstr "gris neutro ND2 (suave)"
+msgstr "gris neutro ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:58
 msgid "Neutral Grey ND4 (soft)"
-msgstr "gris neutro ND4 (suave)"
+msgstr "gris neutro ND4 (soft)"
 
 #: ../src/iop/graduatednd.c:59
 msgid "Neutral Grey ND8 (soft)"
-msgstr "gris neutro ND8 (suave)"
+msgstr "gris neutro ND8 (soft)"
 
 #: ../src/iop/graduatednd.c:60
 msgid "Neutral Grey ND2 (hard)"
-msgstr "gris neutro ND2 (fuerte)"
+msgstr "gris neutro ND2 (hard)"
 
 #: ../src/iop/graduatednd.c:61
 msgid "Neutral Grey ND4 (hard)"
-msgstr "gris neutro ND4 (fuerte)"
+msgstr "gris neutro ND4 (hard)"
 
 #: ../src/iop/graduatednd.c:62
 msgid "Neutral Grey ND8 (hard)"
-msgstr "gris neutro ND8 (fuerte)"
+msgstr "gris neutro ND8 (hard)"
 
 #: ../src/iop/graduatednd.c:63
 msgid "Orange ND2 (soft)"
-msgstr "naranja ND2 (suave)"
+msgstr "naranja ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:64
 msgid "Yellow ND2 (soft)"
-msgstr "amarillo ND2 (suave)"
+msgstr "amarillo ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:65
 msgid "Purple ND2 (soft)"
-msgstr "purpura ND2 (suave)"
+msgstr "purpura ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:66
 msgid "Green ND2 (soft)"
-msgstr "verde ND2 (suave)"
+msgstr "verde ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:67
 msgid "Red ND2 (soft)"
-msgstr "rojo ND2 (suave)"
+msgstr "rojo ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:68
 msgid "Blue ND2 (soft)"
-msgstr "azul ND2 (suave)"
+msgstr "azul ND2 (soft)"
 
 #: ../src/iop/graduatednd.c:69
 msgid "Brown ND4 (soft)"
-msgstr "marrón ND4 (suave)"
+msgstr "marrón ND4 (soft)"
 
 #: ../src/iop/graduatednd.c:96
 msgid "graduated neutral density"
@@ -2499,7 +2503,7 @@ msgstr "longitud focal (mm)"
 #: ../src/iop/lens.c:1025
 #: ../src/iop/lens.c:1040
 msgid "reset from exif data"
-msgstr "reiniciar desde los datos exif"
+msgstr "reinicializar desde los datos exif"
 
 #: ../src/iop/lens.c:1034
 msgid "f/"
@@ -2523,7 +2527,7 @@ msgstr "encontrar cámara"
 
 #: ../src/iop/lens.c:1288
 msgid "find lens"
-msgstr "encontrar lente"
+msgstr "encontrar lentes"
 
 #. target geometry
 #: ../src/iop/lens.c:1316
@@ -2630,7 +2634,7 @@ msgstr "relleno-sombras -0.25EV con 4 zonas"
 
 #: ../src/iop/relight.c:81
 msgid "fill light"
-msgstr "la luz de relleno"
+msgstr "luz de relleno"
 
 #. EV
 #: ../src/iop/relight.c:347
@@ -2719,11 +2723,11 @@ msgstr "tinte"
 
 #: ../src/iop/temperature.c:430
 msgid "temperature out"
-msgstr "temperatura de salida"
+msgstr "temperatura  K"
 
 #: ../src/iop/temperature.c:451
 msgid "temperature in"
-msgstr "temperatura de entrada"
+msgstr "temperatura D50"
 
 #: ../src/iop/temperature.c:484
 msgid "camera white balance"
@@ -2755,7 +2759,7 @@ msgstr "contraste alto"
 
 #: ../src/iop/tonemap.cc:73
 msgid "tone mapping"
-msgstr "tonemapping"
+msgstr "mapeo de tonos"
 
 #: ../src/iop/tonemap.cc:259
 msgid "contrast compression"
@@ -3046,11 +3050,11 @@ msgstr "contar"
 
 #: ../src/libs/camera.c:406
 msgid "brackets"
-msgstr "horquillado"
+msgstr "tomas"
 
 #: ../src/libs/camera.c:407
 msgid "bkt. steps"
-msgstr "pasos"
+msgstr "bkt.pasos"
 
 #: ../src/libs/camera.c:443
 msgid "capture image(s)"
@@ -3066,7 +3070,7 @@ msgstr "alternar modo de captura secuenciado"
 
 #: ../src/libs/camera.c:448
 msgid "toggle bracketed capture mode"
-msgstr "alternar el método de horquillado"
+msgstr "alternar modo de captura horquillado"
 
 #: ../src/libs/camera.c:449
 msgid "the count of seconds before actually doing a capture"
@@ -3082,15 +3086,15 @@ msgstr ""
 
 #: ../src/libs/camera.c:451
 msgid "the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."
-msgstr "cantidad de pasos de exposición a cada lado del centro, imágenes = (pasos*2)+1."
+msgstr "cantidad de tomas a cada lado del disparo centrado, cantidad de imágenes = (posiciones*2)+1."
 
 #: ../src/libs/camera.c:452
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
-"la cantidad de pasos para cada horquillado, los pasos se configuran en la cámara y normalmente son 3 pasos por número f\n"
-"en otras palabras, 3 pasos es un paso de valor 1EV entre los extremos del horquillado."
+"la cantidad de pasos por toma, los pasos son configurables en cámara y habitualmente son tres por stop\n"
+"en otras palabras , 3 pasos es 1EV de compensación de exposición entre tomas."
 
 #: ../src/libs/camera.c:466
 msgid "properties"
@@ -3159,25 +3163,25 @@ msgstr "amarillo"
 #: ../src/libs/collect.c:157
 #: ../src/libs/collect.c:159
 msgid "purple"
-msgstr "morado"
+msgstr "purpura"
 
 #: ../src/libs/collect.c:247
 #: ../src/libs/collect.c:261
 #: ../src/libs/collect.c:527
 msgid "clear this rule"
-msgstr "borrar esta regla"
+msgstr "eliminar esta regla"
 
 #: ../src/libs/collect.c:252
 msgid "clear this rule or add new rules"
-msgstr "borrar esta regla o añadir nuevas reglas"
+msgstr "eliminar esta regla o añadir nuevas reglas"
 
 #: ../src/libs/collect.c:533
 msgid "narrow down search"
-msgstr "acotar la búsqueda"
+msgstr "reducir la busqueda"
 
 #: ../src/libs/collect.c:537
 msgid "add more images"
-msgstr "añadir más imágenes"
+msgstr "añadir mas imagenes"
 
 #: ../src/libs/collect.c:541
 msgid "exclude images"
@@ -3189,7 +3193,7 @@ msgstr "cambiar a: y"
 
 #: ../src/libs/collect.c:551
 msgid "change to: or"
-msgstr "cambiar a: o"
+msgstr "cambiar a: "
 
 #: ../src/libs/collect.c:555
 msgid "change to: except"
@@ -3419,7 +3423,7 @@ msgstr "crear hdr"
 
 #: ../src/libs/image.c:133
 msgid "create a high dynamic range image from selected shots"
-msgstr "crear una imagen HDR a partir de las tomas seleccionadas"
+msgstr "crear una imagen de alto rango dinámico de los disparos seleccionados"
 
 #: ../src/libs/lib.c:115
 #, c-format
@@ -3517,7 +3521,7 @@ msgstr "Todos los derechos reservados."
 
 #: ../src/libs/recentcollect.c:49
 msgid "recently used collections"
-msgstr "sesiones recientemente usadas"
+msgstr "colecciones recientemente utilizadas"
 
 #: ../src/libs/recentcollect.c:139
 #, c-format
@@ -3748,44 +3752,8 @@ msgstr "tira de imagenes"
 msgid "lighttable"
 msgstr "caja de luz"
 
-#~ msgid "devices"
-#~ msgstr "perifericos"
-#~ msgid "import film roll"
-#~ msgstr "importar sesión"
-#~ msgid "library"
-#~ msgstr "libreria"
-#~ msgid "open"
-#~ msgstr "abrir"
-#~ msgid "open selected film roll in light table"
-#~ msgstr "abrir la sesión seleccionada en la mesa de luz"
-#~ msgid "remove selected film roll from collection"
-#~ msgstr "eliminar la sesión seleccionada de la colección"
-#~ msgid "search film rolls by folder"
-#~ msgstr "buscar sesiones por carpeta"
-#~ msgid ""
-#~ "do you really want to remove this film roll and all its images from the "
-#~ "collection?"
-#~ msgstr "desea eliminar esta sesión y todas sus imágenes de la colección?"
-#~ msgid "remove film roll?"
-#~ msgstr "eliminar sesión?"
-#~ msgid "all film rolls"
-#~ msgstr "todas las sesiones"
 #~ msgid "equalizer II"
 #~ msgstr "equalizador II"
-#~ msgid "perspective"
-#~ msgstr "perspectiva"
-#~ msgid "right"
-#~ msgstr "derecha"
-#~ msgid "up"
-#~ msgstr "arriba"
-#~ msgid "mode"
-#~ msgstr "modo"
-#~ msgid "luma (L)"
-#~ msgstr "luminosidad (L)"
-#~ msgid "colorness (C)"
-#~ msgstr "color (C)"
-#~ msgid "hue (h)"
-#~ msgstr "tono (h)"
 #~ msgid "cam"
 #~ msgstr "dispositivo"
 #~ msgid ""
@@ -3800,14 +3768,52 @@ msgstr "caja de luz"
 #~ msgstr ""
 #~ "búsqueda de lentes usando un patrón\n"
 #~ "formato: [fabricante, ][modelo])"
-#~ msgid "relight"
-#~ msgstr "re-iluminar"
 #~ msgid "tag"
 #~ msgstr "etiqueta"
 #~ msgid "date"
 #~ msgstr "fecha"
 #~ msgid "colorlabel"
 #~ msgstr "marcas de color"
+#~ msgid "author information"
+#~ msgstr "información del autor"
+#~ msgid ""
+#~ "do you really want to remove this film roll and all its images from the "
+#~ "collection?"
+#~ msgstr "desea eliminar esta sesión y todas sus imágenes de la colección?"
+#~ msgid "remove film roll?"
+#~ msgstr "eliminar sesión?"
+#~ msgid "devices"
+#~ msgstr "perifericos"
+#~ msgid "import film roll"
+#~ msgstr "importar sesión"
+#~ msgid "library"
+#~ msgstr "libreria"
+#~ msgid "open"
+#~ msgstr "abrir"
+#~ msgid "open selected film roll in light table"
+#~ msgstr "abrir la sesión seleccionada en la mesa de luz"
+#~ msgid "remove selected film roll from collection"
+#~ msgstr "eliminar la sesión seleccionada de la colección"
+#~ msgid "search film rolls by folder"
+#~ msgstr "buscar sesiones por carpeta"
+#~ msgid "all film rolls"
+#~ msgstr "todas las sesiones"
+#~ msgid "perspective"
+#~ msgstr "perspectiva"
+#~ msgid "right"
+#~ msgstr "derecha"
+#~ msgid "up"
+#~ msgstr "arriba"
+#~ msgid "mode"
+#~ msgstr "modo"
+#~ msgid "luma (L)"
+#~ msgstr "luminosidad (L)"
+#~ msgid "colorness (C)"
+#~ msgstr "color (C)"
+#~ msgid "hue (h)"
+#~ msgstr "tono (h)"
+#~ msgid "relight"
+#~ msgstr "re-iluminar"
 #~ msgid "matches selected images"
 #~ msgstr "coincidencia en imágenes seleccionadas"
 #~ msgid "doubleclick to select"
