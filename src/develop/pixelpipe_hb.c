@@ -264,6 +264,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
+    // copy over cached processed max for clipping:
+    if(piece) for(int k=0;k<3;k++) pipe->processed_maximum[k] = piece->processed_maximum[k];
+    else      for(int k=0;k<3;k++) pipe->processed_maximum[k] = 1.0f;
     (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(!modules) return 0;
@@ -472,6 +475,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     }
     dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' [%s]", module->name(),
         pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+    // in case we get this buffer from the cache, also get the processed max:
+    for(int k=0;k<3;k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(module == darktable.develop->gui_module)
     {
