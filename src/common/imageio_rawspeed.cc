@@ -319,7 +319,12 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r)
 
   int raw_width = r->dim.x;
   int raw_height = r->dim.y;
-  int raw_width_extra = r->subsampling.y == 2 ? 72 : 0;
+
+   // work around 50D bug
+   char makermodel[1024];
+   dt_colorspaces_get_makermodel(makermodel, 1024, img->exif_maker, img->exif_model);
+   bool is_50d = !strncmp(makermodel, "Canon EOS 50D", 13);
+   int raw_width_extra = (is_50d && r->subsampling.y == 2) ? 72 : 0;
 
   if(dt_image_alloc(img, DT_IMAGE_FULL))
     return DT_IMAGEIO_CACHE_FULL;
@@ -360,7 +365,12 @@ dt_imageio_open_rawspeed_sraw_preview(dt_image_t *img, RawImage r)
 
   int raw_width = r->dim.x;
   int raw_height = r->dim.y;
-  int raw_width_extra = r->subsampling.y == 2 ? 72 : 0;
+
+   // work around 50D bug
+   char makermodel[1024];
+   dt_colorspaces_get_makermodel(makermodel, 1024, img->exif_maker, img->exif_model);
+   bool is_50d = !strncmp(makermodel, "Canon EOS 50D", 13);
+   int raw_width_extra = (is_50d && r->subsampling.y == 2) ? 72 : 0;
 
   float *buf = (float*)dt_alloc_align(16, raw_width * raw_height * 4 * sizeof(float) );
 
