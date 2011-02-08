@@ -45,6 +45,8 @@ static void _camctl_camera_disconnected_callback (const dt_camera_t *camera,void
 
 static void _camctl_camera_control_status_callback(dt_camctl_status_t status,void *data)
 {
+  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
+  if(needlock) gdk_threads_enter();
   switch(status)
   {
     case CAMERA_CONTROL_BUSY:
@@ -72,6 +74,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
         } while( (child=g_list_next(child)) );
     } break;
   }
+  if(needlock) gdk_threads_leave();
 }
 
 static void scan_callback(GtkButton *button,gpointer data)  
