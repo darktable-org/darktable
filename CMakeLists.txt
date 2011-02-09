@@ -9,6 +9,8 @@ option(USE_DARKTABLE_PROFILING OFF)
 option(DONT_USE_RAWSPEED "Dont compile rawspeed backend." OFF)
 option(DONT_INSTALL_GCONF_SCHEMAS "Dont install gconf schemas, usefull for package creation." OFF)
 option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
+option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and likely-to-change-soon plugins." OFF)
+option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
 
 #
 # Set platform defaults...

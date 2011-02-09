@@ -13,7 +13,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 set(LEGACY_MODULES clahe equalizer)
 
 # new/unfinshed/unstable plugins:
-set(STAGING_MODULES anlfyeni colortransfer bloom)
+set(EXPERIMENTAL_MODULES anlfyeni colortransfer bloom)
 
 add_library(bloom MODULE "bloom.c")
 add_library(tonemap MODULE "tonemap.cc")
@@ -66,4 +66,18 @@ endforeach(module)
 foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
 endforeach(module)
+
+if(INSTALL_IOP_EXPERIMENTAL)
+  message("-- Installing experimental iop plugins")
+  foreach(module ${EXPERIMENTAL_MODULES})
+    install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
+  endforeach(module)
+endif(INSTALL_IOP_EXPERIMENTAL)
+
+if(INSTALL_IOP_LEGACY)
+  message("-- Installing legacy iop plugins")
+  foreach(module ${LEGACY_MODULES})
+    install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
+  endforeach(module)
+endif(INSTALL_IOP_LEGACY)
 
