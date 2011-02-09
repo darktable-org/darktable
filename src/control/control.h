@@ -89,7 +89,7 @@
 #define KEYCODE_Left       123
 #define KEYCODE_Right      124
 #define KEYCODE_Tab         48
-#define KEYCODE_space       49
+#define KEYCODE_Space       49
 #define KEYCODE_Return      36
 #define KEYCODE_BackSpace   22
 #endif
@@ -115,6 +115,7 @@
 #define KEYCODE_Left       113  
 #define KEYCODE_Right      114  
 #define KEYCODE_Tab         23  
+#define KEYCODE_Space       41
 #define KEYCODE_Return      36
 #define KEYCODE_BackSpace   22
 #endif
