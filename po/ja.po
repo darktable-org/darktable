@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-02-06 09:48+0900\n"
-"PO-Revision-Date: 2011-02-06 13:58+0900\n"
+"PO-Revision-Date: 2011-02-09 23:32+0900\n"
 "Last-Translator: deacon macmillan <deaconmacmillan@gmail.com>\n"
 "Language-Team: deacon macmillan <deaconmacmillan@gmail.com>\n"
 "Language: \n"
@@ -1471,7 +1471,7 @@ msgstr "効果量"
 
 #: ../src/iop/atrous.c:109
 msgid "equalizer"
-msgstr "ノイズ削減/シャープネスカーブ1.0"
+msgstr "イコライザー"
 
 #: ../src/iop/atrous.c:599
 msgid "enhance coarse"
@@ -1872,7 +1872,7 @@ msgstr "右クリックしながら直線を引く"
 
 #: ../src/iop/clipping.c:734
 msgid "keystone h"
-msgstr "キーストン"
+msgstr "水平キーストーン"
 
 #: ../src/iop/clipping.c:739
 msgid "adjust perspective for horizontal keystone distortion"
@@ -1880,11 +1880,11 @@ msgstr "水平のキーストン視点調整"
 
 #: ../src/iop/clipping.c:745
 msgid "keystone v"
-msgstr "キーストーン"
+msgstr "垂直キーストーン"
 
 #: ../src/iop/clipping.c:749
 msgid "adjust perspective for vertical keystone distortion"
-msgstr "水直のキーストン視点調整"
+msgstr "水直のキーストーン視点調整"
 
 #: ../src/iop/clipping.c:754
 msgid "aspect"
@@ -1916,7 +1916,7 @@ msgstr "1:1"
 
 #: ../src/iop/clipping.c:766
 msgid "din"
-msgstr "でぃん"
+msgstr "din"
 
 #: ../src/iop/clipping.c:767
 msgid "16:9"
@@ -1968,7 +1968,7 @@ msgstr "コンポジションガイド線を表示する"
 
 #: ../src/iop/clipping.c:801
 msgid "type"
-msgstr "タイプ"
+msgstr "グリッドタイプ"
 
 #: ../src/iop/clipping.c:814
 msgid "flip guides vertically"
@@ -2077,7 +2077,7 @@ msgstr "サポートされていない出力プロファイルは srgb に交換
 
 #: ../src/iop/colorout.c:507
 msgid "output intent"
-msgstr "出力の意図"
+msgstr "出力の目的"
 
 #: ../src/iop/colorout.c:508
 msgid "output profile"
@@ -2085,7 +2085,7 @@ msgstr "出力プロファイル"
 
 #: ../src/iop/colorout.c:509
 msgid "display intent"
-msgstr "ディスプレーの意図"
+msgstr "ディスプレーの目的"
 
 #: ../src/iop/colorout.c:510
 msgid "display profile"
@@ -2130,7 +2130,7 @@ msgstr "srgb 「ネット対応」"
 
 #: ../src/iop/colorout.c:572
 msgid "rendering intent"
-msgstr "レンダリング意図"
+msgstr "レンダリング目的"
 
 #: ../src/iop/colorout.c:573
 #, c-format
@@ -2235,7 +2235,7 @@ msgstr ""
 
 #: ../src/iop/equalizer.c:43
 msgid "legacy equalizer (deprecated)"
-msgstr "等化器「旧」"
+msgstr "イコライザー「旧」"
 
 #: ../src/iop/equalizer.c:267
 msgid "null"
@@ -2249,7 +2249,7 @@ msgid ""
 msgstr ""
 "旧等化器は将来無くなりますので\n"
 "切にし\n"
-"新等化器を使って下さい"
+"新イコライザーを使って下さい"
 
 #: ../src/iop/exposure.c:279
 msgid "black"
@@ -2709,7 +2709,7 @@ msgstr ""
 #: ../src/iop/temperature.c:85
 msgctxt "modulename"
 msgid "white balance"
-msgstr "色温度"
+msgstr "ホワイトバランス"
 
 #: ../src/iop/temperature.c:429
 msgid "tint"
@@ -2729,7 +2729,7 @@ msgstr "カメラ色温度"
 
 #: ../src/iop/temperature.c:485
 msgid "spot white balance"
-msgstr "灰色にクリック"
+msgstr "ホワイトバランススポット"
 
 #: ../src/iop/temperature.c:486
 msgid "passthrough"
@@ -3318,7 +3318,7 @@ msgstr "x"
 
 #: ../src/libs/export.c:441
 msgid "intent"
-msgstr "意図"
+msgstr "目的"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 #: ../src/libs/export.c:445
@@ -3329,7 +3329,7 @@ msgstr "画像設定"
 #: ../src/libs/export.c:543
 #, c-format
 msgid "output icc profiles in %s/color/out or %s/color/out"
-msgstr "%s/color/outか、%s/color/out 内の 出力.iccプロファイル"
+msgstr "%s/color/out又は%s/color/out 内の 出力.iccプロファイル"
 
 #: ../src/libs/export.c:552
 msgid "threads"
