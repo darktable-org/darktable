@@ -4,10 +4,16 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DI
 
 set(MODULES tonecurve gamma temperature colorcorrection exposure 
 	colorin colorout clipping sharpen monochrome basecurve colorzones
-	basecurve highlights velvia vignette splittoning grain clahe bilateral
-	profile_gamma anlfyeni
-	colortransfer channelmixer graduatednd relight zonesystem demosaic atrous tonemap bloom cacorrect overexposed equalizer
+	basecurve highlights velvia vignette splittoning grain bilateral
+	profile_gamma 
+	channelmixer graduatednd relight zonesystem demosaic atrous tonemap cacorrect overexposed
 )
+
+# old stuff we want to get rid of:
+set(LEGACY_MODULES clahe equalizer)
+
+# new/unfinshed/unstable plugins:
+set(STAGING_MODULES anlfyeni colortransfer bloom)
 
 add_library(bloom MODULE "bloom.c")
 add_library(tonemap MODULE "tonemap.cc")
