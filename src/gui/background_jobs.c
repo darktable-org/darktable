@@ -131,6 +131,9 @@ void dt_gui_background_jobs_destroy(const dt_gui_job_t *j)
     gtk_container_remove (GTK_CONTAINER (jobbox), j->widget);
     ((dt_gui_job_t *)j)->widget = NULL;
   }
+  // hide box if we are last active job..
+  if( g_list_length( gtk_container_get_children( GTK_CONTAINER (jobbox) ) ) == 0 )
+    gtk_widget_hide( w );
   g_free ((dt_gui_job_t*)j);
   if(needlock) gdk_threads_leave();
 }
