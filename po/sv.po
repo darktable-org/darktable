@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-02-09 18:18+0100\n"
-"PO-Revision-Date: 2011-02-09 18:54+0100\n"
+"PO-Revision-Date: 2011-02-10 17:12+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: <> <>\n"
 "Language: \n"
@@ -95,12 +95,11 @@ msgstr "antal katalognivåer att visa i listan"
 
 #: ../build/src/preferences_gen.h:411
 msgid "the number of folder levels to show in film roll names, starting from the right"
-msgstr ""
+msgstr "antal katalognivåer att visa i namnet på filmrullen från höger"
 
 #: ../build/src/preferences_gen.h:416
-#, fuzzy
 msgid "initial rating when importing filmrolls"
-msgstr "ignorera importering av jpeg bilder"
+msgstr "standard betyg för importerade bilder"
 
 #: ../build/src/preferences_gen.h:432
 msgid "enable filmstrip in darkroom mode"
@@ -115,6 +114,8 @@ msgid ""
 "keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
 "(needs a restart and will invalidate current thumbnail caches)."
 msgstr ""
+"håll detta värde lågt för snabbare generering av miniatyrbilder (omfång: 160-1300)\n"
+"(kräver omstart och kommer att rensa nuvarande miniatyrbilds cache)."
 
 #: ../build/src/preferences_gen.h:464
 msgid "jpeg quality of on-disk thumbnails"
@@ -122,7 +123,7 @@ msgstr "jpeg kvalitet av miniatyrer på hårddisk"
 
 #: ../build/src/preferences_gen.h:476
 msgid "affects only the thumbnail cache used for quick startup."
-msgstr ""
+msgstr "påverkar endast miniatyrbilds cache som används vid snabb uppstart."
 
 #: ../build/src/preferences_gen.h:481
 msgid "ask before deleting a tag"
@@ -415,9 +416,8 @@ msgid "off"
 msgstr "av"
 
 #: ../src/common/image.c:149
-#, fuzzy
 msgid "orphaned image"
-msgstr "supporterade bilder"
+msgstr "anonyma bilder"
 
 #. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
 #. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
@@ -934,7 +934,7 @@ msgstr "applicerar stil `%s' på aktiv bild"
 
 #: ../src/gui/iop_history.c:128
 msgid "no styles have been created yet"
-msgstr "det finns niga stilar skapade ännu"
+msgstr "det finns inga stilar skapade ännu"
 
 #: ../src/gui/iop_history.c:137
 msgid "compress history stack"
@@ -1482,14 +1482,12 @@ msgid "equalizer"
 msgstr "equalizer"
 
 #: ../src/iop/atrous.c:599
-#, fuzzy
 msgid "enhance coarse"
-msgstr "förbättrad färgmatris"
+msgstr "förbättra ojämnheter"
 
 #: ../src/iop/atrous.c:613
-#, fuzzy
 msgid "sharpen and denoise (strong)"
-msgstr "reducera brus (mycket)"
+msgstr "skärpning och brusreducering  (mycket)"
 
 #: ../src/iop/atrous.c:627
 msgid "sharpen and denoise"
@@ -1531,9 +1529,8 @@ msgstr "klarhet"
 
 #: ../src/iop/atrous.c:949
 #: ../src/iop/atrous.c:953
-#, fuzzy
 msgid "coarse"
-msgstr "grovhet"
+msgstr "ojämnheter"
 
 #: ../src/iop/atrous.c:955
 #: ../src/iop/atrous.c:959
@@ -1655,9 +1652,8 @@ msgid "base curve"
 msgstr "baskurva"
 
 #: ../src/iop/bilateral.cc:70
-#, fuzzy
 msgid "denoise (deprecated)"
-msgstr "reducera brus (mycket)"
+msgstr "brusreducering (utgående)"
 
 #: ../src/iop/bilateral.cc:292
 #: ../src/iop/clahe.c:338
@@ -1728,9 +1724,8 @@ msgid "the threshold of light"
 msgstr "tröskelnivå av ljushet"
 
 #: ../src/iop/bloom.c:291
-#, fuzzy
 msgid "the strength of bloom"
-msgstr "styrkan av applicerat brus"
+msgstr "styrkan av applicerat ljus"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:57
@@ -1829,9 +1824,8 @@ msgid "b/w blue artifacts reduce"
 msgstr "s/v reducering av artefakter"
 
 #: ../src/iop/clahe.c:68
-#, fuzzy
 msgid "local contrast (deprecated)"
-msgstr "lokal kontrast (långsam)"
+msgstr "lokal kontrast (utgående)"
 
 #: ../src/iop/clahe.c:340
 #: ../src/iop/sharpen.c:335
@@ -1893,9 +1887,8 @@ msgid "adjust perspective for horizontal keystone distortion"
 msgstr "justera perspektivet för horisontell keystone distortion"
 
 #: ../src/iop/clipping.c:745
-#, fuzzy
 msgid "keystone v"
-msgstr "nyanskurva"
+msgstr "vertikal keystone"
 
 #: ../src/iop/clipping.c:749
 msgid "adjust perspective for vertical keystone distortion"
@@ -2224,6 +2217,9 @@ msgid ""
 "set to 0.0 to switch off.\n"
 "set to 1.0 to ignore edges."
 msgstr ""
+"tröskelvärde för kantmedveten median.\n"
+"värde 0.0 stänger av funktionen.\n"
+"värde 1.0 ignorerar kanter."
 
 #: ../src/iop/demosaic.c:892
 msgid "color smoothing"
@@ -2231,7 +2227,7 @@ msgstr "färguppmjukning"
 
 #: ../src/iop/demosaic.c:897
 msgid "how many color smoothing median steps after demosaicing"
-msgstr ""
+msgstr "antal färkuppmjuknings pass efter demosaic"
 
 #: ../src/iop/demosaic.c:900
 msgid "match greens"
@@ -2242,10 +2238,12 @@ msgid ""
 "switch on green equilibration before demosaicing.\n"
 "necessary for some mid-range cameras such as the EOS 400D."
 msgstr ""
+"slå på grön equilibration före demosaic.\n"
+"nödvändigt för mid-range kameror som tex. Canon EOS 400D"
 
 #: ../src/iop/equalizer.c:43
 msgid "legacy equalizer (deprecated)"
-msgstr ""
+msgstr "ärvd equalizer (utgående)"
 
 #: ../src/iop/equalizer.c:267
 msgid "null"
@@ -2257,6 +2255,9 @@ msgid ""
 "and is only here so you can switch it off\n"
 "and move to the new equalizer."
 msgstr ""
+"denna modul kommer att tas bort i framtiden\n"
+"och finns endast kvar så att du kan stänga av den\n"
+"och använda den nya equalizern."
 
 #: ../src/iop/exposure.c:279
 msgid "black"
@@ -2620,11 +2621,11 @@ msgstr "övre tröskel"
 
 #: ../src/iop/overexposed.c:250
 msgid "threshold of what shall be considered underexposed"
-msgstr ""
+msgstr "tröskelvärde för underexponerade områden"
 
 #: ../src/iop/overexposed.c:251
 msgid "threshold of what shall be considered overexposed"
-msgstr ""
+msgstr "tröskelvärde för överexponerade områden"
 
 #: ../src/iop/profile_gamma.c:37
 msgid "unbreak input profile"
@@ -2772,9 +2773,8 @@ msgid "contrast compression"
 msgstr "kontrast komprimering"
 
 #: ../src/iop/tonemap.cc:265
-#, fuzzy
 msgid "spatial extent"
-msgstr "gaussiska rumslig utrsträckning"
+msgstr "rumsbestämd utrsträckning"
 
 #: ../src/iop/velvia.c:68
 msgid "velvia"
@@ -3098,7 +3098,7 @@ msgstr "antal steg på vardera sida om center inställning, antal bilder = (steg
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
-msgstr ""
+msgstr "antal step för exponeringsstege, oftast är ett steg storlek konfigurerbart i kameran ochbrukar vara 3 steg per EV, med andra ord 3 steg är 1EV exponersingssteg mellan bilderi exponeringsstegen. "
 
 #: ../src/libs/camera.c:466
 msgid "properties"
@@ -3451,7 +3451,7 @@ msgstr "beskrivning"
 
 #: ../src/libs/metadata.c:274
 msgid "publisher"
-msgstr ""
+msgstr "utgivare"
 
 #: ../src/libs/metadata.c:305
 msgid "clear"
@@ -3516,11 +3516,11 @@ msgstr ""
 
 #: ../src/libs/metadata.c:347
 msgid "all rights reserved"
-msgstr ""
+msgstr "med ensamrätt"
 
 #: ../src/libs/metadata.c:347
 msgid "All rights reserved."
-msgstr ""
+msgstr "Med ensamrätt"
 
 #: ../src/libs/recentcollect.c:49
 msgid "recently used collections"
