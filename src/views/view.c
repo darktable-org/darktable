@@ -630,7 +630,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
       cairo_stroke(cr);
     }
-    else if ((img->flags & 0x7) == 6)
+    else if (img && ((img->flags & 0x7) == 6))
     {
       cairo_set_source_rgb(cr, 1., 0., 0.);
       cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
