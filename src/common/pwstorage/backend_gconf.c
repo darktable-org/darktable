@@ -27,82 +27,86 @@
 static const gchar* gconf_path = "plugins/pwstorage/";
 
 /** Store (key,value) pairs. */
-gboolean dt_pwstorage_gconf_set(const gchar* slot, GHashTable* table){
+gboolean dt_pwstorage_gconf_set(const gchar* slot, GHashTable* table)
+{
 
-	GHashTableIter iter;
-	g_hash_table_iter_init (&iter, table);
-	gpointer key, value;
+  GHashTableIter iter;
+  g_hash_table_iter_init (&iter, table);
+  gpointer key, value;
 
-	while (g_hash_table_iter_next (&iter, &key, &value)){
-		dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_gconf_set] storing (%s, %s)\n",(gchar*)key, (gchar*)value);
-		gsize size = strlen(gconf_path) + strlen(slot) + 1 + strlen(key);
-		gchar* _path = g_malloc(size+1);
-		gchar* _tmp = _path;
-		if(_path == NULL)
-			return FALSE;
-		_tmp = g_stpcpy(_tmp, gconf_path);
-		_tmp = g_stpcpy(_tmp, slot);
-		_tmp[0] = '/';
-		_tmp++;
-		_tmp = g_stpcpy(_tmp, key);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+  {
+    dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_gconf_set] storing (%s, %s)\n",(gchar*)key, (gchar*)value);
+    gsize size = strlen(gconf_path) + strlen(slot) + 1 + strlen(key);
+    gchar* _path = g_malloc(size+1);
+    gchar* _tmp = _path;
+    if(_path == NULL)
+      return FALSE;
+    _tmp = g_stpcpy(_tmp, gconf_path);
+    _tmp = g_stpcpy(_tmp, slot);
+    _tmp[0] = '/';
+    _tmp++;
+    _tmp = g_stpcpy(_tmp, key);
 
-		// This would be the place to do manual encryption of the data.
-		// I know enough about cryptography to not implement this.
-		// If you don't like plain text password just use one of the other backends.
+    // This would be the place to do manual encryption of the data.
+    // I know enough about cryptography to not implement this.
+    // If you don't like plain text password just use one of the other backends.
 
-		dt_conf_set_string( _path, value );
-		g_free(_path);
-	}
+    dt_conf_set_string( _path, value );
+    g_free(_path);
+  }
 
-	return TRUE;
+  return TRUE;
 }
 
 /** Load (key,value) pairs. */
-GHashTable* dt_pwstorage_gconf_get(const gchar* slot){
-	GHashTable* table = g_hash_table_new(g_str_hash, g_str_equal);
+GHashTable* dt_pwstorage_gconf_get(const gchar* slot)
+{
+  GHashTable* table = g_hash_table_new(g_str_hash, g_str_equal);
 
-	gsize size = strlen(gconf_path) + strlen(slot);
-	gchar* _path = g_malloc(size+1);
-	gchar* _tmp = _path;
-	if(_path == NULL)
-		return table;
-	_tmp = g_stpcpy(_tmp, gconf_path);
-	_tmp = g_stpcpy(_tmp, slot);
+  gsize size = strlen(gconf_path) + strlen(slot);
+  gchar* _path = g_malloc(size+1);
+  gchar* _tmp = _path;
+  if(_path == NULL)
+    return table;
+  _tmp = g_stpcpy(_tmp, gconf_path);
+  _tmp = g_stpcpy(_tmp, slot);
 
-	GSList* list;
-	list = dt_conf_all_string_entries(_path);
+  GSList* list;
+  list = dt_conf_all_string_entries(_path);
 
-	g_free(_path);
+  g_free(_path);
 
-	GSList* next = list;
-	while(next){
-		gchar* key = ((dt_conf_string_entry_t*)next->data)->key;
+  GSList* next = list;
+  while(next)
+  {
+    gchar* key = ((dt_conf_string_entry_t*)next->data)->key;
 
-		gsize size = strlen(gconf_path) + strlen(slot) + 1 + strlen(key);
-		gchar* _path = g_malloc(size+1);
-		gchar* _tmp = _path;
-		if(_path == NULL)
-			return table;
-		_tmp = g_stpcpy(_tmp, gconf_path);
-		_tmp = g_stpcpy(_tmp, slot);
-		_tmp[0] = '/';
-		_tmp++;
-		_tmp = g_stpcpy(_tmp, key);
+    gsize size = strlen(gconf_path) + strlen(slot) + 1 + strlen(key);
+    gchar* _path = g_malloc(size+1);
+    gchar* _tmp = _path;
+    if(_path == NULL)
+      return table;
+    _tmp = g_stpcpy(_tmp, gconf_path);
+    _tmp = g_stpcpy(_tmp, slot);
+    _tmp[0] = '/';
+    _tmp++;
+    _tmp = g_stpcpy(_tmp, key);
 
-		gchar* value = ((dt_conf_string_entry_t*)next->data)->value;
-		g_free(_path);
+    gchar* value = ((dt_conf_string_entry_t*)next->data)->value;
+    g_free(_path);
 
-		dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_gconf_get] reading (%s, %s)\n",(gchar*)key, (gchar*)value);
+    dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_gconf_get] reading (%s, %s)\n",(gchar*)key, (gchar*)value);
 
-		// This would be the place for manual decryption.
-		// See above.
+    // This would be the place for manual decryption.
+    // See above.
 
-		g_hash_table_insert(table, g_strdup(key), g_strdup(value));
+    g_hash_table_insert(table, g_strdup(key), g_strdup(value));
 
-		next = next->next;
-	}
+    next = next->next;
+  }
 
-	g_slist_free(list);
+  g_slist_free(list);
 
-	return table;
+  return table;
 }

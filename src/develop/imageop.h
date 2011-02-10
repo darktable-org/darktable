@@ -74,7 +74,7 @@ typedef struct dt_iop_module_so_t
   int (*groups)           ();
   int (*flags)            ();
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  
+
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
@@ -87,7 +87,7 @@ typedef struct dt_iop_module_so_t
   int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
   int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
-  
+
   void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup)         (struct dt_iop_module_t *self);
   void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
@@ -159,7 +159,7 @@ typedef struct dt_iop_module_t
   int (*flags)            ();
   /** how many bytes per pixel in the output. */
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  
+
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
   void (*gui_update)      (struct dt_iop_module_t *self);
@@ -178,7 +178,7 @@ typedef struct dt_iop_module_t
   int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
   int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
-  
+
   void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
   void (*cleanup)         (struct dt_iop_module_t *self);
   /** this inits the piece of the pipe, allocing piece->data as necessary. */
@@ -238,7 +238,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
-                                  uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
+                            uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
 
 void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);

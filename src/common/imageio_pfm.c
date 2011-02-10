@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/darktable.h"
 #include "common/imageio_pfm.h"
@@ -53,16 +53,16 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
   if(cols == 3)
   {
     ret = fread(img->pixels, 3*sizeof(float), img->width*img->height, f);
-    for(int i=img->width*img->height-1;i>=0;i--) for(int c=0;c<3;c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0, img->pixels[3*i+c]));
+    for(int i=img->width*img->height-1; i>=0; i--) for(int c=0; c<3; c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0, img->pixels[3*i+c]));
   }
   else for(int j=0; j < img->height; j++)
-    for(int i=0; i < img->width; i++)
-    {
-      ret = fread(img->pixels + 4*(img->width*j + i), sizeof(float), 1, f);
-      img->pixels[4*(img->width*j + i) + 2] =
-      img->pixels[4*(img->width*j + i) + 1] =
-      img->pixels[4*(img->width*j + i) + 0];
-    }
+      for(int i=0; i < img->width; i++)
+      {
+        ret = fread(img->pixels + 4*(img->width*j + i), sizeof(float), 1, f);
+        img->pixels[4*(img->width*j + i) + 2] =
+          img->pixels[4*(img->width*j + i) + 1] =
+            img->pixels[4*(img->width*j + i) + 0];
+      }
   float *line = (float *)malloc(sizeof(float)*4*img->width);
   for(int j=0; j < img->height/2; j++)
   {
@@ -108,16 +108,16 @@ dt_imageio_retval_t dt_imageio_open_pfm_preview(dt_image_t *img, const char *fil
   if(cols == 3)
   {
     ret = fread(buf, 3*sizeof(float), img->width*img->height, f);
-    for(int i=img->width*img->height-1;i>=0;i--) for(int c=0;c<3;c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0f, buf[3*i+c]));
+    for(int i=img->width*img->height-1; i>=0; i--) for(int c=0; c<3; c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0f, buf[3*i+c]));
   }
   else for(int j=0; j < img->height; j++)
-    for(int i=0; i < img->width; i++)
-    {
-      ret = fread(buf + 4*(img->width*j + i), sizeof(float), 1, f);
-      buf[4*(img->width*j + i) + 2] =
-      buf[4*(img->width*j + i) + 1] =
-      buf[4*(img->width*j + i) + 0];
-    }
+      for(int i=0; i < img->width; i++)
+      {
+        ret = fread(buf + 4*(img->width*j + i), sizeof(float), 1, f);
+        buf[4*(img->width*j + i) + 2] =
+          buf[4*(img->width*j + i) + 1] =
+            buf[4*(img->width*j + i) + 0];
+      }
   float *line = (float *)malloc(sizeof(float)*4*img->width);
   for(int j=0; j < img->height/2; j++)
   {

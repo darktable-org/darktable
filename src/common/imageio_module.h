@@ -55,7 +55,7 @@ typedef struct dt_imageio_module_format_t
 
   // data for you to initialize
   void *gui_data;
-  
+
   // gui and management:
   /* get translated module name */
   const char* (*name) ();
@@ -114,7 +114,7 @@ typedef struct dt_imageio_module_storage_t
 
   // data for you to initialize
   void *gui_data;
-  
+
   // gui and management:
   /* get translated module name */
   const char* (*name) ();

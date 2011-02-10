@@ -33,11 +33,11 @@ int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint
   if(f)
   {
     (void)fprintf(f, "P6\n%d %d\n65535\n", ppm->width, ppm->height);
-    for(int y=0;y<ppm->height;y++)
+    for(int y=0; y<ppm->height; y++)
     {
-      for(int x=0;x<ppm->width;x++)
+      for(int x=0; x<ppm->width; x++)
       {
-        for(int c=0;c<3;c++) swapped[c] = (0xff00 & (row[c]<<8))|(row[c]>>8);
+        for(int c=0; c<3; c++) swapped[c] = (0xff00 & (row[c]<<8))|(row[c]>>8);
         int cnt = fwrite(&swapped, sizeof(uint16_t), 3, f);
         if(cnt != 3) break;
         row+=4;
@@ -80,7 +80,7 @@ mime(dt_imageio_module_data_t *data)
 {
   return "image/x-portable-pixmap";
 }
- 
+
 const char*
 extension(dt_imageio_module_data_t *data)
 {

@@ -67,7 +67,7 @@ name ()
 }
 
 uint32_t
-views() 
+views()
 {
   return DT_LIGHTTABLE_VIEW | DT_LEFT_PANEL_VIEW;
 }
@@ -81,7 +81,8 @@ get_collect (dt_lib_collect_rule_t *r)
 
 static gboolean
 entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
-{ // update related list
+{
+  // update related list
   dt_lib_collect_t *d = get_collect(dr);
   sqlite3_stmt *stmt;
   GtkTreeIter iter;
@@ -99,7 +100,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
   dt_conf_set_string (confname, text);
   snprintf(confname, 200, "plugins/lighttable/collect/item%1ld", dr->num);
   dt_conf_set_int (confname, property);
-  
+
   switch(property)
   {
     case 0: // film roll
@@ -114,75 +115,75 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
     case 4: // History, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-        DT_LIB_COLLECT_COL_TEXT,_("altered"),
-        DT_LIB_COLLECT_COL_ID, 0,
-        DT_LIB_COLLECT_COL_TOOLTIP,_("altered"),
-        -1);
+                          DT_LIB_COLLECT_COL_TEXT,_("altered"),
+                          DT_LIB_COLLECT_COL_ID, 0,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("altered"),
+                          -1);
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-        DT_LIB_COLLECT_COL_TEXT,_("not altered"),
-        DT_LIB_COLLECT_COL_ID, 1,
-        DT_LIB_COLLECT_COL_TOOLTIP,_("not altered"),
-        -1);
+                          DT_LIB_COLLECT_COL_TEXT,_("not altered"),
+                          DT_LIB_COLLECT_COL_ID, 1,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("not altered"),
+                          -1);
       goto entry_key_press_exit;
-    break;
-    
+      break;
+
     case 5: // colorlabels
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-        DT_LIB_COLLECT_COL_TEXT,_("red"),
-        DT_LIB_COLLECT_COL_ID, 0,
-        DT_LIB_COLLECT_COL_TOOLTIP, _("red"),
-        -1);
+                          DT_LIB_COLLECT_COL_TEXT,_("red"),
+                          DT_LIB_COLLECT_COL_ID, 0,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("red"),
+                          -1);
       gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-        DT_LIB_COLLECT_COL_TEXT,_("yellow"),
-        DT_LIB_COLLECT_COL_ID, 1,
-        DT_LIB_COLLECT_COL_TOOLTIP, _("yellow"),
-        -1);
-     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+                          DT_LIB_COLLECT_COL_TEXT,_("yellow"),
+                          DT_LIB_COLLECT_COL_ID, 1,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("yellow"),
+                          -1);
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-        DT_LIB_COLLECT_COL_TEXT,_("green"),
-        DT_LIB_COLLECT_COL_ID, 2,
-        DT_LIB_COLLECT_COL_TOOLTIP, _("green"),
-        -1);
-     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+                          DT_LIB_COLLECT_COL_TEXT,_("green"),
+                          DT_LIB_COLLECT_COL_ID, 2,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("green"),
+                          -1);
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-        DT_LIB_COLLECT_COL_TEXT,_("blue"),
-        DT_LIB_COLLECT_COL_ID, 3,
-        DT_LIB_COLLECT_COL_TOOLTIP, _("blue"),
-        -1);
-     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+                          DT_LIB_COLLECT_COL_TEXT,_("blue"),
+                          DT_LIB_COLLECT_COL_ID, 3,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("blue"),
+                          -1);
+      gtk_list_store_append(GTK_LIST_STORE(model), &iter);
       gtk_list_store_set (GTK_LIST_STORE(model), &iter,
-        DT_LIB_COLLECT_COL_TEXT,_("purple"),
-        DT_LIB_COLLECT_COL_ID, 4,
-        DT_LIB_COLLECT_COL_TOOLTIP, _("purple"),
-        -1);
+                          DT_LIB_COLLECT_COL_TEXT,_("purple"),
+                          DT_LIB_COLLECT_COL_ID, 4,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("purple"),
+                          -1);
       goto entry_key_press_exit;
-    break;
-    
-    // TODO: Add empty string for metadata?
-    // TODO: Autogenerate this code?
+      break;
+
+      // TODO: Add empty string for metadata?
+      // TODO: Autogenerate this code?
     case 6: // title
-        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
-        DT_METADATA_XMP_DC_TITLE, escaped_text);
-        break;
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+               DT_METADATA_XMP_DC_TITLE, escaped_text);
+      break;
     case 7: // description
-        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
-        DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
-        break;
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+               DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
+      break;
     case 8: // creator
-        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
-        DT_METADATA_XMP_DC_CREATOR, escaped_text);
-        break;
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+               DT_METADATA_XMP_DC_CREATOR, escaped_text);
+      break;
     case 9: // publisher
-        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
-        DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
-        break;
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+               DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
+      break;
     case 10: // rights
-        snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
-        DT_METADATA_XMP_DC_RIGHTS, escaped_text);
-        break;
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+               DT_METADATA_XMP_DC_RIGHTS, escaped_text);
+      break;
 
     default: // case 3: // day
       snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", escaped_text);
@@ -219,12 +220,12 @@ gui_update (dt_lib_collect_t *d)
   darktable.gui->reset = 1;
   const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1, 0, 9);
   char confname[200];
-  for(int i=0;i<MAX_RULES;i++)
+  for(int i=0; i<MAX_RULES; i++)
   {
     gtk_widget_set_no_show_all(d->rule[i].hbox, TRUE);
     gtk_widget_set_visible(d->rule[i].hbox, FALSE);
   }
-  for(int i=0;i<=active;i++)
+  for(int i=0; i<=active; i++)
   {
     gtk_widget_set_no_show_all(d->rule[i].hbox, FALSE);
     gtk_widget_set_visible(d->rule[i].hbox, TRUE);
@@ -248,7 +249,7 @@ gui_update (dt_lib_collect_t *d)
     }
     else if(i == active)
     {
-      button->icon = dtgtk_cairo_paint_dropdown; 
+      button->icon = dtgtk_cairo_paint_dropdown;
       gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear this rule or add new rules"), (char *)NULL);
     }
     else
@@ -362,8 +363,8 @@ focus_in_callback (GtkWidget *w, GdkEventFocus *event, dt_lib_module_t *self)
 
 static void
 hide_callback (GObject    *object,
-                   GParamSpec *param_spec,
-                   GtkWidget *view)
+               GParamSpec *param_spec,
+               GtkWidget *view)
 {
   GtkExpander *expander;
   expander = GTK_EXPANDER (object);
@@ -492,7 +493,7 @@ menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_string("plugins/lighttable/collect/string0", "");
   }
   // move up all still active rules by one.
-  for(int i=d->num;i<MAX_RULES-1;i++)
+  for(int i=d->num; i<MAX_RULES-1; i++)
   {
     char confname[200];
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i+1);
@@ -527,7 +528,7 @@ popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_r
   mi = gtk_menu_item_new_with_label(_("clear this rule"));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_clear), d);
-  
+
   if(d->num == active - 1)
   {
     mi = gtk_menu_item_new_with_label(_("narrow down search"));
@@ -580,7 +581,7 @@ gui_init (dt_lib_module_t *self)
   d->view = view;
   GtkListStore *liststore;
 
-  for(int i=0;i<MAX_RULES;i++)
+  for(int i=0; i<MAX_RULES; i++)
   {
     d->rule[i].num = i;
     box = GTK_BOX(gtk_hbox_new(FALSE, 5));
@@ -588,7 +589,7 @@ gui_init (dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     w = gtk_combo_box_new_text();
     d->rule[i].combo = GTK_COMBO_BOX(w);
-    for(int k=0;k<dt_lib_collect_string_cnt;k++)
+    for(int k=0; k<dt_lib_collect_string_cnt; k++)
       gtk_combo_box_append_text(GTK_COMBO_BOX(w), _(dt_lib_collect_string[k]));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);

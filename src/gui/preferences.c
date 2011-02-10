@@ -26,11 +26,11 @@ void dt_gui_preferences_show()
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkWidget *dialog = gtk_dialog_new_with_buttons(
-      _("darktable preferences"), GTK_WINDOW (win), 
-      GTK_DIALOG_MODAL,
-      _("close"),
-      GTK_RESPONSE_ACCEPT,
-      NULL);
+                        _("darktable preferences"), GTK_WINDOW (win),
+                        GTK_DIALOG_MODAL,
+                        _("close"),
+                        GTK_RESPONSE_ACCEPT,
+                        NULL);
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
   gtk_window_resize(GTK_WINDOW(dialog), 600, 300);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));

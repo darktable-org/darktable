@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
@@ -68,10 +68,10 @@ const char *name()
 }
 
 
-int 
-groups () 
+int
+groups ()
 {
-	return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT;
 }
 
 #ifdef HAVE_OPENCL
@@ -84,7 +84,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err;
   const int devid = piece->pipe->devid;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
- 	if(rad == 0)
+  if(rad == 0)
   {
     size_t origin[] = {0, 0, 0};
     size_t region[] = {roi_in->width, roi_in->height, 1};
@@ -97,8 +97,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float sigma2 = (2.5*2.5)*(d->radius*roi_in->scale/piece->iscale)*(d->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
   // init gaussian kernel
-  for(int l=-rad;l<=rad;l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
-  for(int l=-rad;l<=rad;l++) m[l] /= weight;
+  for(int l=-rad; l<=rad; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
+  for(int l=-rad; l<=rad; l++) m[l] /= weight;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -115,10 +115,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-	dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
+  dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
   const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
- 	if(rad == 0)
+  if(rad == 0)
   {
     memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
@@ -131,62 +131,63 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float weight = 0.0f;
   // init gaussian kernel
   m = mat;
-  for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++,m++)
-    weight += *m = expf(- (l*l + k*k)/(2.f*sigma2));
+  for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
+      weight += *m = expf(- (l*l + k*k)/(2.f*sigma2));
   m = mat;
-  for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++,m++)
-    *m /= weight;
+  for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
+      *m /= weight;
 
   // gauss blur the image
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
-  for(int j=rad;j<roi_out->height-rad;j++)
+  for(int j=rad; j<roi_out->height-rad; j++)
   {
     float *in = ((float *)ivoid) + ch*(j*roi_in->width + rad);
     float *out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
-    for(int i=rad;i<roi_out->width-rad;i++)
+    for(int i=rad; i<roi_out->width-rad; i++)
     {
       float *m = mat;
       float sum = 0.0f;
-      for(int l=-rad;l<=rad;l++)
+      for(int l=-rad; l<=rad; l++)
       {
-	float *inp = in + ch*(l*roi_in->width-rad);
-	for(int k=-rad;k<=rad;k++,m++,inp+=ch)
-	  sum += *m * *inp;
+        float *inp = in + ch*(l*roi_in->width-rad);
+        for(int k=-rad; k<=rad; k++,m++,inp+=ch)
+          sum += *m * *inp;
       }
       *out = sum;
-      out += ch; in += ch;
+      out += ch;
+      in += ch;
     }
   }
 
   // fill unsharpened border
-  for(int j=0;j<rad;j++)
+  for(int j=0; j<rad; j++)
     memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
-  for(int j=roi_out->height-rad;j<roi_out->height;j++)
+  for(int j=roi_out->height-rad; j<roi_out->height; j++)
     memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
-  for(int j=rad;j<roi_out->height-rad;j++)
+  for(int j=rad; j<roi_out->height-rad; j++)
   {
     float *in = ((float*)ivoid) + ch*roi_out->width*j;
     float *out = ((float*)ovoid) + ch*roi_out->width*j;
-    for(int i=0;i<rad;i++)
+    for(int i=0; i<rad; i++)
       out[ch*i] = in[ch*i];
-    for(int i=roi_out->width-rad;i<roi_out->width;i++)
+    for(int i=roi_out->width-rad; i<roi_out->width; i++)
       out[ch*i] = in[ch*i];
   }
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#pragma omp parallel for default(none) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
   // subtract blurred image, if diff > thrs, add *amount to orginal image
-  for(int j=0;j<roi_out->height;j++)
-  { 
+  for(int j=0; j<roi_out->height; j++)
+  {
     float *in  = (float *)ivoid + j*ch*roi_out->width;
     float *out = (float *)ovoid + j*ch*roi_out->width;
-	  
-    for(int i=0;i<roi_out->width;i++)
+
+    for(int i=0; i<roi_out->width; i++)
     {
       out[1] = in[1];
       out[2] = in[2];
@@ -197,7 +198,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         out[0] = fmaxf(0.0, in[0] + detail*data->amount);
       }
       else out[0] = in[0];
-      out += ch; in += ch;
+      out += ch;
+      in += ch;
     }
   }
 }
@@ -287,7 +289,10 @@ void init(dt_iop_module_t *module)
   module->priority = 850;
   module->params_size = sizeof(dt_iop_sharpen_params_t);
   module->gui_data = NULL;
-  dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){2.0, 0.5, 0.004};
+  dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t)
+  {
+    2.0, 0.5, 0.004
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_sharpen_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_sharpen_params_t));
 }

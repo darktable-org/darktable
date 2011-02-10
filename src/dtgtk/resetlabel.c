@@ -22,17 +22,17 @@ static void _reset_label_class_init (GtkDarktableResetLabelClass *klass);
 static void _reset_label_init (GtkDarktableResetLabel *label);
 
 
-static void 
+static void
 _reset_label_class_init (GtkDarktableResetLabelClass *klass)
 {
 }
 
-static void 
+static void
 _reset_label_init(GtkDarktableResetLabel *label)
 {
 }
 
-static gboolean 
+static gboolean
 _reset_label_callback(GtkDarktableResetLabel *label, GdkEventButton *event, gpointer user_data)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -46,10 +46,10 @@ _reset_label_callback(GtkDarktableResetLabel *label, GdkEventButton *event, gpoi
 }
 
 // public functions
-GtkWidget* 
+GtkWidget*
 dtgtk_reset_label_new (const gchar *text, dt_iop_module_t *module, void *param, int param_size)
 {
-  GtkDarktableResetLabel *label;	
+  GtkDarktableResetLabel *label;
   label = gtk_type_new (dtgtk_reset_label_get_type());
   label->module = module;
   label->offset = param - (void *)module->params;
@@ -66,11 +66,13 @@ dtgtk_reset_label_new (const gchar *text, dt_iop_module_t *module, void *param, 
   return (GtkWidget *)label;
 }
 
-GtkType dtgtk_reset_label_get_type() 
+GtkType dtgtk_reset_label_get_type()
 {
   static GtkType dtgtk_reset_label_type = 0;
-  if (!dtgtk_reset_label_type) {
-    static const GtkTypeInfo dtgtk_reset_label_info = {
+  if (!dtgtk_reset_label_type)
+  {
+    static const GtkTypeInfo dtgtk_reset_label_info =
+    {
       "GtkDarktableResetLabel",
       sizeof(GtkDarktableResetLabel),
       sizeof(GtkDarktableResetLabelClass),

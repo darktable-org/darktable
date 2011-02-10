@@ -27,7 +27,7 @@
 void dt_gui_navigation_init(dt_gui_navigation_t *n, GtkWidget *widget)
 {
   n->dragging = 0;
-  
+
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
   g_signal_connect (G_OBJECT (widget), "expose-event",
@@ -61,7 +61,8 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
     cairo_paint(cr);
 
-    width -= 2*inset; height -= 2*inset;
+    width -= 2*inset;
+    height -= 2*inset;
     cairo_translate(cr, inset, inset);
 
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
@@ -71,14 +72,14 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
     const float scale = fminf(width/(float)wd, height/(float)ht);
 
     const int stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-    cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    cairo_surface_t *surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width/2.0, height/2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f*wd, -.5f*ht);
 
     // draw shadow around
     float alpha = 1.0f;
-    for(int k=0;k<4;k++)
+    for(int k=0; k<4; k++)
     {
       cairo_rectangle(cr, -k/scale, -k/scale, wd + 2*k/scale, ht + 2*k/scale);
       cairo_set_source_rgba(cr, 0, 0, 0, alpha);

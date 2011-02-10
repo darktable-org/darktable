@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "iop/exposure.h"
 #include "common/opencl.h"
@@ -39,7 +39,7 @@ const char *name()
   return _("exposure");
 }
 
-int 
+int
 groups ()
 {
   return IOP_GROUP_BASIC;
@@ -61,7 +61,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err;
   const float black = d->black;
   const float white = exp2f(-d->exposure);
-  const float scale = 1.0/(white - black); 
+  const float scale = 1.0/(white - black);
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -70,7 +70,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 3, sizeof(float), (void *)&scale);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue exposure kernel! %d\n", err);
-  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] *= scale;
+  for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
 #endif
 
@@ -80,19 +80,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float black = d->black;
   const float white = exp2f(-d->exposure);
   const int ch = piece->colors;
-  const float scale = 1.0/(white - black); 
+  const float scale = 1.0/(white - black);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
-  for(int k=0;k<roi_out->height;k++)
+  for(int k=0; k<roi_out->height; k++)
   {
     const float *in = ((float *)i) + ch*k*roi_out->width;
     float *out = ((float *)o) + ch*k*roi_out->width;
-    for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
-      for(int i=0;i<3;i++)
+    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+      for(int i=0; i<3; i++)
         out[i] = fmaxf(0.0f, (in[i]-black)*scale);
   }
-  for(int k=0;k<3;k++) piece->pipe->processed_maximum[k] *= scale;
+  for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
 
 
@@ -134,7 +134,10 @@ void init(dt_iop_module_t *module)
   module->priority = 255;
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
-  dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t){0., 1., 1.0};
+  dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t)
+  {
+    0., 1., 1.0
+  };
 
   tmp.black = 0.0f;
   tmp.exposure = 0.0f;
@@ -249,7 +252,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
-    * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
+                      * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
   dt_iop_exposure_set_white(self, white);
   return FALSE;
 }
@@ -284,10 +287,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.1, 0.1, .001, p->black, 3));
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), (char *)NULL);
-  
+
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure, 3));
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("adjust the exposure correction [ev]"), (char *)NULL);
-  
+
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -308,7 +311,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (white_callback), self);
   // g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    // G_CALLBACK (gain_callback), self);
+  // G_CALLBACK (gain_callback), self);
   g_signal_connect (G_OBJECT (g->autoexp), "toggled",
                     G_CALLBACK (autoexp_callback), self);
   g_signal_connect (G_OBJECT(self->widget), "expose-event",

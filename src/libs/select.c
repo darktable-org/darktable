@@ -32,7 +32,7 @@ name ()
   return _("select");
 }
 
-uint32_t views() 
+uint32_t views()
 {
   return DT_LIGHTTABLE_VIEW;
 }
@@ -41,15 +41,15 @@ static void
 button_clicked(GtkWidget *widget, gpointer user_data)
 {
   char fullq[2048];
-  
+
   /* create a copy of darktable collection */
   const dt_collection_t *collection = dt_collection_new (darktable.collection);
-  
+
   /* set query flags to not include order or limit part */
   dt_collection_set_query_flags (collection, (dt_collection_get_query_flags(collection)&(~(COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT))));
   dt_collection_update (collection);
   snprintf (fullq, 2048, "insert into selected_images %s", dt_collection_get_query (collection));
-  
+
   switch((long int)user_data)
   {
     case 0: // all
@@ -84,10 +84,10 @@ button_clicked(GtkWidget *widget, gpointer user_data)
       DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
       break;
   }
-  
-  /* free temporary collection and redraw visual*/  
+
+  /* free temporary collection and redraw visual*/
   dt_collection_free(collection);
- 
+
   dt_control_queue_draw_all();
 }
 

@@ -50,7 +50,7 @@ name ()
 }
 
 uint32_t
-views() 
+views()
 {
   return DT_LIGHTTABLE_VIEW | DT_LEFT_PANEL_VIEW;
 }
@@ -68,24 +68,28 @@ serialize(char *buf, int bufsize)
   int c;
   const int num_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   c = snprintf(buf, bufsize, "%d:", num_rules);
-  buf += c; bufsize -= c;
-  for(int k=0;k<num_rules;k++)
+  buf += c;
+  bufsize -= c;
+  for(int k=0; k<num_rules; k++)
   {
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
     const int mode = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", mode);
-    buf += c; bufsize -= c;
+    buf += c;
+    bufsize -= c;
     snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
     const int item = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", item);
-    buf += c; bufsize -= c;
+    buf += c;
+    bufsize -= c;
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
     gchar *str = dt_conf_get_string(confname);
     if(str)
     {
       if(str[0] == '\0') return 1;
       c = snprintf(buf, bufsize, "%s$", str);
-      buf += c; bufsize -= c;
+      buf += c;
+      bufsize -= c;
       g_free(str);
     }
     else
@@ -104,8 +108,9 @@ deserialize(char *buf)
   int mode, item;
   sscanf(buf, "%d", &num_rules);
   dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
-  while(buf[0] != ':') buf++; buf++;
-  for(int k=0;k<num_rules;k++)
+  while(buf[0] != ':') buf++;
+  buf++;
+  for(int k=0; k<num_rules; k++)
   {
     sscanf(buf, "%d:%d:%[^$]", &mode, &item, str);
     snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
@@ -114,7 +119,8 @@ deserialize(char *buf)
     dt_conf_set_int(confname, item);
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
     dt_conf_set_string(confname, str);
-    while(buf[0] != '$' && buf[0] != '\0') buf++; buf++;
+    while(buf[0] != '$' && buf[0] != '\0') buf++;
+    buf++;
   }
   dt_collection_update_query(darktable.collection);
 }
@@ -127,30 +133,32 @@ pretty_print(char *buf, char *out)
   char str[400] = {0};
   int mode, item;
   sscanf(buf, "%d", &num_rules);
-  while(buf[0] != ':') buf++; buf++;
-  for(int k=0;k<num_rules;k++)
+  while(buf[0] != ':') buf++;
+  buf++;
+  for(int k=0; k<num_rules; k++)
   {
     sscanf(buf, "%d:%d:%[^$]", &mode, &item, str);
     str[399] = '$';
 
     if(k > 0) switch(mode)
-    {
-      case DT_LIB_COLLECT_MODE_AND:
-        out += sprintf(out, _(" and "));
-        break;
-      case DT_LIB_COLLECT_MODE_OR:
-        out += sprintf(out, _(" or "));
-        break;
-      default: //case DT_LIB_COLLECT_MODE_AND_NOT:
-        out += sprintf(out, _(" but not "));
-        break;
-    }
+      {
+        case DT_LIB_COLLECT_MODE_AND:
+          out += sprintf(out, _(" and "));
+          break;
+        case DT_LIB_COLLECT_MODE_OR:
+          out += sprintf(out, _(" or "));
+          break;
+        default: //case DT_LIB_COLLECT_MODE_AND_NOT:
+          out += sprintf(out, _(" but not "));
+          break;
+      }
     int i = 0;
     while(str[i] != '$') i++;
     str[i] = '\0';
 
     out += sprintf(out, "%s %s", _(dt_lib_collect_string[item]), item == 0 ? dt_image_film_roll_name(str) : str);
-    while(buf[0] != '$' && buf[0] != '\0') buf++; buf++;
+    while(buf[0] != '$' && buf[0] != '\0') buf++;
+    buf++;
   }
 }
 
@@ -159,7 +167,7 @@ button_pressed (GtkButton *button, dt_lib_recentcollect_t *d)
 {
   // deserialize this button's preset
   int n = -1;
-  for(int k=0;k<NUM_LINES;k++)
+  for(int k=0; k<NUM_LINES; k++)
   {
     if(button == GTK_BUTTON(d->item[k].button))
     {
@@ -189,7 +197,7 @@ collection_updated(void *d)
   if(serialize(buf, bufsize)) return;
 
   int n = -1;
-  for(int k=0;k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES);k++)
+  for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)
   {
     // is it already in the current list?
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
@@ -220,7 +228,7 @@ collection_updated(void *d)
   if(n >= 0 && n < NUM_LINES)
   {
     // sort n to the top
-    for(int k=n;k>0;k--)
+    for(int k=n; k>0; k--)
     {
       snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k-1);
       gchar *line1 = dt_conf_get_string(confname);
@@ -234,7 +242,7 @@ collection_updated(void *d)
     dt_conf_set_string("plugins/lighttable/recentcollect/line0", buf);
   }
   // update button descriptions:
-  for(int k=0;k<NUM_LINES;k++)
+  for(int k=0; k<NUM_LINES; k++)
   {
     char str[200] = {0};
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
@@ -252,7 +260,7 @@ collection_updated(void *d)
     gtk_widget_set_no_show_all(c->item[k].button, TRUE);
     gtk_widget_set_visible(c->item[k].button, FALSE);
   }
-  for(int k=0;k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES);k++)
+  for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)
   {
     gtk_widget_set_no_show_all(c->item[k].button, FALSE);
     gtk_widget_set_visible(c->item[k].button, TRUE);
@@ -265,7 +273,7 @@ gui_reset (dt_lib_module_t *self)
   printf("gui reset\n");
   dt_conf_set_int("plugins/lighttable/recentcollect/num_items", 0);
   char confname[200];
-  for(int k=0;k<NUM_LINES;k++)
+  for(int k=0; k<NUM_LINES; k++)
   {
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
     dt_conf_set_string(confname, "");
@@ -281,7 +289,7 @@ gui_init (dt_lib_module_t *self)
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 0);
   // add buttons in the list, set them all to invisible
-  for(int k=0;k<NUM_LINES;k++)
+  for(int k=0; k<NUM_LINES; k++)
   {
     d->item[k].button = dtgtk_button_new(NULL, CPF_STYLE_FLAT);
     gtk_box_pack_start(GTK_BOX(self->widget), d->item[k].button, FALSE, TRUE, 0);

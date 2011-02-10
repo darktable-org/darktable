@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -73,8 +73,8 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES;
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_COLOR;
 }
@@ -88,7 +88,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  
+
   // Apply velvia saturation
   in  = (float *)ivoid;
   out = (float *)ovoid;
@@ -97,9 +97,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
+    for(int k=0; k<roi_out->width*roi_out->height; k++)
     {
       float *inp = in + ch*k;
       float *outp = out + ch*k;
@@ -208,7 +208,10 @@ void init(dt_iop_module_t *module)
   module->priority = 967;
   module->params_size = sizeof(dt_iop_velvia_params_t);
   module->gui_data = NULL;
-  dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t){50,50,.5};
+  dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t)
+  {
+    50,50,.5
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_velvia_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_velvia_params_t));
 }
@@ -232,11 +235,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  
+
   g->label1 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
   g->label2 = dtgtk_reset_label_new(_("vibrance"), self, &p->vibrance, sizeof(float));
   g->label3 = dtgtk_reset_label_new(_("mid-tones bias"), self, &p->luminance, sizeof(float));
- 
+
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
@@ -246,20 +249,20 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.010, p->luminance, 0));
   dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_RATIO);
-  
+
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the amount of saturation to apply"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the vibrance amount"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("how much to spare highlights and shadows"), (char *)NULL);
-  
+
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (saturation_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-        G_CALLBACK (vibrance_callback), self);
+                    G_CALLBACK (vibrance_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-        G_CALLBACK (luminance_callback), self);  
+                    G_CALLBACK (luminance_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

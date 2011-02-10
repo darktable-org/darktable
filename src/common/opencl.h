@@ -19,11 +19,11 @@
 #define DT_OPENCL_H
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 #define DT_OPENCL_MAX_PROGRAMS 256
-#define DT_OPENCL_MAX_KERNELS 512 
+#define DT_OPENCL_MAX_KERNELS 512
 
 #ifdef HAVE_OPENCL
 
@@ -32,7 +32,7 @@
 #include <CL/cl.h>
 // #pragma GCC diagnostic
 #include "common/dtpthread.h"
- 
+
 /**
  * to support multi-gpu and mixed systems with cpu support,
  * we encapsulate devices and use separate command queues.
@@ -108,18 +108,45 @@ void* dt_opencl_alloc_device(const int width, const int height, const int devid,
 
 #else
 #include <stdlib.h>
-typedef struct dt_opencl_t {int inited;} dt_opencl_t;
-static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[]) { cl->inited = 0; }
+typedef struct dt_opencl_t
+{
+  int inited;
+} dt_opencl_t;
+static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
+{
+  cl->inited = 0;
+}
 static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}
-static inline int dt_opencl_lock_device(dt_opencl_t *cl, const int dev) {return -1;}
+static inline int dt_opencl_lock_device(dt_opencl_t *cl, const int dev)
+{
+  return -1;
+}
 static inline void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev) {}
-static inline int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename) {return -1;}
-static inline int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int program) {return -1;}
-static inline int dt_opencl_create_kernel(dt_opencl_t *cl, const int program, const char *name) {return -1;}
+static inline int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename)
+{
+  return -1;
+}
+static inline int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int program)
+{
+  return -1;
+}
+static inline int dt_opencl_create_kernel(dt_opencl_t *cl, const int program, const char *name)
+{
+  return -1;
+}
 static inline void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel) {}
-static inline int  dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, const int dev, size_t *sizes) { return 0; }
-static inline int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, const size_t size, const void *arg) {return -1;}
-static inline int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes) {return -1;}
+static inline int  dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, const int dev, size_t *sizes)
+{
+  return 0;
+}
+static inline int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, const size_t size, const void *arg)
+{
+  return -1;
+}
+static inline int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes)
+{
+  return -1;
+}
 #endif
 
 

@@ -28,6 +28,6 @@ void dt_gui_contrast_init ();
 void dt_gui_contrast_increase();
 /** decreases the contrast */
 void dt_gui_contrast_decrease();
-	
+
 #endif
 

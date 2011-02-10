@@ -61,15 +61,15 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
     }
     dt_colorspaces_cleanup_profile(out_profile);
   }
-  
-   // Create tiff image
+
+  // Create tiff image
   TIFF *tif=TIFFOpen(filename,"wb");
   if(d->bpp == 8) TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
   else            TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
   if(profile!=NULL)
-    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile); 
+    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile);
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, d->width);
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, d->height);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
@@ -81,7 +81,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
   TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
-  
+
   const uint8_t  *in8 =(const uint8_t  *)in_void;
   const uint16_t *in16=(const uint16_t *)in_void;
   if(d->bpp == 16)
@@ -93,13 +93,13 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
     uint32_t stripe=0;
     // uint32_t insize=((d->width*d->height)*3)*sizeof(uint16_t);
     // while(stripedata<(in8+insize)-(stripesize)) {
-      // TIFFWriteEncodedStrip(tif,stripe++,stripedata,stripesize);
-      // stripedata+=stripesize;  
+    // TIFFWriteEncodedStrip(tif,stripe++,stripedata,stripesize);
+    // stripedata+=stripesize;
     // }
     for (int y = 0; y < d->height; y++)
     {
-      for(int x=0;x<d->width;x++) 
-        for(int k=0;k<3;k++) 
+      for(int x=0; x<d->width; x++)
+        for(int k=0; k<3; k++)
         {
           (wdata)[0] = in16[4*d->width*y + 4*x + k];
           wdata++;
@@ -122,11 +122,11 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
     uint8_t *rowdata = (uint8_t *)malloc(stripesize);
     uint8_t *wdata = rowdata;
     uint32_t stripe=0;
-    
+
     for (int y = 0; y < d->height; y++)
     {
-      for(int x=0;x<d->width;x++) 
-        for(int k=0;k<3;k++) 
+      for(int x=0; x<d->width; x++)
+        for(int k=0; k<3; k++)
         {
           (wdata)[0] = in8[4*d->width*y + 4*x + k];
           wdata++;
@@ -142,10 +142,10 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
     TIFFClose(tif);
     free(rowdata);
   }
-  
+
   if(exif) dt_exif_write_blob(exif,exif_len,filename);
   free(profile);
-  
+
   return 1;
 }
 
@@ -208,7 +208,7 @@ mime(dt_imageio_module_data_t *data)
 {
   return "image/tiff";
 }
- 
+
 const char*
 extension(dt_imageio_module_data_t *data)
 {

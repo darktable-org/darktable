@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "common/colorspaces.h"
 #include "develop/develop.h"
@@ -68,8 +68,8 @@ const char *name()
   return _("local contrast (deprecated)");
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_EFFECT;
 }
@@ -83,38 +83,39 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   dt_iop_rlce_data_t *data = (dt_iop_rlce_data_t *)piece->data;
   const int ch = piece->colors;
-  
+
   // PASS1: Get a luminance map of image...
   float *luminance=(float *)malloc((roi_out->width*roi_out->height)*sizeof(float));
   //double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid)
+#pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid)
 #endif
-  for(int j=0;j<roi_out->height;j++)
+  for(int j=0; j<roi_out->height; j++)
   {
     float *in=(float *)ivoid+j*roi_out->width*ch;
     float *lm=luminance+j*roi_out->width;
-    for(int i=0;i<roi_out->width;i++)
+    for(int i=0; i<roi_out->width; i++)
     {
       double pmax=CLIP(fmax(in[0],fmax(in[1],in[2]))); // Max value in RGB set
       double pmin=CLIP(fmin(in[0],fmin(in[1],in[2]))); // Min value in RGB set
       *lm=(pmax+pmin)/2.0;        // Pixel luminocity
-      in+=ch; lm++;
+      in+=ch;
+      lm++;
     }
   }
-  
-  
+
+
   // Params
   const int rad=data->radius*roi_in->scale/piece->iscale;
- 
+
   const int bins=256;
   const float slope=data->slope;
-  
+
   // CLAHE
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid,ovoid)
+#pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid,ovoid)
 #endif
-  for(int j=0;j<roi_out->height;j++) 
+  for(int j=0; j<roi_out->height; j++)
   {
     int yMin = fmax( 0, j - rad );
     int yMax = fmin( roi_in->height, j + rad + 1 );
@@ -129,17 +130,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     /* initially fill histogram */
     memset(hist,0,(bins+1)*sizeof(int));
-    for ( int yi = yMin; yi < yMax; ++yi ) 
+    for ( int yi = yMin; yi < yMax; ++yi )
       for ( int xi = xMin0; xi < xMax0; ++xi )
         ++hist[ ROUND_POSISTIVE(luminance[yi*roi_in->width+xi] * (float)bins) ];
 
     // Destination row
     memset(dest,0,roi_out->width*sizeof(float));
     float *ld=dest;
-   
-    for(int i=0;i<roi_out->width;i++)
+
+    for(int i=0; i<roi_out->width; i++)
     {
-      
+
       int v = ROUND_POSISTIVE(luminance[j*roi_in->width+i] * (float)bins);
 
       int xMin = fmax( 0, i - rad );
@@ -148,7 +149,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       int n = h * w;
 
       int limit = ( int )( slope * n /  bins + 0.5f );
-      
+
       /* remove left behind values from histogram */
       if ( xMin > 0 )
       {
@@ -181,12 +182,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             clippedhist[ b ] = limit;
           }
         }
-        
+
         int d = (ce / (float) ( bins + 1 ));
         int m = ce % ( bins + 1 );
         for ( int h = 0; h <= bins; h++)
           clippedhist[ h ] += d;
-        
+
         if ( m != 0 )
         {
           int s = bins / (float)m;
@@ -195,7 +196,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         }
       }
       while ( ce != ceb);
-      
+
       /* build cdf of clipped histogram */
       int hMin = bins;
       for ( int h = 0; h < hMin; h++ )
@@ -211,28 +212,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       int cdfMin = clippedhist[ hMin ];
 
-      *ld=( cdf - cdfMin ) / ( float )( cdfMax - cdfMin );      
-     
+      *ld=( cdf - cdfMin ) / ( float )( cdfMax - cdfMin );
+
       ld++;
     }
-    
+
     // Apply row
     float *in = ((float *)ivoid) + j*roi_out->width*ch;
     float *out = ((float *)ovoid) + j*roi_out->width*ch;
-    for(int r=0;r<roi_out->width;r++)
+    for(int r=0; r<roi_out->width; r++)
     {
       float H, S, L;
       rgb2hsl(in[0],in[1],in[2],&H,&S,&L);
       //hsl2rgb(&out[0],&out[1],&out[2],H,S,( L / dest[r] ) * (L-lsmin) + lsmin );
       hsl2rgb(&out[0],&out[1],&out[2],H,S,dest[r] );
-      out += ch; in += ch;ld++; 
+      out += ch;
+      in += ch;
+      ld++;
     }
-    
+
   }
-  
+
   // Cleanup
   free(luminance);
-  
+
 }
 
 static void
@@ -310,7 +313,10 @@ void init(dt_iop_module_t *module)
   module->priority = 966;
   module->params_size = sizeof(dt_iop_rlce_params_t);
   module->gui_data = NULL;
-  dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t){64,1.25};
+  dt_iop_rlce_params_t tmp = (dt_iop_rlce_params_t)
+  {
+    64,1.25
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_rlce_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_rlce_params_t));
 }
@@ -339,20 +345,20 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), g->label1, TRUE, TRUE, 0);
   g->label2 = dtgtk_reset_label_new(_("amount"), self, &p->slope, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), g->label2, TRUE, TRUE, 0);
-  
+
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 256.0, 1.0, p->radius, 0));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 3.0, 0.05, p->slope, 2));
   //dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  
+
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("size of features to preserve"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the effect"), (char *)NULL);
-  
+
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-        G_CALLBACK (slope_callback), self);
+                    G_CALLBACK (slope_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

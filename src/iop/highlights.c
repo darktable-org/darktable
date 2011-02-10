@@ -16,14 +16,14 @@
 		along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-	#include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-	#include <gegl.h>
+#include <gegl.h>
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -39,32 +39,32 @@ DT_MODULE(1)
 
 typedef enum dt_iop_highlights_mode_t
 {
-	DT_IOP_HIGHLIGHTS_CLIP = 0,
-	DT_IOP_HIGHLIGHTS_LCH = 1
+  DT_IOP_HIGHLIGHTS_CLIP = 0,
+  DT_IOP_HIGHLIGHTS_LCH = 1
 }
 dt_iop_highlights_mode_t;
 
 typedef struct dt_iop_highlights_params_t
 {
-	dt_iop_highlights_mode_t mode;
-	float blendL, blendC, blendh;
+  dt_iop_highlights_mode_t mode;
+  float blendL, blendC, blendh;
 }
 dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
 {
-	GtkDarktableSlider *blendL;
-	GtkDarktableSlider *blendC;
-	GtkDarktableSlider *blendh;
-	GtkComboBox        *mode;
-	GtkBox             *slider_box;
+  GtkDarktableSlider *blendL;
+  GtkDarktableSlider *blendC;
+  GtkDarktableSlider *blendh;
+  GtkComboBox        *mode;
+  GtkBox             *slider_box;
 }
 dt_iop_highlights_gui_data_t;
 
 typedef struct dt_iop_highlights_data_t
 {
-	dt_iop_highlights_mode_t mode;
-	float blendL, blendC, blendh;
+  dt_iop_highlights_mode_t mode;
+  float blendL, blendC, blendh;
 }
 dt_iop_highlights_data_t;
 
@@ -76,70 +76,75 @@ dt_iop_highlights_global_data_t;
 
 const char *name()
 {
-	return _("highlight reconstruction");
+  return _("highlight reconstruction");
 }
 
-int 
-groups () 
+int
+groups ()
 {
-	return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC;
 }
 
 
 
-static const float xyz_rgb[3][3] = {  /* XYZ from RGB */
-	{ 0.412453, 0.357580, 0.180423 },
-	{ 0.212671, 0.715160, 0.072169 },
-	{ 0.019334, 0.119193, 0.950227 }};
-static const float rgb_xyz[3][3] = {  /* RGB from XYZ */
-	{ 3.24048, -1.53715, -0.498536 },
-	{ -0.969255, 1.87599, 0.0415559 },
-	{ 0.0556466, -0.204041, 1.05731 }};
+static const float xyz_rgb[3][3] =    /* XYZ from RGB */
+{
+  { 0.412453, 0.357580, 0.180423 },
+  { 0.212671, 0.715160, 0.072169 },
+  { 0.019334, 0.119193, 0.950227 }
+};
+static const float rgb_xyz[3][3] =    /* RGB from XYZ */
+{
+  { 3.24048, -1.53715, -0.498536 },
+  { -0.969255, 1.87599, 0.0415559 },
+  { 0.0556466, -0.204041, 1.05731 }
+};
 
 // convert linear RGB to CIE-LCh
 static void
 rgb_to_lch(float rgb[3], float lch[3])
 {
-	float xyz[3], lab[3];
-	xyz[0] = xyz[1] = xyz[2] = 0.0;
-	for (int c=0; c<3; c++)
-		for (int cc=0; cc<3; cc++)
-			xyz[cc] += xyz_rgb[cc][c] * rgb[c];
-	for (int c=0; c<3; c++)
-		xyz[c] = xyz[c] > 0.008856 ? powf(xyz[c], 1/3.0) : 7.787*xyz[c] + 16/116.0;
-	lab[0] = 116 * xyz[1] - 16;
-	lab[1] = 500 * (xyz[0] - xyz[1]);
-	lab[2] = 200 * (xyz[1] - xyz[2]);
+  float xyz[3], lab[3];
+  xyz[0] = xyz[1] = xyz[2] = 0.0;
+  for (int c=0; c<3; c++)
+    for (int cc=0; cc<3; cc++)
+      xyz[cc] += xyz_rgb[cc][c] * rgb[c];
+  for (int c=0; c<3; c++)
+    xyz[c] = xyz[c] > 0.008856 ? powf(xyz[c], 1/3.0) : 7.787*xyz[c] + 16/116.0;
+  lab[0] = 116 * xyz[1] - 16;
+  lab[1] = 500 * (xyz[0] - xyz[1]);
+  lab[2] = 200 * (xyz[1] - xyz[2]);
 
-	lch[0] = lab[0];
-	lch[1] = sqrtf(lab[1]*lab[1]+lab[2]*lab[2]);
-	lch[2] = atan2f(lab[2], lab[1]);
+  lch[0] = lab[0];
+  lch[1] = sqrtf(lab[1]*lab[1]+lab[2]*lab[2]);
+  lch[2] = atan2f(lab[2], lab[1]);
 }
 
 // convert CIE-LCh to linear RGB
 static void
 lch_to_rgb(float lch[3], float rgb[3])
 {
-	float xyz[3], fx, fy, fz, kappa, epsilon, tmpf, lab[3];
-	epsilon = 0.008856; kappa = 903.3;
-	lab[0] = lch[0];
-	lab[1] = lch[1] * cosf(lch[2]);
-	lab[2] = lch[1] * sinf(lch[2]);
-	xyz[1] = (lab[0]<=kappa*epsilon) ?
-		(lab[0]/kappa) : (powf((lab[0]+16.0)/116.0, 3.0));
-	fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0)/116.0) : ((lab[0]+16.0)/116.0);
-	fz = fy - lab[2]/200.0;
-	fx = lab[1]/500.0 + fy;
-	xyz[2] = (powf(fz, 3.0)<=epsilon) ? ((116.0*fz-16.0)/kappa) : (powf(fz, 3.0));
-	xyz[0] = (powf(fx, 3.0)<=epsilon) ? ((116.0*fx-16.0)/kappa) : (powf(fx, 3.0));
+  float xyz[3], fx, fy, fz, kappa, epsilon, tmpf, lab[3];
+  epsilon = 0.008856;
+  kappa = 903.3;
+  lab[0] = lch[0];
+  lab[1] = lch[1] * cosf(lch[2]);
+  lab[2] = lch[1] * sinf(lch[2]);
+  xyz[1] = (lab[0]<=kappa*epsilon) ?
+           (lab[0]/kappa) : (powf((lab[0]+16.0)/116.0, 3.0));
+  fy = (xyz[1]<=epsilon) ? ((kappa*xyz[1]+16.0)/116.0) : ((lab[0]+16.0)/116.0);
+  fz = fy - lab[2]/200.0;
+  fx = lab[1]/500.0 + fy;
+  xyz[2] = (powf(fz, 3.0)<=epsilon) ? ((116.0*fz-16.0)/kappa) : (powf(fz, 3.0));
+  xyz[0] = (powf(fx, 3.0)<=epsilon) ? ((116.0*fx-16.0)/kappa) : (powf(fx, 3.0));
 
-	for (int c=0; c<3; c++)
-	{
-		tmpf = 0;
-		for (int cc=0; cc<3; cc++)
-			tmpf += rgb_xyz[c][cc] * xyz[cc];
-		rgb[c] = MAX(tmpf, 0);
-	}
+  for (int c=0; c<3; c++)
+  {
+    tmpf = 0;
+    for (int cc=0; cc<3; cc++)
+      tmpf += rgb_xyz[c][cc] * xyz[cc];
+    rgb[c] = MAX(tmpf, 0);
+  }
 }
 
 #ifdef HAVE_OPENCL
@@ -152,7 +157,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err;
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
-	const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+  const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 2, sizeof(int), (void *)&d->mode);
@@ -172,28 +177,29 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-	const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-	float inc[3], lch[3], lchc[3], lchi[3];
+  const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
+  float inc[3], lch[3], lchc[3], lchi[3];
 
-	switch(data->mode)
-	{
-		case DT_IOP_HIGHLIGHTS_LCH:
+  switch(data->mode)
+  {
+    case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
-	#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data, piece) private(in, out, inc, lch, lchc, lchi)
+#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data, piece) private(in, out, inc, lch, lchc, lchi)
 #endif
-      for(int j=0;j<roi_out->height;j++)
+      for(int j=0; j<roi_out->height; j++)
       {
         out = (float *)ovoid + ch*roi_out->width*j;
         in  = (float *)ivoid + ch*roi_out->width*j;
-        for(int i=0;i<roi_out->width;i++)
+        for(int i=0; i<roi_out->width; i++)
         {
           if(in[0] <= clip && in[1] <= clip && in[2] <= clip)
-          { // fast path for well-exposed pixels.
-            for(int c=0;c<3;c++) out[c] = in[c];
+          {
+            // fast path for well-exposed pixels.
+            for(int c=0; c<3; c++) out[c] = in[c];
           }
           else
           {
-            for(int c=0;c<3;c++) inc[c] = fminf(clip, in[c]);
+            for(int c=0; c<3; c++) inc[c] = fminf(clip, in[c]);
             rgb_to_lch(in, lchi);
             rgb_to_lch(inc, lchc);
             lch[0] = lchc[0] + data->blendL * (lchi[0] - lchc[0]);
@@ -201,22 +207,25 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             lch[2] = lchc[2] + data->blendh * (lchi[2] - lchc[2]);
             lch_to_rgb(lch, out);
           }
-          out += ch; in += ch;
+          out += ch;
+          in += ch;
         }
       }
       break;
-    default: case DT_IOP_HIGHLIGHTS_CLIP:
+    default:
+    case DT_IOP_HIGHLIGHTS_CLIP:
 #ifdef _OPENMP
-	#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out) private(in, out, inc, lch, lchc, lchi)
+#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out) private(in, out, inc, lch, lchc, lchi)
 #endif
-      for(int j=0;j<roi_out->height;j++)
+      for(int j=0; j<roi_out->height; j++)
       {
         out = (float *)ovoid + ch*roi_out->width*j;
         in  = (float *)ivoid + ch*roi_out->width*j;
-        for(int i=0;i<roi_out->width;i++)
+        for(int i=0; i<roi_out->width; i++)
         {
-          for(int c=0;c<3;c++) out[c] = fminf(clip, in[c]);
-          out += ch; in += ch;
+          for(int c=0; c<3; c++) out[c] = fminf(clip, in[c]);
+          out += ch;
+          in += ch;
         }
       }
       break;
@@ -226,47 +235,48 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 static void
 blend_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
 {
-	if(self->dt->gui->reset) return;
-	dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-	dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-	if      (slider == g->blendL) p->blendL = dtgtk_slider_get_value(slider);
-	else if (slider == g->blendC) p->blendC = dtgtk_slider_get_value(slider);
-	else if (slider == g->blendh) p->blendh = dtgtk_slider_get_value(slider);
-	dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(self->dt->gui->reset) return;
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  if      (slider == g->blendL) p->blendL = dtgtk_slider_get_value(slider);
+  else if (slider == g->blendC) p->blendC = dtgtk_slider_get_value(slider);
+  else if (slider == g->blendh) p->blendh = dtgtk_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
 mode_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
-	dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-	dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-	int active = gtk_combo_box_get_active(combo);
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  int active = gtk_combo_box_get_active(combo);
 
-	switch(active)
-	{
-		case DT_IOP_HIGHLIGHTS_CLIP:
-			p->mode = DT_IOP_HIGHLIGHTS_CLIP;
-			gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
-			break;
-		default: case DT_IOP_HIGHLIGHTS_LCH:
-			p->mode = DT_IOP_HIGHLIGHTS_LCH;
-			gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
-			gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
-			gtk_widget_show_all(GTK_WIDGET(g->slider_box));
-			gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
-			break;
-	}
-	dt_dev_add_history_item(darktable.develop, self, TRUE);
+  switch(active)
+  {
+    case DT_IOP_HIGHLIGHTS_CLIP:
+      p->mode = DT_IOP_HIGHLIGHTS_CLIP;
+      gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
+      break;
+    default:
+    case DT_IOP_HIGHLIGHTS_LCH:
+      p->mode = DT_IOP_HIGHLIGHTS_LCH;
+      gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
+      gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
+      gtk_widget_show_all(GTK_WIDGET(g->slider_box));
+      gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
+      break;
+  }
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-	dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
-	dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-	d->blendL = p->blendL;
-	d->blendC = p->blendC;
-	d->blendh = p->blendh;
-	d->mode   = p->mode;
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
+  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  d->blendL = p->blendL;
+  d->blendC = p->blendC;
+  d->blendh = p->blendh;
+  d->mode   = p->mode;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -287,35 +297,35 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-	piece->data = malloc(sizeof(dt_iop_highlights_data_t));
-	self->commit_params(self, self->default_params, pipe, piece);
+  piece->data = malloc(sizeof(dt_iop_highlights_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-	free(piece->data);
+  free(piece->data);
 }
 
 void gui_update(struct dt_iop_module_t *self)
 {
-	dt_iop_module_t *module = (dt_iop_module_t *)self;
-	dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-	dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
-	dtgtk_slider_set_value(g->blendL, p->blendL);
-	dtgtk_slider_set_value(g->blendC, p->blendC);
-	dtgtk_slider_set_value(g->blendh, p->blendh);
-	if(p->mode == DT_IOP_HIGHLIGHTS_CLIP)
-	{
-		gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
-	}
-	else
-	{
-		gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
-		gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
-		gtk_widget_show_all(GTK_WIDGET(g->slider_box));
-		gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
-	}
-	gtk_combo_box_set_active(g->mode, p->mode);
+  dt_iop_module_t *module = (dt_iop_module_t *)self;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
+  dtgtk_slider_set_value(g->blendL, p->blendL);
+  dtgtk_slider_set_value(g->blendC, p->blendC);
+  dtgtk_slider_set_value(g->blendh, p->blendh);
+  if(p->mode == DT_IOP_HIGHLIGHTS_CLIP)
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->slider_box), FALSE);
+  }
+  else
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->slider_box), TRUE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(g->slider_box));
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
+  }
+  gtk_combo_box_set_active(g->mode, p->mode);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -323,88 +333,91 @@ void reload_defaults(dt_iop_module_t *module)
   // only on for non-hdr raw images:
   if(module->dev->image->filters && module->dev->image->bpp != sizeof(float))
     module->default_enabled = 1;
-	else
+  else
     module->default_enabled = 0;
 
-	dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t){0, 1.0, 0.0, 0.0};
-	memcpy(module->params, &tmp, sizeof(dt_iop_highlights_params_t));
-	memcpy(module->default_params, &tmp, sizeof(dt_iop_highlights_params_t));
+  dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t)
+  {
+    0, 1.0, 0.0, 0.0
+  };
+  memcpy(module->params, &tmp, sizeof(dt_iop_highlights_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_highlights_params_t));
 }
 
 void init(dt_iop_module_t *module)
 {
-	// module->data = malloc(sizeof(dt_iop_highlights_data_t));
-	module->params = malloc(sizeof(dt_iop_highlights_params_t));
-	module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-	module->priority = 256;
+  // module->data = malloc(sizeof(dt_iop_highlights_data_t));
+  module->params = malloc(sizeof(dt_iop_highlights_params_t));
+  module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
+  module->priority = 256;
   module->default_enabled = 1;
-	module->params_size = sizeof(dt_iop_highlights_params_t);
-	module->gui_data = NULL;
+  module->params_size = sizeof(dt_iop_highlights_params_t);
+  module->gui_data = NULL;
 }
 
 void cleanup(dt_iop_module_t *module)
 {
-	free(module->gui_data);
-	module->gui_data = NULL;
-	free(module->params);
-	module->params = NULL;
+  free(module->gui_data);
+  module->gui_data = NULL;
+  free(module->params);
+  module->params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-	self->gui_data = malloc(sizeof(dt_iop_highlights_gui_data_t));
-	dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-	dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+  self->gui_data = malloc(sizeof(dt_iop_highlights_gui_data_t));
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
-	self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
 
-	GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
-	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
-	GtkWidget *label = dtgtk_reset_label_new(_("method"), self, &p->mode, sizeof(float));
-	gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
-	g->mode = GTK_COMBO_BOX(gtk_combo_box_new_text());
-	gtk_combo_box_append_text(g->mode, _("clip highlights"));
-	gtk_combo_box_append_text(g->mode, _("reconstruct in LCh"));
-	gtk_object_set(GTK_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), (char *)NULL);
-	gtk_box_pack_start(hbox, GTK_WIDGET(g->mode), TRUE, TRUE, 0);
+  GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  GtkWidget *label = dtgtk_reset_label_new(_("method"), self, &p->mode, sizeof(float));
+  gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
+  g->mode = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(g->mode, _("clip highlights"));
+  gtk_combo_box_append_text(g->mode, _("reconstruct in LCh"));
+  gtk_object_set(GTK_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), (char *)NULL);
+  gtk_box_pack_start(hbox, GTK_WIDGET(g->mode), TRUE, TRUE, 0);
 
-	g->slider_box = GTK_BOX(gtk_hbox_new(FALSE, 5));
-	gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
-	GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-	GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-	gtk_box_pack_start(g->slider_box, GTK_WIDGET(vbox1), FALSE, FALSE, 0);
-	gtk_box_pack_start(g->slider_box, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->slider_box), FALSE, FALSE, 0);
-	label = dtgtk_reset_label_new(_("blend L"), self, &p->blendL, sizeof(float));
-	gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
-	label = dtgtk_reset_label_new(_("blend C"), self, &p->blendC, sizeof(float));
-	gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
-	label = dtgtk_reset_label_new(_("blend h"), self, &p->blendh, sizeof(float));
-	gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
+  g->slider_box = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->slider_box), TRUE);
+  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(g->slider_box, GTK_WIDGET(vbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(g->slider_box, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->slider_box), FALSE, FALSE, 0);
+  label = dtgtk_reset_label_new(_("blend L"), self, &p->blendL, sizeof(float));
+  gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
+  label = dtgtk_reset_label_new(_("blend C"), self, &p->blendC, sizeof(float));
+  gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
+  label = dtgtk_reset_label_new(_("blend h"), self, &p->blendh, sizeof(float));
+  gtk_box_pack_start(vbox1, label, FALSE, FALSE, 0);
 
-	g->blendL = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendL, 3));
-	g->blendC = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendC, 3));
-	g->blendh = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendh, 3));
-	gtk_object_set(GTK_OBJECT(g->blendL), "tooltip-text", _("blend lightness (0 is same as clipping)"), (char *)NULL);
-	gtk_object_set(GTK_OBJECT(g->blendC), "tooltip-text", _("blend colorness (0 is same as clipping)"), (char *)NULL);
-	gtk_object_set(GTK_OBJECT(g->blendh), "tooltip-text", _("blend hue (0 is same as clipping)"), (char *)NULL);
-	gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendL), TRUE, TRUE, 0);
-	gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendC), TRUE, TRUE, 0);
-	gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendh), TRUE, TRUE, 0);
+  g->blendL = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendL, 3));
+  g->blendC = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendC, 3));
+  g->blendh = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->blendh, 3));
+  gtk_object_set(GTK_OBJECT(g->blendL), "tooltip-text", _("blend lightness (0 is same as clipping)"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->blendC), "tooltip-text", _("blend colorness (0 is same as clipping)"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->blendh), "tooltip-text", _("blend hue (0 is same as clipping)"), (char *)NULL);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendL), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendC), TRUE, TRUE, 0);
+  gtk_box_pack_start(vbox2, GTK_WIDGET(g->blendh), TRUE, TRUE, 0);
 
-	g_signal_connect (G_OBJECT (g->blendL), "value-changed",
-										G_CALLBACK (blend_callback), self);
-	g_signal_connect (G_OBJECT (g->blendC), "value-changed",
-										G_CALLBACK (blend_callback), self);
-	g_signal_connect (G_OBJECT (g->blendh), "value-changed",
-										G_CALLBACK (blend_callback), self);
-	g_signal_connect (G_OBJECT (g->mode), "changed",
-										G_CALLBACK (mode_changed), self);
+  g_signal_connect (G_OBJECT (g->blendL), "value-changed",
+                    G_CALLBACK (blend_callback), self);
+  g_signal_connect (G_OBJECT (g->blendC), "value-changed",
+                    G_CALLBACK (blend_callback), self);
+  g_signal_connect (G_OBJECT (g->blendh), "value-changed",
+                    G_CALLBACK (blend_callback), self);
+  g_signal_connect (G_OBJECT (g->mode), "changed",
+                    G_CALLBACK (mode_changed), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-	free(self->gui_data);
-	self->gui_data = NULL;
+  free(self->gui_data);
+  self->gui_data = NULL;
 }
 

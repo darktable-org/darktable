@@ -44,7 +44,7 @@ name ()
   return _("history stack");
 }
 
-uint32_t views() 
+uint32_t views()
 {
   return DT_LIGHTTABLE_VIEW;
 }
@@ -54,11 +54,11 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open sidecar file"),
-              GTK_WINDOW (win),
-              GTK_FILE_CHOOSER_ACTION_OPEN,
-              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              (char *)NULL);
+                           GTK_WINDOW (win),
+                           GTK_FILE_CHOOSER_ACTION_OPEN,
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                           (char *)NULL);
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -75,19 +75,19 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
   {
     char *dtfilename;
     dtfilename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    
+
     if (dt_history_load_and_apply_on_selection (dtfilename)!=0)
     {
-       GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(win),
-          GTK_DIALOG_DESTROY_WITH_PARENT,
-          GTK_MESSAGE_ERROR,
-          GTK_BUTTONS_CLOSE,
-          _("error loading file '%s'"),
-          dtfilename);
+      GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(win),
+                          GTK_DIALOG_DESTROY_WITH_PARENT,
+                          GTK_MESSAGE_ERROR,
+                          GTK_BUTTONS_CLOSE,
+                          _("error loading file '%s'"),
+                          dtfilename);
       gtk_dialog_run (GTK_DIALOG (dialog));
       gtk_widget_destroy (dialog);
     }
-    
+
     g_free (dtfilename);
   }
   gtk_widget_destroy (filechooser);
@@ -110,7 +110,9 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
     d->imageid = sqlite3_column_int(stmt, 0);
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
     //dt_control_log(_("history of first image in selection copied"));
-  } else {
+  }
+  else
+  {
     /* no selection is used, use mouse over id */
     int32_t mouse_over_id=0;
     DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -130,14 +132,14 @@ delete_button_clicked (GtkWidget *widget, gpointer user_data)
 static void
 paste_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-  
+
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   /* get past mode and store, overwrite / merge */
   int mode = gtk_combo_box_get_active(d->pastemode);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
-  
+
   /* copy history from d->imageid and past onto selection */
   if (dt_history_copy_and_paste_on_selection (d->imageid, (mode==0)?TRUE:FALSE )!=0)
   {
@@ -145,11 +147,11 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
     int32_t mouse_over_id=0;
     DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
     if(mouse_over_id <= 0) return;
-    
+
     dt_history_copy_and_paste_on_image(d->imageid,mouse_over_id,(mode==0)?TRUE:FALSE);
-    
+
   }
-  
+
   /* redraw */
   dt_control_gui_queue_draw();
 }

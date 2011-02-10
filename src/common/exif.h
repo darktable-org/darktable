@@ -27,28 +27,28 @@ extern "C"
 {
 #endif
 
-/** read exif data from file with full path name, store to image struct. returns 0 on success. */
-int dt_exif_read(dt_image_t *img, const char* path);
+  /** read exif data from file with full path name, store to image struct. returns 0 on success. */
+  int dt_exif_read(dt_image_t *img, const char* path);
 
-/** write exif to blob, return length in bytes. blob needs to be as large at 65535 bytes. sRGB should be true if sRGB colorspace is used as output. */
-int dt_exif_read_blob(uint8_t *blob, const char* path, const int sRGB, const int imgid);
+  /** write exif to blob, return length in bytes. blob needs to be as large at 65535 bytes. sRGB should be true if sRGB colorspace is used as output. */
+  int dt_exif_read_blob(uint8_t *blob, const char* path, const int sRGB, const int imgid);
 
-/** write blob to file exif. merges with existing exif information.*/
-int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path);
+  /** write blob to file exif. merges with existing exif information.*/
+  int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path);
 
-/** write xmp sidecar file. */
-int dt_exif_xmp_write (const int imgid, const char* filename);
+  /** write xmp sidecar file. */
+  int dt_exif_xmp_write (const int imgid, const char* filename);
 
-/** read xmp sidecar file. */
-int dt_exif_xmp_read (dt_image_t * img, const char* filename, const int history_only);
+  /** read xmp sidecar file. */
+  int dt_exif_xmp_read (dt_image_t * img, const char* filename, const int history_only);
 
-/** thread safe init and cleanup. */
-void dt_exif_init();
-void dt_exif_cleanup();
+  /** thread safe init and cleanup. */
+  void dt_exif_init();
+  void dt_exif_cleanup();
 
-/** encode / decode op params */
-void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len);
-void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len);
+  /** encode / decode op params */
+  void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len);
+  void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len);
 
 #ifdef __cplusplus
 }

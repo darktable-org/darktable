@@ -74,7 +74,7 @@ static void _label_destroy(GtkObject *object)
 {
   GtkDarktableLabelClass *klass;
   g_return_if_fail(object != NULL);
-  g_return_if_fail(DTGTK_IS_LABEL(object));  
+  g_return_if_fail(DTGTK_IS_LABEL(object));
   klass = gtk_type_class(gtk_widget_get_type());
   if (GTK_OBJECT_CLASS(klass)->destroy) {
      (* GTK_OBJECT_CLASS(klass)->destroy) (object);
@@ -93,107 +93,109 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   int y = widget->allocation.y;
   int width = widget->allocation.width;
   int height = widget->allocation.height;
- 
+
   // Formating the display of text and draw it...
-  PangoLayout *layout;    
+  PangoLayout *layout;
   layout = gtk_widget_create_pango_layout(widget,NULL);
   pango_layout_set_font_description(layout,style->font_desc);
   const gchar *text=gtk_label_get_text(GTK_LABEL(widget));
   pango_layout_set_text(layout,text,strlen(text));
-  GdkRectangle t={x,y,x+width,y+height};
+  GdkRectangle t= {x,y,x+width,y+height};
   int pw,ph;
   pango_layout_get_pixel_size(layout,&pw,&ph);
-  
-  
-  // Begin cairo drawing 
-  
+
+
+  // Begin cairo drawing
+
   cairo_t *cr;
   cr = gdk_cairo_create(widget->window);
-  
+
   cairo_set_source_rgba(cr,
-   /* style->fg[state].red/65535.0, 
-    style->fg[state].green/65535.0, 
-    style->fg[state].blue/65535.0,*/
-    1,1,1,
-    0.10
-  );
-  
+                        /* style->fg[state].red/65535.0,
+                         style->fg[state].green/65535.0,
+                         style->fg[state].blue/65535.0,*/
+                        1,1,1,
+                        0.10
+                       );
+
   cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
-  
+
   cairo_set_line_width(cr,1.0);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
   if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_UNDERLINED )
   {
-    cairo_move_to(cr,x,y+height-2); 
+    cairo_move_to(cr,x,y+height-2);
     cairo_line_to(cr,x+width,y+height-2);
     cairo_stroke(cr);
-  } 
+  }
   else if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_BACKFILLED )
   {
     cairo_rectangle(cr,x,y,width,height);
-    cairo_fill(cr);	
+    cairo_fill(cr);
   }
   else if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_TAB )
   {
     int rx=x,rw=pw+2;
     if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) rx=x+width-pw-8;
     cairo_rectangle(cr,rx,y,rw+4,height-1);
-    cairo_fill(cr);	
-    
-    if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) 
+    cairo_fill(cr);
+
+    if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT )
     {
       // /|
-      cairo_move_to(cr,x+width-rw-6,y); 
+      cairo_move_to(cr,x+width-rw-6,y);
       cairo_line_to(cr,x+width-rw-6-15,y+height-2);
       cairo_line_to(cr,x+width-rw-6,y+height-2);
-       cairo_fill(cr);
-      
+      cairo_fill(cr);
+
       // hline
-      cairo_move_to(cr,x,y+height-1); 
+      cairo_move_to(cr,x,y+height-1);
       cairo_line_to(cr,x+width-rw-6,y+height-1);
       cairo_stroke(cr);
     }
     else
     {
-      // | 
-      cairo_move_to(cr,x+rw+4,y); 
+      // |
+      cairo_move_to(cr,x+rw+4,y);
       cairo_line_to(cr,x+rw+4+15,y+height-2);
       cairo_line_to(cr,x+rw+4,y+height-2);
-       cairo_fill(cr);
-      
+      cairo_fill(cr);
+
       // hline
-      cairo_move_to(cr,x+rw+4,y+height-1); 
+      cairo_move_to(cr,x+rw+4,y+height-1);
       cairo_line_to(cr,x+width,y+height-1);
       cairo_stroke(cr);
-    }	
+    }
   }
   cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
   cairo_destroy(cr);
 
- // Draw text
+// Draw text
   int lx=x+4, ly=y+((height/2.0)-(ph/2.0));
   if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) lx=x+width-pw-6;
   else if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_CENTER ) lx=(width/2.0)-(pw/2.0);
   gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"label",lx,ly,layout);
-    
+
   return FALSE;
 }
 
 // Public functions
 GtkWidget* dtgtk_label_new(const gchar *text, _darktable_label_flags_t flags)
 {
-  GtkDarktableLabel *label;	
+  GtkDarktableLabel *label;
   label = gtk_type_new(dtgtk_label_get_type());
   gtk_label_set_text(GTK_LABEL(label),text);
   label->flags=flags;
   return (GtkWidget *)label;
 }
 
-GtkType dtgtk_label_get_type() 
+GtkType dtgtk_label_get_type()
 {
   static GtkType dtgtk_label_type = 0;
-  if (!dtgtk_label_type) {
-    static const GtkTypeInfo dtgtk_label_info = {
+  if (!dtgtk_label_type)
+  {
+    static const GtkTypeInfo dtgtk_label_info =
+    {
       "GtkDarktableLabel",
       sizeof(GtkDarktableLabel),
       sizeof(GtkDarktableLabelClass),

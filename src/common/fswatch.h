@@ -23,7 +23,8 @@
 
 
 /** fswatch context */
-typedef struct dt_fswatch_t {
+typedef struct dt_fswatch_t
+{
   uint32_t inotify_fd;
   dt_pthread_mutex_t mutex;
   pthread_t thread;
@@ -35,9 +36,9 @@ dt_fswatch_t;
 typedef enum dt_fswatch_type_t
 {
   /** watch is an image file */
-  DT_FSWATCH_IMAGE = 0,          
+  DT_FSWATCH_IMAGE = 0,
   /** watch is on directory for curves files << Just an test  */
-  DT_FSWATCH_CURVE_DIRECTORY,  	
+  DT_FSWATCH_CURVE_DIRECTORY,
 }
 dt_fswatch_type_t;
 

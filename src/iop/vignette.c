@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -69,7 +69,7 @@ dt_iop_vignette_gui_data_t;
 typedef struct dt_iop_vignette_data_t
 {
   double scale;
-  double falloff_scale;  
+  double falloff_scale;
   double strength;
   double uniformity;
   double bsratio;
@@ -89,8 +89,8 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES;
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_EFFECT;
 }
@@ -104,92 +104,93 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  
+
   const float iw=piece->buf_in.width*roi_out->scale;
   const float ih=piece->buf_in.height*roi_out->scale;
   const int ix= (roi_in->x);
   const int iy= (roi_in->y);
-    
+
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-  {
-    const int k = ch*(roi_out->width*j + i);
-    dt_iop_vector_2d_t pv, vv;
-    
-    // Lets translate current pixel coord to local coord
-    pv.x=-1.0+(((double) (ix+i)/iw)*2.0);
-    pv.y=-1.0+(((double) (iy+j)/ih)*2.0);
-  
-    // Calculate the pixel weight in vinjett
-    double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
-    if(pv.x==0)
-      v=(pv.y>0)?0:M_PI;
-    double dscale=data->scale/100.0;
-    double fscale=data->falloff_scale/100.0;
-    
-    double sinv=sin(v)+data->center.x;
-    double cosv=cos(v)+data->center.y;
-    vv.x=cosv*dscale;                        // apply uniformity and scale vignette to radie 
-    vv.y=sinv*dscale;
-    double weight=0.0;
-    double cvlen=sqrt((vv.x*vv.x)+(vv.y*vv.y));    // Length from center to vv
-    double cplen=sqrt((pv.x*pv.x)+(pv.y*pv.y));  // Length from center to pv
-    
-    if( cplen>=cvlen ) // pixel is outside the inner vingett circle, lets calculate weight of vignette
+  for(int j=0; j<roi_out->height; j++) for(int i=0; i<roi_out->width; i++)
     {
-      double ox=cosv*(dscale+fscale);    // scale outer vignette circle
-      double oy=sinv*(dscale+fscale);
-      double blen=sqrt(((vv.x-ox)*(vv.x-ox))+((vv.y-oy)*(vv.y-oy)));             // lenght between vv and outer circle
-      weight=((cplen-cvlen)/blen);
-      if(weight <=1.0 && weight>0.0) 
-        weight=1.0-( 1.0+sin( ((M_PI/2.0)+(M_PI*weight)) ) )/2.0;
-        //weight=( 1.0+tan( (M_PI-(M_PI/4.0) +((M_PI/4.0)*weight)) ) )/2.0;
-      else 
-        weight=weight>1.0?1.0:0.0;
-    }
-    
-    // Let's apply weighted effect on brightness and desaturation
-    float col[3];
-    for(int c=0;c<3;c++) col[c]=in[k+c];
-    if( weight > 0 )
-    {
-      double bs=1.0;
-      double ss=1.0;
-      
-      if(data->bsratio>0.0) 
-        bs-=data->bsratio;
-      else
-        ss-=fabs(data->bsratio);
-      double strength=data->strength/100.0;
-      
-      // Then apply falloff vignette
-      double falloff=(data->invert_falloff==FALSE)?(1.0-(weight*bs*strength)):(weight*bs*strength);
-      col[0]=CLIP( ((data->invert_falloff==FALSE)? in[k+0]*falloff: in[k+0]+falloff) );
-      col[1]=CLIP( ((data->invert_falloff==FALSE)? in[k+1]*falloff: in[k+1]+falloff) );
-      col[2]=CLIP( ((data->invert_falloff==FALSE)? in[k+2]*falloff: in[k+2]+falloff) );
-      
-      // apply saturation
-      double mv=(col[0]+col[1]+col[2])/3.0;
-      double wss=CLIP(weight*ss)*strength;
-      if(data->invert_saturation==FALSE)
-      { // Desaturate
-        col[0]=CLIP( col[0]+((mv-col[0])* wss) );
-        col[1]=CLIP( col[1]+((mv-col[1])* wss) );
-        col[2]=CLIP( col[2]+((mv-col[2])* wss) );    
-      } 
-      else
+      const int k = ch*(roi_out->width*j + i);
+      dt_iop_vector_2d_t pv, vv;
+
+      // Lets translate current pixel coord to local coord
+      pv.x=-1.0+(((double) (ix+i)/iw)*2.0);
+      pv.y=-1.0+(((double) (iy+j)/ih)*2.0);
+
+      // Calculate the pixel weight in vinjett
+      double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
+      if(pv.x==0)
+        v=(pv.y>0)?0:M_PI;
+      double dscale=data->scale/100.0;
+      double fscale=data->falloff_scale/100.0;
+
+      double sinv=sin(v)+data->center.x;
+      double cosv=cos(v)+data->center.y;
+      vv.x=cosv*dscale;                        // apply uniformity and scale vignette to radie
+      vv.y=sinv*dscale;
+      double weight=0.0;
+      double cvlen=sqrt((vv.x*vv.x)+(vv.y*vv.y));    // Length from center to vv
+      double cplen=sqrt((pv.x*pv.x)+(pv.y*pv.y));  // Length from center to pv
+
+      if( cplen>=cvlen ) // pixel is outside the inner vingett circle, lets calculate weight of vignette
       {
-        wss*=2.0;	// Double effect if we gonna saturate
-        col[0]=CLIP( col[0]-((mv-col[0])* wss) );
-        col[1]=CLIP( col[1]-((mv-col[1])* wss) );
-        col[2]=CLIP( col[2]-((mv-col[2])* wss) );    
+        double ox=cosv*(dscale+fscale);    // scale outer vignette circle
+        double oy=sinv*(dscale+fscale);
+        double blen=sqrt(((vv.x-ox)*(vv.x-ox))+((vv.y-oy)*(vv.y-oy)));             // lenght between vv and outer circle
+        weight=((cplen-cvlen)/blen);
+        if(weight <=1.0 && weight>0.0)
+          weight=1.0-( 1.0+sin( ((M_PI/2.0)+(M_PI*weight)) ) )/2.0;
+        //weight=( 1.0+tan( (M_PI-(M_PI/4.0) +((M_PI/4.0)*weight)) ) )/2.0;
+        else
+          weight=weight>1.0?1.0:0.0;
       }
-      
-    } 
-    for(int c=0;c<3;c++) out[k+c]=col[c];
-  }
+
+      // Let's apply weighted effect on brightness and desaturation
+      float col[3];
+      for(int c=0; c<3; c++) col[c]=in[k+c];
+      if( weight > 0 )
+      {
+        double bs=1.0;
+        double ss=1.0;
+
+        if(data->bsratio>0.0)
+          bs-=data->bsratio;
+        else
+          ss-=fabs(data->bsratio);
+        double strength=data->strength/100.0;
+
+        // Then apply falloff vignette
+        double falloff=(data->invert_falloff==FALSE)?(1.0-(weight*bs*strength)):(weight*bs*strength);
+        col[0]=CLIP( ((data->invert_falloff==FALSE)? in[k+0]*falloff: in[k+0]+falloff) );
+        col[1]=CLIP( ((data->invert_falloff==FALSE)? in[k+1]*falloff: in[k+1]+falloff) );
+        col[2]=CLIP( ((data->invert_falloff==FALSE)? in[k+2]*falloff: in[k+2]+falloff) );
+
+        // apply saturation
+        double mv=(col[0]+col[1]+col[2])/3.0;
+        double wss=CLIP(weight*ss)*strength;
+        if(data->invert_saturation==FALSE)
+        {
+          // Desaturate
+          col[0]=CLIP( col[0]+((mv-col[0])* wss) );
+          col[1]=CLIP( col[1]+((mv-col[1])* wss) );
+          col[2]=CLIP( col[2]+((mv-col[2])* wss) );
+        }
+        else
+        {
+          wss*=2.0;	// Double effect if we gonna saturate
+          col[0]=CLIP( col[0]-((mv-col[0])* wss) );
+          col[1]=CLIP( col[1]-((mv-col[1])* wss) );
+          col[2]=CLIP( col[2]-((mv-col[2])* wss) );
+        }
+
+      }
+      for(int c=0; c<3; c++) out[k+c]=col[c];
+    }
 }
 
 static void
@@ -242,7 +243,7 @@ bsratio_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void 
+static void
 invert_saturation_callback (GtkToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -252,7 +253,7 @@ invert_saturation_callback (GtkToggleButton *button, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void 
+static void
 invert_falloff_callback (GtkToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -325,7 +326,10 @@ void init(dt_iop_module_t *module)
   module->priority = 997;
   module->params_size = sizeof(dt_iop_vignette_params_t);
   module->gui_data = NULL;
-  dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t){80,50,50,.0,0,FALSE,FALSE,{0,0}};
+  dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t)
+  {
+    80,50,50,.0,0,FALSE,FALSE, {0,0}
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_vignette_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_vignette_params_t));
 }
@@ -357,7 +361,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->label4 = dtgtk_reset_label_new (_("b/s ratio"), self, &p->bsratio, sizeof(float));
   g->label5 = dtgtk_reset_label_new (_("saturation"), self, &p->invert_saturation, sizeof(float));
   g->label6 = dtgtk_reset_label_new (_("fall-off"), self, &p->invert_falloff, sizeof(float));
-  
+
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label7), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
@@ -386,27 +390,27 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - only saturation"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton1), "tooltip-text", _("inverts effect of saturation..."), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton2), "tooltip-text", _("inverts effect of fall-off, default is dark fall-off..."), (char *)NULL);
- 
- dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale1),DARKTABLE_SLIDER_FORMAT_PERCENT);
- dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale2),DARKTABLE_SLIDER_FORMAT_PERCENT);
- dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale5),DARKTABLE_SLIDER_FORMAT_PERCENT);
- 
+
+  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale1),DARKTABLE_SLIDER_FORMAT_PERCENT);
+  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale2),DARKTABLE_SLIDER_FORMAT_PERCENT);
+  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale5),DARKTABLE_SLIDER_FORMAT_PERCENT);
+
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale4),DARKTABLE_SLIDER_FORMAT_RATIO);
- 
+
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (falloff_scale_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-        G_CALLBACK (strength_callback), self);
+                    G_CALLBACK (strength_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-        G_CALLBACK (uniformity_callback), self);
+                    G_CALLBACK (uniformity_callback), self);
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-        G_CALLBACK (bsratio_callback), self);
- g_signal_connect (G_OBJECT (g->togglebutton1), "toggled",
-        G_CALLBACK (invert_saturation_callback), self);	
+                    G_CALLBACK (bsratio_callback), self);
+  g_signal_connect (G_OBJECT (g->togglebutton1), "toggled",
+                    G_CALLBACK (invert_saturation_callback), self);
   g_signal_connect (G_OBJECT (g->togglebutton2), "toggled",
-        G_CALLBACK (invert_falloff_callback), self);
+                    G_CALLBACK (invert_falloff_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

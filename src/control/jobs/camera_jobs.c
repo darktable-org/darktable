@@ -32,11 +32,11 @@
 int32_t dt_captured_image_import_job_run(dt_job_t *job)
 {
   dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
-  
-  char message[512]={0};
+
+  char message[512]= {0};
   snprintf(message, 512, _("importing image %s"), t->filename);
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_SINGLE, message );
-  
+
   int id = dt_image_import(t->film_id, t->filename, TRUE);
   if(id)
   {
@@ -63,25 +63,28 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
   int total = t->count * t->brackets;
-  char message[512]={0};
+  char message[512]= {0};
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
   double fraction=0;
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
-  
+
   /* Fetch all values for shutterspeed2 and initialize current value */
   GList *values=NULL;
   gconstpointer orginal_value=NULL;
-  
+
   const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
   const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
-  if (value && cvalue) {
-    do {
+  if (value && cvalue)
+  {
+    do
+    {
       // Add value to list
       values = g_list_append(values, g_strdup(value));
       // Check if current values is the same as orginal value, then lets store item ptr
-      if (strcmp(value,cvalue) == 0) 
+      if (strcmp(value,cvalue) == 0)
         orginal_value = g_list_last(values)->data;
-    } while ((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed")) != NULL);
+    }
+    while ((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed")) != NULL);
   }
   else
   {
@@ -91,62 +94,62 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
     return 1;
   }
   GList *current_value = g_list_find(values,orginal_value);
-  for(int i=0;i<t->count;i++)
+  for(int i=0; i<t->count; i++)
   {
-    for(int b=0;b<(t->brackets*2)+1;b++)
+    for(int b=0; b<(t->brackets*2)+1; b++)
     {
       // If bracket capture, lets set change shutterspeed
-      if (t->brackets) 
+      if (t->brackets)
       {
         if (b == 0)
         {
           // First bracket, step down time with (steps*brackets), also check so we never set the longest shuttertime which would be bulb mode
-          for(int s=0;s<(t->steps*t->brackets);s++)
-            if (g_list_next(current_value) && g_list_next(g_list_next(current_value))) 
+          for(int s=0; s<(t->steps*t->brackets); s++)
+            if (g_list_next(current_value) && g_list_next(g_list_next(current_value)))
               current_value = g_list_next(current_value);
-        } 
+        }
         else
         {
           // Step up with (steps)
-          for(int s=0;s<t->steps;s++)
-            if(g_list_previous(current_value)) 
+          for(int s=0; s<t->steps; s++)
+            if(g_list_previous(current_value))
               current_value = g_list_previous(current_value);
         }
       }
-      
+
       // set the time property for bracked capture
       if (t->brackets)
         dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
-      
+
       // Capture image
       dt_camctl_camera_capture(darktable.camctl,NULL);
       fraction+=1.0/total;
       dt_gui_background_jobs_set_progress( j, fraction);
     }
-    
+
     // lets reset to orginal value before continue
     if (t->brackets)
     {
       current_value = g_list_find(values,orginal_value);
       dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
     }
-    
+
     // Delay if active
     if(t->delay)
       g_usleep(t->delay*G_USEC_PER_SEC);
-   
+
   }
   dt_gui_background_jobs_destroy (j);
-  
+
   // free values
   if(values)
   {
-    for(int i=0;i<g_list_length(values);i++)
+    for(int i=0; i<g_list_length(values); i++)
       g_free(g_list_nth_data(values,i));
-    
+
     g_list_free(values);
   }
-  
+
   return 0;
 }
 
@@ -170,7 +173,7 @@ void dt_camera_get_previews_job_init(dt_job_t *job,dt_camera_t *camera,dt_camctl
 
   t->listener=g_malloc(sizeof(dt_camctl_listener_t));
   memcpy(t->listener,listener,sizeof(dt_camctl_listener_t));
-  
+
   t->camera=camera;
   t->flags=flags;
 }
@@ -178,7 +181,7 @@ void dt_camera_get_previews_job_init(dt_job_t *job,dt_camera_t *camera,dt_camctl
 int32_t dt_camera_get_previews_job_run(dt_job_t *job)
 {
   dt_camera_get_previews_t *t=(dt_camera_get_previews_t*)job->param;
-  
+
   dt_camctl_register_listener(darktable.camctl,t->listener);
   dt_camctl_get_previews(darktable.camctl,t->flags,t->camera);
   dt_camctl_unregister_listener(darktable.camctl,t->listener);
@@ -196,7 +199,8 @@ void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile, cons
 }
 
 int32_t dt_camera_import_backup_job_run(dt_job_t *job)
-{  // copy sourcefile to each found destination
+{
+  // copy sourcefile to each found destination
   dt_camera_import_backup_t *t = (dt_camera_import_backup_t *)job->param;
   GVolumeMonitor *vmgr= g_volume_monitor_get();
   GList *mounts=g_volume_monitor_get_mounts(vmgr);
@@ -205,19 +209,21 @@ int32_t dt_camera_import_backup_job_run(dt_job_t *job)
   if( mounts !=NULL )
     do
     {
-     mount=G_MOUNT(mounts->data);
-      if( ( root=g_mount_get_root( mount ) ) != NULL ) 
-      { // Got the mount point lets check for backup folder
+      mount=G_MOUNT(mounts->data);
+      if( ( root=g_mount_get_root( mount ) ) != NULL )
+      {
+        // Got the mount point lets check for backup folder
         gchar *backuppath=NULL;
         gchar *rootpath=g_file_get_path(root);
         backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("plugins/capture/backup/foldername"),(char *)NULL);
         g_free(rootpath);
-        
+
         if( g_file_test(backuppath,G_FILE_TEST_EXISTS)==TRUE)
-        { // Found a backup storage, lets copy file here..
+        {
+          // Found a backup storage, lets copy file here..
           gchar *destinationfile=g_build_filename(G_DIR_SEPARATOR_S,backuppath,t->destinationfile,(char *)NULL);
           if( g_mkdir_with_parents(g_path_get_dirname(destinationfile),0755) >= 0 )
-          {            
+          {
             gchar *content;
             gsize size;
             if( g_file_get_contents(t->sourcefile,&content,&size,NULL) == TRUE )
@@ -229,15 +235,16 @@ int32_t dt_camera_import_backup_job_run(dt_job_t *job)
                 g_error_free(err);
               }
               g_free(content);
-            } 
+            }
           }
           g_free(destinationfile);
         }
-  
+
         g_free(backuppath);
       }
-    } while( (mounts=g_list_next(mounts)) !=NULL);
-    
+    }
+    while( (mounts=g_list_next(mounts)) !=NULL);
+
   // Release volume manager
   g_object_unref(vmgr);
   return 0;
@@ -269,33 +276,35 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 
   t->fraction+=1.0/g_list_length(t->images);
   dt_gui_background_jobs_set_progress( t->bgj, t->fraction );
-  
+
   if( dt_conf_get_bool("plugins/capture/camera/import/backup/enable") == TRUE )
-  { // Backup is enabled, let's initialize a backup job of imported image...
+  {
+    // Backup is enabled, let's initialize a backup job of imported image...
     char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
     dt_variables_expand( t->vp, base, FALSE );
     const char *sdpart=dt_variables_get_result(t->vp);
     if( sdpart )
-    { // Initialize a image backup job of file
+    {
+      // Initialize a image backup job of file
       dt_job_t j;
       dt_camera_import_backup_job_init(&j, filename,filename+strlen(sdpart));
       dt_control_add_job(darktable.control, &j);
-    } 
+    }
   }
   t->import_count++;
 }
 
-const char *_camera_import_request_image_filename(const dt_camera_t *camera,const char *filename,void *data) 
+const char *_camera_import_request_image_filename(const dt_camera_t *camera,const char *filename,void *data)
 {
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   t->vp->filename=filename;
-  
+
   dt_variables_expand( t->vp, t->path, FALSE );
   const gchar *storage=dt_variables_get_result(t->vp);
-  
+
   dt_variables_expand( t->vp, t->filename, TRUE );
   const gchar *file = dt_variables_get_result(t->vp);
-  
+
   // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
   gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
   if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
@@ -306,9 +315,10 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
       dt_variables_expand( t->vp, t->filename, TRUE );
       file = dt_variables_get_result(t->vp);
       fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
-    } while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
+    }
+    while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
   }
-  
+
   return file;
 }
 
@@ -323,45 +333,45 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
 {
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
   dt_control_log(_("starting to import images from camera"));
-  
+
   // Setup a new filmroll to import images to....
   t->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
-  
+
   dt_film_init(t->film);
-  
+
   dt_variables_expand( t->vp, t->path, FALSE );
   sprintf(t->film->dirname,"%s",dt_variables_get_result(t->vp));
-  
+
   dt_pthread_mutex_lock(&t->film->images_mutex);
   t->film->ref++;
   dt_pthread_mutex_unlock(&t->film->images_mutex);
-  
+
   // Create recursive directories, abort if no access
   if( g_mkdir_with_parents(t->film->dirname,0755) == -1 )
   {
     dt_control_log(_("failed to create import path `%s', import aborted."), t->film->dirname);
     return 1;
   }
-  
+
   // Import path is ok, lets actually create the filmroll in database..
   if(dt_film_new(t->film,t->film->dirname) > 0)
   {
     int total = g_list_length( t->images );
-    char message[512]={0};
+    char message[512]= {0};
     sprintf(message, ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
     t->bgj = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
-    
+
     // Switch to new filmroll
     dt_film_open(t->film->id);
     dt_ctl_switch_mode_to(DT_LIBRARY);
-    
-    // register listener 
+
+    // register listener
     dt_camctl_listener_t listener= {0};
     listener.data=t;
     listener.image_downloaded=_camera_image_downloaded;
     listener.request_image_path=_camera_import_request_image_path;
     listener.request_image_filename=_camera_import_request_image_filename;
-    
+
     //  start download of images
     dt_camctl_register_listener(darktable.camctl,&listener);
     dt_camctl_import(darktable.camctl,t->camera,t->images,dt_conf_get_bool("plugins/capture/camera/import/delete_originals"));
@@ -371,7 +381,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   }
   else
     dt_control_log(_("failed to create filmroll for camera import, import aborted."));
-  
+
   dt_pthread_mutex_lock(&t->film->images_mutex);
   t->film->ref--;
   dt_pthread_mutex_unlock(&t->film->images_mutex);

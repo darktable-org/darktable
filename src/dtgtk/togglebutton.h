@@ -44,4 +44,4 @@ GType dtgtk_togglebutton_get_type (void);
 GtkWidget* dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflag);
 GtkWidget* dtgtk_togglebutton_new_with_label (const gchar *label,DTGTKCairoPaintIconFunc paint, gint paintflag);
 G_END_DECLS
-#endif 
+#endif

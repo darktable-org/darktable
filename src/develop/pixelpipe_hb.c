@@ -167,7 +167,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   }
   // go through all history items and adjust params
   GList *history = dev->history;
-  for(int k=0;k<dev->history_end;k++)
+  for(int k=0; k<dev->history_end; k++)
   {
     dt_dev_pixelpipe_synch(pipe, dev, history);
     history = g_list_next(history);
@@ -188,15 +188,18 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
   dt_pthread_mutex_lock(&dev->history_mutex);
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
-  { // only top history item changed.
+  {
+    // only top history item changed.
     dt_dev_pixelpipe_synch_top(pipe, dev);
   }
   if(pipe->changed & DT_DEV_PIPE_SYNCH)
-  { // pipeline topology remains intact, only change all params.
+  {
+    // pipeline topology remains intact, only change all params.
     dt_dev_pixelpipe_synch_all(pipe, dev);
   }
   if(pipe->changed & DT_DEV_PIPE_REMOVE)
-  { // modules have been added in between or removed. need to rebuild the whole pipeline.
+  {
+    // modules have been added in between or removed. need to rebuild the whole pipeline.
     dt_dev_pixelpipe_cleanup_nodes(pipe);
     dt_dev_pixelpipe_create_nodes(pipe, dev);
   }
@@ -259,14 +262,18 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
   // 1) if cached buffer is still available, return data
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-  if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
+  if(pipe->shutdown)
+  {
+    dt_pthread_mutex_unlock(&pipe->busy_mutex);
+    return 1;
+  }
   uint64_t hash = dt_dev_pixelpipe_cache_hash(dev->image->id, roi_out, pipe, pos);
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
     // copy over cached processed max for clipping:
-    if(piece) for(int k=0;k<3;k++) pipe->processed_maximum[k] = piece->processed_maximum[k];
-    else      for(int k=0;k<3;k++) pipe->processed_maximum[k] = 1.0f;
+    if(piece) for(int k=0; k<3; k++) pipe->processed_maximum[k] = piece->processed_maximum[k];
+    else      for(int k=0; k<3; k++) pipe->processed_maximum[k] = 1.0f;
     (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(!modules) return 0;
@@ -291,7 +298,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
   {
     // 3a) import input array with given scale and roi
     dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
     dt_times_t start;
     dt_get_times(&start);
     if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
@@ -307,9 +318,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         {
           // fast branch for 1:1 pixel copies.
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(pipe,roi_out,roi_in,output)
+#pragma omp parallel for schedule(static) default(none) shared(pipe,roi_out,roi_in,output)
 #endif
-          for(int j=0;j<MIN(roi_out->height, pipe->iheight-roi_in.y);j++)
+          for(int j=0; j<MIN(roi_out->height, pipe->iheight-roi_in.y); j++)
             memcpy(((char *)*output) + bpp*j*roi_out->width, ((char *)pipe->input) + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);
         }
         else
@@ -348,7 +359,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     // get region of interest which is needed in input
     dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
     module->modify_roi_in(module, piece, roi_out, &roi_in);
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -359,7 +374,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     // reserve new cache line: output
     dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
     if(!strcmp(module->op, "gamma"))
       (void) dt_dev_pixelpipe_cache_get_important(&(pipe->cache), hash, bufsize, output);
     else
@@ -367,23 +386,27 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
     // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %lX\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, (long int)*output);
-    
+
     // tonecurve histogram (collect luminance only):
     dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
     if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))
     {
       float *pixel = (float *)input;
       dev->histogram_pre_max = 0;
       memset (dev->histogram_pre, 0, sizeof(float)*4*64);
-      for(int j=0;j<roi_in.height;j+=4) for(int i=0;i<roi_in.width;i+=4)
-      {
-        uint8_t L = CLAMP(63/100.0*(pixel[4*j*roi_in.width+4*i]), 0, 63);
-        dev->histogram_pre[4*L+3] ++;
-      }
+      for(int j=0; j<roi_in.height; j+=4) for(int i=0; i<roi_in.width; i+=4)
+        {
+          uint8_t L = CLAMP(63/100.0*(pixel[4*j*roi_in.width+4*i]), 0, 63);
+          dev->histogram_pre[4*L+3] ++;
+        }
       // don't count <= 0 pixels
-      for(int k=3;k<4*64;k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
-      for(int k=19;k<4*64;k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
+      for(int k=3; k<4*64; k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
+      for(int k=19; k<4*64; k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       dt_control_queue_draw(module->widget);
     }
@@ -391,44 +414,48 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     // if module requested color statistics, get mean in box from preview pipe
     dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
-       (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
+        (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
         module->request_color_pick) // and they need to want to pick ;)
     {
-      for(int k=0;k<3;k++) module->picked_color_min[k] =  666.0f;
-      for(int k=0;k<3;k++) module->picked_color_max[k] = -666.0f;
-      for(int k=0;k<3;k++) module->picked_color_min_Lab[k] =  666.0f;
-      for(int k=0;k<3;k++) module->picked_color_max_Lab[k] = -666.0f;
+      for(int k=0; k<3; k++) module->picked_color_min[k] =  666.0f;
+      for(int k=0; k<3; k++) module->picked_color_max[k] = -666.0f;
+      for(int k=0; k<3; k++) module->picked_color_min_Lab[k] =  666.0f;
+      for(int k=0; k<3; k++) module->picked_color_max_Lab[k] = -666.0f;
       int box[4];
       float rgb[3], Lab[3], *in = (float *)input;
-      for(int k=0;k<3;k++) Lab[k] = rgb[k] = 0.0f;
-      for(int k=0;k<4;k+=2) box[k] = MIN(roi_in.width -1, MAX(0, module->color_picker_box[k]*roi_in.width));
-      for(int k=1;k<4;k+=2) box[k] = MIN(roi_in.height-1, MAX(0, module->color_picker_box[k]*roi_in.height));
+      for(int k=0; k<3; k++) Lab[k] = rgb[k] = 0.0f;
+      for(int k=0; k<4; k+=2) box[k] = MIN(roi_in.width -1, MAX(0, module->color_picker_box[k]*roi_in.width));
+      for(int k=1; k<4; k+=2) box[k] = MIN(roi_in.height-1, MAX(0, module->color_picker_box[k]*roi_in.height));
       const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-      for(int j=box[1];j<=box[3];j++) for(int i=box[0];i<=box[2];i++)
-      {
-        for(int k=0;k<3;k++)
+      for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
         {
-          module->picked_color_min[k] = fminf(module->picked_color_min[k], in[4*(roi_in.width*j + i) + k]);
-          module->picked_color_max[k] = fmaxf(module->picked_color_max[k], in[4*(roi_in.width*j + i) + k]);
-          rgb[k] += w*in[4*(roi_in.width*j + i) + k];
+          for(int k=0; k<3; k++)
+          {
+            module->picked_color_min[k] = fminf(module->picked_color_min[k], in[4*(roi_in.width*j + i) + k]);
+            module->picked_color_max[k] = fmaxf(module->picked_color_max[k], in[4*(roi_in.width*j + i) + k]);
+            rgb[k] += w*in[4*(roi_in.width*j + i) + k];
+          }
+          const float L = in[4*(roi_in.width*j + i) + 0];
+          const float a = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 1]*L));
+          const float b = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 2]*L));
+          Lab[1] += w*a;
+          Lab[2] += w*b;
+          module->picked_color_min_Lab[0] = fminf(module->picked_color_min_Lab[0], L);
+          module->picked_color_min_Lab[1] = fminf(module->picked_color_min_Lab[1], a);
+          module->picked_color_min_Lab[2] = fminf(module->picked_color_min_Lab[2], b);
+          module->picked_color_max_Lab[0] = fmaxf(module->picked_color_max_Lab[0], L);
+          module->picked_color_max_Lab[1] = fmaxf(module->picked_color_max_Lab[1], a);
+          module->picked_color_max_Lab[2] = fmaxf(module->picked_color_max_Lab[2], b);
         }
-        const float L = in[4*(roi_in.width*j + i) + 0];
-        const float a = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 1]*L));
-        const float b = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 2]*L));
-        Lab[1] += w*a;
-        Lab[2] += w*b;
-        module->picked_color_min_Lab[0] = fminf(module->picked_color_min_Lab[0], L);
-        module->picked_color_min_Lab[1] = fminf(module->picked_color_min_Lab[1], a);
-        module->picked_color_min_Lab[2] = fminf(module->picked_color_min_Lab[2], b);
-        module->picked_color_max_Lab[0] = fmaxf(module->picked_color_max_Lab[0], L);
-        module->picked_color_max_Lab[1] = fmaxf(module->picked_color_max_Lab[1], a);
-        module->picked_color_max_Lab[2] = fmaxf(module->picked_color_max_Lab[2], b);
-      }
       Lab[0] = rgb[0];
-      for(int k=0;k<3;k++) module->picked_color_Lab[k] = Lab[k];
-      for(int k=0;k<3;k++) module->picked_color[k] = rgb[k];
+      for(int k=0; k<3; k++) module->picked_color_Lab[k] = Lab[k];
+      for(int k=0; k<3; k++) module->picked_color[k] = rgb[k];
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
@@ -440,7 +467,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     // actual pixel processing done by module
     dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
     dt_times_t start;
     dt_get_times(&start);
 #ifdef HAVE_OPENCL
@@ -474,9 +505,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       module->process(module, piece, input, *output, &roi_in, roi_out);
     }
     dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' [%s]", module->name(),
-        pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
+                  pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     // in case we get this buffer from the cache, also get the processed max:
-    for(int k=0;k<3;k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
+    for(int k=0; k<3; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     if(module == darktable.develop->gui_module)
     {
@@ -486,41 +517,49 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     }
 #ifdef _DEBUG
     dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
-    if(strcmp(module->op, "gamma") && bpp == sizeof(float)*4) for(int k=0;k<4*roi_out->width*roi_out->height;k++)
+    if(pipe->shutdown)
     {
-      if((k&3)<3 && !isfinite(((float*)(*output))[k]))
-      {
-        fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats!\n", module->name());
-        break;
-      }
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
     }
+    if(strcmp(module->op, "gamma") && bpp == sizeof(float)*4) for(int k=0; k<4*roi_out->width*roi_out->height; k++)
+      {
+        if((k&3)<3 && !isfinite(((float*)(*output))[k]))
+        {
+          fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats!\n", module->name());
+          break;
+        }
+      }
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 #endif
 
 post_process_collect_info:
     // 4) final histogram:
     dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown) { dt_pthread_mutex_unlock(&pipe->busy_mutex); return 1; }
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
     if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
       uint8_t *pixel = (uint8_t *)*output;
       dev->histogram_max = 0;
       memset(dev->histogram, 0, sizeof(float)*4*64);
-      for(int j=0;j<roi_out->height;j+=4) for(int i=0;i<roi_out->width;i+=4)
-      {
-        uint8_t rgb[3];
-        for(int k=0;k<3;k++)
-          rgb[k] = pixel[4*j*roi_out->width+4*i+2-k]>>2;
+      for(int j=0; j<roi_out->height; j+=4) for(int i=0; i<roi_out->width; i+=4)
+        {
+          uint8_t rgb[3];
+          for(int k=0; k<3; k++)
+            rgb[k] = pixel[4*j*roi_out->width+4*i+2-k]>>2;
 
-        for(int k=0;k<3;k++)
-          dev->histogram[4*rgb[k]+k] ++;
-        uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-        dev->histogram[4*lum+3] ++;
-      }
-      for(int k=0;k<4*64;k++) dev->histogram[k] = logf(1.0 + dev->histogram[k]);
+          for(int k=0; k<3; k++)
+            dev->histogram[4*rgb[k]+k] ++;
+          uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+          dev->histogram[4*lum+3] ++;
+        }
+      for(int k=0; k<4*64; k++) dev->histogram[k] = logf(1.0 + dev->histogram[k]);
       // don't count <= 0 pixels
-      for(int k=19;k<4*64;k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
+      for(int k=19; k<4*64; k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       dt_control_queue_draw(glade_xml_get_widget (darktable.gui->main_window, "histogram"));
     }
@@ -554,8 +593,11 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->devid = dt_opencl_lock_device(darktable.opencl, -1);
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
   // image max is normalized before
-  for(int k=0;k<3;k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
-  dt_iop_roi_t roi = (dt_iop_roi_t){x, y, width, height, scale};
+  for(int k=0; k<3; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
+  dt_iop_roi_t roi = (dt_iop_roi_t)
+  {
+    x, y, width, height, scale
+  };
   // printf("pixelpipe homebrew process start\n");
   if(darktable.unmuted & DT_DEBUG_DEV)
     dt_dev_pixelpipe_cache_print(&pipe->cache);
@@ -596,7 +638,10 @@ void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe)
 void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in, int height_in, int *width, int *height)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-  dt_iop_roi_t roi_in = (dt_iop_roi_t){0, 0, width_in, height_in, 1.0};
+  dt_iop_roi_t roi_in = (dt_iop_roi_t)
+  {
+    0, 0, width_in, height_in, 1.0
+  };
   dt_iop_roi_t roi_out;
   GList *modules = dev->iop;
   GList *pieces  = pipe->nodes;

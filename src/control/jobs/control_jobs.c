@@ -75,7 +75,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
-  char message[512]={0};
+  char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("merging %d image", "merging %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
@@ -132,9 +132,9 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float aperture = M_PI * powf(efl / (2.0f * eap), 2.0f);
     const float cal = 100.0f/(aperture*img->exif_exposure*img->exif_iso);
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
+#pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
 #endif
-    for(int k=0;k<wd*ht;k++)
+    for(int k=0; k<wd*ht; k++)
     {
       const uint16_t in = ((uint16_t *)img->pixels)[k];
       const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : img->exif_exposure * 0.01f);
@@ -149,9 +149,9 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     dt_image_cache_release(img, 'r');
   }
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight)
+#pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight)
 #endif
-  for(int k=0;k<wd*ht;k++) pixels[k] = fmaxf(0.0f, fminf(10000000.0f, pixels[k]/(65535.0f*weight[k])));
+  for(int k=0; k<wd*ht; k++) pixels[k] = fmaxf(0.0f, fminf(10000000.0f, pixels[k]/(65535.0f*weight[k])));
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
@@ -187,7 +187,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
-  char message[512]={0};
+  char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("duplicating %d image", "duplicating %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
@@ -210,7 +210,7 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
   const int cw = t1->flag;
   GList *t = t1->index;
   int total = g_list_length(t);
-  char message[512]={0};
+  char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
@@ -232,7 +232,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
-  char message[512]={0};
+  char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
@@ -255,7 +255,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
-  char message[512]={0};
+  char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("deleting %d image", "deleting %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new(DT_JOB_PROGRESS, message);
@@ -374,10 +374,10 @@ void dt_control_remove_images()
     GtkWidget *dialog;
     GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_QUESTION,
-        GTK_BUTTONS_YES_NO,
-        _("do you really want to remove all selected images from the collection?"));
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_QUESTION,
+                                    GTK_BUTTONS_YES_NO,
+                                    _("do you really want to remove all selected images from the collection?"));
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -395,10 +395,10 @@ void dt_control_delete_images()
     GtkWidget *dialog;
     GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-        GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_MESSAGE_QUESTION,
-        GTK_BUTTONS_YES_NO,
-        _("do you really want to physically delete all selected images from disk?"));
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_QUESTION,
+                                    GTK_BUTTONS_YES_NO,
+                                    _("do you really want to physically delete all selected images from disk?"));
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -420,7 +420,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   g_assert(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   g_assert(mstorage);
-  
+
   // Get max dimensions...
   uint32_t w,h,fw,fh,sw,sh;
   w=h=fw=fh=sw=sh=0;
@@ -441,74 +441,74 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     return 1;
   }
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
-  char message[512]={0};
+  char message[512]= {0};
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
   dt_gui_background_jobs_can_cancel (j,job);
-  
+
   double fraction=0;
 #ifdef _OPENMP
   // limit this to num threads = num full buffers - 1 (keep one for darkroom mode)
   // use min of user request and mipmap cache entries
   const int full_entries = dt_conf_get_int ("mipmap_cache_full_images");
   const int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
-  #pragma omp parallel shared(j, fraction) num_threads(num_threads)
+#pragma omp parallel shared(j, fraction) num_threads(num_threads)
   {
 #endif
-  // get a thread-safe fdata struct (one jpeg struct per thread etc):
-  dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
-  fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
-  fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
-  fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
-  fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
-  int num = 0;
-  while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
-  {
+    // get a thread-safe fdata struct (one jpeg struct per thread etc):
+    dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
+    fdata->max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
+    fdata->max_height = dt_conf_get_int ("plugins/lighttable/export/height");
+    fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
+    fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+    int num = 0;
+    while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
+    {
 #ifdef _OPENMP
-  #pragma omp critical
+#pragma omp critical
 #endif
-    {
-      imgid = (long int)t->data;
-      t = g_list_delete_link(t, t);
-      num = total - g_list_length(t);
-    }
-    // check if image still exists:
-    char imgfilename[1024];
-    dt_image_t *image = dt_image_cache_get(imgid, 'r');
-    if(image)
-    {
-      dt_image_full_path(image->id, imgfilename, 1024);
-      dt_image_cache_release(image, 'r');
-      if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
       {
-        dt_control_log(_("image `%s' is currently unavailable"), image->filename);
-        fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
-        // dt_image_remove(imgid);
+        imgid = (long int)t->data;
+        t = g_list_delete_link(t, t);
+        num = total - g_list_length(t);
       }
-      else
+      // check if image still exists:
+      char imgfilename[1024];
+      dt_image_t *image = dt_image_cache_get(imgid, 'r');
+      if(image)
       {
-        mstorage->store(sdata, imgid, mformat, fdata, num, total);
+        dt_image_full_path(image->id, imgfilename, 1024);
+        dt_image_cache_release(image, 'r');
+        if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
+        {
+          dt_control_log(_("image `%s' is currently unavailable"), image->filename);
+          fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
+          // dt_image_remove(imgid);
+        }
+        else
+        {
+          mstorage->store(sdata, imgid, mformat, fdata, num, total);
+        }
+      }
+#ifdef _OPENMP
+#pragma omp critical
+#endif
+      {
+        fraction+=1.0/total;
+        dt_gui_background_jobs_set_progress( j, fraction );
       }
     }
 #ifdef _OPENMP
-  #pragma omp critical
+#pragma omp barrier
+#pragma omp master
 #endif
     {
-      fraction+=1.0/total;
-      dt_gui_background_jobs_set_progress( j, fraction );
+      dt_gui_background_jobs_destroy (j);
+      if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
+      mstorage->free_params(mstorage, sdata);
     }
-  }
-#ifdef _OPENMP
-  #pragma omp barrier
-  #pragma omp master
-#endif
-  {
-    dt_gui_background_jobs_destroy (j);
-    if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
-    mstorage->free_params(mstorage, sdata);
-  }
-  // all threads free their fdata
-  mformat->free_params (mformat, fdata);
+    // all threads free their fdata
+    mformat->free_params (mformat, fdata);
 #ifdef _OPENMP
   }
 #endif

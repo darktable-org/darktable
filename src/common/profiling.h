@@ -22,7 +22,7 @@
 #include "gui/gtk.h"
 
 
-#ifdef USE_DARKTABLE_PROFILING 
+#ifdef USE_DARKTABLE_PROFILING
 #define TIMER_START(name,description) dt_timer_t * name = dt_timer_start_with_name(__FILE__,__FUNCTION__,description)
 #else
 #define TIMER_START(name,description) {}
@@ -33,15 +33,15 @@
 #else
 #define TIMER_STOP(name) {}
 #endif
-	
+
 #ifdef USE_DARKTABLE_PROFILING
-typedef struct dt_timer_t 
+typedef struct dt_timer_t
 {
-	const char *file;
-	const char *function;
-	const char *description;
-	GTimer *timer;
-} 
+  const char *file;
+  const char *function;
+  const char *description;
+  GTimer *timer;
+}
 dt_timer_t;
 
 dt_timer_t *dt_timer_start_with_name(const char *file,const char *function,const char *description);
@@ -49,4 +49,3 @@ void dt_timer_stop_with_name(dt_timer_t *);
 #endif
 
 #endif
-	

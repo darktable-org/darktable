@@ -17,7 +17,7 @@
 */
 #include "iop/colorout.h"
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -51,14 +51,14 @@
 
 void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8_t *p8)
 {
-  for(int idx=0;idx < p_wd*p_ht; idx++)
-    for(int k=0;k<3;k++) p8[4*idx+2-k] = dt_dev_default_gamma[(int)CLAMPS(0xffff*f[4*idx+k], 0, 0xffff)];
+  for(int idx=0; idx < p_wd*p_ht; idx++)
+    for(int k=0; k<3; k++) p8[4*idx+2-k] = dt_dev_default_gamma[(int)CLAMPS(0xffff*f[4*idx+k], 0, 0xffff)];
 }
 
 void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, float *f)
 {
-  for(int idx=0;idx < p_wd*p_ht; idx++)
-    for(int k=0;k<3;k++) f[4*idx+2-k] = dt_dev_de_gamma[p8[4*idx+k]];
+  for(int idx=0; idx < p_wd*p_ht; idx++)
+    for(int k=0; k<3; k++) f[4*idx+2-k] = dt_dev_de_gamma[p8[4*idx+k]];
 }
 
 
@@ -82,28 +82,38 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
   if(!orientation)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
-    for(int j=0;j<ht;j++) memcpy(out+j*bpp*wd, in+j*stride, bpp*wd);
+    for(int j=0; j<ht; j++) memcpy(out+j*bpp*wd, in+j*stride, bpp*wd);
     return;
   }
   int ii = 0, jj = 0, fw = fwd, fh = fht;
   int si = bpp, sj = wd*bpp;
   if(orientation & 4)
   {
-    sj = bpp; si = ht*bpp;
-    fw = fht; fh = fwd;
+    sj = bpp;
+    si = ht*bpp;
+    fw = fht;
+    fh = fwd;
   }
-  if(orientation & 2) { jj = (int)fht - jj - 1; sj = -sj; }
-  if(orientation & 1) { ii = (int)fwd - ii - 1; si = -si; }
+  if(orientation & 2)
+  {
+    jj = (int)fht - jj - 1;
+    sj = -sj;
+  }
+  if(orientation & 1)
+  {
+    ii = (int)fwd - ii - 1;
+    si = -si;
+  }
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+#pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
 #endif
-  for(int j=0;j<ht;j++)
+  for(int j=0; j<ht; j++)
   {
     char *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
     const char *in2  = in + stride*j;
-    for(int i=0;i<wd;i++)
+    for(int i=0; i<wd; i++)
     {
       memcpy(out2, in2, bpp);
       in2  += bpp;
@@ -119,30 +129,40 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
   if(!orientation)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
-    for(int j=0;j<ht;j++) for(int i=0;i<wd;i++) for(int k=0;k<ch;k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
+    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
     return;
   }
   int ii = 0, jj = 0, fw = fwd, fh = fht;
   int si = 4, sj = wd*4;
   if(orientation & 4)
   {
-    sj = 4; si = ht*4;
-    fw = fht; fh = fwd;
+    sj = 4;
+    si = ht*4;
+    fw = fht;
+    fh = fwd;
   }
-  if(orientation & 2) { jj = (int)fht - jj - 1; sj = -sj; }
-  if(orientation & 1) { ii = (int)fwd - ii - 1; si = -si; }
+  if(orientation & 2)
+  {
+    jj = (int)fht - jj - 1;
+    sj = -sj;
+  }
+  if(orientation & 1)
+  {
+    ii = (int)fwd - ii - 1;
+    si = -si;
+  }
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+#pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
 #endif
-  for(int j=0;j<ht;j++)
+  for(int j=0; j<ht; j++)
   {
     float *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
     const uint16_t *in2  = in + stride*j;
-    for(int i=0;i<wd;i++)
+    for(int i=0; i<wd; i++)
     {
-      for(int k=0;k<ch;k++) out2[k] = (in2[k] - black)*scale;
+      for(int k=0; k<ch; k++) out2[k] = (in2[k] - black)*scale;
       in2  += ch;
       out2 += si;
     }
@@ -154,9 +174,12 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
   int ii = i, jj = j, w = wd, h = ht, fw = fwd, fh = fht;
   if(orientation & 4)
   {
-    w = ht; h = wd;
-    ii = j; jj = i;
-    fw = fht; fh = fwd;
+    w = ht;
+    h = wd;
+    ii = j;
+    jj = i;
+    fw = fht;
+    fh = fwd;
   }
   if(orientation & 2) ii = (int)fw - ii - 1;
   if(orientation & 1) jj = (int)fh - jj - 1;
@@ -260,7 +283,8 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
 
   // if we have a history stack, don't load preview buffer!
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
-  { // no history stack: get thumbnail
+  {
+    // no history stack: get thumbnail
     ret = libraw_open_file(raw, filename);
     HANDLE_ERRORS(ret, 0);
     ret = libraw_unpack_thumb(raw);
@@ -320,20 +344,22 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
 
       if(image->width == p_wd && image->height == p_ht)
-      { // use 1:1
+      {
+        // use 1:1
         for (int j=0; j < jpg.height; j++)
           for (int i=0; i < jpg.width; i++)
-            for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+            for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
       }
       else
-      { // scale to fit
+      {
+        // scale to fit
         memset(img->mip[DT_IMAGE_MIP4], 0, 4*p_wd*p_ht*sizeof(uint8_t));
         const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
-        for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
-        {
-          uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
-        }
+        for(int j=0; j<p_ht2 && scale*j<jpg.height; j++) for(int i=0; i<p_wd2 && scale*i < jpg.width; i++)
+          {
+            uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
+            for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
+          }
       }
       free(tmp);
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
@@ -361,22 +387,24 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
       const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
       const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
       if(image->width == p_wd2 && image->height == p_ht2)
-      { // use 1:1
-        for(int j=0;j<image->height;j++) for(int i=0;i<image->width;i++)
-        {
-          uint8_t *cam = image->data + 3*(j*image->width + i);
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation) + 2-k] = cam[k];
-        }
+      {
+        // use 1:1
+        for(int j=0; j<image->height; j++) for(int i=0; i<image->width; i++)
+          {
+            uint8_t *cam = image->data + 3*(j*image->width + i);
+            for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation) + 2-k] = cam[k];
+          }
       }
       else
-      { // scale to fit
+      {
+        // scale to fit
         memset(img->mip[DT_IMAGE_MIP4], 0, 4*p_wd*p_ht*sizeof(uint8_t));
         const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
-        for(int j=0;j<p_ht2 && scale*j<image->height;j++) for(int i=0;i<p_wd2 && scale*i < image->width;i++)
-        {
-          uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
-          for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation) + 2-k] = cam[k];
-        }
+        for(int j=0; j<p_ht2 && scale*j<image->height; j++) for(int i=0; i<p_wd2 && scale*i < image->width; i++)
+          {
+            uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
+            for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation) + 2-k] = cam[k];
+          }
       }
       dt_image_release(img, DT_IMAGE_MIP4, 'w');
       if(retval == DT_IMAGEIO_OK)
@@ -439,23 +467,25 @@ try_full_raw:
     dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
 
     if(raw_wd == p_wd && raw_ht == p_ht)
-    { // use 1:1
+    {
+      // use 1:1
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(img, rawpx, raw, p_wd)
+#pragma omp parallel for default(none) schedule(static) shared(img, rawpx, raw, p_wd)
 #endif
-      for(int j=0;j<raw_ht;j++) for(int i=0;i<raw_wd;i++)
-      {
-        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = fmaxf(0.0f, (rawpx[j*raw_wd + i][k] - raw->color.black)*m);
-      }
+      for(int j=0; j<raw_ht; j++) for(int i=0; i<raw_wd; i++)
+        {
+          for(int k=0; k<3; k++) img->mipf[4*(j*p_wd + i) + k] = fmaxf(0.0f, (rawpx[j*raw_wd + i][k] - raw->color.black)*m);
+        }
     }
     else
-    { // scale to fit
+    {
+      // scale to fit
       memset(img->mipf, 0, 4*p_wd*p_ht*sizeof(float));
       const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
-      for(int j=0;j<p_ht && (int)(scale*j)<raw_ht;j++) for(int i=0;i<p_wd && (int)(scale*i) < raw_wd;i++)
-      {
-        for(int k=0;k<3;k++) img->mipf[4*(j*p_wd + i) + k] = fmaxf(0.0f, (rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k] - raw->color.black)*m);
-      }
+      for(int j=0; j<p_ht && (int)(scale*j)<raw_ht; j++) for(int i=0; i<p_wd && (int)(scale*i) < raw_wd; i++)
+        {
+          for(int k=0; k<3; k++) img->mipf[4*(j*p_wd + i) + k] = fmaxf(0.0f, (rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k] - raw->color.black)*m);
+        }
     }
 
     // don't write mip4, it's shitty anyways (altered image has to be processed)
@@ -565,9 +595,9 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(img, image, raw)
+#pragma omp parallel for schedule(static) default(none) shared(img, image, raw)
 #endif
-  for(int k=0;k<img->width*img->height;k++)
+  for(int k=0; k<img->width*img->height; k++)
     ((uint16_t *)img->pixels)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
   // clean up raw stuff.
   libraw_recycle(raw);
@@ -650,31 +680,33 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
 
   if(img->width == p_wd && img->height == p_ht)
-  { // use 1:1
+  {
+    // use 1:1
     if(mip == DT_IMAGE_MIP4)
-      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0;k<3;k++)
-        img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
+      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0; k<3; k++)
+            img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
     else
-      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0;k<3;k++)
-        img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
+      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0; k<3; k++)
+            img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
   }
   else
-  { // scale to fit
+  {
+    // scale to fit
     if(mip == DT_IMAGE_MIP4) memset(img->mip[mip], 0, 4*p_wd*p_ht*sizeof(uint8_t));
     else                     memset(img->mipf, 0,     4*p_wd*p_ht*sizeof(float));
     const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
     if(mip == DT_IMAGE_MIP4)
-    for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
-    {
-      uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
-    }
+      for(int j=0; j<p_ht2 && scale*j<jpg.height; j++) for(int i=0; i<p_wd2 && scale*i < jpg.width; i++)
+        {
+          uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
+          for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
+        }
     else
-    for(int j=0;j<p_ht2 && scale*j<jpg.height;j++) for(int i=0;i<p_wd2 && scale*i < jpg.width;i++)
-    {
-      uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-      for(int k=0;k<3;k++) img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
-    }
+      for(int j=0; j<p_ht2 && scale*j<jpg.height; j++) for(int i=0; i<p_wd2 && scale*i < jpg.width; i++)
+        {
+          uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
+          for(int k=0; k<3; k++) img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
+        }
   }
   free(tmp);
   dt_image_release(img, mip, 'w');
@@ -736,14 +768,14 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
     free(tmp);
     return DT_IMAGEIO_CACHE_FULL;
   }
- 
+
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = orientation & 4 ? img->height : img->width;
   dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
 
   for(int j=0; j < jpg.height; j++)
     for(int i=0; i < jpg.width; i++)
-      for(int k=0;k<3;k++) img->pixels[4*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = (1.0/255.0)*tmp[4*jpg.width*j+4*i+k];
+      for(int k=0; k<3; k++) img->pixels[4*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = (1.0/255.0)*tmp[4*jpg.width*j+4*i+k];
 
   free(tmp);
   dt_image_release(img, DT_IMAGE_FULL, 'w');
@@ -829,32 +861,37 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   const int processed_height = scale*pipe.processed_height + .5f;
   const int bpp = format->bpp(format_params);
   if(bpp == 8)
-  { // ldr output: char
+  {
+    // ldr output: char
     dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     uint8_t *buf8 = pipe.backbuf;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(buf8) schedule(static)
+#pragma omp parallel for default(none) shared(buf8) schedule(static)
 #endif
-    for(int k=0;k<processed_width*processed_height;k++)
-    { // convert in place
+    for(int k=0; k<processed_width*processed_height; k++)
+    {
+      // convert in place
       uint8_t tmp = buf8[4*k+0];
       buf8[4*k+0] = buf8[4*k+2];
       buf8[4*k+2] = tmp;
     }
   }
   else if(bpp == 16)
-  { // uint16_t per color channel
+  {
+    // uint16_t per color channel
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     float    *buff  = (float *)   pipe.backbuf;
     uint16_t *buf16 = (uint16_t *)pipe.backbuf;
-    for(int y=0;y<processed_height;y++) for(int x=0;x<processed_width ;x++)
-    { // convert in place
-      const int k = x + processed_width*y;
-      for(int i=0;i<3;i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
-    }
+    for(int y=0; y<processed_height; y++) for(int x=0; x<processed_width ; x++)
+      {
+        // convert in place
+        const int k = x + processed_width*y;
+        for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
+      }
   }
   else if(bpp == 32)
-  { // 32-bit float
+  {
+    // 32-bit float
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   }
 
@@ -878,7 +915,8 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 // =================================================
 
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
-{ // first try hdr and raw loading
+{
+  // first try hdr and raw loading
   dt_imageio_retval_t ret;
 #ifdef HAVE_RAWSPEED
   ret = dt_imageio_open_rawspeed(img, filename);
@@ -896,7 +934,8 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 }
 
 dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filename)
-{ // first try hdr and raw loading
+{
+  // first try hdr and raw loading
   dt_imageio_retval_t ret;
 #ifdef HAVE_RAWSPEED
   ret = dt_imageio_open_rawspeed_preview(img, filename);
@@ -952,7 +991,11 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
     if(rd < 1) goto delete_old_config;
     char *params = (char *)malloc(len);
     rd = fread(params, 1, len, f);
-    if(rd < len) { free(params); goto delete_old_config; }
+    if(rd < len)
+    {
+      free(params);
+      goto delete_old_config;
+    }
     DT_DEBUG_SQLITE3_BIND_INT(stmt_sel_num, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt_sel_num, 2, num);
     if(sqlite3_step(stmt_sel_num) != SQLITE_ROW)
@@ -995,15 +1038,15 @@ delete_old_config:
 int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
 {
   int stars = 1;
-  char line[512]={0};
+  char line[512]= {0};
   FILE *f = fopen(filename, "rb");
   if(!f) return 1;
-  
+
   // dt_image_t *img = dt_image_cache_get(imgid, 'w');
   sqlite3_stmt *stmt_upd_tagxtag, *stmt_del_tagged, *stmt_sel_id, *stmt_ins_tagxtag, *stmt_upd_tagxtag2, *stmt_ins_tags, *stmt_ins_tagged, *stmt_upd_tagxtag3;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count - 1 where "
-          "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
-          "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag, NULL);
+                              "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
+                              "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt_del_tagged, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from tags where name = ?1", -1, &stmt_sel_id, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt_ins_tagxtag, NULL);
@@ -1011,57 +1054,65 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt_ins_tags, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
-            "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
-            "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag3, NULL);
+                              "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+                              "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag3, NULL);
 
-  while( fgets( line, 512, f ) ) {
-    if( strncmp( line, "stars:", 6) == 0) 
+  while( fgets( line, 512, f ) )
+  {
+    if( strncmp( line, "stars:", 6) == 0)
     {
       if( sscanf( line, "stars: %d\n", &stars) == 1 )
         img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
-    else if( strncmp( line, "rawimport:",10) == 0) 
+    else if( strncmp( line, "rawimport:",10) == 0)
     {
-       sscanf( line, "rawimport: %f %f %d\n", &img->raw_denoise_threshold, &img->raw_auto_bright_threshold, (int32_t *)&img->raw_params);
-    } 
-    else if( strncmp( line, "colorlabels:",12) == 0) 
+      sscanf( line, "rawimport: %f %f %d\n", &img->raw_denoise_threshold, &img->raw_auto_bright_threshold, (int32_t *)&img->raw_params);
+    }
+    else if( strncmp( line, "colorlabels:",12) == 0)
     {
       // Remove associated color labels
       dt_colorlabels_remove_labels( img->id );
-      
-      if( strlen(line+12) > 1 ) {
+
+      if( strlen(line+12) > 1 )
+      {
         char *colors=line+12;
         char *p=colors+1;
-        while( *p!=0) { if(*p==' ') *p='\0'; p++; }
+        while( *p!=0)
+        {
+          if(*p==' ') *p='\0';
+          p++;
+        }
         p=colors;
-        while( *p != '\0' ) {
+        while( *p != '\0' )
+        {
           dt_colorlabels_set_label( img->id, atoi(p) );
           p+=strlen(p)+1;
         }
-        
+
       }
-    } 
-    else if( strncmp( line, "tags:",5) == 0) 
-    { // Special, tags should always be placed at end of dttags file....
-      
+    }
+    else if( strncmp( line, "tags:",5) == 0)
+    {
+      // Special, tags should always be placed at end of dttags file....
+
       // consistency: strip all tags from image (tagged_image, tagxtag)
       DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag, 1, img->id);
       sqlite3_step(stmt_upd_tagxtag);
       sqlite3_reset(stmt_upd_tagxtag);
       sqlite3_clear_bindings(stmt_upd_tagxtag);
-      
-       // remove from tagged_images
+
+      // remove from tagged_images
       DT_DEBUG_SQLITE3_BIND_INT(stmt_del_tagged, 1, img->id);
       sqlite3_step(stmt_del_tagged);
       sqlite3_reset(stmt_del_tagged);
       sqlite3_clear_bindings(stmt_del_tagged);
-        
+
       // while read line, add tag to db.
       while(fscanf(f, "%[^\n]\n", line) != EOF)
       {
         int tagid = -1;
         // check if tag is available, get its id:
-        for(int k=0;k<2;k++)
+        for(int k=0; k<2; k++)
         {
           DT_DEBUG_SQLITE3_BIND_TEXT(stmt_sel_id, 1, line, strlen(line), SQLITE_TRANSIENT);
           if(sqlite3_step(stmt_sel_id) == SQLITE_ROW)
@@ -1101,7 +1152,7 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
         sqlite3_reset(stmt_upd_tagxtag3);
         sqlite3_clear_bindings(stmt_upd_tagxtag3);
       }
-      
+
     }
     memset( line,0,512);
   }

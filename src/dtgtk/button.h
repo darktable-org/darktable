@@ -50,4 +50,4 @@ GType dtgtk_button_get_type (void);
 GtkWidget* dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
 GtkWidget* dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags);
 G_END_DECLS
-#endif 
+#endif

@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -71,8 +71,8 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES;
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_EFFECT;
 }
@@ -87,11 +87,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  
+
   in  = (float *)ivoid;
   out = (float *)ovoid;
 
-    
+
   // gauss blur the L
   int MAXR=128;
   int radius=MAXR*(data->size/100.0);
@@ -102,42 +102,42 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float sigma2 = (2.5*2.5)*(radius*roi_in->scale/piece->iscale)*(radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
   // init gaussian kernel
-  for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-    weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma2));
-  for(int l=-rad;l<=rad;l++) for(int k=-rad;k<=rad;k++)
-    m[l*wd + k] /= weight;
+  for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
+      weight += m[l*wd + k] = expf(- (l*l + k*k)/(2.f*sigma2));
+  for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
+      m[l*wd + k] /= weight;
 
   /* gather light by threshold */
   memcpy(out,in,roi_out->width*roi_out->height*ch*sizeof(float));
   const float scale = 1.0 / exp2f ( -0.5*(data->strength/100.0));
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in, data, rad) schedule(static)
+#pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in, data, rad) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     out = ((float *)ovoid) + ch*k;
     out[0] *= scale;
-    if (out[0]<data->threshold) 
+    if (out[0]<data->threshold)
       out[0]=0.0;
     out +=ch;
   }
-  
-/* apply gaussian pass on gathered light */
+
+  /* apply gaussian pass on gathered light */
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in, rad) schedule(static)
+#pragma omp parallel for default(none) private(in, out) shared(m, ivoid, ovoid, roi_out, roi_in, rad) schedule(static)
 #endif
-  for (int j=rad;j<roi_out->height-rad;j++)
+  for (int j=rad; j<roi_out->height-rad; j++)
   {
     out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
-    for(int i=rad;i<roi_out->width-rad;i++)
+    for(int i=rad; i<roi_out->width-rad; i++)
     {
       //out[0] = 0.0f;
-      for (int l=-rad;l<=rad;l++)
+      for (int l=-rad; l<=rad; l++)
       {
-	float *outp = out + ch*l*roi_in->width;
-	float *mp = m + l*wd;
-	for (int k=-rad;k<=rad;k++,outp+=ch,mp++)
-	  out[0] += mp[0]*outp[0];
+        float *outp = out + ch*l*roi_in->width;
+        float *mp = m + l*wd;
+        for (int k=-rad; k<=rad; k++,outp+=ch,mp++)
+          out[0] += mp[0]*outp[0];
       }
       out += ch;
     }
@@ -146,18 +146,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   out = (float *)ovoid;
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-      float *inp = in + ch*k;
-      float *outp = out + ch*k;
-      float lightness = outp[0];
-      outp[0] = 100-(((100-inp[0])*(100-lightness))/100); // Screen blend
-      outp[1] = inp[1];
-      outp[2] = inp[2];
+    float *inp = in + ch*k;
+    float *outp = out + ch*k;
+    float lightness = outp[0];
+    outp[0] = 100-(((100-inp[0])*(100-lightness))/100); // Screen blend
+    outp[1] = inp[1];
+    outp[2] = inp[2];
   }
-  
+
 }
 
 static void
@@ -245,7 +245,10 @@ void init(dt_iop_module_t *module)
   module->priority = 301;
   module->params_size = sizeof(dt_iop_bloom_params_t);
   module->gui_data = NULL;
-  dt_iop_bloom_params_t tmp = (dt_iop_bloom_params_t){10,98,25};
+  dt_iop_bloom_params_t tmp = (dt_iop_bloom_params_t)
+  {
+    10,98,25
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_bloom_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bloom_params_t));
 }
@@ -269,7 +272,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  
+
   g->label1 = dtgtk_reset_label_new(_("size"), self, &p->size, sizeof(float));
   g->label2 = dtgtk_reset_label_new(_("threshold"), self, &p->threshold, sizeof(float));
   g->label3 = dtgtk_reset_label_new(_("strength"), self, &p->strength, sizeof(float));
@@ -282,14 +285,14 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  
+
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the size of bloom"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the threshold of light"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the strength of bloom"), (char *)NULL);
-  
+
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (size_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",

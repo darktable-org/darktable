@@ -54,7 +54,8 @@ name ()
   return _("send as email");
 }
 
-int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height) {
+int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
+{
   *width=1280;
   *height=1280;
   return 1;
@@ -64,7 +65,7 @@ int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *wi
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
- 
+
 }
 
 void
@@ -76,7 +77,7 @@ gui_cleanup (dt_imageio_module_storage_t *self)
 void
 gui_reset (dt_imageio_module_storage_t *self)
 {
-  
+
 }
 
 int
@@ -87,32 +88,32 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   _email_attachment_t *attachment = ( _email_attachment_t *)malloc(sizeof(_email_attachment_t));
   attachment->imgid = imgid;
-   
+
   /* construct a temporary file name */
-  char tmpdir[4096]={0};
+  char tmpdir[4096]= {0};
   dt_get_user_local_dir (tmpdir,4096);
   strcat (tmpdir,"/tmp");
   g_mkdir_with_parents(tmpdir,0700);
-  
+
   char dirname[4096];
   dt_image_full_path(img->id, dirname, 1024);
   const gchar * filename = g_basename( dirname );
   strcpy( g_strrstr( filename,".")+1, format->extension(fdata));
-  
+
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
-  
+
   dt_imageio_export(img, attachment->file, format, fdata);
   dt_image_cache_release(img, 'r');
-  
+
   char *trunc = attachment->file + strlen(attachment->file) - 32;
   if(trunc < attachment->file) trunc = attachment->file;
   dt_control_log(_("%d/%d exported to `%s%s'"), num, total, trunc != filename ? ".." : "", trunc);
- 
+
 #ifdef _OPENMP // store can be called in parallel, so synch access to shared memory
-  #pragma omp critical
+#pragma omp critical
 #endif
   d->images = g_list_append( d->images, attachment );
- 
+
   return 0;
 }
 
@@ -142,34 +143,36 @@ void
 finalize_store(dt_imageio_module_storage_t *self, void *params)
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)params;
-  
+
   // All images are exported, generate a mailto uri and startup default mail client
-  gchar uri[4096]={0};
-  gchar body[4096]={0};
-  gchar attachments[4096]={0};
+  gchar uri[4096]= {0};
+  gchar body[4096]= {0};
+  gchar attachments[4096]= {0};
   gchar *defaultHandler=NULL;
   gchar *uriFormat=NULL;
   gchar *subject="images exported from darktable";
   gchar *imageBodyFormat="%s %s\n"; // filename, exif oneliner
   gchar *attachmentFormat=NULL;
   gchar *attachmentSeparator="";
-  
-  if(  strlen( defaultHandler = dt_conf_get_string("plugins/imageio/storage/email/client") ) <= 0 ) {
+
+  if(  strlen( defaultHandler = dt_conf_get_string("plugins/imageio/storage/email/client") ) <= 0 )
+  {
 #ifdef HAVE_GCONF
     defaultHandler = gconf_client_get_string (darktable.conf->gconf, "/desktop/gnome/url-handlers/mailto/command", NULL);
 #endif
   }
-   
-  if( defaultHandler ) { 
+
+  if( defaultHandler )
+  {
     // Detected a default handler let's do special case handling for each email client..
-    if( g_strrstr(defaultHandler,"thunderbird") ) 
+    if( g_strrstr(defaultHandler,"thunderbird") )
     {
       uriFormat="thunderbird -compose \"to='',subject='%s',body='%s',attachment='%s'\"";   // subject, body, and list of attachments with format "<filename>,"
       attachmentFormat="%s";
       attachmentSeparator=",";
-      goto proceed; 
+      goto proceed;
     }
-    else if( g_strrstr(defaultHandler,"kmail") ) 
+    else if( g_strrstr(defaultHandler,"kmail") )
     {
       // When I enter the mailto:... in konqueror everything is ok, yet from dt we have no attachements. WTF?
       // So we launch it directly.
@@ -177,8 +180,8 @@ finalize_store(dt_imageio_module_storage_t *self, void *params)
       attachmentFormat="%s";
       attachmentSeparator="\" --attach \"";
       goto proceed;
-    } 
-    else if( g_strrstr(defaultHandler,"evolution") ) 
+    }
+    else if( g_strrstr(defaultHandler,"evolution") )
     {
       uriFormat="evolution \"mailto:?subject=%s&body=%s%s\"";   // subject, body, and list of attachments with format "--attach <filename> "
       attachmentFormat="&attachment=file://%s";
@@ -191,27 +194,28 @@ finalize_store(dt_imageio_module_storage_t *self, void *params)
   attachmentFormat="&attachment=file://%s";
 
 proceed: ; // Let's build up uri / command
-  while( d->images ) {
-    gchar exif[256]={0};
+  while( d->images )
+  {
+    gchar exif[256]= {0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
     const gchar *filename = g_basename( attachment->file );
     dt_image_t *img = dt_image_cache_get( attachment->imgid, 'r');
     dt_image_print_exif( img, exif, 256 );
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
-    
+
     if( strlen( attachments ) )
       g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), "%s", attachmentSeparator );
-    
+
     g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), attachmentFormat, attachment->file );
     // Free attachment item and remove
     dt_image_cache_release(img, 'r');
     g_free( d->images->data );
     d->images = g_list_remove( d->images, d->images->data );
   }
-  
+
   // build uri and launch before we quit...
   g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
-  
+
   // So what should we do...
   if( strncmp( uri, "mailto:", 7) == 0 )
     gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
@@ -219,7 +223,8 @@ proceed: ; // Let's build up uri / command
     if(system( uri ) < 0) fprintf(stderr, "[email] could not launch subprocess!\n");
 }
 
-int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format) {
+int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format)
+{
   const char *mime = format->mime(NULL);
   if(mime[0] == '\0') // this seems to be the copy format
     return 0;

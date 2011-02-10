@@ -22,15 +22,16 @@
 #include <dbus/dbus-glib.h>
 
 /** kwallet backend context */
-typedef struct backend_kwallet_context_t {
-	// Connection to the DBus session bus.
-	DBusGConnection* connection;
+typedef struct backend_kwallet_context_t
+{
+  // Connection to the DBus session bus.
+  DBusGConnection* connection;
 
-	// Proxy to the kwallet DBus service.
-	DBusGProxy* proxy;
+  // Proxy to the kwallet DBus service.
+  DBusGProxy* proxy;
 
-	// The name of the wallet we've opened. Set during init_kwallet().
-	gchar* wallet_name;
+  // The name of the wallet we've opened. Set during init_kwallet().
+  gchar* wallet_name;
 } backend_kwallet_context_t;
 
 /** Initializes a new kwallet backend context. */

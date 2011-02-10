@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
@@ -26,7 +26,7 @@
 #include <inttypes.h>
 #include <ctype.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -45,8 +45,8 @@ name()
   return _("lens correction");
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_CORRECT;
 }
@@ -74,17 +74,17 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
   int modflags = lf_modifier_initialize(
-      modifier, d->lens, LF_PF_F32,
-      d->focal, d->aperture,
-      d->distance, d->scale,
-      d->target_geom, d->modify_flags, d->inverse);
+                   modifier, d->lens, LF_PF_F32,
+                   d->focal, d->aperture,
+                   d->distance, d->scale,
+                   d->target_geom, d->modify_flags, d->inverse);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   if(d->inverse)
   {
     // reverse direction (useful for renderings)
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-          LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
       const size_t req2 = roi_in->width*2*3*sizeof(float);
@@ -95,30 +95,30 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
         float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num());
         lf_modifier_apply_subpixel_geometry_distortion (
-              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
+          modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
         float *buf = ((float *)ovoid) + y*roi_out->width*ch;
         for (int x = 0; x < roi_out->width; x++,buf+=ch)
         {
-          for(int c=0;c<3;c++,pi+=2)
+          for(int c=0; c<3; c++,pi+=2)
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
+            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
             {
               const float fi = pi0 - ii, fj = pi1 - jj;
-	      const float* inp = in + ch*(roi_in->width*jj+ii) + c;
+              const float* inp = in + ch*(roi_in->width*jj+ii) + c;
               buf[c] = // in[ch*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*inp[0] +
-               (1.0f-fj)*(     fi)*inp[ch] +
-               (     fj)*(     fi)*inp[ch+ch_width] +
-               (     fj)*(1.0f-fi)*inp[ch_width]);
+                ((1.0f-fj)*(1.0f-fi)*inp[0] +
+                 (1.0f-fj)*(     fi)*inp[ch] +
+                 (     fj)*(     fi)*inp[ch+ch_width] +
+                 (     fj)*(1.0f-fi)*inp[ch_width]);
             }
             else buf[c] = 0.0f;
           }
@@ -128,7 +128,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     else
     {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
         memcpy(out+ch*y*roi_out->width, in+ch*y*roi_out->width, ch*sizeof(float)*roi_out->width);
@@ -137,7 +137,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     if (modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, modifier) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, out, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -146,8 +146,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         // offset by -roi_in.x
         float *buf = out - ch*(roi_out->width*roi_out->y + roi_out->x);
         lf_modifier_apply_color_modification (modifier,
-              buf + ch*roi_out->width*y, roi_out->x, roi_out->y + y,
-              roi_out->width, 1, pixelformat, ch*roi_out->width);
+                                              buf + ch*roi_out->width*y, roi_out->x, roi_out->y + y,
+                                              roi_out->width, 1, pixelformat, ch*roi_out->width);
       }
     }
   }
@@ -165,7 +165,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     if (modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_in, out, modifier, d) schedule(static)
+#pragma omp parallel for default(none) shared(roi_in, out, modifier, d) schedule(static)
 #endif
       for (int y = 0; y < roi_in->height; y++)
       {
@@ -174,14 +174,14 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         // offset by -roi_in.x
         float *buf = d->tmpbuf - ch*(roi_in->width*roi_in->y + roi_in->x);
         lf_modifier_apply_color_modification (modifier,
-              buf + ch*roi_in->width*y, roi_in->x, roi_in->y + y,
-              roi_in->width, 1, pixelformat, ch*roi_in->width);
+                                              buf + ch*roi_in->width*y, roi_in->x, roi_in->y + y,
+                                              roi_in->width, 1, pixelformat, ch*roi_in->width);
       }
     }
 
     const size_t req2 = roi_out->width*2*3*sizeof(float);
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-          LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
       if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
@@ -191,30 +191,30 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier) schedule(static)
+#pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
         float *pi = (float *)(((char *)d->tmpbuf2) + dt_get_thread_num()*req2);
         lf_modifier_apply_subpixel_geometry_distortion (
-              modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
+          modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
         float *out = ((float *)ovoid) + y*roi_out->width*ch;
         for (int x = 0; x < roi_out->width; x++)
         {
-          for(int c=0;c<3;c++,pi+=2)
+          for(int c=0; c<3; c++,pi+=2)
           {
             const float pi0 = pi[0] - roi_in->x, pi1 = pi[1] - roi_in->y;
             const int ii = (int)pi0, jj = (int)pi1;
-            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
+            if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
             {
               const float fi = pi0 - ii, fj = pi1 - jj;
-	      const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
+              const float *inp = d->tmpbuf + ch*(roi_in->width*jj+ii)+c;
               out[c] = // in[ch*(roi_in->width*jj + ii) + c];
-              ((1.0f-fj)*(1.0f-fi)*inp[0] +
-               (1.0f-fj)*(     fi)*inp[ch] +
-               (     fj)*(     fi)*inp[ch_width+ch] +
-               (     fj)*(1.0f-fi)*inp[ch_width]);
+                ((1.0f-fj)*(1.0f-fi)*inp[0] +
+                 (1.0f-fj)*(     fi)*inp[ch] +
+                 (     fj)*(     fi)*inp[ch_width+ch] +
+                 (     fj)*(1.0f-fi)*inp[ch_width]);
             }
             else out[c] = 0.0f;
           }
@@ -227,7 +227,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       const size_t len = sizeof(float)*ch*roi_out->width*roi_out->height;
       const float *const input = (d->tmpbuf_len >= len) ? d->tmpbuf : in;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
         memcpy(out+ch*y*roi_out->width, input+ch*y*roi_out->width, ch*sizeof(float)*roi_out->width);
@@ -256,13 +256,13 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   float xm = INFINITY, xM = - INFINITY, ym = INFINITY, yM = - INFINITY;
 
   int modflags = lf_modifier_initialize(
-      modifier, d->lens, LF_PF_F32,
-      d->focal, d->aperture,
-      d->distance, d->scale,
-      d->target_geom, d->modify_flags, d->inverse);
+                   modifier, d->lens, LF_PF_F32,
+                   d->focal, d->aperture,
+                   d->distance, d->scale,
+                   d->target_geom, d->modify_flags, d->inverse);
 
   if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-        LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+                  LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
     // acquire temp memory for distorted pixel coords
     const size_t req2 = roi_in->width*2*3*sizeof(float);
@@ -275,21 +275,25 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     for (int y = 0; y < roi_out->height; y++)
     {
       lf_modifier_apply_subpixel_geometry_distortion (
-            modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
+        modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
       const float *pi = d->tmpbuf2;
       // reverse transform the global coords from lf to our buffer
       for (int x = 0; x < roi_out->width; x++)
       {
-        for(int c=0;c<3;c++) 
+        for(int c=0; c<3; c++)
         {
-          xm = fminf(xm, pi[0]); xM = fmaxf(xM, pi[0]);
-          ym = fminf(ym, pi[1]); yM = fmaxf(yM, pi[1]);
+          xm = fminf(xm, pi[0]);
+          xM = fmaxf(xM, pi[0]);
+          ym = fminf(ym, pi[1]);
+          yM = fmaxf(yM, pi[1]);
           pi+=2;
         }
       }
     }
-    roi_in->x = fmaxf(0.0f, xm); roi_in->y = fmaxf(0.0f, ym);
-    roi_in->width = fminf(orig_w-roi_in->x, xM - roi_in->x + 10); roi_in->height = fminf(orig_h-roi_in->y, yM - roi_in->y + 10);
+    roi_in->x = fmaxf(0.0f, xm);
+    roi_in->y = fmaxf(0.0f, ym);
+    roi_in->width = fminf(orig_w-roi_in->x, xM - roi_in->x + 10);
+    roi_in->height = fminf(orig_h-roi_in->y, yM - roi_in->y + 10);
   }
   lf_modifier_destroy(modifier);
 }
@@ -310,7 +314,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
-        NULL, p->camera, 0);
+                                 NULL, p->camera, 0);
     if(cam) camera = cam[0];
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
@@ -318,20 +322,21 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lens = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL,
-        p->lens, 0);
+                          p->lens, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(lens)
     {
       lf_lens_copy(d->lens, lens[0]);
       if(p->tca_override)
-      { // add manual d->lens stuff:
+      {
+        // add manual d->lens stuff:
         lfLensCalibTCA tca;
         tca.Focal = 0;
         tca.Model = LF_TCA_MODEL_LINEAR;
         tca.Terms[0] = p->tca_b;
         tca.Terms[1] = p->tca_r;
         if(d->lens->CalibTCA) for (int i=0; d->lens->CalibTCA[i]; i++)
-          lf_lens_remove_calib_tca (d->lens, i);
+            lf_lens_remove_calib_tca (d->lens, i);
         lf_lens_add_calib_tca (d->lens, &tca);
       }
       lf_free (lens);
@@ -391,7 +396,7 @@ void init_global(dt_iop_module_so_t *module)
     char path[1024];
     dt_get_datadir(path, 1024);
     char *c = path + strlen(path);
-    for(;c>path && *c != '/';c--);
+    for(; c>path && *c != '/'; c--);
     sprintf(c, "/lensfun");
     dt_iop_lensfun_db->HomeDataDir = g_strdup(path);
     if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
@@ -413,7 +418,7 @@ void reload_defaults(dt_iop_module_t *module)
   tmp.scale    = 1.0;
   tmp.inverse  = 0;
   tmp.modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING |
-    LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
+                     LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
   tmp.distance = 5.0;
   tmp.target_geom = LF_RECTILINEAR;
   tmp.tca_override = 0;
@@ -429,7 +434,7 @@ void reload_defaults(dt_iop_module_t *module)
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfCamera **cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
-        img->exif_maker, img->exif_model, 0);
+                           img->exif_maker, img->exif_model, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(cam)
     {
@@ -478,7 +483,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 
 static GtkComboBoxEntry *combo_entry_text (
-    GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip)
+  GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip)
 {
   GtkWidget *label, *combo;
 
@@ -508,19 +513,18 @@ static int precision (double x, double adj)
         return 4;
     else
       return 3;
-  else
-    if (x < 100.0)
-      if (x < 10.0)
-        return 2;
-      else
-        return 1;
+  else if (x < 100.0)
+    if (x < 10.0)
+      return 2;
     else
-      return 0;
+      return 1;
+  else
+    return 0;
 }
 
 static GtkComboBoxEntry *combo_entry_numeric (
-    GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip,
-    gdouble val, gdouble precadj, gdouble *values, int nvalues)
+  GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip,
+  gdouble val, gdouble precadj, gdouble *values, int nvalues)
 {
   int i;
   char txt [30];
@@ -546,8 +550,8 @@ static GtkComboBoxEntry *combo_entry_numeric (
 }
 
 static GtkComboBoxEntry *combo_entry_numeric_log (
-    GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip,
-    gdouble val, gdouble min, gdouble max, gdouble step, gdouble precadj)
+  GtkWidget *container, guint x, guint y, gchar *lbl, gchar *tip,
+  gdouble val, gdouble min, gdouble max, gdouble step, gdouble precadj)
 {
   int phase, nvalues;
   gdouble *values = NULL;
@@ -576,7 +580,7 @@ static GtkComboBoxEntry *combo_entry_numeric_log (
   }
 
   GtkComboBoxEntry *cbe = combo_entry_numeric (
-      container, x, y, lbl, tip, val, precadj, values, nvalues);
+                            container, x, y, lbl, tip, val, precadj, values, nvalues);
   g_free (values);
   return cbe;
 }
@@ -584,7 +588,7 @@ static GtkComboBoxEntry *combo_entry_numeric_log (
 /* -- ufraw ptr array functions -- */
 
 static int ptr_array_insert_sorted (
-    GPtrArray *array, const void *item, GCompareFunc compare)
+  GPtrArray *array, const void *item, GCompareFunc compare)
 {
   int length = array->len;
   g_ptr_array_set_size (array, length + 1);
@@ -621,7 +625,7 @@ done:
 }
 
 static int ptr_array_find_sorted (
-    const GPtrArray *array, const void *item, GCompareFunc compare)
+  const GPtrArray *array, const void *item, GCompareFunc compare)
 {
   int length = array->len;
   void **root = array->pdata;
@@ -653,7 +657,7 @@ static int ptr_array_find_sorted (
 }
 
 static void ptr_array_insert_index (
-    GPtrArray *array, const void *item, int index)
+  GPtrArray *array, const void *item, int index)
 {
   const void **root;
   int length = array->len;
@@ -705,17 +709,17 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
     _variant [0] = 0;
 
   fm = g_strdup_printf (_("maker:\t\t%s\n"
-        "model:\t\t%s%s\n"
-        "mount:\t\t%s\n"
-        "crop factor:\t%.1f"),
-      maker, model, _variant,
-      cam->Mount, cam->CropFactor);
+                          "model:\t\t%s%s\n"
+                          "mount:\t\t%s\n"
+                          "crop factor:\t%.1f"),
+                        maker, model, _variant,
+                        cam->Mount, cam->CropFactor);
   gtk_object_set(GTK_OBJECT(g->camera_model), "tooltip-text", fm, (char *)NULL);
   g_free (fm);
 }
 
 static void camera_menu_select (
-    GtkMenuItem *menuitem, gpointer user_data)
+  GtkMenuItem *menuitem, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   camera_set (self, (lfCamera *)g_object_get_data(G_OBJECT(menuitem), "lfCamera"));
@@ -765,7 +769,7 @@ static void camera_menu_fill (dt_iop_module_t *self, const lfCamera *const *caml
     gtk_widget_show (item);
     g_object_set_data(G_OBJECT(item), "lfCamera", (void *)camlist [i]);
     g_signal_connect(G_OBJECT(item), "activate",
-        G_CALLBACK(camera_menu_select), self);
+                     G_CALLBACK(camera_menu_select), self);
     gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
   }
 
@@ -776,7 +780,7 @@ static void camera_menu_fill (dt_iop_module_t *self, const lfCamera *const *caml
     gtk_widget_show (item);
     gtk_menu_shell_append (GTK_MENU_SHELL (g->camera_menu), item);
     gtk_menu_item_set_submenu (
-        GTK_MENU_ITEM (item), (GtkWidget *)g_ptr_array_index (submenus, i));
+      GTK_MENU_ITEM (item), (GtkWidget *)g_ptr_array_index (submenus, i));
   }
 
   g_ptr_array_free (submenus, TRUE);
@@ -784,7 +788,7 @@ static void camera_menu_fill (dt_iop_module_t *self, const lfCamera *const *caml
 }
 
 static void parse_maker_model (
-    const char *txt, char *make, size_t sz_make, char *model, size_t sz_model)
+  const char *txt, char *make, size_t sz_make, char *model, size_t sz_model)
 {
   const gchar *sep;
 
@@ -819,7 +823,7 @@ static void parse_maker_model (
 }
 
 static void camera_menusearch_clicked(
-    GtkWidget *button, gpointer user_data)
+  GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
@@ -834,10 +838,10 @@ static void camera_menusearch_clicked(
   if (!camlist) return;
   camera_menu_fill (self, camlist);
   gtk_menu_popup (GTK_MENU (g->camera_menu), NULL, NULL, NULL, NULL,
-    0, gtk_get_current_event_time ());
+                  0, gtk_get_current_event_time ());
 }
 static void camera_autosearch_clicked(
-    GtkWidget *button, gpointer user_data)
+  GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
@@ -868,7 +872,7 @@ static void camera_autosearch_clicked(
   }
 
   gtk_menu_popup (GTK_MENU (g->camera_menu), NULL, NULL, NULL, NULL,
-      0, gtk_get_current_event_time ());
+                  0, gtk_get_current_event_time ());
 }
 
 /* -- end camera -- */
@@ -881,7 +885,7 @@ static void lens_comboentry_focal_update (GtkComboBox *widget, dt_iop_module_t *
 }
 
 static void lens_focal_reset(
-    GtkWidget *button, gpointer user_data)
+  GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
@@ -901,7 +905,7 @@ static void lens_comboentry_aperture_update (GtkComboBox *widget, dt_iop_module_
 }
 
 static void lens_aperture_reset(
-    GtkWidget *button, gpointer user_data)
+  GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
@@ -987,21 +991,21 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
     }
 
   fm = g_strdup_printf (_("maker:\t\t%s\n"
-        "model:\t\t%s\n"
-        "focal range:\t%s\n"
-        "aperture:\t\t%s\n"
-        "crop factor:\t%.1f\n"
-        "type:\t\t%s\n"
-        "mounts:\t\t%s"),
-      maker ? maker : "?", model ? model : "?",
-      focal, aperture, lens->CropFactor,
-      lf_get_lens_type_desc (lens->Type, NULL), mounts);
+                          "model:\t\t%s\n"
+                          "focal range:\t%s\n"
+                          "aperture:\t\t%s\n"
+                          "crop factor:\t%.1f\n"
+                          "type:\t\t%s\n"
+                          "mounts:\t\t%s"),
+                        maker ? maker : "?", model ? model : "?",
+                        focal, aperture, lens->CropFactor,
+                        lf_get_lens_type_desc (lens->Type, NULL), mounts);
   gtk_object_set(GTK_OBJECT(g->lens_model), "tooltip-text", fm, (char *)NULL);
   g_free (fm);
 
   /* Create the focal/aperture/distance combo boxes */
   gtk_container_foreach (
-      GTK_CONTAINER (g->lens_param_box), delete_children, NULL);
+    GTK_CONTAINER (g->lens_param_box), delete_children, NULL);
 
   int ffi = 0, fli = -1;
   for (i = 0; i < sizeof (focal_values) / sizeof (gdouble); i++)
@@ -1016,10 +1020,10 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   if (fli < ffi)
     fli = ffi + 1;
   g->cbe[0] = combo_entry_numeric (
-      g->lens_param_box, 0, 0, _("mm"), _("focal length (mm)"),
-      p->focal, 10.0, focal_values + ffi, fli - ffi);
+                g->lens_param_box, 0, 0, _("mm"), _("focal length (mm)"),
+                p->focal, 10.0, focal_values + ffi, fli - ffi);
   g_signal_connect (G_OBJECT(g->cbe[0]), "changed",
-      G_CALLBACK(lens_comboentry_focal_update), self);
+                    G_CALLBACK(lens_comboentry_focal_update), self);
   GtkWidget* button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
@@ -1031,10 +1035,10 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
     if (aperture_values [i] < lens->MinAperture)
       ffi = i + 1;
   g->cbe[1] = combo_entry_numeric (
-      g->lens_param_box, 0, 0, _("f/"), _("f-number (aperture)"),
-      p->aperture, 10.0, aperture_values + ffi, sizeof (aperture_values) / sizeof (gdouble) - ffi);
+                g->lens_param_box, 0, 0, _("f/"), _("f-number (aperture)"),
+                p->aperture, 10.0, aperture_values + ffi, sizeof (aperture_values) / sizeof (gdouble) - ffi);
   g_signal_connect (G_OBJECT(g->cbe[1]), "changed",
-      G_CALLBACK(lens_comboentry_aperture_update), self);
+                    G_CALLBACK(lens_comboentry_aperture_update), self);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
@@ -1042,16 +1046,16 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
                     G_CALLBACK (lens_aperture_reset), self);
 
   g->cbe[2] = combo_entry_numeric_log (
-      g->lens_param_box, 0, 0, _("d"), _("distance to subject"),
-      p->distance, 0.25, 1000, 1.41421356237309504880, 10.0);
+                g->lens_param_box, 0, 0, _("d"), _("distance to subject"),
+                p->distance, 0.25, 1000, 1.41421356237309504880, 10.0);
   g_signal_connect (G_OBJECT(g->cbe[2]), "changed",
-      G_CALLBACK(lens_comboentry_distance_update), self);
+                    G_CALLBACK(lens_comboentry_distance_update), self);
 
   gtk_widget_show_all (g->lens_param_box);
 }
 
 static void lens_menu_select (
-    GtkMenuItem *menuitem, gpointer user_data)
+  GtkMenuItem *menuitem, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   lens_set (self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
@@ -1059,7 +1063,7 @@ static void lens_menu_select (
 }
 
 static void lens_menu_fill (
-    dt_iop_module_t *self, const lfLens *const *lenslist)
+  dt_iop_module_t *self, const lfLens *const *lenslist)
 {
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   unsigned i;
@@ -1094,7 +1098,7 @@ static void lens_menu_fill (
     gtk_widget_show (item);
     g_object_set_data(G_OBJECT(item), "lfLens", (void *)lenslist [i]);
     g_signal_connect(G_OBJECT(item), "activate",
-        G_CALLBACK(lens_menu_select), self);
+                     G_CALLBACK(lens_menu_select), self);
     gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
   }
 
@@ -1105,7 +1109,7 @@ static void lens_menu_fill (
     gtk_widget_show (item);
     gtk_menu_shell_append (GTK_MENU_SHELL (g->lens_menu), item);
     gtk_menu_item_set_submenu (
-        GTK_MENU_ITEM (item), (GtkWidget *)g_ptr_array_index (submenus, i));
+      GTK_MENU_ITEM (item), (GtkWidget *)g_ptr_array_index (submenus, i));
   }
 
   g_ptr_array_free (submenus, TRUE);
@@ -1114,7 +1118,7 @@ static void lens_menu_fill (
 
 
 static void lens_menusearch_clicked(
-    GtkWidget *button, gpointer user_data)
+  GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
@@ -1131,11 +1135,11 @@ static void lens_menusearch_clicked(
   lf_free (lenslist);
 
   gtk_menu_popup (GTK_MENU (g->lens_menu), NULL, NULL, NULL, NULL,
-      0, gtk_get_current_event_time ());
+                  0, gtk_get_current_event_time ());
 }
 
 static void lens_autosearch_clicked(
-    GtkWidget *button, gpointer user_data)
+  GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
@@ -1149,15 +1153,15 @@ static void lens_autosearch_clicked(
   parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
-      make [0] ? make : NULL,
-      model [0] ? model : NULL, 0);
+                                   make [0] ? make : NULL,
+                                   model [0] ? model : NULL, 0);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if (!lenslist) return;
   lens_menu_fill (self, lenslist);
   lf_free (lenslist);
 
   gtk_menu_popup (GTK_MENU (g->lens_menu), NULL, NULL, NULL, NULL,
-      0, gtk_get_current_event_time ());
+                  0, gtk_get_current_event_time ());
 }
 
 /* -- end lens -- */
@@ -1217,15 +1221,15 @@ static float get_autoscale(dt_iop_module_t *self)
     parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera, NULL, p->lens, 0);
-    if(lenslist && !lenslist[1]) 
+    if(lenslist && !lenslist[1])
     {
       // create dummy modifier
       lfModifier *modifier = lf_modifier_new(lenslist[0], p->crop, self->dev->image->width, self->dev->image->height);
       (void)lf_modifier_initialize(
-          modifier, lenslist[0], LF_PF_F32,
-          p->focal, p->aperture,
-          p->distance, 1.0f,
-          p->target_geom, p->modify_flags, p->inverse);
+        modifier, lenslist[0], LF_PF_F32,
+        p->focal, p->aperture,
+        p->distance, 1.0f,
+        p->target_geom, p->modify_flags, p->inverse);
       scale = lf_modifier_get_auto_scale (modifier, p->inverse);
       lf_modifier_destroy(modifier);
     }
@@ -1281,7 +1285,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
   gtk_button_set_label(g->lens_model, self->dev->image->exif_lens);
   g_signal_connect (G_OBJECT (g->lens_model), "clicked",
-      G_CALLBACK (lens_menusearch_clicked), self);
+                    G_CALLBACK (lens_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->lens_model), TRUE, TRUE, 0);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -1304,8 +1308,8 @@ void gui_init(struct dt_iop_module_t *self)
     parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
-        make [0] ? make : NULL,
-        model [0] ? model : NULL, 0);
+                              make [0] ? make : NULL,
+                              model [0] ? model : NULL, 0);
     if(lenslist && !lenslist[1]) lens_set (self, lenslist[0]);
     lf_free (lenslist);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -1319,15 +1323,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->target_geom = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_object_set(GTK_OBJECT(g->target_geom), "tooltip-text",
-      _("target geometry"), (char *)NULL);
+                 _("target geometry"), (char *)NULL);
   gtk_combo_box_append_text(g->target_geom, _("rectilinear"));
   gtk_combo_box_append_text(g->target_geom, _("fish-eye"));
   gtk_combo_box_append_text(g->target_geom, _("panoramic"));
   gtk_combo_box_append_text(g->target_geom, _("equirectangular"));
   gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   g_signal_connect (G_OBJECT (g->target_geom), "changed",
-      G_CALLBACK (target_geometry_changed),
-      (gpointer)self);
+                    G_CALLBACK (target_geometry_changed),
+                    (gpointer)self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->target_geom), 1, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // scale
@@ -1390,7 +1394,7 @@ void gui_update(struct dt_iop_module_t *self)
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
-        NULL, p->camera, 0);
+                                 NULL, p->camera, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(cam) g->camera = cam[0];
   }
@@ -1401,8 +1405,8 @@ void gui_update(struct dt_iop_module_t *self)
     parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
-        make [0] ? make : NULL,
-        model [0] ? model : NULL, 0);
+                              make [0] ? make : NULL,
+                              model [0] ? model : NULL, 0);
     if(lenslist && !lenslist[1]) lens_set (self, lenslist[0]);
     lf_free (lenslist);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);

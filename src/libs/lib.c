@@ -47,7 +47,11 @@ get_preset_name(GtkMenuItem *menuitem)
   const gchar *name = gtk_label_get_label(GTK_LABEL(gtk_bin_get_child(GTK_BIN(menuitem))));
   const gchar *c = name;
   // remove <-> markup tag at beginning.
-  if(*c == '<') { while(*c != '>') c++; c++; }
+  if(*c == '<')
+  {
+    while(*c != '>') c++;
+    c++;
+  }
   gchar *pn = g_strdup(c);
   gchar *c2 = pn;
   // possibly remove trailing <-> markup tag
@@ -114,18 +118,18 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   snprintf(title, 1024, _("edit `%s'"), name);
   dialog = gtk_dialog_new_with_buttons (title,
-      GTK_WINDOW(window),
-      GTK_DIALOG_DESTROY_WITH_PARENT,
-      GTK_STOCK_OK,
-      GTK_RESPONSE_NONE,
-      NULL);
+                                        GTK_WINDOW(window),
+                                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                                        GTK_STOCK_OK,
+                                        GTK_RESPONSE_NONE,
+                                        NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
   gtk_container_add (content_area, alignment);
   GtkBox *box = GTK_BOX(gtk_vbox_new(FALSE, 5));
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(box));
-  
+
   dt_lib_presets_edit_dialog_t *g = (dt_lib_presets_edit_dialog_t *)g_malloc0(sizeof(dt_lib_presets_edit_dialog_t));
   strncpy(g->plugin_name, minfo->plugin_name, 128);
   g->params_size = minfo->params_size;
@@ -268,9 +272,9 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     // selected in bold:
     // printf("comparing %d bytes to %d\n", op_params_size, minfo->params_size);
     // for(int k=0;k<op_params_size && !memcmp(minfo->params, op_params, k);k++) printf("compare [%c %c] %d: %d\n",
-        // ((const char*)(minfo->params))[k],
-        // ((const char*)(op_params))[k],
-        // k, memcmp(minfo->params, op_params, k));
+    // ((const char*)(minfo->params))[k],
+    // ((const char*)(op_params))[k],
+    // k, memcmp(minfo->params, op_params, k));
     if(op_params_size == minfo->params_size && !memcmp(minfo->params, op_params, op_params_size))
     {
       active_preset = cnt;
@@ -356,9 +360,10 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
   if(!g_module_symbol(module->module, "position",               (gpointer)&(module->position)))               module->position = NULL;
   if((!g_module_symbol(module->module, "get_params",            (gpointer)&(module->get_params))) ||
-     (!g_module_symbol(module->module, "set_params",            (gpointer)&(module->set_params))) ||
-     (!g_module_symbol(module->module, "init_presets",          (gpointer)&(module->init_presets))))
-  { // need both at the same time, or none.
+      (!g_module_symbol(module->module, "set_params",            (gpointer)&(module->set_params))) ||
+      (!g_module_symbol(module->module, "init_presets",          (gpointer)&(module->init_presets))))
+  {
+    // need both at the same time, or none.
     module->set_params   = NULL;
     module->get_params   = NULL;
     module->init_presets = NULL;
@@ -375,7 +380,8 @@ static void
 init_presets(dt_lib_module_t *module)
 {
   if(module->init_presets)
-  { // only if method exists and no writeprotected (static) preset has been inserted yet.
+  {
+    // only if method exists and no writeprotected (static) preset has been inserted yet.
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from presets where operation=?1 and writeprotect=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->name(), -1, SQLITE_TRANSIENT);
@@ -397,7 +403,8 @@ dt_lib_load_modules ()
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   while((d_name = g_dir_read_name(dir)))
-  { // get lib*.so
+  {
+    // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
     strncpy(plugin_name, d_name+3, strlen(d_name)-6);
@@ -472,7 +479,7 @@ dt_lib_gui_reset_callback (GtkButton *button, gpointer user_data)
   module->gui_reset(module);
 }
 
-static void 
+static void
 _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
   gint w,h;
@@ -534,7 +541,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   g_signal_connect (G_OBJECT (resetbutton), "clicked",
                     G_CALLBACK (dt_lib_gui_reset_callback), module);
   g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
-                  G_CALLBACK (dt_lib_gui_expander_callback), module);
+                    G_CALLBACK (dt_lib_gui_expander_callback), module);
   gtk_expander_set_spacing(module->expander, 10);
   gtk_widget_hide_all(module->widget);
   gtk_expander_set_expanded(module->expander, FALSE);
@@ -542,7 +549,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
 
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
   gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
-  
+
   return evb;
 }
 

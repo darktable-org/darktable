@@ -48,7 +48,7 @@ void dt_colorlabels_set_label (const int imgid, const int color)
   sqlite3_finalize(stmt);
 }
 
-void dt_colorlabels_remove_label (const int imgid, const int color) 
+void dt_colorlabels_remove_label (const int imgid, const int color)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from color_label where imgid=?1 and color=?2", -1, &stmt, NULL);
@@ -69,7 +69,7 @@ void dt_colorlabels_toggle_label_selection (const int color)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  // delete all currently colored image labels in selection 
+  // delete all currently colored image labels in selection
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from color_labels where imgid in (select imgid from selected_images) and color=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, color);
   sqlite3_step(stmt);
@@ -121,10 +121,15 @@ void dt_colorlabels_key_accel_callback(void *user_data)
   {
     switch(mode)
     {
-      case 0: case 1: case 2: case 3: case 4: // colors red, yellow, green, blue, purple
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+      case 4: // colors red, yellow, green, blue, purple
         dt_colorlabels_toggle_label_selection(mode);
         break;
-      case 5: default: // remove all selected
+      case 5:
+      default: // remove all selected
         dt_colorlabels_remove_labels_selection();
         break;
     }
@@ -133,10 +138,15 @@ void dt_colorlabels_key_accel_callback(void *user_data)
   {
     switch(mode)
     {
-      case 0: case 1: case 2: case 3: case 4: // colors red, yellow, green, blue, purple
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+      case 4: // colors red, yellow, green, blue, purple
         dt_colorlabels_toggle_label(selected, mode);
         break;
-      case 5: default: // remove all selected
+      case 5:
+      default: // remove all selected
         dt_colorlabels_remove_labels(selected);
         break;
     }

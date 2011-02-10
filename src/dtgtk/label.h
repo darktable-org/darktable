@@ -28,13 +28,13 @@ G_BEGIN_DECLS
 
 typedef enum _darktable_label_flags
 {
-	DARKTABLE_LABEL_UNDERLINED=1,
-	DARKTABLE_LABEL_BACKFILLED=2,
-	DARKTABLE_LABEL_TAB=4,
-	DARKTABLE_LABEL_ALIGN_LEFT=16,
-	DARKTABLE_LABEL_ALIGN_RIGHT=32,
-	DARKTABLE_LABEL_ALIGN_CENTER=64
-	
+  DARKTABLE_LABEL_UNDERLINED=1,
+  DARKTABLE_LABEL_BACKFILLED=2,
+  DARKTABLE_LABEL_TAB=4,
+  DARKTABLE_LABEL_ALIGN_LEFT=16,
+  DARKTABLE_LABEL_ALIGN_RIGHT=32,
+  DARKTABLE_LABEL_ALIGN_CENTER=64
+
 }
 _darktable_label_flags_t;
 
@@ -54,4 +54,4 @@ GType dtgtk_label_get_type (void);
 /** Instansiate a new darktable label control passing paint function as content */
 GtkWidget* dtgtk_label_new(const gchar *label,_darktable_label_flags_t flags);
 G_END_DECLS
-#endif 
+#endif

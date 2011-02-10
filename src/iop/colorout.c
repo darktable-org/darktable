@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
@@ -38,8 +38,8 @@ const char
   return _("output color profile");
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_COLOR;
 }
@@ -92,7 +92,8 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
   int pos = gtk_combo_box_get_active(widget);
   GList *prof = g->profiles;
   while(prof)
-  { // could use g_list_nth. this seems safer?
+  {
+    // could use g_list_nth. this seems safer?
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(pp->pos == pos)
     {
@@ -116,7 +117,8 @@ display_profile_changed (GtkComboBox *widget, gpointer user_data)
   int pos = gtk_combo_box_get_active(widget);
   GList *prof = g->profiles;
   while(prof)
-  { // could use g_list_nth. this seems safer?
+  {
+    // could use g_list_nth. this seems safer?
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(pp->pos == pos)
     {
@@ -185,9 +187,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   if(d->cmatrix[0] != -0.666f)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, i, o)
+#pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, i, o)
 #endif
-    for (int k=0;k<roi_out->width*roi_out->height;k++)
+    for (int k=0; k<roi_out->width*roi_out->height; k++)
     {
       const float *const in = ((float *)i) + ch*k;
       float *const out = ((float *)o) + ch*k;
@@ -196,12 +198,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       Lab[1] = in[1];
       Lab[2] = in[2];
       dt_Lab_to_XYZ(Lab, XYZ);
-      for(int i=0;i<3;i++)
+      for(int i=0; i<3; i++)
       {
         rgb[i] = 0.0f;
-        for(int j=0;j<3;j++) rgb[i] += d->cmatrix[3*i+j]*XYZ[j];
+        for(int j=0; j<3; j++) rgb[i] += d->cmatrix[3*i+j]*XYZ[j];
       }
-      for(int i=0;i<3;i++) out[i] = lerp_lut(d->lut[i], rgb[i]);
+      for(int i=0; i<3; i++) out[i] = lerp_lut(d->lut[i], rgb[i]);
       // for(int i=0;i<3;i++) out[i] = rgb[i];
     }
   }
@@ -209,29 +211,29 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   {
     // lcms2 fallback, slow:
     int rowsize=roi_out->width*3;
-  
+
     // FIXME: breaks :(
 #if 0//def _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, rowsize)
+#pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, rowsize)
 #endif
-    for (int k=0;k<roi_out->height;k++)
+    for (int k=0; k<roi_out->height; k++)
     {
       float Lab[rowsize];
       float rgb[rowsize];
 
       const int m=(k*(roi_out->width*ch));
-      for (int l=0;l<roi_out->width;l++)    
-      {    
+      for (int l=0; l<roi_out->width; l++)
+      {
         int li=3*l,ii=ch*l;
         Lab[li+0] = in[m+ii+0];
         Lab[li+1] = in[m+ii+1];
         Lab[li+2] = in[m+ii+2];
       }
-      
+
       // lcms is not thread safe, so use local copy
       cmsDoTransform (d->xform[dt_get_thread_num()], Lab, rgb, roi_out->width);
 
-      for (int l=0;l<roi_out->width;l++) 
+      for (int l=0; l<roi_out->width; l++)
       {
         int oi=ch*l, ri=3*l;
         out[m+oi+0] = rgb[ri+0];
@@ -248,7 +250,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
 #ifdef HAVE_GEGL
   // pull in new params to gegl
-  #error "gegl version needs some more care!"
+#error "gegl version needs some more care!"
 #else
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
@@ -256,11 +258,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   d->output = NULL;
   const int num_threads = dt_get_num_threads();
-  for(int t=0;t<num_threads;t++) if(d->xform[t])
-  {
-    cmsDeleteTransform(d->xform[t]);
-    d->xform[t] = NULL;
-  }
+  for(int t=0; t<num_threads; t++) if(d->xform[t])
+    {
+      cmsDeleteTransform(d->xform[t]);
+      d->xform[t] = NULL;
+    }
   d->cmatrix[0] = -0.666f;
   piece->process_cl_ready = 1;
 
@@ -270,7 +272,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(overprofile && strcmp(overprofile, "image")) snprintf(p->iccprofile, DT_IOP_COLOR_ICC_LEN, "%s", overprofile);
     if(overintent >= 0) p->intent = overintent;
     if(!strcmp(p->iccprofile, "sRGB"))
-    { // default: sRGB
+    {
+      // default: sRGB
       d->output = dt_colorspaces_create_srgb_profile();
     }
     else if(!strcmp(p->iccprofile, "linear_rgb"))
@@ -282,12 +285,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = dt_colorspaces_create_adobergb_profile();
     }
     else if(!strcmp(p->iccprofile, "X profile"))
-    { // x default
+    {
+      // x default
       if(darktable.control->xprofile_data) d->output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
       else d->output = NULL;
     }
     else
-    { // else: load file name
+    {
+      // else: load file name
       char filename[1024];
       dt_colorspaces_find_profile(filename, 1024, p->iccprofile, "out");
       d->output = cmsOpenProfileFromFile(filename, "r");
@@ -297,13 +302,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       d->cmatrix[0] = -0.666f;
       piece->process_cl_ready = 0;
-      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
+      for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
     }
   }
   else
   {
     if(!strcmp(p->displayprofile, "sRGB"))
-    { // default: sRGB
+    {
+      // default: sRGB
       d->output = dt_colorspaces_create_srgb_profile();
     }
     else if(!strcmp(p->displayprofile, "linear_rgb"))
@@ -315,12 +321,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->output = dt_colorspaces_create_adobergb_profile();
     }
     else if(!strcmp(p->displayprofile, "X profile"))
-    { // x default
+    {
+      // x default
       if(darktable.control->xprofile_data) d->output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
       else d->output = NULL;
     }
     else
-    { // else: load file name
+    {
+      // else: load file name
       char filename[1024];
       dt_colorspaces_find_profile(filename, 1024, p->displayprofile, "out");
       d->output = cmsOpenProfileFromFile(filename, "r");
@@ -330,7 +338,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       d->cmatrix[0] = -0.666f;
       piece->process_cl_ready = 0;
-      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
+      for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
     }
   }
   // user selected a non-supported output profile, check that:
@@ -343,7 +351,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       d->cmatrix[0] = -0.666f;
       piece->process_cl_ready = 0;
-      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
+      for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
     }
   }
 #endif
@@ -360,7 +368,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->output = NULL;
   d->xform = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-   for(int t=0;t<dt_get_num_threads();t++) d->xform[t] = NULL;
+  for(int t=0; t<dt_get_num_threads(); t++) d->xform[t] = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
@@ -376,7 +384,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   dt_colorspaces_cleanup_profile(d->Lab);
-  for(int t=0;t<dt_get_num_threads();t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
+  for(int t=0; t<dt_get_num_threads(); t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
   free(d->xform);
   free(piece->data);
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -422,7 +430,9 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 900;
   module->hide_enable_button = 1;
-  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){"sRGB", "X profile", DT_INTENT_PERCEPTUAL};
+  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t)
+  {"sRGB", "X profile", DT_INTENT_PERCEPTUAL
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
 }

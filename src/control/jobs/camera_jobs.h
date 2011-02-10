@@ -27,8 +27,8 @@
 /** Tethered image import job */
 typedef struct dt_captured_image_import_t
 {
-	uint32_t film_id;
-	const char *filename;
+  uint32_t film_id;
+  const char *filename;
 }
 dt_captured_image_import_t;
 int32_t dt_captured_image_import_job_run(dt_job_t *job);
@@ -37,17 +37,17 @@ void dt_captured_image_import_job_init(dt_job_t *job, uint32_t filmid, const cha
 /** Camera capture job */
 typedef struct dt_camera_capture_t
 {
-	/** delay between each capture, 0 no delay */
-	uint32_t delay;
-	/** count of images to capture, 0==1 */
-	uint32_t count;
-	/** bracket capture, 0=no bracket */
-	uint32_t brackets;
-	
-	/** steps for each bracket, only used ig bracket capture*/
-	uint32_t steps;
-	
-	uint32_t film_id;
+  /** delay between each capture, 0 no delay */
+  uint32_t delay;
+  /** count of images to capture, 0==1 */
+  uint32_t count;
+  /** bracket capture, 0=no bracket */
+  uint32_t brackets;
+
+  /** steps for each bracket, only used ig bracket capture*/
+  uint32_t steps;
+
+  uint32_t film_id;
 }
 dt_camera_capture_t;
 int32_t dt_camera_capture_job_run(dt_job_t *job);
@@ -56,9 +56,9 @@ void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, u
 /** camera get previews job. */
 typedef struct dt_camera_get_previews_t
 {
-	struct dt_camera_t *camera;
-	uint32_t flags;
-	struct dt_camctl_listener_t *listener;
+  struct dt_camera_t *camera;
+  uint32_t flags;
+  struct dt_camctl_listener_t *listener;
 }
 dt_camera_get_previews_t;
 int32_t dt_camera_get_previews_job_run(dt_job_t *job);
@@ -67,15 +67,15 @@ void dt_camera_get_previews_job_init(dt_job_t *job,struct dt_camera_t *camera,st
 /** Camera import job */
 typedef struct dt_camera_import_t
 {
-	GList *images;
-	struct dt_camera_t *camera;
-	const dt_gui_job_t *bgj;
-	double fraction;
-	dt_variables_params_t *vp;
-	dt_film_t *film;
-	gchar *path;
-	gchar *filename;
-	uint32_t import_count;
+  GList *images;
+  struct dt_camera_t *camera;
+  const dt_gui_job_t *bgj;
+  double fraction;
+  dt_variables_params_t *vp;
+  dt_film_t *film;
+  gchar *path;
+  gchar *filename;
+  uint32_t import_count;
 }
 dt_camera_import_t;
 int32_t dt_camera_import_job_run(dt_job_t *job);
@@ -84,8 +84,8 @@ void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *fil
 /** Camera image import backup job initiated upon import job for each image*/
 typedef struct dt_camera_import_backup_t
 {
-	gchar *sourcefile;
-	gchar *destinationfile;
+  gchar *sourcefile;
+  gchar *destinationfile;
 }
 dt_camera_import_backup_t;
 int32_t dt_camera_import_backup_job_run(dt_job_t *job);

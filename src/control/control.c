@@ -88,7 +88,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_string ("capture/camera/storage/subpath", "$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)");
   dt_conf_set_string ("capture/camera/storage/namepattern", "$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)");
   dt_conf_set_string ("capture/camera/import/jobcode", "noname");
-  
+
   dt_conf_set_float("gamma_linear", .1f);
   dt_conf_set_float("gamma_gamma", .45f);
 }
@@ -198,8 +198,8 @@ int dt_control_load_config(dt_control_t *c)
       // insert new tables, if not there (statement will just fail if so):
       sqlite3_exec(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "drop table mipmaps", NULL, NULL, NULL);
-      sqlite3_exec(darktable.db, "drop table mipmap_timestamps", NULL, NULL, NULL); 
-      
+      sqlite3_exec(darktable.db, "drop table mipmap_timestamps", NULL, NULL, NULL);
+
       sqlite3_exec(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
@@ -207,13 +207,14 @@ int dt_control_load_config(dt_control_t *c)
       // add columns where needed. will just fail otherwise:
       sqlite3_exec(darktable.db, "alter table images add column orientation integer", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "update images set orientation = 0 where orientation is NULL", NULL, NULL, NULL);
-    
+
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
 #endif
   }
   else
-  { // db not yet there, create it
+  {
+    // db not yet there, create it
     sqlite3_finalize(stmt);
 create_tables:
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
@@ -226,7 +227,7 @@ create_tables:
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
-    
+
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
 
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
@@ -315,7 +316,7 @@ static OSErr dt_ctl_lcms_flatten_profile(SInt32  command,
 
     case writeSpool:
       transfer->data = (guchar *)
-          g_realloc(transfer->data, transfer->len + *size);
+                       g_realloc(transfer->data, transfer->len + *size);
       memcpy(transfer->data + transfer->len, data, *size);
       transfer->len += *size;
       break;
@@ -329,8 +330,9 @@ static OSErr dt_ctl_lcms_flatten_profile(SInt32  command,
 #endif /* GDK_WINDOWING_QUARTZ */
 
 void dt_ctl_get_display_profile(GtkWidget *widget,
-    guint8 **buffer, gint *buffer_size)
-{ // thanks to ufraw for this!
+                                guint8 **buffer, gint *buffer_size)
+{
+  // thanks to ufraw for this!
   *buffer = NULL;
   *buffer_size = 0;
 #if defined GDK_WINDOWING_X11
@@ -347,9 +349,9 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
   GdkAtom type = GDK_NONE;
   gint format = 0;
   gdk_property_get(gdk_screen_get_root_window(screen),
-      gdk_atom_intern(atom_name, FALSE), GDK_NONE,
-      0, 64 * 1024 * 1024, FALSE,
-      &type, &format, buffer_size, buffer);
+                   gdk_atom_intern(atom_name, FALSE), GDK_NONE,
+                   0, 64 * 1024 * 1024, FALSE,
+                   &type, &format, buffer_size, buffer);
   g_free(atom_name);
 
 #elif defined GDK_WINDOWING_QUARTZ
@@ -365,7 +367,7 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
 
   ProfileTransfer transfer = { NULL, 0 };
   //The following code does not work on 64bit OSX.  Disable if we are compiling there.
-#ifndef __LP64__  
+#ifndef __LP64__
   Boolean foo;
   CMFlattenProfile(prof, 0, dt_ctl_lcms_flatten_profile, &transfer, &foo);
   CMCloseProfile(prof);
@@ -383,7 +385,8 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
   GetICMProfile (hdc, &len, NULL);
   gchar *path = g_new (gchar, len);
 
-  if (GetICMProfile (hdc, &len, path)) {
+  if (GetICMProfile (hdc, &len, path))
+  {
     gsize size;
     g_file_get_contents(path, (gchar**)buffer, &size, NULL);
     *buffer_size = size;
@@ -406,7 +409,7 @@ void dt_control_init(dt_control_t *s)
   s->progress = 200.0f;
 
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
-  
+
   // if config is old, replace with new defaults.
   if(DT_CONFIG_VERSION > dt_conf_get_int("config_version"))
     dt_ctl_settings_default(s);
@@ -416,7 +419,8 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
   dt_pthread_mutex_init(&s->run_mutex, NULL);
 
-  int k; for(k=0;k<DT_CONTROL_MAX_JOBS;k++) s->idle[k] = k;
+  int k;
+  for(k=0; k<DT_CONTROL_MAX_JOBS; k++) s->idle[k] = k;
   s->idle_top = DT_CONTROL_MAX_JOBS;
   s->queued_top = 0;
   // start threads
@@ -425,9 +429,9 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_lock(&s->run_mutex);
   s->running = 1;
   dt_pthread_mutex_unlock(&s->run_mutex);
-  for(k=0;k<s->num_threads;k++)
+  for(k=0; k<s->num_threads; k++)
     pthread_create(&s->thread[k], NULL, dt_control_work, s);
-  for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
+  for(k=0; k<DT_CTL_WORKER_RESERVED; k++)
   {
     s->new_res[k] = 0;
     pthread_create(&s->thread_res[k], NULL, dt_control_work_res, s);
@@ -438,7 +442,7 @@ void dt_control_init(dt_control_t *s)
 
 void dt_control_key_accelerators_on(struct dt_control_t *s)
 {
-    s->key_accelerators_on = 1;
+  s->key_accelerators_on = 1;
 }
 
 void dt_control_key_accelerators_off(struct dt_control_t *s)
@@ -479,10 +483,11 @@ void dt_control_shutdown(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   // gdk_threads_leave();
-  int k; for(k=0;k<s->num_threads;k++) 
+  int k;
+  for(k=0; k<s->num_threads; k++)
     // pthread_kill(s->thread[k], 9);
     pthread_join(s->thread[k], NULL);
-  for(k=0;k<DT_CTL_WORKER_RESERVED;k++)
+  for(k=0; k<DT_CTL_WORKER_RESERVED; k++)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
   // gdk_threads_enter();
@@ -533,7 +538,7 @@ void _control_job_set_state(dt_job_t *j,int state)
   j->state = state;
   /* pass state change to callback */
   if (j->state_changed_cb)
-      j->state_changed_cb (j,state);
+    j->state_changed_cb (j,state);
   dt_pthread_mutex_unlock (&j->state_mutex);
 
 }
@@ -554,14 +559,14 @@ void dt_control_job_cancel(dt_job_t *j)
 void dt_control_job_wait(dt_job_t *j)
 {
   int state = dt_control_job_get_state (j);
- 
+
   /* if job execution not is finished let's wait for signal */
   if (state==DT_JOB_STATE_RUNNING || state==DT_JOB_STATE_CANCELLED)
   {
     dt_pthread_mutex_lock (&j->wait_mutex);
     dt_pthread_mutex_unlock (&j->wait_mutex);
   }
- 
+
 }
 
 int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
@@ -582,16 +587,16 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
 
-    _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
-    
+    _control_job_set_state (j,DT_JOB_STATE_RUNNING);
+
     /* execute job */
     j->result = j->execute (j);
-   
-    _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
+
+    _control_job_set_state (j,DT_JOB_STATE_FINISHED);
     dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", res, dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
-  
+
   }
   dt_pthread_mutex_unlock (&j->wait_mutex);
   return 0;
@@ -619,20 +624,20 @@ int32_t dt_control_run_job(dt_control_t *s)
     dt_print(DT_DEBUG_CONTROL, "[run_job+] %02d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
-  
-    _control_job_set_state (j,DT_JOB_STATE_RUNNING); 
-    
+
+    _control_job_set_state (j,DT_JOB_STATE_RUNNING);
+
     /* execute job */
     j->result = j->execute (j);
 
-    _control_job_set_state (j,DT_JOB_STATE_FINISHED); 
-    
+    _control_job_set_state (j,DT_JOB_STATE_FINISHED);
+
     dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
   }
   dt_pthread_mutex_unlock (&j->wait_mutex);
-  
+
   dt_pthread_mutex_lock(&s->queue_mutex);
   assert(s->idle_top < DT_CONTROL_MAX_JOBS);
   s->idle[s->idle_top++] = i;
@@ -647,7 +652,7 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
   dt_print(DT_DEBUG_CONTROL, "[add_job_res] %d ", res);
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  _control_job_set_state (job,DT_JOB_STATE_QUEUED); 
+  _control_job_set_state (job,DT_JOB_STATE_QUEUED);
   s->job_res[res] = *job;
   s->new_res[res] = 1;
   dt_pthread_mutex_unlock(&s->queue_mutex);
@@ -661,8 +666,9 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
   int32_t i;
   dt_pthread_mutex_lock(&s->queue_mutex);
-  for(i=0;i<s->queued_top;i++)
-  { // find equivalent job and quit if already there
+  for(i=0; i<s->queued_top; i++)
+  {
+    // find equivalent job and quit if already there
     const int j = s->queued[i];
     if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
     {
@@ -677,7 +683,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   if(s->idle_top != 0)
   {
     i = --s->idle_top;
-    _control_job_set_state (job,DT_JOB_STATE_QUEUED); 
+    _control_job_set_state (job,DT_JOB_STATE_QUEUED);
     s->job[s->idle[i]] = *job;
     s->queued[s->queued_top++] = s->idle[i];
     dt_pthread_mutex_unlock(&s->queue_mutex);
@@ -685,7 +691,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   else
   {
     dt_print(DT_DEBUG_CONTROL, "[add_job] too many jobs in queue!\n");
-    _control_job_set_state (job,DT_JOB_STATE_DISCARDED); 
+    _control_job_set_state (job,DT_JOB_STATE_DISCARDED);
     dt_pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
@@ -704,8 +710,9 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
   dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  for(int i=0;i<s->queued_top;i++)
-  { // find equivalent job and push it up on top of the stack.
+  for(int i=0; i<s->queued_top; i++)
+  {
+    // find equivalent job and push it up on top of the stack.
     const int j = s->queued[i];
     if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
     {
@@ -808,18 +815,18 @@ void *dt_control_expose(void *voidptr)
   cairo_t *cr = cairo_create(cst);
 
   // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
-  // 
+  //
   float tb = 8;//fmaxf(10, width/100.0);
   darktable.control->tabborder = tb;
   darktable.control->width = width;
   darktable.control->height = height;
 
   GtkStyle *style = gtk_widget_get_style(widget);
-  cairo_set_source_rgb (cr, 
-    style->bg[GTK_STATE_NORMAL].red/65535.0, 
-    style->bg[GTK_STATE_NORMAL].green/65535.0, 
-    style->bg[GTK_STATE_NORMAL].blue/65535.0
-  );
+  cairo_set_source_rgb (cr,
+                        style->bg[GTK_STATE_NORMAL].red/65535.0,
+                        style->bg[GTK_STATE_NORMAL].green/65535.0,
+                        style->bg[GTK_STATE_NORMAL].blue/65535.0
+                       );
 
   cairo_set_line_width(cr, tb);
   cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
@@ -868,7 +875,7 @@ void *dt_control_expose(void *voidptr)
     float rad = 14;
     cairo_set_line_width(cr, 1.);
     cairo_move_to( cr, xc-wd,yc+rad);
-    for(int k=0;k<5;k++)
+    for(int k=0; k<5; k++)
     {
       cairo_arc (cr, xc-wd, yc, rad, M_PI/2.0, 3.0/2.0*M_PI);
       cairo_line_to (cr, xc+wd, yc-rad);
@@ -969,7 +976,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 {
   dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode == mode) return;
-  
+
   dt_control_save_gui_settings(oldmode);
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
@@ -1026,19 +1033,19 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   const float /*xc = wd/4.0-20,*/ yc = ht*0.85+10;
   if(darktable.control->log_ack != darktable.control->log_pos)
-  if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
-  {
-    if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
-    darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
-    dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-    return;
-  }
+    if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
+    {
+      if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
+      darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
+      dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+      return;
+    }
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
   {
     if(!dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, which, type, state))
-    if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
+      if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
   }
 }
 
@@ -1249,7 +1256,7 @@ int dt_control_key_pressed_override(uint16_t which)
   GtkWidget *widget;
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;
-  
+
   switch (which)
   {
     case KEYCODE_F7:
@@ -1258,7 +1265,7 @@ int dt_control_key_pressed_override(uint16_t which)
     case KEYCODE_F8:
       dt_gui_contrast_increase ();
       break;
-    
+
     case KEYCODE_F11:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       fullscreen = dt_conf_get_bool("ui_last/fullscreen");
@@ -1268,7 +1275,8 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_conf_set_bool("ui_last/fullscreen", fullscreen);
       dt_dev_invalidate(darktable.develop);
       break;
-    case KEYCODE_Escape: case KEYCODE_Caps:
+    case KEYCODE_Escape:
+    case KEYCODE_Caps:
       widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
@@ -1323,7 +1331,8 @@ int dt_control_key_pressed(uint16_t which)
       needRedraw = dt_view_manager_key_pressed(darktable.view_manager, which);
       break;
   }
-  if( needRedraw ) {
+  if( needRedraw )
+  {
     widget = glade_xml_get_widget (darktable.gui->main_window, "center");
     gtk_widget_queue_draw(widget);
     widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
@@ -1360,14 +1369,16 @@ void dt_control_add_history_item(int32_t num_in, const char *label)
 void dt_control_clear_history_items(int32_t num)
 {
   darktable.gui->reset = 1;
-  if( num == -1 ) 
-  { /* reset if empty stack */
+  if( num == -1 )
+  {
+    /* reset if empty stack */
     dt_gui_iop_history_reset();
   }
   else
-  { /* pop items from top of history */
+  {
+    /* pop items from top of history */
     int size = dt_gui_iop_history_get_top () - MAX(0, num);
-    for(int k=1;k<size;k++)
+    for(int k=1; k<size; k++)
       dt_gui_iop_history_pop_top ();
 
     dt_gui_iop_history_update_labels ();
@@ -1383,11 +1394,11 @@ void dt_control_update_recent_films()
   /* get the recent film vbox */
   GtkWidget *sb = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
   GtkWidget *recent_used_film_vbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sb)),1);
-  
+
   /* hide all childs and vbox*/
   gtk_widget_hide_all (recent_used_film_vbox);
   GList *childs = gtk_container_get_children (GTK_CONTAINER(recent_used_film_vbox));
-  
+
   /* query database for recent films */
   sqlite3_stmt *stmt;
   int num = 0;
@@ -1402,19 +1413,19 @@ void dt_control_update_recent_films()
     snprintf(label, label_cnt, "%s", cnt);
     GtkWidget *widget = g_list_nth_data (childs,num);
     gtk_button_set_label (GTK_BUTTON (widget), label);
-    
+
     GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(widget)));
     gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
     gtk_label_set_max_width_chars (label, 30);
-    
+
     g_object_set(G_OBJECT(widget), "tooltip-text", filename, (char *)NULL);
-    
+
     gtk_widget_show(recent_used_film_vbox);
     gtk_widget_show(widget);
-    
+
     num++;
   }
-  
+
   if(needlock) gdk_threads_leave();
 }
 #endif

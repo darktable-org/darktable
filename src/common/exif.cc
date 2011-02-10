@@ -46,25 +46,29 @@ extern "C"
 #define DT_XMP_KEYS_NUM 6 // the number of XmpBag XmpSeq keys that dt uses
 
 //this array should contain all XmpBag and XmpSeq keys used by dt
-const char *dt_xmp_keys[DT_XMP_KEYS_NUM] = {
-  "Xmp.dc.subject", "Xmp.darktable.colorlabels", 
-  "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled", 
+const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
+{
+  "Xmp.dc.subject", "Xmp.darktable.colorlabels",
+  "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
   "Xmp.darktable.history_operation", "Xmp.darktable.history_params"
 };
 
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
-    Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
+                               Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
 {
   std::string str = pos->print(&exifData);
 
   char *s = g_locale_to_utf8(str.c_str(), str.length(),
-      NULL, NULL, NULL);
-  if ( s!=NULL ) {
+                             NULL, NULL, NULL);
+  if ( s!=NULL )
+  {
     g_strlcpy(dest, s, dest_max);
     g_free(s);
-  } else {
+  }
+  else
+  {
     g_strlcpy(dest, str.c_str(), dest_max);
   }
 }
@@ -73,10 +77,10 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
 //this should work because dt first reads all known keys
 static void dt_remove_known_keys(Exiv2::XmpData &xmp)
 {
-  for(int i=0;i<DT_XMP_KEYS_NUM;i++)
-  {    
+  for(int i=0; i<DT_XMP_KEYS_NUM; i++)
+  {
     Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
-    xmp.erase(pos); 
+    xmp.erase(pos);
   }
 }
 
@@ -101,82 +105,108 @@ int dt_exif_read(dt_image_t *img, const char* path)
     Exiv2::ExifData::iterator pos;
     /* Read shutter time */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ExposureTime")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ShutterSpeedValue")))
+              != exifData.end() )
+    {
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = 1.0/pos->toFloat ();
     }
     /* Read aperture */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.FNumber")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       img->exif_aperture = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(
-            Exiv2::ExifKey("Exif.Photo.ApertureValue")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(
+                     Exiv2::ExifKey("Exif.Photo.ApertureValue")))
+              != exifData.end() )
+    {
       img->exif_aperture = pos->toFloat ();
     }
     /* Read ISO speed */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ISOSpeedRatings")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       img->exif_iso = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey(
-              "Exif.CanonSi.ISOSpeed"))) != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey(
+                                      "Exif.CanonSi.ISOSpeed"))) != exifData.end() )
+    {
       img->exif_iso = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon1.ISOSpeed")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon1.ISOSpeed")))
+              != exifData.end() )
+    {
       img->exif_iso = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon2.ISOSpeed")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon2.ISOSpeed")))
+              != exifData.end() )
+    {
       img->exif_iso = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.ISOSpeed")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.ISOSpeed")))
+              != exifData.end() )
+    {
       img->exif_iso = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(
-            Exiv2::ExifKey("Exif.MinoltaCsNew.ISOSpeed")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(
+                     Exiv2::ExifKey("Exif.MinoltaCsNew.ISOSpeed")))
+              != exifData.end() )
+    {
       img->exif_iso = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(
-            Exiv2::ExifKey("Exif.MinoltaCsOld.ISOSpeed")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(
+                     Exiv2::ExifKey("Exif.MinoltaCsOld.ISOSpeed")))
+              != exifData.end() )
+    {
       img->exif_iso = pos->toFloat ();
-    } else if ( (pos=exifData.findKey(
-            Exiv2::ExifKey("Exif.MinoltaCs5D.ISOSpeed")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(
+                     Exiv2::ExifKey("Exif.MinoltaCs5D.ISOSpeed")))
+              != exifData.end() )
+    {
       img->exif_iso = pos->toFloat();
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey(
-              "Exif.MinoltaCs7D.ISOSpeed")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey(
+                                      "Exif.MinoltaCs7D.ISOSpeed")))
+              != exifData.end() )
+    {
       img->exif_iso = pos->toFloat();
     }
     /* Read focal length */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.FocalLength")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       img->exif_focal_length = pos->toFloat();
     }
 #if 0
     /* Read focal length in 35mm equivalent */
     if ( (pos=exifData.findKey(Exiv2::ExifKey(
-              "Exif.Photo.FocalLengthIn35mmFilm")))
-        != exifData.end() ) {
+                                 "Exif.Photo.FocalLengthIn35mmFilm")))
+         != exifData.end() )
+    {
       img->exif_focal_length = pos->toFloat ();
     }
 #endif
     /** read image orientation */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
     /* Read lens name */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Lens")))
-        != exifData.end() )
+         != exifData.end() )
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
     else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
-        ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
+             ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
@@ -195,12 +225,14 @@ int dt_exif_read(dt_image_t *img, const char* path)
 #if 0
     /* Read flash mode */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.Flash")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       uf_strlcpy_to_utf8(uf->conf->flashText, max_name, pos, exifData);
     }
     /* Read White Balance Setting */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.WhiteBalance")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       uf_strlcpy_to_utf8(uf->conf->whiteBalanceText, max_name, pos, exifData);
     }
 #endif
@@ -211,8 +243,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
     Exiv2::IptcData::iterator iptcPos;
 
     if( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
-        != iptcData.end() ) {
-      while(iptcPos != iptcData.end()){
+        != iptcData.end() )
+    {
+      while(iptcPos != iptcData.end())
+      {
         std::string str = iptcPos->print(&exifData);
         guint tagid = 0;
         dt_tag_new(str.c_str(),&tagid);
@@ -222,43 +256,61 @@ int dt_exif_read(dt_image_t *img, const char* path)
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Make")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       dt_strlcpy_to_utf8(img->exif_maker, 32, pos, exifData);
-      for(char *c=img->exif_maker+31;c > img->exif_maker;c--) if(*c != ' ' && *c != '\0') { *(c+1) = '\0'; break; }
+      for(char *c=img->exif_maker+31; c > img->exif_maker; c--) if(*c != ' ' && *c != '\0')
+        {
+          *(c+1) = '\0';
+          break;
+        }
     }
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Model")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       dt_strlcpy_to_utf8(img->exif_model, 32, pos, exifData);
-      for(char *c=img->exif_model+31;c > img->exif_model;c--) if(*c != ' ' && *c != '\0') { *(c+1) = '\0'; break; }
+      for(char *c=img->exif_model+31; c > img->exif_model; c--) if(*c != ' ' && *c != '\0')
+        {
+          *(c+1) = '\0';
+          break;
+        }
     }
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
-    } else if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
-        != iptcData.end() ) {
+    }
+    else if ( (iptcPos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Writer")))
+              != iptcData.end() )
+    {
       std::string str = iptcPos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
-    } else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.OwnerName")))
-        != exifData.end() ) {
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.OwnerName")))
+              != exifData.end() )
+    {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
 
     // FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.UserComment")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
-        != exifData.end() ) {
+         != exifData.end() )
+    {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
     }
@@ -308,14 +360,15 @@ const char *dt_exif_data_get_value(void *exif_data, const char *key,char *value,
 void *dt_exif_data_new(uint8_t *data,uint32_t size)
 {
   // use libexif to parse the binary exif ifd into a exiv2 metadata
-  Exiv2::ExifData *exifData=new Exiv2::ExifData; 
+  Exiv2::ExifData *exifData=new Exiv2::ExifData;
   ::ExifData *ed;
 
   if( (ed = exif_data_new_from_data((unsigned char *)data, size)) != NULL)
   {
-    char value[1024]={0};
+    char value[1024]= {0};
     int ifd_index=EXIF_IFD_EXIF;
-    for(uint32_t i = 0; i < ed->ifd[ifd_index]->count; i++) {
+    for(uint32_t i = 0; i < ed->ifd[ifd_index]->count; i++)
+    {
       char key[1024]="Exif.Photo.";
       exif_entry_get_value(ed->ifd[ifd_index]->entries[i],value,1024);
       strcat(key,exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag));
@@ -403,94 +456,94 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
     Exiv2::ExifData::iterator pos;
     /* Delete original TIFF data, which is irrelevant*/
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ImageWidth")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ImageLength")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.BitsPerSample")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Compression")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.PhotometricInterpretation")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.FillOrder")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.SamplesPerPixel")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.StripOffsets")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.RowsPerStrip")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.StripByteCounts")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.XResolution")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.YResolution")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.PlanarConfiguration")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ResolutionUnit")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
 
     /* Delete various MakerNote fields only applicable to the raw file */
 
     // Nikon thumbnail data
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Preview")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.NikonPreview.JPEGInterchangeFormat")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
 
     // DNG private data
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.DNGPrivateData")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
 
     // Pentax thumbnail data
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewResolution")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewLength")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.PreviewOffset")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
 
     // Minolta thumbnail data
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.Thumbnail")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.ThumbnailOffset")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.ThumbnailLength")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
 
     // Olympus thumbnail data
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Olympus.Thumbnail")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Olympus.ThumbnailOffset")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Olympus.ThumbnailLength")))
-        != exifData.end() )
+         != exifData.end() )
       exifData.erase(pos);
 
     /* Write appropriate color space tag if using sRGB output */
@@ -573,7 +626,7 @@ int dt_exif_read_blob(uint8_t *buf, const char* path, const int sRGB, const int 
 void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len)
 {
   const char hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-  for(int i=0;i<len;i++)
+  for(int i=0; i<len; i++)
   {
     const int hi = input[i] >> 4;
     const int lo = input[i] & 15;
@@ -590,9 +643,9 @@ void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len
   // 48- 57 0-9
   // 97-102 a-f
 #define TO_BINARY(a) (a > 57 ? a - 97 + 10 : a - 48)
-  for(int i=0;i<len/2;i++)
+  for(int i=0; i<len/2; i++)
   {
-    const int hi = TO_BINARY( input[2*i  ] ); 
+    const int hi = TO_BINARY( input[2*i  ] );
     const int lo = TO_BINARY( input[2*i+1] );
     output[i] = (hi << 4) | lo;
   }
@@ -636,7 +689,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // rights
         char *rights = strdup(pos->toString().c_str());
         char *adr = rights;
-        if(strncmp(rights, "lang=", 5) == 0){
+        if(strncmp(rights, "lang=", 5) == 0)
+        {
           rights = strchr(rights, ' ');
           if(rights != NULL)
             rights++;
@@ -649,7 +703,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // description
         char *description = strdup(pos->toString().c_str());
         char *adr = description;
-        if(strncmp(description, "lang=", 5) == 0){
+        if(strncmp(description, "lang=", 5) == 0)
+        {
           description = strchr(description, ' ');
           if(description != NULL)
             description++;
@@ -662,7 +717,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // title
         char *title = strdup(pos->toString().c_str());
         char *adr = title;
-        if(strncmp(title, "lang=", 5) == 0){
+        if(strncmp(title, "lang=", 5) == 0)
+        {
           title = strchr(title, ' ');
           if(title != NULL)
             title++;
@@ -675,7 +731,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // creator
         char *creator = strdup(pos->toString().c_str());
         char *adr = creator;
-        if(strncmp(creator, "lang=", 5) == 0){
+        if(strncmp(creator, "lang=", 5) == 0)
+        {
           creator = strchr(creator, ' ');
           if(creator != NULL)
             creator++;
@@ -688,7 +745,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         // publisher
         char *publisher = strdup(pos->toString().c_str());
         char *adr = publisher;
-        if(strncmp(publisher, "lang=", 5) == 0){
+        if(strncmp(publisher, "lang=", 5) == 0)
+        {
           publisher = strchr(publisher, ' ');
           if(publisher != NULL)
             publisher++;
@@ -737,8 +795,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     {
       // consistency: strip all tags from image (tagged_image, tagxtag)
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count - 1 where "
-          "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
-          "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
+                                  "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
+                                  "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
@@ -759,13 +817,13 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt_upd_tagxtag, NULL);
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
-          "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
-          "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag2, NULL);
-      for(int i=0;i<cnt;i++)
+                                  "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
+                                  "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag2, NULL);
+      for(int i=0; i<cnt; i++)
       {
         int tagid = -1;
         // check if tag is available, get its id:
-        for(int k=0;k<2;k++)
+        for(int k=0; k<2; k++)
         {
           const char *tag = pos->toString(i).c_str();
           DT_DEBUG_SQLITE3_BIND_TEXT(stmt_sel_id, 1, tag, strlen(tag), SQLITE_TRANSIENT);
@@ -822,7 +880,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       // color labels
       const int cnt = pos->count();
       dt_colorlabels_remove_labels(img->id);
-      for(int i=0;i<cnt;i++)
+      for(int i=0; i<cnt; i++)
       {
         dt_colorlabels_set_label(img->id, pos->toLong(i));
       }
@@ -835,9 +893,9 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     Exiv2::XmpData::iterator param;
 
     if ( (ver=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_modversion"))) != xmpData.end() &&
-        (en=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled")))     != xmpData.end() &&
-        (op=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_operation")))   != xmpData.end() &&
-        (param=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_params")))   != xmpData.end() )
+         (en=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled")))     != xmpData.end() &&
+         (op=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_operation")))   != xmpData.end() &&
+         (param=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_params")))   != xmpData.end() )
     {
       const int cnt = ver->count();
       if(cnt == en->count() && cnt == op->count() && cnt == param->count())
@@ -851,7 +909,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt_sel_num, NULL);
         DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt_ins_hist, NULL);
         DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
-        for(int i=0;i<cnt;i++)
+        for(int i=0; i<cnt; i++)
         {
           const int modversion = ver->toLong(i);
           const int enabled = en->toLong(i);
@@ -955,7 +1013,8 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       int key = sqlite3_column_int(stmt, 0);
-      switch(key){
+      switch(key)
+      {
         case DT_METADATA_XMP_DC_CREATOR:
           xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
           break;
@@ -1020,7 +1079,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      int32_t modversion = sqlite3_column_int(stmt, 2); 
+      int32_t modversion = sqlite3_column_int(stmt, 2);
       snprintf(val, 2048, "%d", modversion);
       tv.read(val);
       snprintf(key, 1024, "Xmp.darktable.history_modversion[%d]", num);

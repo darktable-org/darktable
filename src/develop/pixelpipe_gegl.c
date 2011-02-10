@@ -44,7 +44,10 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   pipe->iwidth = width;
   pipe->iheight = height;
-  GeglRectangle rect = (GeglRectangle){0, 0, width, height};
+  GeglRectangle rect = (GeglRectangle)
+  {
+    0, 0, width, height
+  };
   if(pipe->input_buffer) gegl_buffer_destroy(pipe->input_buffer);
   pipe->input_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
   gegl_buffer_set(pipe->input_buffer, NULL, babl_format("RGB float"), input, GEGL_AUTO_ROWSTRIDE);
@@ -137,7 +140,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   }
   // go through all history items and adjust params
   GList *history = dev->history;
-  for(int k=0;k<dev->history_end;k++)
+  for(int k=0; k<dev->history_end; k++)
   {
     dt_dev_pixelpipe_synch(pipe, dev, history);
     history = g_list_next(history);
@@ -188,7 +191,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 {
   pipe->processing = 1;
   printf("pixelpipe process start\n");
-  
+
   // have backbuf in right size:
   if(pipe->backbuf_size < width*height*4*sizeof(uint8_t))
   {
@@ -202,8 +205,14 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   // scale node (is slow):
   // scale *= 2;
   // FIXME: this seems to be a bug in gegl. need to manually adjust updated roi here.
-  GeglRectangle roi  = (GeglRectangle){x, y, width, height};
-  GeglRectangle roio = (GeglRectangle){roi.x/scale, roi.y/scale, roi.width/scale, roi.height/scale};
+  GeglRectangle roi  = (GeglRectangle)
+  {
+    x, y, width, height
+  };
+  GeglRectangle roio = (GeglRectangle)
+  {
+    roi.x/scale, roi.y/scale, roi.width/scale, roi.height/scale
+  };
   roio.x      = MAX(0, roio.x);
   roio.y      = MAX(0, roio.y);
   roio.width  = MIN(pipe->iwidth -roio.x-1, roio.width);
