@@ -331,7 +331,7 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
   roi_in.height = raw_ht;
   roi_in.scale = 1.0f;
   roi_out.x = roi_out.y = 0;
-  roi_out.width = p_wd;//f_wd;
+  roi_out.width  = p_wd;//f_wd;
   roi_out.height = p_ht;//f_ht;
   roi_out.scale = fminf(f_wd/(float)raw_wd, f_ht/(float)raw_ht);
   if(img->filters)

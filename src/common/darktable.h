@@ -212,7 +212,7 @@ static inline float dt_fast_expf(const float x)
   // e^x, the comment would be 2^x
   const int i2 = 0x402DF854u;//0x40000000u;
   // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
-  // without max clamping (doesn't work for large x, but is faster:
+  // without max clamping (doesn't work for large x, but is faster):
   const int k0 = i1 + x * (i2 - i1);
   const int k = k0 > 0 ? k0 : 0;
   const float f = *(const float *)&k;

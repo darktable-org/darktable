@@ -695,7 +695,7 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
       // upper left corner:
-      float fx = (x + roi_out->x + 0.5f)/roi_out->scale, fy = (y + roi_out->y + 0.5f)/roi_out->scale;
+      float fx = (x + roi_out->x)/roi_out->scale, fy = (y + roi_out->y)/roi_out->scale;
       int px = (int)fx, py = (int)fy;
       const float dx = fx - px, dy = fy - py;
       const __m128 d0 = _mm_set1_ps((1.0f-dx)*(1.0f-dy));
@@ -785,7 +785,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
     {
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
-      int px = (x + roi_out->x + 0.5f)/roi_out->scale, py = (y + roi_out->y + 0.5f)/roi_out->scale;
+      int px = (x + roi_out->x)/roi_out->scale, py = (y + roi_out->y)/roi_out->scale;
 
       // round down to next even number and jump to rggb block:
       px = MAX(0, px & ~1) + rggbx;
@@ -866,7 +866,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
       // upper left corner:
-      float fx = (x + roi_out->x + 0.5f)/roi_out->scale, fy = (y + roi_out->y + 0.5f)/roi_out->scale;
+      float fx = (x + roi_out->x)/roi_out->scale, fy = (y + roi_out->y)/roi_out->scale;
       int px = (int)fx, py = (int)fy;
 
       // round down to next even number and jump to rggb block:
