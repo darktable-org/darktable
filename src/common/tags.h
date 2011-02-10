@@ -21,11 +21,11 @@
 #include <sqlite3.h>
 #include <glib.h>
 
-typedef struct dt_tag_t 
+typedef struct dt_tag_t
 {
   guint id;
   gchar *tag;
-} 
+}
 dt_tag_t;
 
 /** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new tag, this can be NULL \return false if failed to create a tag and indicates that tagid is invalid to use. \note If tag already exists the existing tag id is returned. */

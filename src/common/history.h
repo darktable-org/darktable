@@ -38,9 +38,9 @@ void dt_history_delete_on_selection();
 
 typedef struct dt_history_item_t
 {
-	guint num;
-	gchar *name;
-}dt_history_item_t;
+  guint num;
+  gchar *name;
+} dt_history_item_t;
 
 /** get list of history items for image */
 GList *dt_history_get_items(int32_t imgid);

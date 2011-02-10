@@ -26,7 +26,8 @@ G_BEGIN_DECLS
 #define DTGTK_IS_GRADIENT_SLIDER(obj) GTK_CHECK_TYPE(obj, dtgtk_gradient_slider_get_type())
 #define DTGTK_IS_GRADIENT_SLIDER_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_get_type())
 
-enum {
+enum
+{
   GRADIENT_SLIDER_VALUE_CHANGED,
   GRADIENT_SLIDER_LAST_SIGNAL
 };
@@ -38,7 +39,7 @@ typedef struct _GtkDarktableGradientSlider
   gdouble position;
   gint prev_x_root;
   gboolean is_dragging;
-  gboolean is_changed;	
+  gboolean is_changed;
 } GtkDarktableGradientSlider;
 
 typedef struct _GtkDarktableGradientSliderClass
@@ -60,4 +61,4 @@ gdouble dtgtk_gradient_slider_get_value(GtkDarktableGradientSlider *gslider);
 void dtgtk_gradient_slider_set_value(GtkDarktableGradientSlider *gslider,gdouble value);
 gboolean dtgtk_gradient_slider_is_dragging(GtkDarktableGradientSlider *gslider);
 G_END_DECLS
-#endif 
+#endif

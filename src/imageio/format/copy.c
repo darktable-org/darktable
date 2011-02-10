@@ -29,69 +29,70 @@ DT_MODULE(1)
 // FIXME: we can't rely on darktable to avoid file overwriting -- it doesn't know the filename (extension).
 int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint16_t *in, void *exif, int exif_len, int imgid)
 {
-	int status = 1;
-	char *sourcefile = NULL;
-	char *targetfile = NULL;
-	char *xmpfile = NULL;
-	char *content = NULL;
-	FILE *fin = NULL;
-	FILE *fout = NULL;
-	sqlite3_stmt *stmt;
+  int status = 1;
+  char *sourcefile = NULL;
+  char *targetfile = NULL;
+  char *xmpfile = NULL;
+  char *content = NULL;
+  FILE *fin = NULL;
+  FILE *fout = NULL;
+  sqlite3_stmt *stmt;
 
-	DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder, filename from images, film_rolls where images.id = ?1 and film_id = film_rolls.id;", -1, &stmt, NULL);
-	DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder, filename from images, film_rolls where images.id = ?1 and film_id = film_rolls.id;", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-	if(sqlite3_step(stmt) != SQLITE_ROW)
-		goto END;
+  if(sqlite3_step(stmt) != SQLITE_ROW)
+    goto END;
 
-	char *sfolder    = (char*)sqlite3_column_text(stmt, 0);
-	char *sfilename  = (char*)sqlite3_column_text(stmt, 1);
-	sourcefile = g_build_filename(sfolder, sfilename, NULL);
-	char *extension  = g_strrstr(sourcefile, ".");
-	if(extension == NULL)
-		goto END;
-	targetfile = g_strconcat(filename, ++extension, NULL);
+  char *sfolder    = (char*)sqlite3_column_text(stmt, 0);
+  char *sfilename  = (char*)sqlite3_column_text(stmt, 1);
+  sourcefile = g_build_filename(sfolder, sfilename, NULL);
+  char *extension  = g_strrstr(sourcefile, ".");
+  if(extension == NULL)
+    goto END;
+  targetfile = g_strconcat(filename, ++extension, NULL);
 
-	fin = fopen(sourcefile, "rb");
-	fout = fopen(targetfile, "wb");
-	if(fin == NULL || fout == NULL)
-		goto END;
+  fin = fopen(sourcefile, "rb");
+  fout = fopen(targetfile, "wb");
+  if(fin == NULL || fout == NULL)
+    goto END;
 
-	fseek(fin,0,SEEK_END);
-	int end = ftell(fin);
-	rewind(fin);
+  fseek(fin,0,SEEK_END);
+  int end = ftell(fin);
+  rewind(fin);
 
-	content = (char*)g_malloc(sizeof(char)*end);
-	if(content == NULL)
-		goto END;
-	if(fread(content,sizeof(char),end,fin) != end)
-		goto END;
-	if(fwrite(content,sizeof(char),end,fout) != end)
-		goto END;
+  content = (char*)g_malloc(sizeof(char)*end);
+  if(content == NULL)
+    goto END;
+  if(fread(content,sizeof(char),end,fin) != end)
+    goto END;
+  if(fwrite(content,sizeof(char),end,fout) != end)
+    goto END;
 
-	// we got a copy of the file, now write the xmp data
-	xmpfile = g_strconcat(targetfile, ".xmp", NULL);
-	if(dt_exif_xmp_write (imgid, xmpfile) != 0){
-		// something went wrong, unlink the copied image.
-		g_unlink(targetfile);
-		goto END;
-	}
+  // we got a copy of the file, now write the xmp data
+  xmpfile = g_strconcat(targetfile, ".xmp", NULL);
+  if(dt_exif_xmp_write (imgid, xmpfile) != 0)
+  {
+    // something went wrong, unlink the copied image.
+    g_unlink(targetfile);
+    goto END;
+  }
 
-	status = 0;
+  status = 0;
 END:
-	if(sourcefile)
-		g_free(sourcefile);
-	if(targetfile)
-		g_free(targetfile);
-	if(xmpfile)
-		g_free(xmpfile);
-	if(content)
-		g_free(content);
-	if(fin)
-		fclose(fin);
-	if(fout)
-		fclose(fout);
-	return status;
+  if(sourcefile)
+    g_free(sourcefile);
+  if(targetfile)
+    g_free(targetfile);
+  if(xmpfile)
+    g_free(xmpfile);
+  if(content)
+    g_free(content);
+  if(fin)
+    fclose(fin);
+  if(fout)
+    fclose(fout);
+  return status;
 }
 
 void*
@@ -125,7 +126,7 @@ mime(dt_imageio_module_data_t *data)
 {
   return "";
 }
- 
+
 const char*
 extension(dt_imageio_module_data_t *data)
 {
@@ -138,7 +139,8 @@ name ()
   return _("copy");
 }
 
-void gui_init    (dt_imageio_module_format_t *self){
+void gui_init    (dt_imageio_module_format_t *self)
+{
   GtkWidget *box = gtk_hbox_new(FALSE, 20);
   self->widget = box;
 

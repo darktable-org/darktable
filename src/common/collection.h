@@ -27,7 +27,7 @@
 #define COLLECTION_QUERY_USE_WHERE_EXT          4           // if query should include extended where part
 #define COLLECTION_QUERY_USE_ONLY_WHERE_EXT     8           // if query should only use extended where part
 
-#define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT)         
+#define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT)
 
 
 #define COLLECTION_FILTER_FILM_ID               1             // use film_id in filter
@@ -54,7 +54,7 @@ typedef struct dt_collection_params_t
 
 typedef struct dt_collection_t
 {
-	int clone;
+  int clone;
   gchar *query;
   gchar *where_ext;
   dt_collection_params_t params;
@@ -89,9 +89,9 @@ uint32_t dt_collection_get_query_flags (const dt_collection_t *collection);
 void dt_collection_set_query_flags (const dt_collection_t *collection, uint32_t flags);
 
 /** set the film_id of collection */
-void dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film_id); 
+void dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film_id);
 /** set the star level for filter */
-void dt_collection_set_rating (const dt_collection_t *collection, uint32_t rating); 
+void dt_collection_set_rating (const dt_collection_t *collection, uint32_t rating);
 /** get the count of query */
 uint32_t dt_collection_get_count (const dt_collection_t *collection);
 

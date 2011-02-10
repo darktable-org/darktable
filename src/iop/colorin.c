@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
@@ -46,8 +46,8 @@ name()
   return _("input color profile");
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_COLOR;
 }
@@ -92,7 +92,8 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
   int pos = gtk_combo_box_get_active(widget);
   GList *prof = g->profiles;
   while(prof)
-  { // could use g_list_nth. this seems safer?
+  {
+    // could use g_list_nth. this seems safer?
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(pp->pos == pos)
     {
@@ -156,20 +157,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  
+
   if(mat[0] != -666.0f)
-  { // only color matrix. use our optimized fast path!
+  {
+    // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
-    for(int k=0;k<roi_out->width*roi_out->height;k++)
+    for(int k=0; k<roi_out->width*roi_out->height; k++)
     {
       const float *const buf_in  = in  + ch*k;
       float *const buf_out = out + ch*k;
       float cam[3], XYZ[3], Lab[3];
       // memcpy(cam, buf_in, sizeof(float)*3);
       // TODO: avoid calling this for linear profiles? doesn't seem to impact performance much.
-      for(int i=0;i<3;i++) cam[i] = lerp_lut(d->lut[i], buf_in[i]);
+      for(int i=0; i<3; i++) cam[i] = lerp_lut(d->lut[i], buf_in[i]);
       // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
       const float YY = cam[0]+cam[1]+cam[2];
       const float zz = cam[2]/YY;
@@ -184,41 +186,44 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         cam[2] -= t*amount;
       }
       // now convert camera to XYZ using the color matrix
-      for(int j=0;j<3;j++)
+      for(int j=0; j<3; j++)
       {
         XYZ[j] = 0.0f;
-        for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
+        for(int i=0; i<3; i++) XYZ[j] += mat[3*j+i] * cam[i];
       }
       dt_XYZ_to_Lab(XYZ, Lab);
       memcpy(buf_out, Lab, sizeof(float)*3);
     }
   }
   else
-  { // use general lcms2 fallback
+  {
+    // use general lcms2 fallback
     int rowsize=roi_out->width*3;
     float cam[rowsize];
     float Lab[rowsize];
-    
+
     // FIXME: for some unapparent reason even this breaks lcms2 :(
 #if 0//def _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
 #endif
-    for(int k=0;k<roi_out->height;k++)
+    for(int k=0; k<roi_out->height; k++)
     {
       const int m=(k*(roi_out->width*ch));
-      
-      for (int l=0;l<roi_out->width;l++) {
+
+      for (int l=0; l<roi_out->width; l++)
+      {
         int ci=3*l, ii=ch*l;
-        
+
         cam[ci+0] = in[m+ii+0];
         cam[ci+1] = in[m+ii+1];
         cam[ci+2] = in[m+ii+2];
-        
+
         const float YY = cam[ci+0]+cam[ci+1]+cam[ci+2];
         const float zz = cam[ci+2]/YY;
         const float bound_z = 0.5f, bound_Y = 0.5f;
         const float amount = 0.11f;
-        if (zz > bound_z) {
+        if (zz > bound_z)
+        {
           const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
           cam[ci+1] += t*amount;
           cam[ci+2] -= t*amount;
@@ -227,8 +232,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // convert to (L,a/L,b/L) to be able to change L without changing saturation.
       // lcms is not thread safe, so work on one copy for each thread :(
       cmsDoTransform (d->xform[dt_get_thread_num()], cam, Lab, roi_out->width);
-    
-      for (int l=0;l<roi_out->width;l++) {
+
+      for (int l=0; l<roi_out->width; l++)
+      {
         int li=3*l, oi=ch*l;
         out[m+oi+0] = Lab[li+0];
         out[m+oi+1] = Lab[li+1];
@@ -244,17 +250,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
 #ifdef HAVE_GEGL
   // pull in new params to gegl
-  #error "gegl version needs some more care!"
+#error "gegl version needs some more care!"
 #else
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
   const int num_threads = dt_get_num_threads();
   d->input = NULL;
-  for(int t=0;t<num_threads;t++) if(d->xform[t])
-  {
-    cmsDeleteTransform(d->xform[t]);
-    d->xform[t] = NULL;
-  }
+  for(int t=0; t<num_threads; t++) if(d->xform[t])
+    {
+      cmsDeleteTransform(d->xform[t]);
+      d->xform[t] = NULL;
+    }
   d->cmatrix[0] = -666.0f;
   piece->process_cl_ready = 1;
   char datadir[1024];
@@ -268,7 +274,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(!d->input) sprintf(p->iccprofile, "cmatrix");
   }
   if(!strcmp(p->iccprofile, "cmatrix"))
-  { // color matrix
+  {
+    // color matrix
     int ret;
     dt_image_full_path(self->dev->image->id, filename, 1024);
     libraw_data_t *raw = libraw_init(0);
@@ -276,11 +283,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(!ret)
     {
       float cmat[3][4];
-      for(int k=0;k<4;k++) for(int i=0;i<3;i++)
-      {
-        // d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
-        cmat[i][k] = raw->color.rgb_cam[i][k];
-      }
+      for(int k=0; k<4; k++) for(int i=0; i<3; i++)
+        {
+          // d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
+          cmat[i][k] = raw->color.rgb_cam[i][k];
+        }
       d->input = dt_colorspaces_create_cmatrix_profile(cmat);
     }
     libraw_close(raw);
@@ -316,13 +323,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = -666.0f;
-      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+      for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
   }
   else
   {
     if(strcmp(p->iccprofile, "sRGB"))
-    { // use linear_rgb as fallback for missing profiles:
+    {
+      // use linear_rgb as fallback for missing profiles:
       d->input = dt_colorspaces_create_linear_rgb_profile();
     }
     if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
@@ -330,7 +338,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = -666.0f;
-      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+      for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
   }
   // user selected a non-supported output profile, check that:
@@ -343,7 +351,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = -666.0f;
-      for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
+      for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
     }
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -359,7 +367,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
   d->xform = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  for(int t=0;t<dt_get_num_threads();t++) d->xform[t] = NULL;
+  for(int t=0; t<dt_get_num_threads(); t++) d->xform[t] = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
@@ -375,7 +383,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) dt_colorspaces_cleanup_profile(d->input);
   dt_colorspaces_cleanup_profile(d->Lab);
-  for(int t=0;t<dt_get_num_threads();t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
+  for(int t=0; t<dt_get_num_threads(); t++) if(d->xform[t]) cmsDeleteTransform(d->xform[t]);
   free(d->xform);
   free(piece->data);
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -412,7 +420,9 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 300;
   module->hide_enable_button = 1;
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){"darktable", DT_INTENT_PERCEPTUAL};
+  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
+  {"darktable", DT_INTENT_PERCEPTUAL
+  };
   if(dt_image_is_ldr(module->dev->image)) strcpy(tmp.iccprofile, "sRGB");
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
@@ -445,7 +455,7 @@ void gui_init(struct dt_iop_module_t *self)
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
   // darktable built-in, if applicable
-  for(int k=0;k<dt_profiled_colormatrix_cnt;k++)
+  for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
     if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
     {

@@ -24,8 +24,8 @@
 
 typedef struct dt_image_load_t
 {
-	int32_t imgid;
-	dt_image_buffer_t mip;
+  int32_t imgid;
+  dt_image_buffer_t mip;
 }
 dt_image_load_t;
 

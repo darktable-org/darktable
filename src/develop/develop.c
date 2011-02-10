@@ -53,7 +53,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
     c = 1.0;
   }
 
-  for(int k=0;k<0x10000;k++)
+  for(int k=0; k<0x10000; k++)
   {
     // int32_t tmp = 0x10000 * powf(k/(float)0x10000, 1./2.2);
     int32_t tmp;
@@ -106,11 +106,16 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 #if 0 // this prints out a correction curve, to better understand the tonecurve.
     dt_dev_set_gamma_array(dev, 0.04045, 0.41, dt_dev_default_gamma);
     int last1 = 0; // invert
-    for(int i=0;i<0x100;i++) for(int k=last1;k<0x10000;k++)
-      if(dt_dev_default_gamma[k] >= i) { last1 = k; dt_dev_de_gamma[i] = k/(float)0x10000; break; }
+    for(int i=0; i<0x100; i++) for(int k=last1; k<0x10000; k++)
+        if(dt_dev_default_gamma[k] >= i)
+        {
+          last1 = k;
+          dt_dev_de_gamma[i] = k/(float)0x10000;
+          break;
+        }
     dt_dev_set_gamma_array(dev, 0.1, 0.35, dt_dev_default_gamma);
     printf("begin\n");
-    for(int k=0;k<0x10000;k++)
+    for(int k=0; k<0x10000; k++)
     {
       printf("%d %d\n", k, (int)(dt_dev_de_gamma[dt_dev_default_gamma[k]]*0x10000));
     }
@@ -120,10 +125,15 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     float gam = dt_conf_get_float("gamma_gamma");
     dt_dev_set_gamma_array(dev, lin, gam, dt_dev_default_gamma);
     int last = 0; // invert
-    for(int i=0;i<0x100;i++) for(int k=last;k<0x10000;k++)
-      if(dt_dev_default_gamma[k] >= i) { last = k; dt_dev_de_gamma[i] = k/(float)0x10000; break; }
+    for(int i=0; i<0x100; i++) for(int k=last; k<0x10000; k++)
+        if(dt_dev_default_gamma[k] >= i)
+        {
+          last = k;
+          dt_dev_de_gamma[i] = k/(float)0x10000;
+          break;
+        }
   }
-  for(int i=0;i<0x100;i++) dev->gamma[i] = dt_dev_default_gamma[i<<8];
+  for(int i=0; i<0x100; i++) dev->gamma[i] = dt_dev_default_gamma[i<<8];
 
   dev->iop_instance = 0;
   dev->iop = NULL;
@@ -131,7 +141,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
 void dt_dev_cleanup(dt_develop_t *dev)
 {
-  if(!dev) return; 
+  if(!dev) return;
   // image_cache does not have to be unref'd, this is done outside develop module.
   // unref used mipmap buffers:
   if(dev->image)
@@ -212,7 +222,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_dirty = 1;
   if(dev->preview_loading)
-  { 
+  {
     // prefetch and lock
     if(dt_image_get(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
     {
@@ -335,9 +345,9 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
   // don't if processing failed and backbuf's not there.
   if(dev->preview_pipe->backbuf)
   {
-    dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
-      dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height, 
-      dev->image->mip[DT_IMAGE_MIP4], 0, 0, fwd, fht, wd, ht);
+    dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height,
+                           dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height,
+                           dev->image->mip[DT_IMAGE_MIP4], 0, 0, fwd, fht, wd, ht);
 
   }
   dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
@@ -387,7 +397,7 @@ restart:
   assert(dev->capwidth  <= DT_IMAGE_WINDOW_SIZE);
   assert(dev->capheight <= DT_IMAGE_WINDOW_SIZE);
 #endif
- 
+
   dt_times_t start;
   dt_get_times(&start);
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale))
@@ -434,7 +444,8 @@ restart:
     dt_show_times(&start, "[dev_raw_load] imageio", "to load the image.");
     dt_print(DT_DEBUG_CONTROL, "[run_job-] 99 %f imageio loading image %d\n", dt_get_wtime(), img->id);
     if(err)
-    { // couldn't load image (cache slots full?)
+    {
+      // couldn't load image (cache slots full?)
       fprintf(stderr, "[dev_raw_load] failed to load image %s!\n", img->filename);
       // spin lock:
       sleep(1);
@@ -587,7 +598,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   {
     // if gui_attached pop all operations down to dev->history_end
     dt_control_clear_history_items (dev->history_end-1);
-    
+
     // remove unused history items:
     GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
@@ -602,7 +613,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
     }
     history = g_list_nth(dev->history, dev->history_end-1);
     if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance)
-    { // new operation, push new item
+    {
+      // new operation, push new item
       // printf("adding new history item %d - %s\n", dev->history_end, module->op);
       // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1, ((dt_dev_history_item_t *)history->data)->module->op);
       dev->history_end++;
@@ -632,13 +644,15 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
     }
     else
-    { // same operation, change params
+    {
+      // same operation, change params
       // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
       // if the user changed stuff and the module is still not enabled, do it:
       if(strcmp(module->op, "rawimport") && !hist->enabled && !module->enabled)
-      { // only if not rawimport. this always stays off.
+      {
+        // only if not rawimport. this always stays off.
         module->enabled = 1;
         if(module->off)
         {
@@ -654,17 +668,17 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   }
 #if 0
   {
-  // debug:
-  printf("remaining %d history items:\n", dev->history_end);
-  GList *history = dev->history;
-  int i = 0;
-  while(history)
-  {
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    printf("%d %s\n", i, hist->module->op);
-    history = g_list_next(history);
-    i++;
-  }
+    // debug:
+    printf("remaining %d history items:\n", dev->history_end);
+    GList *history = dev->history;
+    int i = 0;
+    while(history)
+    {
+      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+      printf("%d %s\n", i, hist->module->op);
+      history = g_list_next(history);
+      i++;
+    }
   }
 #endif
 
@@ -716,7 +730,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   }
   // go through history and set gui params
   GList *history = dev->history;
-  for(int i=0;i<cnt && history; i++)
+  for(int i=0; i<cnt && history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     memcpy(hist->module->params, hist->params, hist->module->params_size);
@@ -747,7 +761,7 @@ void dt_dev_write_history(dt_develop_t *dev)
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
   GList *history = dev->history;
-  for(int i=0;i<dev->history_end && history; i++)
+  for(int i=0; i<dev->history_end && history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(dev->image, hist, i);
@@ -794,7 +808,7 @@ void dt_dev_read_history(dt_develop_t *dev)
 
     hist->params = malloc(hist->module->params_size);
     if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
-       strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
+        strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
       if(!hist->module->legacy_params ||
           hist->module->legacy_params(hist->module, sqlite3_column_blob(stmt, 4), labs(modversion), hist->params, labs(hist->module->version())))
@@ -846,7 +860,8 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
     const float imgh = (closeup ? 2 : 1)*proch;
     const float devw = MIN(imgw, dev->width);
     const float devh = MIN(imgh, dev->height);
-    boxw = fminf(1.0, devw/imgw); boxh = fminf(1.0, devh/imgh);
+    boxw = fminf(1.0, devw/imgw);
+    boxh = fminf(1.0, devh/imgh);
   }
   if(zoom == DT_ZOOM_FIT)
   {
@@ -860,9 +875,10 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
     const float imgh = proch;
     const float devw = dev->width;
     const float devh = dev->height;
-    boxw = devw/(imgw*scale); boxh = devh/(imgh*scale);
+    boxw = devw/(imgw*scale);
+    boxh = devh/(imgh*scale);
   }
-  
+
   if(*zoom_x < boxw/2 - .5) *zoom_x = boxw/2 - .5;
   if(*zoom_x > .5 - boxw/2) *zoom_x = .5 - boxw/2;
   if(*zoom_y < boxh/2 - .5) *zoom_y = boxh/2 - .5;
@@ -908,7 +924,7 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, con
     g_snprintf(label, cnt, "%s", hist->module->name());
 }
 
-int 
+int
 dt_dev_is_current_image (dt_develop_t *dev, int imgid)
 {
   return (dev->image && dev->image->id==imgid)?1:0;

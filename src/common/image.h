@@ -18,7 +18,7 @@
 #ifndef DT_IMAGE_H
 #define DT_IMAGE_H
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 #include <glib.h>
@@ -104,7 +104,7 @@ typedef struct dt_image_t
   char exif_lens[52];
   char exif_datetime_taken[20];
   char filename[512];
-  
+
   // common stuff
   int32_t width, height, output_width, output_height;
   // used by library
@@ -150,7 +150,7 @@ void dt_image_film_roll(dt_image_t *img, char *pathname, int len);
 void dt_image_path_append_version(int imgid, char *pathname, const int len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(dt_image_t *img, char *line, int len);
-/** opens an image with minimal storage from the data base and stores it in image cache. */ 
+/** opens an image with minimal storage from the data base and stores it in image cache. */
 int dt_image_open(const int32_t id);
 int dt_image_open2(dt_image_t *img, const int32_t id);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
@@ -175,7 +175,7 @@ static inline uint32_t
 dt_image_flipped_filter(const dt_image_t *img)
 {
   // from the dcraw source code documentation:
-  // 
+  //
   //   0x16161616:     0x61616161:     0x49494949:     0x94949494:
 
   //   0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5     0 1 2 3 4 5
@@ -194,7 +194,7 @@ dt_image_flipped_filter(const dt_image_t *img)
   // if image height is odd (and flip y), need to switch pattern by one row:
   // 0x16161616 <-> 0x61616161
   // 0x49494949 <-> 0x94949494
-  // 
+  //
   // if image width is odd (and flip x), need to switch pattern by one column:
   // 0x16161616 <-> 0x49494949
   // 0x61616161 <-> 0x94949494
@@ -205,22 +205,42 @@ dt_image_flipped_filter(const dt_image_t *img)
   {
     switch(filters)
     {
-      case 0x16161616u: filters = 0x49494949u; break;
-      case 0x49494949u: filters = 0x16161616u; break;
-      case 0x61616161u: filters = 0x94949494u; break;
-      case 0x94949494u: filters = 0x61616161u; break;
-      default:          filters = 0;           break;
+      case 0x16161616u:
+        filters = 0x49494949u;
+        break;
+      case 0x49494949u:
+        filters = 0x16161616u;
+        break;
+      case 0x61616161u:
+        filters = 0x94949494u;
+        break;
+      case 0x94949494u:
+        filters = 0x61616161u;
+        break;
+      default:
+        filters = 0;
+        break;
     }
   }
   if((orient & 2) && (img->width & 1))
   {
     switch(filters)
     {
-      case 0x16161616u: filters = 0x61616161u; break;
-      case 0x49494949u: filters = 0x94949494u; break;
-      case 0x61616161u: filters = 0x16161616u; break;
-      case 0x94949494u: filters = 0x49494949u; break;
-      default:          filters = 0;           break;
+      case 0x16161616u:
+        filters = 0x61616161u;
+        break;
+      case 0x49494949u:
+        filters = 0x94949494u;
+        break;
+      case 0x61616161u:
+        filters = 0x16161616u;
+        break;
+      case 0x94949494u:
+        filters = 0x49494949u;
+        break;
+      default:
+        filters = 0;
+        break;
     }
   }
   switch(filters)
@@ -231,37 +251,53 @@ dt_image_flipped_filter(const dt_image_t *img)
     case 0x16161616u:
       switch(orient)
       {
-        case 5:  return 0x61616161u;
-        case 6:  return 0x49494949u;
-        case 3:  return 0x94949494u;
-        default: return 0x16161616u;
+        case 5:
+          return 0x61616161u;
+        case 6:
+          return 0x49494949u;
+        case 3:
+          return 0x94949494u;
+        default:
+          return 0x16161616u;
       }
       break;
     case 0x61616161u:
       switch(orient)
       {
-        case 6:  return 0x16161616u;
-        case 3:  return 0x49494949u;
-        case 5:  return 0x94949494u;
-        default: return 0x61616161u;
+        case 6:
+          return 0x16161616u;
+        case 3:
+          return 0x49494949u;
+        case 5:
+          return 0x94949494u;
+        default:
+          return 0x61616161u;
       }
       break;
     case 0x49494949u:
       switch(orient)
       {
-        case 3:  return 0x61616161u;
-        case 6:  return 0x94949494u;
-        case 5:  return 0x16161616u;
-        default: return 0x49494949u;
+        case 3:
+          return 0x61616161u;
+        case 6:
+          return 0x94949494u;
+        case 5:
+          return 0x16161616u;
+        default:
+          return 0x49494949u;
       }
       break;
     default: // case 0x94949494u:
       switch(orient)
       {
-        case 6:  return 0x61616161u;
-        case 5:  return 0x49494949u;
-        case 3:  return 0x16161616u;
-        default: return 0x94949494u;
+        case 6:
+          return 0x61616161u;
+        case 5:
+          return 0x49494949u;
+        case 3:
+          return 0x16161616u;
+        default:
+          return 0x94949494u;
       }
       break;
   }
@@ -344,13 +380,13 @@ void dt_image_validate(dt_image_t *image, dt_image_buffer_t mip);
 dt_image_buffer_t dt_image_get_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
     const char *file, const int line, const char *function);
 int dt_image_alloc_with_caller(dt_image_t *img, dt_image_buffer_t mip,
-    const char *file, const int line, const char *function);
+                               const char *file, const int line, const char *function);
 dt_image_buffer_t dt_image_get_blocking_with_caller(dt_image_t *img, const dt_image_buffer_t mip, const char mode,
     const char *file, const int line, const char *function);
 int dt_image_lock_if_available_with_caller(dt_image_t *img, const dt_image_buffer_t mip_in, const char mode,
     const char *file, const int line, const char *function);
 void dt_image_prefetch_with_caller(dt_image_t *img, dt_image_buffer_t mip,
-    const char *file, const int line, const char *function);
+                                   const char *file, const int line, const char *function);
 #else
 
 /** gets the requested image buffer or a smaller preview if it is not available (w lock || =NULL), marking this with the read lock. returns found mip level. */

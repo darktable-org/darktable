@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "iop/gamma.h"
 #include "develop/develop.h"
@@ -37,10 +37,10 @@ const char *name()
   return C_("modulename", "gamma");
 }
 
-int 
-groups () 
+int
+groups ()
 {
-	return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR;
 }
 
 
@@ -51,16 +51,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   const int ch = piece->colors;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, o, i, d) schedule(static)
 #endif
-  for(int k=0;k<roi_out->height;k++)
+  for(int k=0; k<roi_out->height; k++)
   {
     const float *in = ((float *)i) + ch*k*roi_out->width;
     uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
-    for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
+    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
-      for(int c=0;c<3;c++)
-	out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
+      for(int c=0; c<3; c++)
+        out[2-c] = d->table[(uint16_t)CLAMP((int)(0xfffful*in[c]), 0, 0xffff)];
     }
   }
 }
@@ -88,7 +88,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     a = b = g = 0.0;
     c = 1.0;
   }
-  for(int k=0;k<0x10000;k++)
+  for(int k=0; k<0x10000; k++)
   {
     int32_t tmp;
     if (k<0x10000*p->linear) tmp = MIN(c*k, 0xFFFF);
@@ -141,7 +141,10 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 1000;
   module->hide_enable_button = 1;
-  dt_iop_gamma_params_t tmp = (dt_iop_gamma_params_t){1.0, 1.0};
+  dt_iop_gamma_params_t tmp = (dt_iop_gamma_params_t)
+  {
+    1.0, 1.0
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_gamma_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_gamma_params_t));
 }

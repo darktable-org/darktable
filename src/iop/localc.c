@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "develop/imageop.h"
 #include "dtgtk/slider.h"
@@ -32,8 +32,8 @@ DT_MODULE(1)
 
 /* Description: This module implements a local contrast enhancement method
  * based on apaptive nonlinear filters. The algorithm is based on the article
- * "Image Local Contrast Enhancement using Adaptive Non-Linear Filters" by 
- * T. Arici and Y. Altunbasak in  IEEE International Conference on Image 
+ * "Image Local Contrast Enhancement using Adaptive Non-Linear Filters" by
+ * T. Arici and Y. Altunbasak in  IEEE International Conference on Image
  * Processing, (2006). It is significantly faster than local contrast
  * enhancement by unsharp mask or apaptive histogram methods, and is not very
  * prone to produce halos. However the results look quite different as well.
@@ -63,7 +63,7 @@ dt_iop_localc_gui_data_t;
 typedef struct dt_iop_localc_data_t
 {
   float alpha, scale, strength; // in our case, no precomputation or
-                     // anything is possible, so this is just a copy.
+  // anything is possible, so this is just a copy.
 }
 dt_iop_localc_data_t;
 
@@ -81,28 +81,28 @@ const char *name()
 }
 
 int
-groups () 
+groups ()
 {
-	return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT;
 }
 
 static float lambda(float x, float mu, float alpha)
 {
-    return pow((1-abs(mu-x)/100.),alpha);
+  return pow((1-abs(mu-x)/100.),alpha);
 }
 
 static float yeni(float x, float mu, float alpha)
 {
-    float l = lambda(x, mu, alpha);
-    return l*mu + (1-l)*x;
+  float l = lambda(x, mu, alpha);
+  return l*mu + (1-l)*x;
 }
 
 static float gain(float x, float a, float b, float c, float K)
 {
-    if(x<=a) return 0.;
-    if(x<=b) return K*(cosf(M_PI+(x-a)*(0.5*M_PI)/(b-a))+1);
-    if(x<=c) return K*cosf((x-b)*(0.5*M_PI/(c-b)));
-    return 0.;
+  if(x<=a) return 0.;
+  if(x<=b) return K*(cosf(M_PI+(x-a)*(0.5*M_PI)/(b-a))+1);
+  if(x<=c) return K*cosf((x-b)*(0.5*M_PI/(c-b)));
+  return 0.;
 }
 
 /** process, all real work is done here. */
@@ -120,42 +120,42 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float highpass;
   // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
-   //optional: parallelize it!
-   //TODO: IMPORTANT!! I am not 100% sure if this can actually be parallised. I
-   //should check that omp really only parallises the outer loop.
-  #pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,d) private(mu_f, mu_b, highpass)
+  //optional: parallelize it!
+  //TODO: IMPORTANT!! I am not 100% sure if this can actually be parallised. I
+  //should check that omp really only parallises the outer loop.
+#pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,d) private(mu_f, mu_b, highpass)
 #endif
-    for(int j=0;j<roi_out->height;j++)
-    {
-      int i,k;
-      float *in  = ((float *)ivoid) + ch*roi_in->width *j;
-      float *out = ((float *)ovoid) + ch*roi_out->width*j;
-      mu_f[0] = yeni(in[0], in[0], d->alpha);
-      mu_b[0] = yeni(in[ch*(roi_out->width-1)+0], 
-             in[ch*(roi_out->width -1) + 0], d->alpha);
-      out[1] = in[1];
-      out[2] = in[2];
-    for(i=1;i<roi_out->width/2;i++)
+  for(int j=0; j<roi_out->height; j++)
+  {
+    int i,k;
+    float *in  = ((float *)ivoid) + ch*roi_in->width *j;
+    float *out = ((float *)ovoid) + ch*roi_out->width*j;
+    mu_f[0] = yeni(in[0], in[0], d->alpha);
+    mu_b[0] = yeni(in[ch*(roi_out->width-1)+0],
+                   in[ch*(roi_out->width -1) + 0], d->alpha);
+    out[1] = in[1];
+    out[2] = in[2];
+    for(i=1; i<roi_out->width/2; i++)
     {
       mu_f[i] = yeni(in[ch*i+0], mu_f[i-1], d->alpha);
-      mu_b[i] = yeni(in[ch*(roi_out->width-(1+i))+0], 
-              mu_b[i-1], d->alpha);
+      mu_b[i] = yeni(in[ch*(roi_out->width-(1+i))+0],
+                     mu_b[i-1], d->alpha);
       out[ch*i+1] = in[ch*i+1];
       out[ch*i+2] = in[ch*i+2];
     }
-    for(k=i;k<roi_out->width;k++)
+    for(k=i; k<roi_out->width; k++)
     {
       out[ch*k+1] = in[ch*k+1];
       out[ch*k+2] = in[ch*k+2];
       mu_f[k] = yeni(in[ch*k+0], mu_f[k-1], d->alpha);
-      mu_b[k] = yeni(in[ch*(roi_out->width-(1+k))+0], 
-              mu_b[k-1], d->alpha);
+      mu_b[k] = yeni(in[ch*(roi_out->width-(1+k))+0],
+                     mu_b[k-1], d->alpha);
       highpass = in[ch*k+0] - (mu_f[k]+mu_b[roi_out->width-(1+k)])/2;
       out[ch*k+0] = in[ch*k+0]+gain(highpass, a, b, c, d->strength)*highpass;
-      highpass = in[ch*(roi_out->width-(1+k))+0] - 
+      highpass = in[ch*(roi_out->width-(1+k))+0] -
                  (mu_f[roi_out->width-(1+k)]+ mu_b[k])/2;
       out[ch*(roi_out->width-(1+k))+0] = in[ch*(roi_out->width-(1+k))+0] +
-                gain(highpass, a, b, c, d->strength)*highpass;
+                                         gain(highpass, a, b, c, d->strength)*highpass;
     }
   }
 }
@@ -163,7 +163,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  module->data = NULL; 
+  module->data = NULL;
   module->params = malloc(sizeof(dt_iop_localc_params_t));
   module->default_params = malloc(sizeof(dt_iop_localc_params_t));
   module->default_enabled = 0;
@@ -171,7 +171,10 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_localc_params_t);
   module->gui_data = NULL;
   // TODO: check the defaults if there's better ones
-  dt_iop_localc_params_t tmp = (dt_iop_localc_params_t){5.0f, 1.0f, 1.0f};
+  dt_iop_localc_params_t tmp = (dt_iop_localc_params_t)
+  {
+    5.0f, 1.0f, 1.0f
+  };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_localc_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_localc_params_t));
@@ -242,7 +245,7 @@ strength_callback(GtkRange *range, dt_iop_module_t *self)
   // let core know of the changes
   dt_dev_add_history_item(darktable.develop, self);
 }
- 
+
 /** gui callbacks, these are needed. */
 void gui_update    (dt_iop_module_t *self)
 {

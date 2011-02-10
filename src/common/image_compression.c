@@ -38,21 +38,21 @@ void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, con
   int32_t n_zeroes, Lbias;
   uint8_t r[4], b[4];
   const uint8_t *block = in;
-  for(int j=0;j<height;j+=4)
+  for(int j=0; j<height; j+=4)
   {
-    for(int i=0;i<width;i+=4)
+    for(int i=0; i<width; i+=4)
     {
       // luma
       Lbias = (block[0] >> 3) << 10;
       n_zeroes = block[0] & 0x7;
       const int shift = 14-n_zeroes-4+1;
 
-      for(int k=0;k<8;k++)
+      for(int k=0; k<8; k++)
       {
         L16[2*k  ] = ((int)(block[1+k]>> 4) << shift) + Lbias;
         L16[2*k+1] = ((int)(block[1+k]&0xf) << shift) + Lbias;
       }
-      for(int k=0;k<16;k++)
+      for(int k=0; k<16; k++)
       {
         L[k].i  = (((int)(L16[k]) >> 10)-(15-127)) << (23);
         L[k].i |= (L16[k] & 0x3ff)<<13;
@@ -67,14 +67,14 @@ void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, con
       r[3] = ((block[14] & 0x3f) << 1) | (block[15] >> 7);
       b[3] =   block[15] & 0x7f;
 
-      for(int q=0;q<4;q++)
+      for(int q=0; q<4; q++)
       {
         chrom[q][0] = r[q]*(1./127.);
         chrom[q][2] = b[q]*(1./127.);
         chrom[q][1] = 1. - chrom[q][0] - chrom[q][2];
       }
-      for(int k=0;k<16;k++)
-        for(int c=0;c<3;c++)
+      for(int k=0; k<16; k++)
+        for(int c=0; c<3; c++)
           out[3*(i + (k & 3) + width*(j + (k>>2))) + c] = L[k].f*fac[c]*chrom[((k>>3)<<1)|((k&3)>>1)][c];
       block += 16*sizeof(uint8_t);
     }
@@ -86,23 +86,23 @@ void dt_image_compress(const float *in, uint8_t *out, const int32_t width, const
   dt_image_float_int_t L[16];
   int16_t Lmin, Lmax, n_zeroes, L16[16];
   uint8_t *block = out, r[4], b[4];
-  for(int j=0;j<height;j+=4)
+  for(int j=0; j<height; j+=4)
   {
-    for(int i=0;i<width;i+=4)
+    for(int i=0; i<width; i+=4)
     {
       Lmin = 0x7fff;
-      for(int q=0;q<4;q++)
+      for(int q=0; q<4; q++)
       {
         float chrom[3] = {0,0,0};
-        for(int pj=0;pj<2;pj++)
+        for(int pj=0; pj<2; pj++)
         {
-          for(int pi=0;pi<2;pi++)
+          for(int pi=0; pi<2; pi++)
           {
             const int io = (pi+((q&1)<<1)), jo = (pj+(q&2));
             const int ii = i + io, jj = j + jo;
 
             L[io+4*jo].f = (in[3*(ii+width*jj) + 0] + 2*in[3*(ii+width*jj) +1] + in[3*(ii+width*jj) +2])*.25;
-            for(int k=0;k<3;k++) chrom[k] += L[io+4*jo].f*in[3*(ii+width*jj) + k];
+            for(int k=0; k<3; k++) chrom[k] += L[io+4*jo].f*in[3*(ii+width*jj) + k];
             L16[io+4*jo]  =  (L[io+4*jo].i>>13)&0x3ff;
             int e = ((L[io+4*jo].i >> (23))-(127-15));
             e = e > 0 ? e : 0;
@@ -119,17 +119,17 @@ void dt_image_compress(const float *in, uint8_t *out, const int32_t width, const
       Lmin &= ~0x3ff;
       block[0] = (Lmin>>10)<<3; // Lbias
       Lmax = 0;
-      for(int k=0;k<16;k++)
+      for(int k=0; k<16; k++)
       {
         L16[k] -= Lmin;
         Lmax = Lmax > L16[k] ? Lmax : L16[k];
       }
       n_zeroes = 0;
-      for(int k=1<<14;(k&Lmax)==0&&n_zeroes<7;k>>=1) n_zeroes++;
+      for(int k=1<<14; (k&Lmax)==0&&n_zeroes<7; k>>=1) n_zeroes++;
       block[0] |= n_zeroes;
       const int shift = 14-n_zeroes-4+1;
       const int off = (1<<shift)>>1;
-      for(int k=0;k<8;k++)
+      for(int k=0; k<8; k++)
       {
         L16[2*k] = ((int)L16[2*k] + off)>>shift;
         L16[2*k] = L16[2*k] > 0xf ? 0xf : L16[2*k];

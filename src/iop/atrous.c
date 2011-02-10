@@ -109,7 +109,7 @@ name()
   return _("equalizer");
 }
 
-int 
+int
 groups ()
 {
   return IOP_GROUP_CORRECT;
@@ -125,39 +125,39 @@ weight (const float *c1, const float *c2, const float sharpen)
 
 static void
 eaw_decompose (float *const out, const float *const in, float *const detail, const int scale,
-    const float sharpen, const int32_t width, const int32_t height)
+               const float sharpen, const int32_t width, const int32_t height)
 {
   const int mult = 1<<scale;
   const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
-  
+
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
-  for(int j=0;j<height;j++)
+  for(int j=0; j<height; j++)
   {
     const __m128 *px = ((__m128 *)in) + j*width;
     float *pdetail = detail + 4*j*width;
     float *pcoarse = out + 4*j*width;
-    for(int i=0;i<width;i++)
+    for(int i=0; i<width; i++)
     {
       // TODO: prefetch? _mm_prefetch()
       __m128 sum = _mm_setzero_ps(), wgt = _mm_setzero_ps();
-      for(int jj=0;jj<5;jj++) for(int ii=0;ii<5;ii++)
-      {
-        const int iii = ii-2;
-        const int jjj = jj-2;
-        int x = i + mult*iii, y = j + mult*jjj;
-        // if(x < 0 || x >= width || y < 0 || y >= height) continue;
-        // clamp to edge
-        if(x < 0)       x = 0;
-        if(x >= width)  x = width  - 1;
-        if(y < 0)       y = 0;
-        if(y >= height) y = height - 1;
-        const __m128 *px2 = ((__m128 *)in) + x + y*width;
-        const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight((float *)px, (float *)px2, sharpen));
-        sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
-        wgt = _mm_add_ps(wgt, w);
-      }
+      for(int jj=0; jj<5; jj++) for(int ii=0; ii<5; ii++)
+        {
+          const int iii = ii-2;
+          const int jjj = jj-2;
+          int x = i + mult*iii, y = j + mult*jjj;
+          // if(x < 0 || x >= width || y < 0 || y >= height) continue;
+          // clamp to edge
+          if(x < 0)       x = 0;
+          if(x >= width)  x = width  - 1;
+          if(y < 0)       y = 0;
+          if(y >= height) y = height - 1;
+          const __m128 *px2 = ((__m128 *)in) + x + y*width;
+          const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight((float *)px, (float *)px2, sharpen));
+          sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
+          wgt = _mm_add_ps(wgt, w);
+        }
       // sum = _mm_div_ps(sum, wgt);
       sum = _mm_mul_ps(sum, _mm_rcp_ps(wgt)); // less precise, but faster
 
@@ -177,21 +177,21 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
 
 static void
 eaw_synthesize (float *const out, const float *const in, const float *const detail,
-    const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+                const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
 {
   const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
   const __m128 boost     = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
-  for(int j=0;j<height;j++)
+  for(int j=0; j<height; j++)
   {
     // TODO: prefetch? _mm_prefetch()
-     const __m128 *pin = (__m128 *)in + j*width;
+    const __m128 *pin = (__m128 *)in + j*width;
     __m128 *pdetail = (__m128 *)detail + j*width;
     float *pout = out + 4*j*width;
-    for(int i=0;i<width;i++)
+    for(int i=0; i<width; i++)
     {
       const __m128i maski = _mm_set1_epi32(0x80000000u);
       const __m128 *mask = (__m128*)&maski;
@@ -206,12 +206,12 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
   _mm_sfence();
 }
 
-static int 
+static int
 get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atrous_data_t *const d, const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *const piece)
 {
   // we want coeffs to span max 20% of the image
   // finest is 5x5 filter
-  // 
+  //
   // 1:1 : w=20% buf_in.width                     w=5x5
   //     : ^ ...            ....            ....  ^
   // buf :  17x17  9x9  5x5     2*2^k+1
@@ -223,9 +223,9 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
   // largest desired filter on input buffer (20% of input dim)
   const float supp0 = MAX(piece->buf_in.height, piece->buf_in.width) * 0.2f;
   int max_scale = 0;
-  for(;max_scale<MAX_LEVEL;max_scale++)
+  for(; max_scale<MAX_LEVEL; max_scale++)
     if(2*(2<<max_scale) + 1 > supp0) break;
-  for(int i=0;i<max_scale;i++)
+  for(int i=0; i<max_scale; i++)
   {
     // actual filter support on scaled buffer
     const float supp  = 2*(2<<i) + 1;
@@ -236,7 +236,7 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
     const float t = 1.0f - (i_in+.5f)/max_scale;
     boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], t);
     boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], t);
-    for(int k=0;k<4;k++) boost[i][k] *= boost[i][k];
+    for(int k=0; k<4; k++) boost[i][k] *= boost[i][k];
     thrs [i][0] = thrs [i][3] = powf(2.0f, -7.0f*(1.0f-t)) * 10.0f*dt_draw_curve_calc_value(d->curve[atrous_Lt], t);
     thrs [i][1] = thrs [i][2] = powf(2.0f, -7.0f*(1.0f-t)) * 20.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
     sharp[i]    = 0.0025f*dt_draw_curve_calc_value(d->curve[atrous_s], t);
@@ -285,55 +285,65 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   const int tiles_y = need_tiles ? ceilf(height/(float)tile_ht) : 1;
 
   // for all tiles:
-  for(int tx=0;tx<tiles_x;tx++)
-  for(int ty=0;ty<tiles_y;ty++)
-  {
-    // size_t orig0[3] = {0, 0, 0};
-    // size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
-    int orig0_x = 0, orig0_y = 0;
-    int origin_x = tx*tile_wd, origin_y = ty*tile_ht;
-    int wd = origin_x + tile_wd_full > width  ? width  - origin_x : tile_wd_full;
-    int ht = origin_y + tile_ht_full > height ? height - origin_y : tile_ht_full;
-    int vwd = wd, vht = ht; // valid region
-    // size_t region[3] = {wd, ht, 1};
-
-    if(need_tiles)
+  for(int tx=0; tx<tiles_x; tx++)
+    for(int ty=0; ty<tiles_y; ty++)
     {
-      for(int j=0;j<ht;j++)
-        memcpy(tmp2 + j*4*wd, ((float *)i) + ((origin_y + j)*roi_in->width + origin_x)*4, sizeof(float)*4*wd);
-      buf1 = tmp2;
-      buf2 = tmp;
-    }
-    if(tx > 0) { origin_x += max_filter_radius; orig0_x += max_filter_radius; vwd -= max_filter_radius; }
-    if(ty > 0) { origin_y += max_filter_radius; orig0_y += max_filter_radius; vht -= max_filter_radius; }
+      // size_t orig0[3] = {0, 0, 0};
+      // size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
+      int orig0_x = 0, orig0_y = 0;
+      int origin_x = tx*tile_wd, origin_y = ty*tile_ht;
+      int wd = origin_x + tile_wd_full > width  ? width  - origin_x : tile_wd_full;
+      int ht = origin_y + tile_ht_full > height ? height - origin_y : tile_ht_full;
+      int vwd = wd, vht = ht; // valid region
+      // size_t region[3] = {wd, ht, 1};
 
-    // FIXME: can vwd/vht be < 0?
-    if(vwd <= 0 || vht <= 0) continue;
+      if(need_tiles)
+      {
+        for(int j=0; j<ht; j++)
+          memcpy(tmp2 + j*4*wd, ((float *)i) + ((origin_y + j)*roi_in->width + origin_x)*4, sizeof(float)*4*wd);
+        buf1 = tmp2;
+        buf2 = tmp;
+      }
+      if(tx > 0)
+      {
+        origin_x += max_filter_radius;
+        orig0_x += max_filter_radius;
+        vwd -= max_filter_radius;
+      }
+      if(ty > 0)
+      {
+        origin_y += max_filter_radius;
+        orig0_y += max_filter_radius;
+        vht -= max_filter_radius;
+      }
 
-    for(int scale=0;scale<max_scale;scale++)
-    {
-      eaw_decompose (buf2, buf1, detail + 4*wd*ht*scale, scale, sharp[scale], wd, ht);
-      if(!need_tiles && scale == 0) buf1 = (float *)o;
-      float *buf3 = buf2;
-      buf2 = buf1;
-      buf1 = buf3;
-    }
+      // FIXME: can vwd/vht be < 0?
+      if(vwd <= 0 || vht <= 0) continue;
 
-    for(int scale=max_scale-1;scale>=0;scale--)
-    {
-      eaw_synthesize (buf2, buf1, detail + 4*wd*ht*scale,
-        thrs[scale], boost[scale], wd, ht);
-      float *buf3 = buf2;
-      buf2 = buf1;
-      buf1 = buf3;
-    }
+      for(int scale=0; scale<max_scale; scale++)
+      {
+        eaw_decompose (buf2, buf1, detail + 4*wd*ht*scale, scale, sharp[scale], wd, ht);
+        if(!need_tiles && scale == 0) buf1 = (float *)o;
+        float *buf3 = buf2;
+        buf2 = buf1;
+        buf1 = buf3;
+      }
 
-    if(need_tiles)
-    {
-      for(int j=0;j<vht;j++)
-        memcpy(((float *)o) + ((origin_y + j)*roi_out->width + origin_x)*4, buf1 + 4*(orig0_x + (orig0_y + j)*wd), sizeof(float)*4*vwd);
+      for(int scale=max_scale-1; scale>=0; scale--)
+      {
+        eaw_synthesize (buf2, buf1, detail + 4*wd*ht*scale,
+                        thrs[scale], boost[scale], wd, ht);
+        float *buf3 = buf2;
+        buf2 = buf1;
+        buf1 = buf3;
+      }
+
+      if(need_tiles)
+      {
+        for(int j=0; j<vht; j++)
+          memcpy(((float *)o) + ((origin_y + j)*roi_out->width + origin_x)*4, buf1 + 4*(orig0_x + (orig0_y + j)*wd), sizeof(float)*4*vwd);
+      }
     }
-  }
 
   free(detail);
   free(tmp);
@@ -383,97 +393,107 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   // details for local contrast enhancement:
   cl_mem dev_detail[max_scale];
-  for(int k=0;k<max_scale;k++)
+  for(int k=0; k<max_scale; k++)
     dev_detail[k] = dt_opencl_alloc_device(sizes[0], sizes[1], devid, 4*sizeof(float));
 
   // FIXME: boundary handling inside tiles!
   // FIXME: tiles > 1x1 => infinite loop (dim: 7x1024)
   // for all tiles:
-  for(int tx=0;tx<tiles_x;tx++)
-  for(int ty=0;ty<tiles_y;ty++)
-  {
-    size_t orig0[3] = {0, 0, 0};
-    size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
-    size_t wd = origin[0] + sizes[0] > width  ? width  - origin[0] : sizes[0];
-    size_t ht = origin[1] + sizes[1] > height ? height - origin[1] : sizes[1];
-    size_t region[3] = {wd, ht, 1};
-
-    // printf("tile extents: %zd %zd -- %zd %zd\n", origin[0], origin[1], region[0], region[1]);
-
-    err = CL_SUCCESS;
-    if(need_tiles) err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, _dev_in, dev_in, origin, orig0, region, 0, NULL, NULL);
-    if(err != CL_SUCCESS) fprintf(stderr, "trouble copying image: %d\n", err);
-    clFinish(darktable.opencl->dev[devid].cmd_queue);
-
-
-    if(tx > 0) { origin[0] += max_filter_radius; orig0[0] += max_filter_radius; region[0] -= max_filter_radius; }
-    if(ty > 0) { origin[1] += max_filter_radius; orig0[1] += max_filter_radius; region[1] -= max_filter_radius; }
-
-    for(int s=0;s<max_scale;s++)
+  for(int tx=0; tx<tiles_x; tx++)
+    for(int ty=0; ty<tiles_y; ty++)
     {
-      const int scale = s;
-      err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
-      if(err != CL_SUCCESS) fprintf(stderr, "couldn't set kernel arg! %d\n", err);
-      if(s & 1)
+      size_t orig0[3] = {0, 0, 0};
+      size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
+      size_t wd = origin[0] + sizes[0] > width  ? width  - origin[0] : sizes[0];
+      size_t ht = origin[1] + sizes[1] > height ? height - origin[1] : sizes[1];
+      size_t region[3] = {wd, ht, 1};
+
+      // printf("tile extents: %zd %zd -- %zd %zd\n", origin[0], origin[1], region[0], region[1]);
+
+      err = CL_SUCCESS;
+      if(need_tiles) err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, _dev_in, dev_in, origin, orig0, region, 0, NULL, NULL);
+      if(err != CL_SUCCESS) fprintf(stderr, "trouble copying image: %d\n", err);
+      clFinish(darktable.opencl->dev[devid].cmd_queue);
+
+
+      if(tx > 0)
       {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_in);
+        origin[0] += max_filter_radius;
+        orig0[0] += max_filter_radius;
+        region[0] -= max_filter_radius;
+      }
+      if(ty > 0)
+      {
+        origin[1] += max_filter_radius;
+        orig0[1] += max_filter_radius;
+        region[1] -= max_filter_radius;
+      }
+
+      for(int s=0; s<max_scale; s++)
+      {
+        const int scale = s;
+        err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
+        if(err != CL_SUCCESS) fprintf(stderr, "couldn't set kernel arg! %d\n", err);
+        if(s & 1)
+        {
+          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
+          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_in);
+        }
+        else
+        {
+          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
+          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
+        }
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(float), (void *)&sharp[s]);
+
+        // printf("equeueing kernel with %lu %lu threads\n", local[0], global[0]);
+        err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_decompose, sizes);
+        if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue analysis kernel! %d\n", err);
+        // else fprintf(stderr, "successfully enqueued analysis kernel!\n");
+        clFinish(darktable.opencl->dev[devid].cmd_queue);
+      }
+
+      // now synthesize again:
+      for(int scale=max_scale-1; scale>=0; scale--)
+      {
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  3, sizeof(float), (void *)&thrs[scale][0]);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  4, sizeof(float), (void *)&thrs[scale][1]);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][2]);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][3]);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&boost[scale][0]);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&boost[scale][1]);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][2]);
+        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][3]);
+        if(scale & 1)
+        {
+          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
+          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_in);
+        }
+        else
+        {
+          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
+          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_in);
+        }
+
+        err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_synthesize, sizes);
+        if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue synth kernel! %d\n", err);
+        clFinish(darktable.opencl->dev[devid].cmd_queue);
+      }
+      if(need_tiles)
+      {
+        err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_out, orig0, origin, region, 0, NULL, NULL);
+        if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
       }
       else
       {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
+        err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, orig0, orig0, region, 0, NULL, NULL);
+        if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
       }
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(float), (void *)&sharp[s]);
-
-      // printf("equeueing kernel with %lu %lu threads\n", local[0], global[0]);
-      err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_decompose, sizes);
-      if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue analysis kernel! %d\n", err);
-      // else fprintf(stderr, "successfully enqueued analysis kernel!\n");
+      // clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
       clFinish(darktable.opencl->dev[devid].cmd_queue);
     }
-
-    // now synthesize again:
-    for(int scale=max_scale-1;scale>=0;scale--)
-    {
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  3, sizeof(float), (void *)&thrs[scale][0]);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  4, sizeof(float), (void *)&thrs[scale][1]);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][2]);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][3]);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&boost[scale][0]);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&boost[scale][1]);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][2]);
-      dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][3]);
-      if(scale & 1)
-      {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_in);
-      }
-      else
-      {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_in);
-      }
-
-      err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_synthesize, sizes);
-      if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue synth kernel! %d\n", err);
-      clFinish(darktable.opencl->dev[devid].cmd_queue);
-    }
-    if(need_tiles)
-    {
-      err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_out, orig0, origin, region, 0, NULL, NULL);
-      if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
-    }
-    else
-    {
-      err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, orig0, orig0, region, 0, NULL, NULL);
-      if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
-    }
-    // clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
-    clFinish(darktable.opencl->dev[devid].cmd_queue);
-  }
 
   // free device mem
   if(need_tiles)
@@ -481,7 +501,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     clReleaseMemObject(dev_in);
     clReleaseMemObject(dev_out);
   }
-  for(int k=0;k<max_scale;k++) clReleaseMemObject(dev_detail[k]);
+  for(int k=0; k<max_scale; k++) clReleaseMemObject(dev_detail[k]);
 }
 #endif
 
@@ -495,7 +515,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
   tmp.octaves = 3;
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     tmp.y[atrous_L][k] = tmp.y[atrous_s][k] = tmp.y[atrous_c][k] = 0.5f;
     tmp.x[atrous_L][k] = tmp.x[atrous_s][k] = tmp.x[atrous_c][k] = k/(BANDS-1.0f);
@@ -539,18 +559,18 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 #if 0
   printf("---------- atrous preset begin\n");
   printf("p.octaves = %d;\n", p->octaves);
-  for(int ch=0;ch<atrous_none;ch++) for(int k=0;k<BANDS;k++)
-  {
-    printf("p.x[%d][%d] = %f;\n", ch, k, p->x[ch][k]);
-    printf("p.y[%d][%d] = %f;\n", ch, k, p->y[ch][k]);
-  }
+  for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)
+    {
+      printf("p.x[%d][%d] = %f;\n", ch, k, p->x[ch][k]);
+      printf("p.y[%d][%d] = %f;\n", ch, k, p->y[ch][k]);
+    }
   printf("---------- atrous preset end\n");
 #endif
   d->octaves = p->octaves;
-  for(int ch=0;ch<atrous_none;ch++) for(int k=0;k<BANDS;k++)
-    dt_draw_curve_set_point(d->curve[ch], k, p->x[ch][k], p->y[ch][k]);
+  for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)
+      dt_draw_curve_set_point(d->curve[ch], k, p->x[ch][k], p->y[ch][k]);
   int l = 0;
-  for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale);k;k>>=1) l++;
+  for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale); k; k>>=1) l++;
   d->octaves = MIN(MAX_LEVEL, l);
 }
 
@@ -559,21 +579,21 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)malloc(sizeof(dt_iop_atrous_data_t));
   dt_iop_atrous_params_t *default_params = (dt_iop_atrous_params_t *)self->default_params;
   piece->data = (void *)d;
-  for(int ch=0;ch<atrous_none;ch++)
+  for(int ch=0; ch<atrous_none; ch++)
   {
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-    for(int k=0;k<BANDS;k++)
+    for(int k=0; k<BANDS; k++)
       (void)dt_draw_curve_add_point(d->curve[ch], default_params->x[ch][k], default_params->y[ch][k]);
   }
   int l = 0;
-  for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale);k;k>>=1) l++;
+  for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale); k; k>>=1) l++;
   d->octaves = MIN(MAX_LEVEL, l);
 }
 
 void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)(piece->data);
-  for(int ch=0;ch<atrous_none;ch++) dt_draw_curve_destroy(d->curve[ch]);
+  for(int ch=0; ch<atrous_none; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
 }
 
@@ -582,8 +602,8 @@ void init_presets (dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;
   p.octaves = 7;
-  
-  for(int k=0;k<BANDS;k++)
+
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -597,7 +617,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("enhance coarse"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -611,7 +631,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = .6f*k/(float)BANDS;
   }
   dt_gui_presets_add_generic(_("sharpen and denoise (strong)"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -625,7 +645,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
   dt_gui_presets_add_generic(_("sharpen and denoise"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -639,7 +659,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -653,7 +673,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("sharpen"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -667,7 +687,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
   dt_gui_presets_add_generic(_("denoise"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -683,7 +703,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.y[atrous_s][BANDS-1] = 0.0f;
   p.y[atrous_s][BANDS-2] = 0.42f;
   dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -698,7 +718,7 @@ void init_presets (dt_iop_module_so_t *self)
   }
   p.y[atrous_L][0] = .5f;
   dt_gui_presets_add_generic(_("bloom"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -712,7 +732,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity (subtle)"), self->op, &p, sizeof(p), 1);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
@@ -763,7 +783,7 @@ area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data
 static void
 get_params(dt_iop_atrous_params_t *p, const int ch, const double mouse_x, const double mouse_y, const float rad)
 {
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     const float f = expf(-(mouse_x - p->x[ch][k])*(mouse_x - p->x[ch][k])/(rad*rad));
     p->y[ch][k] = MAX(0.0f, MIN(1.0f, (1-f)*p->y[ch][k] + f*mouse_y));
@@ -778,7 +798,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
   int ch  = (int)c->channel;
   int ch2 = (int)c->channel2;
-  for(int k=0;k<BANDS;k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+  for(int k=0; k<BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
   const int inset = INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -786,12 +806,13 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   // clear bg, match color of the notebook tabs:
   GtkStyle *style = gtk_widget_get_style(GTK_WIDGET(c->channel_tabs));
   cairo_set_source_rgb (cr, style->bg[GTK_STATE_NORMAL].red/65535.0f,
-                            style->bg[GTK_STATE_NORMAL].green/65535.0f,
-                            style->bg[GTK_STATE_NORMAL].blue/65535.0f);
+                        style->bg[GTK_STATE_NORMAL].green/65535.0f,
+                        style->bg[GTK_STATE_NORMAL].blue/65535.0f);
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
-  width -= 2*inset; height -= 2*inset;
+  width -= 2*inset;
+  height -= 2*inset;
 
   cairo_set_line_width(cr, 1.0);
   cairo_set_source_rgb (cr, .1, .1, .1);
@@ -806,13 +827,13 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   {
     // draw min/max curves:
     get_params(&p, ch2, c->mouse_x, 1., c->mouse_radius);
-    for(int k=0;k<BANDS;k++)
+    for(int k=0; k<BANDS; k++)
       dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_min_xs, c->draw_min_ys);
 
     p = *(dt_iop_atrous_params_t *)self->params;
     get_params(&p, ch2, c->mouse_x, .0, c->mouse_radius);
-    for(int k=0;k<BANDS;k++)
+    for(int k=0; k<BANDS; k++)
       dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_max_xs, c->draw_max_ys);
   }
@@ -836,19 +857,20 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_scale(cr, width/(BANDS-1.0), -(height-5)/c->band_max);
     cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
     cairo_move_to(cr, 0, 0);
-    for(int k=0;k<BANDS;k++) cairo_line_to(cr, k, c->band_hist[k]);
+    for(int k=0; k<BANDS; k++) cairo_line_to(cr, k, c->band_hist[k]);
     cairo_line_to(cr, BANDS-1.0, 0.);
     cairo_close_path(cr);
     cairo_fill(cr);
     cairo_restore(cr);
   }
 #endif
- 
+
   // cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_set_line_width(cr, 2.);
-  for(int i=0;i<=atrous_s;i++)
-  { // draw curves, selected last.
+  for(int i=0; i<=atrous_s; i++)
+  {
+    // draw curves, selected last.
     int ch = ((int)c->channel+i+1)%(atrous_s+1);
     int ch2 = -1;
     const float bgmul = i < atrous_s ? 0.5f : 1.0f;
@@ -877,15 +899,15 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
     if(ch2 >= 0)
     {
-      for(int k=0;k<BANDS;k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+      for(int k=0; k<BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
       dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
       cairo_move_to(cr, width, -height*p.y[ch2][BANDS-1]);
-      for(int k=RES-2;k>=0;k--) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_ys[k]);
+      for(int k=RES-2; k>=0; k--) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_ys[k]);
     }
     else cairo_move_to(cr, 0, 0);
-    for(int k=0;k<BANDS;k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
+    for(int k=0; k<BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
-    for(int k=0;k<RES;k++) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_ys[k]);
+    for(int k=0; k<RES; k++) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_ys[k]);
     if(ch2 < 0) cairo_line_to(cr, width, 0);
     cairo_close_path(cr);
     cairo_stroke_preserve(cr);
@@ -897,7 +919,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   if(ch != ch2) cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
   else          cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
   cairo_set_line_width(cr, 1.);
-  for(int k=0;k<BANDS;k++)
+  for(int k=0; k<BANDS; k++)
   {
     cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], 3.0, 0.0, 2.0*M_PI);
     if(c->x_move == k) cairo_fill(cr);
@@ -906,17 +928,19 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_restore(cr);
 
   if(c->mouse_y > 0 || c->dragging)
-  { // draw min/max, if selected
+  {
+    // draw min/max, if selected
     // cairo_set_source_rgba(cr, .6, .6, .6, .5);
     cairo_move_to(cr, 0, - height*c->draw_min_ys[0]);
-    for(int k=1;k<RES;k++)    cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_min_ys[k]);
-    for(int k=RES-1;k>=0;k--) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_max_ys[k]);
+    for(int k=1; k<RES; k++)    cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_min_ys[k]);
+    for(int k=RES-1; k>=0; k--) cairo_line_to(cr, k*width/(float)(RES-1), - height*c->draw_max_ys[k]);
     cairo_close_path(cr);
     cairo_fill(cr);
     // draw mouse focus circle
     cairo_set_source_rgba(cr, .9, .9, .9, .5);
     const float pos = RES * c->mouse_x;
-    int k = (int)pos; const float f = k - pos;
+    int k = (int)pos;
+    const float f = k - pos;
     if(k >= RES-1) k = RES - 2;
     float ht = -height*(f*c->draw_ys[k] + (1-f)*c->draw_ys[k+1]);
     cairo_arc(cr, c->mouse_x*width, ht, c->mouse_radius*width, 0, 2.*M_PI);
@@ -929,7 +953,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_set_line_width(cr, 1.);
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   const float arrw = 7.0f;
-  for(int k=1;k<BANDS-1;k++)
+  for(int k=1; k<BANDS-1; k++)
   {
     cairo_move_to(cr, width*p.x[ch][k], inset-1);
     cairo_rel_line_to(cr, -arrw*.5f, 0);
@@ -1025,7 +1049,7 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
     // move x-positions
     c->x_move = 0;
     float dist = fabsf(p->x[c->channel][0] - c->mouse_x);
-    for(int k=1;k<BANDS;k++)
+    for(int k=1; k<BANDS; k++)
     {
       float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
@@ -1040,7 +1064,7 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
     // choose between bottom and top curve:
     int ch = c->channel;
     float dist = 1000000.0f;
-    for(int k=0;k<BANDS;k++)
+    for(int k=0; k<BANDS; k++)
     {
       float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
@@ -1061,7 +1085,8 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 
 static gboolean
 area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{ // set active point
+{
+  // set active point
   if(event->button == 1)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -1103,7 +1128,7 @@ area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 }
 
 static void
-tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data) 
+tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
@@ -1121,11 +1146,11 @@ mix_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   const float mix = dtgtk_slider_get_value(slider);
-  for(int ch=0;ch<atrous_none;ch++) for(int k=0;k<BANDS;k++)
-  {
-    p->x[ch][k] = fminf(1.0f, fmaxf(0.0f, d->x[ch][k] + mix * (c->drag_params.x[ch][k] - d->x[ch][k])));
-    p->y[ch][k] = fminf(1.0f, fmaxf(0.0f, d->y[ch][k] + mix * (c->drag_params.y[ch][k] - d->y[ch][k])));
-  }
+  for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)
+    {
+      p->x[ch][k] = fminf(1.0f, fmaxf(0.0f, d->x[ch][k] + mix * (c->drag_params.x[ch][k] - d->x[ch][k])));
+      p->y[ch][k] = fminf(1.0f, fmaxf(0.0f, d->y[ch][k] + mix * (c->drag_params.y[ch][k] - d->y[ch][k])));
+    }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -1142,7 +1167,7 @@ void gui_init (struct dt_iop_module_t *self)
   c->channel = c->channel2 = dt_conf_get_int("plugins/darkroom/atrous/gui_channel");
   int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-  for(int k=0;k<BANDS;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
+  for(int k=0; k<BANDS; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;

@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "common/colorspaces.h"
 #include "develop/develop.h"
@@ -65,8 +65,8 @@ const char *name()
   return _("monochrome");
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_EFFECT;
 }
@@ -90,13 +90,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   const int ch = piece->colors;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
-  for(int k=0;k<roi_out->height;k++)
+  for(int k=0; k<roi_out->height; k++)
   {
     const float *in = ((float *)i) + ch*k*roi_out->width;
     float *out = ((float *)o) + ch*k*roi_out->width;
-    for (int j=0;j<roi_out->width;j++,in+=ch,out+=ch)
+    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
       out[0] = color_filter(in[0], in[1], in[2], d->a, d->b, d->size);
       out[1] = out[2] = 0.0f;
@@ -108,7 +108,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)p1;
 #ifdef HAVE_GEGL
-  #error "FIXME: port monochrome to gegl."
+#error "FIXME: port monochrome to gegl."
 #else
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   d->a = p->a;
@@ -149,7 +149,10 @@ void init(dt_iop_module_t *module)
   module->priority = 550;
   module->params_size = sizeof(dt_iop_monochrome_params_t);
   module->gui_data = NULL;
-  dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t){0., 0., 1.};
+  dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t)
+  {
+    0., 0., 1.
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_monochrome_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_monochrome_params_t));
 }
@@ -177,7 +180,8 @@ static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *even
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
-  width -= 2*inset; height -= 2*inset;
+  width -= 2*inset;
+  height -= 2*inset;
   // clip region to inside:
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_clip(cr);
@@ -185,20 +189,21 @@ static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *even
   cairo_translate(cr, 0, height);
   cairo_scale(cr, 1., -1.);
   const int cells = 8;
-  for(int j=0;j<cells;j++) for(int i=0;i<cells;i++)
-  {
-    double rgb[3] = {0.5, 0.5, 0.5};
-    cmsCIELab Lab;
-    Lab.L = 53.390011; Lab.a = Lab.b = 0; // grey
-    // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
-    Lab.a = (Lab.a + Lab.L * .05*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
-    Lab.b = (Lab.b + Lab.L * .05*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
-    Lab.L = color_filter(Lab.L, Lab.a, Lab.b, p->a, p->b, 40*40*p->size*p->size);
-    cmsDoTransform(g->xform, &Lab, rgb, 1);
-    cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-    cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
-    cairo_fill(cr);
-  }
+  for(int j=0; j<cells; j++) for(int i=0; i<cells; i++)
+    {
+      double rgb[3] = {0.5, 0.5, 0.5};
+      cmsCIELab Lab;
+      Lab.L = 53.390011;
+      Lab.a = Lab.b = 0; // grey
+      // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
+      Lab.a = (Lab.a + Lab.L * .05*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
+      Lab.b = (Lab.b + Lab.L * .05*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
+      Lab.L = color_filter(Lab.L, Lab.a, Lab.b, p->a, p->b, 40*40*p->size*p->size);
+      cmsDoTransform(g->xform, &Lab, rgb, 1);
+      cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
+      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
+      cairo_fill(cr);
+    }
   cairo_set_source_rgb(cr, .7, .7, .7);
   const float x = p->a * width/128.0 + width * .5f, y = p->b * width/128.0 + width * .5f;
   cairo_arc(cr, x, y, width*.22f*p->size, 0, 2.0*M_PI);
@@ -314,11 +319,11 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_monochrome_leave_notify), self);
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_monochrome_scrolled), self);
-  
+
   g->hsRGB = dt_colorspaces_create_srgb_profile();
   g->hLab  = dt_colorspaces_create_lab_profile();
-  g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, 
-      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
+  g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL,
+                                INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

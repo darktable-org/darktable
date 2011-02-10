@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
@@ -72,7 +72,8 @@ typedef struct basecurve_preset_t
 }
 basecurve_preset_t;
 
-static const basecurve_preset_t basecurve_presets[] = {
+static const basecurve_preset_t basecurve_presets[] =
+{
   {linear, "", "", 0, 51200, {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, 0}, 0},
   {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
   // pascals canon eos curve (well tested):
@@ -132,19 +133,19 @@ const char *name()
   return _("base curve");
 }
 
-int 
-groups () 
+int
+groups ()
 {
-	return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC;
 }
-	
+
 
 void init_presets (dt_iop_module_so_t *self)
 {
   // transform presets above to db entries.
   // sql begin
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
-  for(int k=0;k<basecurve_presets_cnt;k++)
+  for(int k=0; k<basecurve_presets_cnt; k++)
   {
     // add the preset.
     dt_gui_presets_add_generic(_(basecurve_presets[k].name), self->op, &basecurve_presets[k].params, sizeof(dt_iop_basecurve_params_t), 1);
@@ -186,9 +187,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out,out,d,in) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out,out,d,in) schedule(static)
 #endif
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
@@ -204,11 +205,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
 #ifdef HAVE_GEGL
-  for(int k=0;k<6;k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0; k<6; k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   gegl_node_set(piece->input, "curve", d->curve, NULL);
 #else
   // printf("committing params:\n");
-  for(int k=0;k<6;k++)
+  for(int k=0; k<6; k++)
   {
     // printf("tmp.tonecurve_x[%d] = %f;\n", k, p->tonecurve_x[k]);
     // printf("tmp.tonecurve_y[%d] = %f;\n", k, p->tonecurve_y[k]);
@@ -225,11 +226,11 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_basecurve_params_t *default_params = (dt_iop_basecurve_params_t *)self->default_params;
   piece->data = (void *)d;
   d->curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
-  for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(d->curve, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
+  for(int k=0; k<6; k++) (void)dt_draw_curve_add_point(d->curve, default_params->tonecurve_x[k], default_params->tonecurve_y[k]);
 #ifdef HAVE_GEGL
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
 #else
-  for(int k=0;k<0x10000;k++) d->table[k] = k/0x10000; // identity
+  for(int k=0; k<0x10000; k++) d->table[k] = k/0x10000; // identity
 #endif
 }
 
@@ -261,9 +262,14 @@ void init(dt_iop_module_t *module)
   module->priority = 260;
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
-  dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t) {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
-                                                {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
-                                                 0};
+  dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t)
+  {
+    {
+      0.0, 0.08, 0.4, 0.6, 0.92, 1.0
+    },
+    {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
+    0
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
 }
@@ -308,7 +314,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
-  for(int k=0;k<6;k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0; k<6; k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -318,12 +324,13 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
-  width -= 2*inset; height -= 2*inset;
+  width -= 2*inset;
+  height -= 2*inset;
 
 #if 0
   // draw shadow around
   float alpha = 1.0f;
-  for(int k=0;k<inset;k++)
+  for(int k=0; k<inset; k++)
   {
     cairo_rectangle(cr, -k, -k, width + 2*k, height + 2*k);
     cairo_set_source_rgba(cr, 0, 0, 0, alpha);
@@ -344,7 +351,8 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   if(c->mouse_y > 0 || c->dragging)
   {
     float oldx1, oldy1;
-    oldx1 = p->tonecurve_x[c->selected]; oldy1 = p->tonecurve_y[c->selected];
+    oldx1 = p->tonecurve_x[c->selected];
+    oldy1 = p->tonecurve_y[c->selected];
     if(c->selected == 0) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fmaxf(c->selected_min, p->tonecurve_y[1]));
     if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->tonecurve_x[1], fminf(c->selected_min, fmaxf(0.0, p->tonecurve_y[1] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
     if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->tonecurve_x[4], fmaxf(c->selected_min, fminf(1.0, p->tonecurve_y[4] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
@@ -359,7 +367,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     dt_draw_curve_set_point  (c->minmax_curve, c->selected, oldx1, c->selected_max);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_max_xs, c->draw_max_ys);
   }
-  for(int k=0;k<6;k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0; k<6; k++) dt_draw_curve_set_point(c->minmax_curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_TONECURVE_RES, c->draw_xs, c->draw_ys);
 
   // draw grid
@@ -371,7 +379,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_set_line_width(cr, 1.);
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   const float arrw = 7.0f;
-  for(int k=1;k<5;k++)
+  for(int k=1; k<5; k++)
   {
     cairo_move_to(cr, width*p->tonecurve_x[k], height+inset-1);
     cairo_rel_line_to(cr, -arrw*.5f, 0);
@@ -381,7 +389,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     if(c->x_move == k) cairo_fill(cr);
     else               cairo_stroke(cr);
   }
-  
+
   // draw selected cursor
   cairo_set_line_width(cr, 1.);
   cairo_translate(cr, 0, height);
@@ -401,22 +409,23 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     cairo_restore(cr);
   }
 #endif
- 
+
   if(c->mouse_y > 0 || c->dragging)
   {
     // draw min/max, if selected
     cairo_set_source_rgba(cr, .6, .6, .6, .5);
     cairo_move_to(cr, 0, - height*c->draw_min_ys[0]);
-    for(int k=1;k<DT_IOP_TONECURVE_RES;k++)   cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_min_ys[k]);
+    for(int k=1; k<DT_IOP_TONECURVE_RES; k++)   cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_min_ys[k]);
     cairo_line_to(cr, width, - height*c->draw_min_ys[DT_IOP_TONECURVE_RES-1]);
     cairo_line_to(cr, width, - height*c->draw_max_ys[DT_IOP_TONECURVE_RES-1]);
-    for(int k=DT_IOP_TONECURVE_RES-2;k>=0;k--) cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_max_ys[k]);
+    for(int k=DT_IOP_TONECURVE_RES-2; k>=0; k--) cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_max_ys[k]);
     cairo_close_path(cr);
     cairo_fill(cr);
     // draw mouse focus circle
     cairo_set_source_rgb(cr, .9, .9, .9);
     const float pos = MAX(0, (DT_IOP_TONECURVE_RES-1) * c->mouse_x/(float)width - 1);
-    int k = (int)pos; const float f = k - pos;
+    int k = (int)pos;
+    const float f = k - pos;
     if(k >= DT_IOP_TONECURVE_RES-1) k = DT_IOP_TONECURVE_RES - 2;
     float ht = -height*(f*c->draw_ys[k] + (1-f)*c->draw_ys[k+1]);
     cairo_arc(cr, c->mouse_x, ht, 4, 0, 2.*M_PI);
@@ -428,7 +437,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
   cairo_move_to(cr, 0, -height*c->draw_ys[0]);
-  for(int k=1;k<DT_IOP_TONECURVE_RES;k++) cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_ys[k]);
+  for(int k=1; k<DT_IOP_TONECURVE_RES; k++) cairo_line_to(cr, k*width/(DT_IOP_TONECURVE_RES-1.0), - height*c->draw_ys[k]);
   cairo_stroke(cr);
 
   cairo_destroy(cr);
@@ -482,7 +491,7 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
       c->x_move = 1;
       const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
       float dist = fabsf(p->tonecurve_x[1] - mx);
-      for(int k=2;k<5;k++)
+      for(int k=2; k<5; k++)
       {
         float d2 = fabsf(p->tonecurve_x[k] - mx);
         if(d2 < dist)
@@ -499,10 +508,15 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     float pos = (event->x - inset)/width;
     float min = 100.0;
     int nearest = 0;
-    for(int k=0;k<6;k++)
+    for(int k=0; k<6; k++)
     {
-      float dist = (pos - p->tonecurve_x[k]); dist *= dist;
-      if(dist < min) { min = dist; nearest = k; }
+      float dist = (pos - p->tonecurve_x[k]);
+      dist *= dist;
+      if(dist < min)
+      {
+        min = dist;
+        nearest = k;
+      }
     }
     c->selected = nearest;
     c->selected_y = p->tonecurve_y[c->selected];
@@ -535,7 +549,8 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
 
 static gboolean
 dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{ // set active point
+{
+  // set active point
   if(event->button == 1)
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -566,9 +581,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
 
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
-  for(int k=0;k<6;k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);
+  for(int k=0; k<6; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->tonecurve_x[k], p->tonecurve_y[k]);
   c->mouse_x = c->mouse_y = -1.0;
-  c->selected = -1; c->selected_offset = 0.0;
+  c->selected = -1;
+  c->selected_offset = 0.0;
   c->dragging = 0;
   c->x_move = -1;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
@@ -581,15 +597,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
-                    G_CALLBACK (dt_iop_basecurve_expose), self);
+  G_CALLBACK (dt_iop_basecurve_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
-                    G_CALLBACK (dt_iop_basecurve_button_press), self);
+  G_CALLBACK (dt_iop_basecurve_button_press), self);
   g_signal_connect (G_OBJECT (c->area), "button-release-event",
-                    G_CALLBACK (dt_iop_basecurve_button_release), self);
+  G_CALLBACK (dt_iop_basecurve_button_release), self);
   g_signal_connect (G_OBJECT (c->area), "motion-notify-event",
-                    G_CALLBACK (dt_iop_basecurve_motion_notify), self);
+  G_CALLBACK (dt_iop_basecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
-                    G_CALLBACK (dt_iop_basecurve_leave_notify), self);
+  G_CALLBACK (dt_iop_basecurve_leave_notify), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

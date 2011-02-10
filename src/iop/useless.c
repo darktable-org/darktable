@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "develop/imageop.h"
 #include "dtgtk/slider.h"
@@ -58,7 +58,7 @@ typedef struct dt_iop_useless_data_t
   // you can do some precomputation and get this data in process().
   // stored in piece->data
   int checker_scale; // in our case, no precomputation or
-                     // anything is possible, so this is just a copy.
+  // anything is possible, so this is just a copy.
 }
 dt_iop_useless_data_t;
 
@@ -81,9 +81,9 @@ const char *name()
 
 // where does it appear in the gui?
 int
-groups () 
+groups ()
 {
-	return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC;
 }
 
 // implement this, if you have esoteric output bytes per pixel. default is 4*float
@@ -115,18 +115,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
   // optional: parallelize it!
-  #pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out,d)
+#pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out,d)
 #endif
-  for(int j=0;j<roi_out->height;j++)
+  for(int j=0; j<roi_out->height; j++)
   {
     float *in  = ((float *)i) + ch*roi_in->width *j;
     float *out = ((float *)o) + ch*roi_out->width*j;
-    for(int i=0;i<roi_out->width;i++)
+    for(int i=0; i<roi_out->width; i++)
     {
       // calculate world space coordinates:
       int wi = (roi_in->x + i) * scale, wj = (roi_in->y + j) * scale;
-      if((wi/d->checker_scale+wj/d->checker_scale)&1) for(int c=0;c<3;c++) out[c] = 0;
-      else                                            for(int c=0;c<3;c++) out[c] = in[c];
+      if((wi/d->checker_scale+wj/d->checker_scale)&1) for(int c=0; c<3; c++) out[c] = 0;
+      else                                            for(int c=0; c<3; c++) out[c] = in[c];
       in += ch;
       out += ch;
     }
@@ -152,11 +152,14 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // we are pretty late in the pipe:
-  module->priority = 900; 
+  module->priority = 900;
   module->params_size = sizeof(dt_iop_useless_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_useless_params_t tmp = (dt_iop_useless_params_t){50};
+  dt_iop_useless_params_t tmp = (dt_iop_useless_params_t)
+  {
+    50
+  };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_useless_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_useless_params_t));

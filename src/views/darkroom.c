@@ -49,7 +49,7 @@ init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);
-  
+
 }
 
 
@@ -80,7 +80,8 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
   if(dev->gui_synch)
-  { // synch module guis from gtk thread:
+  {
+    // synch module guis from gtk thread:
     darktable.gui->reset = 1;
     GList *modules = dev->iop;
     while(modules)
@@ -92,7 +93,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     darktable.gui->reset = 0;
     dev->gui_synch = 0;
   }
-  
+
   if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
   if(dev->preview_dirty) dt_dev_process_preview(dev);
 
@@ -108,8 +109,10 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
 
   if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
-  { // create double-buffered image to draw on, to make modules draw more fluently.
-    image_surface_width = width; image_surface_height = height;
+  {
+    // create double-buffered image to draw on, to make modules draw more fluently.
+    image_surface_width = width;
+    image_surface_height = height;
     if(image_surface) cairo_surface_destroy(image_surface);
     image_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
   }
@@ -124,13 +127,14 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
 
   if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
-  { // draw image
+  {
+    // draw image
     mutex = &dev->pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
     wd = dev->pipe->backbuf_width;
     ht = dev->pipe->backbuf_height;
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data (dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    surface = cairo_image_surface_create_for_data (dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_set_source_rgb (cr, .2, .2, .2);
     cairo_paint(cr);
     cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
@@ -157,8 +161,9 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     image_surface_imgid = dev->image->id;
   }
   else if(!dev->preview_dirty)
-  // else if(!dev->preview_loading)
-  { // draw preview
+    // else if(!dev->preview_loading)
+  {
+    // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
 
@@ -170,11 +175,12 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_clip(cr);
     stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride); 
+    surface = cairo_image_surface_create_for_data (dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width/2.0, height/2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
-    cairo_rectangle(cr, 0, 0, wd, ht);
+    // avoid to draw the 1px garbage that sometimes shows up in the preview :(
+    cairo_rectangle(cr, 0, 0, wd-1, ht-1);
     cairo_set_source_surface (cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill(cr);
@@ -208,7 +214,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_line_to(cri, width*.5f, height);
     cairo_stroke(cri);
   }
-  
+
   // execute module callback hook.
   if(dev->gui_module && dev->gui_module->request_color_pick)
   {
@@ -286,7 +292,8 @@ int try_enter(dt_view_t *self)
   int selected;
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
   if(selected < 0)
-  { // try last selected
+  {
+    // try last selected
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -295,7 +302,8 @@ int try_enter(dt_view_t *self)
   }
 
   if(selected < 0)
-  { // fail :(
+  {
+    // fail :(
     dt_control_log(_("no image selected!"));
     return 1;
   }
@@ -365,7 +373,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 
   dev->image = image;
   while(dev->history)
-  { // clear history of old image
+  {
+    // clear history of old image
     free(((dt_dev_history_item_t *)dev->history->data)->params);
     free( (dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
@@ -447,7 +456,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 
 static void
 film_strip_activated(const int imgid, void *data)
-{ // switch images in darkroom mode:
+{
+  // switch images in darkroom mode:
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_image_t *image = dt_image_cache_get(imgid, 'r');
@@ -509,7 +519,7 @@ void enter(dt_view_t *self)
 {
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  
+
   select_this_image(dev->image->id);
 
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
@@ -568,31 +578,35 @@ void enter(dt_view_t *self)
       GtkWidget *image = gtk_image_new_from_file(filename);
       gtk_button_set_image(GTK_BUTTON(module->showhide), image);
       g_signal_connect(G_OBJECT(module->showhide), "toggled",
-          G_CALLBACK(module_show_callback), module);
+                       G_CALLBACK(module_show_callback), module);
       gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
-          GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-          GTK_SHRINK,
-          0, 0);
+                       GTK_FILL | GTK_EXPAND | GTK_SHRINK,
+                       GTK_SHRINK,
+                       0, 0);
       if(ti < 5) ti++;
-      else { ti = 0; tj ++; }
+      else
+      {
+        ti = 0;
+        tj ++;
+      }
     }
     modules = g_list_previous(modules);
   }
   // end marker widget:
   GtkWidget *endmarker = gtk_drawing_area_new();
-  
+
   gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (endmarker), "expose-event",
-      G_CALLBACK (dt_control_expose_endmarker), 0);
+                    G_CALLBACK (dt_control_expose_endmarker), 0);
   gtk_widget_set_size_request(endmarker, -1, 50);
 
   gtk_widget_show_all(GTK_WIDGET(box));
   gtk_widget_show_all(GTK_WIDGET(module_list));
-  
-    
+
+
   /* set list of modules to modulegroups */
   dt_gui_iop_modulegroups_set_list (dev->iop);
-  
+
   // hack: now hide all custom expander widgets again.
   modules = dev->iop;
   while(modules)
@@ -634,7 +648,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel, (void *)1);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel, (void *)2);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel, (void *)3);
-  
+
   // switch on groups as they where last time:
   dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
 
@@ -652,7 +666,7 @@ void enter(dt_view_t *self)
     }
     g_free(active_plugin);
   }
-   
+
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
@@ -684,12 +698,13 @@ void leave(dt_view_t *self)
   dt_gui_key_accel_unregister(zoom_key_accel);
 
   GList *childs = gtk_container_get_children (
-  GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")));
-  while(childs) {
+                    GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")));
+  while(childs)
+  {
     gtk_widget_destroy ( GTK_WIDGET (childs->data));
     childs=g_list_next(childs);
   }
- 
+
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, FALSE);
@@ -727,7 +742,8 @@ void leave(dt_view_t *self)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
     // printf("removing history item %d - %s, data %f %f\n", hist->module->instance, hist->module->op, *(float *)hist->params, *((float *)hist->params+1));
-    free(hist->params); hist->params = NULL;
+    free(hist->params);
+    hist->params = NULL;
     free(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
@@ -776,7 +792,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   int32_t mouse_over_id = -1;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  if(mouse_over_id == -1){
+  if(mouse_over_id == -1)
+  {
     mouse_over_id = dev->image->id;
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
     dt_gui_metadata_update();
@@ -794,7 +811,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   if(dev->gui_module && dev->gui_module->request_color_pick &&
       ctl->button_down &&
       ctl->button_down_which == 1)
-  { // module requested a color box
+  {
+    // module requested a color box
     float zoom_x, zoom_y, bzoom_x, bzoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
     dt_dev_get_pointer_zoom_pos(dev, ctl->button_x + offx, ctl->button_y + offy, &bzoom_x, &bzoom_y);
@@ -812,7 +830,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   if(handled) return;
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
-  { // depending on dev_zoom, adjust dev_zoom_x/y.
+  {
+    // depending on dev_zoom, adjust dev_zoom_x/y.
     dt_dev_zoom_t zoom;
     int closeup;
     DT_CTL_GET_GLOBAL(zoom, dev_zoom);
@@ -914,7 +933,8 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
-{ // free zoom
+{
+  // free zoom
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_zoom_t zoom;
   int closeup, procw, proch;
@@ -965,7 +985,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
   DT_CTL_GET_GLOBAL(scale, dev_zoom_scale);
-  if(which > 1) 
+  if(which > 1)
   {
     if(up) zoom_x -= 0.02;
     else   zoom_x += 0.02;

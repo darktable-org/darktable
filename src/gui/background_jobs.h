@@ -22,23 +22,25 @@
 #include <inttypes.h>
 
 
-typedef enum dt_gui_job_type_t {
-	/** Single job ... */
-	DT_JOB_SINGLE,
-	/** Progress job ... */
-	DT_JOB_PROGRESS
+typedef enum dt_gui_job_type_t
+{
+  /** Single job ... */
+  DT_JOB_SINGLE,
+  /** Progress job ... */
+  DT_JOB_PROGRESS
 } dt_gui_job_type_t;
 
-typedef struct dt_gui_job_t {
-	dt_gui_job_type_t type;
-	GtkWidget *widget;
-	struct dt_job_t *job;
-	/** One liner of message */
-	gchar *message;
-	
-	/** Progress of job 0.0 - 1.0 */
-	double progress;
-	
+typedef struct dt_gui_job_t
+{
+  dt_gui_job_type_t type;
+  GtkWidget *widget;
+  struct dt_job_t *job;
+  /** One liner of message */
+  gchar *message;
+
+  /** Progress of job 0.0 - 1.0 */
+  double progress;
+
 } dt_gui_job_t;
 
 void dt_gui_background_jobs_init();

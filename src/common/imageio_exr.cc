@@ -17,7 +17,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 extern "C"
@@ -51,34 +51,40 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename)
   std::auto_ptr<Imf::TiledInputFile> fileTiled;
   std::auto_ptr<Imf::InputFile> file;
   const Imf::Header *header=NULL;
- 
+
   /* verify openexr image */
-  if(!Imf::isOpenExrFile ((const char *)filename,isTiled)) 
+  if(!Imf::isOpenExrFile ((const char *)filename,isTiled))
     return DT_IMAGEIO_FILE_CORRUPTED;
-  
+
   /* open exr file */
-  try {
-    if(isTiled) {
+  try
+  {
+    if(isTiled)
+    {
       std::auto_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
       fileTiled = temp;
       header = &(fileTiled->header());
-    } else {
+    }
+    else
+    {
       std::auto_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
       file = temp;
       header = &(file->header());
     }
-  } catch (const std::exception &e) {
+  }
+  catch (const std::exception &e)
+  {
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
-  
+
   /* Get image width and height */
   Imath::Box2i dw = header->dataWindow();
   uint32_t width = dw.max.x - dw.min.x + 1;
   uint32_t height = dw.max.y - dw.min.y + 1;
   img->width = width;
   img->height = height;
- 
-  
+
+
   // Try to allocate image data
   if(dt_image_alloc(img, DT_IMAGE_FULL))
   {
@@ -97,56 +103,65 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename)
     frameBuffer.insert ("G",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+1),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     frameBuffer.insert ("B",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+2),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     frameBuffer.insert ("A",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+3),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-    
-    if(isTiled) {
+
+    if(isTiled)
+    {
       fileTiled->setFrameBuffer (frameBuffer);
       fileTiled->readTiles (0, fileTiled->numXTiles() - 1, 0, fileTiled->numYTiles() - 1);
-    } else {
+    }
+    else
+    {
       file->setFrameBuffer (frameBuffer);
       file->readPixels(dw.min.y,dw.max.y);
     }
-  } 
-  
+  }
+
   /* cleanup and return... */
   dt_image_release(img, DT_IMAGE_FULL, 'w');
   img->flags |= DT_IMAGE_HDR;
-  
+
   return DT_IMAGEIO_OK;
 }
 
 dt_imageio_retval_t dt_imageio_open_exr_preview(dt_image_t *img, const char *filename)
 {
-   bool isTiled=false;
+  bool isTiled=false;
   std::auto_ptr<Imf::TiledInputFile> fileTiled;
   std::auto_ptr<Imf::InputFile> file;
   const Imf::Header *header=NULL;
 
   /* verify openexr image */
-  if(!Imf::isOpenExrFile ((const char *)filename,isTiled)) 
+  if(!Imf::isOpenExrFile ((const char *)filename,isTiled))
     return DT_IMAGEIO_FILE_CORRUPTED;
-  
+
   /* open exr file */
-  try {
-    if(isTiled) {
+  try
+  {
+    if(isTiled)
+    {
       std::auto_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
       fileTiled = temp;
       header = &(fileTiled->header());
-    } else {
+    }
+    else
+    {
       std::auto_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
       file = temp;
       header = &(file->header());
     }
-  } catch (const std::exception &e) {
+  }
+  catch (const std::exception &e)
+  {
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
-  
+
   /* Get image width and height */
   Imath::Box2i dw = header->dataWindow();
   uint32_t width = dw.max.x - dw.min.x + 1;
   uint32_t height = dw.max.y - dw.min.y + 1;
   img->width = width;
   img->height = height;
- 
+
   float *buf = (float*)dt_alloc_align(16,4*sizeof(float)*img->width*img->height);
 
   /* check channels in image, currently we only support R,G,B */
@@ -158,17 +173,20 @@ dt_imageio_retval_t dt_imageio_open_exr_preview(dt_image_t *img, const char *fil
     frameBuffer.insert ("G",Imf::Slice(Imf::FLOAT,(char *)(buf+1),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     frameBuffer.insert ("B",Imf::Slice(Imf::FLOAT,(char *)(buf+2),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
     frameBuffer.insert ("A",Imf::Slice(Imf::FLOAT,(char *)(buf+3),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-    
-    if(isTiled) {
+
+    if(isTiled)
+    {
       fileTiled->setFrameBuffer (frameBuffer);
       fileTiled->readTiles (0, fileTiled->numXTiles() - 1, 0, fileTiled->numYTiles() - 1);
-    } else {
+    }
+    else
+    {
       file->setFrameBuffer (frameBuffer);
       file->readPixels(dw.min.y,dw.max.y);
     }
-  } 
+  }
   dt_imageio_retval_t retv = dt_image_raw_to_preview(img, buf);
   free(buf);
-  
+
   return retv;
 }

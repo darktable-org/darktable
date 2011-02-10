@@ -24,7 +24,7 @@ static void _button_size_request (GtkWidget *widget, GtkRequisition *requisition
 static gboolean _button_expose (GtkWidget *widget, GdkEventExpose *event);
 
 
-static void 
+static void
 _button_class_init (GtkDarktableButtonClass *klass)
 {
   GtkWidgetClass *widget_class=(GtkWidgetClass *) klass;
@@ -32,12 +32,12 @@ _button_class_init (GtkDarktableButtonClass *klass)
   widget_class->expose_event = _button_expose;
 }
 
-static void 
+static void
 _button_init(GtkDarktableButton *button)
 {
 }
 
-static void  
+static void
 _button_size_request(GtkWidget *widget,GtkRequisition *requisition)
 {
   g_return_if_fail (widget != NULL);
@@ -47,7 +47,7 @@ _button_size_request(GtkWidget *widget,GtkRequisition *requisition)
   requisition->height = 17;
 }
 
-static gboolean 
+static gboolean
 _button_expose (GtkWidget *widget, GdkEventExpose *event)
 {
   g_return_val_if_fail (widget != NULL, FALSE);
@@ -63,7 +63,7 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   int border = (flags&CPF_DO_NOT_USE_BORDER)?2:4;
 
   /* create pango text settings if label exists */
-  PangoLayout *layout=NULL;    
+  PangoLayout *layout=NULL;
   int pw=0,ph=0;
   const gchar *text=gtk_button_get_label (GTK_BUTTON (widget));
   if (text)
@@ -90,32 +90,32 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
     {
       cairo_rectangle (cr,x,y,width,height);
       cairo_set_source_rgba (cr,
-          style->bg[state].red/65535.0, 
-          style->bg[state].green/65535.0, 
-          style->bg[state].blue/65535.0,
-          0.5);
+                             style->bg[state].red/65535.0,
+                             style->bg[state].green/65535.0,
+                             style->bg[state].blue/65535.0,
+                             0.5);
       cairo_fill (cr);
     }
-  } 
-  else if( !(flags & CPF_BG_TRANSPARENT) )  
+  }
+  else if( !(flags & CPF_BG_TRANSPARENT) )
   {
     /* draw default boxed button */
     gtk_paint_box (widget->style, widget->window,
-        GTK_WIDGET_STATE (widget),
-        GTK_SHADOW_OUT, NULL, widget, "button",
-        x, y, width, height);
+                   GTK_WIDGET_STATE (widget),
+                   GTK_SHADOW_OUT, NULL, widget, "button",
+                   x, y, width, height);
   }
 
 
   cairo_set_source_rgb (cr,
-      style->fg[state].red/65535.0, 
-      style->fg[state].green/65535.0, 
-      style->fg[state].blue/65535.0);
+                        style->fg[state].red/65535.0,
+                        style->fg[state].green/65535.0,
+                        style->fg[state].blue/65535.0);
 
   /* draw icon */
   if (DTGTK_BUTTON (widget)->icon)
   {
-    if (flags & CPF_IGNORE_FG_STATE) 
+    if (flags & CPF_IGNORE_FG_STATE)
       state = GTK_STATE_NORMAL;
 
 
@@ -131,7 +131,7 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   {
     int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
     if (DTGTK_BUTTON (widget)->icon) lx += width;
-    GdkRectangle t={x,y,x+width,y+height};
+    GdkRectangle t= {x,y,x+width,y+height};
     gtk_paint_layout(style,widget->window, GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
   }
 
@@ -139,32 +139,34 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
 }
 
 // Public functions
-GtkWidget* 
+GtkWidget*
 dtgtk_button_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
-  GtkDarktableButton *button;	
+  GtkDarktableButton *button;
   button = gtk_type_new (dtgtk_button_get_type());
   button->icon = paint;
   button->icon_flags = paintflags;
   return (GtkWidget *)button;
 }
 
-GtkWidget* 
+GtkWidget*
 dtgtk_button_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkWidget *button = dtgtk_button_new (paint,paintflags);
-  
+
   /* set button label */
   gtk_button_set_label (GTK_BUTTON (button),label);
-  
+
   return button;
 }
 
-GtkType dtgtk_button_get_type() 
+GtkType dtgtk_button_get_type()
 {
   static GtkType dtgtk_button_type = 0;
-  if (!dtgtk_button_type) {
-    static const GtkTypeInfo dtgtk_button_info = {
+  if (!dtgtk_button_type)
+  {
+    static const GtkTypeInfo dtgtk_button_info =
+    {
       "GtkDarktableButton",
       sizeof(GtkDarktableButton),
       sizeof(GtkDarktableButtonClass),

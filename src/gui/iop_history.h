@@ -32,5 +32,5 @@ long int dt_gui_iop_history_get_top();
 /** removes item on top */
 void dt_gui_iop_history_pop_top ();
 void dt_gui_iop_history_update_labels ();
-	
+
 #endif

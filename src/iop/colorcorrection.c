@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "common/colorspaces.h"
 #include "iop/colorcorrection.h"
@@ -47,8 +47,8 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES;
 }
 
-int 
-groups () 
+int
+groups ()
 {
   return IOP_GROUP_COLOR;
 }
@@ -60,12 +60,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     out[0] = in[0];
     out[1] = d->saturation*(in[1] + in[0] * d->a_scale + d->a_base);
     out[2] = d->saturation*(in[2] + in[0] * d->b_scale + d->b_base);
-    out += ch; in += ch;
+    out += ch;
+    in += ch;
   }
 }
 
@@ -127,7 +128,10 @@ void init(dt_iop_module_t *module)
   module->priority = 800;
   module->params_size = sizeof(dt_iop_colorcorrection_params_t);
   module->gui_data = NULL;
-  dt_iop_colorcorrection_params_t tmp = (dt_iop_colorcorrection_params_t){0., 0., 0., 0., 1.0};
+  dt_iop_colorcorrection_params_t tmp = (dt_iop_colorcorrection_params_t)
+  {
+    0., 0., 0., 0., 1.0
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorcorrection_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcorrection_params_t));
 }
@@ -177,7 +181,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_colorcorrection_leave_notify), self);
   g_signal_connect (G_OBJECT (g->area), "scroll-event",
                     G_CALLBACK (dt_iop_colorcorrection_scrolled), self);
-  
+
   g->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
@@ -196,8 +200,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (sat_callback), self);
   g->hsRGB = dt_colorspaces_create_srgb_profile();
   g->hLab  = dt_colorspaces_create_lab_profile();
-  g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, 
-      INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
+  g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL,
+                                INTENT_PERCEPTUAL, 0);//cmsFLAGS_NOTPRECALC);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -236,26 +240,28 @@ static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose 
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
-  width -= 2*inset; height -= 2*inset;
+  width -= 2*inset;
+  height -= 2*inset;
   // flip y:
   cairo_translate(cr, 0, height);
   cairo_scale(cr, 1., -1.);
   const int cells = 8;
-  for(int j=0;j<cells;j++) for(int i=0;i<cells;i++)
-  {
-    double rgb[3] = {0.5, 0.5, 0.5}; // Lab: rgb grey converted to Lab
-    cmsCIELab Lab;
-    Lab.L = 53.390011; Lab.a = Lab.b = 0; // grey
-    // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
-    // printf("lab = %f %f %f\n", Lab[0], Lab[1], Lab[2]);
-    Lab.a = p->saturation*(Lab.a + Lab.L * .05*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
-    Lab.b = p->saturation*(Lab.b + Lab.L * .05*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
-    cmsDoTransform(g->xform, &Lab, rgb, 1);
-    // dt_iop_Lab_to_sRGB(Lab, rgb, 0, 0, 1.0, 1, 1);
-    cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-    cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
-    cairo_fill(cr);
-  }
+  for(int j=0; j<cells; j++) for(int i=0; i<cells; i++)
+    {
+      double rgb[3] = {0.5, 0.5, 0.5}; // Lab: rgb grey converted to Lab
+      cmsCIELab Lab;
+      Lab.L = 53.390011;
+      Lab.a = Lab.b = 0; // grey
+      // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
+      // printf("lab = %f %f %f\n", Lab[0], Lab[1], Lab[2]);
+      Lab.a = p->saturation*(Lab.a + Lab.L * .05*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
+      Lab.b = p->saturation*(Lab.b + Lab.L * .05*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
+      cmsDoTransform(g->xform, &Lab, rgb, 1);
+      // dt_iop_Lab_to_sRGB(Lab, rgb, 0, 0, 1.0, 1, 1);
+      cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
+      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
+      cairo_fill(cr);
+    }
   float loa, hia, lob, hib;
   if(!g->dragging) p1 = p;
   loa = .5f*(width + width*p1->loa/(float)DT_COLORCORRECTION_MAX);

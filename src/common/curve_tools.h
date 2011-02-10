@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     part of this file is based on nikon_curve.h  from UFraw
     Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
@@ -33,7 +33,7 @@
 #define CT_ERROR    100
 #define CT_WARNING  104
 #define CT_SET_ERROR    200
- 
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -46,38 +46,38 @@ CurveData:
 ***********************************************************/
 typedef struct
 {
-    float x;
-    float y;
+  float x;
+  float y;
 } CurveAnchorPoint;
 
 typedef struct
 {
-    //Type for this curve
-    unsigned int m_spline_type;
+  //Type for this curve
+  unsigned int m_spline_type;
 
-    //Box data
-    float m_min_x;
-    float m_max_x;
-    float m_min_y;
-    float m_max_y;
+  //Box data
+  float m_min_x;
+  float m_max_x;
+  float m_min_y;
+  float m_max_y;
 
-    //Number of anchor points
-    unsigned char m_numAnchors;
+  //Number of anchor points
+  unsigned char m_numAnchors;
 
-    //contains a list of anchors, 2 floats per each point, x-y format
-    //max is 20 points
-    CurveAnchorPoint m_anchors[MAX_ANCHORS];
+  //contains a list of anchors, 2 floats per each point, x-y format
+  //max is 20 points
+  CurveAnchorPoint m_anchors[MAX_ANCHORS];
 
 } CurveData;
 
 typedef struct
 {
-    //Number of samples to use for the curve.
-    unsigned int m_samplingRes;
-    unsigned int m_outputRes;
+  //Number of samples to use for the curve.
+  unsigned int m_samplingRes;
+  unsigned int m_outputRes;
 
-    //Sampling array
-    unsigned short int *m_Samples; // jo: changed to short int to save memory
+  //Sampling array
+  unsigned short int *m_Samples; // jo: changed to short int to save memory
 
 } CurveSample;
 
@@ -93,8 +93,8 @@ int CurveDataSample(CurveData *curve, CurveSample *sample);
 
 /***************************************************************
  * interpolate_set:
- *  
- * convenience function for calculating the necessary parameters for 
+ *
+ * convenience function for calculating the necessary parameters for
  * interpolation.
  *
  * input:
@@ -109,8 +109,8 @@ float *interpolate_set( int n, float x[], float y[], unsigned int type);
 
 /***************************************************************
  * interpolate_val:
- *  
- * convenience function for piecewise interpolation 
+ *
+ * convenience function for piecewise interpolation
  *
  * input:
  *      n    - length of data arrays
@@ -121,5 +121,5 @@ float *interpolate_set( int n, float x[], float y[], unsigned int type);
  *      type - type of interpolation currently either CUBIC or HERMITE
  * output:
  *      yval  - interpolated value at xval
- *******************************************************************/ 
+ *******************************************************************/
 float interpolate_val( int n, float x[], float xval, float y[], float tangents[], unsigned int type);

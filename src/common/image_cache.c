@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/darktable.h"
 #include "common/image_cache.h"
@@ -42,7 +42,7 @@ int dt_image_cache_check_consistency(dt_image_cache_t *cache)
   int i = cache->lru;
   if(cache->line[i].lru != -1) return 1;
   int num = 1;
-  for(int k=0;k<cache->num_lines;k++)
+  for(int k=0; k<cache->num_lines; k++)
   {
     i = cache->line[i].mru;
     if(i >= cache->num_lines || i < 0) printf("line %d got next %d/%d\n", k, i, cache->num_lines);
@@ -57,7 +57,7 @@ int dt_image_cache_check_consistency(dt_image_cache_t *cache)
   i = cache->mru;
   if(cache->line[i].mru != cache->num_lines) return 6;
   num = 1;
-  for(int k=0;k<cache->num_lines;k++)
+  for(int k=0; k<cache->num_lines; k++)
   {
     i = cache->line[i].lru;
     if(i >= cache->num_lines || i < 0) printf("line %d got next %d/%d\n", k, i, cache->num_lines);
@@ -79,17 +79,18 @@ void dt_image_cache_write(dt_image_cache_t *cache)
 {
   dt_pthread_mutex_lock(&(cache->mutex));
   if(dt_image_cache_check_consistency(cache))
-  { // consistency check. if failed, don't write!
+  {
+    // consistency check. if failed, don't write!
     fprintf(stderr, "[image_cache_write] refusing to write corrupted cache.\n");
     dt_pthread_mutex_unlock(&(cache->mutex));
     return;
   }
-  
+
   char cachedir[1024];
   char dbfilename[1024];
   dt_get_user_cache_dir(cachedir,1024);
   gchar *filename = dt_conf_get_string("cachefile");
-  
+
   if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/%s", cachedir,DT_IMAGE_CACHE_FILE_NAME);
   else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", cachedir, filename);
   else                                 snprintf(dbfilename, 512, "%s", filename);
@@ -116,8 +117,9 @@ void dt_image_cache_write(dt_image_cache_t *cache)
   written = fwrite(cache->by_id, sizeof(int16_t), cache->num_lines, f);
   if(written != cache->num_lines) goto write_error;
 
-  for(int k=0;k<cache->num_lines;k++)
-  { // for all images
+  for(int k=0; k<cache->num_lines; k++)
+  {
+    // for all images
     int wd, ht;
     dt_image_cache_line_t line;
     dt_image_t *img;
@@ -126,12 +128,12 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     img = &(cache->line[k].image);
     line.image.pixels = NULL;
     // line.image.exif_inited = 0;
-    for(int i=0;i<DT_IMAGE_NONE;i++)
+    for(int i=0; i<DT_IMAGE_NONE; i++)
     {
       line.image.lock[i].users = line.image.lock[i].write = 0;
       line.image.mip_buf_size[i] = 0;
     }
-    for(int mip=0;mip<DT_IMAGE_MIPF;mip++)
+    for(int mip=0; mip<DT_IMAGE_MIPF; mip++)
     {
       line.image.mip[mip] = line.image.mip[mip]?(uint8_t*)1:NULL;
       dt_image_get_mip_size(img, mip, &wd, &ht);
@@ -146,7 +148,7 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     written = fwrite(&line, sizeof(dt_image_cache_line_t), 1, f);
     if(written != 1) goto write_error;
 
-    for(int mip=0;mip<DT_IMAGE_MIPF;mip++)
+    for(int mip=0; mip<DT_IMAGE_MIPF; mip++)
     {
       if(!line.image.mip[mip]) continue;
       // printf("writing mip %d for image %d\n", mip, img->id);
@@ -156,9 +158,17 @@ void dt_image_cache_write(dt_image_cache_t *cache)
       uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
       int32_t length = dt_imageio_jpeg_compress(img->mip[mip], blob, wd, ht, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
       written = fwrite(&length, sizeof(int32_t), 1, f);
-      if(written != 1) { free(blob); goto write_error; }
+      if(written != 1)
+      {
+        free(blob);
+        goto write_error;
+      }
       written = fwrite(blob, sizeof(uint8_t), length, f);
-      if(written != length) { free(blob); goto write_error; }
+      if(written != length)
+      {
+        free(blob);
+        goto write_error;
+      }
       free(blob);
     }
     // dump mipf in dct
@@ -170,9 +180,17 @@ void dt_image_cache_write(dt_image_cache_t *cache)
       dt_image_compress(img->mipf, buf, wd, ht);
       int32_t length = wd*ht;
       written = fwrite(&length, sizeof(int32_t), 1, f);
-      if(written != 1) { free(buf); goto write_error; }
+      if(written != 1)
+      {
+        free(buf);
+        goto write_error;
+      }
       written = fwrite(buf, sizeof(uint8_t), length, f);
-      if(written != length) { free(buf); goto write_error; }
+      if(written != length)
+      {
+        free(buf);
+        goto write_error;
+      }
       free(buf);
     }
   }
@@ -232,7 +250,7 @@ int dt_image_cache_read(dt_image_cache_t *cache)
   // printf("read cache with %d lines, mru %d lru %d\n", cache->num_lines, cache->mru, cache->lru);
 
   // read cache lines (images)
-  for(int k=0;k<cache->num_lines;k++)
+  for(int k=0; k<cache->num_lines; k++)
   {
     dt_image_t *image = &(cache->line[k].image);
     rd = fread(cache->line+k, sizeof(dt_image_cache_line_t), 1, f);
@@ -242,8 +260,9 @@ int dt_image_cache_read(dt_image_cache_t *cache)
     // printf("read image `%s' from disk cache\n", image->filename);
 
     int wd, ht;
-    for(int mip=0;mip<DT_IMAGE_MIPF;mip++)
-    { // read all available mips
+    for(int mip=0; mip<DT_IMAGE_MIPF; mip++)
+    {
+      // read all available mips
       if(!image->mip[mip]) continue;
       image->mip[mip] = NULL;
       // printf("reading mip %d for image %d\n", mip, image->id);
@@ -251,14 +270,22 @@ int dt_image_cache_read(dt_image_cache_t *cache)
       uint8_t *blob = (uint8_t *)malloc(4*sizeof(uint8_t)*wd*ht);
       int32_t length = 0;
       rd = fread(&length, sizeof(int32_t), 1, f);
-      if(rd != 1 || length > 4*sizeof(uint8_t)*wd*ht) { free(blob); goto read_error; }
+      if(rd != 1 || length > 4*sizeof(uint8_t)*wd*ht)
+      {
+        free(blob);
+        goto read_error;
+      }
       rd = fread(blob, sizeof(uint8_t), length, f);
-      if(rd != length) { free(blob); goto read_error; }
+      if(rd != length)
+      {
+        free(blob);
+        goto read_error;
+      }
       if(!dt_image_alloc(image, mip))
       {
         dt_image_check_buffer(image, mip, 4*wd*ht*sizeof(uint8_t));
         dt_imageio_jpeg_t jpg;
-        if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) || 
+        if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) ||
             (jpg.width != wd || jpg.height != ht) ||
             dt_imageio_jpeg_decompress(&jpg, image->mip[mip]))
         {
@@ -270,15 +297,24 @@ int dt_image_cache_read(dt_image_cache_t *cache)
       free(blob);
     }
     if(image->mipf)
-    { // read float preview
+    {
+      // read float preview
       image->mipf = NULL;
       dt_image_get_mip_size(image, DT_IMAGE_MIPF, &wd, &ht);
       uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t)*wd*ht);
       int32_t length = wd*ht;
       rd = fread(&length, sizeof(int32_t), 1, f);
-      if(rd != 1 || length != wd*ht) { free(buf); goto read_error; }
+      if(rd != 1 || length != wd*ht)
+      {
+        free(buf);
+        goto read_error;
+      }
       rd = fread(buf, sizeof(uint8_t), length, f);
-      if(rd != length) { free(buf); goto read_error; }
+      if(rd != length)
+      {
+        free(buf);
+        goto read_error;
+      }
       if(!dt_image_alloc(image, DT_IMAGE_MIPF))
       {
         dt_image_check_buffer(image, DT_IMAGE_MIPF, 3*wd*ht*sizeof(float));
@@ -330,12 +366,12 @@ static void _image_cache_backup()
   char dbfilename[1024];
   dt_get_user_cache_dir (cachedir,1024);
   gchar *filename = dt_conf_get_string ("cachefile");
-  
+
   if(!filename || filename[0] == '\0') snprintf (dbfilename, 1024, "%s/%s", cachedir, DT_IMAGE_CACHE_FILE_NAME);
   else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", cachedir, filename);
   else                                 snprintf (dbfilename, 512, "%s", filename);
   g_free(filename);
-  
+
   char *src = g_strdup (dbfilename);
   strcat(dbfilename,".fallback");
   _image_cache_copy_file (src,dbfilename);
@@ -348,12 +384,12 @@ static void _image_cache_restore()
   char dbfilename[1024];
   dt_get_user_cache_dir(cachedir,1024);
   gchar *filename = dt_conf_get_string ("cachefile");
-  
+
   if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", cachedir,DT_IMAGE_CACHE_FILE_NAME);
   else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", cachedir, filename);
   else                                 snprintf (dbfilename, 512, "%s", filename);
   g_free(filename);
-  
+
   char *dest = g_strdup (dbfilename);
   strcat(dbfilename,".fallback");
   _image_cache_copy_file (dbfilename,dest);
@@ -367,9 +403,9 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t
   cache->num_lines = entries;
   cache->line = (dt_image_cache_line_t *)malloc(sizeof(dt_image_cache_line_t)*cache->num_lines);
   memset(cache->line,0,sizeof(dt_image_cache_line_t)*cache->num_lines);
-    
+
   cache->by_id = (int16_t *)malloc(sizeof(int16_t)*cache->num_lines);
-  for(int k=0;k<cache->num_lines;k++)
+  for(int k=0; k<cache->num_lines; k++)
   {
     cache->by_id[k] = k;
     dt_image_init(&(cache->line[k].image));
@@ -383,28 +419,28 @@ void dt_image_cache_init(dt_image_cache_t *cache, int32_t entries, const int32_t
   if(load_cached!=0)
   {
     gboolean cb = dt_conf_get_bool ("cachefile_backup");
-      
+
     if (dt_image_cache_read(cache))
     {
       // the cache failed to load, the file has been
       // deleted.
       // reset to useful values:
-      
+
       dt_image_cache_cleanup(cache);
-      
+
       /* restore cachefile backup if first failure */
       if (cb && load_cached==1)
         _image_cache_restore();
 
       /* lets try to reinit */
       dt_image_cache_init(cache, entries, (cb && load_cached==1)?2:0 );
-    } 
+    }
     else
     {
       /* backup cachefile */
       if (cb && load_cached==1)
         _image_cache_backup();
-    
+
     }
   }
 }
@@ -413,7 +449,7 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
 {
   dt_image_cache_write(cache);
   // free mipmap cache lines
-  for(int k=0;k<cache->num_lines;k++)
+  for(int k=0; k<cache->num_lines; k++)
   {
     dt_image_cache_flush_no_sidecars(&(cache->line[k].image));
     dt_image_cleanup(&(cache->line[k].image));
@@ -450,10 +486,10 @@ dt_image_t *dt_image_cache_get(int32_t id, const char mode)
   dt_image_t *img = dt_image_cache_get_uninited(id, mode);
   if(img == NULL) return NULL;
   if(img->film_id == -1) if(dt_image_open2(img, id))
-  {
-    dt_image_cache_release(img, mode);
-    return NULL;
-  }
+    {
+      dt_image_cache_release(img, mode);
+      return NULL;
+    }
   // printf("[image_cache_get] %ld id %d\n", (long int)img, img->id);
   return img;
 }
@@ -491,12 +527,13 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
   if(res < 0)
   {
     // get least recently used image without lock and replace it:
-    for(int i=0;i<cache->num_lines;i++)
+    for(int i=0; i<cache->num_lines; i++)
     {
       if(cache->line[k].image.id == -1) break;
       if(cache->line[k].lock.write == 0 && cache->line[k].lock.users == 0)
-      { // in case image buffers have not been released correctly, do it now:
-        for(int i=0;i<DT_IMAGE_NONE;i++) cache->line[k].image.lock[i].users = cache->line[k].image.lock[i].write = 0;
+      {
+        // in case image buffers have not been released correctly, do it now:
+        for(int i=0; i<DT_IMAGE_NONE; i++) cache->line[k].image.lock[i].users = cache->line[k].image.lock[i].write = 0;
         break;
       }
       k = cache->line[k].mru;
@@ -539,7 +576,7 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
     if(cache->line[res].lru >= 0)
       cache->line[cache->line[res].lru].mru = cache->line[res].mru;
     cache->line[cache->line[res].mru].lru = cache->line[res].lru;
-    
+
     if(cache->lru == res) cache->lru = cache->line[res].mru;
     cache->line[cache->mru].mru = res;
     cache->line[res].mru = cache->num_lines;
@@ -567,7 +604,7 @@ void dt_image_cache_release(dt_image_t *img, const char mode)
 void dt_image_cache_print(dt_image_cache_t *cache)
 {
   int users = 0, write = 0, entries = 0;
-  for(int k=0;k<cache->num_lines;k++)
+  for(int k=0; k<cache->num_lines; k++)
   {
     if(cache->line[k].image.id == -1) continue;
     entries++;

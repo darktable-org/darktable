@@ -95,17 +95,17 @@
 #endif
 #else
 #define KEYCODE_a           38
-#define KEYCODE_o           39  
-#define KEYCODE_e           40  
+#define KEYCODE_o           39
+#define KEYCODE_e           40
 #define KEYCODE_z           52
-#define KEYCODE_apostrophe  24  
-#define KEYCODE_comma       25  
-#define KEYCODE_period      26  
-#define KEYCODE_1           10  
-#define KEYCODE_2           11  
-#define KEYCODE_3           12  
-#define KEYCODE_4           13  
-#define KEYCODE_Escape       9  
+#define KEYCODE_apostrophe  24
+#define KEYCODE_comma       25
+#define KEYCODE_period      26
+#define KEYCODE_1           10
+#define KEYCODE_2           11
+#define KEYCODE_3           12
+#define KEYCODE_4           13
+#define KEYCODE_Escape       9
 #define KEYCODE_Caps        66
 #define KEYCODE_F7        73
 #define KEYCODE_F8        74
@@ -179,14 +179,14 @@ typedef struct dt_job_t
 {
   int32_t (*execute) (struct dt_job_t *job);
   int32_t result;
-  
-  dt_pthread_mutex_t state_mutex;  
+
+  dt_pthread_mutex_t state_mutex;
   dt_pthread_mutex_t wait_mutex;
-  
+
   int32_t state;
   dt_job_state_change_callback state_changed_cb;
   void *user_data;
- 
+
   int32_t param[32];
 #ifdef DT_CONTROL_JOB_DEBUG
   char description[DT_CONTROL_DESCRIPTION_LEN];
@@ -230,7 +230,7 @@ typedef struct dt_control_t
   guint log_message_timeout_id;
   int  log_busy;
   dt_pthread_mutex_t log_mutex;
-  
+
   // gui settings
   dt_ctl_settings_t global_settings, global_defaults;
   dt_pthread_mutex_t global_mutex, image_mutex;

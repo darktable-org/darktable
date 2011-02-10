@@ -20,16 +20,16 @@
 /** some common drawing routines. */
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 #include <stdlib.h>
 #include <math.h>
 // this is a dirty hack, this way nikon_curve will not even be compiled if we don't need it:
 #ifdef DT_CONTROL_H
-  #include "common/curve_tools.c"
+#include "common/curve_tools.c"
 #else
-  #include "common/curve_tools.h"
+#include "common/curve_tools.h"
 #endif
 #include <cairo.h>
 
@@ -46,11 +46,13 @@ static inline void dt_draw_grid(cairo_t *cr, const int num, const int left, cons
   float width = right - left;
   float height = bottom - top;
 
-  for(int k=1;k<num;k++)
+  for(int k=1; k<num; k++)
   {
-    cairo_move_to(cr, left + k/(float)num*width, top); cairo_line_to(cr, left +  k/(float)num*width, bottom);
+    cairo_move_to(cr, left + k/(float)num*width, top);
+    cairo_line_to(cr, left +  k/(float)num*width, bottom);
     cairo_stroke(cr);
-    cairo_move_to(cr, left, top + k/(float)num*height); cairo_line_to(cr, right, top + k/(float)num*height);
+    cairo_move_to(cr, left, top + k/(float)num*height);
+    cairo_line_to(cr, right, top + k/(float)num*height);
     cairo_stroke(cr);
   }
 }
@@ -60,27 +62,28 @@ static inline void dt_draw_endmarker(cairo_t *cr, const int width, const int hei
   // fibonacci spiral:
   float v[14] = { -8., 3.,
                   -8., 0., -13., 0., -13, 3.,
-                  -13., 8., -8., 8., 0., 0.};
-  for(int k=0;k<14;k+=2) v[k] = v[k]*0.01 + 0.5;
-  for(int k=1;k<14;k+=2) v[k] = v[k]*0.03 + 0.5;
-  for(int k=0;k<14;k+=2) v[k] *= width;
-  for(int k=1;k<14;k+=2) v[k] *= height;
+                  -13., 8., -8., 8., 0., 0.
+                };
+  for(int k=0; k<14; k+=2) v[k] = v[k]*0.01 + 0.5;
+  for(int k=1; k<14; k+=2) v[k] = v[k]*0.03 + 0.5;
+  for(int k=0; k<14; k+=2) v[k] *= width;
+  for(int k=1; k<14; k+=2) v[k] *= height;
   if(left)
-    for(int k=0;k<14;k+=2) v[k] = width - v[k];
+    for(int k=0; k<14; k+=2) v[k] = width - v[k];
   cairo_set_line_width(cr, 2.);
   cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
   cairo_move_to (cr, v[0], v[1]);
   cairo_curve_to(cr, v[2], v[3], v[4], v[5], v[6], v[7]);
   cairo_curve_to(cr, v[8], v[9], v[10], v[11], v[12], v[13]);
-  for(int k=0;k<14;k+=2) v[k] = width - v[k];
-  for(int k=1;k<14;k+=2) v[k] = height - v[k];
+  for(int k=0; k<14; k+=2) v[k] = width - v[k];
+  for(int k=1; k<14; k+=2) v[k] = height - v[k];
   cairo_curve_to(cr, v[10], v[11], v[8], v[9], v[6], v[7]);
   cairo_curve_to(cr, v[4], v[5], v[2], v[3], v[0], v[1]);
   cairo_stroke(cr);
 }
 
-static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float max, 
-        unsigned int type)
+static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float max,
+    unsigned int type)
 {
   dt_draw_curve_t *c = (dt_draw_curve_t *)malloc(sizeof(dt_draw_curve_t));
   c->csample.m_samplingRes = 0x10000;
@@ -113,9 +116,9 @@ static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min
   c->csample.m_samplingRes = res;
   c->csample.m_outputRes = 0x10000;
   CurveDataSample(&c->c, &c->csample);
-  if(x) for(int k=0;k<res;k++) x[k] = k*(1.0f/res);
-  if(y) for(int k=0;k<res;k++)
-    y[k] = min + (max-min)*c->csample.m_Samples[k]*(1.0f/0x10000);
+  if(x) for(int k=0; k<res; k++) x[k] = k*(1.0f/res);
+  if(y) for(int k=0; k<res; k++)
+      y[k] = min + (max-min)*c->csample.m_Samples[k]*(1.0f/0x10000);
 }
 
 static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)

@@ -19,17 +19,19 @@
 
 #include "common/darktable.h"
 
-typedef enum pw_storage_backend_t{
-	PW_STORAGE_BACKEND_NONE = 0,
-	PW_STORAGE_BACKEND_GCONF,
-	PW_STORAGE_BACKEND_KWALLET,
-	PW_STORAGE_BACKEND_GNOME_KEYRING
+typedef enum pw_storage_backend_t
+{
+  PW_STORAGE_BACKEND_NONE = 0,
+  PW_STORAGE_BACKEND_GCONF,
+  PW_STORAGE_BACKEND_KWALLET,
+  PW_STORAGE_BACKEND_GNOME_KEYRING
 } pw_storage_backend_t;
 
 /** pwstorage context */
-typedef struct dt_pwstorage_t {
-	pw_storage_backend_t pw_storage_backend;
-	void* backend_context;
+typedef struct dt_pwstorage_t
+{
+  pw_storage_backend_t pw_storage_backend;
+  void* backend_context;
 }
 dt_pwstorage_t;
 

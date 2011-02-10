@@ -17,7 +17,7 @@
    version="1.0"
    sodipodi:docname="tonemap.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/plugins-darkroom/template.png"
+   inkscape:export-filename="/home/jo/vcs/darktable/data/pixmaps/plugins/darkroom/tonemap.png"
    inkscape:export-xdpi="10.8"
    inkscape:export-ydpi="10.8">
   <defs
@@ -66,7 +66,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

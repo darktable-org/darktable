@@ -32,7 +32,7 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
   n->exposure = NULL;
 
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text",
-      _("drag to change exposure,\ndoubleclick resets"), (char *)NULL);
+                 _("drag to change exposure,\ndoubleclick resets"), (char *)NULL);
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_gui_histogram_expose), n);
   g_signal_connect (G_OBJECT (widget), "button-press-event",
@@ -47,7 +47,7 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
                     G_CALLBACK (dt_gui_histogram_enter_notify), n);
   g_signal_connect (G_OBJECT (widget), "scroll-event",
                     G_CALLBACK (dt_gui_histogram_scroll), n);
-  
+
   gtk_widget_add_events(widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL);
 }
 
@@ -67,19 +67,20 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
   cairo_paint(cr);
 
   cairo_translate(cr, 4*inset, inset);
-  width -= 2*4*inset; height -= 2*inset;
+  width -= 2*4*inset;
+  height -= 2*inset;
 
 #if 1
   // draw shadow around
   float alpha = 1.0f;
   cairo_set_line_width(cr, 0.2);
-  for(int k=0;k<inset;k++)
+  for(int k=0; k<inset; k++)
   {
     cairo_rectangle(cr, -k, -k, width + 2*k, height + 2*k);
     cairo_set_source_rgba(cr, 0, 0, 0, alpha);
     alpha *= 0.5f;
     cairo_fill(cr);
-  } 
+  }
   cairo_set_line_width(cr, 1.0);
 #else
   cairo_set_line_width(cr, 1.0);
@@ -111,7 +112,7 @@ gboolean dt_gui_histogram_expose(GtkWidget *widget, GdkEventExpose *event, dt_gu
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
-  
+
   if(hist_max > 0)
   {
     cairo_save(cr);
@@ -164,13 +165,13 @@ gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event
   if(n->dragging && n->highlight == 2 && n->exposure && n->set_white)
   {
     float white = n->white - (event->x - n->button_down_x)*
-          1.0f/(float)widget->allocation.width; 
+                  1.0f/(float)widget->allocation.width;
     n->set_white(n->exposure, white);
   }
   else if(n->dragging && n->highlight == 1 && n->exposure && n->set_black)
   {
     float black = n->black - (event->x - n->button_down_x)*
-          .2f/(float)widget->allocation.width; 
+                  .2f/(float)widget->allocation.width;
     n->set_black(n->exposure, black);
   }
   else
@@ -251,7 +252,7 @@ gboolean dt_gui_histogram_leave_notify(GtkWidget *widget, GdkEventCrossing *even
 void dt_gui_histogram_draw_8(cairo_t *cr, float *hist, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
-  for(int k=0;k<64;k++)
+  for(int k=0; k<64; k++)
     cairo_line_to(cr, k, hist[4*k+channel]);
   cairo_line_to(cr, 63, 0);
   cairo_close_path(cr);

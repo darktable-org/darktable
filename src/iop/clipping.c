@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
@@ -25,7 +25,7 @@
 #include <inttypes.h>
 #include <gdk/gdkkeysyms.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -58,7 +58,8 @@ dt_iop_clipping_params_t;
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if(old_version == 2 && new_version == 3) {
+  if(old_version == 2 && new_version == 3)
+  {
     dt_iop_clipping_params_t *o = (dt_iop_clipping_params_t *)old_params;
     dt_iop_clipping_params_t *n = (dt_iop_clipping_params_t *)new_params;
     *n = *o; // only the old k field was split to k_h and k_v, everything else is copied as is
@@ -68,10 +69,13 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     else                   is_horizontal = 0;
     intk &= ~0x40000000;
     float floatk = *(float *)&intk;
-    if(is_horizontal) {
+    if(is_horizontal)
+    {
       n->k_h = floatk;
       n->k_v = 0.0;
-    } else {
+    }
+    else
+    {
       n->k_h = 0.0;
       n->k_v = floatk;
     }
@@ -124,7 +128,7 @@ static void mul_mat_vec_2(const float *m, const float *p, float *o)
 // helper to count corners in for loops:
 static void get_corner(const float *aabb, const int i, float *p)
 {
-  for(int k=0;k<2;k++) p[k] = aabb[2*((i>>k)&1) + k];
+  for(int k=0; k<2; k++) p[k] = aabb[2*((i>>k)&1) + k];
 }
 
 static void adjust_aabb(const float *p, float *aabb)
@@ -140,10 +144,10 @@ const char *name()
   return _("crop and rotate");
 }
 
-int 
-groups () 
+int
+groups ()
 {
-	return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT;
 }
 
 
@@ -173,8 +177,13 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 
   // use whole-buffer roi information to create matrix and inverse.
   float rt[] = { cosf(d->angle), sinf(d->angle),
-                -sinf(d->angle), cosf(d->angle)};
-  if(d->angle == 0.0f) { rt[0] = rt[3] = 1.0; rt[1] = rt[2] = 0.0f; }
+                 -sinf(d->angle), cosf(d->angle)
+               };
+  if(d->angle == 0.0f)
+  {
+    rt[0] = rt[3] = 1.0;
+    rt[1] = rt[2] = 0.0f;
+  }
 
   // correct keystone correction factors by resolution of this buffer
   const float kc = 1.0f/fminf(roi_in->width, roi_in->height);
@@ -184,18 +193,18 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   float cropscale = -1.0f;
   // check portrait/landscape orientation, whichever fits more area:
   const float oaabb[4] = {-.5f*roi_in->width, -.5f*roi_in->height, .5f*roi_in->width, .5f*roi_in->height};
-  for(int flip=0;flip<2;flip++)
+  for(int flip=0; flip<2; flip++)
   {
     const float roi_in_width  = flip ? roi_in->height : roi_in->width;
     const float roi_in_height = flip ? roi_in->width  : roi_in->height;
     float newcropscale = 1.0f;
     // fwd transform rotated points on corners and scale back inside roi_in bounds.
     float p[2], o[2], aabb[4] = {-.5f*roi_in_width, -.5f*roi_in_height, .5f*roi_in_width, .5f*roi_in_height};
-    for(int c=0;c<4;c++)
+    for(int c=0; c<4; c++)
     {
       get_corner(oaabb, c, p);
       transform(p, o, rt, d->k_h, d->k_v);
-      for(int k=0;k<2;k++) if(fabsf(o[k]) > 0.001f) newcropscale = fminf(newcropscale, aabb[(o[k] > 0 ? 2 : 0) + k]/o[k]);
+      for(int k=0; k<2; k++) if(fabsf(o[k]) > 0.001f) newcropscale = fminf(newcropscale, aabb[(o[k] > 0 ? 2 : 0) + k]/o[k]);
     }
     if(newcropscale >= cropscale)
     {
@@ -232,9 +241,17 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   d->ciw = roi_out->width;
   d->cih = roi_out->height;
 
-  for(int k=0;k<4;k++) d->m[k] = rt[k];
-  if(d->flags & FLAG_FLIP_HORIZONTAL) { d->m[0] = - rt[0]; d->m[2] = - rt[2]; }
-  if(d->flags & FLAG_FLIP_VERTICAL)   { d->m[1] = - rt[1]; d->m[3] = - rt[3]; }
+  for(int k=0; k<4; k++) d->m[k] = rt[k];
+  if(d->flags & FLAG_FLIP_HORIZONTAL)
+  {
+    d->m[0] = - rt[0];
+    d->m[2] = - rt[2];
+  }
+  if(d->flags & FLAG_FLIP_VERTICAL)
+  {
+    d->m[1] = - rt[1];
+    d->m[3] = - rt[3];
+  }
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -249,18 +266,29 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   const float so = roi_out->scale;
   float p[2], o[2], aabb[4] = {roi_out->x+d->cix*so, roi_out->y+d->ciy*so, roi_out->x+d->cix*so+roi_out->width, roi_out->y+d->ciy*so+roi_out->height};
   float aabb_in[4] = {INFINITY, INFINITY, -INFINITY, -INFINITY};
-  for(int c=0;c<4;c++)
+  for(int c=0; c<4; c++)
   {
     // get corner points of roi_out
     get_corner(aabb, c, p);
     // backtransform aabb using m
-    if(d->flip) {p[1] -= d->tx*so; p[0] -= d->ty*so;}
-    else        {p[0] -= d->tx*so; p[1] -= d->ty*so;}
-    p[0] *= 1.0/so; p[1] *= 1.0/so;
+    if(d->flip)
+    {
+      p[1] -= d->tx*so;
+      p[0] -= d->ty*so;
+    }
+    else
+    {
+      p[0] -= d->tx*so;
+      p[1] -= d->ty*so;
+    }
+    p[0] *= 1.0/so;
+    p[1] *= 1.0/so;
     // mul_mat_vec_2(d->m, p, o);
     backtransform(p, o, d->m, d->k_h, d->k_v);
-    o[0] *= so; o[1] *= so;
-    o[0] += d->tx*so; o[1] += d->ty*so;
+    o[0] *= so;
+    o[1] *= so;
+    o[0] += d->tx*so;
+    o[1] += d->ty*so;
     // transform to roi_in space, get aabb.
     adjust_aabb(o, aabb_in);
   }
@@ -272,7 +300,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->height = aabb_in[3]-aabb_in[1]+4;
 
   if(d->angle == 0.0f && d->all_off)
-  { // just crop: make sure everything is precise.
+  {
+    // just crop: make sure everything is precise.
     roi_in->x      = aabb_in[0];
     roi_in->y      = aabb_in[1];
     roi_in->width  = roi_out->width;
@@ -280,7 +309,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 }
 
-// 3rd (final) pass: you get this input region (may be different from what was requested above), 
+// 3rd (final) pass: you get this input region (may be different from what was requested above),
 // do your best to fill the ouput region!
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -293,58 +322,71 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(d,ovoid,ivoid,roi_in,roi_out)
+#pragma omp parallel for schedule(static) default(none) shared(d,ovoid,ivoid,roi_in,roi_out)
 #endif
-    for(int j=0;j<roi_out->height;j++)
+    for(int j=0; j<roi_out->height; j++)
     {
       const float *in  = ((float *)ivoid)+ch*roi_out->width*j;
       float *out = ((float *)ovoid)+ch*roi_out->width*j;
-      for(int i=0;i<roi_out->width;i++)
+      for(int i=0; i<roi_out->width; i++)
       {
-        for(int c=0;c<3;c++) out[c] = in[c];
-        out += ch; in += ch;
+        for(int c=0; c<3; c++) out[c] = in[c];
+        out += ch;
+        in += ch;
       }
     }
   }
   else
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out)
+#pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
-    for(int j=0;j<roi_out->height;j++)
+    for(int j=0; j<roi_out->height; j++)
     {
       float *out = ((float *)ovoid)+ch*j*roi_out->width;
-      for(int i=0;i<roi_out->width;i++,out+=ch)
+      for(int i=0; i<roi_out->width; i++,out+=ch)
       {
         float pi[2], po[2];
 
         pi[0] = roi_out->x + roi_out->scale*d->cix + i + .5;
         pi[1] = roi_out->y + roi_out->scale*d->ciy + j + .5;
         // transform this point using matrix m
-        if(d->flip) {pi[1] -= d->tx*roi_out->scale; pi[0] -= d->ty*roi_out->scale;}
-        else        {pi[0] -= d->tx*roi_out->scale; pi[1] -= d->ty*roi_out->scale;}
-        pi[0] /= roi_out->scale; pi[1] /= roi_out->scale;
+        if(d->flip)
+        {
+          pi[1] -= d->tx*roi_out->scale;
+          pi[0] -= d->ty*roi_out->scale;
+        }
+        else
+        {
+          pi[0] -= d->tx*roi_out->scale;
+          pi[1] -= d->ty*roi_out->scale;
+        }
+        pi[0] /= roi_out->scale;
+        pi[1] /= roi_out->scale;
         backtransform(pi, po, d->m, d->k_h, d->k_v);
-        po[0] *= roi_in->scale; po[1] *= roi_in->scale;
-        po[0] += d->tx*roi_in->scale;  po[1] += d->ty*roi_in->scale;
+        po[0] *= roi_in->scale;
+        po[1] *= roi_in->scale;
+        po[0] += d->tx*roi_in->scale;
+        po[1] += d->ty*roi_in->scale;
         // transform this point to roi_in
-        po[0] -= roi_in->x; po[1] -= roi_in->y;
+        po[0] -= roi_in->x;
+        po[1] -= roi_in->y;
 
         const int ii = (int)po[0], jj = (int)po[1];
-        if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2) 
+        if(ii >= 0 && jj >= 0 && ii <= roi_in->width-2 && jj <= roi_in->height-2)
         {
-	  const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
+          const float *in = ((float *)ivoid) + ch*(roi_in->width*jj+ii);
           const float fi = po[0] - ii, fj = po[1] - jj;
-          for(int c=0;c<3;c++,in++)
-	    out[c] =
-	      ((1.0f-fj)*(1.0f-fi)*in[0] +
-	       (1.0f-fj)*(     fi)*in[ch] +
-	       (     fj)*(     fi)*in[ch_width+ch] +
-	       (     fj)*(1.0f-fi)*in[ch_width]);
-	}
-        else for(int c=0;c<3;c++) out[c] = 0.0f;
+          for(int c=0; c<3; c++,in++)
+            out[c] =
+              ((1.0f-fj)*(1.0f-fi)*in[0] +
+               (1.0f-fj)*(     fi)*in[ch] +
+               (     fj)*(     fi)*in[ch_width+ch] +
+               (     fj)*(1.0f-fi)*in[ch_width]);
+        }
+        else for(int c=0; c<3; c++) out[c] = 0.0f;
       }
     }
   }
@@ -355,7 +397,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)p1;
 #ifdef HAVE_GEGL
   // pull in new params to gegl
-  #error "clipping needs to be ported to GEGL!"
+#error "clipping needs to be ported to GEGL!"
 #else
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   // pull in bit from weird p->k => d->keystone = 1
@@ -378,7 +420,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 #ifdef HAVE_GEGL
-  #error "clipping needs to be ported to GEGL!"
+#error "clipping needs to be ported to GEGL!"
 #else
   piece->data = malloc(sizeof(dt_iop_clipping_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
@@ -388,7 +430,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 #ifdef HAVE_GEGL
-  #error "clipping needs to be ported to GEGL!"
+#error "clipping needs to be ported to GEGL!"
 #else
   free(piece->data);
 #endif
@@ -418,9 +460,10 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
 
     // first fix aspect ratio:
 
-    // corners: move two adjacent 
+    // corners: move two adjacent
     if     (grab == 1+2)
-    { // move x y
+    {
+      // move x y
       g->clip_x = g->clip_x + g->clip_w - (target_w + g->clip_w)*.5;
       g->clip_y = g->clip_y + g->clip_h - (target_h + g->clip_h)*.5;
       g->clip_w = (target_w + g->clip_w)*.5f;
@@ -444,13 +487,15 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
       g->clip_w = (target_w + g->clip_w)*.5;
     }
     else if(grab & 5) // dragged either x or w (1 4)
-    { // change h and move y, h equally
+    {
+      // change h and move y, h equally
       const float off = target_h - g->clip_h;
       g->clip_h = g->clip_h + off;
       g->clip_y = g->clip_y - .5f*off;
     }
     else if(grab & 10) // dragged either y or h (2 8)
-    { // channge w and move x, w equally
+    {
+      // channge w and move x, w equally
       const float off = target_w - g->clip_w;
       g->clip_w = g->clip_w + off;
       g->clip_x = g->clip_x - .5f*off;
@@ -484,7 +529,10 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
 
 void init_presets (dt_iop_module_t *self)
 {
-  dt_iop_clipping_params_t p = (dt_iop_clipping_params_t){0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0};
+  dt_iop_clipping_params_t p = (dt_iop_clipping_params_t)
+  {
+    0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0
+  };
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   p.angle = 90.0f;
   dt_gui_presets_add_generic(_("rotate by  90"), self->op, &p, sizeof(p), 1);
@@ -512,7 +560,8 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
       while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
       if(c < text + strlen(text))
       {
-        *c = '\0'; c++;
+        *c = '\0';
+        c++;
         g->current_aspect = atof(text) / atof(c);
         apply_box_aspect(self, 5);
         dt_control_queue_draw_all();
@@ -587,7 +636,10 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
   module->priority = 875;
-  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t){0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f};
+  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t)
+  {
+    0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
 }
@@ -782,7 +834,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 2, 6, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
-/*-------------------------------------------*/
+  /*-------------------------------------------*/
   gtk_table_set_row_spacing(GTK_TABLE(self->widget), 4, 10);
   label = GTK_WIDGET(dtgtk_label_new(_("guides"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT));
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 6, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 5);
@@ -795,7 +847,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->guide_lines, _("golden mean"));
   gtk_combo_box_set_active(g->guide_lines, GUIDE_NONE);
   gtk_object_set (GTK_OBJECT(g->guide_lines), "tooltip-text", _("with this option, you can display guide lines "
-	    "to help compose your photograph."), (char *)NULL);
+                  "to help compose your photograph."), (char *)NULL);
   g_signal_connect (G_OBJECT (g->guide_lines), "changed",
                     G_CALLBACK (guides_presets_changed), self);
   label = gtk_label_new(_("type"));
@@ -803,7 +855,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->guide_lines), 2, 6, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-/*-------------------------------------------*/
+  /*-------------------------------------------*/
   g->label7 = GTK_LABEL(gtk_label_new(_("flip")));
   gtk_misc_set_alignment(GTK_MISC(g->label7), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label7), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -813,7 +865,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->flipVerGoldenGuide), 4, 6, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_object_set (GTK_OBJECT(g->flipHorGoldenGuide), "tooltip-text", _("flip guides vertically"), (char *)NULL);
   gtk_object_set (GTK_OBJECT(g->flipVerGoldenGuide), "tooltip-text", _("flip guides horizontally"), (char *)NULL);
-/*-------------------------------------------*/
+  /*-------------------------------------------*/
   g->goldenSectionBox = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("golden sections")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->goldenSectionBox), TRUE);
   gtk_object_set (GTK_OBJECT(g->goldenSectionBox), "tooltip-text", _("enable this option to show golden sections."), (char *)NULL);
@@ -895,7 +947,8 @@ get_grab (float pzx, float pzy, dt_iop_clipping_gui_data_t *g, const float borde
 static void
 drawLine(cairo_t *cr, float left, float top, float right, float bottom)
 {
-  cairo_move_to(cr, left, top); cairo_line_to(cr, right,  bottom);
+  cairo_move_to(cr, left, top);
+  cairo_line_to(cr, right,  bottom);
 }
 
 typedef struct QRect
@@ -1088,7 +1141,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // draw cropping window handles:
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
-  pzx += 0.5f; pzy += 0.5f;
+  pzx += 0.5f;
+  pzy += 0.5f;
   cairo_set_dash (cr, &dashes, 0, 0);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
   cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
@@ -1098,7 +1152,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   cairo_stroke (cr);
 
-  // draw crop area guides 
+  // draw crop area guides
   float left, top, right, bottom, xThird, yThird;
   left = g->clip_x*wd;
   top = g->clip_y*ht;
@@ -1244,18 +1298,21 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
-  pzx += 0.5f; pzy += 0.5f;
+  pzx += 0.5f;
+  pzy += 0.5f;
   static int old_grab = -1;
   int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 3)
-  { // second mouse button, straighten activated:
+  {
+    // second mouse button, straighten activated:
     g->straightening = 1;
     dt_control_change_cursor(GDK_CROSSHAIR);
     dt_control_gui_queue_draw();
   }
   else if(darktable.control->button_down && darktable.control->button_down_which == 1)
-  { // first mouse button, adjust cropping frame, but what do we do?
+  {
+    // first mouse button, adjust cropping frame, but what do we do?
     float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
     if(!g->cropping && !g->straightening)
     {
@@ -1307,9 +1364,11 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     return 1;
   }
   else if (grab)
-  { // hover over active borders, no button pressed
+  {
+    // hover over active borders, no button pressed
     if(old_grab != grab)
-    { // change mouse pointer
+    {
+      // change mouse pointer
       if     (grab == 1)  dt_control_change_cursor(GDK_LEFT_SIDE);
       else if(grab == 2)  dt_control_change_cursor(GDK_TOP_SIDE);
       else if(grab == 4)  dt_control_change_cursor(GDK_RIGHT_SIDE);
@@ -1322,7 +1381,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     dt_control_gui_queue_draw();
   }
   else
-  { // somewhere besides borders. maybe rotate?
+  {
+    // somewhere besides borders. maybe rotate?
     if(old_grab != grab) dt_control_change_cursor(GDK_FLEUR);
     g->straightening = g->cropping = 0;
     dt_control_gui_queue_draw();
@@ -1340,7 +1400,8 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
   g->old_clip_h = g->clip_h;
   g->cropping = 0;
   if(!self->enabled)
-  { // first time crop, if any data is stored in p, it's obsolete:
+  {
+    // first time crop, if any data is stored in p, it's obsolete:
     p->cx = p->cy = 0.0f;
     p->cw = p->ch = 1.0f;
   }
@@ -1367,7 +1428,11 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   if(g->straightening)
   {
     float dx = x - darktable.control->button_x, dy = y - darktable.control->button_y;
-    if(dx < 0) { dx = -dx; dy = - dy; }
+    if(dx < 0)
+    {
+      dx = -dx;
+      dy = - dy;
+    }
     float angle = atan2f(dy, dx);
     if(!(angle >= - M_PI/2.0 && angle <= M_PI/2.0)) angle = 0.0f;
     float close = angle;

@@ -39,7 +39,7 @@ name ()
   return _("selected image[s]");
 }
 
-uint32_t views() 
+uint32_t views()
 {
   return DT_LIGHTTABLE_VIEW;
 }

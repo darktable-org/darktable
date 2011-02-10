@@ -28,7 +28,7 @@ void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, i
   cache->size = (size_t *)malloc(sizeof(size_t)*entries);
   cache->hash = (uint64_t *)malloc(sizeof(uint64_t)*entries);
   cache->used = (int32_t *)malloc(sizeof(int32_t)*entries);
-  for(int k=0;k<entries;k++)
+  for(int k=0; k<entries; k++)
   {
     cache->data[k] = (void *)dt_alloc_align(16, size);
     cache->size[k] = size;
@@ -43,7 +43,7 @@ void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, i
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 {
-  for(int k=0;k<cache->entries;k++) free(cache->data[k]);
+  for(int k=0; k<cache->entries; k++) free(cache->data[k]);
   free(cache->data);
   free(cache->hash);
   free(cache->used);
@@ -56,27 +56,27 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
   uint64_t hash = 5381 + imgid;
   // go through all modules up to module and compute a weird hash using the operation and params.
   GList *pieces = pipe->nodes;
-  for(int k=0;k<module&&pieces;k++)
+  for(int k=0; k<module&&pieces; k++)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     hash = ((hash << 5) + hash) ^ piece->hash;
     if(piece->module->request_color_pick)
     {
       const char *str = (const char *)piece->module->color_picker_box;
-      for(int i=0;i<sizeof(float)*4;i++) hash = ((hash << 5) + hash) ^ str[i];
+      for(int i=0; i<sizeof(float)*4; i++) hash = ((hash << 5) + hash) ^ str[i];
     }
     pieces = g_list_next(pieces);
   }
   // also add scale, x and y:
   const char *str = (const char *)roi;
-  for(int i=0;i<sizeof(dt_iop_roi_t);i++) hash = ((hash << 5) + hash) ^ str[i];
+  for(int i=0; i<sizeof(dt_iop_roi_t); i++) hash = ((hash << 5) + hash) ^ str[i];
   return hash;
 }
 
 int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash)
 {
   // search for hash in cache
-  for(int k=0;k<cache->entries;k++) if(cache->hash[k] == hash) return 1;
+  for(int k=0; k<cache->entries; k++) if(cache->hash[k] == hash) return 1;
   return 0;
 }
 
@@ -96,8 +96,9 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
   *data = NULL;
   int max_used = -1, max = 0;
   size_t sz = 0;
-  for(int k=0;k<cache->entries;k++)
-  { // search for hash in cache
+  for(int k=0; k<cache->entries; k++)
+  {
+    // search for hash in cache
     if(cache->used[k] > max_used)
     {
       max_used = cache->used[k];
@@ -113,7 +114,8 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
   }
 
   if(!*data || sz < size)
-  { // kill LRU entry
+  {
+    // kill LRU entry
     // printf("[pixelpipe_cache_get] hash not found, returning slot %d/%d age %d\n", max, cache->entries, weight);
     if(cache->size[max] < size)
     {
@@ -132,7 +134,7 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
 
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
 {
-  for(int k=0;k<cache->entries;k++)
+  for(int k=0; k<cache->entries; k++)
   {
     cache->hash[k] = -1;
     cache->used[k] = 0;
@@ -141,7 +143,7 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
 
 void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data)
 {
-  for(int k=0;k<cache->entries;k++)
+  for(int k=0; k<cache->entries; k++)
   {
     if(cache->data[k] == data)
     {
@@ -152,7 +154,7 @@ void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data
 
 void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *data)
 {
-  for(int k=0;k<cache->entries;k++)
+  for(int k=0; k<cache->entries; k++)
   {
     if(cache->data[k] == data)
     {
@@ -163,7 +165,7 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
 
 void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache)
 {
-  for(int k=0;k<cache->entries;k++)
+  for(int k=0; k<cache->entries; k++)
   {
     printf("pixelpipe cacheline %d ", k);
     printf("used %d by %"PRIu64"", cache->used[k], cache->hash[k]);

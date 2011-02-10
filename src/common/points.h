@@ -23,7 +23,7 @@
 // lamer version for obsolete archs:
 
 #ifndef _XOPEN_SOURCE
-  #define _XOPEN_SOURCE
+#define _XOPEN_SOURCE
 #endif
 
 #include <stdlib.h>
@@ -31,7 +31,7 @@ double drand48(void);
 void srand48(long int seedval);
 
 typedef struct dt_points_t
-{ }
+  { }
 dt_points_t;
 
 static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads)
@@ -62,14 +62,14 @@ static inline float dt_points_get()
 
 #if !defined(MEXP)
 #ifdef __GNUC__
-  #warning "MEXP is not defined. I assume MEXP is 19937."
+#warning "MEXP is not defined. I assume MEXP is 19937."
 #endif
-  #define MEXP 19937
+#define MEXP 19937
 #endif
 /*-----------------
   BASIC DEFINITIONS
   -----------------*/
-/** Mersenne Exponent. The period of the sequence 
+/** Mersenne Exponent. The period of the sequence
  *  is a multiple of 2^MEXP-1.
  * #define MEXP 19937 */
 /** SFMT generator has an internal state array of 128-bit integers,
@@ -94,8 +94,8 @@ static inline float dt_points_get()
 #define SL1 18
  */
 
-/** the parameter of shift left as one 128-bit register. 
- * The 128-bit integer is shifted by (SL2 * 8) bits. 
+/** the parameter of shift left as one 128-bit register.
+ * The 128-bit integer is shifted by (SL2 * 8) bits.
 #define SL2 1 
 */
 
@@ -103,8 +103,8 @@ static inline float dt_points_get()
 #define SR1 11
 */
 
-/** the parameter of shift right as one 128-bit register. 
- * The 128-bit integer is shifted by (SL2 * 8) bits. 
+/** the parameter of shift right as one 128-bit register.
+ * The 128-bit integer is shifted by (SL2 * 8) bits.
 #define SR2 1 
 */
 
@@ -125,31 +125,31 @@ static inline float dt_points_get()
 
 #if 0
 #if MEXP == 607
-  #include "SFMT-params607.h"
+#include "SFMT-params607.h"
 #elif MEXP == 1279
-  #include "SFMT-params1279.h"
+#include "SFMT-params1279.h"
 #elif MEXP == 2281
-  #include "SFMT-params2281.h"
+#include "SFMT-params2281.h"
 #elif MEXP == 4253
-  #include "SFMT-params4253.h"
+#include "SFMT-params4253.h"
 #elif MEXP == 11213
-  #include "SFMT-params11213.h"
+#include "SFMT-params11213.h"
 #elif MEXP == 19937
-  #include "SFMT-params19937.h"
+#include "SFMT-params19937.h"
 #elif MEXP == 44497
-  #include "SFMT-params44497.h"
+#include "SFMT-params44497.h"
 #elif MEXP == 86243
-  #include "SFMT-params86243.h"
+#include "SFMT-params86243.h"
 #elif MEXP == 132049
-  #include "SFMT-params132049.h"
+#include "SFMT-params132049.h"
 #elif MEXP == 216091
-  #include "SFMT-params216091.h"
+#include "SFMT-params216091.h"
 #else
 #ifdef __GNUC__
-  #error "MEXP is not valid."
-  #undef MEXP
+#error "MEXP is not valid."
+#undef MEXP
 #else
-  #undef MEXP
+#undef MEXP
 #endif
 #endif
 
@@ -215,8 +215,8 @@ typedef struct sfmt_state_t
 }
 sfmt_state_t;
 
-/** 
- * @file SFMT.h 
+/**
+ * @file SFMT.h
  *
  * @brief SIMD oriented Fast Mersenne Twister(SFMT) pseudorandom
  * number generator
@@ -235,7 +235,7 @@ sfmt_state_t;
  * and you have to define PRIu64 and PRIx64 in this file as follows:
  * @verbatim
  typedef unsigned int uint32_t
- typedef unsigned long long uint64_t  
+ typedef unsigned long long uint64_t
 #define PRIu64 "llu"
 #define PRIx64 "llx"
 @endverbatim
@@ -303,8 +303,8 @@ static inline int get_min_array_size64(void);
 /** generates a random number on [0,1]-real-interval */
 inline static double to_real1(uint32_t v)
 {
-  return v * (1.0/4294967295.0); 
-  /* divided by 2^32-1 */ 
+  return v * (1.0/4294967295.0);
+  /* divided by 2^32-1 */
 }
 
 /** generates a random number on [0,1]-real-interval */
@@ -316,7 +316,7 @@ inline static double genrand_real1(struct sfmt_state_t *s)
 /** generates a random number on [0,1)-real-interval */
 inline static double to_real2(uint32_t v)
 {
-  return v * (1.0/4294967296.0); 
+  return v * (1.0/4294967296.0);
   /* divided by 2^32 */
 }
 
@@ -342,7 +342,7 @@ inline static float genrand_real2f(struct sfmt_state_t *s)
 /** generates a random number on (0,1)-real-interval */
 inline static double to_real3(uint32_t v)
 {
-  return (((double)v) + 0.5)*(1.0/4294967296.0); 
+  return (((double)v) + 0.5)*(1.0/4294967296.0);
   /* divided by 2^32 */
 }
 
@@ -354,38 +354,38 @@ inline static double genrand_real3(struct sfmt_state_t *s)
 /** These real versions are due to Isaku Wada */
 
 /** generates a random number on [0,1) with 53-bit resolution*/
-inline static double to_res53(uint64_t v) 
-{ 
+inline static double to_res53(uint64_t v)
+{
   return v * (1.0/18446744073709551616.0L);
 }
 
 /** generates a random number on [0,1) with 53-bit resolution from two
  * 32 bit integers */
-inline static double to_res53_mix(uint32_t x, uint32_t y) 
-{ 
+inline static double to_res53_mix(uint32_t x, uint32_t y)
+{
   return to_res53(x | ((uint64_t)y << 32));
 }
 
 /** generates a random number on [0,1) with 53-bit resolution
 */
-inline static double genrand_res53(struct sfmt_state_t *s) 
-{ 
+inline static double genrand_res53(struct sfmt_state_t *s)
+{
   return to_res53(gen_rand64(s));
-} 
+}
 
 /** generates a random number on [0,1) with 53-bit resolution
   using 32bit integer.
   */
 inline static double genrand_res53_mix(struct sfmt_state_t *s)
-{ 
+{
   uint32_t x, y;
 
   x = gen_rand32(s);
   y = gen_rand32(s);
   return to_res53_mix(x, y);
-} 
+}
 #endif
-/** 
+/**
  * @file  SFMT-sse2.h
  * @brief SIMD oriented Fast Mersenne Twister(SFMT) for Intel SSE2
  *
@@ -404,7 +404,7 @@ inline static double genrand_res53_mix(struct sfmt_state_t *s)
 #define SFMT_SSE2_H
 
 PRE_ALWAYS static __m128i mm_recursion(__m128i *a, __m128i *b, __m128i c,
-    __m128i d, __m128i mask) ALWAYSINLINE;
+                                       __m128i d, __m128i mask) ALWAYSINLINE;
 
 /**
  * This function represents the recursion formula.
@@ -415,8 +415,9 @@ PRE_ALWAYS static __m128i mm_recursion(__m128i *a, __m128i *b, __m128i c,
  * @param mask 128-bit mask
  * @return output
  */
-PRE_ALWAYS static __m128i mm_recursion(__m128i *a, __m128i *b, 
-    __m128i c, __m128i d, __m128i mask) {
+PRE_ALWAYS static __m128i mm_recursion(__m128i *a, __m128i *b,
+                                       __m128i c, __m128i d, __m128i mask)
+{
   __m128i v, x, y, z;
 
   x = _mm_load_si128(a);
@@ -436,20 +437,23 @@ PRE_ALWAYS static __m128i mm_recursion(__m128i *a, __m128i *b,
  * This function fills the internal state array with pseudorandom
  * integers.
  */
-inline static void gen_rand_all(struct sfmt_state_t *s) {
+inline static void gen_rand_all(struct sfmt_state_t *s)
+{
   int i;
   __m128i r, r1, r2, mask;
   mask = _mm_set_epi32(MSK4, MSK3, MSK2, MSK1);
 
   r1 = _mm_load_si128(&(s->sfmt[N - 2].si));
   r2 = _mm_load_si128(&(s->sfmt[N - 1].si));
-  for (i = 0; i < N - POS1; i++) {
+  for (i = 0; i < N - POS1; i++)
+  {
     r = mm_recursion(&(s->sfmt[i].si), &(s->sfmt[i + POS1].si), r1, r2, mask);
     _mm_store_si128(&(s->sfmt[i].si), r);
     r1 = r2;
     r2 = r;
   }
-  for (; i < N; i++) {
+  for (; i < N; i++)
+  {
     r = mm_recursion(&(s->sfmt[i].si), &(s->sfmt[i + POS1 - N].si), r1, r2, mask);
     _mm_store_si128(&(s->sfmt[i].si), r);
     r1 = r2;
@@ -461,43 +465,49 @@ inline static void gen_rand_all(struct sfmt_state_t *s) {
  * This function fills the user-specified array with pseudorandom
  * integers.
  *
- * @param array an 128-bit array to be filled by pseudorandom numbers.  
+ * @param array an 128-bit array to be filled by pseudorandom numbers.
  * @param size number of 128-bit pesudorandom numbers to be generated.
  */
-inline static void gen_rand_array(struct sfmt_state_t *s, w128_t *array, int size) {
+inline static void gen_rand_array(struct sfmt_state_t *s, w128_t *array, int size)
+{
   int i, j;
   __m128i r, r1, r2, mask;
   mask = _mm_set_epi32(MSK4, MSK3, MSK2, MSK1);
 
   r1 = _mm_load_si128(&(s->sfmt[N - 2].si));
   r2 = _mm_load_si128(&(s->sfmt[N - 1].si));
-  for (i = 0; i < N - POS1; i++) {
+  for (i = 0; i < N - POS1; i++)
+  {
     r = mm_recursion(&(s->sfmt[i].si), &(s->sfmt[i + POS1].si), r1, r2, mask);
     _mm_store_si128(&array[i].si, r);
     r1 = r2;
     r2 = r;
   }
-  for (; i < N; i++) {
+  for (; i < N; i++)
+  {
     r = mm_recursion(&(s->sfmt[i].si), &array[i + POS1 - N].si, r1, r2, mask);
     _mm_store_si128(&array[i].si, r);
     r1 = r2;
     r2 = r;
   }
   /* main loop */
-  for (; i < size - N; i++) {
+  for (; i < size - N; i++)
+  {
     r = mm_recursion(&array[i - N].si, &array[i + POS1 - N].si, r1, r2,
-        mask);
+                     mask);
     _mm_store_si128(&array[i].si, r);
     r1 = r2;
     r2 = r;
   }
-  for (j = 0; j < 2 * N - size; j++) {
+  for (j = 0; j < 2 * N - size; j++)
+  {
     r = _mm_load_si128(&array[j + size - N].si);
     _mm_store_si128(&(s->sfmt[j].si), r);
   }
-  for (; i < size; i++) {
+  for (; i < size; i++)
+  {
     r = mm_recursion(&array[i - N].si, &array[i + POS1 - N].si, r1, r2,
-        mask);
+                     mask);
     _mm_store_si128(&array[i].si, r);
     _mm_store_si128(&(s->sfmt[j++].si), r);
     r1 = r2;
@@ -506,7 +516,7 @@ inline static void gen_rand_array(struct sfmt_state_t *s, w128_t *array, int siz
 }
 
 #endif
-/** 
+/**
  * @file  SFMT.c
  * @brief SIMD oriented Fast Mersenne Twister(SFMT)
  *
@@ -547,7 +557,7 @@ dt_points_t;
 #if 0
 /*--------------------------------------
   FILE GLOBAL VARIABLES
-  internal state, index counter and flag 
+  internal state, index counter and flag
   --------------------------------------*/
 /** the 128-bit internal state array */
 static w128_t sfmt[N];
@@ -588,15 +598,17 @@ inline static void swap(w128_t *array, int size);
 #endif*/
 
 /**
- * This function simulate a 64-bit index of LITTLE ENDIAN 
+ * This function simulate a 64-bit index of LITTLE ENDIAN
  * in BIG ENDIAN machine.
  */
 #ifdef ONLY64
-inline static int idxof(int i) {
+inline static int idxof(int i)
+{
   return i ^ 1;
 }
 #else
-inline static int idxof(int i) {
+inline static int idxof(int i)
+{
   return i;
 }
 #endif
@@ -609,7 +621,8 @@ inline static int idxof(int i) {
  * @param shift the shift value
  */
 #ifdef ONLY64
-inline static void rshift128(w128_t *out, w128_t const *in, int shift) {
+inline static void rshift128(w128_t *out, w128_t const *in, int shift)
+{
   uint64_t th, tl, oh, ol;
 
   th = ((uint64_t)in->u[2] << 32) | ((uint64_t)in->u[3]);
@@ -624,7 +637,8 @@ inline static void rshift128(w128_t *out, w128_t const *in, int shift) {
   out->u[3] = (uint32_t)oh;
 }
 #else
-inline static void rshift128(w128_t *out, w128_t const *in, int shift) {
+inline static void rshift128(w128_t *out, w128_t const *in, int shift)
+{
   uint64_t th, tl, oh, ol;
 
   th = ((uint64_t)in->u[3] << 32) | ((uint64_t)in->u[2]);
@@ -648,7 +662,8 @@ inline static void rshift128(w128_t *out, w128_t const *in, int shift) {
  * @param shift the shift value
  */
 #ifdef ONLY64
-inline static void lshift128(w128_t *out, w128_t const *in, int shift) {
+inline static void lshift128(w128_t *out, w128_t const *in, int shift)
+{
   uint64_t th, tl, oh, ol;
 
   th = ((uint64_t)in->u[2] << 32) | ((uint64_t)in->u[3]);
@@ -663,7 +678,8 @@ inline static void lshift128(w128_t *out, w128_t const *in, int shift) {
   out->u[3] = (uint32_t)oh;
 }
 #else
-inline static void lshift128(w128_t *out, w128_t const *in, int shift) {
+inline static void lshift128(w128_t *out, w128_t const *in, int shift)
+{
   uint64_t th, tl, oh, ol;
 
   th = ((uint64_t)in->u[3] << 32) | ((uint64_t)in->u[2]);
@@ -690,47 +706,51 @@ inline static void lshift128(w128_t *out, w128_t const *in, int shift) {
 #if (!defined(HAVE_ALTIVEC)) && (!defined(HAVE_SSE2))
 #ifdef ONLY64
 inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b, w128_t *c,
-    w128_t *d) {
+                                w128_t *d)
+{
   w128_t x;
   w128_t y;
 
   lshift128(&x, a, SL2);
   rshift128(&y, c, SR2);
-  r->u[0] = a->u[0] ^ x.u[0] ^ ((b->u[0] >> SR1) & MSK2) ^ y.u[0] 
-    ^ (d->u[0] << SL1);
-  r->u[1] = a->u[1] ^ x.u[1] ^ ((b->u[1] >> SR1) & MSK1) ^ y.u[1] 
-    ^ (d->u[1] << SL1);
-  r->u[2] = a->u[2] ^ x.u[2] ^ ((b->u[2] >> SR1) & MSK4) ^ y.u[2] 
-    ^ (d->u[2] << SL1);
-  r->u[3] = a->u[3] ^ x.u[3] ^ ((b->u[3] >> SR1) & MSK3) ^ y.u[3] 
-    ^ (d->u[3] << SL1);
+  r->u[0] = a->u[0] ^ x.u[0] ^ ((b->u[0] >> SR1) & MSK2) ^ y.u[0]
+            ^ (d->u[0] << SL1);
+  r->u[1] = a->u[1] ^ x.u[1] ^ ((b->u[1] >> SR1) & MSK1) ^ y.u[1]
+            ^ (d->u[1] << SL1);
+  r->u[2] = a->u[2] ^ x.u[2] ^ ((b->u[2] >> SR1) & MSK4) ^ y.u[2]
+            ^ (d->u[2] << SL1);
+  r->u[3] = a->u[3] ^ x.u[3] ^ ((b->u[3] >> SR1) & MSK3) ^ y.u[3]
+            ^ (d->u[3] << SL1);
 }
 #else
 inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b, w128_t *c,
-    w128_t *d) {
+                                w128_t *d)
+{
   w128_t x;
   w128_t y;
 
   lshift128(&x, a, SL2);
   rshift128(&y, c, SR2);
-  r->u[0] = a->u[0] ^ x.u[0] ^ ((b->u[0] >> SR1) & MSK1) ^ y.u[0] 
-    ^ (d->u[0] << SL1);
-  r->u[1] = a->u[1] ^ x.u[1] ^ ((b->u[1] >> SR1) & MSK2) ^ y.u[1] 
-    ^ (d->u[1] << SL1);
-  r->u[2] = a->u[2] ^ x.u[2] ^ ((b->u[2] >> SR1) & MSK3) ^ y.u[2] 
-    ^ (d->u[2] << SL1);
-  r->u[3] = a->u[3] ^ x.u[3] ^ ((b->u[3] >> SR1) & MSK4) ^ y.u[3] 
-    ^ (d->u[3] << SL1);
+  r->u[0] = a->u[0] ^ x.u[0] ^ ((b->u[0] >> SR1) & MSK1) ^ y.u[0]
+            ^ (d->u[0] << SL1);
+  r->u[1] = a->u[1] ^ x.u[1] ^ ((b->u[1] >> SR1) & MSK2) ^ y.u[1]
+            ^ (d->u[1] << SL1);
+  r->u[2] = a->u[2] ^ x.u[2] ^ ((b->u[2] >> SR1) & MSK3) ^ y.u[2]
+            ^ (d->u[2] << SL1);
+  r->u[3] = a->u[3] ^ x.u[3] ^ ((b->u[3] >> SR1) & MSK4) ^ y.u[3]
+            ^ (d->u[3] << SL1);
 }
 #endif
 #endif
 
 #if defined(BIG_ENDIAN64) && !defined(ONLY64) && !defined(HAVE_ALTIVEC)
-inline static void swap(w128_t *array, int size) {
+inline static void swap(w128_t *array, int size)
+{
   int i;
   uint32_t x, y;
 
-  for (i = 0; i < size; i++) {
+  for (i = 0; i < size; i++)
+  {
     x = array[i].u[0];
     y = array[i].u[2];
     array[i].u[0] = array[i].u[1];
@@ -746,7 +766,8 @@ inline static void swap(w128_t *array, int size) {
  * @param x 32-bit integer
  * @return 32-bit integer
  */
-static uint32_t func1(uint32_t x) {
+static uint32_t func1(uint32_t x)
+{
   return (x ^ (x >> 27)) * (uint32_t)1664525UL;
 }
 
@@ -756,14 +777,16 @@ static uint32_t func1(uint32_t x) {
  * @param x 32-bit integer
  * @return 32-bit integer
  */
-static uint32_t func2(uint32_t x) {
+static uint32_t func2(uint32_t x)
+{
   return (x ^ (x >> 27)) * (uint32_t)1566083941UL;
 }
 
 /**
  * This function certificate the period of 2^{MEXP}
  */
-static void period_certification(sfmt_state_t *s) {
+static void period_certification(sfmt_state_t *s)
+{
   int inner = 0;
   int i, j;
   uint32_t work;
@@ -774,14 +797,18 @@ static void period_certification(sfmt_state_t *s) {
     inner ^= inner >> i;
   inner &= 1;
   /* check OK */
-  if (inner == 1) {
+  if (inner == 1)
+  {
     return;
   }
   /* check NG, and modification */
-  for (i = 0; i < 4; i++) {
+  for (i = 0; i < 4; i++)
+  {
     work = 1;
-    for (j = 0; j < 32; j++) {
-      if ((work & s->parity[i]) != 0) {
+    for (j = 0; j < 32; j++)
+    {
+      if ((work & s->parity[i]) != 0)
+      {
         s->psfmt32[idxof(i)] ^= work;
         return;
       }
@@ -798,7 +825,8 @@ static void period_certification(sfmt_state_t *s) {
  * The string shows the word size, the Mersenne exponent,
  * and all parameters of this generator.
  */
-const char *get_idstring(void) {
+const char *get_idstring(void)
+{
   return IDSTR;
 }
 
@@ -807,7 +835,8 @@ const char *get_idstring(void) {
  * fill_array32() function.
  * @return minimum size of array used for fill_array32() function.
  */
-int get_min_array_size32(void) {
+int get_min_array_size32(void)
+{
   return N32;
 }
 
@@ -816,7 +845,8 @@ int get_min_array_size32(void) {
  * fill_array64() function.
  * @return minimum size of array used for fill_array64() function.
  */
-int get_min_array_size64(void) {
+int get_min_array_size64(void)
+{
   return N64;
 }
 
@@ -826,11 +856,13 @@ int get_min_array_size64(void) {
  * init_gen_rand or init_by_array must be called before this function.
  * @return 32-bit pseudorandom number
  */
-uint32_t gen_rand32(sfmt_state_t *s) {
+uint32_t gen_rand32(sfmt_state_t *s)
+{
   uint32_t r;
 
   //assert(s->initialized);
-  if (s->idx >= N32) {
+  if (s->idx >= N32)
+  {
     gen_rand_all(s);
     s->idx = 0;
   }
@@ -842,34 +874,36 @@ uint32_t gen_rand32(sfmt_state_t *s) {
  * This function generates and returns 64-bit pseudorandom number.
  * init_gen_rand or init_by_array must be called before this function.
  * The function gen_rand64 should not be called after gen_rand32,
- * unless an initialization is again executed. 
+ * unless an initialization is again executed.
  * @return 64-bit pseudorandom number
  */
-  uint64_t gen_rand64(sfmt_state_t *s) {
+uint64_t gen_rand64(sfmt_state_t *s)
+{
 #if defined(BIG_ENDIAN64) && !defined(ONLY64)
-    uint32_t r1, r2;
+  uint32_t r1, r2;
 #else
-    uint64_t r;
+  uint64_t r;
 #endif
 
-    //assert(s->initialized);
-    //assert(s->idx % 2 == 0);
+  //assert(s->initialized);
+  //assert(s->idx % 2 == 0);
 
-    if (s->idx >= N32) {
-      gen_rand_all(s);
-      s->idx = 0;
-    }
-#if defined(BIG_ENDIAN64) && !defined(ONLY64)
-    r1 = s->psfmt32[s->idx];
-    r2 = s->psfmt32[s->idx + 1];
-    s->idx += 2;
-    return ((uint64_t)r2 << 32) | r1;
-#else
-    r = s->psfmt64[s->idx / 2];
-    s->idx += 2;
-    return r;
-#endif
+  if (s->idx >= N32)
+  {
+    gen_rand_all(s);
+    s->idx = 0;
   }
+#if defined(BIG_ENDIAN64) && !defined(ONLY64)
+  r1 = s->psfmt32[s->idx];
+  r2 = s->psfmt32[s->idx + 1];
+  s->idx += 2;
+  return ((uint64_t)r2 << 32) | r1;
+#else
+  r = s->psfmt64[s->idx / 2];
+  s->idx += 2;
+  return r;
+#endif
+}
 
 #ifndef ONLY64
 /**
@@ -897,7 +931,8 @@ uint32_t gen_rand32(sfmt_state_t *s) {
  * memory. Mac OSX doesn't have these functions, but \b malloc of OSX
  * returns the pointer to the aligned memory block.
  */
-void fill_array32(sfmt_state_t *s, uint32_t *array, int size) {
+void fill_array32(sfmt_state_t *s, uint32_t *array, int size)
+{
   // assert(s->initialized);
   // assert(s->idx == N32);
   // assert(size % 4 == 0);
@@ -933,7 +968,8 @@ void fill_array32(sfmt_state_t *s, uint32_t *array, int size) {
  * memory. Mac OSX doesn't have these functions, but \b malloc of OSX
  * returns the pointer to the aligned memory block.
  */
-void fill_array64(sfmt_state_t *s, uint64_t *array, int size) {
+void fill_array64(sfmt_state_t *s, uint64_t *array, int size)
+{
   // assert(s->initialized);
   // assert(s->idx == N32);
   // assert(size % 2 == 0);
@@ -953,14 +989,16 @@ void fill_array64(sfmt_state_t *s, uint64_t *array, int size) {
  *
  * @param seed a 32-bit integer used as the seed.
  */
-void init_gen_rand(sfmt_state_t *s, uint32_t seed) {
+void init_gen_rand(sfmt_state_t *s, uint32_t seed)
+{
   int i;
 
   s->psfmt32[idxof(0)] = seed;
-  for (i = 1; i < N32; i++) {
-    s->psfmt32[idxof(i)] = 1812433253UL * (s->psfmt32[idxof(i - 1)] 
-        ^ (s->psfmt32[idxof(i - 1)] >> 30))
-      + i;
+  for (i = 1; i < N32; i++)
+  {
+    s->psfmt32[idxof(i)] = 1812433253UL * (s->psfmt32[idxof(i - 1)]
+                                           ^ (s->psfmt32[idxof(i - 1)] >> 30))
+                           + i;
   }
   s->idx = N32;
   period_certification(s);
@@ -973,59 +1011,73 @@ void init_gen_rand(sfmt_state_t *s, uint32_t seed) {
  * @param init_key the array of 32-bit integers, used as a seed.
  * @param key_length the length of init_key.
  */
-void init_by_array(sfmt_state_t *s, uint32_t *init_key, int key_length) {
+void init_by_array(sfmt_state_t *s, uint32_t *init_key, int key_length)
+{
   int i, j, count;
   uint32_t r;
   int lag;
   int mid;
   int size = N * 4;
 
-  if (size >= 623) {
+  if (size >= 623)
+  {
     lag = 11;
-  } else if (size >= 68) {
+  }
+  else if (size >= 68)
+  {
     lag = 7;
-  } else if (size >= 39) {
+  }
+  else if (size >= 39)
+  {
     lag = 5;
-  } else {
+  }
+  else
+  {
     lag = 3;
   }
   mid = (size - lag) / 2;
 
   memset(s->sfmt, 0x8b, sizeof(s->sfmt));
-  if (key_length + 1 > N32) {
+  if (key_length + 1 > N32)
+  {
     count = key_length + 1;
-  } else {
+  }
+  else
+  {
     count = N32;
   }
-  r = func1(s->psfmt32[idxof(0)] ^ s->psfmt32[idxof(mid)] 
-      ^ s->psfmt32[idxof(N32 - 1)]);
+  r = func1(s->psfmt32[idxof(0)] ^ s->psfmt32[idxof(mid)]
+            ^ s->psfmt32[idxof(N32 - 1)]);
   s->psfmt32[idxof(mid)] += r;
   r += key_length;
   s->psfmt32[idxof(mid + lag)] += r;
   s->psfmt32[idxof(0)] = r;
 
   count--;
-  for (i = 1, j = 0; (j < count) && (j < key_length); j++) {
-    r = func1(s->psfmt32[idxof(i)] ^ s->psfmt32[idxof((i + mid) % N32)] 
-        ^ s->psfmt32[idxof((i + N32 - 1) % N32)]);
+  for (i = 1, j = 0; (j < count) && (j < key_length); j++)
+  {
+    r = func1(s->psfmt32[idxof(i)] ^ s->psfmt32[idxof((i + mid) % N32)]
+              ^ s->psfmt32[idxof((i + N32 - 1) % N32)]);
     s->psfmt32[idxof((i + mid) % N32)] += r;
     r += init_key[j] + i;
     s->psfmt32[idxof((i + mid + lag) % N32)] += r;
     s->psfmt32[idxof(i)] = r;
     i = (i + 1) % N32;
   }
-  for (; j < count; j++) {
-    r = func1(s->psfmt32[idxof(i)] ^ s->psfmt32[idxof((i + mid) % N32)] 
-        ^ s->psfmt32[idxof((i + N32 - 1) % N32)]);
+  for (; j < count; j++)
+  {
+    r = func1(s->psfmt32[idxof(i)] ^ s->psfmt32[idxof((i + mid) % N32)]
+              ^ s->psfmt32[idxof((i + N32 - 1) % N32)]);
     s->psfmt32[idxof((i + mid) % N32)] += r;
     r += i;
     s->psfmt32[idxof((i + mid + lag) % N32)] += r;
     s->psfmt32[idxof(i)] = r;
     i = (i + 1) % N32;
   }
-  for (j = 0; j < N32; j++) {
-    r = func2(s->psfmt32[idxof(i)] + s->psfmt32[idxof((i + mid) % N32)] 
-        + s->psfmt32[idxof((i + N32 - 1) % N32)]);
+  for (j = 0; j < N32; j++)
+  {
+    r = func2(s->psfmt32[idxof(i)] + s->psfmt32[idxof((i + mid) % N32)]
+              + s->psfmt32[idxof((i + N32 - 1) % N32)]);
     s->psfmt32[idxof((i + mid) % N32)] ^= r;
     r -= i;
     s->psfmt32[idxof((i + mid + lag) % N32)] ^= r;
@@ -1046,7 +1098,7 @@ static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads
   p->num = num_threads;
 
   int seed = 0xD71337;
-  for(int i=0;i<(int)num_threads;i++)
+  for(int i=0; i<(int)num_threads; i++)
   {
     p->s[i] = states + i;
 #if !defined(BIG_ENDIAN64) || defined(ONLY64)

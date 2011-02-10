@@ -19,10 +19,10 @@
 #define DARKTABLE_H
 
 #ifndef _XOPEN_SOURCE
-  #define _XOPEN_SOURCE 600 // for localtime_r
+#define _XOPEN_SOURCE 600 // for localtime_r
 #endif
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/dtpthread.h"
 #include <time.h>
@@ -34,7 +34,7 @@
 #include <glib.h>
 #include <math.h>
 #ifdef _OPENMP
-  #include <omp.h>
+#include <omp.h>
 #endif
 
 #define DT_MODULE_VERSION 3   // version of dt's module interface
@@ -75,7 +75,7 @@ static inline int dt_version()
 }
 
 #ifndef M_PI
-  #define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
 
 // NaN-safe clamping (NaN compares false, and will thus result in H)
@@ -92,7 +92,8 @@ struct dt_points_t;
 struct dt_imageio_t;
 
 typedef enum dt_debug_thread_t
-{ // powers of two, masking
+{
+  // powers of two, masking
   DT_DEBUG_CACHE = 1,
   DT_DEBUG_CONTROL = 2,
   DT_DEBUG_DEV = 4,
@@ -212,7 +213,7 @@ static inline float dt_fast_expf(const float x)
   // e^x, the comment would be 2^x
   const int i2 = 0x402DF854u;//0x40000000u;
   // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
-  // without max clamping (doesn't work for large x, but is faster:
+  // without max clamping (doesn't work for large x, but is faster):
   const int k0 = i1 + x * (i2 - i1);
   const int k = k0 > 0 ? k0 : 0;
   const float f = *(const float *)&k;

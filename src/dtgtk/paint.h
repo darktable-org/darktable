@@ -25,13 +25,13 @@
 
 typedef enum dtgtk_cairo_paint_flags_t
 {
-	CPF_DIRECTION_UP=1,
-	CPF_DIRECTION_DOWN=2,
-	CPF_DIRECTION_LEFT=4,
-	CPF_DIRECTION_RIGHT=8,
-	CPF_ACTIVE=16,
-	CPF_PRELIGHT=32,
-	CPF_IGNORE_FG_STATE=64,	    // Ignore state when setting foregroundcolor 
+  CPF_DIRECTION_UP=1,
+  CPF_DIRECTION_DOWN=2,
+  CPF_DIRECTION_LEFT=4,
+  CPF_DIRECTION_RIGHT=8,
+  CPF_ACTIVE=16,
+  CPF_PRELIGHT=32,
+  CPF_IGNORE_FG_STATE=64,	    // Ignore state when setting foregroundcolor
   CPF_BG_TRANSPARENT=128,     // transparent background
   CPF_STYLE_FLAT=256,         // flat style widget
   CPF_STYLE_BOX=512,          // boxed style widget

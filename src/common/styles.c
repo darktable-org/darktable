@@ -33,12 +33,14 @@
 #include <stdio.h>
 #include <glib.h>
 
-typedef struct {
-	GString 	*name;
-	GString 	*description;
+typedef struct
+{
+  GString 	*name;
+  GString 	*description;
 } StyleInfoData;
 
-typedef struct {
+typedef struct
+{
   int   num;
   int   module;
   GString   *operation;
@@ -46,7 +48,8 @@ typedef struct {
   int   enabled;
 } StylePluginData;
 
-typedef struct {
+typedef struct
+{
   StyleInfoData   *info;
   GList           *plugins;
   gboolean        in_plugin;
@@ -54,14 +57,15 @@ typedef struct {
 
 static int32_t dt_styles_get_id_by_name (const char *name);
 
-gboolean 
+gboolean
 dt_styles_exists (const char *name)
 {
   return (dt_styles_get_id_by_name(name))!=0?TRUE:FALSE;
 }
 
 static gboolean
-dt_styles_create_style_header(const char *name, const char *description){
+dt_styles_create_style_header(const char *name, const char *description)
+{
   sqlite3_stmt *stmt;
   if (dt_styles_get_id_by_name(name)!=0)
   {
@@ -77,12 +81,12 @@ dt_styles_create_style_header(const char *name, const char *description){
   return TRUE;
 }
 
-void 
+void
 dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *filter)
 {
   int id=0;
-  sqlite3_stmt *stmt;  
-  
+  sqlite3_stmt *stmt;
+
   /* first create the style header */
   if (!dt_styles_create_style_header(name,description) ) return;
 
@@ -93,7 +97,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
     {
       GList *list=filter;
       char tmp[64];
-      char include[2048]={0};
+      char include[2048]= {0};
       strcat(include,"num in (");
       do
       {
@@ -101,23 +105,25 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
           strcat(include,",");
         sprintf(tmp,"%ld",(long int)list->data);
         strcat(include,tmp);
-      } while ((list=g_list_next(list)));
+      }
+      while ((list=g_list_next(list)));
       strcat(include,")");
-      char query[4096]={0};
+      char query[4096]= {0};
       sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled) select ?1, num,module,operation,op_params,enabled from history where imgid=?2 and %s",include);
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
-    } else
+    }
+    else
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into style_items (styleid,num,module,operation,op_params,enabled) select ?1, num,module,operation,op_params,enabled from history where imgid=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
-    
+
     dt_control_log(_("style named '%s' successfully created"),name);
   }
 }
 
-void 
+void
 dt_styles_apply_to_selection(const char *name,gboolean duplicate)
 {
   /* for each selected image apply style */
@@ -131,29 +137,29 @@ dt_styles_apply_to_selection(const char *name,gboolean duplicate)
   sqlite3_finalize(stmt);
 }
 
-void 
+void
 dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 {
   int id=0;
-  sqlite3_stmt *stmt;  
-  
+  sqlite3_stmt *stmt;
+
   if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
     /* check if we should make a duplicate before applying style */
     if (duplicate)
       imgid = dt_image_duplicate (imgid);
-    
-     /* if merge onto history stack, lets find history offest in destination image */
-    int32_t offs = 0; 
+
+    /* if merge onto history stack, lets find history offest in destination image */
+    int32_t offs = 0;
 #if 1
-    { 
+    {
       /* apply on top of history stack */
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
       if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
     }
 #else
-    { 
+    {
       /* replace history stack */
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -161,7 +167,7 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     }
 #endif
     sqlite3_finalize (stmt);
-    
+
     /* copy history items from styles onto image */
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid,num,module,operation,op_params,enabled) select ?1, num+?2,module,operation,op_params,enabled from style_items where styleid=?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -169,26 +175,27 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
-    
+
     /* add tag */
     guint tagid=0;
     if (dt_tag_new(name,&tagid))
       dt_tag_attach(tagid,imgid);
-    
+
     /* if current image in develop reload history */
     if (dt_dev_is_current_image(darktable.develop, imgid))
       dt_dev_reload_history_items (darktable.develop);
-    
+
     /* reimport image */
     dt_image_t *img = dt_image_cache_get (imgid, 'r');
-    if(img != NULL){
+    if(img != NULL)
+    {
       img->force_reimport = 1;
       dt_image_cache_flush(img);
     }
   }
 }
 
-void 
+void
 dt_styles_delete_by_name(const char *name)
 {
   int id=0;
@@ -200,13 +207,13 @@ dt_styles_delete_by_name(const char *name)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
-    
+
     /* delete style_items belonging to style */
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from style_items where styleid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
-    
+
   }
 }
 
@@ -222,7 +229,7 @@ dt_styles_get_item_list (const char *name)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      char name[512]={0};
+      char name[512]= {0};
       dt_style_item_t *item=g_malloc (sizeof (dt_style_item_t));
       item->num = sqlite3_column_int (stmt, 0);
       g_snprintf(name,512,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
@@ -237,7 +244,7 @@ dt_styles_get_item_list (const char *name)
 GList *
 dt_styles_get_list (const char *filter)
 {
-  char filterstring[512]={0};
+  char filterstring[512]= {0};
   sqlite3_stmt *stmt;
   sprintf (filterstring,"%%%s%%",filter);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, description from styles where name like ?1 or description like ?1 order by name", -1, &stmt, NULL);
@@ -257,64 +264,69 @@ dt_styles_get_list (const char *filter)
 }
 
 static char *
-dt_style_encode(sqlite3_stmt *stmt, int row){
-      const int32_t len = sqlite3_column_bytes(stmt, row);
-      char *vparams = (char *)malloc(2*len + 1);
-      dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, row), vparams, len);
-      return vparams;
+dt_style_encode(sqlite3_stmt *stmt, int row)
+{
+  const int32_t len = sqlite3_column_bytes(stmt, row);
+  char *vparams = (char *)malloc(2*len + 1);
+  dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, row), vparams, len);
+  return vparams;
 }
-      
-void 
-dt_styles_save_to_file(const char *style_name,const char *filedir){
-    int rc = 0;
-    char stylename[520];
-    sqlite3_stmt *stmt;
-    
-    snprintf(stylename,512,"%s/%s.dtstyle",filedir,style_name);
-    
-    // check if file exists
-    if( g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE ){
-      dt_control_log(_("style file for %s exists"),style_name);
-      return;
-    }
-    
-    if ( !dt_styles_exists (style_name) ) return;
-    
-    xmlTextWriterPtr writer = xmlNewTextWriterFilename(stylename, 0);
-    if (writer == NULL) {
-        fprintf(stderr,"[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
-        return;
-    }
-    rc = xmlTextWriterStartDocument(writer, NULL, "ISO-8859-1", NULL);
-    if (rc < 0) {
-        fprintf(stderr,"[dt_styles_save_to_file]: Error on encoding setting");
-        return;
-    }
-    xmlTextWriterStartElement(writer, BAD_CAST "darktable_style");
-    xmlTextWriterWriteAttribute(writer, BAD_CAST "version", BAD_CAST "1.0");
-    
-    xmlTextWriterStartElement(writer, BAD_CAST "info");
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
-    xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", dt_styles_get_description(style_name));
+
+void
+dt_styles_save_to_file(const char *style_name,const char *filedir)
+{
+  int rc = 0;
+  char stylename[520];
+  sqlite3_stmt *stmt;
+
+  snprintf(stylename,512,"%s/%s.dtstyle",filedir,style_name);
+
+  // check if file exists
+  if( g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE )
+  {
+    dt_control_log(_("style file for %s exists"),style_name);
+    return;
+  }
+
+  if ( !dt_styles_exists (style_name) ) return;
+
+  xmlTextWriterPtr writer = xmlNewTextWriterFilename(stylename, 0);
+  if (writer == NULL)
+  {
+    fprintf(stderr,"[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
+    return;
+  }
+  rc = xmlTextWriterStartDocument(writer, NULL, "ISO-8859-1", NULL);
+  if (rc < 0)
+  {
+    fprintf(stderr,"[dt_styles_save_to_file]: Error on encoding setting");
+    return;
+  }
+  xmlTextWriterStartElement(writer, BAD_CAST "darktable_style");
+  xmlTextWriterWriteAttribute(writer, BAD_CAST "version", BAD_CAST "1.0");
+
+  xmlTextWriterStartElement(writer, BAD_CAST "info");
+  xmlTextWriterWriteFormatElement(writer, BAD_CAST "name", "%s", style_name);
+  xmlTextWriterWriteFormatElement(writer, BAD_CAST "description", "%s", dt_styles_get_description(style_name));
+  xmlTextWriterEndElement(writer);
+
+  xmlTextWriterStartElement(writer, BAD_CAST "style");
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num,module,operation,op_params,enabled from style_items where styleid =?1",-1, &stmt,NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt,1,dt_styles_get_id_by_name(style_name));
+  while (sqlite3_step (stmt) == SQLITE_ROW)
+  {
+    xmlTextWriterStartElement(writer, BAD_CAST "plugin");
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d", sqlite3_column_int(stmt,0));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d", sqlite3_column_int(stmt,1));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", sqlite3_column_text(stmt,2));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_style_encode(stmt,3));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt,4));
     xmlTextWriterEndElement(writer);
-    
-    xmlTextWriterStartElement(writer, BAD_CAST "style");
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num,module,operation,op_params,enabled from style_items where styleid =?1",-1, &stmt,NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt,1,dt_styles_get_id_by_name(style_name));
-    while (sqlite3_step (stmt) == SQLITE_ROW)
-    {
-      xmlTextWriterStartElement(writer, BAD_CAST "plugin");
-      xmlTextWriterWriteFormatElement(writer, BAD_CAST "num", "%d", sqlite3_column_int(stmt,0));
-      xmlTextWriterWriteFormatElement(writer, BAD_CAST "module", "%d", sqlite3_column_int(stmt,1));
-      xmlTextWriterWriteFormatElement(writer, BAD_CAST "operation", "%s", sqlite3_column_text(stmt,2));
-      xmlTextWriterWriteFormatElement(writer, BAD_CAST "op_params", "%s", dt_style_encode(stmt,3));
-      xmlTextWriterWriteFormatElement(writer, BAD_CAST "enabled", "%d", sqlite3_column_int(stmt,4));
-      xmlTextWriterEndElement(writer);
-    }
-    sqlite3_finalize(stmt);
-    xmlTextWriterEndDocument(writer);
-    xmlFreeTextWriter(writer);
-    dt_control_log(_("style %s was sucessfully saved"),style_name);
+  }
+  sqlite3_finalize(stmt);
+  xmlTextWriterEndDocument(writer);
+  xmlFreeTextWriter(writer);
+  dt_control_log(_("style %s was sucessfully saved"),style_name);
 }
 
 static StyleData *
@@ -323,12 +335,12 @@ dt_styles_style_data_new ()
   StyleInfoData *info = g_new0(StyleInfoData,1);
   info->name = g_string_new("");
   info->description = g_string_new("");
-  
+
   StyleData *data = g_new0(StyleData,1);
   data->info = info;
   data->in_plugin = FALSE;
   data->plugins = NULL;
-  
+
   return data;
 }
 
@@ -344,91 +356,102 @@ dt_styles_style_plugin_new ()
 static void
 dt_styles_style_data_free (StyleData *style, gboolean free_segments)
 {
-	g_string_free (style->info->name, free_segments);
-	g_string_free (style->info->description, free_segments);
-	g_list_free(style->plugins);
-	g_free(style);
+  g_string_free (style->info->name, free_segments);
+  g_string_free (style->info->description, free_segments);
+  g_list_free(style->plugins);
+  g_free(style);
 }
 
 static void
 dt_styles_start_tag_handler (GMarkupParseContext *context,
-					 const gchar         *element_name,
-					 const gchar        **attribute_names,
-					 const gchar        **attribute_values,
-					 gpointer             user_data,
-					 GError             **error)
+                             const gchar         *element_name,
+                             const gchar        **attribute_names,
+                             const gchar        **attribute_values,
+                             gpointer             user_data,
+                             GError             **error)
 {
-	StyleData *style = user_data;
-	const gchar *elt = g_markup_parse_context_get_element (context);
-	
-	// We need to append the contents of any subtags to the content field
-	// for this we need to know when we are inside the note-content tag
-	if (g_ascii_strcasecmp (elt, "plugin") == 0) {
-		style->in_plugin = TRUE;
-		style->plugins = g_list_prepend(style->plugins,dt_styles_style_plugin_new());
-	}
+  StyleData *style = user_data;
+  const gchar *elt = g_markup_parse_context_get_element (context);
+
+  // We need to append the contents of any subtags to the content field
+  // for this we need to know when we are inside the note-content tag
+  if (g_ascii_strcasecmp (elt, "plugin") == 0)
+  {
+    style->in_plugin = TRUE;
+    style->plugins = g_list_prepend(style->plugins,dt_styles_style_plugin_new());
+  }
 }
 
 static void
 dt_styles_end_tag_handler (GMarkupParseContext *context,
-                   const gchar         *element_name,
-                   gpointer             user_data,
-                   GError             **error)
+                           const gchar         *element_name,
+                           gpointer             user_data,
+                           GError             **error)
 {
-	StyleData *style = user_data;
-	const gchar *elt = g_markup_parse_context_get_element (context);
-	
-	// We need to append the contents of any subtags to the content field
-	// for this we need to know when we are inside the note-content tag
-	if (g_ascii_strcasecmp (elt, "plugin") == 0) {
-		style->in_plugin = FALSE;
-	}
+  StyleData *style = user_data;
+  const gchar *elt = g_markup_parse_context_get_element (context);
+
+  // We need to append the contents of any subtags to the content field
+  // for this we need to know when we are inside the note-content tag
+  if (g_ascii_strcasecmp (elt, "plugin") == 0)
+  {
+    style->in_plugin = FALSE;
+  }
 }
 
 static void
 dt_styles_style_text_handler (GMarkupParseContext *context,
-			    const gchar *text,
-			    gsize text_len,
-			    gpointer user_data,
-			    GError **error){
-			    
-			    StyleData *style = user_data;
-			    const gchar *elt = g_markup_parse_context_get_element (context);
-			    
-			    if ( g_ascii_strcasecmp (elt, "name") == 0 ){
-			      g_string_append_len (style->info->name, text, text_len);
-			    }
-			    else if (g_ascii_strcasecmp (elt, "description") == 0 ){
-			      g_string_append_len (style->info->description, text, text_len);
-			    }
-			    else if ( style->in_plugin){
-			      StylePluginData *plug = g_list_first(style->plugins)->data;
-			      if ( g_ascii_strcasecmp (elt, "operation") == 0 ){
-			      g_string_append_len (plug->operation, text, text_len);
-			      }
-			      else if (g_ascii_strcasecmp (elt, "op_params") == 0 ){
-			        g_string_append_len (plug->op_params, text, text_len);
-			      }
-			      else if (g_ascii_strcasecmp (elt, "num") == 0 ){
-			        plug->num = atoi(text);
-			      }
-			      else if (g_ascii_strcasecmp (elt, "module") == 0 ){
-			        plug->module =  atoi(text);
-			      }
-			      else if (g_ascii_strcasecmp (elt, "enabled") == 0 ){
-			        plug->enabled = atoi(text);
-			      }
-			    }
-			    
-			}
+                              const gchar *text,
+                              gsize text_len,
+                              gpointer user_data,
+                              GError **error)
+{
+
+  StyleData *style = user_data;
+  const gchar *elt = g_markup_parse_context_get_element (context);
+
+  if ( g_ascii_strcasecmp (elt, "name") == 0 )
+  {
+    g_string_append_len (style->info->name, text, text_len);
+  }
+  else if (g_ascii_strcasecmp (elt, "description") == 0 )
+  {
+    g_string_append_len (style->info->description, text, text_len);
+  }
+  else if ( style->in_plugin)
+  {
+    StylePluginData *plug = g_list_first(style->plugins)->data;
+    if ( g_ascii_strcasecmp (elt, "operation") == 0 )
+    {
+      g_string_append_len (plug->operation, text, text_len);
+    }
+    else if (g_ascii_strcasecmp (elt, "op_params") == 0 )
+    {
+      g_string_append_len (plug->op_params, text, text_len);
+    }
+    else if (g_ascii_strcasecmp (elt, "num") == 0 )
+    {
+      plug->num = atoi(text);
+    }
+    else if (g_ascii_strcasecmp (elt, "module") == 0 )
+    {
+      plug->module =  atoi(text);
+    }
+    else if (g_ascii_strcasecmp (elt, "enabled") == 0 )
+    {
+      plug->enabled = atoi(text);
+    }
+  }
+
+}
 
 static GMarkupParser dt_style_parser =
 {
-	dt_styles_start_tag_handler,	// Start element handler
-	dt_styles_end_tag_handler,  	// End element handler
-	dt_styles_style_text_handler,	// Text element handler
-	NULL,					 		// Passthrough handler
-	NULL					 		// Error handler
+  dt_styles_start_tag_handler,	// Start element handler
+  dt_styles_end_tag_handler,  	// End element handler
+  dt_styles_style_text_handler,	// Text element handler
+  NULL,					 		// Passthrough handler
+  NULL					 		// Error handler
 };
 
 static void
@@ -456,70 +479,81 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
 }
 
 static void
-dt_style_save(StyleData *style){
+dt_style_save(StyleData *style)
+{
   int id = 0;
   if ( style == NULL) return;
-  
+
   /* first create the style header */
   if (!dt_styles_create_style_header(style->info->name->str,style->info->description->str) ) return;
-  
+
   if ((id=dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
-      g_list_foreach(style->plugins,(GFunc)dt_style_plugin_save,GINT_TO_POINTER(id));
-      dt_control_log(_("style %s was sucessfully imported"),style->info->name->str);
+    g_list_foreach(style->plugins,(GFunc)dt_style_plugin_save,GINT_TO_POINTER(id));
+    dt_control_log(_("style %s was sucessfully imported"),style->info->name->str);
   }
 }
 
-void 
-dt_styles_import_from_file(const char *style_path){
+void
+dt_styles_import_from_file(const char *style_path)
+{
 
-	FILE    			*style_file;
-	StyleData           *style;
-	GMarkupParseContext	*parser;
-	gchar				buf[1024];
-	int					num_read;
-	
-	style = dt_styles_style_data_new();
-	parser = g_markup_parse_context_new (&dt_style_parser, 0, style, NULL);
-	
-	if ((style_file = fopen (style_path, "r"))) {
-	
-		while (!feof (style_file)) {
-			num_read = fread (buf, sizeof(gchar), 1024, style_file);
+  FILE    			*style_file;
+  StyleData           *style;
+  GMarkupParseContext	*parser;
+  gchar				buf[1024];
+  int					num_read;
 
-			if (num_read == 0) {
-				break;
-			} else if (num_read < 0) {
-				// ERROR !
-				break;
-			}
-			
-			if (!g_markup_parse_context_parse(parser, buf, num_read, NULL)) {
-				g_markup_parse_context_free(parser);
-				dt_styles_style_data_free(style,TRUE);
-				fclose (style_file);
-				return;
-			}
-		}
-	} else {
-		// Failed to open file, clean up.
-		g_markup_parse_context_free(parser);
-		dt_styles_style_data_free(style,TRUE);
-		return;
-	}
-	
-	if (!g_markup_parse_context_end_parse (parser, NULL)) {
-		g_markup_parse_context_free(parser);
-		dt_styles_style_data_free(style,TRUE);
-		fclose (style_file);
-		return;
-	}
-	g_markup_parse_context_free (parser);
-	// save data
-	dt_style_save(style);
-	//
-	dt_styles_style_data_free(style,TRUE);
-	fclose (style_file);
+  style = dt_styles_style_data_new();
+  parser = g_markup_parse_context_new (&dt_style_parser, 0, style, NULL);
+
+  if ((style_file = fopen (style_path, "r")))
+  {
+
+    while (!feof (style_file))
+    {
+      num_read = fread (buf, sizeof(gchar), 1024, style_file);
+
+      if (num_read == 0)
+      {
+        break;
+      }
+      else if (num_read < 0)
+      {
+        // ERROR !
+        break;
+      }
+
+      if (!g_markup_parse_context_parse(parser, buf, num_read, NULL))
+      {
+        g_markup_parse_context_free(parser);
+        dt_styles_style_data_free(style,TRUE);
+        fclose (style_file);
+        return;
+      }
+    }
+  }
+  else
+  {
+    // Failed to open file, clean up.
+    g_markup_parse_context_free(parser);
+    dt_styles_style_data_free(style,TRUE);
+    return;
+  }
+
+  if (!g_markup_parse_context_end_parse (parser, NULL))
+  {
+    g_markup_parse_context_free(parser);
+    dt_styles_style_data_free(style,TRUE);
+    fclose (style_file);
+    return;
+  }
+  g_markup_parse_context_free (parser);
+  // save data
+  dt_style_save(style);
+  //
+  dt_styles_style_data_free(style,TRUE);
+  fclose (style_file);
 }
 
 gchar *

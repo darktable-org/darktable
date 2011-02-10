@@ -16,10 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #ifdef HAVE_GEGL
-  #include "develop/pixelpipe_gegl.h"
+#include "develop/pixelpipe_gegl.h"
 #else
-  #include "develop/pixelpipe_hb.h"
+#include "develop/pixelpipe_hb.h"
 #endif

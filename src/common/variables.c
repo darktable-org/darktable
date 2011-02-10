@@ -23,10 +23,10 @@
 #include "common/variables.h"
 #include "common/utility.h"
 
-typedef struct dt_variables_data_t 
-{	
+typedef struct dt_variables_data_t
+{
   gchar *source;
- 
+
   /** expanded result string */
   gchar *result;
   time_t time;
@@ -41,7 +41,7 @@ gchar *_string_get_first_variable(gchar *string,gchar *variable)
     gchar *pend=string+strlen(string);
     gchar *p,*e;
     p=e=string;
-    while( p < pend && e < pend) 
+    while( p < pend && e < pend)
     {
       while( *p!='$' && *(p+1)!='(' && p<pend) p++;
       if( *p=='$' && *(p+1)=='(' )
@@ -66,10 +66,10 @@ gchar *_string_get_first_variable(gchar *string,gchar *variable)
 
 gchar *_string_get_next_variable(gchar *string,gchar *variable)
 {
-   gchar *pend=string+strlen(string);
-   gchar *p,*e;
-   p=e=string;
-  while( p < pend && e < pend) 
+  gchar *pend=string+strlen(string);
+  gchar *p,*e;
+  p=e=string;
+  while( p < pend && e < pend)
   {
     while( !(*p=='$' && *(p+1)=='(') && p<=pend) p++;
     if( *p=='$' && *(p+1)=='(' )
@@ -85,7 +85,7 @@ gchar *_string_get_next_variable(gchar *string,gchar *variable)
       else
         return NULL;
     }
-   
+
   }
   return NULL;
 }
@@ -95,63 +95,67 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   const gchar *file_ext=NULL;
   gboolean got_value=FALSE;
   struct tm *tim=localtime(&params->data->time);
-  
+
   const gchar *homedir=g_getenv("HOME");
-  if( !homedir ) 
+  if( !homedir )
     homedir=g_get_home_dir();
 
   gchar *pictures_folder=NULL;
-  
+
   if(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) == NULL)
     pictures_folder=g_build_path(G_DIR_SEPARATOR_S,homedir,"Pictures",(char *)NULL);
-  else 
+  else
     pictures_folder=g_strdup( g_get_user_special_dir(G_USER_DIRECTORY_PICTURES) );
-  
+
   if(params->filename)
   {
     file_ext=(g_strrstr(params->filename,".")+1);
     if(file_ext == (gchar*)1) file_ext = params->filename + strlen(params->filename);
   }
-  
+
   /* image exif time */
   gboolean have_exif_tm = FALSE;
-  struct tm exif_tm={0};
+  struct tm exif_tm= {0};
   if (params->img)
   {
-  if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-          &exif_tm.tm_year,
-          &exif_tm.tm_mon,
-          &exif_tm.tm_mday,
-          &exif_tm.tm_hour,
-          &exif_tm.tm_min,
-          &exif_tm.tm_sec
-        ) == 6
-    )
-  {
-    exif_tm.tm_year--;
-    exif_tm.tm_mon--;
-    have_exif_tm = TRUE;
+    if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+                &exif_tm.tm_year,
+                &exif_tm.tm_mon,
+                &exif_tm.tm_mday,
+                &exif_tm.tm_hour,
+                &exif_tm.tm_min,
+                &exif_tm.tm_sec
+               ) == 6
+       )
+    {
+      exif_tm.tm_year--;
+      exif_tm.tm_mon--;
+      have_exif_tm = TRUE;
+    }
   }
-  }
-  
+
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
   else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim->tm_mon+1);
   else if( g_strcmp0(variable,"$(DAY)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_mday);
   else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.2d",tim->tm_hour);
   else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_min);
   else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_sec);
-  
+
   else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_year:tim->tm_year)+1);
   else if( g_strcmp0(variable,"$(EXIF_MONTH)") == 0 && (got_value=TRUE)  )  		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mon:tim->tm_mon)+1);
   else if( g_strcmp0(variable,"$(EXIF_DAY)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mday:tim->tm_mday));
   else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_hour:tim->tm_hour));
   else if( g_strcmp0(variable,"$(EXIF_MINUTE)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_min:tim->tm_min));
   else if( g_strcmp0(variable,"$(EXIF_SECOND)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_sec:tim->tm_sec));
-  
+
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
   else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_basename(g_path_get_dirname(params->filename)));
   else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
-  else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )  { sprintf(value,"%s",g_path_get_basename(params->filename)); if (g_strrstr(value,".")) *(g_strrstr(value,"."))=0; }
+  else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    sprintf(value,"%s",g_path_get_basename(params->filename));
+    if (g_strrstr(value,".")) *(g_strrstr(value,"."))=0;
+  }
   else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
   else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->sequence>=0?params->sequence:params->data->sequence);
   else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
@@ -174,9 +178,9 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
   }
 #endif
-  
+
   g_free(pictures_folder);
-  
+
   return got_value;
 }
 
@@ -196,7 +200,8 @@ void dt_variables_params_destroy(dt_variables_params_t *params)
   g_free(params);
 }
 
-const gchar *dt_variables_get_result(dt_variables_params_t *params) {
+const gchar *dt_variables_get_result(dt_variables_params_t *params)
+{
   return params->data->result;
 }
 
@@ -209,32 +214,35 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
   // Let's free previous expanded result if any...
   if( params->data->result )
     g_free(  params->data->result );
-  
+
   if(iterate)
     params->data->sequence++;
-  
+
   // Lets expand string
   gchar *result=NULL;
   params->data->result = params->data->source = string;
   if( (token=_string_get_first_variable(params->data->source,variable)) != NULL)
   {
-    do {
+    do
+    {
       //fprintf(stderr,"var: %s\n",variable);
       if( _variable_get_value(params,variable,value) )
       {
         //fprintf(stderr,"Substitute variable '%s' with value '%s'\n",variable,value);
         if( (result=dt_util_str_replace(params->data->result,variable,value)) != params->data->result && result != params->data->source)
-        { // we got a result 
+        {
+          // we got a result
           if( params->data->result != params->data->source)
             g_free(params->data->result);
           params->data->result=result;
         }
       }
-    } while( (token=_string_get_next_variable(token,variable)) !=NULL );
+    }
+    while( (token=_string_get_next_variable(token,variable)) !=NULL );
   }
   else
     params->data->result = g_strdup (string);
-  
+
   g_free(variable);
   g_free(value);
   return TRUE;

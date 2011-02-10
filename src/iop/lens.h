@@ -23,7 +23,7 @@
 #include <lensfun.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-  
+
 typedef struct dt_iop_lensfun_params_t
 {
   int modify_flags;

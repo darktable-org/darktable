@@ -20,8 +20,8 @@
 #define __DEBUG_H__
 
 #ifdef _DEBUG
-	#include <assert.h>
-	#define __DT_DEBUG_ASSERT__(xin) \
+#include <assert.h>
+#define __DT_DEBUG_ASSERT__(xin) \
   {\
     const int x = xin; \
 		if(x != SQLITE_OK){ \
@@ -30,7 +30,7 @@
     assert(x == SQLITE_OK);\
   }
 #else
-	#define __DT_DEBUG_ASSERT__(xin) \
+#define __DT_DEBUG_ASSERT__(xin) \
   {\
     const int x = xin; \
 		if(x != SQLITE_OK){ \

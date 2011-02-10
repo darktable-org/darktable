@@ -17,7 +17,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/darktable.h"
 #include "common/imageio_module.h"
@@ -59,8 +59,8 @@ dt_imageio_png_gui_t;
  */
 
 static void PNGwriteRawProfile(png_struct *ping,
-    png_info *ping_info, char *profile_type, guint8 *profile_data,
-    png_uint_32 length)
+                               png_info *ping_info, char *profile_type, guint8 *profile_data,
+                               png_uint_32 length)
 {
   png_textp text;
   long i;
@@ -160,8 +160,8 @@ write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, voi
   png_set_compression_buffer_size(png_ptr, 8192);
 
   png_set_IHDR(png_ptr, info_ptr, width, height,
-      p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-      PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+  p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+  PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
   png_write_info(png_ptr, info_ptr);
 
@@ -173,12 +173,12 @@ write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, voi
   {
     for (int y = 0; y < height; y++)
     {
-      for(int x=0;x<width;x++) for(int k=0;k<3;k++)
-      {
-        uint16_t pix = ((uint16_t *)in)[4*width*y + 4*x + k];
-        uint16_t swapped = (0xff00 & (pix<<8)) | (pix>>8);
-        ((uint16_t *)row)[3*x+k] = swapped;
-      }
+      for(int x=0; x<width; x++) for(int k=0; k<3; k++)
+        {
+          uint16_t pix = ((uint16_t *)in)[4*width*y + 4*x + k];
+          uint16_t swapped = (0xff00 & (pix<<8)) | (pix>>8);
+          ((uint16_t *)row)[3*x+k] = swapped;
+        }
       png_write_row(png_ptr, row);
     }
   }
@@ -186,9 +186,9 @@ write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, voi
   {
     for (int y = 0; y < height; y++)
     {
-      for(int x=0;x<width;x++) for(int k=0;k<3;k++) row[3*x+k] = in[4*width*y + 4*x + k];
+      for(int x=0; x<width; x++) for(int k=0; k<3; k++) row[3*x+k] = in[4*width*y + 4*x + k];
       png_write_row(png_ptr, row);
-    }	
+    }
   }
 
   PNGwriteRawProfile(png_ptr, info_ptr, "exif", exif, exif_len);
@@ -214,7 +214,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
 
   if (cnt != NUM_BYTES_CHECK || png_sig_cmp(dat, (png_size_t) 0, NUM_BYTES_CHECK))
   {
-	  fclose(png->f);
+    fclose(png->f);
     return 1;
   }
 
@@ -268,7 +268,7 @@ int read_header(const char *filename, dt_imageio_png_t *png)
 
   // grayscale => rgb
   if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-	png_set_gray_to_rgb(png->png_ptr);
+    png_set_gray_to_rgb(png->png_ptr);
 
   // png->bytespp = 3*bit_depth/8;
   png->width  = png_get_image_width(png->png_ptr, png->info_ptr);
@@ -288,7 +288,7 @@ int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
   }
   uint32_t bit_depth = png_get_bit_depth(png->png_ptr, png->info_ptr);
   // strip down to 8 bit channels
-  if (bit_depth == 16) 
+  if (bit_depth == 16)
     png_set_strip_16(png->png_ptr);
 
   return 0;
@@ -311,8 +311,8 @@ int read_image (dt_imageio_png_t *png, uint8_t *out)
 
   for (int y = 0; y < png->height; y++)
   {
-  	png_read_row(png->png_ptr, row_pointer, NULL);
-	  row_pointer += rowbytes;
+    png_read_row(png->png_ptr, row_pointer, NULL);
+    row_pointer += rowbytes;
   }
 
   png_read_end(png->png_ptr, png->info_ptr);
@@ -362,7 +362,7 @@ mime(dt_imageio_png_t *data)
 {
   return "image/png";
 }
- 
+
 const char*
 extension(dt_imageio_module_data_t *data)
 {

@@ -19,15 +19,15 @@
 #ifndef VARIABLES_H
 #define VARIABLES_H
 #include <glib.h>
-typedef struct dt_variables_params_t 
+typedef struct dt_variables_params_t
 {
-    
+
   /** only validates string */
   gboolean validate_only;
-  
+
   /** used for expanding variables that uses filename $(FILE_DIRECTORY) $(FILE_NAME) and $(FILE_EXTENSION). */
   const gchar *filename;
-  
+
   /** used for expanding variable $(JOBCODE) */
   const gchar *jobcode;
 
@@ -37,9 +37,9 @@ typedef struct dt_variables_params_t
   /** used as thread-safe sequence number. only used if >= 0. */
   int sequence;
 
-  /** internal variables data */	
+  /** internal variables data */
   struct dt_variables_data_t *data;
-  
+
 } dt_variables_params_t;
 
 /** allocate and initializes a dt_variables_params_t. */

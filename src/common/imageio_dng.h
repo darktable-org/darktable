@@ -28,8 +28,8 @@
 
 
 #define II       1
-#define MM       2  
-#define BYTE     1 
+#define MM       2
+#define BYTE     1
 #define ASCII    2
 #define SHORT    3
 #define LONG     4
@@ -46,8 +46,8 @@ dt_imageio_dng_write_buf(uint8_t *buf, int adr, int val)
 }
 
 static inline uint8_t *
-dt_imageio_dng_make_tag ( uint16_t tag, uint16_t type, uint32_t lng, 
-  uint32_t fld, uint8_t *b, uint8_t *cnt )
+dt_imageio_dng_make_tag ( uint16_t tag, uint16_t type, uint32_t lng,
+                          uint32_t fld, uint8_t *b, uint8_t *cnt )
 {
   dt_imageio_dng_write_buf(b, 0, (tag<<16)| type);
   dt_imageio_dng_write_buf(b, 4, lng);
@@ -72,13 +72,13 @@ dt_imageio_dng_convert_rational(float f, int32_t *num, int32_t *den)
   *num *= sign;
 }
 
-static inline void 
+static inline void
 dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av, float f, float iso, uint32_t filter)
 {
   const uint32_t channels = 1;
   uint8_t *b, *offs1, *offs2;
   // uint32_t exif_offs;
-  uint8_t  buf[1024]; 
+  uint8_t  buf[1024];
   uint8_t  cnt = 0;
 
   memset(buf, 0, 1024);
@@ -165,7 +165,7 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   // ColorMatrix1
   float m[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1};
   // colorspace_get_xyz_to_cam(m);
-  for(int k=0;k<9;k++)
+  for(int k=0; k<9; k++)
   {
     dt_imageio_dng_convert_rational(m[3*(k%3)+k/3], &num, &den);
     dt_imageio_dng_write_buf(buf, 328+8*k,   num);

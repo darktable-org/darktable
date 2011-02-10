@@ -23,7 +23,7 @@
 
 typedef struct dt_film_import1_t
 {
-	dt_film_t *film;
+  dt_film_t *film;
 }
 dt_film_import1_t;
 

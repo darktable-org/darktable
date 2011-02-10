@@ -46,7 +46,7 @@
   dt_pthread_mutex_lock(&(darktable.control->global_mutex)); \
   strncpy(darktable.control->global_settings.attrib, x, n); \
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex))
-  
+
 
 typedef enum dt_ctl_gui_mode_t
 {
@@ -128,7 +128,7 @@ typedef struct dt_ctl_settings_t
   char dbname[512];
 
   int32_t lib_image_mouse_over_id;
- 
+
   // synchronized navigation
   float dev_zoom_x, dev_zoom_y, dev_zoom_scale;
   dt_dev_zoom_t dev_zoom;

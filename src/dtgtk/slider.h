@@ -26,14 +26,16 @@ G_BEGIN_DECLS
 #define DTGTK_IS_SLIDER(obj) GTK_CHECK_TYPE(obj, dtgtk_slider_get_type())
 #define DTGTK_IS_SLIDER_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_slider_get_type())
 
-typedef enum _darktable_slider_type {
+typedef enum _darktable_slider_type
+{
   /** Default type , a standard slider, this is default */
   DARKTABLE_SLIDER_BAR=0,
   /** Value slider, doesnt show a bar, just a value */
   DARKTABLE_SLIDER_VALUE
 } darktable_slider_type_t;
 
-typedef enum _darktable_slider_format_type {
+typedef enum _darktable_slider_format_type
+{
   /** Default format type , value is displayed as float*/
   DARKTABLE_SLIDER_FORMAT_FLOAT=0,
   /** Value is displayed as ratio  eg. 50/50*/
@@ -67,9 +69,10 @@ typedef struct _GtkDarktableSliderClass
 {
   GtkEventBoxClass parent_class;
   ValueChanged *value_changed;
-}GtkDarktableSliderClass;
+} GtkDarktableSliderClass;
 
-enum {
+enum
+{
   VALUE_CHANGED,
   LAST_SIGNAL
 };

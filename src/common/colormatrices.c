@@ -27,8 +27,9 @@ typedef struct dt_profiled_colormatrix_t
 }
 dt_profiled_colormatrix_t;
 
-  // image submitter, chart type, illuminant, comments
-static dt_profiled_colormatrix_t dt_profiled_colormatrices[] = {
+// image submitter, chart type, illuminant, comments
+static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
+{
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "PENTAX K-x",                   { 821548, 337357,  42923}, { 247818, 1042969, -218735}, { -4105, -293045, 1085129}, {792206, 821823, 668640}},

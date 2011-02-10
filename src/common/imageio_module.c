@@ -38,7 +38,10 @@ dt_imageio_sort_modules_format (gconstpointer a, gconstpointer b)
 }
 
 /** Default implementation of dimension module function, used if format modules does not implements dimension() */
-int _default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, uint32_t *height) { return 0; }
+int _default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, uint32_t *height)
+{
+  return 0;
+}
 
 static int
 dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *libname, const char *plugin_name)
@@ -96,7 +99,8 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   while((d_name = g_dir_read_name(dir)))
-  { // get lib*.so
+  {
+    // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
     strncpy(plugin_name, d_name+3, strlen(d_name)-6);
@@ -120,9 +124,15 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
 }
 
 /** Default implementation of supported function, used if storage modules not implements supported() */
-int _default_supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format) { return 1; }
+int _default_supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format)
+{
+  return 1;
+}
 /** Default implementation of dimension module function, used if storage modules does not implements dimension() */
-int _default_storage_dimension(struct dt_imageio_module_storage_t *self,uint32_t *width, uint32_t *height) { return 0; }
+int _default_storage_dimension(struct dt_imageio_module_storage_t *self,uint32_t *width, uint32_t *height)
+{
+  return 0;
+}
 
 static int
 dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char *libname, const char *plugin_name)
@@ -152,7 +162,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
   if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))            	module->dimension = _default_storage_dimension;
   if(!g_module_symbol(module->module, "recommended_dimension",  (gpointer)&(module->recommended_dimension)))  module->recommended_dimension = _default_storage_dimension;
-  
+
   return 0;
 error:
   fprintf(stderr, "[imageio_load_module] failed to open storage `%s': %s\n", plugin_name, g_module_error());
@@ -173,7 +183,8 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   while((d_name = g_dir_read_name(dir)))
-  { // get lib*.so
+  {
+    // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
     strncpy(plugin_name, d_name+3, strlen(d_name)-6);

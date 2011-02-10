@@ -136,14 +136,14 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   sqlite3_stmt *stmt = NULL;
 
 
-    /* get the count of current collection */
+  /* get the count of current collection */
   int count = dt_collection_get_count (darktable.collection);
 
   /* get the collection query */
   const gchar *query=dt_collection_get_query (darktable.collection);
   if(!query)
-  return;
-  
+    return;
+
   if(offset < 0)                strip->offset = offset = 0;
   if(offset > count-max_cols+1) strip->offset = offset = count-max_cols+1;
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
@@ -205,13 +205,13 @@ paste_history_key_accel_callback(void *data)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)data;
   if (strip->history_copy_imgid==-1) return;
-  
+
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   if(mouse_over_id <= 0) return;
-  
+
   int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
-  
+
   dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE);
   dt_control_queue_draw_all();
 }
@@ -221,7 +221,7 @@ discard_history_key_accel_callback(void *data)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)data;
   if (strip->history_copy_imgid==-1) return;
-  
+
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   if(mouse_over_id <= 0) return;
@@ -236,8 +236,15 @@ star_key_accel_callback(void *data)
   long int num = (long int)data;
   switch (num)
   {
-    case DT_VIEW_DESERT: case DT_VIEW_REJECT: case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4: case DT_VIEW_STAR_5: case 666:
-    { 
+    case DT_VIEW_DESERT:
+    case DT_VIEW_REJECT:
+    case DT_VIEW_STAR_1:
+    case DT_VIEW_STAR_2:
+    case DT_VIEW_STAR_3:
+    case DT_VIEW_STAR_4:
+    case DT_VIEW_STAR_5:
+    case 666:
+    {
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       if(mouse_over_id <= 0) return;
@@ -265,14 +272,14 @@ void mouse_enter(dt_view_t *self)
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   if(!strip->stars_registered)
   {
-	dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
+    dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
     dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
     dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
     dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
     dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
     dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
     dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
-   
+
     strip->stars_registered = 1;
   }
 }
@@ -295,11 +302,11 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
   dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
   strip->stars_registered = 1;
-  
+
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, copy_history_key_accel_callback, (void *)strip);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, paste_history_key_accel_callback, (void *)strip);
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_d, discard_history_key_accel_callback, (void *)strip);
-  
+
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
   dt_colorlabels_register_key_accels();
   // scroll to opened image.
@@ -340,15 +347,19 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   if(which == 1 && type == GDK_2BUTTON_PRESS)
   {
     // emit some selection event.
-    if(mouse_over_id > 0 && darktable.view_manager->film_strip_activated) 
+    if(mouse_over_id > 0 && darktable.view_manager->film_strip_activated)
       darktable.view_manager->film_strip_activated(mouse_over_id, darktable.view_manager->film_strip_data);
   }
   // image button pressed?
   switch(strip->image_over)
   {
-    case DT_VIEW_DESERT: break;
-    case DT_VIEW_STAR_1: case DT_VIEW_STAR_2: case DT_VIEW_STAR_3: case DT_VIEW_STAR_4:
-    { 
+    case DT_VIEW_DESERT:
+      break;
+    case DT_VIEW_STAR_1:
+    case DT_VIEW_STAR_2:
+    case DT_VIEW_STAR_3:
+    case DT_VIEW_STAR_4:
+    {
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
       image->dirty = 1;
       if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
@@ -373,13 +384,17 @@ int key_pressed(dt_view_t *self, uint16_t which)
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
   switch (which)
   {
-    case KEYCODE_Left: case KEYCODE_a:
-    case KEYCODE_Up: case KEYCODE_comma:
+    case KEYCODE_Left:
+    case KEYCODE_a:
+    case KEYCODE_Up:
+    case KEYCODE_comma:
       strip->offset --;
       darktable.view_manager->film_strip_scroll_to = -1;
       break;
-    case KEYCODE_Right: case KEYCODE_e:
-    case KEYCODE_Down: case KEYCODE_o:
+    case KEYCODE_Right:
+    case KEYCODE_e:
+    case KEYCODE_Down:
+    case KEYCODE_o:
       strip->offset ++;
       darktable.view_manager->film_strip_scroll_to = -1;
       break;

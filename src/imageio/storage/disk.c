@@ -61,11 +61,11 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   disk_t *d = (disk_t *)self->gui_data;
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
-              GTK_WINDOW (win),
-              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-              (char *)NULL);
+                           GTK_WINDOW (win),
+                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                           (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
@@ -104,27 +104,27 @@ gui_init (dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
-                                                       "$(ROLL_NAME) - roll of the input image\n"
-                                                       "$(FILE_DIRECTORY) - directory of the input image\n"
-                                                       "$(FILE_NAME) - basename of the input image\n"
-                                                       "$(FILE_EXTENSION) - extension of the input image\n"
-                                                       "$(SEQUENCE) - sequence number\n"
-                                                       "$(YEAR) - year\n"
-                                                       "$(MONTH) - month\n"
-                                                       "$(DAY) - day\n"
-                                                       "$(HOUR) - hour\n"
-                                                       "$(MINUTE) - minute\n"
-                                                       "$(SECOND) - second\n"
-                                                       "$(EXIF_YEAR) - exif year\n"
-                                                       "$(EXIF_MONTH) - exif month\n"
-                                                       "$(EXIF_DAY) - exif day\n"
-                                                       "$(EXIF_HOUR) - exif hour\n"
-                                                       "$(EXIF_MINUTE) - exif minute\n"
-                                                       "$(EXIF_SECOND) - exif second\n"
-                                                       "$(PICTURES_FOLDER) - pictures folder\n"
-                                                       "$(HOME_FOLDER) - home folder\n"
-                                                       "$(DESKTOP_FOLDER) - desktop folder"
-                                                       ), (char *)NULL);
+                 "$(ROLL_NAME) - roll of the input image\n"
+                 "$(FILE_DIRECTORY) - directory of the input image\n"
+                 "$(FILE_NAME) - basename of the input image\n"
+                 "$(FILE_EXTENSION) - extension of the input image\n"
+                 "$(SEQUENCE) - sequence number\n"
+                 "$(YEAR) - year\n"
+                 "$(MONTH) - month\n"
+                 "$(DAY) - day\n"
+                 "$(HOUR) - hour\n"
+                 "$(MINUTE) - minute\n"
+                 "$(SECOND) - second\n"
+                 "$(EXIF_YEAR) - exif year\n"
+                 "$(EXIF_MONTH) - exif month\n"
+                 "$(EXIF_DAY) - exif day\n"
+                 "$(EXIF_HOUR) - exif hour\n"
+                 "$(EXIF_MINUTE) - exif minute\n"
+                 "$(EXIF_SECOND) - exif second\n"
+                 "$(PICTURES_FOLDER) - pictures folder\n"
+                 "$(HOME_FOLDER) - home folder\n"
+                 "$(DESKTOP_FOLDER) - desktop folder"
+                                                      ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
   gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
@@ -154,62 +154,64 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if(!img) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
-  char filename[1024]={0};
-  char dirname[1024]={0};
+  char filename[1024]= {0};
+  char dirname[1024]= {0};
   dt_image_full_path(img->id, dirname, 1024);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
- 
-  // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-  if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
-    snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "$(FILE_NAME)");
 
-  // avoid braindead export which is bound to overwrite at random:
-  if(total > 1 && !g_strrstr(d->filename, "$"))
-  {
-    snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
-  }
-  
-      
-  d->vp->filename = dirname;
-  d->vp->jobcode = "export";
-  d->vp->img = img;
-  d->vp->sequence = num;
-  dt_variables_expand(d->vp, d->filename, TRUE);
-  strncpy(filename, dt_variables_get_result(d->vp), 1024);
-  strncpy(dirname, filename, 1024);
+    // if filenamepattern is a directory just let att ${FILE_NAME} as default..
+    if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
+      snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "$(FILE_NAME)");
 
-  char *c = dirname + strlen(dirname);
-  for(;c>dirname && *c != '/';c--);
-  if(*c == '/') *c = '\0';
-  if(g_mkdir_with_parents(dirname, 0755))
-  {
-    fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", dirname);
-    dt_control_log(_("could not create directory `%s'!"), dirname);
-    dt_image_cache_release(img, 'r');
-    fail = 1;
-    goto failed;
-  }
+    // avoid braindead export which is bound to overwrite at random:
+    if(total > 1 && !g_strrstr(d->filename, "$"))
+    {
+      snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
+    }
 
-  c = filename + strlen(filename);
-  for(;c>filename && *c != '.' && *c != '/' ;c--);
-  if(c <= filename || *c=='/') c = filename + strlen(filename);
 
-  const char *ext = format->extension(fdata);
-  sprintf(c,".%s",ext);
-  
-  /* prevent overwrite of files */
-  int seq=1;
+    d->vp->filename = dirname;
+    d->vp->jobcode = "export";
+    d->vp->img = img;
+    d->vp->sequence = num;
+    dt_variables_expand(d->vp, d->filename, TRUE);
+    strncpy(filename, dt_variables_get_result(d->vp), 1024);
+    strncpy(dirname, filename, 1024);
+
+    char *c = dirname + strlen(dirname);
+    for(; c>dirname && *c != '/'; c--);
+    if(*c == '/') *c = '\0';
+    if(g_mkdir_with_parents(dirname, 0755))
+    {
+      fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", dirname);
+      dt_control_log(_("could not create directory `%s'!"), dirname);
+      dt_image_cache_release(img, 'r');
+      fail = 1;
+      goto failed;
+    }
+
+    c = filename + strlen(filename);
+    for(; c>filename && *c != '.' && *c != '/' ; c--);
+    if(c <= filename || *c=='/') c = filename + strlen(filename);
+
+    const char *ext = format->extension(fdata);
+    sprintf(c,".%s",ext);
+
+    /* prevent overwrite of files */
+    int seq=1;
 failed:
-  if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
-  {
-    do {
-      sprintf(c,"_%.2d.%s",seq,ext);
-      seq++;
-    } while (g_file_test (filename,G_FILE_TEST_EXISTS));
-  }
+    if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
+    {
+      do
+      {
+        sprintf(c,"_%.2d.%s",seq,ext);
+        seq++;
+      }
+      while (g_file_test (filename,G_FILE_TEST_EXISTS));
+    }
 
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);

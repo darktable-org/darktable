@@ -27,14 +27,15 @@
 
 
 /** A camera object used for camera actions and callbacks */
-typedef struct dt_camera_t {
+typedef struct dt_camera_t
+{
   /** A pointer to the model string of camera. */
   const char *model;
   /** A pointer to the port string of camera. */
   const char *port;
   /** Camera summary text */
   CameraText summary;
- 
+
   /** Camera configuration cache */
   CameraWidget *configuration;
   gboolean config_changed;
@@ -45,23 +46,24 @@ typedef struct dt_camera_t {
   gboolean can_tether;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
-  
+
   /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
-  gboolean is_tethering;  
+  gboolean is_tethering;
 
   /** A mutex lock for jobqueue */
   dt_pthread_mutex_t jobqueue_lock;
   /** The jobqueue */
   GList *jobqueue;
-    
-  struct {
+
+  struct
+  {
     CameraWidget *widget;
     uint32_t index;
   } current_choice;
-  
+
   /** gphoto2 camera pointer */
   Camera *gpcam;
-} 
+}
 dt_camera_t;
 
 /** Camera control status.
@@ -81,19 +83,19 @@ dt_camctl_status_t;
   These enumerations are passed to the host application using
   listener interface function camera_error().
 */
-typedef enum dt_camera_error_t 
+typedef enum dt_camera_error_t
 {
   /** Locking camera failed. \remarks This means that camera control is busy and locking failed. */
-  CAMERA_LOCK_FAILED,     
-  /**  Camera conenction is broken and unuseable. 
+  CAMERA_LOCK_FAILED,
+  /**  Camera conenction is broken and unuseable.
   \remarks Beyond this message references to dt_camera_t pointer is invalid, which means that the host application should remove all references of camera pointer and disallow any opertations onto it.
- */
+   */
   CAMERA_CONNECTION_BROKEN
-} 
+}
 dt_camera_error_t;
 
 /** Context of camera control */
-typedef struct dt_camctl_t 
+typedef struct dt_camctl_t
 {
   dt_pthread_mutex_t lock;
   /** Camera event thread. */
@@ -102,26 +104,26 @@ typedef struct dt_camctl_t
   GList *listeners;
   /** List of cameras found and initialized by camera control.*/
   GList *cameras;
-  
+
   /** The actual gphoto2 context */
   GPContext *gpcontext;
   /** List of gphoto2 port drivers */
   GPPortInfoList *gpports;
   /** List of gphoto2 camera drivers */
   CameraAbilitiesList *gpcams;
-  
+
   /** The host application want to use this camera. \see dt_camctl_select_camera() */
   const dt_camera_t *wanted_camera;
-  
+
   const dt_camera_t *active_camera;
-} 
+}
 dt_camctl_t;
 
 
 typedef struct dt_camctl_listener_t
 {
   void *data;
- /** Invoked when a image is downloaded while in tethered mode or  by import. \see dt_camctl_status_t */
+  /** Invoked when a image is downloaded while in tethered mode or  by import. \see dt_camctl_status_t */
   void (*control_status)(dt_camctl_status_t status,void *data);
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this at time... */
@@ -129,18 +131,18 @@ typedef struct dt_camctl_listener_t
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this at time... */
   const char * (*request_image_filename)(const dt_camera_t *camera,const char *filename,void *data);
-  
+
   /** Invoked when a image is downloaded while in tethered mode or  by import */
   void (*image_downloaded)(const dt_camera_t *camera,const char *filename,void *data);
-  
+
   /** Invoked when a image is found on storage.. such as from dt_camctl_get_previews(), if 0 is returned the recurse is stopped.. */
   int (*camera_storage_image_filename)(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *data);
-  
+
   /** Invoked when a value of a property is changed. */
   void (*camera_property_value_changed)(const dt_camera_t *camera,const char *name,const char *value,void *data);
   /** Invoked when accesibility of a property is changed. */
   void (*camera_property_accessibility_changed)(const dt_camera_t *camera,const char *name,gboolean read_only,void *data);
-  
+
   /** Invoked from dt_camctl_detect_cameras() when a new camera is connected */
   void (*camera_connected)(const dt_camera_t *camera,void *data);
   /** Invoked from dt_camctl_detect_cameras() when a new camera is disconnected, or when connection is broken and camera is unuseable */
@@ -155,7 +157,7 @@ typedef enum dt_camera_preview_flags_t
   /** No image data */
   CAMCTL_IMAGE_NO_DATA=0,
   /**Get a image  preview. */
-  CAMCTL_IMAGE_PREVIEW_DATA=1,	
+  CAMCTL_IMAGE_PREVIEW_DATA=1,
   /**Get the image exif */
   CAMCTL_IMAGE_EXIF_DATA=2
 }

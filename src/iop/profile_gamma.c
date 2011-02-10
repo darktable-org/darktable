@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "iop/profile_gamma.h"
 #include "develop/develop.h"
@@ -49,12 +49,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  for(int k=0;k<roi_out->width*roi_out->height;k++)
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     out[0] = d->table[CLAMP((int)(in[0]*0x10000ul), 0, 0xffff)];
     out[1] = d->table[CLAMP((int)(in[1]*0x10000ul), 0, 0xffff)];
     out[2] = d->table[CLAMP((int)(in[2]*0x10000ul), 0, 0xffff)];
-    in += ch; out += ch;
+    in += ch;
+    out += ch;
   }
 }
 
@@ -71,13 +72,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   float a, b, c, g;
   if(p->gamma == 1.0)
   {
-    for(int k=0;k<0x10000;k++) d->table[k] = 1.0*k/0x10000;
+    for(int k=0; k<0x10000; k++) d->table[k] = 1.0*k/0x10000;
   }
-  else 
+  else
   {
     if(p->linear == 0.0)
     {
-      for(int k=0;k<0x10000;k++)
+      for(int k=0; k<0x10000; k++)
         d->table[k] = powf(1.00*k/0x10000, p->gamma);
     }
     else
@@ -94,7 +95,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         a = b = g = 0.0;
         c = 1.0;
       }
-      for(int k=0;k<0x10000;k++)
+      for(int k=0; k<0x10000; k++)
       {
         float tmp;
         if (k<0x10000*p->linear) tmp = c*k/0x10000;
@@ -149,7 +150,10 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_profile_gamma_params_t);
   module->gui_data = NULL;
   module->priority = 299; // colorin module->priority - 1
-  dt_iop_profile_gamma_params_t tmp = (dt_iop_profile_gamma_params_t){1.0, 1.0};
+  dt_iop_profile_gamma_params_t tmp = (dt_iop_profile_gamma_params_t)
+  {
+    1.0, 1.0
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_profile_gamma_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_profile_gamma_params_t));
 }
@@ -185,9 +189,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-      G_CALLBACK (linear_callback), self);
+                    G_CALLBACK (linear_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-      G_CALLBACK (gamma_callback), self);
+                    G_CALLBACK (gamma_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

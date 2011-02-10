@@ -19,7 +19,7 @@
 #define DT_USER_CONFIG_H
 
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 
 #include <stdio.h>
@@ -28,8 +28,8 @@
 #include "common/darktable.h"
 
 #ifdef HAVE_GCONF
-  #include <gconf/gconf-client.h>
-  #define DT_GCONF_DIR "/apps/darktable"
+#include <gconf/gconf-client.h>
+#define DT_GCONF_DIR "/apps/darktable"
 #endif
 
 // silly gconf replacement for mac. very sucky altogether.
@@ -55,7 +55,7 @@ dt_conf_t;
 /** return slot for this variable or newly allocated slot. */
 static inline int dt_conf_get_var_pos(const char *name)
 {
-  for(int i=0;i<darktable.conf->num;i++)
+  for(int i=0; i<darktable.conf->num; i++)
   {
     if(!strncmp(name, darktable.conf->varname[i], DT_CONF_MAX_VAR_BUF)) return i;
   }
@@ -191,23 +191,23 @@ typedef struct dt_conf_string_entry_t
 static inline GSList *dt_conf_all_string_entries (const char *dir)
 {
   GSList *result = NULL;
- 
+
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf (var, 1024, "%s/%s", DT_GCONF_DIR, dir);
   GSList *slist = gconf_client_all_entries (darktable.conf->gconf, var, NULL);
   GSList *item=slist;
-  if(slist) 
+  if(slist)
     do
     {
       GConfEntry *entry = (GConfEntry *)item->data;
       dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
-      
+
       /* get the key name from path/key */
       gchar *p=entry->key+strlen (entry->key);
       while (*--p!='/');
       nv->key = g_strdup (++p);
-      
+
       /* get the value from gconf entry */
       nv->value = g_strdup (gconf_value_get_string (entry->value));
       if (nv->key && nv->value)
@@ -217,31 +217,33 @@ static inline GSList *dt_conf_all_string_entries (const char *dir)
         g_free (nv->key);
         g_free (nv);
       }
-      
-    } while ((item=g_slist_next (item))!=NULL);
-    
+
+    }
+    while ((item=g_slist_next (item))!=NULL);
+
 #else
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  for (int i=0;i<DT_CONF_MAX_VARS;i++)
+  for (int i=0; i<DT_CONF_MAX_VARS; i++)
   {
-    if (strcmp(darktable.conf->varname[i],dir)==0) {
+    if (strcmp(darktable.conf->varname[i],dir)==0)
+    {
       dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
       gchar *key = g_strdup (darktable.conf->varname[i]);
-      
+
       /* get the key name from path/key */
       gchar *p = key+strlen (key);
       while (*--p!='/');
       nv->key = g_strdup (++p);
-      
+
       /* get the value */
       nv->value = g_strdup(darktable.conf->varval[i]);
-      
+
       result = g_slist_append (result,nv);
     }
   }
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
-  
-#endif	
+
+#endif
   return result;
 }
 
@@ -291,7 +293,7 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
 #else
   FILE *f = fopen(cf->filename, "wb");
   if(!f) return;
-  for(int i=0;i<cf->num;i++)
+  for(int i=0; i<cf->num; i++)
   {
     fprintf(f, "%s=%s\n", cf->varname[i], cf->varval[i]);
   }
@@ -311,9 +313,9 @@ static inline int dt_conf_key_exists (const char *key)
 #else
   /* lookup in stringtable for match of key name */
   dt_pthread_mutex_lock (&darktable.conf->mutex);
-  for (int i=0;i<darktable.conf->num;i++)
+  for (int i=0; i<darktable.conf->num; i++)
   {
-    if (!strncmp (key, darktable.conf->varname[i], DT_CONF_MAX_VAR_BUF)) 
+    if (!strncmp (key, darktable.conf->varname[i], DT_CONF_MAX_VAR_BUF))
     {
       res=1;
       break;

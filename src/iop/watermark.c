@@ -16,14 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
 #ifdef HAVE_GEGL
-  #include <gegl.h>
+#include <gegl.h>
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -51,7 +51,7 @@ typedef struct dt_iop_watermark_params_t
 {
   /** opacity value of rendering watermark */
   float opacity;
- /** scale value of rendering watermark */
+  /** scale value of rendering watermark */
   float scale;
   /** Pixel independent xoffset, 0 to 1 */
   float xoffset;
@@ -71,7 +71,7 @@ typedef struct dt_iop_watermark_data_t
   float yoffset;
   int alignment;
   char filename[64];
-} 
+}
 dt_iop_watermark_data_t;
 
 typedef struct dt_iop_watermark_gui_data_t
@@ -101,22 +101,27 @@ int groups()
 }
 
 
-static gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text) {
+static gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text)
+{
   gboolean found=FALSE;
   gchar *sv=NULL;
   GtkTreeIter iter;
   GtkTreeModel *tm=gtk_combo_box_get_model(cb);
-  if(  gtk_tree_model_get_iter_first (tm,&iter) ) {
-    do { 
+  if(  gtk_tree_model_get_iter_first (tm,&iter) )
+  {
+    do
+    {
       GValue value = { 0, };
       gtk_tree_model_get_value(tm,&iter,0,&value);
-       if (G_VALUE_HOLDS_STRING (&value)) 
-        if( (sv=(gchar *)g_value_get_string(&value))!=NULL && strcmp(sv,text)==0) {
+      if (G_VALUE_HOLDS_STRING (&value))
+        if( (sv=(gchar *)g_value_get_string(&value))!=NULL && strcmp(sv,text)==0)
+        {
           gtk_combo_box_set_active_iter(cb, &iter);
           found=TRUE;
           break;
         }
-    } while( gtk_tree_model_iter_next(tm,&iter) );
+    }
+    while( gtk_tree_model_iter_next(tm,&iter) );
   }
   return found;
 }
@@ -152,7 +157,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   strcat(configdir,"/watermarks/");
   strcat(datadir,data->filename);
   strcat(configdir,data->filename);
-  
+
   if (g_file_test(configdir,G_FILE_TEST_EXISTS))
     filename=configdir;
   else if (g_file_test(datadir,G_FILE_TEST_EXISTS))
@@ -160,60 +165,133 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   else return NULL;
 
   gchar *svgdata=NULL;
-  if( g_file_get_contents( filename, &svgdata, &length, NULL) ) {
+  if( g_file_get_contents( filename, &svgdata, &length, NULL) )
+  {
     // File is loaded lets substitute strings if found...
-    
-    // Darktable internal 
+
+    // Darktable internal
     svgdoc = _string_substitute(svgdata,"$(DARKTABLE.NAME)",PACKAGE_NAME);
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
     svgdoc = _string_substitute(svgdata,"$(DARKTABLE.VERSION)",PACKAGE_VERSION);
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-  
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
     // Current image
     gchar buffer[1024];
     dt_image_print_exif(self->dev->image,buffer,1024);
     svgdoc = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
 
     // Image exif
     svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",self->dev->image->exif_datetime_taken);
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
     svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",self->dev->image->exif_maker);
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
     svgdoc = _string_substitute(svgdata,"$(EXIF.MODEL)",self->dev->image->exif_model);
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
     svgdoc = _string_substitute(svgdata,"$(EXIF.LENS)",self->dev->image->exif_lens);
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
 
     svgdoc = _string_substitute(svgdata,"$(IMAGE.FILENAME)",PACKAGE_VERSION);
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
 
     // TODO: auto generate that code?
     GList * res;
     res = dt_metadata_get(self->dev->image->id, "Xmp.dc.creator", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.creator)",(res?res->data:""));
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-    if( res ) { g_free(res->data); g_list_free(res); }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    if( res )
+    {
+      g_free(res->data);
+      g_list_free(res);
+    }
 
     res = dt_metadata_get(self->dev->image->id, "Xmp.dc.publisher", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.publisher)",(res?res->data:""));
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-    if( res ) { g_free(res->data); g_list_free(res); }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    if( res )
+    {
+      g_free(res->data);
+      g_list_free(res);
+    }
 
     res = dt_metadata_get(self->dev->image->id, "Xmp.dc.title", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.title)",(res?res->data:""));
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-    if( res ) { g_free(res->data); g_list_free(res); }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    if( res )
+    {
+      g_free(res->data);
+      g_list_free(res);
+    }
 
     res = dt_metadata_get(self->dev->image->id, "Xmp.dc.description", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.description)",(res?res->data:""));
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-    if( res ) { g_free(res->data); g_list_free(res); }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    if( res )
+    {
+      g_free(res->data);
+      g_list_free(res);
+    }
 
     res = dt_metadata_get(self->dev->image->id, "Xmp.dc.rights", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.rights)",(res?res->data:""));
-    if( svgdoc != svgdata ) { g_free(svgdata); svgdata = svgdoc; }
-    if( res ) { g_free(res->data); g_list_free(res); }
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+    if( res )
+    {
+      g_free(res->data);
+      g_list_free(res);
+    }
 
   }
   return svgdoc;
@@ -226,23 +304,25 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  
+
   /* Load svg if not loaded */
   gchar *svgdoc = _watermark_get_svgdoc (self, data);
-  if (!svgdoc) {
+  if (!svgdoc)
+  {
     memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
-  
+
   /* create the rsvghandle from parsed svg data */
   GError *error = NULL;
   RsvgHandle *svg = rsvg_handle_new_from_data ((const guint8 *)svgdoc,strlen (svgdoc),&error);
   g_free (svgdoc);
-  if (!svg || error) {    
+  if (!svg || error)
+  {
     memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
-    
+
   /* get the dimension of svg */
   RsvgDimensionData dimension;
   rsvg_handle_get_dimensions (svg,&dimension);
@@ -254,29 +334,29 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float scale=1.0;
   if ((dimension.width/dimension.height)>1.0)
     scale = iw/dimension.width;
-  else 
+  else
     scale = ih/dimension.height;
-  
+
   scale *= (data->scale/100.0);
-  
+
   /* setup stride for performance */
   int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,roi_out->width);
-  
+
   /* create cairo memory surface */
   guint8 *image= (guint8 *)g_malloc (stride*roi_out->height);
   memset (image,0,stride*roi_out->height);
   cairo_surface_t *surface = cairo_image_surface_create_for_data (image,CAIRO_FORMAT_ARGB32,roi_out->width,roi_out->height,stride);
-  if (cairo_surface_status(surface)!=	CAIRO_STATUS_SUCCESS) 
+  if (cairo_surface_status(surface)!=	CAIRO_STATUS_SUCCESS)
   {
- //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
+//   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free (image);
     memcpy(ovoid, ivoid, sizeof(float)*3*roi_out->width*roi_out->height);
     return;
   }
-  
+
   /* create cairo context and setup transformation/scale */
   cairo_t *cr = cairo_create (surface);
-  
+
   float ty=0,tx=0;
   if( data->alignment >=0 && data->alignment <3) // Align to verttop
     ty=0;
@@ -284,51 +364,53 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     ty=(ih/2.0)-((dimension.height*scale)/2.0);
   else if( data->alignment >=6 && data->alignment <9) // Align to vertbottom
     ty=ih-(dimension.height*scale);
-  
+
   if( data->alignment == 0 ||  data->alignment == 3 || data->alignment==6 )
     tx=0;
   else if( data->alignment == 1 ||  data->alignment == 4 || data->alignment==7 )
     tx=(iw/2.0)-((dimension.width*scale)/2.0);
   else if( data->alignment == 2 ||  data->alignment == 5 || data->alignment==8 )
     tx=iw-(dimension.width*scale);
-  
+
   /* translate to position */
   cairo_translate (cr,-roi_in->x,-roi_in->y);
   cairo_translate (cr,tx,ty);
-  
+
   /* scale */
   cairo_scale (cr,scale,scale);
-  
+
   /* translate x and y offset */
   cairo_translate (cr,data->xoffset*iw,data->yoffset*ih);
-    
+
   /* render svg into surface*/
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   rsvg_handle_render_cairo (svg,cr);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    
+
   /* ensure that all operations on surface finishing up */
   cairo_surface_flush (surface);
-  
+
   /* render surface on output */
   guint8 *sd = image;
   float opacity = data->opacity/100.0;
-/*
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out,sd,opacity) schedule(static)
-#endif
-*/
-  for(int j=0;j<roi_out->height;j++) for(int i=0;i<roi_out->width;i++)
-  {
-    float alpha = (sd[3]/255.0)*opacity;
-    out[0] = ((1.0-alpha)*in[0]) + (alpha*(sd[2]/255.0));
-    out[1] = ((1.0-alpha)*in[1]) + (alpha*(sd[1]/255.0));
-    out[2] = ((1.0-alpha)*in[2]) + (alpha*(sd[0]/255.0));
-    
-    out+=ch; in+=ch; sd+=4;
-  }
-  
-  
+  /*
+  #ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, in, out,sd,opacity) schedule(static)
+  #endif
+  */
+  for(int j=0; j<roi_out->height; j++) for(int i=0; i<roi_out->width; i++)
+    {
+      float alpha = (sd[3]/255.0)*opacity;
+      out[0] = ((1.0-alpha)*in[0]) + (alpha*(sd[2]/255.0));
+      out[1] = ((1.0-alpha)*in[1]) + (alpha*(sd[1]/255.0));
+      out[2] = ((1.0-alpha)*in[2]) + (alpha*(sd[0]/255.0));
+
+      out+=ch;
+      in+=ch;
+      sd+=4;
+    }
+
+
   /* clean up */
   cairo_surface_destroy (surface);
   g_object_unref (svg);
@@ -336,8 +418,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 }
 
-static void 
-watermark_callback(GtkWidget *tb, gpointer user_data) 
+static void
+watermark_callback(GtkWidget *tb, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
@@ -350,16 +432,17 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
 }
 
 
-static void refresh_watermarks( dt_iop_module_t *self ) {
+static void refresh_watermarks( dt_iop_module_t *self )
+{
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
   g_signal_handlers_block_by_func (g->combobox1,watermark_callback,self);
-  
+
   // Clear combobox...
   GtkTreeModel *model=gtk_combo_box_get_model(g->combobox1);
   gtk_list_store_clear (GTK_LIST_STORE(model));
-  
+
   // check watermarkdir and update combo with entries...
   int count=0;
   const gchar *d_name = NULL;
@@ -368,7 +451,7 @@ static void refresh_watermarks( dt_iop_module_t *self ) {
   dt_get_user_config_dir(configdir, 1024);
   strcat(datadir,"/watermarks");
   strcat(configdir,"/watermarks");
-  
+
   /* read watermarks from datadir */
   GDir *dir = g_dir_open(datadir, 0, NULL);
   if(dir)
@@ -393,24 +476,24 @@ static void refresh_watermarks( dt_iop_module_t *self ) {
     }
   }
 
-   _combo_box_set_active_text( g->combobox1, p->filename );
- 
+  _combo_box_set_active_text( g->combobox1, p->filename );
+
   g_signal_handlers_unblock_by_func (g->combobox1,watermark_callback,self);
 
 }
 
-static void 
-refresh_callback(GtkWidget *tb, gpointer user_data) 
+static void
+refresh_callback(GtkWidget *tb, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   refresh_watermarks(self);
-}  
+}
 
 
 
-  
-static void 
-alignment_callback(GtkWidget *tb, gpointer user_data) 
+
+static void
+alignment_callback(GtkWidget *tb, gpointer user_data)
 {
   int index=-1;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -418,20 +501,20 @@ alignment_callback(GtkWidget *tb, gpointer user_data)
 
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  
-    
-  for(int i=0; i<9; i++) 
+
+
+  for(int i=0; i<9; i++)
   {
     /* block signal handler */
     g_signal_handlers_block_by_func (g->dtba[i],alignment_callback,user_data);
 
-    if( GTK_WIDGET(g->dtba[i]) == tb ) 
+    if( GTK_WIDGET(g->dtba[i]) == tb )
     {
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dtba[i]),TRUE);
       index=i;
     }
     else gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->dtba[i]),FALSE);
-    
+
     /* unblock signal handler */
     g_signal_handlers_unblock_by_func (g->dtba[i],alignment_callback,user_data);
   }
@@ -494,7 +577,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->alignment= p->alignment;
   memset(d->filename,0,64);
   sprintf(d->filename,"%s",p->filename);
-  
+
   //fprintf(stderr,"Commit params: %s...\n",d->filename);
 #endif
 }
@@ -544,7 +627,10 @@ void init(dt_iop_module_t *module)
   module->priority = 999;
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
-  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){100.0,100.0,0.0,0.0,4,{"darktable.svg"}}; // opacity,scale,xoffs,yoffs,alignment
+  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)
+  {
+    100.0,100.0,0.0,0.0,4, {"darktable.svg"}
+  }; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
 }
@@ -562,20 +648,20 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_watermark_gui_data_t));
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  
+
   self->widget = gtk_hbox_new(FALSE,0);
   GtkTable *table = GTK_TABLE(gtk_table_new(6,2,FALSE) );
   gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET(table),TRUE,TRUE,5);
   gtk_table_set_row_spacings(GTK_TABLE(table),2);
   gtk_table_set_col_spacings(GTK_TABLE(table),8);
-  
+
   GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char)*64);
   GtkWidget *label2 = dtgtk_reset_label_new(_("opacity"), self, &p->opacity, sizeof(float));
   GtkWidget *label3 = dtgtk_reset_label_new(_("scale"), self, &p->scale, sizeof(float));
   GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
   GtkWidget *label5 = dtgtk_reset_label_new(_("x offset"), self, &p->xoffset, sizeof(float));
   GtkWidget *label6 = dtgtk_reset_label_new(_("y offset"), self, &p->yoffset, sizeof(float));
-  
+
   // Add labels to the table
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label1), 0,1,0,1,GTK_FILL,0,0,0);
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label2), 0,1,1,2,GTK_FILL,0,0,0);
@@ -583,15 +669,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label4), 0,1,3,4,GTK_FILL,0,0,0);
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label5), 0,1,4,5,GTK_FILL,0,0,0);
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label6), 0,1,5,6,GTK_FILL,0,0,0);
-  
-  // Add the marker combobox 
+
+  // Add the marker combobox
   GtkWidget *hbox= GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(hbox), 1,2,0,1,GTK_EXPAND|GTK_FILL,0,0,0);
-  
+
   // Add opacity/scale sliders to table
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->opacity, 0.5));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 100.0, 1.0, p->scale, 0.5));
@@ -599,47 +685,48 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->scale1), 1,2,1,2,GTK_EXPAND|GTK_FILL,0,0,0);
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->scale2), 1,2,2,3,GTK_EXPAND|GTK_FILL,0,0,0);
-  
+
   // Create the 3x3 gtk table toggle button table...
   GtkTable *bat = GTK_TABLE( gtk_table_new(3,3,TRUE));
-  for(int i=0;i<9;i++) {
+  for(int i=0; i<9; i++)
+  {
     g->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<(i+1))));
     gtk_widget_set_size_request (GTK_WIDGET (g->dtba[i]),16,16);
     gtk_table_attach (GTK_TABLE (bat), GTK_WIDGET (g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
-    g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);          
+    g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);
   }
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(bat), 1,2,3,4,GTK_EXPAND|GTK_FILL,0,0,0);
-  
+
   // x/y offset
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale3 ), 1,2,4,5,GTK_EXPAND|GTK_FILL,0,0,0);
   gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale4 ), 1,2,5,6,GTK_EXPAND|GTK_FILL,0,0,0);
- 
-  
+
+
   // Let's add some tooltips and hook up some signals...
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (opacity_callback), self);     
+                    G_CALLBACK (opacity_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (scale_callback), self);      
-                    
+                    G_CALLBACK (scale_callback), self);
+
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    G_CALLBACK (xoffset_callback), self); 
-                    
+                    G_CALLBACK (xoffset_callback), self);
+
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-                    G_CALLBACK (yoffset_callback), self);          
-                    
-  
-  g_signal_connect (G_OBJECT (g->dtbutton1), "clicked",G_CALLBACK (refresh_callback), self);        
-  
+                    G_CALLBACK (yoffset_callback), self);
+
+
+  g_signal_connect (G_OBJECT (g->dtbutton1), "clicked",G_CALLBACK (refresh_callback), self);
+
   refresh_watermarks( self );
-  
-  
+
+
   g_signal_connect (G_OBJECT (g->combobox1), "changed",
-                    G_CALLBACK (watermark_callback), self);     
+                    G_CALLBACK (watermark_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

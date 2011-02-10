@@ -24,14 +24,14 @@
 
 typedef struct dt_dev_raw_load_t
 {
-	dt_develop_t *dev;
-	dt_image_t *image;
+  dt_develop_t *dev;
+  dt_image_t *image;
 }
 dt_dev_raw_load_t;
 
 typedef struct dt_dev_process_t
 {
-	dt_develop_t *dev;
+  dt_develop_t *dev;
 }
 dt_dev_process_t;
 

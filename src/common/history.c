@@ -46,29 +46,29 @@ void dt_history_delete_on_image(int32_t imgid)
   img->output_width = img->width;
   img->output_height = img->height;
   dt_image_cache_flush (img);
-  
+
   /* if current image in develop reload history */
   if (dt_dev_is_current_image (darktable.develop, imgid))
     dt_dev_reload_history_items (darktable.develop);
-  
+
   dt_image_cache_release (img, 'r');
-  
+
 }
 
-void 
+void
 dt_history_delete_on_selection()
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-     int imgid = sqlite3_column_int (stmt, 0);
+    int imgid = sqlite3_column_int (stmt, 0);
     dt_history_delete_on_image (imgid);
   }
   sqlite3_finalize(stmt);
 }
 
-int 
+int
 dt_history_load_and_apply_on_selection (gchar *filename)
 {
   int res=0;
@@ -88,11 +88,11 @@ dt_history_load_and_apply_on_selection (gchar *filename)
       img->force_reimport = 1;
       img->dirty = 1;
       dt_image_cache_flush(img);
-      
+
       /* if current image in develop reload history */
       if (dt_dev_is_current_image(darktable.develop, imgid))
         dt_dev_reload_history_items (darktable.develop);
-      
+
       dt_image_cache_release(img, 'r');
     }
   }
@@ -100,25 +100,25 @@ dt_history_load_and_apply_on_selection (gchar *filename)
   return res;
 }
 
-int 
+int
 dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean merge)
 {
   sqlite3_stmt *stmt;
   if(imgid==dest_imgid) return 1;
-  
+
   dt_image_t *oimg = dt_image_cache_get (imgid, 'r');
-  
+
   /* if merge onto history stack, lets find history offest in destination image */
-  int32_t offs = 0; 
+  int32_t offs = 0;
   if (merge)
-  { 
+  {
     /* apply on top of history stack */
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
   }
   else
-  { 
+  {
     /* replace history stack */
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
@@ -133,7 +133,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
-  
+
   /* reimport image updated image */
   dt_image_t *img = dt_image_cache_get (dest_imgid, 'r');
   img->force_reimport = 1;
@@ -142,13 +142,13 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   img->raw_denoise_threshold = oimg->raw_denoise_threshold;
   img->raw_auto_bright_threshold = oimg->raw_auto_bright_threshold;
   dt_image_cache_flush(img);
-  
+
   /* if current image in develop reload history */
   if (dt_dev_is_current_image(darktable.develop, dest_imgid))
     dt_dev_reload_history_items (darktable.develop);
-  
+
   dt_image_cache_release(img, 'r');
-  
+
   dt_image_cache_release(oimg, 'r');
   return 0;
 }
@@ -162,12 +162,12 @@ dt_history_get_items(int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
-  char name[512]={0};
-  dt_history_item_t *item=g_malloc (sizeof (dt_history_item_t));
-  item->num = sqlite3_column_int (stmt, 0);
-  g_snprintf(name,512,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
-  item->name = g_strdup (name);
-  result = g_list_append (result,item);
+    char name[512]= {0};
+    dt_history_item_t *item=g_malloc (sizeof (dt_history_item_t));
+    item->num = sqlite3_column_int (stmt, 0);
+    g_snprintf(name,512,"%s (%s)",sqlite3_column_text (stmt, 1),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+    item->name = g_strdup (name);
+    result = g_list_append (result,item);
   }
   return result;
 }
@@ -203,8 +203,8 @@ dt_history_get_items_as_string(int32_t imgid)
   // collect all the entries in the history from the db
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char name[512]={0};
-	g_snprintf(name,512,"%s (%s)", (char*)g_hash_table_lookup(module_names, sqlite3_column_text(stmt, 0)), (sqlite3_column_int(stmt, 1)==0)?onoff[0]:onoff[1]);
+    char name[512]= {0};
+    g_snprintf(name,512,"%s (%s)", (char*)g_hash_table_lookup(module_names, sqlite3_column_text(stmt, 0)), (sqlite3_column_int(stmt, 1)==0)?onoff[0]:onoff[1]);
     items = g_list_append(items, g_strdup(name));
     count++;
   }
@@ -212,11 +212,14 @@ dt_history_get_items_as_string(int32_t imgid)
   // add the entries to an char* array
   items = g_list_first(items);
   char** strings = g_malloc(sizeof(char*) * count);
-  if(items != NULL){
+  if(items != NULL)
+  {
     int i = 0;
-    do{
+    do
+    {
       strings[i++] = items->data;
-    } while((items=g_list_next(items)) != NULL);
+    }
+    while((items=g_list_next(items)) != NULL);
     strings[i] = NULL;
   }
 
@@ -225,10 +228,13 @@ dt_history_get_items_as_string(int32_t imgid)
 
   // free the GList and the array
   items = g_list_first(items);
-  if(items != NULL){
-    do{
+  if(items != NULL)
+  {
+    do
+    {
       g_free(items->data);
-    } while((items=g_list_next(items)) != NULL);
+    }
+    while((items=g_list_next(items)) != NULL);
   }
   g_list_free(items);
   if(strings != NULL)
@@ -237,7 +243,7 @@ dt_history_get_items_as_string(int32_t imgid)
   return result;
 }
 
-int 
+int
 dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
 {
   if (imgid < 0) return 1;
@@ -252,14 +258,15 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
     {
       /* get imgid of selected image */
       int32_t dest_imgid = sqlite3_column_int (stmt, 0);
-      
+
       /* paste history stack onto image id */
       dt_history_copy_and_paste_on_image(imgid,dest_imgid,merge);
 
-    }while (sqlite3_step (stmt) == SQLITE_ROW);
+    }
+    while (sqlite3_step (stmt) == SQLITE_ROW);
   }
   else res = 1;
-  
+
   sqlite3_finalize(stmt);
   return res;
 }

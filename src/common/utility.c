@@ -18,39 +18,50 @@
 
 #include "utility.h"
 
-guint dt_util_str_occurence(const gchar *haystack,const gchar *needle){
-	guint o=0;
-	if( haystack && needle ){
-		const gchar *p=haystack;
-		if( (p=g_strstr_len(p,strlen(p),needle)) != NULL){
-			do{
-				o++;
-			}while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
-		}
-	}
-	return o;
+guint dt_util_str_occurence(const gchar *haystack,const gchar *needle)
+{
+  guint o=0;
+  if( haystack && needle )
+  {
+    const gchar *p=haystack;
+    if( (p=g_strstr_len(p,strlen(p),needle)) != NULL)
+    {
+      do
+      {
+        o++;
+      }
+      while((p=g_strstr_len((p+1),strlen(p+1),needle)) != NULL);
+    }
+  }
+  return o;
 }
 
-gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gchar* substitute){
-	gint occurences = dt_util_str_occurence(string, pattern);
-	gchar* nstring;
-	if(occurences){
-		nstring=g_malloc(strlen(string)+(occurences*strlen(substitute))+1);
-		const gchar *pend=string+strlen(string);
-		const gchar *s = string, *p = string;
-		gchar *np = nstring;
-		if((s=g_strstr_len(s,strlen(s),pattern)) != NULL){
-			do{
-				memcpy(np,p,s-p);
-				np+=(s-p);
-				memcpy(np,substitute,strlen(substitute));
-				np+=strlen(substitute);
-				p=s+strlen(pattern);
-			}while((s=g_strstr_len((s+1),strlen(s+1),pattern)) != NULL);
-		}
-		memcpy(np,p,pend-p);
-		np[pend-p]='\0';
-	} else
-		nstring = g_strdup(string); // otherwise it's a hell to decide whether to free this string later.
-	return nstring;
+gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gchar* substitute)
+{
+  gint occurences = dt_util_str_occurence(string, pattern);
+  gchar* nstring;
+  if(occurences)
+  {
+    nstring=g_malloc(strlen(string)+(occurences*strlen(substitute))+1);
+    const gchar *pend=string+strlen(string);
+    const gchar *s = string, *p = string;
+    gchar *np = nstring;
+    if((s=g_strstr_len(s,strlen(s),pattern)) != NULL)
+    {
+      do
+      {
+        memcpy(np,p,s-p);
+        np+=(s-p);
+        memcpy(np,substitute,strlen(substitute));
+        np+=strlen(substitute);
+        p=s+strlen(pattern);
+      }
+      while((s=g_strstr_len((s+1),strlen(s+1),pattern)) != NULL);
+    }
+    memcpy(np,p,pend-p);
+    np[pend-p]='\0';
+  }
+  else
+    nstring = g_strdup(string); // otherwise it's a hell to decide whether to free this string later.
+  return nstring;
 }

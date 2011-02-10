@@ -27,12 +27,13 @@ static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *alloca
 static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event);
 static void _togglebutton_destroy(GtkObject *object);
 
-void temp() {
+void temp()
+{
   _togglebutton_size_allocate(NULL,NULL);
   _togglebutton_size_request(NULL,NULL);
   _togglebutton_expose(NULL,NULL);
   _togglebutton_destroy(NULL);
-  
+
 }
 
 static void _togglebutton_class_init (GtkDarktableToggleButtonClass *klass)
@@ -58,7 +59,7 @@ static void  _togglebutton_size_request(GtkWidget *widget,GtkRequisition *requis
 
   /* create pango text settings if label exists */
   GtkStyle *style = gtk_widget_get_style(widget);
-  PangoLayout *layout = NULL;    
+  PangoLayout *layout = NULL;
   int pw=0,ph=0;
   const gchar *text=gtk_button_get_label (GTK_BUTTON (widget));
   if (text)
@@ -70,8 +71,8 @@ static void  _togglebutton_size_request(GtkWidget *widget,GtkRequisition *requis
 
     requisition->width = pw+4;
     requisition->height = ph+4;
-  } 
-  else 
+  }
+  else
   {
     requisition->width = 22;
     requisition->height = 17;
@@ -86,23 +87,25 @@ static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *alloca
 
   widget->allocation = *allocation;
 
-  if (GTK_WIDGET_REALIZED(widget)) {
-     gdk_window_move_resize(
-         widget->window,
-         allocation->x, allocation->y,
-         allocation->width, allocation->height
-     );
-   }
+  if (GTK_WIDGET_REALIZED(widget))
+  {
+    gdk_window_move_resize(
+      widget->window,
+      allocation->x, allocation->y,
+      allocation->width, allocation->height
+    );
+  }
 }
 
 static void _togglebutton_destroy(GtkObject *object)
 {
   GtkDarktableToggleButtonClass *klass;
   g_return_if_fail(object != NULL);
-  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(object));  
+  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(object));
   klass = gtk_type_class(gtk_widget_get_type());
-  if (GTK_OBJECT_CLASS(klass)->destroy) {
-     (* GTK_OBJECT_CLASS(klass)->destroy) (object);
+  if (GTK_OBJECT_CLASS(klass)->destroy)
+  {
+    (* GTK_OBJECT_CLASS(klass)->destroy) (object);
   }
 }
 
@@ -115,7 +118,7 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   int state = gtk_widget_get_state(widget);
 
   /* fix text style */
-  for(int i=0;i<5;i++)
+  for(int i=0; i<5; i++)
     style->text[i]=style->fg[i];
 
   /* fetch flags */
@@ -148,25 +151,25 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
     {
       cairo_rectangle (cr,x,y,width,height);
       cairo_set_source_rgba (cr,
-          style->bg[state].red/65535.0, 
-          style->bg[state].green/65535.0, 
-          style->bg[state].blue/65535.0,
-          0.5);
+                             style->bg[state].red/65535.0,
+                             style->bg[state].green/65535.0,
+                             style->bg[state].blue/65535.0,
+                             0.5);
       cairo_fill (cr);
     }
-  } 
-  else if( !(flags & CPF_BG_TRANSPARENT) )  
+  }
+  else if( !(flags & CPF_BG_TRANSPARENT) )
   {
     /* draw default boxed button */
     gtk_paint_box (widget->style, widget->window,
-        GTK_WIDGET_STATE (widget),
-        GTK_SHADOW_OUT, NULL, widget, "button",
-        x, y, width, height);
+                   GTK_WIDGET_STATE (widget),
+                   GTK_SHADOW_OUT, NULL, widget, "button",
+                   x, y, width, height);
   }
 
 
   /* create pango text settings if label exists */
-  PangoLayout *layout=NULL;    
+  PangoLayout *layout=NULL;
   int pw=0,ph=0;
   const gchar *text=gtk_button_get_label (GTK_BUTTON (widget));
   if (text)
@@ -178,14 +181,14 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   }
 
   cairo_set_source_rgb (cr,
-      style->fg[state].red/65535.0, 
-      style->fg[state].green/65535.0, 
-      style->fg[state].blue/65535.0);
+                        style->fg[state].red/65535.0,
+                        style->fg[state].green/65535.0,
+                        style->fg[state].blue/65535.0);
 
   /* draw icon */
   if (DTGTK_TOGGLEBUTTON (widget)->icon)
   {
-    if (flags & CPF_IGNORE_FG_STATE) 
+    if (flags & CPF_IGNORE_FG_STATE)
       state = GTK_STATE_NORMAL;
 
 
@@ -213,10 +216,10 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
 }
 
 // Public functions
-GtkWidget* 
+GtkWidget*
 dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
-  GtkDarktableToggleButton *button;	
+  GtkDarktableToggleButton *button;
   button = gtk_type_new(dtgtk_togglebutton_get_type());
   button->icon=paint;
   button->icon_flags=paintflags;
@@ -224,19 +227,21 @@ dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 }
 
 
-GtkWidget* 
+GtkWidget*
 dtgtk_togglebutton_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkWidget *button = dtgtk_togglebutton_new(paint,paintflags);
-  gtk_button_set_label(GTK_BUTTON (button), label);	
+  gtk_button_set_label(GTK_BUTTON (button), label);
   return button;
 }
 
-GtkType dtgtk_togglebutton_get_type() 
+GtkType dtgtk_togglebutton_get_type()
 {
   static GtkType dtgtk_togglebutton_type = 0;
-  if (!dtgtk_togglebutton_type) {
-    static const GtkTypeInfo dtgtk_togglebutton_info = {
+  if (!dtgtk_togglebutton_type)
+  {
+    static const GtkTypeInfo dtgtk_togglebutton_info =
+    {
       "GtkDarktableToggleButton",
       sizeof(GtkDarktableToggleButton),
       sizeof(GtkDarktableToggleButtonClass),

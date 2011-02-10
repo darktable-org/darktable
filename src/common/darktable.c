@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/darktable.h"
 #include "common/collection.h"
@@ -78,7 +78,7 @@ int dt_init(int argc, char *argv[])
 #endif
   darktable.unmuted = 0;
   char *image_to_load = NULL;
-  for(int k=1;k<argc;k++)
+  for(int k=1; k<argc; k++)
   {
     if(argv[k][0] == '-')
     {
@@ -127,11 +127,11 @@ int dt_init(int argc, char *argv[])
   char filename[1024];
   snprintf(filename, 1024, "%s/darktablerc", datadir);
 
-  // Initialize the filesystem watcher  
-  darktable.fswatch=dt_fswatch_new();  
-  
+  // Initialize the filesystem watcher
+  darktable.fswatch=dt_fswatch_new();
+
 #ifdef HAVE_GPHOTO2
-  // Initialize the camera control 
+  // Initialize the camera control
   darktable.camctl=dt_camctl_new();
 #endif
   // has to go first for settings needed by all the others.
@@ -145,10 +145,10 @@ int dt_init(int argc, char *argv[])
   darktable.thumbnail_size *= 16;
 
   // Initialize the password storage engine
-  darktable.pwstorage=dt_pwstorage_new();  
+  darktable.pwstorage=dt_pwstorage_new();
 
   // check and migrate database into new XDG structure
-  char dbfilename[2048]={0};
+  char dbfilename[2048]= {0};
   gchar *conf_db = dt_conf_get_string("database");
   if (conf_db && conf_db[0] != '/')
   {
@@ -158,7 +158,7 @@ int dt_init(int argc, char *argv[])
     {
       fprintf(stderr, "[init] moving database into new XDG directory structure\n");
       // move database into place
-      char destdbname[2048]={0};
+      char destdbname[2048]= {0};
       snprintf(destdbname,2048,"%s/%s",datadir,"library.db");
       if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
       {
@@ -168,10 +168,10 @@ int dt_init(int argc, char *argv[])
     }
     g_free(conf_db);
   }
-  
+
   // check and migrate the cachedir
-  char cachefilename[2048]={0};
-  char cachedir[2048]={0};
+  char cachefilename[2048]= {0};
+  char cachedir[2048]= {0};
   gchar *conf_cache = dt_conf_get_string("cachefile");
   if (conf_cache && conf_cache[0] != '/')
   {
@@ -180,7 +180,7 @@ int dt_init(int argc, char *argv[])
     if (g_file_test (cachefilename,G_FILE_TEST_EXISTS))
     {
       fprintf(stderr, "[init] moving cache into new XDG directory structure\n");
-      char destcachename[2048]={0};
+      char destcachename[2048]= {0};
       snprintf(destcachename,2048,"%s/%s",cachedir,"mipmaps");
       if(!g_file_test (destcachename,G_FILE_TEST_EXISTS))
       {
@@ -190,7 +190,7 @@ int dt_init(int argc, char *argv[])
     }
     g_free(conf_cache);
   }
-  
+
   gchar * dbname = NULL;
   if ( dbfilenameFromCommand == NULL )
   {
@@ -225,13 +225,13 @@ int dt_init(int argc, char *argv[])
     return 1;
   }
   if (dbname != NULL) g_free(dbname);
-  
+
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
   // initialize collection query
   darktable.collection_listeners = NULL;
-  darktable.collection = dt_collection_new(NULL);  
+  darktable.collection = dt_collection_new(NULL);
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, argc, argv);
@@ -297,7 +297,8 @@ int dt_init(int argc, char *argv[])
     }
 
     if(g_file_test(filename, G_FILE_TEST_IS_DIR))
-    {                             // import a directory into a film roll
+    {
+      // import a directory into a film roll
       unsigned int last_char = strlen(filename)-1;
       if(filename[last_char] == '/')
         filename[last_char] = '\0';
@@ -313,7 +314,8 @@ int dt_init(int argc, char *argv[])
       }
     }
     else
-    {                                                                   // import a single image
+    {
+      // import a single image
       gchar *directory = g_path_get_dirname((const gchar *)filename);
       dt_film_t film;
       const int filmid = dt_film_new(&film, directory);
@@ -432,28 +434,28 @@ void *dt_alloc_align(size_t alignment, size_t size)
 #endif
 }
 
-void 
+void
 dt_get_user_config_dir (char *data, size_t bufsize)
 {
-  g_snprintf (data,bufsize,"%s/.config/darktable",getenv("HOME"));  
-  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
+  g_snprintf (data,bufsize,"%s/.config/darktable",getenv("HOME"));
+  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
     g_mkdir_with_parents (data,0700);
 }
 
-void 
+void
 dt_get_user_cache_dir (char *data, size_t bufsize)
 {
-  g_snprintf (data,bufsize,"%s/.cache/darktable",getenv("HOME"));  
-  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
+  g_snprintf (data,bufsize,"%s/.cache/darktable",getenv("HOME"));
+  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
     g_mkdir_with_parents (data,0700);
 }
 
 
-void 
+void
 dt_get_user_local_dir (char *data, size_t bufsize)
 {
   g_snprintf(data,bufsize,"%s/.local",getenv("HOME"));
-  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE) 
+  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
     g_mkdir_with_parents (data,0700);
 
 }
@@ -462,22 +464,33 @@ void dt_get_plugindir(char *datadir, size_t bufsize)
 {
 #if defined(__MACH__) || defined(__APPLE__)
   gchar *curr = g_get_current_dir();
-  int contains = 0; for(int k=0;darktable.progname[k] != 0;k++) if(darktable.progname[k] == '/') { contains = 1; break; }
+  int contains = 0;
+  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
+    {
+      contains = 1;
+      break;
+    }
   if(darktable.progname[0] == '/') // absolute path
     snprintf(datadir, bufsize, "%s", darktable.progname);
   else if(contains) // relative path
     snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
   else
-  { // no idea where we have been called. use compiled in path
+  {
+    // no idea where we have been called. use compiled in path
     g_free(curr);
     snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
     return;
   }
   size_t len = MIN(strlen(datadir), bufsize);
   char *t = datadir + len; // strip off bin/darktable
-  for(;t>datadir && *t!='/';t--); t--;
-  if(*t == '.' && *(t-1) != '.') { for(;t>datadir && *t!='/';t--); t--; }
-  for(;t>datadir && *t!='/';t--);
+  for(; t>datadir && *t!='/'; t--);
+  t--;
+  if(*t == '.' && *(t-1) != '.')
+  {
+    for(; t>datadir && *t!='/'; t--);
+    t--;
+  }
+  for(; t>datadir && *t!='/'; t--);
   strcpy(t, "/lib/darktable");
   g_free(curr);
 #else
@@ -489,22 +502,33 @@ void dt_get_datadir(char *datadir, size_t bufsize)
 {
 #if defined(__MACH__) || defined(__APPLE__)
   gchar *curr = g_get_current_dir();
-  int contains = 0; for(int k=0;darktable.progname[k] != 0;k++) if(darktable.progname[k] == '/') { contains = 1; break; }
+  int contains = 0;
+  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
+    {
+      contains = 1;
+      break;
+    }
   if(darktable.progname[0] == '/') // absolute path
     snprintf(datadir, bufsize, "%s", darktable.progname);
   else if(contains) // relative path
     snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
   else
-  { // no idea where we have been called. use compiled in path
+  {
+    // no idea where we have been called. use compiled in path
     g_free(curr);
     snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
     return;
   }
   size_t len = MIN(strlen(datadir), bufsize);
   char *t = datadir + len; // strip off bin/darktable
-  for(;t>datadir && *t!='/';t--); t--;
-  if(*t == '.' && *(t-1) != '.') { for(;t>datadir && *t!='/';t--); t--; }
-  for(;t>datadir && *t!='/';t--);
+  for(; t>datadir && *t!='/'; t--);
+  t--;
+  if(*t == '.' && *(t-1) != '.')
+  {
+    for(; t>datadir && *t!='/'; t--);
+    t--;
+  }
+  for(; t>datadir && *t!='/'; t--);
   strcpy(t, "/share/darktable");
   g_free(curr);
 #else

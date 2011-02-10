@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include <stdlib.h>
 #include <cairo.h>
@@ -29,45 +29,51 @@
 
 DT_MODULE(1)
 
-typedef struct dt_iop_overexposed_params_t{
-	float lower;
-	float upper;
-}dt_iop_overexposed_params_t;
+typedef struct dt_iop_overexposed_params_t
+{
+  float lower;
+  float upper;
+} dt_iop_overexposed_params_t;
 
-typedef struct dt_iop_overexposed_gui_data_t{
-	GtkVBox             *vbox1;
-	GtkVBox             *vbox2;
-	GtkWidget           *label1;
-	GtkWidget           *label2;
-	GtkDarktableSlider  *lower;
-	GtkDarktableSlider  *upper;
+typedef struct dt_iop_overexposed_gui_data_t
+{
+  GtkVBox             *vbox1;
+  GtkVBox             *vbox2;
+  GtkWidget           *label1;
+  GtkWidget           *label2;
+  GtkDarktableSlider  *lower;
+  GtkDarktableSlider  *upper;
 // 	int                  width;
 // 	int                  height;
 // 	unsigned char       *mask;
-}dt_iop_overexposed_gui_data_t;
+} dt_iop_overexposed_gui_data_t;
 
-typedef struct dt_iop_overexposed_data_t{
-	float lower;
-	float upper;
-}dt_iop_overexposed_data_t;
+typedef struct dt_iop_overexposed_data_t
+{
+  float lower;
+  float upper;
+} dt_iop_overexposed_data_t;
 
-const char* name(){
-	return _("overexposed");
+const char* name()
+{
+  return _("overexposed");
 }
 
-int groups(){
-	return IOP_GROUP_COLOR;
+int groups()
+{
+  return IOP_GROUP_COLOR;
 }
 
 // FIXME: I'm not sure if this is the best test (all >= / <= threshold), but it seems to work.
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out){
-	dt_iop_overexposed_data_t *data = (dt_iop_overexposed_data_t *)piece->data;
-	float lower  = data->lower / 100.0;
-	float upper  = data->upper / 100.0;
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_overexposed_data_t *data = (dt_iop_overexposed_data_t *)piece->data;
+  float lower  = data->lower / 100.0;
+  float upper  = data->upper / 100.0;
 
-	float *in    = (float *)i;
-	float *out   = (float *)o;
-	const int ch = piece->colors;
+  float *in    = (float *)i;
+  float *out   = (float *)o;
+  const int ch = piece->colors;
 
 // 	int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, roi_out->width);
 
@@ -80,31 +86,37 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 // 	char *mask = (char*)((dt_iop_overexposed_gui_data_t*)self->gui_data)->mask;
 
 #ifdef _OPENMP
-	#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower) schedule(static)
 // 	#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower, mask, stride) schedule(static)
 #endif
-	for(int k=0;k<roi_out->width*roi_out->height;k++){
-		float *inp = in + ch*k;
-		float *outp = out + ch*k;
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  {
+    float *inp = in + ch*k;
+    float *outp = out + ch*k;
 // 		int x=k%roi_out->width;
 // 		int y=k/roi_out->width;
-		if(inp[0] >= upper && inp[1] >= upper && inp[2] >= upper){
+    if(inp[0] >= upper && inp[1] >= upper && inp[2] >= upper)
+    {
 // 			mask[y*stride+x] = 255;
-			outp[0] = 1;
-			outp[1] = 0;
-			outp[2] = 0;
-		} else if(inp[0] <= lower && inp[1] <= lower && inp[2] <= lower){
+      outp[0] = 1;
+      outp[1] = 0;
+      outp[2] = 0;
+    }
+    else if(inp[0] <= lower && inp[1] <= lower && inp[2] <= lower)
+    {
 // 			mask[(y*stride+x)+(stride*roi_out->height)] = 255;
-			outp[0] = 0;
-			outp[1] = 0;
-			outp[2] = 1;
-		} else {
-			// TODO: memcpy()?
-			outp[0] = inp[0];
-			outp[1] = inp[1];
-			outp[2] = inp[2];
-		}
-	}
+      outp[0] = 0;
+      outp[1] = 0;
+      outp[2] = 1;
+    }
+    else
+    {
+      // TODO: memcpy()?
+      outp[0] = inp[0];
+      outp[1] = inp[1];
+      outp[2] = inp[2];
+    }
+  }
 }
 
 // void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery){
@@ -152,110 +164,123 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 // 	}
 // }
 
-static void lower_callback (GtkDarktableSlider *slider, gpointer user_data){
-	dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-	if(self->dt->gui->reset) return;
-	dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
-	p->lower = dtgtk_slider_get_value(slider);
-	dt_dev_add_history_item(darktable.develop, self, TRUE);
+static void lower_callback (GtkDarktableSlider *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
+  p->lower = dtgtk_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void upper_callback (GtkDarktableSlider *slider, gpointer user_data){
-	dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-	if(self->dt->gui->reset) return;
-	dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
-	p->upper = dtgtk_slider_get_value(slider);
-	dt_dev_add_history_item(darktable.develop, self, TRUE);
+static void upper_callback (GtkDarktableSlider *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)self->params;
+  p->upper = dtgtk_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece){
-	dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)p1;
-	dt_iop_overexposed_data_t *d   = (dt_iop_overexposed_data_t *)piece->data;
-	d->lower = p->lower;
-	d->upper = p->upper;
-	if(pipe->type != DT_DEV_PIXELPIPE_FULL) piece->enabled = 0;
+void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_overexposed_params_t *p = (dt_iop_overexposed_params_t *)p1;
+  dt_iop_overexposed_data_t *d   = (dt_iop_overexposed_data_t *)piece->data;
+  d->lower = p->lower;
+  d->upper = p->upper;
+  if(pipe->type != DT_DEV_PIXELPIPE_FULL) piece->enabled = 0;
 }
 
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece){
-	piece->data = malloc(sizeof(dt_iop_overexposed_data_t));
-	memset(piece->data,0,sizeof(dt_iop_overexposed_data_t));
-	self->commit_params(self, self->default_params, pipe, piece);
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = malloc(sizeof(dt_iop_overexposed_data_t));
+  memset(piece->data,0,sizeof(dt_iop_overexposed_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
 }
 
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece){
-	free(piece->data);
+void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
 // 	if(((dt_iop_overexposed_gui_data_t*)(self->gui_data))->mask != NULL)
 // 		free(((dt_iop_overexposed_gui_data_t*)(self->gui_data))->mask);
 // 	((dt_iop_overexposed_gui_data_t*)(self->gui_data))->mask = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self){
-	dt_iop_module_t *module = (dt_iop_module_t *)self;
-	dt_iop_overexposed_gui_data_t *g = (dt_iop_overexposed_gui_data_t *)self->gui_data;
-	dt_iop_overexposed_params_t *p   = (dt_iop_overexposed_params_t *)module->params;
-	dtgtk_slider_set_value(g->lower, p->lower);
-	dtgtk_slider_set_value(g->upper, p->upper);
+void gui_update(struct dt_iop_module_t *self)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)self;
+  dt_iop_overexposed_gui_data_t *g = (dt_iop_overexposed_gui_data_t *)self->gui_data;
+  dt_iop_overexposed_params_t *p   = (dt_iop_overexposed_params_t *)module->params;
+  dtgtk_slider_set_value(g->lower, p->lower);
+  dtgtk_slider_set_value(g->upper, p->upper);
 }
 
-void init(dt_iop_module_t *module){
-	module->params                  = malloc(sizeof(dt_iop_overexposed_params_t));
-	module->default_params          = malloc(sizeof(dt_iop_overexposed_params_t));
-	module->default_enabled         = 0;
-	module->priority                = 999;
-	module->params_size             = sizeof(dt_iop_overexposed_params_t);
-	module->gui_data                = NULL;
-	dt_iop_overexposed_params_t tmp = (dt_iop_overexposed_params_t){2,98};
-	memcpy(module->params, &tmp, sizeof(dt_iop_overexposed_params_t));
-	memcpy(module->default_params, &tmp, sizeof(dt_iop_overexposed_params_t));
+void init(dt_iop_module_t *module)
+{
+  module->params                  = malloc(sizeof(dt_iop_overexposed_params_t));
+  module->default_params          = malloc(sizeof(dt_iop_overexposed_params_t));
+  module->default_enabled         = 0;
+  module->priority                = 999;
+  module->params_size             = sizeof(dt_iop_overexposed_params_t);
+  module->gui_data                = NULL;
+  dt_iop_overexposed_params_t tmp = (dt_iop_overexposed_params_t)
+  {
+    2,98
+  };
+  memcpy(module->params, &tmp, sizeof(dt_iop_overexposed_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_overexposed_params_t));
 }
 
-void cleanup(dt_iop_module_t *module){
+void cleanup(dt_iop_module_t *module)
+{
 // 	if(((dt_iop_overexposed_gui_data_t*)(module->gui_data))->mask != NULL)
 // 		free(((dt_iop_overexposed_gui_data_t*)(module->gui_data))->mask);
 // 	((dt_iop_overexposed_gui_data_t*)(module->gui_data))->mask = NULL;
-	if(module->gui_data != NULL)
-		free(module->gui_data);
-	module->gui_data = NULL;
-	if(module->params != NULL)
-		free(module->params);
-	module->params = NULL;
+  if(module->gui_data != NULL)
+    free(module->gui_data);
+  module->gui_data = NULL;
+  if(module->params != NULL)
+    free(module->params);
+  module->params = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self){
-	self->gui_data                   = malloc(sizeof(dt_iop_overexposed_gui_data_t));
-	dt_iop_overexposed_gui_data_t *g = (dt_iop_overexposed_gui_data_t *)self->gui_data;
-	dt_iop_overexposed_params_t *p   = (dt_iop_overexposed_params_t *)self->params;
+void gui_init(struct dt_iop_module_t *self)
+{
+  self->gui_data                   = malloc(sizeof(dt_iop_overexposed_gui_data_t));
+  dt_iop_overexposed_gui_data_t *g = (dt_iop_overexposed_gui_data_t *)self->gui_data;
+  dt_iop_overexposed_params_t *p   = (dt_iop_overexposed_params_t *)self->params;
 
 // 	g->mask = NULL;
 
-	self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-	g->vbox1     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-	g->vbox2     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-	
-	g->label1 = dtgtk_reset_label_new(_("lower threshold"), self, &p->lower, sizeof(float));
-	g->label2 = dtgtk_reset_label_new(_("upper threshold"), self, &p->upper, sizeof(float));
-	
-	gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-	g->lower = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lower, 2));
-	dtgtk_slider_set_format_type(g->lower,DARKTABLE_SLIDER_FORMAT_PERCENT);
-	g->upper = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->upper, 2));
-	dtgtk_slider_set_format_type(g->upper,DARKTABLE_SLIDER_FORMAT_PERCENT);
-	
-	gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->lower), TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
-	gtk_object_set(GTK_OBJECT(g->lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
-	gtk_object_set(GTK_OBJECT(g->upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
-	
-	g_signal_connect (G_OBJECT (g->lower), "value-changed", G_CALLBACK (lower_callback), self);
-	g_signal_connect (G_OBJECT (g->upper), "value-changed", G_CALLBACK (upper_callback), self);  
+  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  g->vbox1     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+
+  g->label1 = dtgtk_reset_label_new(_("lower threshold"), self, &p->lower, sizeof(float));
+  g->label2 = dtgtk_reset_label_new(_("upper threshold"), self, &p->upper, sizeof(float));
+
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
+  g->lower = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lower, 2));
+  dtgtk_slider_set_format_type(g->lower,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  g->upper = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->upper, 2));
+  dtgtk_slider_set_format_type(g->upper,DARKTABLE_SLIDER_FORMAT_PERCENT);
+
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->lower), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
+  gtk_object_set(GTK_OBJECT(g->lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
+
+  g_signal_connect (G_OBJECT (g->lower), "value-changed", G_CALLBACK (lower_callback), self);
+  g_signal_connect (G_OBJECT (g->upper), "value-changed", G_CALLBACK (upper_callback), self);
 }
 
-void gui_cleanup(struct dt_iop_module_t *self){
-	if(self->gui_data)
-		free(self->gui_data);
-	self->gui_data = NULL;
+void gui_cleanup(struct dt_iop_module_t *self)
+{
+  if(self->gui_data)
+    free(self->gui_data);
+  self->gui_data = NULL;
 }

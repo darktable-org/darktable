@@ -31,15 +31,17 @@ DT_MODULE(1)
 typedef  struct dt_lib_capture_t
 {
   /** Gui part of the module */
-  struct {
+  struct
+  {
     GtkLabel *label1;                           // Jobcode
     GtkEntry *entry1;                         // Jobcode
     GtkButton *button1;                     // create new
   } gui;
-  
+
   /** Data part of the module */
-  struct  {
-    
+  struct
+  {
+
   } data;
 }
 dt_lib_capture_t;
@@ -50,7 +52,7 @@ name ()
   return _("session");
 }
 
-uint32_t views() 
+uint32_t views()
 {
   return DT_CAPTURE_VIEW;
 }
@@ -67,8 +69,8 @@ position ()
   return 999;
 }
 
-static void 
-create_callback(GtkButton *button, gpointer user_data) 
+static void
+create_callback(GtkButton *button, gpointer user_data)
 {
   dt_lib_module_t *self=(dt_lib_module_t *)user_data;
   dt_lib_capture_t *lib=self->data;
@@ -85,39 +87,39 @@ gui_init (dt_lib_module_t *self)
   self->widget = gtk_vbox_new(TRUE, 5);
   self->data = malloc(sizeof(dt_lib_capture_t));
   memset(self->data,0,sizeof(dt_lib_capture_t));
-  
+
   // Setup lib data
   dt_lib_capture_t *lib=self->data;
-  
+
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
   GtkBox *hbox, *vbox1, *vbox2;
-  
+
   // Session settings
   //gtk_box_pack_start(GTK_BOX(self->widget), dtgtk_label_new("session settings",DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
   vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  
+
   lib->gui.label1 = GTK_LABEL(gtk_label_new(_("jobcode")));
   gtk_misc_set_alignment(GTK_MISC(lib->gui.label1 ), 0.0, 0.5);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
-  
+
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->gui.entry1));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
- 
+
   lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label( _("create") ));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), TRUE, TRUE, 0);
-  
+
   g_signal_connect (G_OBJECT (lib->gui.button1), "clicked",
-                  G_CALLBACK (create_callback), self);
+                    G_CALLBACK (create_callback), self);
 
   gtk_entry_set_text(lib->gui.entry1, dt_conf_get_string("plugins/capture/jobcode") );
-  
+
 }
 
 void

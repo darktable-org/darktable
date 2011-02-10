@@ -47,13 +47,13 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
   dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
   if(cols == 3) ret = fread(img->pixels, 3*sizeof(float), img->width*img->height, f);
   else for(int j=0; j < img->height; j++)
-    for(int i=0; i < img->width; i++)
-    {
-      ret = fread(img->pixels + 3*(img->width*j + i), sizeof(float), 1, f);
-      img->pixels[3*(img->width*j + i) + 2] =
-      img->pixels[3*(img->width*j + i) + 1] =
-      img->pixels[3*(img->width*j + i) + 0];
-    }
+      for(int i=0; i < img->width; i++)
+      {
+        ret = fread(img->pixels + 3*(img->width*j + i), sizeof(float), 1, f);
+        img->pixels[3*(img->width*j + i) + 2] =
+          img->pixels[3*(img->width*j + i) + 1] =
+            img->pixels[3*(img->width*j + i) + 0];
+      }
   // repair nan/inf etc
   for(int i=0; i < img->width*img->height*3; i++) img->pixels[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
   float *line = (float *)malloc(sizeof(float)*3*img->width);
@@ -83,9 +83,9 @@ int write_image (dt_imageio_module_data_t *pfm, const char *filename, const floa
   if(f)
   {
     (void)fprintf(f, "PF\n%d %d\n-1.0\n", pfm->width, pfm->height);
-    for(int j=pfm->height-1;j>=0;j--)
+    for(int j=pfm->height-1; j>=0; j--)
     {
-      for(int i=0;i<pfm->width;i++)
+      for(int i=0; i<pfm->width; i++)
       {
         int cnt = fwrite(in + 4*(pfm->width*j + i), sizeof(float)*3, 1, f);
         if(cnt != 1) status = 1;
@@ -128,7 +128,7 @@ mime(dt_imageio_module_data_t *data)
 {
   return "image/x-portable-floatmap";
 }
- 
+
 const char*
 extension(dt_imageio_module_data_t *data)
 {
