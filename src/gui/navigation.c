@@ -86,7 +86,7 @@ gboolean dt_gui_navigation_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
       cairo_fill(cr);
     }
 
-    cairo_rectangle(cr, 0, 0, wd, ht);
+    cairo_rectangle(cr, 0, 0, wd-2, ht-1);
     cairo_set_source_surface (cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill(cr);
