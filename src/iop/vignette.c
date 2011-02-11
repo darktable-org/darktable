@@ -100,75 +100,60 @@ groups ()
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
+  const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const int ch = piece->colors;
 
-  const float iw=piece->buf_in.width*roi_out->scale;
-  const float ih=piece->buf_in.height*roi_out->scale;
+  const float iwscale=2.0/(piece->buf_in.width*roi_out->scale);
+  const float ihscale=2.0/(piece->buf_in.height*roi_out->scale);
   const int ix= (roi_in->x);
   const int iy= (roi_in->y);
+  const double dscale=data->scale/100.0;
+  const double fscale=data->falloff_scale/100.0;
+  const double strength=data->strength/100.0;
+  const double bs=1.0-MAX(data->bsratio,0.0);
+  const double ss=1.0+MIN(data->bsratio,0.0);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data) schedule(static)
 #endif
-  for(int j=0; j<roi_out->height; j++) for(int i=0; i<roi_out->width; i++)
+  for(int j=0; j<roi_out->height; j++)
+  {
+    const int k = ch*roi_out->width*j;
+    const float *in = (const float *)ivoid + k;
+    float *out = (float *)ovoid + k;
+    for(int i=0; i<roi_out->width; i++, in+=ch, out+=ch)
     {
-      const int k = ch*(roi_out->width*j + i);
-      dt_iop_vector_2d_t pv, vv;
+      // current pixel coord translated to local coord
+      const dt_iop_vector_2d_t pv = {
+	(ix+i)*iwscale-data->center.x-1.0,
+	(iy+j)*ihscale-data->center.y-1.0
+      };
 
-      // Lets translate current pixel coord to local coord
-      pv.x=-1.0+(((double) (ix+i)/iw)*2.0);
-      pv.y=-1.0+(((double) (iy+j)/ih)*2.0);
-
-      // Calculate the pixel weight in vinjett
-      double v=tan(pv.y/pv.x);                    // get the pixel v of tan opp. / adj.
-      if(pv.x==0)
-        v=(pv.y>0)?0:M_PI;
-      double dscale=data->scale/100.0;
-      double fscale=data->falloff_scale/100.0;
-
-      double sinv=sin(v)+data->center.x;
-      double cosv=cos(v)+data->center.y;
-      vv.x=cosv*dscale;                        // apply uniformity and scale vignette to radie
-      vv.y=sinv*dscale;
+      // Calculate the pixel weight in vignette
+      const double cplen=sqrt((pv.x*pv.x)+(pv.y*pv.y));  // Length from center to pv
       double weight=0.0;
-      double cvlen=sqrt((vv.x*vv.x)+(vv.y*vv.y));    // Length from center to vv
-      double cplen=sqrt((pv.x*pv.x)+(pv.y*pv.y));  // Length from center to pv
 
-      if( cplen>=cvlen ) // pixel is outside the inner vingett circle, lets calculate weight of vignette
+      if( cplen>=dscale ) // pixel is outside the inner vingette circle, lets calculate weight of vignette
       {
-        double ox=cosv*(dscale+fscale);    // scale outer vignette circle
-        double oy=sinv*(dscale+fscale);
-        double blen=sqrt(((vv.x-ox)*(vv.x-ox))+((vv.y-oy)*(vv.y-oy)));             // lenght between vv and outer circle
-        weight=((cplen-cvlen)/blen);
-        if(weight <=1.0 && weight>0.0)
-          weight=1.0-( 1.0+sin( ((M_PI/2.0)+(M_PI*weight)) ) )/2.0;
-        //weight=( 1.0+tan( (M_PI-(M_PI/4.0) +((M_PI/4.0)*weight)) ) )/2.0;
-        else
-          weight=weight>1.0?1.0:0.0;
+        weight=((cplen-dscale)/fscale);
+	if (weight >= 1.0)
+	  weight = 1.0;
+	else if (weight <= 0.0)
+	  weight = 0.0;
+	else
+          weight=0.5 - cos( M_PI*weight )/2.0;
       }
 
       // Let's apply weighted effect on brightness and desaturation
       float col[3];
-      for(int c=0; c<3; c++) col[c]=in[k+c];
+      for(int c=0; c<3; c++) col[c]=in[c];
       if( weight > 0 )
       {
-        double bs=1.0;
-        double ss=1.0;
-
-        if(data->bsratio>0.0)
-          bs-=data->bsratio;
-        else
-          ss-=fabs(data->bsratio);
-        double strength=data->strength/100.0;
-
         // Then apply falloff vignette
         double falloff=(data->invert_falloff==FALSE)?(1.0-(weight*bs*strength)):(weight*bs*strength);
-        col[0]=CLIP( ((data->invert_falloff==FALSE)? in[k+0]*falloff: in[k+0]+falloff) );
-        col[1]=CLIP( ((data->invert_falloff==FALSE)? in[k+1]*falloff: in[k+1]+falloff) );
-        col[2]=CLIP( ((data->invert_falloff==FALSE)? in[k+2]*falloff: in[k+2]+falloff) );
+        col[0]=CLIP( ((data->invert_falloff==FALSE)? in[0]*falloff: in[0]+falloff) );
+        col[1]=CLIP( ((data->invert_falloff==FALSE)? in[1]*falloff: in[1]+falloff) );
+        col[2]=CLIP( ((data->invert_falloff==FALSE)? in[2]*falloff: in[2]+falloff) );
 
         // apply saturation
         double mv=(col[0]+col[1]+col[2])/3.0;
@@ -189,8 +174,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         }
 
       }
-      for(int c=0; c<3; c++) out[k+c]=col[c];
+      for(int c=0; c<3; c++) out[c]=col[c];
     }
+  }
 }
 
 static void
