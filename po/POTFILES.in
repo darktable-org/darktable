@@ -79,6 +79,7 @@ src/iop/zonesystem.c
 src/libs/camera.c
 src/libs/capture.c
 src/libs/collect.c
+src/libs/collect.h
 src/libs/copy_history.c
 src/libs/export.c
 src/libs/image.c
