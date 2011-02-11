@@ -50,6 +50,12 @@ uint32_t views()
 }
 
 static void
+write_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_control_write_sidecar_files();
+}
+
+static void
 load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
   GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
@@ -224,7 +230,12 @@ gui_init (dt_lib_module_t *self)
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
   gtk_object_set(GTK_OBJECT(loadbutton), "tooltip-text", _("open an xmp sidecar file\nand apply it to selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, gtk_label_new(""), TRUE, TRUE, 0);
+
+  GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (copy), "clicked",
