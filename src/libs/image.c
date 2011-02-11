@@ -55,7 +55,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   long int i = (long int)user_data;
   if     (i == 0) dt_control_remove_images();
   else if(i == 1) dt_control_delete_images();
-  else if(i == 2) dt_control_write_sidecar_files();
+  // else if(i == 2) dt_control_write_sidecar_files();
   else if(i == 3) dt_control_duplicate_images();
   else if(i == 4) dt_control_flip_images(0);
   else if(i == 5) dt_control_flip_images(1);
@@ -93,10 +93,10 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  button = gtk_button_new_with_label(_("write sidecar files"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
+  button = gtk_button_new_with_label(_("create hdr"));
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)2);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)7);
+  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a high dynamic range image from selected shots"), (char *)NULL);
 
   button = gtk_button_new_with_label(_("duplicate"));
   gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), (char *)NULL);
@@ -124,14 +124,6 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  button = gtk_button_new_with_label(_("create hdr"));
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)7);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a high dynamic range image from selected shots"), (char *)NULL);
-  gtk_box_pack_start(hbox, gtk_label_new(""), TRUE, TRUE, 0);
 }
 
 void
