@@ -23,6 +23,7 @@
 #include "gui/presets.h"
 #include "gui/gtk.h"
 #include "dtgtk/slider.h"
+#include "control/control.h"
 #include <memory.h>
 #include <stdlib.h>
 #include <xmmintrin.h>
@@ -35,7 +36,7 @@
 DT_MODULE(1)
 
 #define BANDS 6
-#define MAX_LEVEL 7
+#define MAX_NUM_SCALES 8 // 2*2^(i+1) + 1 = 1025px support for i = 8
 #define RES 64
 
 #define dt_atrous_show_upper_label(cr, text, ext) 	cairo_text_extents (cr, text, &ext);\
@@ -62,7 +63,7 @@ atrous_channel_t;
 
 typedef struct dt_iop_atrous_params_t
 {
-  int32_t octaves; // max is 7 -> 5*2^7 = 640px support
+  int32_t octaves;
   float x[atrous_none][BANDS], y[atrous_none][BANDS];
 }
 dt_iop_atrous_params_t;
@@ -83,8 +84,10 @@ typedef struct dt_iop_atrous_gui_data_t
   float draw_xs[RES], draw_ys[RES];
   float draw_min_xs[RES], draw_min_ys[RES];
   float draw_max_xs[RES], draw_max_ys[RES];
-  float band_hist[BANDS];
+  float band_hist[MAX_NUM_SCALES];
   float band_max;
+  float sample[MAX_NUM_SCALES];
+  int   num_samples;
 }
 dt_iop_atrous_gui_data_t;
 
@@ -207,6 +210,26 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
 }
 
 static int
+get_samples (float *t, const dt_iop_atrous_data_t *const d, const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *const piece)
+{
+  const float scale = roi_in->scale;
+  const float supp0 = MIN(2*(2<<(MAX_NUM_SCALES-1)) + 1, MAX(piece->buf_in.height, piece->buf_in.width) * 0.2f);
+  const float i0 = dt_log2f((supp0 - 1.0f)*.5f);
+  int i=0;
+  for(; i<MAX_NUM_SCALES; i++)
+  {
+    // actual filter support on scaled buffer
+    const float supp  = 2*(2<<i) + 1;
+    // approximates this filter size on unscaled input image:
+    const float supp_in = supp * (1.0f/scale);
+    const float i_in = dt_log2f((supp_in - 1)*.5f) - 1.0f;
+    t[i] = 1.0f - (i_in+.5f)/i0;
+    if(t[i] < 0.0f) break;
+  }
+  return i;
+}
+
+static int
 get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atrous_data_t *const d, const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *const piece)
 {
   // we want coeffs to span max 20% of the image
@@ -221,11 +244,10 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
   // cut off too fine ones, if image is not detailed enough (due to roi_in->scale)
   const float scale = roi_in->scale;
   // largest desired filter on input buffer (20% of input dim)
-  const float supp0 = MAX(piece->buf_in.height, piece->buf_in.width) * 0.2f;
-  int max_scale = 0;
-  for(; max_scale<MAX_LEVEL; max_scale++)
-    if(2*(2<<max_scale) + 1 > supp0) break;
-  for(int i=0; i<max_scale; i++)
+  const float supp0 = MIN(2*(2<<(MAX_NUM_SCALES-1)) + 1, MAX(piece->buf_in.height, piece->buf_in.width) * 0.2f);
+  const float i0 = dt_log2f((supp0 - 1.0f)*.5f);
+  int i=0;
+  for(; i<MAX_NUM_SCALES; i++)
   {
     // actual filter support on scaled buffer
     const float supp  = 2*(2<<i) + 1;
@@ -233,7 +255,7 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
     const float supp_in = supp * (1.0f/scale);
     const float i_in = dt_log2f((supp_in - 1)*.5f) - 1.0f;
     // i_in = max_scale .. .. .. 0
-    const float t = 1.0f - (i_in+.5f)/max_scale;
+    const float t = 1.0f - (i_in+.5f)/i0;
     boost[i][3] = boost[i][0] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_L], t);
     boost[i][1] = boost[i][2] = 2.0f*dt_draw_curve_calc_value(d->curve[atrous_c], t);
     for(int k=0; k<4; k++) boost[i][k] *= boost[i][k];
@@ -241,18 +263,26 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
     thrs [i][1] = thrs [i][2] = powf(2.0f, -7.0f*(1.0f-t)) * 20.0f*dt_draw_curve_calc_value(d->curve[atrous_ct], t);
     sharp[i]    = 0.0025f*dt_draw_curve_calc_value(d->curve[atrous_s], t);
     // printf("scale %d boost %f %f thrs %f %f sharpen %f\n", i, boost[i][0], boost[i][2], thrs[i][0], thrs[i][1], sharp[i]);
+    if(t < 0.0f) break;
   }
-  return max_scale;
+  return i;
 }
 
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
-  float thrs [MAX_LEVEL][4];
-  float boost[MAX_LEVEL][4];
-  float sharp[MAX_LEVEL];
+  float thrs [MAX_NUM_SCALES][4];
+  float boost[MAX_NUM_SCALES][4];
+  float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+
+  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  {
+    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    g->num_samples = get_samples (g->sample, d, roi_in, piece);
+    dt_control_queue_draw(GTK_WIDGET(g->area));
+  }
 
   float *detail = NULL;
   float *tmp    = NULL;
@@ -355,10 +385,18 @@ void
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem _dev_in, cl_mem _dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
-  float thrs [MAX_LEVEL][4];
-  float boost[MAX_LEVEL][4];
-  float sharp[MAX_LEVEL];
+  float thrs [MAX_NUM_SCALES][4];
+  float boost[MAX_NUM_SCALES][4];
+  float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+
+  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  {
+    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    g->num_samples = get_samples (g->sample, d, roi_in, piece);
+    dt_control_queue_draw(GTK_WIDGET(g->area));
+  }
+
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
   // global scale is roi scale and pipe input prescale
 
@@ -571,7 +609,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
       dt_draw_curve_set_point(d->curve[ch], k, p->x[ch][k], p->y[ch][k]);
   int l = 0;
   for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale); k; k>>=1) l++;
-  d->octaves = MIN(MAX_LEVEL, l);
+  d->octaves = MIN(BANDS, l);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -587,7 +625,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   }
   int l = 0;
   for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale); k; k>>=1) l++;
-  d->octaves = MIN(MAX_LEVEL, l);
+  d->octaves = MIN(BANDS, l);
 }
 
 void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -851,6 +889,29 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // draw frequency histogram in bg.
 #if 1
+  if(c->num_samples > 0)
+  {
+    cairo_save(cr);
+    for(int k=1;k<c->num_samples;k+=2)
+    {
+      cairo_set_line_width(cr, 1.f);
+      cairo_set_source_rgba(cr, .2, .2, .2, 0.3);
+      cairo_move_to(cr, width*c->sample[k-1], 0.0f);
+      cairo_line_to(cr, width*c->sample[k-1], -height);
+      cairo_line_to(cr, width*c->sample[k], -height);
+      cairo_line_to(cr, width*c->sample[k], 0.0f);
+      cairo_fill(cr);
+    }
+    if(c->num_samples & 1)
+    {
+      cairo_move_to(cr, width*c->sample[c->num_samples-1], 0.0f);
+      cairo_line_to(cr, width*c->sample[c->num_samples-1], -height);
+      cairo_line_to(cr, 0.0f, -height);
+      cairo_line_to(cr, 0.0f, 0.0f);
+      cairo_fill(cr);
+    }
+    cairo_restore(cr);
+  }
   if(c->band_max > 0)
   {
     cairo_save(cr);
@@ -1161,9 +1222,8 @@ void gui_init (struct dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
 
+  c->num_samples = 0;
   c->band_max = 0;
-//   c->channel = atrous_L;
-//   c->channel2 = atrous_L;
   c->channel = c->channel2 = dt_conf_get_int("plugins/darkroom/atrous/gui_channel");
   int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
@@ -1175,7 +1235,7 @@ void gui_init (struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
 
   // tabs
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));//DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
