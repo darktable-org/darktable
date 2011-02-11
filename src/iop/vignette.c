@@ -60,9 +60,8 @@ dt_iop_vignette_params_t;
 typedef struct dt_iop_vignette_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6,*label7;			                	// scale, strength, uniformity, b/s ratio, invert saturation, invert falloff, falloff scale
   GtkToggleButton *togglebutton1,*togglebutton2;				// invert saturation, invert falloff vignette
-  GtkDarktableSlider *scale1,*scale2,*scale3,*scale4,*scale5;	  	// scale, strength, uniformity, b/s ratio, falloff sclae
+  GtkDarktableSlider *scale1,*scale2,*scale3,*scale4,*scale5,*scale6,*scale7;	  	// scale, strength, uniformity, b/s ratio, falloff sclae, horiz. center, vert. center
 }
 dt_iop_vignette_gui_data_t;
 
@@ -230,6 +229,26 @@ bsratio_callback (GtkDarktableSlider *slider, gpointer user_data)
 }
 
 static void
+centerx_callback (GtkDarktableSlider *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
+  p->center.x = dtgtk_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+centery_callback (GtkDarktableSlider *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
+  p->center.y = dtgtk_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
 invert_saturation_callback (GtkToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -300,6 +319,8 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale3, p->uniformity);
   dtgtk_slider_set_value(g->scale4, p->bsratio);
   dtgtk_slider_set_value(g->scale5, p->falloff_scale);
+  dtgtk_slider_set_value(g->scale6, p->center.x);
+  dtgtk_slider_set_value(g->scale7, p->center.y);
   gtk_toggle_button_set_active(g->togglebutton1, p->invert_saturation);
   gtk_toggle_button_set_active(g->togglebutton2, p->invert_falloff);
 }
@@ -330,6 +351,8 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
+  GtkWidget *widget;
+
   self->gui_data = malloc(sizeof(dt_iop_vignette_gui_data_t));
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
@@ -340,26 +363,32 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
 
-  g->label1 = dtgtk_reset_label_new (_("scale"), self, &p->scale, sizeof(float));
-  g->label7 = dtgtk_reset_label_new (_("fall-off strength"), self, &p->falloff_scale, sizeof(float));
-  g->label2 = dtgtk_reset_label_new (_("strength"), self, &p->strength, sizeof(float));
-  g->label3 = dtgtk_reset_label_new (_("uniformity"), self, &p->uniformity, sizeof(float));
-  g->label4 = dtgtk_reset_label_new (_("b/s ratio"), self, &p->bsratio, sizeof(float));
-  g->label5 = dtgtk_reset_label_new (_("saturation"), self, &p->invert_saturation, sizeof(float));
-  g->label6 = dtgtk_reset_label_new (_("fall-off"), self, &p->invert_falloff, sizeof(float));
+  widget = dtgtk_reset_label_new (_("scale"), self, &p->scale, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new (_("fall-off strength"), self, &p->falloff_scale, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new (_("strength"), self, &p->strength, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new (_("uniformity"), self, &p->uniformity, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new (_("b/s ratio"), self, &p->bsratio, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new (_("saturation"), self, &p->invert_saturation, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new (_("fall-off"), self, &p->invert_falloff, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new (_("horizontal center"), self, &p->center.x, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  widget = dtgtk_reset_label_new (_("vertical center"), self, &p->center.y, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label7), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label6), TRUE, TRUE, 0);
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0000, 0.50, p->scale, 2));
-  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.000, 0.010, p->falloff_scale, 2));
+  g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.000, 1.0, p->falloff_scale, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0000, 0.50, p->strength, 2));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.010, p->uniformity, 3));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0000, 1.0000, 0.010, p->bsratio, 1));
+  g->scale6 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0000, 1.0000, 0.010, p->center.x, 3));
+  g->scale7 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0000, 1.0000, 0.010, p->center.y, 3));
   g->togglebutton1 = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("invert")));
   g->togglebutton2 = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("invert")));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
@@ -369,6 +398,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->togglebutton1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->togglebutton2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale6), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale7), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radii scale of vignette for start of fall-off"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("the radii scale of vignette for end of fall-off"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of effect"), (char *)NULL);
@@ -376,12 +407,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("brightness/saturation ratio\nof the result,\n-1 - only brightness\n 0 - 50/50 mix of brightness and saturation\n+1 - only saturation"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton1), "tooltip-text", _("inverts effect of saturation..."), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->togglebutton2), "tooltip-text", _("inverts effect of fall-off, default is dark fall-off..."), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale6), "tooltip-text", _("horizontal offset of center of the effect"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale7), "tooltip-text", _("vertical offset of center of the effect"), (char *)NULL);
 
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale1),DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale2),DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale5),DARKTABLE_SLIDER_FORMAT_PERCENT);
 
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale4),DARKTABLE_SLIDER_FORMAT_RATIO);
+  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale6),DARKTABLE_SLIDER_FORMAT_RATIO);
+  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale7),DARKTABLE_SLIDER_FORMAT_RATIO);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);
@@ -397,6 +432,10 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (invert_saturation_callback), self);
   g_signal_connect (G_OBJECT (g->togglebutton2), "toggled",
                     G_CALLBACK (invert_falloff_callback), self);
+  g_signal_connect (G_OBJECT (g->scale6), "value-changed",
+                    G_CALLBACK (centerx_callback), self);
+  g_signal_connect (G_OBJECT (g->scale7), "value-changed",
+                    G_CALLBACK (centery_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
