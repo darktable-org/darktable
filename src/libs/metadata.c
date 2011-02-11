@@ -44,7 +44,7 @@ dt_lib_metadata_t;
 
 const char* name()
 {
-  return _("meta data editor");
+  return _("metadata editor");
 }
 
 uint32_t views()
