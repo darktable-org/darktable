@@ -228,6 +228,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 	
 	if(d->cmatrix[0] != -0.666f)
 	{
+		//fprintf(stderr,"Using cmatrix codepath\n");
 #ifdef _OPENMP
 	#pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, i, o)
 #endif
@@ -251,6 +252,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 	}
 	else
 	{
+		//fprintf(stderr,"Using xform codepath\n");
+
 		// lcms2 fallback, slow:
 		int rowsize=roi_out->width*3;
 	
@@ -386,7 +389,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 	if (d->softproofing)
 		d->softproof =  _create_profile(g->softproofprofile);
 	
-	/* get matrix from profile, if softproofing always do d->xform variant */
+	/* get matrix from profile, if softproofing always go xform codepath */
 	if (d->softproofing || dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES)) {
 		d->cmatrix[0] = -0.666f;
 		piece->process_cl_ready = 0;
@@ -419,181 +422,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 	
 	
 	//fprintf(stderr, " Output profile %s, softproof %s%s%s\n", outprofile, d->softproofing?"enabled ":"disabled",d->softproofing?"using profile ":"",d->softproofing?g->softproofprofile:"");
-	
-/*
-	
-	if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-	{
-		// get export override:
-		if(overprofile && strcmp(overprofile, "image")) snprintf(p->iccprofile, DT_IOP_COLOR_ICC_LEN, "%s", overprofile);
-		if(overintent >= 0) p->intent = overintent;
-		if(!strcmp(p->iccprofile, "sRGB"))
-		{ // default: sRGB
-			d->output = dt_colorspaces_create_srgb_profile();
-		}
-		else if(!strcmp(p->iccprofile, "linear_rgb"))
-		{
-			d->output = dt_colorspaces_create_linear_rgb_profile();
-		}
-		else if(!strcmp(p->iccprofile, "adobergb"))
-		{
-			d->output = dt_colorspaces_create_adobergb_profile();
-		}
-		else if(!strcmp(p->iccprofile, "X profile"))
-		{ // x default
-			if(darktable.control->xprofile_data) d->output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
-			else d->output = NULL;
-		}
-		else
-		{ // else: load file name
-			char filename[1024];
-			dt_colorspaces_find_profile(filename, 1024, p->iccprofile, "out");
-			d->output = cmsOpenProfileFromFile(filename, "r");
-		}
-		if (!d->output) 
-			d->output = dt_colorspaces_create_srgb_profile();
-		if (dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
-		{
-			d->cmatrix[0] = -0.666f;
-			piece->process_cl_ready = 0;
-			for(int t=0;t<num_threads;t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
-		}
-	}
-	else
-	{
-		// initialize & load display profile to use 
-		if (!strcmp(p->displayprofile, "sRGB"))
-		{ // default: sRGB
-			d->output = dt_colorspaces_create_srgb_profile();
-		}
-		else if (!strcmp(p->displayprofile, "linear_rgb"))
-		{
-			d->output = dt_colorspaces_create_linear_rgb_profile();
-		}
-		else if (!strcmp(p->displayprofile, "adobergb"))
-		{
-			d->output = dt_colorspaces_create_adobergb_profile();
-		}
-		else if (!strcmp(p->displayprofile, "X profile"))
-		{ // x default
-			if(darktable.control->xprofile_data) 
-				d->output = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
-			else d->output = NULL;
-		}
-		else
-		{ // else: load file name
-			char filename[1024];
-			dt_colorspaces_find_profile(filename, 1024, p->displayprofile, "out");
-			d->output = cmsOpenProfileFromFile(filename, "r");
-		}
 		
-		/// no profiles created, let's default to srgb as fallback 
-		if (!d->output) 
-			d->output = dt_colorspaces_create_srgb_profile();
-		
-		
-		if (dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
-		{
-			d->cmatrix[0] = -0.666f;
-			piece->process_cl_ready = 0;
-			for (int t=0;t<num_threads;t++) 
-				d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->displayintent, 0);
-		}
-		
-	}
-	
-	// user selected a non-supported output profile, check that:
-	if (!d->xform[0] && d->cmatrix[0] == -0.666f)
-	{
-		dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
-		if (d->output) 
-			dt_colorspaces_cleanup_profile(d->output);
-		d->output = dt_colorspaces_create_srgb_profile();
-		if (dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
-		{
-			d->cmatrix[0] = -0.666f;
-			piece->process_cl_ready = 0;
-			for (int t=0;t<num_threads;t++) 
-				d->xform[t] = cmsCreateTransform(d->Lab, TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, p->intent, 0);
-		}
-	}
-	
-	// check if we should do softproofing, lets create transform 
-	dt_iop_colorout_gui_data_t *g=NULL;
-	if ((g=(dt_iop_colorout_gui_data_t *)self->gui_data) &&
-					g->softproofing &&
-					g->softproofprofile )
-	{
-		d->softproofing = TRUE;
-		// initialize & load softproof profile to use 
-		if(!strcmp(g->softproofprofile, "sRGB"))
-			d->softproof = dt_colorspaces_create_srgb_profile();
-		else if (!strcmp(g->softproofprofile, "linear_rgb"))
-			d->softproof = dt_colorspaces_create_linear_rgb_profile();
-		else if (!strcmp(g->softproofprofile, "adobergb"))
-			d->softproof = dt_colorspaces_create_adobergb_profile();
-		else if (!strcmp(g->softproofprofile, "X profile"))
-			if (darktable.control->xprofile_data) 
-				d->softproof = cmsOpenProfileFromMem(darktable.control->xprofile_data, darktable.control->xprofile_size);
-			else 
-				d->softproof = NULL;
-		else
-		{ 
-			char filename[1024]={0};
-			dt_colorspaces_find_profile(filename, 1024,g->softproofprofile, "out");
-			d->softproof = cmsOpenProfileFromFile(filename, "r");
-		}
-		
-		// no profiles matched, let's default to srgb as fallback 
-		if (!d->softproof) 
-			d->softproof = dt_colorspaces_create_srgb_profile();
-		
-		// now lets create the transform
-		for (int t=0;t<num_threads;t++) 
-				d->softproof_xform[t] = cmsCreateProofingTransform(
-											d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, 
-											d->softproof, p->displayintent, 
-											INTENT_ABSOLUTE_COLORIMETRIC, 0);
-
-
-	
-		if (dt_colorspaces_get_matrix_from_output_profile (d->softproof, d->softproof_cmatrix, d->softproof_lut[0], d->softproof_lut[1], d->softproof_lut[2], LUT_SAMPLES))
-		{
-			d->softproof_cmatrix[0] = -0.666f;
-			piece->process_cl_ready = 0;
-			for (int t=0;t<num_threads;t++) 
-				d->softproof_xform[t] = cmsCreateProofingTransform(
-											d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, 
-											d->softproof, p->displayintent, 
-											INTENT_ABSOLUTE_COLORIMETRIC,cmsFLAGS_SOFTPROOFING);
-		}
-		
-		// user selected a non-supported output profile, check that:
-		if (!d->softproof_xform[0] && d->softproof_cmatrix[0] == -0.666f)
-		{
-			dt_control_log(_("unsupported softproof profile has been replaced by sRGB!"));
-			if (d->softproof) 
-				dt_colorspaces_cleanup_profile(d->softproof);
-			d->softproof = dt_colorspaces_create_srgb_profile();
-			if (dt_colorspaces_get_matrix_from_output_profile (d->softproof, d->softproof_cmatrix, d->softproof_lut[0], d->softproof_lut[1], d->softproof_lut[2], LUT_SAMPLES))
-			{
-				d->softproof_cmatrix[0] = -0.666f;
-				piece->process_cl_ready = 0;
-				for (int t=0;t<num_threads;t++) 
-					d->softproof_xform[t] = cmsCreateProofingTransform(
-											d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT, 
-											d->softproof, p->displayintent, 
-											INTENT_ABSOLUTE_COLORIMETRIC, cmsFLAGS_SOFTPROOFING);
-			}
-		}
-		
-	}
-	else
-			d->softproofing = FALSE;
-	
-	
-	*/
-	
 #endif
 	g_free(overprofile);
 	// pthread_mutex_unlock(&darktable.plugin_threadsafe);
