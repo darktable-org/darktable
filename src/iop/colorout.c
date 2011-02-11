@@ -405,7 +405,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 		if (d->output) 
 			dt_colorspaces_cleanup_profile(d->output);
 		d->output = dt_colorspaces_create_srgb_profile();
-		if (dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+		if (d->softproofing || dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
 		{
 			d->cmatrix[0] = -0.666f;
 			piece->process_cl_ready = 0;
