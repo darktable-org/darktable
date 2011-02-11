@@ -1602,6 +1602,19 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/atrous/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/atrous/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/equalizer/visible</key>
       <applyto>/apps/darktable/plugins/darkroom/equalizer/visible</applyto>
       <owner>darktable</owner>
@@ -1773,6 +1786,19 @@
     <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/colorout/expanded</key>
       <applyto>/apps/darktable/plugins/darkroom/colorout/expanded</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/atrous/expanded</key>
+      <applyto>/apps/darktable/plugins/darkroom/atrous/expanded</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
