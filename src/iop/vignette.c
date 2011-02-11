@@ -52,8 +52,8 @@ typedef struct dt_iop_fvector_2d_t
 
 typedef struct dt_iop_vignette_params1_t
 {
-  double scale;              // 0 - 1 Radie
-  double falloff_scale;   // 0 - 1 Radie for falloff inner radie of falloff=scale and outer=scale+falloff_scale
+  double scale;              // 0 - 100 Radie
+  double falloff_scale;   // 0 - 100 Radie for falloff inner radie of falloff=scale and outer=scale+falloff_scale
   double strength;         // 0 - 1 strength of effect
   double uniformity;       // 0 - 1 uniformity of center
   double bsratio;            // -1 - +1 ratio of brightness/saturation effect
@@ -65,8 +65,8 @@ dt_iop_vignette_params1_t;
 
 typedef struct dt_iop_vignette_params_t
 {
-  float scale;			// 0 - 1 Inner radius, relative to image size
-  float falloff_scale;		// 0 - 1 Radius for falloff -- outer radius = inner radius + falloff_scale
+  float scale;			// 0 - 100 Inner radius, percent of largest image dimension
+  float falloff_scale;		// 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
   float brightness;		// -1 - 1 Strength of brightness reduction
   float saturation;		// -1 - 1 Strength of saturation reduction
   dt_iop_vector_2d_t center;	// Center of vignette
@@ -188,8 +188,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
   const float dscale=data->scale/100.0;
-  const float fscale=MIN(data->falloff_scale,0.05)/100.0;
-  const float shape=MIN(data->shape,0.001);
+  // A minimum falloff is used, based on the image size, to smooth out aliasing artifacts
+  const float min_falloff=100.0/MIN(buf_in->width, buf_in->height);
+  const float fscale=MAX(data->falloff_scale,min_falloff)/100.0;
+  const float shape=MAX(data->shape,0.001);
   const float exp1=2.0/shape;
   const float exp2=shape/2.0;
 
