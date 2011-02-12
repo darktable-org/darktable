@@ -204,12 +204,20 @@ dt_colorspaces_create_srgb_profile()
   cmsFreeToneCurve(Gamma22[0]);
   if (hsRGB == NULL) return NULL;
 
-  cmsWriteRawTag(hsRGB, cmsSigDeviceMfgDescTag,   "(dt internal)", sizeof("(dt internal"));
-  cmsWriteRawTag(hsRGB, cmsSigDeviceModelDescTag, "sRGB", sizeof("sRGB"));
-
-
-  // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteRawTag(hsRGB, cmsSigProfileDescriptionTag,   "Darktable sRGB", sizeof("Darktable sRGB"));
+  cmsSetProfileVersion(hsRGB, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "sRGB");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable sRGB");
+  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
 
   return hsRGB;
 }
@@ -247,11 +255,20 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsFreeToneCurve(Gamma22[0]);
   if (hAdobeRGB == NULL) return NULL;
 
-  cmsWriteRawTag(hAdobeRGB, cmsSigDeviceMfgDescTag,   "(dt internal)", sizeof("(dt internal)"));
-  cmsWriteRawTag(hAdobeRGB, cmsSigDeviceModelDescTag, "AdobeRGB", sizeof("AdobeRGB"));
-
-  // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteRawTag(hAdobeRGB, cmsSigProfileDescriptionTag, "Darktable AdobeRGB", sizeof("Darktable AdobeRGB"));
+  cmsSetProfileVersion(hAdobeRGB, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "AdobeRGB");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable AdobeRGB");
+  cmsWriteTag(hAdobeRGB, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hAdobeRGB, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hAdobeRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
 
   return hAdobeRGB;
 }
@@ -444,9 +461,20 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
 
   char name[512];
   snprintf(name, 512, "Darktable profiled %s", makermodel);
-  cmsWriteRawTag(hp, cmsSigDeviceMfgDescTag,      "(dt internal)", sizeof("(dt internal)"));
-  cmsWriteRawTag(hp, cmsSigDeviceModelDescTag,    name, strlen(name));
-  cmsWriteRawTag(hp, cmsSigProfileDescriptionTag, name, strlen(name));
+  cmsSetProfileVersion(hp, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", name);
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", name);
+  cmsWriteTag(hp, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hp, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hp, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
 
   return hp;
 }
@@ -463,10 +491,20 @@ dt_colorspaces_create_xyz_profile(void)
 
   if (hXYZ == NULL) return NULL;
 
-  cmsWriteRawTag(hXYZ, cmsSigDeviceMfgDescTag,      "(dt internal)", sizeof("(dt internal)"));
-  cmsWriteRawTag(hXYZ, cmsSigDeviceModelDescTag,    "linear XYZ", sizeof("linear XYZ"));
-  // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteRawTag(hXYZ, cmsSigProfileDescriptionTag, "Darktable linear XYZ", sizeof("Darktable linear XYZ"));
+  cmsSetProfileVersion(hXYZ, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "linear XYZ");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear XYZ");
+  cmsWriteTag(hXYZ, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hXYZ, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hXYZ, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
 
   return hXYZ;
 }
@@ -491,11 +529,20 @@ dt_colorspaces_create_linear_rgb_profile(void)
   cmsFreeToneCurve(Gamma[0]);
   if (hsRGB == NULL) return NULL;
 
-  cmsWriteRawTag(hsRGB, cmsSigDeviceMfgDescTag,   "(dt internal)", sizeof("(dt internal"));
-  cmsWriteRawTag(hsRGB, cmsSigDeviceModelDescTag, "linear rgb", sizeof("linear rgb"));
-
-  // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteRawTag(hsRGB, cmsSigProfileDescriptionTag, "Darktable linear RGB", sizeof("Darktable linear RGB"));
+  cmsSetProfileVersion(hsRGB, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "linear rgb");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear RGB");
+  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
 
   return hsRGB;
 }
@@ -521,11 +568,20 @@ dt_colorspaces_create_linear_infrared_profile(void)
   cmsFreeToneCurve(Gamma[0]);
   if (hsRGB == NULL) return NULL;
 
-  cmsWriteRawTag(hsRGB, cmsSigDeviceMfgDescTag,     "(dt internal)", sizeof("(dt internal)"));
-  cmsWriteRawTag(hsRGB, cmsSigDeviceModelDescTag,   "linear infrared bgr", sizeof("linear infrared bgr"));
-
-  // This will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteRawTag(hsRGB, cmsSigProfileDescriptionTag, "Darktable Linear Infrared BGR", sizeof("Darktable Linear Infrared BGR"));
+  cmsSetProfileVersion(hsRGB, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "linear infrared bgr");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable Linear Infrared RGB");
+  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
 
   return hsRGB;
 }
@@ -636,9 +692,20 @@ dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4])
   if (cmat == NULL) return NULL;
   cmsFreeToneCurve(Gamma[0]);
 
-  cmsWriteRawTag(cmat, cmsSigDeviceMfgDescTag,      "(dt internal)", sizeof("(dt internal)"));
-  cmsWriteRawTag(cmat, cmsSigDeviceModelDescTag,    "color matrix built-in", sizeof("color matrix bulit-in"));
-  cmsWriteRawTag(cmat, cmsSigProfileDescriptionTag, "color matrix built-in", sizeof("color matrix bulit-in"));
+  cmsSetProfileVersion(cmat, 2.1);
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "color matrix built-in");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "color matrix built-in");
+  cmsWriteTag(cmat, cmsSigDeviceMfgDescTag,   mlu0);
+  cmsWriteTag(cmat, cmsSigDeviceModelDescTag, mlu1);
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(cmat, cmsSigProfileDescriptionTag, mlu2);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
 
   return cmat;
 }
