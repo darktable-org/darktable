@@ -9,7 +9,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>database file</short>
-        <long>filename relative to your home directory, or starting with a slash (needs a restart).</long>
+        <long>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</long>
       </locale>
     </schema>
 
@@ -22,7 +22,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>image cache file</short>
-        <long>filename relative to your home directory, or starting with a slash (needs a restart).</long>
+        <long>filename relative to ~/.cache/darktable or starting with a slash (needs a restart).</long>
       </locale>
     </schema>
     
