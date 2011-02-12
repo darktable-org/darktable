@@ -97,8 +97,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 	memset(blurlightness,0,(roi_out->width*roi_out->height*sizeof(float)));
 	memcpy(out,in,roi_out->width*roi_out->height*ch*sizeof(float));
 
-	int rad = 512*(fmin(100.0,data->size+1)/100.0);
-	const int radius = MIN(512, ceilf(rad * roi_in->scale / piece->iscale));
+	int rad = 256*(fmin(100.0,data->size+1)/100.0);
+	const int radius = MIN(256, ceilf(rad * roi_in->scale / piece->iscale));
 	
 	const float scale = 1.0 / exp2f ( -1.0*(fmin(100.0,data->strength+1)/100.0));
 	
