@@ -105,6 +105,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   { "NIKON D3000",                  { 778854, 333221,  21927}, { 292007, 1031448,  -88516}, { 27664, -245956,  997391}, {714828, 740387, 601334}},
 
   // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D3100",                  { 856476, 350891,  48691}, { 221741, 1049164, -218933}, { 12115, -297424, 1083755}, {807373, 841156, 682846}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D5000",                  { 852386, 356232,  42389}, { 205353, 1026688, -220184}, {  6348, -292526, 1083313}, {822647, 849106, 688538}},
 
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
