@@ -149,6 +149,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, camera strobe, well lit
   { "Panasonic DMC-FZ40",           { 833542, 259720,  35721}, { 129517, 1239594, -525848}, {117340, -405273, 1440384}, {825226, 863846, 688431}},
 
+  // Robert Park, ColorChecker Passport, camera strobe, well lit
+  { "Panasonic DMC-FZ100",          { 700119, 181885, -50354}, { 355804, 1326492, -441132}, {   244, -424149, 1415451}, {734222, 767410, 619049}},
+
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G1",             { 747467, 300064,  74265}, { 225922, 1028946, -310913}, { 91782, -229019, 1153793}, {846222, 864502, 694458}},
 
