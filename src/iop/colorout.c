@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "dtgtk/resetlabel.h"
 
 DT_MODULE(1)
 
@@ -450,7 +451,7 @@ void gui_init(struct dt_iop_module_t *self)
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  // dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  dt_iop_colorout_params_t *p   = (dt_iop_colorout_params_t *)self->params;
 
   g->profiles = NULL;
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -509,23 +510,21 @@ void gui_init(struct dt_iop_module_t *self)
     g_dir_close(dir);
   }
 
+  GtkWidget *label1, *label2, *label3, *label4;
+
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label1 = GTK_LABEL(gtk_label_new(_("output intent")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("output profile")));
-  g->label4 = GTK_LABEL(gtk_label_new(_("display intent")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("display profile")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label4), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
+  label1 = dtgtk_reset_label_new(_("output intent"), self, &p->intent, sizeof(dt_iop_color_intent_t));
+  label2 = dtgtk_reset_label_new(_("output profile"), self, &p->iccprofile, sizeof(char)*DT_IOP_COLOR_ICC_LEN);
+  label4 = dtgtk_reset_label_new(_("display intent"), self, &p->displayintent, sizeof(dt_iop_color_intent_t));
+  label3 = dtgtk_reset_label_new(_("display profile"), self, &p->displayprofile, sizeof(char)*DT_IOP_COLOR_ICC_LEN);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(label1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(label2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(label4), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(label3), TRUE, TRUE, 0);
   g->cbox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->cbox1, _("perceptual"));
   gtk_combo_box_append_text(g->cbox1, _("relative colorimetric"));

@@ -340,13 +340,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
 
-  g->label1 = dtgtk_reset_label_new (_("scale"), self, &p->scale, sizeof(float));
-  g->label7 = dtgtk_reset_label_new (_("fall-off strength"), self, &p->falloff_scale, sizeof(float));
-  g->label2 = dtgtk_reset_label_new (_("strength"), self, &p->strength, sizeof(float));
-  g->label3 = dtgtk_reset_label_new (_("uniformity"), self, &p->uniformity, sizeof(float));
-  g->label4 = dtgtk_reset_label_new (_("b/s ratio"), self, &p->bsratio, sizeof(float));
-  g->label5 = dtgtk_reset_label_new (_("saturation"), self, &p->invert_saturation, sizeof(float));
-  g->label6 = dtgtk_reset_label_new (_("fall-off"), self, &p->invert_falloff, sizeof(float));
+  g->label1 = dtgtk_reset_label_new (_("scale"), self, &p->scale, sizeof(double));
+  g->label7 = dtgtk_reset_label_new (_("fall-off strength"), self, &p->falloff_scale, sizeof(double));
+  g->label2 = dtgtk_reset_label_new (_("strength"), self, &p->strength, sizeof(double));
+  g->label3 = dtgtk_reset_label_new (_("uniformity"), self, &p->uniformity, sizeof(double));
+  g->label4 = dtgtk_reset_label_new (_("b/s ratio"), self, &p->bsratio, sizeof(double));
+  g->label5 = dtgtk_reset_label_new (_("saturation"), self, &p->invert_saturation, sizeof(gboolean));
+  g->label6 = dtgtk_reset_label_new (_("fall-off"), self, &p->invert_falloff, sizeof(gboolean));
 
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label7), TRUE, TRUE, 0);

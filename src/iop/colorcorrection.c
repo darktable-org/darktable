@@ -31,6 +31,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "develop/imageop.h"
+#include "dtgtk/resetlabel.h"
 
 DT_MODULE(1)
 
@@ -188,9 +189,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label5 = GTK_LABEL(gtk_label_new(_("saturation")));
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
+  GtkWidget *label = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(label), TRUE, TRUE, 0);
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation,2));
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);

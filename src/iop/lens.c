@@ -1317,8 +1317,7 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 
   // target geometry
-  label = gtk_label_new(_("geometry"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  label = dtgtk_reset_label_new(_("geometry"), self, &p->target_geom, sizeof(lfLensType));
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
 
   g->target_geom = GTK_COMBO_BOX(gtk_combo_box_new_text());

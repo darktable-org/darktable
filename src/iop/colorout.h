@@ -42,7 +42,6 @@ dt_iop_colorout_params_t;
 typedef struct dt_iop_colorout_gui_data_t
 {
   GtkVBox *vbox1, *vbox2;
-  GtkLabel *label1, *label2, *label3, *label4;
   GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4;
   GList *profiles;
 }
