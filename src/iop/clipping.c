@@ -770,8 +770,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->vflip), 4, 6, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->hflip), "toggled", G_CALLBACK(toggled_callback), self);
   g_signal_connect (G_OBJECT (g->vflip), "toggled", G_CALLBACK(toggled_callback), self);
-  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("flip image vertically"), (char *)NULL);
-  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("flip image horizontally"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("flip image horizontally"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("flip image vertically"), (char *)NULL);
 
   label = dtgtk_reset_label_new(_("angle"), self, &p->angle, sizeof(float));
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -180.0, 180.0, 0.25, p->angle, 2));
