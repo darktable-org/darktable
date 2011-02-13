@@ -1303,7 +1303,8 @@ dt_image_buffer_t dt_image_get_blocking(dt_image_t *img, const dt_image_buffer_t
 
   // start job to load this buf in bg.
   dt_print(DT_DEBUG_CACHE, "[image_get_blocking] reloading mip %d for image %d\n", mip_in, img->id);
-  if(dt_image_load(img, mip_in)) mip = DT_IMAGE_NONE; // this returns with 'r' locked
+//   if(dt_image_load(img, mip_in)) mip = DT_IMAGE_NONE; // this returns with 'r' locked
+  dt_image_load(img, mip_in);
   mip = mip_in;
 
   dt_pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
@@ -1423,3 +1424,4 @@ void dt_image_validate(dt_image_t *image, dt_image_buffer_t mip)
   dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

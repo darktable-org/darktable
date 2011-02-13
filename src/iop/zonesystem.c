@@ -138,8 +138,8 @@ _iop_zonesystem_calculate_zonemap (struct dt_iop_zonesystem_params_t *p, float *
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
+  float *in;
+  float *out;
   dt_iop_zonesystem_gui_data_t *g = NULL;
   dt_iop_zonesystem_data_t *data = (dt_iop_zonesystem_data_t*)piece->data;
 
@@ -207,7 +207,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     /* create zonemap preview */
-    in  = (float *)ivoid;
+//     in  = (float *)ivoid;
     out = (float *)ovoid;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out,out,buffer,g,zonemap) schedule(static)
@@ -673,3 +673,5 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
 
   return TRUE;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

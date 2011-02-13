@@ -87,14 +87,12 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
     for(int j=0; j<ht; j++) memcpy(out+j*bpp*wd, in+j*stride, bpp*wd);
     return;
   }
-  int ii = 0, jj = 0, fw = fwd, fh = fht;
+  int ii = 0, jj = 0;
   int si = bpp, sj = wd*bpp;
   if(orientation & 4)
   {
     sj = bpp;
     si = ht*bpp;
-    fw = fht;
-    fh = fwd;
   }
   if(orientation & 2)
   {
@@ -134,14 +132,12 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
     for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
     return;
   }
-  int ii = 0, jj = 0, fw = fwd, fh = fht;
+  int ii = 0, jj = 0;
   int si = 4, sj = wd*4;
   if(orientation & 4)
   {
     sj = 4;
     si = ht*4;
-    fw = fht;
-    fh = fwd;
   }
   if(orientation & 2)
   {
@@ -171,11 +167,10 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
 
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
 {
-  int ii = i, jj = j, w = wd, h = ht, fw = fwd, fh = fht;
+  int ii = i, jj = j, w = wd, fw = fwd, fh = fht;
   if(orientation & 4)
   {
     w = ht;
-    h = wd;
     ii = j;
     jj = i;
     fw = fht;
@@ -1171,3 +1166,4 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
   return 0;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

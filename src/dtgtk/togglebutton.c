@@ -188,8 +188,8 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   /* draw icon */
   if (DTGTK_TOGGLEBUTTON (widget)->icon)
   {
-    if (flags & CPF_IGNORE_FG_STATE)
-      state = GTK_STATE_NORMAL;
+//     if (flags & CPF_IGNORE_FG_STATE)
+//       state = GTK_STATE_NORMAL;
 
 
     if (text)
@@ -256,3 +256,4 @@ GtkType dtgtk_togglebutton_get_type()
   return dtgtk_togglebutton_type;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

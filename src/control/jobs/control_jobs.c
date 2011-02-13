@@ -423,7 +423,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 
   // Get max dimensions...
   uint32_t w,h,fw,fh,sw,sh;
-  w=h=fw=fh=sw=sh=0;
+  fw=fh=sw=sh=0;
   mstorage->dimension(mstorage, &sw,&sh);
   mformat->dimension(mformat, &fw,&fh);
 
@@ -531,3 +531,4 @@ void dt_control_export()
   dt_control_add_job(darktable.control, &j);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

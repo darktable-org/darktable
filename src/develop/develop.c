@@ -854,15 +854,15 @@ void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, d
   int procw, proch;
   dt_dev_get_processed_size(dev, &procw, &proch);
   float boxw = 1, boxh = 1; // viewport in normalised space
-  if(zoom == DT_ZOOM_1)
-  {
-    const float imgw = (closeup ? 2 : 1)*procw;
-    const float imgh = (closeup ? 2 : 1)*proch;
-    const float devw = MIN(imgw, dev->width);
-    const float devh = MIN(imgh, dev->height);
-    boxw = fminf(1.0, devw/imgw);
-    boxh = fminf(1.0, devh/imgh);
-  }
+//   if(zoom == DT_ZOOM_1)
+//   {
+//     const float imgw = (closeup ? 2 : 1)*procw;
+//     const float imgh = (closeup ? 2 : 1)*proch;
+//     const float devw = MIN(imgw, dev->width);
+//     const float devh = MIN(imgh, dev->height);
+//     boxw = fminf(1.0, devw/imgw);
+//     boxh = fminf(1.0, devh/imgh);
+//   }
   if(zoom == DT_ZOOM_FIT)
   {
     *zoom_x = *zoom_y = 0.0f;
@@ -929,3 +929,5 @@ dt_dev_is_current_image (dt_develop_t *dev, int imgid)
 {
   return (dev->image && dev->image->id==imgid)?1:0;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

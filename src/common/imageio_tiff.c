@@ -39,7 +39,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
     (void) dt_exif_read(img, filename);
 
   TIFF *image;
-  uint32_t width, height, imagesize, config;
+  uint32_t width, height, config;
   uint16_t spp, bpp;
 
   if((image = TIFFOpen(filename, "rb")) == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -48,8 +48,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
   TIFFGetField(image, TIFFTAG_IMAGELENGTH, &height);
   TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
   TIFFGetField(image, TIFFTAG_SAMPLESPERPIXEL, &spp);
-  if(bpp < 12) imagesize =   4*(height * width + 1);
-  else         imagesize = 2*4*(height * width + 1);
 
   img->width = width;
   img->height = height;
@@ -117,7 +115,7 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
     (void) dt_exif_read(img, filename);
 
   TIFF *image;
-  uint32_t width, height, imagesize, config;
+  uint32_t width, height, config;
   uint16_t spp, bpp;
 
   if((image = TIFFOpen(filename, "rb")) == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -126,9 +124,6 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   TIFFGetField(image, TIFFTAG_IMAGELENGTH, &height);
   TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
   TIFFGetField(image, TIFFTAG_SAMPLESPERPIXEL, &spp);
-
-  if(bpp < 12) imagesize =   4*(height * width + 1);
-  else         imagesize = 2*4*(height * width + 1);
 
   img->width = width;
   img->height = height;
@@ -249,8 +244,4 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   return DT_IMAGEIO_OK;
 }
 
-
-
-
-
-
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -116,7 +116,7 @@ dt_collection_update (const dt_collection_t *collection)
 
     /* add where ext if wanted */
     if ((collection->params.query_flags&COLLECTION_QUERY_USE_WHERE_EXT))
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s %s",(need_operator)?"and":((need_operator=1)?"":""), collection->where_ext);
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s %s",(need_operator)?"and":"", collection->where_ext);
   }
   else
     g_snprintf (wq,512,"%s",collection->where_ext);
@@ -426,7 +426,7 @@ dt_collection_update_query(const dt_collection_t *collection)
     g_free(text);
   }
   complete_query[pos++] = ')';
-  complete_query[pos++] = '\0';
+  complete_query[pos]   = '\0';
 
   // printf("complete query: `%s'\n", complete_query);
 
@@ -460,4 +460,4 @@ dt_collection_update_query(const dt_collection_t *collection)
   }
 }
 
-
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

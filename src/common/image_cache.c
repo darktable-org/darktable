@@ -657,3 +657,4 @@ void dt_image_cache_flush(dt_image_t *img)
   dt_image_write_sidecar_file(img->id);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

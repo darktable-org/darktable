@@ -1005,3 +1005,4 @@ void scrolled(dt_view_t *view, double x, double y, int up, int state)
   }
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -225,21 +225,18 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   double saturation=0;
   float color[3];
   GtkWidget *preview;
-  GtkDarktableGradientSlider *sslider=NULL;
   if( slider == g->gslider2 )
   {
     // Shadows
     hue=dtgtk_gradient_slider_get_value(g->gslider1);
     p->shadow_saturation=saturation=dtgtk_gradient_slider_get_value(slider);
     preview=GTK_WIDGET(g->colorpick1);
-    sslider=g->gslider1;
   }
   else
   {
     hue=dtgtk_gradient_slider_get_value(g->gslider3);
     p->highlight_saturation=saturation=dtgtk_gradient_slider_get_value(slider);
     preview=GTK_WIDGET(g->colorpick2);
-    sslider=g->gslider3;
   }
 
   hsl2rgb(&color[0],&color[1],&color[2],hue,saturation,0.5);
@@ -584,3 +581,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

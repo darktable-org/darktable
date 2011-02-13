@@ -388,7 +388,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
           {
             col = cc+left;
             c = FC(rr,cc,filters);
-            indx=row*width+col;
+            //indx=row*width+col;//for dcraw implementation
             indx1=rr*TS+cc;
             rgb[indx1][c] = in[row*width + col];//(rawData[row][col])/65535.0f;
             //rgb[indx1][c] = image[indx][c]/65535.0f;//for dcraw implementation
@@ -1219,3 +1219,4 @@ void gui_cleanup   (dt_iop_module_t *self)
 // int mouse_moved(dt_iop_module_t *self, double x, double y, int which);
 // int button_pressed(dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

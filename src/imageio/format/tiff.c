@@ -111,7 +111,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
       }
     }
     if((wdata-stripesize/sizeof(uint16_t))!=rowdata)
-      TIFFWriteEncodedStrip(tif,stripe++,rowdata,(wdata-rowdata)*sizeof(uint16_t));
+      TIFFWriteEncodedStrip(tif,stripe,rowdata,(wdata-rowdata)*sizeof(uint16_t));
     TIFFClose(tif);
     free(rowdata);
   }
@@ -138,7 +138,7 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
       }
     }
     if((wdata-stripesize)!=rowdata)
-      TIFFWriteEncodedStrip(tif,stripe++,rowdata,wdata-rowdata);
+      TIFFWriteEncodedStrip(tif,stripe,rowdata,wdata-rowdata);
     TIFFClose(tif);
     free(rowdata);
   }
@@ -258,4 +258,4 @@ void gui_reset   (dt_imageio_module_format_t *self)
   // TODO: reset to gconf? reset to factory defaults?
 }
 
-
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
