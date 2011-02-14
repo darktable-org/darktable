@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-02-07 21:09+0700\n"
-"PO-Revision-Date: 2011-02-14 22:34+0700\n"
+"PO-Revision-Date: 2011-02-14 23:06+0700\n"
 "Last-Translator: Phondanai Khanti <phondanai@gmail.com>\n"
 "Language-Team: American English <>\n"
 "Language: \n"
@@ -844,7 +844,7 @@ msgstr "* ผู้ร่วมสมทบงาน *"
 
 #: ../src/gui/gtk.c:449
 msgid "translator-credits"
-msgstr "เครดิต-ผู้แปล"
+msgstr "พรดนัย ขันติ"
 
 #: ../src/gui/gtk.c:663
 msgid "import film"
