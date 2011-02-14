@@ -13,7 +13,7 @@
 
       <div class="listtext">
     	<img src="images/rocks.jpg" class="img" alt="dreggn" /><h1>released 0.8</h1>
-      <em>(2011-02-15)</em> we released version 0.8, which again obsoletes 0.7.1 in a lot of ways:
+      <em>(2011-02-15)</em> we released version 0.8, which obsoletes 0.7.1 in a lot of ways:
       <ul>
         <li><em>much</em> faster image loading due to <em>rawspeed</em>, an awesome new library by klaus post @rawstudio</li>
         <li>lots of performance improvements in our caches and pixel pipelines (together with the above like 5x--10x)</li>
@@ -51,7 +51,7 @@
     Pacsal de Bruijn, and
     Alex Chateau.
     <br />
-    special thanks to Pacsal ;)
+    special thanks to Pacsal ;) and to Robert Park for an awesome amount of color matrices created with his help.
       </div>
 
       <div class="listtext">
