@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-12 18:28+0100\n"
-"PO-Revision-Date: 2011-02-11 22:05+0100\n"
+"POT-Creation-Date: 2011-02-14 15:24+0100\n"
+"PO-Revision-Date: 2011-02-14 15:38+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -418,6 +418,63 @@ msgstr ""
 "zoombarer Leuchttisch\n"
 "Dateiverwaltung"
 
+#: ../src/common/collection.c:323 ../src/iop/bilateral.cc:301
+#: ../src/iop/channelmixer.c:339 ../src/iop/channelmixer.c:356
+#: ../src/iop/temperature.c:471 ../src/libs/collect.c:134
+#: ../src/libs/collect.c:136
+msgid "red"
+msgstr "Rot"
+
+#: ../src/common/collection.c:324 ../src/libs/collect.c:140
+#: ../src/libs/collect.c:142
+msgid "yellow"
+msgstr "Gelb"
+
+#: ../src/common/collection.c:325 ../src/iop/bilateral.cc:303
+#: ../src/iop/channelmixer.c:340 ../src/iop/channelmixer.c:357
+#: ../src/iop/temperature.c:475 ../src/libs/collect.c:146
+#: ../src/libs/collect.c:148
+msgid "green"
+msgstr "Grün"
+
+#: ../src/common/collection.c:326 ../src/iop/bilateral.cc:305
+#: ../src/iop/channelmixer.c:341 ../src/iop/channelmixer.c:358
+#: ../src/iop/temperature.c:479 ../src/libs/collect.c:152
+#: ../src/libs/collect.c:154
+msgid "blue"
+msgstr "Blau"
+
+#: ../src/common/collection.c:327 ../src/libs/collect.c:158
+#: ../src/libs/collect.c:160
+msgid "purple"
+msgstr "Violett"
+
+#. history
+#: ../src/common/collection.c:333 ../src/libs/collect.c:118
+#: ../src/libs/collect.c:120
+msgid "altered"
+msgstr "geändert"
+
+#: ../src/common/darktable.c:285
+#, c-format
+msgid "found strange path `%s'"
+msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
+
+#: ../src/common/darktable.c:313
+#, c-format
+msgid "error loading directory `%s'"
+msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
+
+#: ../src/common/darktable.c:334 ../src/gui/gtk.c:802
+#, c-format
+msgid "file `%s' has unknown format!"
+msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
+
+#: ../src/common/darktable.c:346 ../src/gui/gtk.c:787
+#, c-format
+msgid "error loading file `%s'"
+msgstr "Fehler beim Laden von Datei ‚%s‘"
+
 #: ../src/common/history.c:168 ../src/common/history.c:197
 #: ../src/common/styles.c:235 ../src/develop/develop.c:922
 #: ../src/gui/styles_dialog.c:323
@@ -494,7 +551,7 @@ msgstr[1] "%d Bilder aufnehmen"
 
 #: ../src/control/jobs/camera_jobs.c:91
 msgid "please set your camera to manual mode first!"
-msgstr ""
+msgstr "Bitte die Kamera erst auf manuellen Modus setzen!"
 
 #: ../src/control/jobs/camera_jobs.c:275
 #, c-format
@@ -614,8 +671,8 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "%d Bild nach %s exportieren"
 msgstr[1] "%d Bilder nach %s exportieren"
 
-#: ../src/control/jobs/control_jobs.c:484
-#: ../src/control/jobs/control_jobs.c:485 ../src/views/darkroom.c:318
+#: ../src/control/jobs/control_jobs.c:483
+#: ../src/control/jobs/control_jobs.c:484 ../src/views/darkroom.c:318
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
@@ -951,16 +1008,6 @@ msgstr "unterstütze Bilder"
 msgid "all files"
 msgstr "alle Dateien"
 
-#: ../src/gui/gtk.c:787
-#, c-format
-msgid "error loading file `%s'"
-msgstr "Fehler beim Laden von Datei ‚%s‘"
-
-#: ../src/gui/gtk.c:802
-#, c-format
-msgid "file `%s' has unknown format!"
-msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
-
 #: ../src/gui/gtk.c:1116
 msgid "show global preferences"
 msgstr "Zeige globale Voreinstellungen"
@@ -1262,11 +1309,11 @@ msgstr ""
 "Alle Markierungen der\n"
 "ausgewählten Bilder entfernen"
 
-#: ../src/imageio/format/copy.c:139 ../src/libs/copy_history.c:201
+#: ../src/imageio/format/copy.c:142 ../src/libs/copy_history.c:201
 msgid "copy"
 msgstr "kopieren"
 
-#: ../src/imageio/format/copy.c:147
+#: ../src/imageio/format/copy.c:150
 msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
@@ -1517,7 +1564,7 @@ msgstr "Alpha"
 msgid "scale"
 msgstr "Skalierung"
 
-#: ../src/iop/anlfyeni.c:281 ../src/iop/bloom.c:319 ../src/iop/grain.c:505
+#: ../src/iop/anlfyeni.c:281 ../src/iop/bloom.c:316 ../src/iop/grain.c:505
 #: ../src/iop/localc.c:278 ../src/iop/vignette.c:345
 msgid "strength"
 msgstr "Stärke"
@@ -1527,107 +1574,107 @@ msgid "equalizer"
 msgstr "Equalizer"
 
 # uh. passt das so?
-#: ../src/iop/atrous.c:657
+#: ../src/iop/atrous.c:665
 msgid "enhance coarse"
 msgstr "grobe Strukturen verstärken"
 
-#: ../src/iop/atrous.c:671
+#: ../src/iop/atrous.c:679
 msgid "sharpen and denoise (strong)"
 msgstr "schärfen und entrauschen (stark)"
 
-#: ../src/iop/atrous.c:685
+#: ../src/iop/atrous.c:693
 msgid "sharpen and denoise"
 msgstr "schärfen und entrauschen"
 
-#: ../src/iop/atrous.c:699 ../src/iop/equalizer.c:256
+#: ../src/iop/atrous.c:707 ../src/iop/equalizer.c:256
 msgid "sharpen (strong)"
 msgstr "schärfen (stark)"
 
 # Als Plugin-Name sollte das "Schärfen" sein, das beißt sich aber mit dem Preset-Namen. Müßte man mal im Code anpassen ...
-#: ../src/iop/atrous.c:713 ../src/iop/equalizer.c:266 ../src/iop/sharpen.c:67
+#: ../src/iop/atrous.c:721 ../src/iop/equalizer.c:266 ../src/iop/sharpen.c:67
 msgid "sharpen"
 msgstr "schärfen"
 
-#: ../src/iop/atrous.c:727 ../src/iop/equalizer.c:282
+#: ../src/iop/atrous.c:735 ../src/iop/equalizer.c:282
 msgid "denoise"
 msgstr "entrauschen"
 
-#: ../src/iop/atrous.c:743 ../src/iop/equalizer.c:292
+#: ../src/iop/atrous.c:751 ../src/iop/equalizer.c:292
 msgid "denoise (strong)"
 msgstr "entrauschen (stark)"
 
-#: ../src/iop/atrous.c:758 ../src/iop/bloom.c:67
+#: ../src/iop/atrous.c:766 ../src/iop/bloom.c:67
 msgid "bloom"
 msgstr "Überstrahlung"
 
-#: ../src/iop/atrous.c:772
+#: ../src/iop/atrous.c:780
 msgid "clarity (subtle)"
 msgstr "Klarheit (schwach)"
 
-#: ../src/iop/atrous.c:786
+#: ../src/iop/atrous.c:794
 msgid "clarity"
 msgstr "Klarheit"
 
-#: ../src/iop/atrous.c:1034 ../src/iop/atrous.c:1038
+#: ../src/iop/atrous.c:1042 ../src/iop/atrous.c:1046
 msgid "coarse"
 msgstr "grob"
 
-#: ../src/iop/atrous.c:1040 ../src/iop/atrous.c:1044
+#: ../src/iop/atrous.c:1048 ../src/iop/atrous.c:1052
 msgid "fine"
 msgstr "fein"
 
-#: ../src/iop/atrous.c:1051
+#: ../src/iop/atrous.c:1059
 msgid "contrasty"
 msgstr "kontrastreich"
 
 # ist das eine passende Übersetzung?
-#: ../src/iop/atrous.c:1052 ../src/iop/atrous.c:1056
+#: ../src/iop/atrous.c:1060 ../src/iop/atrous.c:1064
 msgid "smooth"
 msgstr "gleichmäßig"
 
-#: ../src/iop/atrous.c:1057
+#: ../src/iop/atrous.c:1065
 msgid "noisy"
 msgstr "verrauscht"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1060
+#: ../src/iop/atrous.c:1068
 msgid "bold"
 msgstr "kräftig"
 
-#: ../src/iop/atrous.c:1061
+#: ../src/iop/atrous.c:1069
 msgid "dull"
 msgstr "matt"
 
-#: ../src/iop/atrous.c:1242 ../src/iop/equalizer.c:339
+#: ../src/iop/atrous.c:1250 ../src/iop/equalizer.c:339
 msgid "luma"
 msgstr "Luminanz"
 
 # uh, häßlich
-#: ../src/iop/atrous.c:1243
+#: ../src/iop/atrous.c:1251
 msgid "change lightness at each feature size"
 msgstr "Helligkeit bei jeder Strukturgröße ändern"
 
-#: ../src/iop/atrous.c:1244 ../src/iop/equalizer.c:340
+#: ../src/iop/atrous.c:1252 ../src/iop/equalizer.c:340
 msgid "chroma"
 msgstr "Chrominanz"
 
-#: ../src/iop/atrous.c:1245
+#: ../src/iop/atrous.c:1253
 msgid "change color saturation at each feature size"
 msgstr "Farbsättigung bei jeder Strukturgröße ändern"
 
-#: ../src/iop/atrous.c:1246
+#: ../src/iop/atrous.c:1254
 msgid "sharpness"
 msgstr "Schärfe"
 
-#: ../src/iop/atrous.c:1247
+#: ../src/iop/atrous.c:1255
 msgid "sharpness of edges at each feature size"
 msgstr "Kantenschärfe bei jeder Strukturgröße"
 
-#: ../src/iop/atrous.c:1283
+#: ../src/iop/atrous.c:1291
 msgid "mix"
 msgstr "einblenden"
 
-#: ../src/iop/atrous.c:1284 ../src/iop/atrous.c:1285
+#: ../src/iop/atrous.c:1292 ../src/iop/atrous.c:1293
 msgid "make effect stronger or weaker"
 msgstr "mache den Effekt stärker oder schwächer"
 
@@ -1696,24 +1743,6 @@ msgstr "Entrauschen (überholt)"
 msgid "radius"
 msgstr "Radius"
 
-#: ../src/iop/bilateral.cc:301 ../src/iop/channelmixer.c:339
-#: ../src/iop/channelmixer.c:356 ../src/iop/temperature.c:471
-#: ../src/libs/collect.c:134 ../src/libs/collect.c:136
-msgid "red"
-msgstr "Rot"
-
-#: ../src/iop/bilateral.cc:303 ../src/iop/channelmixer.c:340
-#: ../src/iop/channelmixer.c:357 ../src/iop/temperature.c:475
-#: ../src/libs/collect.c:146 ../src/libs/collect.c:148
-msgid "green"
-msgstr "Grün"
-
-#: ../src/iop/bilateral.cc:305 ../src/iop/channelmixer.c:341
-#: ../src/iop/channelmixer.c:358 ../src/iop/temperature.c:479
-#: ../src/libs/collect.c:152 ../src/libs/collect.c:154
-msgid "blue"
-msgstr "Blau"
-
 #: ../src/iop/bilateral.cc:316
 msgid "spatial extent of the gaussian"
 msgstr "Ausdehnung des Gaußschen Weichzeichners"
@@ -1731,24 +1760,24 @@ msgstr "wie stark soll Grün weichgezeichnet werden"
 msgid "how much to blur blue"
 msgstr "wie stark soll Blau weichgezeichnet werden"
 
-#: ../src/iop/bloom.c:317 ../src/libs/camera.c:561
+#: ../src/iop/bloom.c:314 ../src/libs/camera.c:561
 msgid "size"
 msgstr "Größe"
 
-#: ../src/iop/bloom.c:318 ../src/iop/sharpen.c:342
+#: ../src/iop/bloom.c:315 ../src/iop/sharpen.c:342
 msgid "threshold"
 msgstr "Schwellwert"
 
-#: ../src/iop/bloom.c:333
+#: ../src/iop/bloom.c:330
 msgid "the size of bloom"
 msgstr "Größe der Überstrahlung"
 
 # unschön
-#: ../src/iop/bloom.c:334
+#: ../src/iop/bloom.c:331
 msgid "the threshold of light"
 msgstr "Schwellwert des Lichts"
 
-#: ../src/iop/bloom.c:335
+#: ../src/iop/bloom.c:332
 msgid "the strength of bloom"
 msgstr "Stärke der Überstrahlung"
 
@@ -1782,14 +1811,14 @@ msgstr "Ausgabekanal"
 
 #: ../src/iop/channelmixer.c:336 ../src/iop/colorzones.c:791
 #: ../src/iop/colorzones.c:811 ../src/iop/graduatednd.c:424
-#: ../src/iop/splittoning.c:428 ../src/iop/splittoning.c:487
+#: ../src/iop/splittoning.c:425 ../src/iop/splittoning.c:484
 msgid "hue"
 msgstr "Farbton"
 
 #: ../src/iop/channelmixer.c:337 ../src/iop/colorcorrection.c:192
 #: ../src/iop/colorzones.c:792 ../src/iop/colorzones.c:810
-#: ../src/iop/graduatednd.c:425 ../src/iop/splittoning.c:429
-#: ../src/iop/splittoning.c:488 ../src/iop/velvia.c:239
+#: ../src/iop/graduatednd.c:425 ../src/iop/splittoning.c:426
+#: ../src/iop/splittoning.c:485 ../src/iop/velvia.c:237
 #: ../src/iop/vignette.c:348
 msgid "saturation"
 msgstr "Sättigung"
@@ -1884,12 +1913,12 @@ msgid "flip"
 msgstr "spiegeln"
 
 #: ../src/iop/clipping.c:773
-msgid "flip image vertically"
-msgstr "Bild vertikal spiegeln"
-
-#: ../src/iop/clipping.c:774
 msgid "flip image horizontally"
 msgstr "Bild horizontal spiegeln"
+
+#: ../src/iop/clipping.c:774
+msgid "flip image vertically"
+msgstr "Bild vertikal spiegeln"
 
 #: ../src/iop/clipping.c:776
 msgid "angle"
@@ -1902,17 +1931,19 @@ msgstr ""
 "Mit rechter Maustaste ins Bild klicken und eine Linie ziehen, um eine gerade "
 "Kante zu markieren"
 
+# war "Trapezkorrektur h", aber zu lang für GUI (Bug?)
 #: ../src/iop/clipping.c:785
 msgid "keystone h"
-msgstr "Trapezkorrektur h"
+msgstr "Trapez h"
 
 #: ../src/iop/clipping.c:789
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "Perspektive für horizontale Trapezverzerrung anpassen"
 
+# siehe "keystone h"
 #: ../src/iop/clipping.c:795
 msgid "keystone v"
-msgstr "Trapezkorrektur v"
+msgstr "Trapez v"
 
 #: ../src/iop/clipping.c:798
 msgid "adjust perspective for vertical keystone distortion"
@@ -2005,12 +2036,12 @@ msgid "type"
 msgstr "Typ"
 
 #: ../src/iop/clipping.c:863
-msgid "flip guides vertically"
-msgstr "Hilfslinien vertikal spiegeln"
-
-#: ../src/iop/clipping.c:864
 msgid "flip guides horizontally"
 msgstr "Hilfslinien horizontal spiegeln"
+
+#: ../src/iop/clipping.c:864
+msgid "flip guides vertically"
+msgstr "Hilfslinien vertikal spiegeln"
 
 #. -------------------------------------------
 #: ../src/iop/clipping.c:866
@@ -2267,7 +2298,7 @@ msgstr "Alter Equalizer (überholt)"
 
 #: ../src/iop/equalizer.c:272
 msgid "null"
-msgstr ""
+msgstr "nichts"
 
 #: ../src/iop/equalizer.c:300
 msgid ""
@@ -2275,6 +2306,9 @@ msgid ""
 "and is only here so you can switch it off\n"
 "and move to the new equalizer."
 msgstr ""
+"Dieses Modul wird in absehbarer Zukunft entfernt\n"
+"und ist nur noch hier, damit Sie es abschalten\n"
+"und durch den neuen Equalizer ersetzen können."
 
 #: ../src/iop/exposure.c:282
 msgid "black"
@@ -2683,49 +2717,49 @@ msgstr "Breite der Füllicht-Fläche, definiert in Zonen."
 msgid "split toning"
 msgstr "Split-Toning"
 
-#: ../src/iop/splittoning.c:274
+#: ../src/iop/splittoning.c:271
 msgid "Select tone color"
 msgstr "Farbton wählen"
 
 #. Shadows
-#: ../src/iop/splittoning.c:415
+#: ../src/iop/splittoning.c:412
 msgid "shadows"
 msgstr "Schatten"
 
-#: ../src/iop/splittoning.c:461
+#: ../src/iop/splittoning.c:458
 msgid "select the hue tone for shadows"
 msgstr "Farbton für die Schatten wählen"
 
-#: ../src/iop/splittoning.c:471
+#: ../src/iop/splittoning.c:468
 msgid "select the saturation shadow tone"
 msgstr "Sättigung für die Schatten wählen"
 
 #. Highlights
-#: ../src/iop/splittoning.c:474
+#: ../src/iop/splittoning.c:471
 msgid "highlights"
 msgstr "Spitzlichter"
 
-#: ../src/iop/splittoning.c:521
+#: ../src/iop/splittoning.c:518
 msgid "select the hue tone for highlights"
 msgstr "Farbton für die Spitzlichter wählen"
 
-#: ../src/iop/splittoning.c:531
+#: ../src/iop/splittoning.c:528
 msgid "select the saturation highlights tone"
 msgstr "Sättigung für die Spitzlichter wählen"
 
-#: ../src/iop/splittoning.c:541
+#: ../src/iop/splittoning.c:538
 msgid "balance"
 msgstr "Ausgleich"
 
-#: ../src/iop/splittoning.c:542
+#: ../src/iop/splittoning.c:539
 msgid "compress"
 msgstr "komprimieren"
 
-#: ../src/iop/splittoning.c:555
+#: ../src/iop/splittoning.c:552
 msgid "the balance of center of splittoning"
 msgstr "Mittelpunkt des Split-Toning ausgleichen"
 
-#: ../src/iop/splittoning.c:556
+#: ../src/iop/splittoning.c:553
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
@@ -2794,23 +2828,23 @@ msgstr "räumliche Ausdehnung"
 msgid "velvia"
 msgstr "Velvia"
 
-#: ../src/iop/velvia.c:240
+#: ../src/iop/velvia.c:238
 msgid "vibrance"
 msgstr "Lebendigkeit"
 
-#: ../src/iop/velvia.c:241
+#: ../src/iop/velvia.c:239
 msgid "mid-tones bias"
 msgstr "Mittenbetonung"
 
-#: ../src/iop/velvia.c:256
+#: ../src/iop/velvia.c:254
 msgid "the amount of saturation to apply"
 msgstr "Menge an Sättigung, die angewendet werden soll"
 
-#: ../src/iop/velvia.c:257
+#: ../src/iop/velvia.c:255
 msgid "the vibrance amount"
 msgstr "Menge an Lebendigkeit"
 
-#: ../src/iop/velvia.c:258
+#: ../src/iop/velvia.c:256
 msgid "how much to spare highlights and shadows"
 msgstr "wie sehr sollen Spitzlichter und Schatten ausgenommen werden"
 
@@ -3175,21 +3209,9 @@ msgstr "Erzeugen"
 msgid "collect images"
 msgstr "Bilder sammeln"
 
-#: ../src/libs/collect.c:118 ../src/libs/collect.c:120
-msgid "altered"
-msgstr "geändert"
-
 #: ../src/libs/collect.c:124 ../src/libs/collect.c:126
 msgid "not altered"
 msgstr "ungeändert"
-
-#: ../src/libs/collect.c:140 ../src/libs/collect.c:142
-msgid "yellow"
-msgstr "Gelb"
-
-#: ../src/libs/collect.c:158 ../src/libs/collect.c:160
-msgid "purple"
-msgstr "Violett"
 
 #: ../src/libs/collect.c:248 ../src/libs/collect.c:262
 #: ../src/libs/collect.c:528
