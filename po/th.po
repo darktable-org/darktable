@@ -7,19 +7,19 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-02-07 21:09+0700\n"
-"PO-Revision-Date: 2011-02-07 21:55+0700\n"
+"PO-Revision-Date: 2011-02-14 22:34+0700\n"
 "Last-Translator: Phondanai Khanti <phondanai@gmail.com>\n"
 "Language-Team: American English <>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.0\n"
 
 #: ../build/src/preferences_gen.h:300
 msgid "gui options"
-msgstr ""
+msgstr "ตัวเลือกส่วนติดต่อผู้ใช้"
 
 #: ../build/src/preferences_gen.h:302
 msgid "filename of your custom theme in share/darktable/"
@@ -37,19 +37,19 @@ msgstr ""
 #: ../build/src/preferences_gen.h:620
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr ""
+msgstr "ดับเบิ้ลคลิกเพื่อกลับสู่ `%s'"
 
 #: ../build/src/preferences_gen.h:313 ../build/src/preferences_gen.h:573
 msgid " (needs a restart) "
-msgstr ""
+msgstr "(ต้องเริ่มโปรแกรมใหม่)"
 
 #: ../build/src/preferences_gen.h:318
 msgid "size of the side panels in pixels"
-msgstr ""
+msgstr "ขนาดของพาเนลด้านข้างเป็นพิกเซล"
 
 #: ../build/src/preferences_gen.h:330
 msgid " (needs a restart)"
-msgstr ""
+msgstr "(ต้องเริ่มโปรแกรมใหม่)"
 
 #: ../build/src/preferences_gen.h:335
 msgid "don't use embedded preview jpeg, always use half-size raw"
@@ -83,25 +83,25 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:399
 msgid "number of folder levels to show in lists"
-msgstr "จำนวนระดับในโฟลเดอร์ จะที่จะแสดงในลิส"
+msgstr "จำนวนระดับในโฟลเดอร์ จะที่จะแสดงในรายการ"
 
 #: ../build/src/preferences_gen.h:411
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
-msgstr ""
+msgstr "จำนวนระดับของโฟลเดอร์ที่แสดงในชื่อม้วนฟิล์ม, เริ่มจากขวา"
 
 #: ../build/src/preferences_gen.h:416
 msgid "initial rating when importing filmrolls."
-msgstr ""
+msgstr "กำหนดเรตติ้งเมื่อนำเข้าม้วนฟิล์ม"
 
 #: ../build/src/preferences_gen.h:432
 msgid "enable filmstrip in darkroom mode"
-msgstr ""
+msgstr "เปิดใช้ filmstip ในโหมด darkroom"
 
 #: ../build/src/preferences_gen.h:447
 msgid "maximum resolution of lighttable thumbnails"
-msgstr ""
+msgstr "ขนาดสูงสุดของภาพย่อของ lighttable"
 
 #: ../build/src/preferences_gen.h:459
 msgid ""
@@ -119,11 +119,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:481
 msgid "ask before deleting a tag"
-msgstr ""
+msgstr "ถามก่อนลบแท็ค"
 
 #: ../build/src/preferences_gen.h:511
 msgid "core options"
-msgstr ""
+msgstr "ตัวเลือกหลัก"
 
 #: ../build/src/preferences_gen.h:513
 msgid "database file"
@@ -137,11 +137,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:529
 msgid "image cache file"
-msgstr ""
+msgstr "แฟ้มแคชรูปภาพ"
 
 #: ../build/src/preferences_gen.h:545
 msgid "image cache file backup"
-msgstr ""
+msgstr "แฟ้มสำรองแคชรูปภาพ"
 
 #: ../build/src/preferences_gen.h:556
 msgid ""
@@ -187,19 +187,19 @@ msgstr ""
 
 #: ../data/darktable.glade.h:1
 msgid "( --- )"
-msgstr ""
+msgstr "( --- )"
 
 #: ../data/darktable.glade.h:2
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: ../data/darktable.glade.h:3
 msgid "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
-msgstr ""
+msgstr "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
 
 #: ../data/darktable.glade.h:4
 msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
-msgstr ""
+msgstr "<span color=\"#7f7f7f\"><big><b>โหมด light table</b></big></span>"
 
 #: ../data/darktable.glade.h:5
 msgid "about darktable"
@@ -216,6 +216,14 @@ msgid ""
 "5 star\n"
 "rejected"
 msgstr ""
+"ทั้งหมด\n"
+"ไม่มีดาว\n"
+"1 ดาว\n"
+"2 ดาว\n"
+"3 ดาว\n"
+"4 ดาว\n"
+"5 ดาว\n"
+"ปฏิเสธ"
 
 #. aperture
 #: ../data/darktable.glade.h:14 ../src/gui/presets.c:297
@@ -225,11 +233,11 @@ msgstr "รูรับแสง"
 
 #: ../data/darktable.glade.h:15 ../src/libs/metadata.c:261
 msgid "creator"
-msgstr ""
+msgstr "ผู้สร้าง"
 
 #: ../data/darktable.glade.h:16
 msgid "date/time"
-msgstr ""
+msgstr "วันที่/เวลา"
 
 #. exposure
 #. adding the labels
@@ -240,7 +248,7 @@ msgstr ""
 
 #: ../data/darktable.glade.h:18
 msgid "f-length"
-msgstr ""
+msgstr "ระยะโฟกัส"
 
 #: ../data/darktable.glade.h:19
 msgid "filename"
@@ -254,10 +262,15 @@ msgid ""
 "id\n"
 "color label"
 msgstr ""
+"ชื่อแฟ้ม\n"
+"เวลา\n"
+"เรตติ้ง\n"
+"ไอดี\n"
+"ฉลากสี"
 
 #: ../data/darktable.glade.h:25
 msgid "film roll"
-msgstr ""
+msgstr "ม้วนฟิล์ม"
 
 #: ../data/darktable.glade.h:26
 msgid "folder"
@@ -269,7 +282,7 @@ msgstr "ความสูง"
 
 #: ../data/darktable.glade.h:28
 msgid "histogram"
-msgstr ""
+msgstr "ฮิสโทแกรม"
 
 #: ../data/darktable.glade.h:29
 msgid "history"
@@ -305,7 +318,7 @@ msgstr "เลนส์"
 
 #: ../data/darktable.glade.h:36
 msgid "list"
-msgstr ""
+msgstr "รายการ"
 
 #: ../data/darktable.glade.h:37 ../src/gui/presets.c:255
 msgid "maker"
@@ -324,7 +337,7 @@ msgstr "รุ่น"
 
 #: ../data/darktable.glade.h:42
 msgid "more plugins"
-msgstr ""
+msgstr "ปลั๊กอินต่างๆ"
 
 #: ../data/darktable.glade.h:43
 msgid "navigation"
@@ -332,7 +345,7 @@ msgstr ""
 
 #: ../data/darktable.glade.h:44
 msgid "pick"
-msgstr ""
+msgstr "เลือก"
 
 #: ../data/darktable.glade.h:45 ../src/imageio/storage/picasa.c:686
 #: ../src/libs/metadata.c:287
@@ -341,11 +354,11 @@ msgstr ""
 
 #: ../data/darktable.glade.h:46
 msgid "select a folder to import as film roll"
-msgstr "เลือกโฟลเดอร์ที่จะนำเป็นม้วนฟิล์ม"
+msgstr "เลือกโฟลเดอร์ที่จะนำเข้ามาเป็นม้วนฟิล์ม"
 
 #: ../data/darktable.glade.h:47
 msgid "select one or more images to import"
-msgstr ""
+msgstr "เลือกหนึ่งหรือหลาายรูปภาพที่จะนำเขา"
 
 #: ../data/darktable.glade.h:48
 msgid "snapshots"
@@ -353,7 +366,7 @@ msgstr ""
 
 #: ../data/darktable.glade.h:49
 msgid "switch to darkroom mode"
-msgstr ""
+msgstr "สลับไปโหมด darkroom"
 
 #: ../data/darktable.glade.h:50 ../src/imageio/storage/flickr.c:440
 #: ../src/imageio/storage/picasa.c:684 ../src/libs/metadata.c:235
@@ -374,13 +387,13 @@ msgstr ""
 #: ../src/common/styles.c:228 ../src/develop/develop.c:906
 #: ../src/gui/styles_dialog.c:319
 msgid "on"
-msgstr ""
+msgstr "เปิด"
 
 #: ../src/common/history.c:168 ../src/common/history.c:197
 #: ../src/common/styles.c:228 ../src/develop/develop.c:906
 #: ../src/gui/styles_dialog.c:319
 msgid "off"
-msgstr ""
+msgstr "ปิด"
 
 #: ../src/common/image.c:149
 msgid "orphaned image"
@@ -396,27 +409,27 @@ msgstr ""
 #: ../src/common/styles.c:68
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr ""
+msgstr "สไตล์ที่ชื่อ '%s' มีอยู่แล้ว"
 
 #: ../src/common/styles.c:116
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr ""
+msgstr "สไตล์ชื่อ '%s' ถูกสร้างสำเร็จแล้ว"
 
 #: ../src/common/styles.c:277
 #, c-format
 msgid "style file for %s exists"
-msgstr ""
+msgstr "สไตล์สำหรับ %s มีอยู่แล้ว"
 
 #: ../src/common/styles.c:317
 #, c-format
 msgid "style %s was sucessfully saved"
-msgstr ""
+msgstr "สไตล์ %s ถูกบันทึกสำเร็จแล้ว"
 
 #: ../src/common/styles.c:469
 #, c-format
 msgid "style %s was sucessfully imported"
-msgstr ""
+msgstr "สไตล์ %s ถูกนำเข้าสำเร็จแล้ว"
 
 #: ../src/control/control.c:897 ../src/control/control.c:900
 msgid "working.."
@@ -451,7 +464,7 @@ msgstr ""
 #: ../src/control/jobs/camera_jobs.c:268
 #, c-format
 msgid "%d/%d imported to %s"
-msgstr ""
+msgstr "%d/%d ถูกนำเข้าไปยัง %s"
 
 #: ../src/control/jobs/camera_jobs.c:325
 msgid "starting to import images from camera"
@@ -528,7 +541,7 @@ msgstr[1] ""
 
 #: ../src/control/jobs/control_jobs.c:380
 msgid "do you really want to remove all selected images from the collection?"
-msgstr ""
+msgstr "คุณต้องการจะเอารูปที่เลือกทั้งหมดออกจากชุด?"
 
 #: ../src/control/jobs/control_jobs.c:381
 msgid "remove images?"
@@ -536,7 +549,7 @@ msgstr "เอารูปภาพออก?"
 
 #: ../src/control/jobs/control_jobs.c:401
 msgid "do you really want to physically delete all selected images from disk?"
-msgstr ""
+msgstr "คุณต้องการจะลบรูปที่เลือกทั้งหมดออกจากดิสก์?"
 
 #: ../src/control/jobs/control_jobs.c:402
 msgid "delete images?"
@@ -574,7 +587,7 @@ msgstr "กำลังโหลดรูปภาพ %s"
 #: ../src/develop/develop.c:807
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr ""
+msgstr "%s: รุ่นของโมดูล `%s' ไม่ตรง: %d != %d"
 
 #: ../src/develop/imageop.c:294 ../src/develop/imageop.c:313
 #: ../src/develop/imageop.c:586
@@ -614,7 +627,7 @@ msgstr "กลับไปค่าปริยาย"
 
 #: ../src/gui/camera_import_dialog.c:246
 msgid "import images from camera"
-msgstr ""
+msgstr "นำเข้ารูปภาพจากกล้อง"
 
 #: ../src/gui/camera_import_dialog.c:246
 msgid "cancel"
@@ -656,6 +669,8 @@ msgid ""
 "check this option if you want to delete images on camera after download to "
 "computer"
 msgstr ""
+"เลือกตัวเลือกนี้ หากคุณต้องการลบรูปภาพออกจากกล้องหลังจากโหลดลงสู่ "
+"คอมพิวเตอร์แล้ว"
 
 #: ../src/gui/camera_import_dialog.c:313
 msgid "override today's date"
@@ -747,7 +762,7 @@ msgstr "รูปภาพ"
 
 #: ../src/gui/camera_import_dialog.c:389
 msgid "settings"
-msgstr ""
+msgstr "ตั้งค่า"
 
 #. Lets run dialog
 #: ../src/gui/camera_import_dialog.c:537
@@ -755,6 +770,8 @@ msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
 msgstr ""
+"เลือกรูปภาพจากรายการที่คุณต้องการนำเข้าเป็น "
+"ม้วนฟิล์มใหม่"
 
 #: ../src/gui/camera_import_dialog.c:577
 msgid "please set the basedirectory settings before importing"
@@ -780,7 +797,7 @@ msgstr ""
 #: ../src/gui/devices.c:163
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
-msgstr ""
+msgstr "อุปกรณ์ \"%s\" เชื่อมต่อบนพอร์ต \"%s\"."
 
 #: ../src/gui/devices.c:171
 msgid "import from camera"
@@ -803,19 +820,19 @@ msgstr "ไม่เจออุปกรณ์ที่รองรับ"
 #. case 1: // Lab
 #: ../src/gui/gtk.c:336
 msgid "Lab"
-msgstr ""
+msgstr "แล็บ"
 
 #: ../src/gui/gtk.c:404
 msgid "organize and develop images from digital cameras"
-msgstr ""
+msgstr "จัดการและสร้างสรรค์ภาพ จาก กล้องดิจิทัล"
 
 #: ../src/gui/gtk.c:408
 msgid "* developers *"
-msgstr ""
+msgstr "* ผู้พัฒนา *"
 
 #: ../src/gui/gtk.c:413
 msgid "* ubuntu packaging, color management, video tutorials *"
-msgstr ""
+msgstr "* ทำแพคเกจ อูบุนตู, การจัดการสี, วิดีทัศน์การสอน *"
 
 #: ../src/gui/gtk.c:416
 msgid "* networking, battle testing, translation expert *"
@@ -823,15 +840,15 @@ msgstr ""
 
 #: ../src/gui/gtk.c:419
 msgid "* contributors *"
-msgstr ""
+msgstr "* ผู้ร่วมสมทบงาน *"
 
 #: ../src/gui/gtk.c:449
 msgid "translator-credits"
-msgstr ""
+msgstr "เครดิต-ผู้แปล"
 
 #: ../src/gui/gtk.c:663
 msgid "import film"
-msgstr ""
+msgstr "นำเข้าฟิล์ม"
 
 #: ../src/gui/gtk.c:682
 msgid "import directories recursively"
@@ -844,13 +861,15 @@ msgstr ""
 
 #: ../src/gui/gtk.c:690
 msgid "ignore jpeg files"
-msgstr ""
+msgstr "ไม่สนใจแฟ้ม jpeg"
 
 #: ../src/gui/gtk.c:691
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
 msgstr ""
+"ไม่โหลดแฟ้มนามสกุล .jpg หรือ .jpeg. นี่จะเป็นประโยชน์ "
+"เมื่อทั้งแฟ้ม raw+jpeg อยู่ในที่เก็บแฟ้ม."
 
 #: ../src/gui/gtk.c:734
 msgid "import image"
@@ -897,11 +916,11 @@ msgstr ""
 #: ../src/gui/iop_history.c:96
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr ""
+msgstr "ใช้สไตล์ `%s' กับรูปปัจจุบัน"
 
 #: ../src/gui/iop_history.c:128
 msgid "no styles have been created yet"
-msgstr ""
+msgstr "ยังไม่มีสไตล์ที่ถูกสร้าง"
 
 #: ../src/gui/iop_history.c:137
 msgid "compress history stack"
@@ -931,7 +950,7 @@ msgstr "พื้นฐาน"
 
 #: ../src/gui/iop_modulegroups.c:175
 msgid "basic group"
-msgstr ""
+msgstr "กลุ่มพื้นฐาน"
 
 #. add button for color plugins
 #. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
@@ -941,17 +960,17 @@ msgstr "สี"
 
 #: ../src/gui/iop_modulegroups.c:182
 msgid "color group"
-msgstr ""
+msgstr "กลุ่มสี"
 
 #. add button for correction plugins
 #. _iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
 #: ../src/gui/iop_modulegroups.c:187
 msgid "correct"
-msgstr ""
+msgstr "ความถูกต้อง"
 
 #: ../src/gui/iop_modulegroups.c:189
 msgid "correction group"
-msgstr ""
+msgstr "กลุ่มความถูกต้อง"
 
 #. add buttons for artistic plugins
 #. _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
@@ -961,11 +980,11 @@ msgstr "เอฟเฟ็กต์"
 
 #: ../src/gui/iop_modulegroups.c:196
 msgid "effect group"
-msgstr ""
+msgstr "กลุ่มเอฟเฟ็กต์"
 
 #: ../src/gui/preferences.c:29
 msgid "darktable preferences"
-msgstr ""
+msgstr "ปรับแต่ง darktable"
 
 #: ../src/gui/preferences.c:31
 msgid "close"
@@ -974,12 +993,12 @@ msgstr "ปิด"
 #: ../src/gui/presets.c:97 ../src/gui/presets.c:509 ../src/gui/presets.c:522
 #: ../src/libs/lib.c:56
 msgid "(default)"
-msgstr ""
+msgstr "(ปริยาย)"
 
 #: ../src/gui/presets.c:198
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr ""
+msgstr "แก้ไข `%s' สำหรับโมดูล `%s'"
 
 #: ../src/gui/presets.c:223 ../src/libs/lib.c:136
 msgid "name of the preset"
@@ -987,7 +1006,7 @@ msgstr ""
 
 #: ../src/gui/presets.c:227 ../src/libs/lib.c:140
 msgid "description or further information"
-msgstr ""
+msgstr "รายละเอียด หรือ ข้อมูลเพิ่มเติม"
 
 #: ../src/gui/presets.c:229
 msgid "auto apply this preset to matching images"
@@ -1036,24 +1055,24 @@ msgstr ""
 
 #: ../src/gui/presets.c:302
 msgid "minimum aperture value"
-msgstr ""
+msgstr "ค่ารูรับแสงต่ำสุด"
 
 #: ../src/gui/presets.c:303
 msgid "maximum aperture value"
-msgstr ""
+msgstr "ค่ารูรับแสงสูงสุด"
 
 #. focal length
 #: ../src/gui/presets.c:312 ../src/libs/camera.c:500
 msgid "focal length"
-msgstr ""
+msgstr "ระยะโฟกัส"
 
 #: ../src/gui/presets.c:319
 msgid "minimum focal length"
-msgstr ""
+msgstr "ระยะโฟกัสต่ำสุด"
 
 #: ../src/gui/presets.c:320
 msgid "maximum focal length"
-msgstr ""
+msgstr "ระยะโฟกัสสูงสุด"
 
 #. then show edit dialog
 #: ../src/gui/presets.c:383 ../src/gui/presets.c:388 ../src/gui/presets.c:395
@@ -1086,23 +1105,23 @@ msgstr ""
 #: ../src/gui/styles_dialog.c:181
 #, c-format
 msgid "edit style"
-msgstr ""
+msgstr "แก้ไขสไตล์"
 
 #: ../src/gui/styles_dialog.c:185
 msgid "create new style"
-msgstr ""
+msgstr "สร้างสไตล์ใหม่"
 
 #: ../src/gui/styles_dialog.c:205
 msgid "enter a name for the new style"
-msgstr ""
+msgstr "ป้อนชื่อสำหรับสไตล์ใหม่"
 
 #: ../src/gui/styles_dialog.c:208
 msgid "enter a description for the new style, this description is searchable"
-msgstr ""
+msgstr "ป้อนรายละเอียดสำหรับสไตล์ใหม่enter, รายละเอียดนี้สามารถค้นหาได้"
 
 #: ../src/gui/styles_dialog.c:227
 msgid "advanced edit of style"
-msgstr ""
+msgstr "การแก้ไขสไตล์ขั้นสูง"
 
 #: ../src/gui/styles_dialog.c:247
 msgid "include"
@@ -1121,34 +1140,44 @@ msgid ""
 "toggle red label\n"
 "of selected images (f1)"
 msgstr ""
+"แปะฉลากสีแดง\n"
+"ลงรูปที่เลือก (f1)"
 
 #: ../src/gui/tool_colorlabels.c:47
 msgid ""
 "toggle yellow label\n"
 "of selected images (f2)"
 msgstr ""
+"แปะฉลากสีเหลือง\n"
+"ลงรูปที่เลือก (f2)"
 
 #: ../src/gui/tool_colorlabels.c:52
 msgid ""
 "toggle green label\n"
 "of selected images (f3)"
 msgstr ""
+"แปะฉลากสีเขียว\n"
+"ลงรูปที่เลือก (f3)"
 
 #: ../src/gui/tool_colorlabels.c:57
 msgid ""
 "toggle blue label\n"
 "of selected images (f4)"
 msgstr ""
+"แปะฉลากสีน้ำเงิน\n"
+"ลงรูปที่เลือก (f4)"
 
 #: ../src/gui/tool_colorlabels.c:62
 msgid ""
 "toggle purple label\n"
 "of selected images (f5)"
 msgstr ""
+"แปะฉลากสีม่วง\n"
+"ลงรูปที่เลือก (f5)"
 
 #: ../src/gui/tool_colorlabels.c:67
 msgid "clear all labels of selected images"
-msgstr ""
+msgstr "ลบฉลากออกจากรูปที่เลือกทั้งหมด"
 
 #: ../src/imageio/format/copy.c:138 ../src/libs/copy_history.c:193
 msgid "copy"
@@ -1162,7 +1191,7 @@ msgstr ""
 
 #: ../src/imageio/format/exr.cc:149
 msgid "openexr"
-msgstr ""
+msgstr "openexr"
 
 #: ../src/imageio/format/jpeg.c:617
 msgid "8-bit jpg"
@@ -1190,7 +1219,7 @@ msgstr "16-บิต"
 
 #: ../src/imageio/format/ppm.c:93
 msgid "16-bit ppm"
-msgstr "16-bit ppm"
+msgstr "16-บิต ppm"
 
 #: ../src/imageio/format/tiff.c:221
 msgid "8/16-bit tiff"
@@ -1198,7 +1227,7 @@ msgstr "8/16-บิต tiff"
 
 #: ../src/imageio/storage/disk.c:55
 msgid "file on disk"
-msgstr ""
+msgstr "แฟ้มบนดิสก์"
 
 #: ../src/imageio/storage/disk.c:63 ../src/imageio/storage/disk.c:130
 #: ../src/libs/styles.c:196
@@ -1238,7 +1267,7 @@ msgstr ""
 #: ../src/imageio/storage/disk.c:225 ../src/imageio/storage/email.c:109
 #, c-format
 msgid "%d/%d exported to `%s%s'"
-msgstr ""
+msgstr "%d/%d ถูกส่งออกไปยัง `%s%s'"
 
 #: ../src/imageio/storage/email.c:54
 msgid "send as email"
@@ -1338,23 +1367,23 @@ msgstr ""
 
 #: ../src/imageio/storage/picasa.c:680
 msgid "user"
-msgstr ""
+msgstr "ผู้ใช้"
 
 #: ../src/imageio/storage/picasa.c:681
 msgid "password"
-msgstr ""
+msgstr "รหัสผ่าน"
 
 #: ../src/imageio/storage/picasa.c:682
 msgid "albums"
-msgstr ""
+msgstr "อัลบั้ม"
 
 #: ../src/imageio/storage/picasa.c:725
 msgid "my new album"
-msgstr ""
+msgstr "อัลบั้มใหม่ของฉัน"
 
 #: ../src/imageio/storage/picasa.c:750
 msgid "public album"
-msgstr ""
+msgstr "อัลบั้มสาธารณะ"
 
 #: ../src/imageio/storage/picasa.c:900
 #, c-format
@@ -1773,15 +1802,15 @@ msgstr ""
 
 #: ../src/iop/clipping.c:762
 msgid "1:2"
-msgstr ""
+msgstr "1:2"
 
 #: ../src/iop/clipping.c:763
 msgid "3:2"
-msgstr ""
+msgstr "3:2"
 
 #: ../src/iop/clipping.c:764
 msgid "4:3"
-msgstr ""
+msgstr "4:3"
 
 #: ../src/iop/clipping.c:765
 msgid "square"
@@ -1793,7 +1822,7 @@ msgstr ""
 
 #: ../src/iop/clipping.c:767
 msgid "16:9"
-msgstr ""
+msgstr "16:9"
 
 #: ../src/iop/clipping.c:774
 msgid ""
@@ -1910,12 +1939,12 @@ msgstr ""
 
 #: ../src/iop/colorin.c:547
 msgid "srgb (e.g. jpg)"
-msgstr ""
+msgstr "srgb (เช่น jpg)"
 
 #: ../src/iop/colorin.c:549 ../src/iop/colorout.c:552
 #: ../src/iop/colorout.c:553 ../src/libs/export.c:463
 msgid "adobe rgb"
-msgstr ""
+msgstr "adobe rgb"
 
 #: ../src/iop/colorin.c:551 ../src/iop/colorout.c:542
 #: ../src/iop/colorout.c:543 ../src/libs/export.c:475
@@ -2106,7 +2135,7 @@ msgstr ""
 
 #: ../src/iop/exposure.c:279
 msgid "black"
-msgstr ""
+msgstr "สีดำ"
 
 #: ../src/iop/exposure.c:286
 msgid "adjust the black level"
@@ -2261,7 +2290,7 @@ msgstr ""
 
 #: ../src/iop/highlights.c:363
 msgid "method"
-msgstr ""
+msgstr "วิธีการ"
 
 #: ../src/iop/highlights.c:366
 msgid "clip highlights"
@@ -2330,7 +2359,7 @@ msgstr "มม"
 
 #: ../src/iop/lens.c:1019
 msgid "focal length (mm)"
-msgstr ""
+msgstr "ระยะโฟกัส (มม)"
 
 #: ../src/iop/lens.c:1025 ../src/iop/lens.c:1040
 msgid "reset from exif data"
@@ -2338,7 +2367,7 @@ msgstr ""
 
 #: ../src/iop/lens.c:1034
 msgid "f/"
-msgstr ""
+msgstr "f/"
 
 #: ../src/iop/lens.c:1034
 msgid "f-number (aperture)"
@@ -2346,7 +2375,7 @@ msgstr ""
 
 #: ../src/iop/lens.c:1045
 msgid "d"
-msgstr ""
+msgstr "d"
 
 #: ../src/iop/lens.c:1045
 msgid "distance to subject"
@@ -2491,12 +2520,12 @@ msgstr ""
 
 #: ../src/iop/splittoning.c:272
 msgid "Select tone color"
-msgstr ""
+msgstr "เลือกโทนสี"
 
 #. Shadows
 #: ../src/iop/splittoning.c:410
 msgid "shadows"
-msgstr ""
+msgstr "เงา"
 
 #: ../src/iop/splittoning.c:435
 msgid "select the hue tone for shadows"
@@ -2685,11 +2714,11 @@ msgstr ""
 
 #: ../src/iop/watermark.c:573
 msgid "opacity"
-msgstr ""
+msgstr "ความทึบ"
 
 #: ../src/iop/watermark.c:575
 msgid "alignment"
-msgstr ""
+msgstr "การจัดวาง"
 
 #: ../src/iop/watermark.c:576
 msgid "x offset"
@@ -2844,7 +2873,7 @@ msgstr ""
 
 #: ../src/libs/camera.c:330
 msgid "battery"
-msgstr ""
+msgstr "แบตเตอรี่"
 
 #: ../src/libs/camera.c:330
 msgid "n/a"
@@ -2974,11 +3003,11 @@ msgstr ""
 
 #: ../src/libs/collect.c:139 ../src/libs/collect.c:141
 msgid "yellow"
-msgstr ""
+msgstr "เหลือง"
 
 #: ../src/libs/collect.c:157 ../src/libs/collect.c:159
 msgid "purple"
-msgstr ""
+msgstr "ม่วง"
 
 #: ../src/libs/collect.c:247 ../src/libs/collect.c:261
 #: ../src/libs/collect.c:527
@@ -3053,11 +3082,11 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:206
 msgid "append"
-msgstr ""
+msgstr "เพิ่ม"
 
 #: ../src/libs/copy_history.c:207
 msgid "overwrite"
-msgstr ""
+msgstr "เขียนทับ"
 
 #: ../src/libs/copy_history.c:208
 msgid "how to handle existing history"
@@ -3125,7 +3154,7 @@ msgstr ""
 
 #: ../src/libs/export.c:437
 msgid "x"
-msgstr ""
+msgstr "x"
 
 #: ../src/libs/export.c:441
 msgid "intent"
@@ -3158,7 +3187,7 @@ msgstr "ส่งออก"
 
 #: ../src/libs/export.c:560
 msgid "export with current settings (ctrl-e)"
-msgstr ""
+msgstr "ส่งออกโดยใช้การตั้งค่าปัจจุบัน (ctrl-e)"
 
 #: ../src/libs/image.c:39
 msgid "selected image[s]"
@@ -3166,19 +3195,19 @@ msgstr ""
 
 #: ../src/libs/image.c:83
 msgid "remove"
-msgstr ""
+msgstr "เอาออก"
 
 #: ../src/libs/image.c:84
 msgid "remove from the collection"
-msgstr ""
+msgstr "เอาออกจากชุด"
 
 #: ../src/libs/image.c:88 ../src/libs/styles.c:334 ../src/libs/tagging.c:425
 msgid "delete"
-msgstr ""
+msgstr "ลบ"
 
 #: ../src/libs/image.c:89
 msgid "physically delete from disk"
-msgstr ""
+msgstr "ลบออกจากดิสก์"
 
 #: ../src/libs/image.c:96
 msgid "write sidecar files"
@@ -3198,11 +3227,11 @@ msgstr ""
 
 #: ../src/libs/image.c:111
 msgid "rotate selected images 90 degrees ccw"
-msgstr ""
+msgstr "หมุนภาพที่เลือก 90 องศา ทวนเข็มนาฬิกา"
 
 #: ../src/libs/image.c:116
 msgid "rotate selected images 90 degrees cw"
-msgstr ""
+msgstr "หมุนภาพที่เลือก 90 องศา ตามเข็มนาฬิกา"
 
 #: ../src/libs/image.c:121
 msgid "reset rotation"
@@ -3223,7 +3252,7 @@ msgstr ""
 #: ../src/libs/lib.c:115
 #, c-format
 msgid "edit `%s'"
-msgstr ""
+msgstr "แก้ไข `%s'"
 
 #: ../src/libs/lib.c:237
 msgid "deleting preset for obsolete module"
@@ -3239,7 +3268,7 @@ msgstr ""
 
 #: ../src/libs/metadata.c:248
 msgid "description"
-msgstr ""
+msgstr "รายละเอียด"
 
 #: ../src/libs/metadata.c:274
 msgid "publisher"
@@ -3321,12 +3350,12 @@ msgstr ""
 #: ../src/libs/recentcollect.c:139
 #, c-format
 msgid " and "
-msgstr ""
+msgstr " และ "
 
 #: ../src/libs/recentcollect.c:142
 #, c-format
 msgid " or "
-msgstr ""
+msgstr " หรือ "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:145
@@ -3336,19 +3365,19 @@ msgstr ""
 
 #: ../src/libs/select.c:32
 msgid "select"
-msgstr ""
+msgstr "เลือก"
 
 #: ../src/libs/select.c:119
 msgid "select all"
-msgstr ""
+msgstr "เลือกทั้งหมด"
 
 #: ../src/libs/select.c:120
 msgid "select all images in current collection (ctrl-a)"
-msgstr ""
+msgstr "เลือกรูปภาพทั้งหมดในชุดปัจจุบัน (ctrl-a)"
 
 #: ../src/libs/select.c:125
 msgid "select none"
-msgstr ""
+msgstr "ไม่เลือก"
 
 #: ../src/libs/select.c:126
 msgid "clear selection (ctrl-shift-a)"
@@ -3366,7 +3395,7 @@ msgstr ""
 
 #: ../src/libs/select.c:140
 msgid "select film roll"
-msgstr ""
+msgstr "เลือกม้วนฟิล์ม"
 
 #: ../src/libs/select.c:141
 msgid ""
@@ -3386,11 +3415,11 @@ msgstr ""
 
 #: ../src/libs/styles.c:44
 msgid "styles"
-msgstr ""
+msgstr "สไตล์"
 
 #: ../src/libs/styles.c:216
 msgid "select style"
-msgstr ""
+msgstr "เลือกสไตล์"
 
 #: ../src/libs/styles.c:229
 msgid "darktable style files"
@@ -3417,7 +3446,7 @@ msgstr ""
 #. TODO: Unfinished stuff
 #: ../src/libs/styles.c:329
 msgid "edit"
-msgstr ""
+msgstr "แก้ไข"
 
 #: ../src/libs/styles.c:336
 msgid "deletes the selected style in list above"
@@ -3440,7 +3469,7 @@ msgstr[1] ""
 
 #: ../src/libs/tagging.c:277
 msgid "delete tag?"
-msgstr ""
+msgstr "ลบแท็ก?"
 
 #: ../src/libs/tagging.c:359
 msgid ""
@@ -3466,7 +3495,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:387
 msgid "enter tag name"
-msgstr ""
+msgstr "ป้อนชื่อแท็ก"
 
 #: ../src/libs/tagging.c:412
 msgid ""
@@ -3476,7 +3505,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:419
 msgid "new"
-msgstr ""
+msgstr "ใหม่"
 
 #: ../src/libs/tagging.c:420
 msgid ""
@@ -3519,7 +3548,7 @@ msgstr "แสดง %s"
 #. fail :(
 #: ../src/views/darkroom.c:299
 msgid "no image selected!"
-msgstr ""
+msgstr "ไม่มีรูปที่ถูกเลือก!"
 
 #: ../src/views/filmstrip.c:68
 msgid "film strip"
@@ -3528,4 +3557,5 @@ msgstr ""
 #: ../src/views/lighttable.c:75
 msgid "lighttable"
 msgstr ""
+
 
