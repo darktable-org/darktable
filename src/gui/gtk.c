@@ -440,6 +440,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
     "Jochen Schroeder",
     "Jose Carlos Garcia Sogo",
     "Karl Mikaelsson",
+    "Klaus Staedtler",
     "Mikko Ruohola",
     "Nao Nakashima",
     "Olivier Tribout",
