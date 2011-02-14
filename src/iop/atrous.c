@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -290,7 +290,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   float *buf2   = NULL;
   float *buf1   = NULL;
 
-  int tile_wd_full = DT_IMAGE_WINDOW_SIZE, tile_ht_full = DT_IMAGE_WINDOW_SIZE;
+  // should be >= DT_IMAGE_WINDOW_SIZE, as dr mode won't use tiling then.
+  // border is with MAX_NUM_SCALES=8 502 pixels, the ratio (tile_wd_full-border)/tile_wd_full*(same for y) is directly proportional to the slowdown.
+  // int tile_wd_full = DT_IMAGE_WINDOW_SIZE, tile_ht_full = DT_IMAGE_WINDOW_SIZE;
+  // results in 3x2 for 5D mk II 21MPix images (24s 1300^2 -> 20s full export)
+  // and        2x1 for 12MPix (14s -> 7s)
+  int tile_wd_full = 2390, tile_ht_full = 2390;
+  // int tile_wd_full = 3350, tile_ht_full = 3350; // results in 2x2 for 5D mk II 21MPix images (24s 1300^2 -> 19s full export)
   const int need_tiles = roi_in->width > tile_wd_full || roi_out->height > tile_ht_full;
 
   if(need_tiles)
@@ -313,6 +319,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   const int tile_wd = tile_wd_full - 2*max_filter_radius, tile_ht = tile_ht_full - 2*max_filter_radius;
   const int tiles_x = need_tiles ? ceilf(width /(float)tile_wd) : 1;
   const int tiles_y = need_tiles ? ceilf(height/(float)tile_ht) : 1;
+
+  // printf("need %d x %d tiles with %d x %d (%d x %d) resolution\n", tiles_x, tiles_y, tile_wd, tile_ht, tile_wd_full, tile_ht_full);
 
   // for all tiles:
   for(int tx=0; tx<tiles_x; tx++)
