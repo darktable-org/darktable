@@ -27,6 +27,31 @@
         <li>lots of new color matrices and white balance presets</li>
         <li>lots of bugfixes</li>
       </ul>
+      according to the git log, this release introduces over 900 new commits brought to you by (in order of commits):
+    johannes hanika,
+    Tobias Ellinghaus,
+    Henrik Andersson,
+    Pascal de Bruijn,
+    Ger Siemerink,
+    Bruce Guenter,
+    Jose Carlos Garcia Sogo,
+    Boucman,
+    Alexandre Prokoudine,
+    Simon Spannagel,
+    Olivier,
+    Jochen,
+    Karl Mikaelsson,
+    Jochen Schroeder,
+    Brian Teague,
+    Pascal Obry,
+    calca,
+    Ville Pätsi,
+    Uli Scholler,
+    Thierry Leconte,
+    Pacsal de Bruijn, and
+    Alex Chateau.
+    <br />
+    special thanks to Pacsal ;)
       </div>
 
       <div class="listtext">

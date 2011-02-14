@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -402,7 +402,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, et al. 2009-2010");
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, tobias ellinghaus et al. 2009-2011");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://darktable.sf.net/");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
@@ -426,20 +426,28 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
     "Andrey Kaminsky",
     "Anton Blanchard",
     "Bernhard Schneider",
+    "Boucman",
+    "Brian Teague",
     "Bruce Guenter",
     "Christian Fuchs",
     "Christian Himpel",
     "Daniele Giorgis",
     "David Bremner",
+    "Ger Siemerink",
+    "Gianluigi Calcaterra",
     "Gregor Quade",
     "Jan Rinze",
+    "Jochen Schroeder",
     "Jose Carlos Garcia Sogo",
+    "Karl Mikaelsson",
     "Mikko Ruohola",
     "Nao Nakashima",
     "Olivier Tribout",
     "Pascal de Bruijn",
+    "Pascal Obry",
     "Robert Park",
     "Richard Hughes",
+    "Simon Spannagel",
     "Stephen van den Berg",
     "Stuart Henderson",
     "Thierry Leconte",
