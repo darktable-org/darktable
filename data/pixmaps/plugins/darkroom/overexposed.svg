@@ -15,9 +15,9 @@
    sodipodi:version="0.32"
    inkscape:version="0.48.0 r9654"
    version="1.0"
-   sodipodi:docname="template.svg"
+   sodipodi:docname="overexposed.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/plugins-darkroom/template.png"
+   inkscape:export-filename="/home/jo/vcs/darktable/data/pixmaps/plugins/darkroom/overexposed.png"
    inkscape:export-xdpi="10.8"
    inkscape:export-ydpi="10.8">
   <defs
@@ -50,7 +50,7 @@
      inkscape:window-width="1272"
      inkscape:window-height="722"
      inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-y="24"
      inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
