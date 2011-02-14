@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-14 15:24+0100\n"
-"PO-Revision-Date: 2011-02-14 15:38+0100\n"
+"POT-Creation-Date: 2011-02-14 17:28+0100\n"
+"PO-Revision-Date: 2011-02-14 17:26+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -465,12 +465,12 @@ msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
 msgid "error loading directory `%s'"
 msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
 
-#: ../src/common/darktable.c:334 ../src/gui/gtk.c:802
+#: ../src/common/darktable.c:334 ../src/gui/gtk.c:810
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:346 ../src/gui/gtk.c:787
+#: ../src/common/darktable.c:346 ../src/gui/gtk.c:795
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
@@ -965,30 +965,30 @@ msgstr "* Netzwerken, Battle-Testen, Übersetzungsexperte *"
 msgid "* contributors *"
 msgstr "* Mitwirkende *"
 
-#: ../src/gui/gtk.c:453
+#: ../src/gui/gtk.c:461
 msgid "translator-credits"
 msgstr "Tobias Ellinghaus"
 
-#: ../src/gui/gtk.c:667
+#: ../src/gui/gtk.c:675
 msgid "import film"
 msgstr "Film importieren"
 
-#: ../src/gui/gtk.c:686
+#: ../src/gui/gtk.c:694
 msgid "import directories recursively"
 msgstr "Verzeichnisse rekursiv importieren"
 
-#: ../src/gui/gtk.c:687
+#: ../src/gui/gtk.c:695
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "Verzeichnisse rekursiv importieren. Jedes Verzeichnis kommt in eine eigene "
 "Filmrolle."
 
-#: ../src/gui/gtk.c:694
+#: ../src/gui/gtk.c:702
 msgid "ignore jpeg files"
 msgstr "JPEG-Dateien ignorieren"
 
-#: ../src/gui/gtk.c:695
+#: ../src/gui/gtk.c:703
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -996,23 +996,23 @@ msgstr ""
 "Lade keine Dateien mit der Endung .JPG oder .JPEG. Dies kann nützlich sein, "
 "wenn es RAW+JPEG im gleichen Ordner gibt."
 
-#: ../src/gui/gtk.c:738
+#: ../src/gui/gtk.c:746
 msgid "import image"
 msgstr "Bild importieren"
 
-#: ../src/gui/gtk.c:763
+#: ../src/gui/gtk.c:771
 msgid "supported images"
 msgstr "unterstütze Bilder"
 
-#: ../src/gui/gtk.c:768 ../src/libs/copy_history.c:77 ../src/libs/styles.c:241
+#: ../src/gui/gtk.c:776 ../src/libs/copy_history.c:77 ../src/libs/styles.c:241
 msgid "all files"
 msgstr "alle Dateien"
 
-#: ../src/gui/gtk.c:1116
+#: ../src/gui/gtk.c:1124
 msgid "show global preferences"
 msgstr "Zeige globale Voreinstellungen"
 
-#: ../src/gui/gtk.c:1231
+#: ../src/gui/gtk.c:1239
 msgid "take snapshot"
 msgstr "Snapshot erstellen"
 
@@ -3109,11 +3109,11 @@ msgstr "Anzahl"
 
 #: ../src/libs/camera.c:417
 msgid "brackets"
-msgstr ""
+msgstr "Belichtungen"
 
 #: ../src/libs/camera.c:418
 msgid "bkt. steps"
-msgstr ""
+msgstr "Belichtungsschritte"
 
 #: ../src/libs/camera.c:454
 msgid "capture image(s)"
@@ -3150,13 +3150,20 @@ msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
 msgstr ""
+"Anzahl Belichtungen auf jeder\n"
+"Seite der mittleren Aufnahme,\n"
+"Anzahl Bilder = (Belichtungen*2)+1."
 
+# Kapiere ich nicht so ganz ...
 #: ../src/libs/camera.c:463
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 "
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
+"Anzahl Schritte pro Belichtung, Schritte können in der Kamera eingestellt "
+"werden und betragen normalerweise 3 Schritte pro Blende.\n"
+"Mit anderen Worten, 3 Schritte ist 1EV Belichtung zwischen den Aufnahmen."
 
 #: ../src/libs/camera.c:477
 msgid "properties"
