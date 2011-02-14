@@ -12,7 +12,7 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
-    	<img src="images/rocks.jpg" class="img" alt="dreggn" /><h1>released 0.8</h1>
+    	<img src="images/donau.jpg" class="img" alt="dreggn" /><h1>released 0.8</h1>
       <em>(2011-02-15)</em> we released version 0.8, which obsoletes 0.7.1 in a lot of ways:
       <ul>
         <li><em>much</em> faster image loading due to <em>rawspeed</em>, an awesome new library by klaus post @rawstudio</li>
