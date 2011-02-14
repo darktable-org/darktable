@@ -17,6 +17,17 @@
       range.
     	</div>
       <div class="text">
+      <a href="images/lighttable1.jpg"><img src="images/lighttable1-thumb.jpg" alt="scr0" class="img"/></a><h1>some 0.8 screenshots</h1>
+      </div>
+      showing lighttable and darkroom modes, some plugins, and the film strip view.
+      <div class="text">
+      <a href="images/lighttable2.jpg"><img src="images/lighttable2-thumb.jpg" alt="scr0" class="img"/></a>
+      <a href="images/darkroom1.jpg"><img src="images/darkroom1-thumb.jpg" alt="scr0" class="img"/></a>
+      <a href="images/darkroom2.jpg"><img src="images/darkroom2-thumb.jpg" alt="scr0" class="img"/></a>
+      <a href="images/darkroom3.jpg"><img src="images/darkroom3-thumb.jpg" alt="scr0" class="img"/></a>
+      <a href="images/darkroom4.jpg"><img src="images/darkroom4-thumb.jpg" alt="scr0" class="img"/></a>
+      </div>
+      <div class="text">
       <a href="images/highlights.jpg"><img src="images/highlights-thumb.jpg" alt="scr0" class="img"/></a><h1>highlights and side-by-side view</h1>
       </div>
       reconstruct highlights, view your changes in a side-by-side comparison
