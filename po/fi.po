@@ -2,6 +2,7 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Mikko Ruohola <mikko@ruohola.org>, 2011.
 #
 #: ../src/gui/preferences_gen.h:290 ../src/gui/preferences_gen.h:355
 #: ../src/gui/preferences_gen.h:371
@@ -10,7 +11,7 @@ msgstr ""
 "Project-Id-Version: Darktable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-11-20 16:47+0100\n"
-"PO-Revision-Date: 2010-08-18 19:02+0300\n"
+"PO-Revision-Date: 2011-02-15 03:10+0200\n"
 "Last-Translator: Mikko Ruohola <mikko@ruohola.org>\n"
 "Language-Team: Finnish Translators <mikko@ruohola.org>\n"
 "Language: \n"
@@ -41,9 +42,8 @@ msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>valopöytä tila</b></big></span>"
 
 #: ../darktable.glade.h:5
-#, fuzzy
 msgid "about darktable"
-msgstr "viety darktablesta"
+msgstr "tietoja darktablesta"
 
 #: ../darktable.glade.h:6
 msgid ""
@@ -225,7 +225,7 @@ msgstr ""
 
 #: ../darktable.schemas.in.h:1
 msgid "(needs a restart)"
-msgstr ""
+msgstr "(tarvitsee uudelleen käynnistyksen)"
 
 #: ../darktable.schemas.in.h:2
 msgid "0 -- append on top of stack, 1 -- replace it."
@@ -256,9 +256,8 @@ msgid "append or replace history stack if pasted"
 msgstr "lisää tai korvaa historiapino liitettäessä."
 
 #: ../darktable.schemas.in.h:9 ../src/gui/preferences_gen.h:360
-#, fuzzy
 msgid "ask before deleting a tag"
-msgstr "kysy ennen kuvatiedostojen poistoa"
+msgstr "kysy ennen tunnisteen poistoa"
 
 #: ../darktable.schemas.in.h:10 ../src/gui/preferences_gen.h:311
 msgid "ask before deleting images"
@@ -273,6 +272,8 @@ msgid ""
 "creates backup of cachefile to prevent loss of thumbnails generated at "
 "crashes etc (needs a restart)."
 msgstr ""
+"luo varmuuskopion välimuistitiedostosta, jotta luotuja näytekuvia ei "
+"menetetä virhetilanteissa jne. (tarvitsee uudelleen käynnistyksen)"
 
 #: ../darktable.schemas.in.h:13 ../src/gui/preferences_gen.h:393
 msgid "database file"
@@ -288,9 +289,8 @@ msgid "downsample the preview pixels"
 msgstr "epätarkenna esikatselun pikseleitä"
 
 #: ../darktable.schemas.in.h:16 ../src/gui/preferences_gen.h:344
-#, fuzzy
 msgid "enable filmstrip in darkroom mode"
-msgstr "vaihda pimiötilaan"
+msgstr "käytä filminauhaa pimiötilassa."
 
 #: ../darktable.schemas.in.h:17 ../src/gui/preferences_gen.h:246
 msgid "filename of your custom theme in share/darktable/"
@@ -298,12 +298,12 @@ msgstr "omat teemasi tiedostonimi share/darktable/ hakemistossa"
 
 #: ../darktable.schemas.in.h:18 ../src/gui/preferences_gen.h:404
 #: ../src/gui/preferences_gen.h:420
-#, fuzzy
 msgid ""
 "filename relative to your home directory, or starting with a slash (needs a "
 "restart)."
 msgstr ""
-"suhteellinen tiedostonimi kotihakemistostasi tai kauttaviivalla alkava."
+"suhteellinen tiedostonimi kotihakemistostasi tai kauttaviivalla alkava "
+"(tarvitsee uudelleen käynnistyksen)"
 
 #: ../darktable.schemas.in.h:19
 msgid "flag if backup of imported images should be performed"
@@ -383,16 +383,15 @@ msgstr ""
 
 #: ../darktable.schemas.in.h:32
 msgid "ignore jpeg images when importing film rolls."
-msgstr ""
+msgstr "ohita jpeg kuvat filmirullia tuotaessa."
 
 #: ../darktable.schemas.in.h:33 ../src/gui/preferences_gen.h:409
 msgid "image cache file"
 msgstr "kuvavälimuistin tiedosto"
 
 #: ../darktable.schemas.in.h:34 ../src/gui/preferences_gen.h:425
-#, fuzzy
 msgid "image cache file backup"
-msgstr "kuvavälimuistin tiedosto"
+msgstr "kuvavälimuistin varmuuskopio"
 
 #: ../darktable.schemas.in.h:35
 msgid "jobcode of import job"
@@ -412,7 +411,7 @@ msgstr "kaappaustyön nimi"
 
 #: ../darktable.schemas.in.h:39 ../src/gui/preferences_gen.h:491
 msgid "password storage backend to use"
-msgstr ""
+msgstr "käytettävä salasanavarasto"
 
 #: ../darktable.schemas.in.h:40
 msgid "path of storage for captured images"
@@ -420,7 +419,7 @@ msgstr "polku johon kamerasta kaapatut kuvat tallennetaan"
 
 #: ../darktable.schemas.in.h:41
 msgid "recursive directory traversal when importing filmrolls."
-msgstr ""
+msgstr "hae alihakemistoista kun tuodaan filmirullia."
 
 #: ../darktable.schemas.in.h:42
 msgid "rename pattern for captured images"
@@ -433,7 +432,7 @@ msgstr ""
 
 #: ../darktable.schemas.in.h:44 ../src/gui/preferences_gen.h:262
 msgid "size of the side panels in pixels"
-msgstr ""
+msgstr "sivupaneelien koko pikseleissä"
 
 #: ../darktable.schemas.in.h:45
 msgid "small thumbnails to keep in main memory cache"
@@ -452,6 +451,8 @@ msgid ""
 "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - "
 "kwallet, 3 - gnome keyring"
 msgstr ""
+"käytettävä salasanavarasto: 0 - ei mitään, 1 - gconf (älä käytä), 2 - "
+"kwaller, 3 - gnome keyring"
 
 #: ../darktable.schemas.in.h:49 ../src/gui/preferences_gen.h:486
 msgid ""
@@ -484,6 +485,8 @@ msgid ""
 "when having raw+jpeg images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all jpegs found."
 msgstr ""
+"kun käytetään raw+jpeg tiedostoja samassa hakemistossa, ei kannata tuoda "
+"molempia. Tämä valinta ohittaa kaikki jpeg-tiedostot."
 
 #: ../darktable.schemas.in.h:54
 msgid "which layout should lighttable mode show"
@@ -498,9 +501,8 @@ msgid "width of the exported image, or 0 if no scaling should be done."
 msgstr "vietävän kuvan leveys tai 0 jos käytetään alkuperäistä"
 
 #: ../darktable.schemas.in.h:57 ../src/gui/preferences_gen.h:475
-#, fuzzy
 msgid "write a redundant sidecar file for each image"
-msgstr "kirjoita ylimääräinen tiedosto jokaista kuvaa varten"
+msgstr "kirjoita aputiedosto jokaista kuvaa varten"
 
 #. single images
 #: ../src/common/image.c:98 ../src/control/control.c:1371
@@ -524,12 +526,12 @@ msgstr "pois päältä"
 #: ../src/common/styles.c:44
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr ""
+msgstr "tyyli nimellä '%s' on jo olemassa"
 
 #: ../src/common/styles.c:84
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr ""
+msgstr "tyyli '%s' on luotu onnistuneesti"
 
 #: ../src/control/control.c:879 ../src/control/control.c:882
 msgid "working.."
@@ -592,11 +594,11 @@ msgstr[0] "kahdennetaan %d kuva"
 msgstr[1] "kahdennataan %d kuvaa"
 
 #: ../src/control/jobs/control_jobs.c:100
-#, fuzzy, c-format
+#, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
-msgstr[0] "tuhotaan %d kuva.."
-msgstr[1] "tuhotaan %d kuvaa.."
+msgstr[0] "käännetään %d kuva.."
+msgstr[1] "käännetään %d kuvaa.."
 
 #: ../src/control/jobs/control_jobs.c:122
 #, c-format
@@ -630,7 +632,7 @@ msgstr "tuhoa kuvat?"
 
 #: ../src/control/jobs/control_jobs.c:314
 msgid "failed to get parameters from storage module, aborting export.."
-msgstr ""
+msgstr "ei saatu arvoja tiedostovarastolta, keskeytetään vienti.."
 
 #: ../src/control/jobs/control_jobs.c:317
 #, c-format
@@ -683,14 +685,12 @@ msgid "history stack"
 msgstr "historiapino"
 
 #: ../src/libs/copy_history.c:55
-#, fuzzy
 msgid "open sidecar file"
-msgstr "avaa dt aputiedosto"
+msgstr "avaa aputiedosto"
 
 #: ../src/libs/copy_history.c:65
-#, fuzzy
 msgid "xmp sidecar files"
-msgstr "dt aputiedostot"
+msgstr "xmp aputiedostot"
 
 #: ../src/libs/copy_history.c:70 ../src/gui/gtk.c:752
 msgid "all files"
@@ -750,17 +750,15 @@ msgstr ""
 "valittuihin kuviin (ctrl-v)"
 
 #: ../src/libs/copy_history.c:222
-#, fuzzy
 msgid "load sidecar file"
-msgstr "dt aputiedostot"
+msgstr "lataa aputiedosto"
 
 #: ../src/libs/copy_history.c:223
-#, fuzzy
 msgid ""
 "open an xmp sidecar file\n"
 "and apply it to selected images"
 msgstr ""
-"avaa dt aputiedosto\n"
+"avaa xmp-aputiedosto\n"
 "ja käytä sitä valittuihin kuviin"
 
 #: ../src/libs/lib.c:55 ../src/gui/presets.c:78 ../src/gui/presets.c:490
@@ -789,7 +787,7 @@ msgstr "uusi esiasetus"
 
 #: ../src/libs/lib.c:236
 msgid "deleting preset for obsolete module"
-msgstr ""
+msgstr "poista esiasetus vanhentuneesta moduulista."
 
 #: ../src/libs/lib.c:300 ../src/gui/presets.c:524
 msgid "edit this preset.."
@@ -907,18 +905,19 @@ msgstr "järjestelmän profiili"
 #: ../src/libs/export.c:535
 #, c-format
 msgid "output icc profiles in %s/color/out"
-msgstr ""
+msgstr "vienti icc-profiilit ovat %s/color/out-hakemistossa"
 
 #: ../src/libs/export.c:544
-#, fuzzy
 msgid "threads"
-msgstr "raja-arvo"
+msgstr "säikeet"
 
 #: ../src/libs/export.c:548
 msgid ""
 "export using this number of threads.\n"
 "beware! each thread will use ~1GB of ram."
 msgstr ""
+"vie käyttäen säikeitä.\n"
+"varoitus! jokainen säie käyttää ~1GB ram-muistia."
 
 #: ../src/libs/export.c:551
 msgid "export"
@@ -926,7 +925,7 @@ msgstr "vie"
 
 #: ../src/libs/export.c:552
 msgid "export with current settings (ctrl-e)"
-msgstr ""
+msgstr "vie nykyisillä asetuksilla (ctrl-e)"
 
 #: ../src/libs/image.c:39
 msgid "selected image[s]"
@@ -945,14 +944,12 @@ msgid "physically delete from disk"
 msgstr "poista tiedosto levyltä"
 
 #: ../src/libs/image.c:95
-#, fuzzy
 msgid "write sidecar files"
-msgstr "dt aputiedostot"
+msgstr "kirjoita aputiedostot"
 
 #: ../src/libs/image.c:96
-#, fuzzy
 msgid "write history stack and tags to xmp sidecar files"
-msgstr "kirjoita historiapino ja merkinnät aputiedostoihin"
+msgstr "kirjoita historiapino ja merkinnät xmp-aputiedostoihin"
 
 #: ../src/libs/image.c:100
 msgid "duplicate"
@@ -963,24 +960,20 @@ msgid "add a duplicate to the collection"
 msgstr "lisää kopio kokoelmaan"
 
 #: ../src/libs/image.c:110
-#, fuzzy
 msgid "rotate selected images 90 degrees ccw"
-msgstr "vastaavat valitut kuvat"
+msgstr "käännä valittuja kuvia 90-astetta vastapäivään"
 
 #: ../src/libs/image.c:115
-#, fuzzy
 msgid "rotate selected images 90 degrees cw"
-msgstr "vastaavat valitut kuvat"
+msgstr "käännä valittuja kuvia 90-astetta myötäpäivään"
 
 #: ../src/libs/image.c:120
-#, fuzzy
 msgid "reset rotation"
-msgstr "kylläisyys"
+msgstr "palauta kääntö"
 
 #: ../src/libs/image.c:121
-#, fuzzy
 msgid "reset rotation to exif data"
-msgstr "palauta oletusarvo"
+msgstr "palauta kääntö exif-tietojen mukaiseksi"
 
 #: ../src/libs/tagging.c:50
 msgid "tagging"
@@ -1124,7 +1117,6 @@ msgid "red"
 msgstr "punainen"
 
 #: ../src/libs/collect.c:93 ../src/libs/collect.c:198
-#, fuzzy
 msgid "yellow"
 msgstr "keltainen"
 
@@ -1156,9 +1148,8 @@ msgid "date"
 msgstr "päiväys"
 
 #: ../src/libs/collect.c:308
-#, fuzzy
 msgid "colorlabel"
-msgstr "värimerkit"
+msgstr "värimerkki"
 
 #: ../src/libs/collect.c:317
 #, no-c-format
@@ -1196,7 +1187,7 @@ msgstr "vaihda näkymän tilaa keskinäkymässä"
 
 #: ../src/libs/camera.c:190
 msgid "Connection with camera lost, exiting tethering mode"
-msgstr ""
+msgstr "Yhteys kameraan menetetty, poistutaan liitetyn kuvauksen tilasta"
 
 #: ../src/libs/camera.c:324
 msgid "battery"
@@ -1283,46 +1274,41 @@ msgstr "koko"
 
 #. user specified properties
 #: ../src/libs/camera.c:574
-#, fuzzy
 msgid "additional properties"
-msgstr "ominaisuudet"
+msgstr "lisäominaisuudet"
 
 #: ../src/libs/camera.c:578
 msgid "label"
-msgstr ""
+msgstr "merkki"
 
 #: ../src/libs/camera.c:584
-#, fuzzy
 msgid "property"
 msgstr "ominaisuudet"
 
 #: ../src/libs/camera.c:596
 msgid "add user property"
-msgstr ""
+msgstr "lisää käyttäjän ominaisuus"
 
 #: ../src/libs/styles.c:44
 msgid "styles"
-msgstr ""
+msgstr "tyylit"
 
 #: ../src/libs/styles.c:238
-#, fuzzy
 msgid "create duplicate"
 msgstr "kahdenna"
 
 #: ../src/libs/styles.c:242
 msgid "creates a duplicate of the image before applying style"
-msgstr ""
+msgstr "kahdenna kuva ennen tyylin käyttöä"
 
 #. TODO: Unfinished stuff
 #: ../src/libs/styles.c:246
-#, fuzzy
 msgid "edit"
-msgstr "muokkaa `%s'"
+msgstr "muokkaa"
 
 #: ../src/libs/styles.c:253
-#, fuzzy
 msgid "deletes the selected style in list above"
-msgstr "poista valittu merkki"
+msgstr "poistaa valitun tyylin listasta"
 
 #: ../src/iop/clipping.c:116
 msgid "crop and rotate"
@@ -1413,23 +1399,19 @@ msgstr "din"
 
 #: ../src/iop/clipping.c:732
 msgid "16:9"
-msgstr ""
+msgstr "16:9"
 
 #: ../src/iop/clipping.c:739
-#, fuzzy
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
 msgstr ""
-"määrittele kuvasuhde (k/l)\n"
+"määrittele kuvasuhde (k:l)\n"
 "paina ctrl-x kääntääksesi"
 
 #: ../src/iop/clipping.c:745
-#, fuzzy
 msgid "swap the aspect ratio (ctrl-x)"
-msgstr ""
-"määrittele kuvasuhde (k/l)\n"
-"paina ctrl-x kääntääksesi"
+msgstr "käännä kuvasuhde (ctrl-x)"
 
 #: ../src/iop/clipping.c:752
 msgid "guides"
@@ -1529,7 +1511,7 @@ msgstr "syötteen profiili"
 
 #: ../src/iop/colorin.c:217
 msgid "unsupported input profile has been replaced by linear rgb!"
-msgstr ""
+msgstr "yhteensopimaton syöttöprofiili on korvattu lineaarisella rgb:llä!"
 
 #: ../src/iop/colorin.c:420
 msgid "standard color matrix"
@@ -1566,7 +1548,7 @@ msgstr "tuloksen profiili"
 
 #: ../src/iop/colorout.c:238
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr ""
+msgstr "yhteensopimaton vientiprofiili on korvattu sRGB:llä!"
 
 #: ../src/iop/colorout.c:406
 msgid "output intent"
@@ -1663,78 +1645,76 @@ msgstr "gamma"
 
 #: ../src/iop/graduatednd.c:56
 msgid "Neutral Grey ND2 (soft)"
-msgstr ""
+msgstr "Harmaasuodin ND2 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:57
 msgid "Neutral Grey ND4 (soft)"
-msgstr ""
+msgstr "Harmaasuodin ND4 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:58
 msgid "Neutral Grey ND8 (soft)"
-msgstr ""
+msgstr "Harmaasuodin ND8 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:59
 msgid "Neutral Grey ND2 (hard)"
-msgstr ""
+msgstr "Harmaasuodin ND2 (kova)"
 
 #: ../src/iop/graduatednd.c:60
 msgid "Neutral Grey ND4 (hard)"
-msgstr ""
+msgstr "Harmaasuodin ND4 (kova)"
 
 #: ../src/iop/graduatednd.c:61
 msgid "Neutral Grey ND8 (hard)"
-msgstr ""
+msgstr "Harmaasuodin ND8 (kova)"
 
 #: ../src/iop/graduatednd.c:62
 msgid "Orange ND2 (soft)"
-msgstr ""
+msgstr "Oranssi ND2 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:63
 msgid "Yellow ND2 (soft)"
-msgstr ""
+msgstr "Keltainen ND2 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:64
 msgid "Purple ND2 (soft)"
-msgstr ""
+msgstr "Violetti ND2 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:65
 msgid "Green ND2 (soft)"
-msgstr ""
+msgstr "Vihreä ND2 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:66
 msgid "Red ND2 (soft)"
-msgstr ""
+msgstr "Punainen ND2 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:67
 msgid "Blue ND2 (soft)"
-msgstr ""
+msgstr "Sininen ND2 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:68
 msgid "Brown ND4 (soft)"
-msgstr ""
+msgstr "Ruskea ND4 (pehmeä)"
 
 #: ../src/iop/graduatednd.c:95
 msgid "graduated neutral density"
-msgstr ""
+msgstr "asteittainen harmaasuodin."
 
 #. adding the labels
 #: ../src/iop/graduatednd.c:377
 msgid "density"
-msgstr ""
+msgstr "tiheys"
 
 #: ../src/iop/graduatednd.c:378
-#, fuzzy
 msgid "compression"
-msgstr "pakkaa"
+msgstr "jyrkkyys"
 
 #: ../src/iop/graduatednd.c:379
-#, fuzzy
 msgid "rotation"
-msgstr "kylläisyys"
+msgstr "kääntö"
 
 #: ../src/iop/graduatednd.c:380
 msgid "split"
-msgstr ""
+msgstr "jako"
 
 #: ../src/iop/graduatednd.c:381 ../src/iop/splittoning.c:466
 #: ../src/iop/splittoning.c:498 ../src/iop/channelmixer.c:361
@@ -1742,18 +1722,16 @@ msgid "hue"
 msgstr "värisävy"
 
 #: ../src/iop/graduatednd.c:412
-#, fuzzy
 msgid "select the hue tone of filter"
-msgstr "valitse kirkkaiden kohtien sävy"
+msgstr "valitse suotimen sävy"
 
 #: ../src/iop/graduatednd.c:421
-#, fuzzy
 msgid "select the saturation of filter"
-msgstr "valitse varjokohtien värikylläisyys"
+msgstr "valitse suotimen värikylläisyys"
 
 #: ../src/iop/graduatednd.c:428
 msgid "the density in EV for the filter"
-msgstr ""
+msgstr "tiheys aukkoina suotimelle"
 
 #: ../src/iop/graduatednd.c:430
 #, no-c-format
@@ -1761,14 +1739,16 @@ msgid ""
 "compression of graduation:\n"
 "0% = soft, 100% = hard"
 msgstr ""
+"astettaisen suotimen jyrkkyys:\n"
+"0% = pehmeä, 100% = kova"
 
 #: ../src/iop/graduatednd.c:431
 msgid "rotation of filter -180 to 180 degrees"
-msgstr ""
+msgstr "suotimen kääntö -180 - 180 astetta"
 
 #: ../src/iop/graduatednd.c:432
 msgid "offset of filter in angle of rotation"
-msgstr ""
+msgstr "suotimen käännön siirros"
 
 #: ../src/iop/highlights.c:72
 msgid "highlight reconstruction"
@@ -1815,9 +1795,8 @@ msgid "blend hue (0 is same as clipping)"
 msgstr "sekoita sävyä (0 on sama kuin leikkaus)"
 
 #: ../src/iop/lens.c:44
-#, fuzzy
 msgid "lens correction"
-msgstr "värien korjaus"
+msgstr "vääristymien korjaus"
 
 #: ../src/iop/lens.c:676
 #, c-format
@@ -1940,7 +1919,7 @@ msgstr "tca r"
 
 #: ../src/iop/lens.c:1255
 msgid "tca b"
-msgstr ""
+msgstr "tca b"
 
 #: ../src/iop/lens.c:1263
 msgid ""
@@ -1993,6 +1972,8 @@ msgid ""
 "number of 3x3 median filter passes\n"
 "on R-G and B-G after demosaicing"
 msgstr ""
+"3x3 mediaanisuotimen käyttökertojen määrä\n"
+"R-G ja B-G väreillä kehityksen jälkeen"
 
 #: ../src/iop/rawimport.c:433
 msgid "demosaic method"
@@ -2097,7 +2078,7 @@ msgstr "vär"
 #: ../src/iop/rawimport.c:476
 msgid ""
 "fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"
-msgstr ""
+msgstr "fbdd käyttää kohinanpoistoa ennen RAW-kehitystä"
 
 #. GtkCheckButton *vcd_eeci_refine;
 #: ../src/iop/rawimport.c:481
@@ -2126,7 +2107,7 @@ msgstr "ca automaattinen korjaus"
 
 #: ../src/iop/rawimport.c:495
 msgid "artificial ca autocorrection from AMaZE"
-msgstr ""
+msgstr "keinotekoinen CA-korjaus AMaZE:sta"
 
 #: ../src/iop/rawimport.c:498
 msgid "reset"
@@ -2366,11 +2347,11 @@ msgstr "leica tyylinen"
 
 #: ../src/iop/basecurve.c:57
 msgid "kodak easyshare like"
-msgstr ""
+msgstr "kodak easyshare tyylinen"
 
 #: ../src/iop/basecurve.c:58
 msgid "konica minolta like"
-msgstr ""
+msgstr "konica minolta tyylinen"
 
 #: ../src/iop/basecurve.c:59
 msgid "fotogenetic (point & shoot)"
@@ -2430,7 +2411,7 @@ msgstr "vinjetointi"
 
 #: ../src/iop/vignette.c:353
 msgid "fall-off strength"
-msgstr ""
+msgstr "häivytyksen vahvuus"
 
 #: ../src/iop/vignette.c:354 ../src/iop/grain.c:435
 msgid "strength"
@@ -2446,7 +2427,7 @@ msgstr "kirk/kyll suhde"
 
 #: ../src/iop/vignette.c:358
 msgid "fall-off"
-msgstr ""
+msgstr "häivytys"
 
 #: ../src/iop/vignette.c:372 ../src/iop/vignette.c:373
 msgid "invert"
@@ -2487,7 +2468,7 @@ msgstr "kääntää värikylläisyysvaikutuksen"
 
 #: ../src/iop/vignette.c:387
 msgid "inverts effect of fall-off, default is dark fall-off..."
-msgstr ""
+msgstr "kääntää häivytyksen, oletuksena häivytys on tumma..."
 
 #: ../src/iop/velvia.c:67
 msgid "velvia"
@@ -2584,9 +2565,8 @@ msgid "the strength of applied grain"
 msgstr "käytettävän rakeen voimakkuus"
 
 #: ../src/iop/bilateral.cc:70
-#, fuzzy
 msgid "denoise (slow)"
-msgstr "kohinanpoisto (suuri)"
+msgstr "kohinanpoisto (hidas)"
 
 #: ../src/iop/bilateral.cc:299
 msgid "spatial extent of the gaussian"
@@ -2610,9 +2590,8 @@ msgid "unbreak input profile"
 msgstr "korjaa syötteen profiili"
 
 #: ../src/iop/clahe.c:67
-#, fuzzy
 msgid "local contrast (slow)"
-msgstr "paikallinen kontrasti"
+msgstr "paikallinen kontrasti (hidas)"
 
 #: ../src/iop/clahe.c:396
 msgid "size of features to preserve"
@@ -2644,7 +2623,7 @@ msgstr "käytä"
 
 #: ../src/iop/colortransfer.c:628
 msgid "apply previously analyzed image look to this image"
-msgstr ""
+msgstr "käytä aiemmin analysoidun kuvan asua tähän kuvaan"
 
 #: ../src/iop/channelmixer.c:107
 msgid "channel mixer"
@@ -2684,7 +2663,7 @@ msgstr "värien yksityiskohtien lisäys"
 
 #: ../src/iop/channelmixer.c:423
 msgid "color artifacts boost"
-msgstr ""
+msgstr "värihäiriöiden lisäys"
 
 #: ../src/iop/channelmixer.c:424
 msgid "b/w"
@@ -2692,7 +2671,7 @@ msgstr "mv"
 
 #: ../src/iop/channelmixer.c:425
 msgid "b/w artifacts boost"
-msgstr ""
+msgstr "mv häiriöiden korostys"
 
 #: ../src/iop/channelmixer.c:426
 msgid "b/w smooth skin"
@@ -2700,81 +2679,78 @@ msgstr "mv pehmeä iho"
 
 #: ../src/iop/channelmixer.c:427
 msgid "b/w blue artifacts reduce"
-msgstr ""
+msgstr "mv sinisten häiriöiden vähennys"
 
 #: ../src/iop/relight.c:54
 msgid "Fill-light 0.25EV with 4 zones"
-msgstr ""
+msgstr "täytä valo 0.25EV, 4 alueen alalta"
 
 #: ../src/iop/relight.c:55
 msgid "Fill-shadow -0.25EV with 4 zones"
-msgstr ""
+msgstr "täytä varjot -0.25EV, 4 alueen alalta"
 
 #: ../src/iop/relight.c:80
-#, fuzzy
 msgid "relight"
-msgstr "oikea"
+msgstr "uudelleenvalota"
 
 #. EV
 #: ../src/iop/relight.c:343
 msgid "center"
-msgstr ""
+msgstr "keskikohta"
 
 #: ../src/iop/relight.c:362
-#, fuzzy
 msgid "select the center of fill-light"
-msgstr "valitse kirkkaiden kohtien sävy"
+msgstr "valitse täytevalon keskikohta"
 
 #: ../src/iop/relight.c:374
 msgid "toggle tool for picking median lightness in image"
-msgstr ""
+msgstr "käytä työkalua keskimääräisen valoisuuden valitsemiseksi kuvasta"
 
 #: ../src/iop/relight.c:375
 msgid "the fill-light in EV"
-msgstr ""
+msgstr "täytevalon määrä aukoissa"
 
 #: ../src/iop/relight.c:377
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr ""
+msgstr "täytevalon leveys kirkkausalueina"
 
 #: ../src/iop/watermark.c:87
 msgid "watermark"
-msgstr ""
+msgstr "vesileima"
 
 #: ../src/iop/watermark.c:563
 msgid "marker"
-msgstr ""
+msgstr "merkki"
 
 #: ../src/iop/watermark.c:564
 msgid "opacity"
-msgstr ""
+msgstr "läpinäkyvyys"
 
 #: ../src/iop/watermark.c:566
 msgid "alignment"
-msgstr ""
+msgstr "kohdistus"
 
 #: ../src/iop/watermark.c:567
 msgid "x offset"
-msgstr ""
+msgstr "x-siirto"
 
 #: ../src/iop/watermark.c:568
 msgid "y offset"
-msgstr ""
+msgstr "y-siirto"
 
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/watermark.c:612
 msgid "the opacity of the watermark"
-msgstr ""
+msgstr "vesileiman läpinäkyvyys"
 
 #: ../src/iop/watermark.c:613
-#, fuzzy
 msgid "the scale of the watermark"
-msgstr "kohinan koko"
+msgstr "vesileiman koko"
 
 #: ../src/iop/zonesystem.c:84
 msgid "zone system"
-msgstr ""
+msgstr "alueet"
 
 #: ../src/imageio/format/jpeg.c:618
 msgid "8-bit jpeg"
@@ -2817,7 +2793,6 @@ msgid "select directory"
 msgstr "valitse hakemisto"
 
 #: ../src/imageio/storage/disk.c:106
-#, fuzzy
 msgid ""
 "enter the path where to put exported images:\n"
 "$(ROLL_NAME) - roll of the input image\n"
@@ -2836,6 +2811,7 @@ msgid ""
 "$(DESKTOP_FOLDER) - desktop folder"
 msgstr ""
 "Anna polku johon viedyt kuvat tallennetaan:\n"
+"$(ROLL_NAME) - kuvan filmirullan nimi\n"
 "$(FILE_DIRECTORY) - alkuperäisen kuvan hakemisto\n"
 "$(FILE_NAME) - alkuperäisen kuvan tiedostonimi ilman päätettä\n"
 "$(FILE_EXTENSION) - alkuperäisen kuvan tiedostopääte\n"
@@ -2851,7 +2827,7 @@ msgstr ""
 "$(DESKTOP_FOLDER) - työpöytähakemisto"
 
 #: ../src/imageio/storage/disk.c:184
-#, fuzzy, c-format
+#, c-format
 msgid "could not create directory `%s'!"
 msgstr "hakemistoa %s ei voitu luoda!"
 
@@ -2942,29 +2918,28 @@ msgid "Lab"
 msgstr "Lab"
 
 #: ../src/gui/gtk.c:398
-#, fuzzy
 msgid "organize and develop images from digital cameras"
-msgstr "tuodaan %d kuva kamerasta"
+msgstr "järjestele ja kehitä kuvia digitaalikameroista"
 
 #: ../src/gui/gtk.c:402
 msgid "* developers *"
-msgstr ""
+msgstr "* kehittäjät *"
 
 #: ../src/gui/gtk.c:406
 msgid "* ubuntu packaging, color management, video tutorials *"
-msgstr ""
+msgstr "* ubuntu-paketointi, värienhallinta, video-oppaat *"
 
 #: ../src/gui/gtk.c:409
 msgid "* networking, battle testing, translation expert *"
-msgstr ""
+msgstr "* verkot, taistelutestaus, käännös-expertti *"
 
 #: ../src/gui/gtk.c:412
 msgid "* contributors *"
-msgstr ""
+msgstr "* osallistujat *"
 
 #: ../src/gui/gtk.c:443
 msgid "translator-credits"
-msgstr ""
+msgstr "käännökset"
 
 #: ../src/gui/gtk.c:657
 msgid "import film"
@@ -2972,23 +2947,26 @@ msgstr "tuo filmi"
 
 #: ../src/gui/gtk.c:676
 msgid "import directories recursively"
-msgstr ""
+msgstr "tuo alihakemistoista"
 
 #: ../src/gui/gtk.c:677
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
+"tuo alihakemistot rekursiivisesti. jokainen alihakemisto menee uuteen "
+"filmirullaan."
 
 #: ../src/gui/gtk.c:684
-#, fuzzy
 msgid "ignore jpeg files"
-msgstr "kuvavälimuistin tiedosto"
+msgstr "ohita jpeg tiedostot"
 
 #: ../src/gui/gtk.c:685
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
 msgstr ""
+"älä lataa kuvia joiden pääte on .jpg tai .jpeg. Tämä voi olla hyödyllinen "
+"kun tuodaan hakemistoja joissa on raw ja jpeg kuvia."
 
 #: ../src/gui/gtk.c:728
 msgid "import image"
@@ -3000,25 +2978,19 @@ msgstr "tuetut kuvat"
 
 #: ../src/gui/gtk.c:1076
 msgid "show global preferences"
-msgstr ""
+msgstr "näytä yleiset asetukset"
 
 #: ../src/gui/gtk.c:1204
 msgid "take snapshot"
 msgstr "ota vedos"
 
 #: ../src/gui/gtk.c:1233
-#, fuzzy
 msgid "recently used film rolls"
-msgstr ""
-"\n"
-"viimeksi käytetyt filmirullat"
+msgstr "viimeksi käytetyt filmirullat"
 
 #: ../src/gui/gtk.c:1254
-#, fuzzy
 msgid "all film rolls"
-msgstr ""
-"\n"
-"kaikki filmirullat"
+msgstr "kaikki filmirullat"
 
 #: ../src/gui/histogram.c:35 ../src/gui/histogram.c:187
 msgid ""
@@ -3061,7 +3033,7 @@ msgstr "luo pienin mahdollinen historia joka tuottaa saman kuvan"
 
 #: ../src/gui/iop_history.c:107
 msgid "create a style from currently developed image and its history stack"
-msgstr ""
+msgstr "luo tyyli nykyisestä kuvasta ja sen historiapinosta"
 
 #: ../src/gui/iop_history.c:130 ../src/gui/iop_history.c:221
 msgid "0 - original"
@@ -3071,45 +3043,41 @@ msgstr "0 - alkuperäinen"
 #. _iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
 #: ../src/gui/iop_modulegroups.c:173
 msgid "basic"
-msgstr ""
+msgstr "perus"
 
 #: ../src/gui/iop_modulegroups.c:175
 msgid "basic group"
-msgstr ""
+msgstr "perusryhmä"
 
 #. add button for color plugins
 #. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
 #: ../src/gui/iop_modulegroups.c:180
-#, fuzzy
 msgid "color"
-msgstr "värialueet"
+msgstr "väri"
 
 #: ../src/gui/iop_modulegroups.c:182
-#, fuzzy
 msgid "color group"
-msgstr "värialueet"
+msgstr "väriryhmä"
 
 #. add button for correction plugins
 #. _iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
 #: ../src/gui/iop_modulegroups.c:187
-#, fuzzy
 msgid "correct"
-msgstr "ca automaattinen korjaus"
+msgstr "korjaa"
 
 #: ../src/gui/iop_modulegroups.c:189
-#, fuzzy
 msgid "correction group"
-msgstr "värien korjaus"
+msgstr "korjausryhmä"
 
 #. add buttons for artistic plugins
 #. _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
 #: ../src/gui/iop_modulegroups.c:194
 msgid "effect"
-msgstr ""
+msgstr "tehoste"
 
 #: ../src/gui/iop_modulegroups.c:196
 msgid "effect group"
-msgstr ""
+msgstr "tehosteryhmä"
 
 #. Add the rescan button
 #: ../src/gui/devices.c:136
@@ -3131,7 +3099,7 @@ msgstr "tuo kamerasta"
 
 #: ../src/gui/devices.c:174
 msgid "tethered shoot"
-msgstr ""
+msgstr "liitetty kuvaaminen"
 
 #. No supported devices is detected lets notice user..
 #. gtk_widget_set_sensitive(expander,FALSE);
@@ -3219,6 +3187,9 @@ msgid ""
 "renaming for import storage and images; if you dont know how to use this, "
 "keep the default settings."
 msgstr ""
+"seuraavat kolme asetusta kertovat hakemistorakenteen ja tiedostojen "
+"uudelleennimeämisasetukset tuonnille; jos et tiedä miten tätä käytetään, "
+"säilytä oletusasetukset."
 
 #: ../src/gui/camera_import_dialog.c:333
 msgid "storage directory"
@@ -3250,6 +3221,9 @@ msgid ""
 "used as basedirectory in the above storage structure and when a image are "
 "downloaded from camera it is replicated to found backup destinations."
 msgstr ""
+"ulkoinen varmuuskopio on valinta joka kytkee päälle kyseisen ominaisuuden. "
+"Se etsii liitetyistä laitteista asetettua hakemistoa ja käyttää kaikki "
+"löydettyjä hakemistoja varmuuskopiointiin."
 
 #: ../src/gui/camera_import_dialog.c:362
 msgid "enable backup"
@@ -3281,6 +3255,8 @@ msgid ""
 "if such a folder is found in any mounter media it is used as a backup "
 "destination."
 msgstr ""
+"tämä on varmuuskopiohakemiston nimi; Jos sellainen löytyy mistä tahansa "
+"liitetystä laitteesta, sitä käytetään varmuuskopiointiin."
 
 #: ../src/gui/camera_import_dialog.c:388
 msgid "images"
@@ -3393,31 +3369,28 @@ msgid "background jobs"
 msgstr "taustatyöt"
 
 #: ../src/gui/tool_colorlabels.c:41
-#, fuzzy
 msgid ""
 "toggle red label\n"
 "of selected images (f1)"
 msgstr ""
 "vaihda punainen värimerkki\n"
-"valituista kuvista (ctlr-1)"
+"valituista kuvista (f1)"
 
 #: ../src/gui/tool_colorlabels.c:46
-#, fuzzy
 msgid ""
 "toggle yellow label\n"
 "of selected images (f2)"
 msgstr ""
 "vaihda keltainen värimerkki\n"
-"valituista kuvista (ctrl-2)"
+"valituista kuvista (f2)"
 
 #: ../src/gui/tool_colorlabels.c:51
-#, fuzzy
 msgid ""
 "toggle green label\n"
 "of selected images (f3)"
 msgstr ""
 "vaihda vihreä värimerkki\n"
-"valituista kuvista (ctrl-3)"
+"valituista kuvista (f3)"
 
 #: ../src/gui/tool_colorlabels.c:56
 msgid "clear all labels of selected images"
@@ -3425,16 +3398,15 @@ msgstr "tyhjennä kaikki merkit valituista kuvista"
 
 #: ../src/gui/preferences.c:29
 msgid "darktable preferences"
-msgstr ""
+msgstr "darktablen asetukset"
 
 #: ../src/gui/preferences.c:31
 msgid "close"
-msgstr ""
+msgstr "sulje"
 
 #: ../src/gui/preferences_gen.h:244
-#, fuzzy
 msgid "gui options"
-msgstr "yleiset valinnat"
+msgstr "käyttöliittymän valinnat"
 
 #: ../src/gui/preferences_gen.h:254 ../src/gui/preferences_gen.h:271
 #: ../src/gui/preferences_gen.h:287 ../src/gui/preferences_gen.h:303
@@ -3444,48 +3416,46 @@ msgstr "yleiset valinnat"
 #: ../src/gui/preferences_gen.h:433 ../src/gui/preferences_gen.h:450
 #: ../src/gui/preferences_gen.h:467 ../src/gui/preferences_gen.h:483
 #: ../src/gui/preferences_gen.h:500
-#, fuzzy, c-format
+#, c-format
 msgid "double click to reset to `%s'"
-msgstr "tuplaklikkaa valitaksesi"
+msgstr "tuplaklikkaa palauttaaksesi arvoksi `%s'"
 
 #: ../src/gui/preferences_gen.h:257 ../src/gui/preferences_gen.h:453
 msgid " (needs a restart) "
-msgstr ""
+msgstr " (tarvitsee uudelleen käynnistyksen)"
 
 #: ../src/gui/preferences_gen.h:274
 msgid " (needs a restart)"
-msgstr ""
+msgstr " (tarvitsee uudelleen käynnistyksen)"
 
 #: ../src/gui/preferences_gen.h:391
-#, fuzzy
 msgid "core options"
-msgstr "yleiset valinnat"
+msgstr "ytimen valinnat"
 
 #: ../src/gui/styles_dialog.c:181
-#, fuzzy, c-format
+#, c-format
 msgid "edit style"
-msgstr "muokkaa `%s'"
+msgstr "muokkaa tyyliä"
 
 #: ../src/gui/styles_dialog.c:185
-#, fuzzy
 msgid "create new style"
-msgstr "luo uusi albumi"
+msgstr "luo uusi tyyli"
 
 #: ../src/gui/styles_dialog.c:205
 msgid "enter a name for the new style"
-msgstr ""
+msgstr "anna uudelle tyylille nimi"
 
 #: ../src/gui/styles_dialog.c:208
 msgid "enter a description for the new style, this description is searchable"
-msgstr ""
+msgstr "anna uudelle tyylille kuvaus, tätä kuvausta voidaan käyttää haussa"
 
 #: ../src/gui/styles_dialog.c:227
 msgid "advanced edit of style"
-msgstr ""
+msgstr "tyylin edistyneet asetukset"
 
 #: ../src/gui/styles_dialog.c:247
 msgid "include"
-msgstr ""
+msgstr "sisällytä"
 
 #: ../src/gui/styles_dialog.c:258
 msgid "item"
@@ -3493,12 +3463,11 @@ msgstr ""
 
 #: ../src/gui/styles_dialog.c:336
 msgid "can't create style out of unaltered image"
-msgstr ""
+msgstr "tyyliä ei voi luoda muokkaamattomasta kuvasta"
 
 #: ../src/dtgtk/resetlabel.c:61
-#, fuzzy
 msgid "double-click to reset"
-msgstr "tuplaklikkaa valitaksesi"
+msgstr "tuplaklikkaa nollataksesi"
 
 #: ../src/views/darkroom.c:41
 msgid "darkroom"
