@@ -27,6 +27,7 @@
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/blend.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
@@ -110,7 +111,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 int
@@ -251,6 +252,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[2]=col2;
     }
   }
+  
+  /* lets blend if used */
+  dt_develop_blend_process (self, piece, ivoid, ovoid, roi_in, roi_out);
+  
 }
 
 static void

@@ -384,6 +384,7 @@ void dt_iop_load_modules_so()
     strncpy(op, d_name+3, strlen(d_name)-6);
     op[strlen(d_name)-6] = '\0';
     module = (dt_iop_module_so_t *)malloc(sizeof(dt_iop_module_so_t));
+    memset(module,0,sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
     if(dt_iop_load_module_so(module, libname, op))
     {
@@ -409,6 +410,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   {
     module_so = (dt_iop_module_so_t *)iop->data;
     module    = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+    memset(module,0,sizeof(dt_iop_module_t));
     if(dt_iop_load_module_by_so(module, module_so, dev))
     {
       free(module);
@@ -580,6 +582,22 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
+typedef struct _iop_gui_blend_data_t
+{
+  dt_iop_module_t *module;
+  GtkComboBox *blend_modes_combo;
+}_iop_gui_blend_data_t;
+
+static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,_iop_gui_blend_data_t *data)
+{
+  if (gtk_toggle_button_get_active(b)) 
+    gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),TRUE);
+  else
+    gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),FALSE);
+
+}
+
+
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
@@ -619,8 +637,39 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
   gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
+  /* add widget to container */
   gtk_container_add(GTK_CONTAINER(al), module->widget);
 
+  /* create and add blend mode if module supports it */
+  if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
+  {
+    module->blend_data = g_malloc(sizeof(_iop_gui_blend_data_t));
+    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+    
+    GtkWidget *bvb = gtk_hbox_new(FALSE,2);
+    GtkWidget *bhb = gtk_hbox_new(FALSE,5);
+    GtkWidget *eb = gtk_check_button_new_with_label(_("blend"));
+    bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
+    
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("lighten"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("darken"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("multiply"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("average"));
+    
+    gtk_object_set(GTK_OBJECT(eb), "tooltip-text", _("enable blending mode"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
+    
+    g_signal_connect (G_OBJECT (eb), "toggled",
+                    G_CALLBACK (_iop_gui_enabled_blend_cb), bd);
+    
+    gtk_box_pack_start(GTK_BOX(bhb), eb, TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bhb),GTK_WIDGET(bd->blend_modes_combo), TRUE, TRUE, 0);
+    
+    gtk_box_pack_start(GTK_BOX(bvb),bhb,TRUE,TRUE,0);
+    gtk_box_pack_start(GTK_BOX(vbox), bvb,TRUE,TRUE,0);
+  }
+  
   g_signal_connect (G_OBJECT (resetbutton), "clicked",
                     G_CALLBACK (dt_iop_gui_reset_callback), module);
   g_signal_connect (G_OBJECT (presetsbutton), "clicked",
