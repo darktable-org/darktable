@@ -394,25 +394,20 @@ void static refresh_albums(dt_storage_flickr_gui_data_t *ui)
     gtk_combo_box_append_text( ui->comboBox1, "" );// Separator
 
     // Then add albums from list...
-    if (ui->albums != NULL)
+    for(i=0; ui->albums[i]; i++)
     {
-      for(i=0; ui->albums[i]; i++)
-      {
-        char data[512]= {0};
-        sprintf(data,"%s (%i)", ui->albums[i]->title, ui->albums[i]->photos_count);
-        gtk_combo_box_append_text( ui->comboBox1, g_strdup(data));
-      }
-      gtk_combo_box_set_active( ui->comboBox1, 2);
-      gtk_widget_hide( GTK_WIDGET(ui->hbox1) ); // Hide create album box...
-
+      char data[512]= {0};
+      sprintf(data,"%s (%i)", ui->albums[i]->title, ui->albums[i]->photos_count);
+      gtk_combo_box_append_text( ui->comboBox1, g_strdup(data));
     }
-    else
-      gtk_combo_box_set_active( ui->comboBox1, 0);
+    gtk_combo_box_set_active( ui->comboBox1, 3);
+    gtk_widget_hide( GTK_WIDGET(ui->hbox1) ); // Hide create album box...
   }
   else
   {
     // Failed to parse feed of album...
     // Lets notify somehow...
+    gtk_combo_box_set_active( ui->comboBox1, 0);
   }
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), TRUE);
 
@@ -756,6 +751,7 @@ get_params(dt_imageio_module_storage_t *self, int *size)
           break;
         default:
           // use existing album
+          printf("index - 3 : %d\n", index - 3);
           d->flickr_api->current_album = flickcurl_photosets_getInfo(d->flickr_api->fc,ui->albums[index-3]->id);
           if( d->flickr_api->current_album == NULL )
           {
