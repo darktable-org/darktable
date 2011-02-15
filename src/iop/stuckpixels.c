@@ -99,9 +99,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float mid=*in-threshold;
       if (mid > 0)
       {
-	int count=0;
-	float maxin=0.0;
-	float other;
+        int count=0;
+        float maxin=0.0;
+        float other;
 #define TESTONE(OFFSET)				\
 	other=in[OFFSET];			\
 	if (mid > other)			\
@@ -109,23 +109,23 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 	  count++;				\
 	  if (other > maxin) maxin = other;	\
 	}
-	TESTONE(-2);
-	TESTONE(-widthx2);
-	TESTONE(+2);
-	TESTONE(+widthx2);
+        TESTONE(-2);
+        TESTONE(-widthx2);
+        TESTONE(+2);
+        TESTONE(+widthx2);
 #undef TESTONE
-	if (count >= 3)
-	{
-	  *out = maxin;
-	  fixed++;
-	  if (markfixed)
-	  {
-	    for (int i=-2; i>=-10 && i>=-col; i-=2)
-	      out[i] = *in;
-	    for (int i=2; i<=10 && i<width-col; i+=2)
-	      out[i] = *in;
-	  }
-	}
+        if (count >= 3)
+        {
+          *out = maxin;
+          fixed++;
+          if (markfixed)
+          {
+            for (int i=-2; i>=-10 && i>=-col; i-=2)
+              out[i] = *in;
+            for (int i=2; i<=10 && i<width-col; i+=2)
+              out[i] = *in;
+          }
+        }
       }
     }
   }
