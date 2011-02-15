@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "develop/pixelpipe.h"
+#include "develop/blend.h"
 #include "gui/gtk.h"
 #include "control/control.h"
 #include "common/opencl.h"
@@ -503,6 +504,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     {
 #endif
       module->process(module, piece, input, *output, &roi_in, roi_out);
+      
+      /* process blending */
+      dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
     }
     dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' [%s]", module->name(),
                   pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
