@@ -12,6 +12,7 @@
     	<span class="number"><img src="style/5.png" alt="5" width="142px" /></span><div class="headline"><img src="documentation.png" alt="documentation" width="324px"/></div>
     	<div class="starterText">
       on this page, there are a few demonstrations of darktable's tools, as well as hack-level tricks.
+      the documentation package can be downloaded from <a href="https://sourceforge.net/projects/darktable/files/darktable/0.8/darktable-doc-0.8.tar.bz2/download">the sourceforge download manager</a>.
       </div>
 
       <div class="listtext"><h1>screencast tutorials</h1>
