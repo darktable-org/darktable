@@ -6,14 +6,13 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	colorin colorout clipping sharpen monochrome basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma 
-	channelmixer graduatednd relight zonesystem demosaic atrous tonemap cacorrect overexposed stuckpixels
-)
+	channelmixer graduatednd relight zonesystem demosaic atrous tonemap cacorrect overexposed bloom)
 
 # old stuff we want to get rid of:
 set(LEGACY_MODULES clahe equalizer)
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colortransfer bloom)
+set(EXPERIMENTAL_MODULES anlfyeni colortransfer stuckpixels)
 
 add_library(bloom MODULE "bloom.c")
 add_library(tonemap MODULE "tonemap.cc")
