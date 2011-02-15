@@ -52,6 +52,9 @@ int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint
     goto END;
   targetfile = g_strconcat(filename, ++extension, NULL);
 
+  if(!strcmp(sourcefile, targetfile))
+    goto END;
+
   fin = fopen(sourcefile, "rb");
   fout = fopen(targetfile, "wb");
   if(fin == NULL || fout == NULL)
@@ -151,3 +154,5 @@ void gui_init    (dt_imageio_module_format_t *self)
 }
 void gui_cleanup (dt_imageio_module_format_t *self) {}
 void gui_reset   (dt_imageio_module_format_t *self) {}
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

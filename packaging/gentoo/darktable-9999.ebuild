@@ -17,10 +17,8 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-IUSE="dbus gconf gphoto openmp gnome-keyring doc"
+IUSE="gconf gphoto openmp gnome-keyring"
 RDEPEND="dev-db/sqlite:3
-	doc? ( dev-java/fop )
-	dbus? ( dev-libs/dbus-glib )
 	dev-libs/libxml2:2
 	gconf? ( gnome-base/gconf )
 	gnome-base/libglade:2.0
@@ -31,7 +29,6 @@ RDEPEND="dev-db/sqlite:3
 	>=media-libs/lensfun-0.2.3
 	gphoto? ( media-libs/libgphoto2 )
 	media-libs/libpng
-	media-libs/libraw
 	gnome-base/librsvg:2
 	media-libs/openexr
 	media-libs/tiff
@@ -48,6 +45,8 @@ src_configure() {
 		"$(cmake-utils_use_use openmp OPENMP)"
 		"$(cmake-utils_use_use gconf GCONF_BACKEND)"
 		"$(cmake-utils_use_use gphoto CAMERA_SUPPORT)"
-		"-DDONT_INSTALL_GCONF_SCHEMAS=ON" )
+		"-DDONT_INSTALL_GCONF_SCHEMAS=ON"
+		"-DINSTALL_IOP_EXPERIMENTAL=ON"
+		"-DINSTALL_IOP_LEGACY=ON" )
 	cmake-utils_src_configure
 }

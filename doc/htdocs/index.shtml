@@ -12,6 +12,50 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
 
       <div class="listtext">
+    	<img src="images/donau.jpg" class="img" alt="dreggn" /><h1>released 0.8</h1>
+      <em>(2011-02-15)</em> we released version 0.8, which obsoletes 0.7.1 in a lot of ways:
+      <ul>
+        <li><em>much</em> faster image loading due to <em>rawspeed</em>, an awesome new library by klaus post @rawstudio</li>
+        <li>lots of performance improvements in our caches and pixel pipelines (together with the above like 5x--10x)</li>
+        <li>gpu computing using opencl (for graphics boards that support it) for a lot of common plugins, to give a huge performance boost</li>
+        <li>overhauled collection plugin for more flexible image collections</li>
+        <li>metadata editor (set author and copyright information etc)</li>
+        <li>fast demosaicing now done on roi and in floating point</li>
+        <li>HDR bracketing and tone mapping (somewhat experimental)</li>
+        <li>flickr upload</li>
+        <li>new languages: thai and japanese</li>
+        <li>lots of new color matrices and white balance presets</li>
+        <li>lots of bugfixes</li>
+      </ul>
+      according to the git log, this release introduces over 900 new commits brought to you by (in order of commits):
+    johannes hanika,
+    Tobias Ellinghaus,
+    Henrik Andersson,
+    Pascal de Bruijn,
+    Ger Siemerink,
+    Bruce Guenter,
+    Jose Carlos Garcia Sogo,
+    Boucman,
+    Alexandre Prokoudine,
+    Simon Spannagel,
+    Olivier,
+    Jochen,
+    Karl Mikaelsson,
+    Jochen Schroeder,
+    Brian Teague,
+    Pascal Obry,
+    calca,
+    Ville Pätsi,
+    Uli Scholler,
+    Thierry Leconte,
+    Pacsal de Bruijn, and
+    Alex Chateau.
+    <br />
+    special thanks to Pacsal ;) and to Robert Park for an awesome amount of color matrices created with his help, also for
+    Klaus Staedtler for the new icons.
+      </div>
+
+      <div class="listtext">
     	<img src="images/rocks.jpg" class="img" alt="dreggn" /><h1>released 0.7.1</h1>
       <em>(2010-12-07)</em> we released version 0.7.1, a small bugfix release to fix up some nuisances in 0.7:
       <ul>

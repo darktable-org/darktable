@@ -677,6 +677,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     // need to scale to right res
     dev_tmp = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
     cl_mem dev_green_eq = NULL;
+    sizes[0] = roi_in->width;
+    sizes[1] = roi_in->height;
     if(data->green_eq)
     {
       // green equilibration
@@ -688,8 +690,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dev_in = dev_green_eq;
     }
 
-    sizes[0] = roi_in->width;
-    sizes[1] = roi_in->height;
     if(data->median_thrs > 0.0f)
     {
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);

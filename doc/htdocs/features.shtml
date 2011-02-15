@@ -17,35 +17,34 @@
     	<img src="images/gold.jpg" alt="done" class="img" /><h1>current features</h1>
       <ul>
         <li>fully non-destructive editing.</li>
-        <li>core functions operate on 3x32-bit floating point pixel buffers.</li>
+        <li>core functions operate on 4x32-bit floating point pixel buffers, enabling SSE instructions for speedups.</li>
+        <li>if available, gpu acceleration via opencl is done.</li>
         <li>modular, extensible image operations (plug-in interface).</li>
         <li>flexible data base queries, search by tags, simple tagging by related tags.</li>
         <li>image rating (stars) and color labels, filtering and sorting within the base query.</li>
         <li>import a variety of standard, raw, and high dynamic range image formats (e.g. jpg, cr2, hdr, pfm, .. ).</li>
         <li>zero-latency user interface through multi-level software caches.</li>
         <li>fullscreen, zoomable user interface.</li>
-        <li>color-managed image operations in L*a*b* and profiled rgb: rotate/crop, color correction, input/output/display color profile management, edge-avoiding wavelet domain editing (e.g. edge-aware denoise, ringing-free sharpen), exposure controls, flexible color zone mapper (e.g. make all colors except red monochrome, imitate polarizing filter, etc.), lens defect correction (lensfun), color filter based monochrome conversion, unsharp mask sharpen, white balancing, tone curve, and base curve, and more.</li>
+        <li>34 color-managed image operations in L*a*b* and profiled rgb: rotate/crop, color correction, input/output/display color profile management, edge-avoiding wavelet domain editing (e.g. edge-aware denoise, ringing-free sharpen), exposure controls, flexible color zone mapper (e.g. make all colors except red monochrome, imitate polarizing filter, etc.), lens defect correction (lensfun), color filter based monochrome conversion, unsharp mask sharpen, white balancing, tone curve, and base curve, and many more.</li>
         <li>built-in icc profile support: srgb, adobe rgb, xyz, and linear rgb.</li>
         <li>export to low dynamic range (jpg, png, tiff), 16-bit (ppm, tiff), or linear high dynamic range (pfm, exr).</li>
         <li>exif data read and written using libexiv2.</li>
-        <li>automatic image re-import when it is written (inotify).</li>
+        <li>xmp sidecar files.</li>
+        <li>automatic image re-import when an image is written (inotify).</li>
         <li>runs on gnu linux/gnome and mac osx/macports.</li>
-        <li>translations available in english, gaelic, german, french, russian, spanish, and swedish.</li>
-        <li>powerful, modular export system, supporting picasa webalbum, disk storage, and email.</li>
+        <li>translations available in catalan, czech, german, spanish, finnish, french, gaelic, italian, japanese, dutch, polish, russian, albanian,
+            swedish, and thai.</li>
+        <li>powerful, modular export system, supporting picasa webalbum, flickr upload, disk storage, 1:1 copy, and email.</li>
         <li>tethered shooting.</li>
-        <li>artistic image postprocessing: velvia, split toning, channel mixer, vignetting, and grain simulation.</li>
+        <li>artistic image postprocessing: velvia, split toning, channel mixer, vignetting, tone mapping, and grain simulation.</li>
       </ul>
     	</div>
     	<div class="listtext">
     	<img src="images/moon.jpg" alt="todo" class="img" /><h1>scheduled features</h1>
       <ul>
         <li>image auto-rating to simplify processing of large sessions</li>
-        <li>cleaner libraw interfacing (pull demosaicing into dt)</li>
         <li>get rid of libglade</li>
-        <li>flickr upload</li>
-        <li>store dt history stacks in xmp sidecars</li>
         <li>printing interface</li>
-        <li>tonemapping for hdr input.</li>
         <li>...?</li>
       </ul>
     	</div>

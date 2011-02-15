@@ -89,9 +89,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 	float *out = (float *)ovoid;
 	const int ch = piece->colors;
 
-	in  = (float *)ivoid;
-	out = (float *)ovoid;
-
 	/* gather light by threshold */
 	float *blurlightness = malloc(roi_out->width*roi_out->height*sizeof(float));
 	memset(blurlightness,0,(roi_out->width*roi_out->height*sizeof(float)));
@@ -348,3 +345,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
 	self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

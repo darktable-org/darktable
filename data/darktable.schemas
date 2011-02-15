@@ -565,7 +565,7 @@
       <applyto>/apps/darktable/plugins/lighttable/thumbnail_size</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>300</default>
+      <default>800</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>maximum resolution of lighttable thumbnails</short>

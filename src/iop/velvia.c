@@ -90,8 +90,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   // Apply velvia saturation
-  in  = (float *)ivoid;
-  out = (float *)ovoid;
   if(data->saturation <= 0.0)
     memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
   else
@@ -271,3 +269,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

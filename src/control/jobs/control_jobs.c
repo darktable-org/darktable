@@ -423,7 +423,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 
   // Get max dimensions...
   uint32_t w,h,fw,fh,sw,sh;
-  w=h=fw=fh=sw=sh=0;
+  fw=fh=sw=sh=0;
   mstorage->dimension(mstorage, &sw,&sh);
   mformat->dimension(mformat, &fw,&fh);
 
@@ -452,7 +452,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   // use min of user request and mipmap cache entries
   const int full_entries = dt_conf_get_int ("mipmap_cache_full_images");
   const int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
-#pragma omp parallel shared(j, fraction) num_threads(num_threads)
+#pragma omp parallel default(none) private(imgid, size) shared(j, fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads)
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
@@ -478,15 +478,16 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       if(image)
       {
         dt_image_full_path(image->id, imgfilename, 1024);
-        dt_image_cache_release(image, 'r');
         if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
         {
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);
           fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
           // dt_image_remove(imgid);
+          dt_image_cache_release(image, 'r');
         }
         else
         {
+          dt_image_cache_release(image, 'r');
           mstorage->store(sdata, imgid, mformat, fdata, num, total);
         }
       }
@@ -530,3 +531,4 @@ void dt_control_export()
   dt_control_add_job(darktable.control, &j);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

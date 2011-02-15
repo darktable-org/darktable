@@ -18,7 +18,7 @@
     	<img src="images/bee.jpg" alt="prerequisites" class="img" /><h1>prerequisites</h1>
       <ul>
         <li>*nix (tested: ubuntu karmic lucid, arch linux, funtoo, gentoo, fedora, macintosh osx with macports)</li>
-        <li>required packages: libsqlite3, libjpeg, libpng, libraw (supplied), gtk+-2, cairo, libglade2, lcms, exiv2, gconf, tiff, curl, gphoto2, dbus-glib, gnome-keyring, fop, openexr</li>
+        <li>required packages: libsqlite3, libjpeg, libpng, libraw (supplied), rawspeed (supplied), gtk+-2, cairo, libglade2, lcms, exiv2, gconf, tiff, curl, gphoto2, dbus-glib, gnome-keyring, fop, openexr</li>
         <li>for convenience, the ubuntu package list of build dependencies:
         intltool libatk1.0-dev
 libbabl-0.0-0-dev libgegl-0.0-dev libcairo2-dev libexiv2-dev
@@ -26,7 +26,7 @@ libfontconfig1-dev libfreetype6-dev libgconf2-dev libglade2-dev
 libgomp1 libgtk2.0-dev libjpeg62-dev libtiff4-dev liblcms1-dev
 liblensfun-dev libpng12-dev libsqlite3-dev libstdc++6-4.4-dev
 libxml2-dev libopenexr-dev libcurl4-gnutls-dev libgphoto2-2-dev
-libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev</li>
+libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
         <li>optional: gcc&gt;=4.4 (openmp, earlier versions could not handle openmp statements in non-main threads)</li>
         <li>writable gconf config source. if you don't have that (for local installs without root access), use --disable-gconf or try <br />
         <em>GCONF_CONFIG_SOURCE="xml:readwrite:${HOME}/.gconf" gconftool-2 --makefile-install-rule darktable.schemas</em><br />
@@ -69,10 +69,13 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev</li>
     	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
-        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.7/darktable-0.7.1.tar.gz/download">0.7.1 source .gz</a></li>
-        <li>$ tar xvjf darktable-0.7.1.tar.bz2 &amp;&amp; cd darktable-0.7.1</li>
-        <li>$ ./configure --prefix=/usr</li>
-        <li>$ make</li>
+        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.8/darktable-0.8.tar.gz/download">0.8 source .gz</a></li>
+        <li>$ tar xvjf darktable-0.8.tar.gz &amp;&amp; cd darktable-0.8</li>
+        <li>$ ./build.sh</li>
+        <li>or, manually:</li>
+        <li>$ mkdir build &amp;&amp; cd build/</li>
+        <li>$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DDT_GCONF_SCHEMA_DIR="xml:readwrite:${HOME}/.gconf" ..</li>
+        <li>$ make -j5</li>
         <li># make install</li>
         <li>$ darktable</li>
       </ul>
@@ -101,7 +104,7 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev</li>
     	<div class="listtext">
       <img src="images/macosx.jpg" alt="release" class="img" /><h1>outdated release for mac osx</h1>
       <ul>
-        <li><b>the mac bundle is currently unmaintained and terribly outdated!</b></li>
+        <li><b>the mac bundle is currently unmaintained and terribly (terribly, terribly, ..) outdated!</b></li>
         <li>download the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.dmg/download">0.4 disk image</a></li>
         <li>mount the thing</li>
         <li>pull the darktable icon into your applications folder</li>

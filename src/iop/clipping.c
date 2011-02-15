@@ -34,6 +34,7 @@
 #include "common/debug.h"
 #include "dtgtk/label.h"
 #include "dtgtk/slider.h"
+#include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
@@ -85,7 +86,6 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 }
 typedef struct dt_iop_clipping_gui_data_t
 {
-  GtkLabel *label5;
   GtkDarktableSlider *scale5, *keystone_h,*keystone_v;
   GtkDarktableToggleButton *hflip,*vflip;
   GtkComboBoxEntry *aspect_presets;
@@ -770,21 +770,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->vflip), 4, 6, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->hflip), "toggled", G_CALLBACK(toggled_callback), self);
   g_signal_connect (G_OBJECT (g->vflip), "toggled", G_CALLBACK(toggled_callback), self);
-  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("flip image vertically"), (char *)NULL);
-  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("flip image horizontally"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT(g->hflip), "tooltip-text", _("flip image horizontally"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT(g->vflip), "tooltip-text", _("flip image vertically"), (char *)NULL);
 
-  g->label5 = GTK_LABEL(gtk_label_new(_("angle")));
-  gtk_misc_set_alignment(GTK_MISC(g->label5), 0.0, 0.5);
+  label = dtgtk_reset_label_new(_("angle"), self, &p->angle, sizeof(float));
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -180.0, 180.0, 0.25, p->angle, 2));
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
   gtk_object_set (GTK_OBJECT(g->scale5), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->label5), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale5), 2, 6, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
-  label = gtk_label_new(_("keystone h"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  label = dtgtk_reset_label_new(_("keystone h"), self, &p->k_h, sizeof(float));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->keystone_h = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
@@ -794,8 +792,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_h), 2, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
-  label = gtk_label_new(_("keystone v"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  label = dtgtk_reset_label_new(_("keystone v"), self, &p->k_v, sizeof(float));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g->keystone_v = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
   gtk_object_set (GTK_OBJECT(g->keystone_v), "tooltip-text", _("adjust perspective for vertical keystone distortion"), (char *)NULL);
@@ -863,8 +860,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->flipVerGoldenGuide = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,0));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->flipHorGoldenGuide), 2, 4, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->flipVerGoldenGuide), 4, 6, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_object_set (GTK_OBJECT(g->flipHorGoldenGuide), "tooltip-text", _("flip guides vertically"), (char *)NULL);
-  gtk_object_set (GTK_OBJECT(g->flipVerGoldenGuide), "tooltip-text", _("flip guides horizontally"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT(g->flipHorGoldenGuide), "tooltip-text", _("flip guides horizontally"), (char *)NULL);
+  gtk_object_set (GTK_OBJECT(g->flipVerGoldenGuide), "tooltip-text", _("flip guides vertically"), (char *)NULL);
   /*-------------------------------------------*/
   g->goldenSectionBox = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("golden sections")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->goldenSectionBox), TRUE);

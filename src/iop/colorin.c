@@ -30,6 +30,7 @@
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
 #include "common/opencl.h"
+#include "dtgtk/resetlabel.h"
 
 DT_MODULE(1)
 
@@ -441,7 +442,7 @@ void gui_init(struct dt_iop_module_t *self)
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-  // dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  dt_iop_colorin_params_t *p   = (dt_iop_colorin_params_t *)self->params;
 
   g->profiles = NULL;
 
@@ -541,9 +542,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  g->label2 = GTK_LABEL(gtk_label_new(_("profile")));
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
+  GtkWidget *label = dtgtk_reset_label_new(_("profile"), self, &p->iccprofile, sizeof(char)*DT_IOP_COLOR_ICC_LEN);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(label), TRUE, TRUE, 0);
   g->cbox2 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   GList *l = g->profiles;
   while(l)

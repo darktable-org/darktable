@@ -661,7 +661,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       else x = (.04+7*0.04)*fscale;
       dt_view_draw_altered(cr, x, y, s);
       //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-      if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
+      if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
       {
         if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
         {
@@ -851,3 +851,4 @@ void dt_view_film_strip_prefetch()
   }
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

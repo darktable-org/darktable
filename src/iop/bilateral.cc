@@ -298,11 +298,11 @@ extern "C"
 
     GtkWidget *widget = dtgtk_reset_label_new(_("radius"), self, &p->sigma[0], sizeof(float));
     gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-    widget = dtgtk_reset_label_new(_("red"), self, &p->sigma[1], sizeof(float));
+    widget = dtgtk_reset_label_new(_("red"), self, &p->sigma[2], sizeof(float));
     gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-    widget = dtgtk_reset_label_new(_("green"), self, &p->sigma[2], sizeof(float));
+    widget = dtgtk_reset_label_new(_("green"), self, &p->sigma[3], sizeof(float));
     gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-    widget = dtgtk_reset_label_new(_("blue"), self, &p->sigma[3], sizeof(float));
+    widget = dtgtk_reset_label_new(_("blue"), self, &p->sigma[4], sizeof(float));
     gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
 
 

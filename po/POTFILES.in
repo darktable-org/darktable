@@ -1,7 +1,9 @@
 build/src/preferences_gen.h
 data/darktable.schemas
 data/darktable.glade
+src/common/collection.c
 src/common/darktable.h
+src/common/darktable.c
 src/common/film.c
 src/common/history.c
 src/common/image.c

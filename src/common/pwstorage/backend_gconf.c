@@ -110,3 +110,5 @@ GHashTable* dt_pwstorage_gconf_get(const gchar* slot)
 
   return table;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

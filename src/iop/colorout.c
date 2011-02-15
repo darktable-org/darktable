@@ -29,6 +29,7 @@
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "dtgtk/resetlabel.h"
 
 DT_MODULE(2)
 
@@ -573,7 +574,7 @@ void gui_init(struct dt_iop_module_t *self)
 	self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
 	memset(self->gui_data,0,sizeof(dt_iop_colorout_gui_data_t));
 	dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-	// dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+	dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
 
 	g->profiles = NULL;
 	dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -637,11 +638,12 @@ void gui_init(struct dt_iop_module_t *self)
 	g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
 	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
 	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-	g->label1 = GTK_LABEL(gtk_label_new(_("output intent")));
-	g->label2 = GTK_LABEL(gtk_label_new(_("output profile")));
-	g->label5 = GTK_LABEL(gtk_label_new(_("softproof profile")));
-	g->label4 = GTK_LABEL(gtk_label_new(_("display intent")));
-	g->label3 = GTK_LABEL(gtk_label_new(_("display profile")));
+	g->label1 = GTK_WIDGET(dtgtk_reset_label_new(_("output intent"), self, &p->intent, sizeof(dt_iop_color_intent_t)));
+	g->label2 = GTK_WIDGET(dtgtk_reset_label_new(_("output profile"), self, &p->iccprofile, sizeof(char)*DT_IOP_COLOR_ICC_LEN));
+	g->label5 = GTK_WIDGET(gtk_label_new(_("softproof profile")));
+	g->label4 = GTK_WIDGET(dtgtk_reset_label_new(_("display intent"), self, &p->displayintent, sizeof(dt_iop_color_intent_t)));
+	g->label3 = GTK_WIDGET(dtgtk_reset_label_new(_("display profile"), self, &p->displayprofile, sizeof(char)*DT_IOP_COLOR_ICC_LEN));
+
 	gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
 	gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
 	gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
@@ -752,3 +754,5 @@ void gui_cleanup(struct dt_iop_module_t *self)
 	free(self->gui_data);
 	self->gui_data = NULL;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

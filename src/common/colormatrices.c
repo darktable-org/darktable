@@ -105,7 +105,13 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   { "NIKON D3000",                  { 778854, 333221,  21927}, { 292007, 1031448,  -88516}, { 27664, -245956,  997391}, {714828, 740387, 601334}},
 
   // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D3100",                  { 856476, 350891,  48691}, { 221741, 1049164, -218933}, { 12115, -297424, 1083755}, {807373, 841156, 682846}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D5000",                  { 852386, 356232,  42389}, { 205353, 1026688, -220184}, {  6348, -292526, 1083313}, {822647, 849106, 688538}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON D7000",                  { 744919, 228027, -46982}, { 454605, 1326797,  -33585}, {-132294, -467194, 985611}, {609375, 629852, 515625}},
 
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D90",                    { 855072, 361176,  22751}, { 177414,  963577, -241501}, { 28931, -229019, 1123062}, {751816, 781677, 650024}},
@@ -143,6 +149,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, camera strobe, well lit
   { "Panasonic DMC-FZ40",           { 833542, 259720,  35721}, { 129517, 1239594, -525848}, {117340, -405273, 1440384}, {825226, 863846, 688431}},
 
+  // Robert Park, ColorChecker Passport, camera strobe, well lit
+  { "Panasonic DMC-FZ100",          { 700119, 181885, -50354}, { 355804, 1326492, -441132}, {   244, -424149, 1415451}, {734222, 767410, 619049}},
+
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G1",             { 747467, 300064,  74265}, { 225922, 1028946, -310913}, { 91782, -229019, 1153793}, {846222, 864502, 694458}},
 
@@ -151,6 +160,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-LX3",            { 779907, 298859,  94101}, { 239655, 1167938, -489197}, { 53589, -371368, 1317261}, {796707, 825119, 668030}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Panasonic DMC-LX5",            { 845215, 228226,  59219}, { 190109, 1297211, -543121}, { 42511, -433456, 1414032}, {761322, 790985, 642044}},
 
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}},

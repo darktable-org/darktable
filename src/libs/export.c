@@ -675,10 +675,16 @@ get_params (dt_lib_module_t *self, int *size)
   pos += sizeof(int32_t);
   memcpy(params+pos, &ssize, sizeof(int32_t));
   pos += sizeof(int32_t);
-  memcpy(params+pos, fdata, fsize);
-  pos += fsize;
-  memcpy(params+pos, sdata, ssize);
-  pos += ssize;
+  if(fdata != NULL) // otherwise fsize == 0, but clang doesn't like it ...
+  {
+    memcpy(params+pos, fdata, fsize);
+    pos += fsize;
+  }
+  if(sdata != NULL) // see above
+  {
+    memcpy(params+pos, sdata, ssize);
+    pos += ssize;
+  }
   g_assert(pos == *size);
 
   g_free(iccprofile);
@@ -762,3 +768,4 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   return res;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

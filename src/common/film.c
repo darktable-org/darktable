@@ -278,7 +278,6 @@ void dt_film_import1(dt_film_t *film)
 {
   const gchar *d_name;
   char filename[1024];
-  dt_image_t image;
 
   gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
 
@@ -288,7 +287,6 @@ void dt_film_import1(dt_film_t *film)
     if (film->dir && (d_name = g_dir_read_name(film->dir)) && dt_control_running())
     {
       snprintf(filename, 1024, "%s/%s", film->dirname, d_name);
-      image.film_id = film->id;
       film->last_loaded++;
     }
     else
