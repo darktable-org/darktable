@@ -116,6 +116,8 @@ int dt_init(int argc, char *argv[])
     }
   }
 
+  g_type_init();
+
 #ifdef HAVE_GEGL
   (void)setenv("GEGL_PATH", DARKTABLE_DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
