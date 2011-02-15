@@ -428,7 +428,7 @@ msgstr "выкл"
 #: ../src/common/image.c:149
 #, fuzzy
 msgid "orphaned image"
-msgstr "Поддерживаемые форматы"
+msgstr "Одиночная фотография"
 
 #. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
 #. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
@@ -543,7 +543,7 @@ msgstr "У фотографий должен быть одинаковый ра�
 #: ../src/control/jobs/control_jobs.c:168
 #, c-format
 msgid "wrote merged hdr `%s'"
-msgstr "Записано созданный файл HDR `%s'"
+msgstr "Записан созданный файл HDR `%s'"
 
 #: ../src/control/jobs/control_jobs.c:192
 #, c-format
@@ -3244,7 +3244,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:214
 msgid "append"
-msgstr "Поверх"
+msgstr "Добавить"
 
 #: ../src/libs/copy_history.c:215
 msgid "overwrite"
