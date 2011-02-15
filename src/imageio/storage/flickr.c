@@ -346,14 +346,18 @@ void static flickr_entry_changed(GtkEntry *entry, gpointer data)
 flickcurl_photoset static **_flickr_api_photosets( _flickr_api_context_t *ctx, const char *user)
 {
   flickcurl_photoset **photoset;
-  char *nsid;
+//  char *nsid;
 
 //TODO: Support both userid and email. As more services uses email as username
 //      users can confise the needed id to be introduced in the user field.
 //  nsid = flickcurl_people_findByEmail(ctx->fc, "@");
-  nsid = flickcurl_people_findByUsername(ctx->fc, user);
 
-  photoset = flickcurl_photosets_getList(ctx->fc, nsid);
+//  no need to specify nsid at all
+//  nsid = flickcurl_people_findByUsername(ctx->fc, user);
+
+// "If none is specified, the calling user is assumed (or NULL) " 
+// (c) http://librdf.org/flickcurl/api/flickcurl-section-photoset.html#flickcurl-photosets-getList
+  photoset = flickcurl_photosets_getList(ctx->fc, NULL);
 
   return photoset;
 }
