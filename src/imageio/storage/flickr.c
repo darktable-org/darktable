@@ -751,7 +751,6 @@ get_params(dt_imageio_module_storage_t *self, int *size)
           break;
         default:
           // use existing album
-          printf("index - 3 : %d\n", index - 3);
           d->flickr_api->current_album = flickcurl_photosets_getInfo(d->flickr_api->fc,ui->albums[index-3]->id);
           if( d->flickr_api->current_album == NULL )
           {
