@@ -152,12 +152,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   /* Center coordinates of buf_in */
-  const dt_iop_vector_2d_t buf_center = {
+  const dt_iop_vector_2d_t buf_center =
+  {
     (buf_in->width - buf_in->x) / 2.0 + buf_in->x,
     (buf_in->height - buf_in->y) / 2.0 + buf_in->y
   };
   /* Coordinates of buf_center in terms of roi_in */
-  const dt_iop_vector_2d_t roi_center = {
+  const dt_iop_vector_2d_t roi_center =
+  {
     buf_center.x * roi_in->scale - roi_in->x,
     buf_center.y * roi_in->scale - roi_in->y
   };
@@ -206,9 +208,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=0; i<roi_out->width; i++, in+=ch, out+=ch)
     {
       // current pixel coord translated to local coord
-      const dt_iop_vector_2d_t pv = {
-	fabsf((i-roi_center.x)*xscale-data->center.x),
-	fabsf((j-roi_center.y)*yscale-data->center.y)
+      const dt_iop_vector_2d_t pv =
+      {
+        fabsf((i-roi_center.x)*xscale-data->center.x),
+        fabsf((j-roi_center.y)*yscale-data->center.y)
       };
 
       // Calculate the pixel weight in vignette
@@ -218,11 +221,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if( cplen>=dscale ) // pixel is outside the inner vingette circle, lets calculate weight of vignette
       {
         weight=((cplen-dscale)/fscale);
-	if (weight >= 1.0)
-	  weight = 1.0;
-	else if (weight <= 0.0)
-	  weight = 0.0;
-	else
+        if (weight >= 1.0)
+          weight = 1.0;
+        else if (weight <= 0.0)
+          weight = 0.0;
+        else
           weight=0.5 - cos( M_PI*weight )/2.0;
       }
 
@@ -239,9 +242,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         // apply saturation
         float mv=(col0+col1+col2)/3.0;
         float wss=weight*data->saturation;
-	col0=CLIP( col0-((mv-col0)* wss) );
-	col1=CLIP( col1-((mv-col1)* wss) );
-	col2=CLIP( col2-((mv-col2)* wss) );
+        col0=CLIP( col0-((mv-col0)* wss) );
+        col1=CLIP( col1-((mv-col1)* wss) );
+        col2=CLIP( col2-((mv-col2)* wss) );
       }
       out[0]=col0;
       out[1]=col1;

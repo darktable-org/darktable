@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2009--2010 johannes hanika.
+		copyright (c) 2009--2011 johannes hanika.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -27,41 +27,40 @@
 
 typedef struct dt_iop_colorout_global_data_t
 {
-	int kernel_colorout;
+  int kernel_colorout;
 }
 dt_iop_colorout_global_data_t;
 
 typedef struct dt_iop_colorout_params_t
 {
-	char iccprofile[DT_IOP_COLOR_ICC_LEN];
-	char displayprofile[DT_IOP_COLOR_ICC_LEN];
-	dt_iop_color_intent_t intent;
-	dt_iop_color_intent_t displayintent;
-	unsigned char seq;		/// FIXME: Ugly hack to change hash of param to force softproof processing
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  char displayprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  dt_iop_color_intent_t displayintent;
+  unsigned char seq;		/// FIXME: Ugly hack to change hash of param to force softproof processing
 }
 dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
 {
-	GtkVBox *vbox1, *vbox2;
-	GtkWidget *label1, *label2, *label3, *label4, *label5;
-	GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
-	GList *profiles;
+  GtkVBox *vbox1, *vbox2;
+  GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
+  GList *profiles;
 
-	gboolean softproofing;
-	gchar *softproofprofile;
+  gboolean softproofing;
+  gchar *softproofprofile;
 }
 dt_iop_colorout_gui_data_t;
 
 typedef struct dt_iop_colorout_data_t
 {
-	gboolean softproofing;
-	float lut[3][LUT_SAMPLES];
-	float cmatrix[9];
-	cmsHPROFILE softproof;
-	cmsHPROFILE output;
-	cmsHPROFILE Lab;
-	cmsHTRANSFORM *xform;
+  gboolean softproofing;
+  float lut[3][LUT_SAMPLES];
+  float cmatrix[9];
+  cmsHPROFILE softproof;
+  cmsHPROFILE output;
+  cmsHPROFILE Lab;
+  cmsHTRANSFORM *xform;
 }
 dt_iop_colorout_data_t;
 
