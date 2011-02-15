@@ -128,8 +128,8 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     dt_iop_vignette_params_t *new = new_params;
     new->scale = old->scale;
     new->falloff_scale = old->falloff_scale;
-    new->brightness= (1.0-MAX(old->bsratio,0.0))*old->strength/100.0;
-    new->saturation= (1.0+MIN(old->bsratio,0.0))*old->strength/100.0;
+    new->brightness= -(1.0-MAX(old->bsratio,0.0))*old->strength/100.0;
+    new->saturation= -(1.0+MIN(old->bsratio,0.0))*old->strength/100.0;
     if (old->invert_saturation)
       new->saturation *= -2.0;	// Double effect for increasing saturation
     if (old->invert_falloff)
@@ -231,17 +231,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if( weight > 0 )
       {
         // Then apply falloff vignette
-        float falloff=(data->brightness>=0)?(1.0-(weight*data->brightness)):(weight*-data->brightness);
-        col0=CLIP( ((data->brightness>=0)? col0*falloff: col0+falloff) );
-        col1=CLIP( ((data->brightness>=0)? col1*falloff: col1+falloff) );
-        col2=CLIP( ((data->brightness>=0)? col2*falloff: col2+falloff) );
+        float falloff=(data->brightness<=0)?(1.0+(weight*data->brightness)):(weight*data->brightness);
+        col0=CLIP( ((data->brightness<0)? col0*falloff: col0+falloff) );
+        col1=CLIP( ((data->brightness<0)? col1*falloff: col1+falloff) );
+        col2=CLIP( ((data->brightness<0)? col2*falloff: col2+falloff) );
 
         // apply saturation
         float mv=(col0+col1+col2)/3.0;
         float wss=weight*data->saturation;
-	col0=CLIP( col0+((mv-col0)* wss) );
-	col1=CLIP( col1+((mv-col1)* wss) );
-	col2=CLIP( col2+((mv-col2)* wss) );
+	col0=CLIP( col0-((mv-col0)* wss) );
+	col1=CLIP( col1-((mv-col1)* wss) );
+	col2=CLIP( col2-((mv-col2)* wss) );
       }
       out[0]=col0;
       out[1]=col1;
@@ -410,7 +410,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t)
   {
-    80,50,0.5,0.5, {0,0}, FALSE, 1.0, 1.0
+    80,50,-0.5,-0.5, {0,0}, FALSE, 1.0, 1.0
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_vignette_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_vignette_params_t));
