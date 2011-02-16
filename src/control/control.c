@@ -207,7 +207,8 @@ int dt_control_load_config(dt_control_t *c)
       // add columns where needed. will just fail otherwise:
       sqlite3_exec(darktable.db, "alter table images add column orientation integer", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "update images set orientation = 0 where orientation is NULL", NULL, NULL, NULL);
-
+      sqlite3_exec(darktable.db, "alter table history add column blend_params blob", NULL, NULL, NULL);
+   
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
 #endif
