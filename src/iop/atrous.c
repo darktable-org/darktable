@@ -900,7 +900,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   if(c->num_samples > 0)
   {
     cairo_save(cr);
-    for(int k=1;k<c->num_samples;k+=2)
+    for(int k=1; k<c->num_samples; k+=2)
     {
       cairo_set_line_width(cr, 1.f);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.3);

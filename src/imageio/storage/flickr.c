@@ -355,7 +355,7 @@ flickcurl_photoset static **_flickr_api_photosets( _flickr_api_context_t *ctx, c
 //  no need to specify nsid at all
 //  nsid = flickcurl_people_findByUsername(ctx->fc, user);
 
-// "If none is specified, the calling user is assumed (or NULL) " 
+// "If none is specified, the calling user is assumed (or NULL) "
 // (c) http://librdf.org/flickcurl/api/flickcurl-section-photoset.html#flickcurl-photosets-getList
   photoset = flickcurl_photosets_getList(ctx->fc, NULL);
 
