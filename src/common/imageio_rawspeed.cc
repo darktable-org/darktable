@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef HAVE_RAWSPEED
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -397,3 +398,4 @@ dt_imageio_open_rawspeed_sraw_preview(dt_image_t *img, RawImage r)
   return DT_IMAGEIO_OK;
 }
 
+#endif
