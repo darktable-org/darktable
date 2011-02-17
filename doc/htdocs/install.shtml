@@ -18,15 +18,16 @@
     	<img src="images/bee.jpg" alt="prerequisites" class="img" /><h1>prerequisites</h1>
       <ul>
         <li>*nix (tested: ubuntu karmic lucid, arch linux, funtoo, gentoo, fedora, macintosh osx with macports)</li>
-        <li>required packages: libsqlite3, libjpeg, libpng, libraw (supplied), rawspeed (supplied), gtk+-2, cairo, libglade2, lcms, exiv2, gconf, tiff, curl, gphoto2, dbus-glib, gnome-keyring, fop, openexr</li>
+        <li>required packages: libsqlite3, libjpeg, libpng, libraw (supplied), rawspeed (supplied), gtk+-2, cairo, libglade2, lcms2, exiv2, gconf, tiff, curl, gphoto2, dbus-glib, gnome-keyring, fop, openexr</li>
         <li>for convenience, the ubuntu package list of build dependencies:
         intltool libatk1.0-dev
 libbabl-0.0-0-dev libgegl-0.0-dev libcairo2-dev libexiv2-dev
 libfontconfig1-dev libfreetype6-dev libgconf2-dev libglade2-dev
-libgomp1 libgtk2.0-dev libjpeg62-dev libtiff4-dev liblcms1-dev
+libgomp1 libgtk2.0-dev libjpeg62-dev libtiff4-dev liblcms2-dev
 liblensfun-dev libpng12-dev libsqlite3-dev libstdc++6-4.4-dev
 libxml2-dev libopenexr-dev libcurl4-gnutls-dev libgphoto2-2-dev
 libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
+        <li>you might need to get lcms2 from pascal's ppa (see ubuntu below)</li>
         <li>optional: gcc&gt;=4.4 (openmp, earlier versions could not handle openmp statements in non-main threads)</li>
         <li>writable gconf config source. if you don't have that (for local installs without root access), use --disable-gconf or try <br />
         <em>GCONF_CONFIG_SOURCE="xml:readwrite:${HOME}/.gconf" gconftool-2 --makefile-install-rule darktable.schemas</em><br />
