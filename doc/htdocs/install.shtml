@@ -56,7 +56,7 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
       </ul>
     	</div>
     	<div class="listtext">
-    	<img src="images/foehr.jpg" alt="release" class="img" /><h1>fedora 13 packages</h1>
+    	<img src="images/foehr.jpg" alt="release" class="img" /><h1>fedora packages</h1>
       <ul>
         <li># yum install darktable</li>
         <li>or, for more up-to-date nightly builds (<b>fedora 14</b> only):</li>
