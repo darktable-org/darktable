@@ -30,6 +30,12 @@ static float _blend_darken(float a,float b) { return (a<b)?a:b; }
 static float _blend_multiply(float a,float b) { return (a*b); }
 /* average */
 static float _blend_average(float a,float b) { return (a+b)/2.0; }
+/* add */
+static float _blend_add(float a,float b) { return a+b; }
+/* substract */
+static float _blend_substract(float a,float b) { return a-b; }
+/* difference */
+static float _blend_difference(float a,float b) { return fabs(a-b); }
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
@@ -59,6 +65,15 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 		case DEVELOP_BLEND_AVERAGE:
 			blend = _blend_average;
 		break;
+		case DEVELOP_BLEND_ADD:
+			blend = _blend_add;
+		break;
+		case DEVELOP_BLEND_SUBSTRACT:
+			blend = _blend_substract;
+		break;
+		case DEVELOP_BLEND_DIFFERENCE:
+			blend = _blend_difference;
+		break;
 		
 		/* fallback to normal blend */
 		case DEVELOP_BLEND_NORMAL:
@@ -69,9 +84,10 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 	
 	const dt_develop_blend_params_t *bp = self->blend_params;
 	
-	if(!(bp->mode & DEVELOP_BLEND_MASK_FLAG))
+	if (!(bp->mode & DEVELOP_BLEND_MASK_FLAG))
 	{
 		/* blending without mask */
+		const float opacity = bp->opacity/100.0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(in,roi_out,out,blend,bp)
 #endif
@@ -80,7 +96,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 			{
 				int index=(y*roi_out->width+x)*ch;
 				for(int k=index;k<(index+3);k++)
-					out[k] = (in[k] * (1.0-bp->opacity)) + (blend(in[k],out[k]) * bp->opacity);
+					out[k] = (in[k] * (1.0-opacity)) + (blend(in[k],out[k]) * opacity);
 			}	
 	}
 	else

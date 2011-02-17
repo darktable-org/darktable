@@ -21,13 +21,16 @@
 
 #include "develop/pixelpipe.h"
 
-#define DEVELOP_BLEND_MASK_FLAG			0x7f
-#define DEVELOP_BLEND_DISABLED			0x00
+#define DEVELOP_BLEND_MASK_FLAG				0x80
+#define DEVELOP_BLEND_DISABLED				0x00
 #define DEVELOP_BLEND_NORMAL				0x01
 #define DEVELOP_BLEND_LIGHTEN				0x02
 #define DEVELOP_BLEND_DARKEN				0x03
 #define DEVELOP_BLEND_MULTIPLY				0x04
 #define DEVELOP_BLEND_AVERAGE				0x05
+#define DEVELOP_BLEND_ADD					0x06
+#define DEVELOP_BLEND_SUBSTRACT				0x07
+#define DEVELOP_BLEND_DIFFERENCE				0x08
 
 typedef struct dt_develop_blend_params_t {
 	/** blending mode */
