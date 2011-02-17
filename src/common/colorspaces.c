@@ -742,8 +742,11 @@ dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *cons
     for(e=makermodel; c<maker+strlen(maker) && *c != ' '; c++,e++) *e = *c;
     // separate with space
     *(e++) = ' ';
-    // and continue with model:
-    snprintf(e, size - (d-maker), "%s", model);
+    // and continue with model.
+    // replace MAXXUM with DYNAX for wb presets.
+    if(!strcmp(maker, "MINOLTA") && !strncmp(model, "MAXXUM", 6))
+      snprintf(e, size - (d-maker), "DYNAX %s", model+7);
+    else snprintf(e, size - (d-maker), "%s", model);
   }
   // strip trailing spaces
   e = makermodel + strlen(makermodel) - 1;
