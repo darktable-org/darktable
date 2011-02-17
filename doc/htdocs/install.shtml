@@ -29,7 +29,7 @@ libxml2-dev libopenexr-dev libcurl4-gnutls-dev libgphoto2-2-dev
 libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
         <li>you might need to get lcms2 from pascal's ppa (see ubuntu below)</li>
         <li>optional: gcc&gt;=4.4 (openmp, earlier versions could not handle openmp statements in non-main threads)</li>
-        <li>writable gconf config source. if you don't have that (for local installs without root access), use --disable-gconf or try <br />
+        <li>writable gconf config source. if you don't have that (for local installs without root access), pass -DUSE_GCONF_BACKEND=Off to cmake to switch it off, use -DDT_GCONF_SCHEMA_DIR="xml:readwrite:${HOME}/.gconf" for a local install, or use -DDONT_INSTALL_GCONF_SCHEMAS=On and install manually: <br />
         <em>GCONF_CONFIG_SOURCE="xml:readwrite:${HOME}/.gconf" gconftool-2 --makefile-install-rule darktable.schemas</em><br />
         after make install and before the first run.
         </li>
