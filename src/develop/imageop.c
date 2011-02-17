@@ -35,6 +35,14 @@
 #include <gmodule.h>
 #include <xmmintrin.h>
 
+typedef struct _iop_gui_blend_data_t
+{
+  dt_iop_module_t *module;
+  GtkToggleButton *enable;
+  GtkComboBox *blend_modes_combo;
+  GtkWidget *opacity_slider;
+}_iop_gui_blend_data_t;
+
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   const void *blob = NULL;
@@ -494,6 +502,16 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   module->gui_update(module);
+  if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+  {
+    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+    
+    gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode);
+    gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
+    dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
+    fprintf(stderr,"gui_update: mode %d, opacity %f\n",module->blend_params->mode,module->blend_params->opacity);
+    
+  }
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   darktable.gui->reset = reset;
 }
@@ -597,12 +615,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
-typedef struct _iop_gui_blend_data_t
-{
-  dt_iop_module_t *module;
-  GtkComboBox *blend_modes_combo;
-  GtkWidget *opacity_slider;
-}_iop_gui_blend_data_t;
+
 
 static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,_iop_gui_blend_data_t *data)
 {
@@ -691,7 +704,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     
     GtkWidget *bvb = gtk_vbox_new(FALSE,0);
     GtkWidget *bhb = gtk_hbox_new(FALSE,0);
-    GtkWidget *eb = gtk_check_button_new_with_label(_("blend"));
+    bd->enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend")));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
     bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, 100.0, 2));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
@@ -706,19 +719,19 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_widget_set_sensitive(GTK_WIDGET(bd->blend_modes_combo),FALSE);
     gtk_widget_set_sensitive(bd->opacity_slider,FALSE);
     gtk_combo_box_set_active(bd->blend_modes_combo,0);
-    gtk_object_set(GTK_OBJECT(eb), "tooltip-text", _("enable blending mode"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(bd->enable), "tooltip-text", _("enable blending mode"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
     
-    g_signal_connect (G_OBJECT (eb), "toggled",
+    g_signal_connect (G_OBJECT (bd->enable), "toggled",
                     G_CALLBACK (_iop_gui_enabled_blend_cb), bd);
     g_signal_connect (G_OBJECT (bd->opacity_slider), "value-changed",
                     G_CALLBACK (_blendop_opacity_callback), bd);
     g_signal_connect (G_OBJECT (bd->blend_modes_combo), "changed",
                     G_CALLBACK (_blendop_mode_callback), bd);
   
-    gtk_box_pack_start(GTK_BOX(bhb), eb, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bhb),GTK_WIDGET(bd->blend_modes_combo), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(bhb), GTK_WIDGET(bd->enable), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bhb), GTK_WIDGET(bd->blend_modes_combo), TRUE, TRUE, 0);
     
     gtk_box_pack_start(GTK_BOX(bvb),gtk_hseparator_new(),TRUE,TRUE,4);
     gtk_box_pack_start(GTK_BOX(bvb),bhb,TRUE,TRUE,2);
