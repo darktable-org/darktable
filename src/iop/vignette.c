@@ -157,11 +157,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     (buf_in->width - buf_in->x) / 2.0 + buf_in->x,
     (buf_in->height - buf_in->y) / 2.0 + buf_in->y
   };
-  /* Coordinates of buf_center in terms of roi_in */
+  /* Center coordinates of vignette center */
+  const dt_iop_vector_2d_t vignette_center =
+  {
+    buf_center.x + data->center.x * buf_in->width / 2.0,
+    buf_center.y + data->center.y * buf_in->height / 2.0
+  };
+  /* Coordinates of vignette_center in terms of roi_in */
   const dt_iop_vector_2d_t roi_center =
   {
-    buf_center.x * roi_in->scale - roi_in->x,
-    buf_center.y * roi_in->scale - roi_in->y
+    vignette_center.x * roi_in->scale - roi_in->x,
+    vignette_center.y * roi_in->scale - roi_in->y
   };
   float xscale;
   float yscale;
@@ -196,6 +202,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float shape=MAX(data->shape,0.001);
   const float exp1=2.0/shape;
   const float exp2=shape/2.0;
+  // Pre-scale the center offset
+  const dt_iop_vector_2d_t roi_center_scaled =
+  {
+    -roi_center.x * xscale,
+    -roi_center.y * yscale
+  };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data, yscale, xscale) schedule(static)
@@ -210,8 +222,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // current pixel coord translated to local coord
       const dt_iop_vector_2d_t pv =
       {
-        fabsf((i-roi_center.x)*xscale-data->center.x),
-        fabsf((j-roi_center.y)*yscale-data->center.y)
+        fabsf(i*xscale+roi_center_scaled.x),
+        fabsf(j*yscale+roi_center_scaled.y)
       };
 
       // Calculate the pixel weight in vignette
