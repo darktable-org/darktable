@@ -542,7 +542,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
         break;
 
     }
-    pango_layout_set_text(layout,sv,strlen(sv));
+    pango_layout_set_text(layout,sv,-1);
     GdkRectangle t= {0,0,width,height};
     int pw,ph;
     pango_layout_get_pixel_size(layout,&pw,&ph);

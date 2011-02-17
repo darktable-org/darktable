@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef HAVE_RAWSPEED
 #ifndef DT_IMAGEIO_RAWSPEED_H
 #define DT_IMAGEIO_RAWSPEED_H
 #ifdef __cplusplus
@@ -29,5 +30,6 @@ extern "C"
 
 #ifdef __cplusplus
 }
+#endif
 #endif
 #endif

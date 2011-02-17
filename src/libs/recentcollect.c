@@ -245,6 +245,9 @@ collection_updated(void *d)
   for(int k=0; k<NUM_LINES; k++)
   {
     char str[200] = {0};
+    char str_cut[200] = {0};
+    char str_pretty[200] = {0};
+
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
     gchar *buf = dt_conf_get_string(confname);
     if(buf && buf[0] != '\0')
@@ -254,9 +257,16 @@ collection_updated(void *d)
     }
     gtk_object_set(GTK_OBJECT(c->item[k].button), "tooltip-text", str, (char *)NULL);
     const int cut = 45;
-    str[cut] = str[cut+1] = str[cut+2] = '.';
-    str[cut+3] = '\0';
-    gtk_button_set_label(GTK_BUTTON(c->item[k].button), str);
+    if (g_utf8_strlen(str, -1) > cut) 
+    { 
+      g_utf8_strncpy(str_cut, str, cut);
+      snprintf(str_pretty, 200, "%s...", str_cut);
+      gtk_button_set_label(GTK_BUTTON(c->item[k].button), str_pretty);
+    }
+    else
+    {
+      gtk_button_set_label(GTK_BUTTON(c->item[k].button), str);
+    }
     gtk_widget_set_no_show_all(c->item[k].button, TRUE);
     gtk_widget_set_visible(c->item[k].button, FALSE);
   }

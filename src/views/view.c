@@ -627,12 +627,14 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
     {
       *image_over = DT_VIEW_REJECT; //mouse sensitive
+      cairo_new_sub_path(cr);
       cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
       cairo_stroke(cr);
     }
     else if (img && ((img->flags & 0x7) == 6))
     {
       cairo_set_source_rgb(cr, 1., 0., 0.);
+      cairo_new_sub_path(cr);
       cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
       cairo_stroke(cr);
       cairo_set_line_width(cr, 2.5);

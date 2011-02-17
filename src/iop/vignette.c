@@ -158,11 +158,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     (buf_in->width - buf_in->x) / 2.0 + buf_in->x,
     (buf_in->height - buf_in->y) / 2.0 + buf_in->y
   };
-  /* Coordinates of buf_center in terms of roi_in */
+  /* Center coordinates of vignette center */
+  const dt_iop_vector_2d_t vignette_center =
+  {
+    buf_center.x + data->center.x * buf_in->width / 2.0,
+    buf_center.y + data->center.y * buf_in->height / 2.0
+  };
+  /* Coordinates of vignette_center in terms of roi_in */
   const dt_iop_vector_2d_t roi_center =
   {
-    buf_center.x * roi_in->scale - roi_in->x,
-    buf_center.y * roi_in->scale - roi_in->y
+    vignette_center.x * roi_in->scale - roi_in->x,
+    vignette_center.y * roi_in->scale - roi_in->y
   };
   float xscale;
   float yscale;
@@ -197,6 +203,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float shape=MAX(data->shape,0.001);
   const float exp1=2.0/shape;
   const float exp2=shape/2.0;
+  // Pre-scale the center offset
+  const dt_iop_vector_2d_t roi_center_scaled =
+  {
+    -roi_center.x * xscale,
+    -roi_center.y * yscale
+  };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data, yscale, xscale) schedule(static)
@@ -211,8 +223,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // current pixel coord translated to local coord
       const dt_iop_vector_2d_t pv =
       {
-        fabsf((i-roi_center.x)*xscale-data->center.x),
-        fabsf((j-roi_center.y)*yscale-data->center.y)
+        fabsf(i*xscale+roi_center_scaled.x),
+        fabsf(j*yscale+roi_center_scaled.y)
       };
 
       // Calculate the pixel weight in vignette
@@ -494,7 +506,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->center_y), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->autoratio), "tooltip-text", _("enable to have the ratio automatically follow the image size"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
 
@@ -530,3 +542,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef HAVE_RAWSPEED
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -158,7 +159,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
     }
     catch (RawDecoderException e)
     {
-      printf("failed decoding raw `%s'\n", e.what());
+      // printf("failed decoding raw `%s'\n", e.what());
       if (d) delete d;
       if (m) delete m;
       return DT_IMAGEIO_FILE_CORRUPTED;
@@ -166,14 +167,14 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
   }
   catch (CameraMetadataException e)
   {
-    printf("failed meta data `%s'\n", e.what());
+    // printf("failed meta data `%s'\n", e.what());
     if (d) delete d;
     if (m) delete m;
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   catch (TiffParserException e)
   {
-    printf("failed decoding tiff `%s'\n", e.what());
+    // printf("failed decoding tiff `%s'\n", e.what());
     if (d) delete d;
     if (m) delete m;
     return DT_IMAGEIO_FILE_CORRUPTED;
@@ -397,3 +398,4 @@ dt_imageio_open_rawspeed_sraw_preview(dt_image_t *img, RawImage r)
   return DT_IMAGEIO_OK;
 }
 
+#endif
