@@ -66,7 +66,7 @@ static void  _togglebutton_size_request(GtkWidget *widget,GtkRequisition *requis
   {
     layout = gtk_widget_create_pango_layout (widget,NULL);
     pango_layout_set_font_description (layout,style->font_desc);
-    pango_layout_set_text (layout,text,strlen(text));
+    pango_layout_set_text (layout,text,-1);
     pango_layout_get_pixel_size (layout,&pw,&ph);
 
     requisition->width = pw+4;
@@ -176,7 +176,7 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   {
     layout = pango_cairo_create_layout (cr);
     pango_layout_set_font_description (layout,style->font_desc);
-    pango_layout_set_text (layout,text,strlen(text));
+    pango_layout_set_text (layout,text,-1);
     pango_layout_get_pixel_size (layout,&pw,&ph);
   }
 

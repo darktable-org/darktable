@@ -70,7 +70,7 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   {
     layout = gtk_widget_create_pango_layout (widget,NULL);
     pango_layout_set_font_description (layout,style->font_desc);
-    pango_layout_set_text (layout,text,strlen(text));
+    pango_layout_set_text (layout,text,-1);
     pango_layout_get_pixel_size (layout,&pw,&ph);
   }
 

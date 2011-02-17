@@ -99,7 +99,7 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   layout = gtk_widget_create_pango_layout(widget,NULL);
   pango_layout_set_font_description(layout,style->font_desc);
   const gchar *text=gtk_label_get_text(GTK_LABEL(widget));
-  pango_layout_set_text(layout,text,strlen(text));
+  pango_layout_set_text(layout,text,-1);
   GdkRectangle t= {x,y,x+width,y+height};
   int pw,ph;
   pango_layout_get_pixel_size(layout,&pw,&ph);
