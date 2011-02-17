@@ -21,9 +21,11 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
+#include "develop/blend.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
+#include "dtgtk/slider.h"
 
 #include <strings.h>
 #include <assert.h>
@@ -462,14 +464,27 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
 {
   uint64_t hash = 5381;
   piece->hash = 0;
-  const char *str = (const char *)params;
   if(piece->enabled)
   {
+    /* construct module params data for hash calc */
+    int length = module->params_size+sizeof(dt_develop_blend_params_t);
+    char *str = malloc(length);
+    memcpy(str,module->params,module->params_size);
+    
+    /* if module supports blend op add blend params into account */
+    if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    {
+      memcpy(str+module->params_size,module->blend_params,sizeof(dt_develop_blend_params_t));
+      // TODO: actually commit blendop params
+    }
+    
     // assume process_cl is ready, commit_params can overwrite this.
     if(module->process_cl) piece->process_cl_ready = 1;
     module->commit_params(module, params, pipe, piece);
-    for(int i=0; i<module->params_size; i++) hash = ((hash << 5) + hash) ^ str[i];
+    for(int i=0; i<length; i++) hash = ((hash << 5) + hash) ^ str[i];
     piece->hash = hash;
+    
+    free(str);
   }
   // printf("commit params hash += module %s: %lu, enabled = %d\n", piece->module->op, piece->hash, piece->enabled);
 }
@@ -487,10 +502,10 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
 {
   GtkExpander *expander = GTK_EXPANDER (object);
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-
+  GtkWidget *content = gtk_widget_get_parent(module->widget);
   if (gtk_expander_get_expanded (expander))
   {
-    gtk_widget_show(module->widget);
+    gtk_widget_show(content);
     // register to receive draw events
     dt_iop_request_focus(module);
     // hide all other module widgets
@@ -516,7 +531,7 @@ static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec
       dt_iop_request_focus(NULL);
       dt_control_gui_queue_draw();
     }
-    gtk_widget_hide(module->widget);
+    gtk_widget_hide(content);
   }
 }
 
@@ -586,15 +601,38 @@ typedef struct _iop_gui_blend_data_t
 {
   dt_iop_module_t *module;
   GtkComboBox *blend_modes_combo;
+  GtkWidget *opacity_slider;
 }_iop_gui_blend_data_t;
 
 static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,_iop_gui_blend_data_t *data)
 {
   if (gtk_toggle_button_get_active(b)) 
+  {
     gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(data->opacity_slider),TRUE);
+    data->module->blend_params->mode = gtk_combo_box_get_active(data->blend_modes_combo);
+  } 
   else
+  {
     gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(data->opacity_slider),FALSE);
+    data->module->blend_params->mode = DEVELOP_BLEND_DISABLED;
+  }
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
 
+static void
+_blendop_mode_callback (GtkComboBox *combo, _iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->mode = 1+gtk_combo_box_get_active(data->blend_modes_combo);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void
+_blendop_opacity_callback (GtkDarktableSlider *slider, _iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->opacity = dtgtk_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
 
@@ -636,39 +674,64 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
-  /* add widget to container */
-  gtk_container_add(GTK_CONTAINER(al), module->widget);
+  
+  /* add module widget to container */
+  GtkWidget * iopw = gtk_vbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
+  
 
   /* create and add blend mode if module supports it */
   if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
   {
+    module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
+    memset(module->blend_params,0,sizeof(dt_develop_blend_params_t));
     module->blend_data = g_malloc(sizeof(_iop_gui_blend_data_t));
     _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+    bd->module = module;
     
-    GtkWidget *bvb = gtk_hbox_new(FALSE,2);
-    GtkWidget *bhb = gtk_hbox_new(FALSE,5);
+    GtkWidget *bvb = gtk_vbox_new(FALSE,0);
+    GtkWidget *bhb = gtk_hbox_new(FALSE,0);
     GtkWidget *eb = gtk_check_button_new_with_label(_("blend"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
-    
+    bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, 100.0, 2));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("lighten"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("darken"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("multiply"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("average"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("add"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("substract"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("difference"));
     
+    gtk_widget_set_sensitive(GTK_WIDGET(bd->blend_modes_combo),FALSE);
+    gtk_widget_set_sensitive(bd->opacity_slider,FALSE);
+    gtk_combo_box_set_active(bd->blend_modes_combo,0);
     gtk_object_set(GTK_OBJECT(eb), "tooltip-text", _("enable blending mode"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
     
     g_signal_connect (G_OBJECT (eb), "toggled",
                     G_CALLBACK (_iop_gui_enabled_blend_cb), bd);
-    
-    gtk_box_pack_start(GTK_BOX(bhb), eb, TRUE, FALSE, 0);
+    g_signal_connect (G_OBJECT (bd->opacity_slider), "value-changed",
+                    G_CALLBACK (_blendop_opacity_callback), bd);
+    g_signal_connect (G_OBJECT (bd->blend_modes_combo), "changed",
+                    G_CALLBACK (_blendop_mode_callback), bd);
+  
+    gtk_box_pack_start(GTK_BOX(bhb), eb, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bhb),GTK_WIDGET(bd->blend_modes_combo), TRUE, TRUE, 0);
     
-    gtk_box_pack_start(GTK_BOX(bvb),bhb,TRUE,TRUE,0);
-    gtk_box_pack_start(GTK_BOX(vbox), bvb,TRUE,TRUE,0);
+    gtk_box_pack_start(GTK_BOX(bvb),gtk_hseparator_new(),TRUE,TRUE,4);
+    gtk_box_pack_start(GTK_BOX(bvb),bhb,TRUE,TRUE,2);
+    gtk_box_pack_start(GTK_BOX(bvb), bd->opacity_slider,TRUE,TRUE,2);
+    
+    gtk_box_pack_start(GTK_BOX(iopw),bvb,TRUE,TRUE,4);
+    
   }
+
+  /* add the iopw widget to aligment widget */
+  gtk_container_add(GTK_CONTAINER(al), iopw);
+  gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
+
   
   g_signal_connect (G_OBJECT (resetbutton), "clicked",
                     G_CALLBACK (dt_iop_gui_reset_callback), module);
@@ -677,7 +740,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
                     G_CALLBACK (dt_iop_gui_expander_callback), module);
   gtk_expander_set_spacing(module->expander, 10);
-  gtk_widget_hide_all(module->widget);
+  gtk_widget_hide_all(al);
   gtk_expander_set_expanded(module->expander, FALSE);
   GtkWidget *evb = gtk_event_box_new();
   gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
