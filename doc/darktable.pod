@@ -129,7 +129,7 @@ Zoom out to fit all images in one row inside viewport, center on image under cur
 
 Move around (arrows also work)
 
-=item B<1, 2, 3, 4>
+=item B<1, 2, 3, 4, 5>
 
 Star rating
 
@@ -137,9 +137,9 @@ Star rating
 
 Strip all stars (reject image)
 
-=item B<F1, F2, F3>
+=item B<F1, F2, F3, F4, F5>
 
-Color labels: toggle red, yellow, green
+Color labels: toggle red, yellow, green, blue and magenta
 
 =item B<ctrl-g, ctrl-shift-g> 
 
