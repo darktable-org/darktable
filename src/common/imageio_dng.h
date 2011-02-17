@@ -76,7 +76,7 @@ static inline void
 dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av, float f, float iso, uint32_t filter)
 {
   const uint32_t channels = 1;
-  uint8_t *b, *offs1, *offs2;
+  uint8_t *b/*, *offs1, *offs2*/;
   // uint32_t exif_offs;
   uint8_t  buf[1024];
   uint8_t  cnt = 0;
@@ -100,7 +100,7 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   b = dt_imageio_dng_make_tag(  262, SHORT, 1, 32803<<16, b, &cnt);/* cfa */  //34892, b, &cnt ); // linear raw /* Photo interp.  */
   // b = dt_imageio_dng_make_tag(  271, ASCII, 8, 494, b, &cnt); // maker, needed for dcraw
   // b = dt_imageio_dng_make_tag(  272, ASCII, 9, 484, b, &cnt); // model
-  offs2 = b + 8;
+//   offs2 = b + 8;
   b = dt_imageio_dng_make_tag(  273, LONG, 1, 584, b, &cnt ); /* Strip offset.  */
   b = dt_imageio_dng_make_tag(  274, SHORT, 1, 1<<16, b, &cnt ); /* Orientation. */
   b = dt_imageio_dng_make_tag(  277, SHORT, 1, channels<<16, b, &cnt ); /* Samples per pixel.  */
@@ -130,7 +130,7 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   b = dt_imageio_dng_make_tag(33422, BYTE, 4, cfapattern, b, &cnt ); /* CFAREPEATEDPATTERNDIM */
 
   // b = dt_imageio_dng_make_tag(  306, ASCII, 20, 428, b, &cnt ); // DateTime
-  offs1 = b + 8;// + 3;
+//   offs1 = b + 8;// + 3;
   // b = dt_imageio_dng_make_tag(34665, LONG, 1, 264, b, &cnt); // exif ifd
   b = dt_imageio_dng_make_tag(50706, BYTE, 4, (1<<24) | (2<<16), b, &cnt); // DNG Version/backward version
   b = dt_imageio_dng_make_tag(50707, BYTE, 4, (1<<24) | (1<<16), b, &cnt);
@@ -204,8 +204,9 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   dt_imageio_dng_write_buf(buf, 524, den);
 
   // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
-  int k = 0;
-  k = fwrite ( buf, 1, 584, fp );
+  int k = fwrite ( buf, 1, 584, fp );
+  if(k != 584)
+    fprintf(stderr, "[dng_write_header] failed to write image header!\n");
 }
 
 static inline void
@@ -232,3 +233,4 @@ dt_imageio_write_dng(const char *filename, const float *const pixel, const int w
 #undef SRATIONAL
 #endif
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

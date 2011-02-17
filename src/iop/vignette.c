@@ -489,7 +489,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->center_y), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->autoratio), "tooltip-text", _("enable to have the ratio automatically follow the image size"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
 
@@ -525,3 +525,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

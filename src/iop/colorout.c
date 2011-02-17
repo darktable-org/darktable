@@ -596,13 +596,13 @@ void gui_init(struct dt_iop_module_t *self)
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "adobergb");
   strcpy(prof->name, "adobergb");
-  pos = prof->pos = 1;
+  prof->pos = 1;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   strcpy(prof->filename, "X profile");
   strcpy(prof->name, "X profile");
-  pos = prof->pos = 2;
+  prof->pos = 2;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
