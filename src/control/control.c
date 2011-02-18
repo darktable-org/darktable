@@ -252,8 +252,6 @@ create_tables:
   if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
   else           gtk_window_unfullscreen(GTK_WINDOW(widget));
   dt_control_restore_gui_settings(DT_LIBRARY);
-  // FIXME: should be replaced by query system.
-  // dt_control_update_recent_films();
   return 0;
 }
 
@@ -1385,48 +1383,4 @@ void dt_control_clear_history_items(int32_t num)
   }
   darktable.gui->reset = 0;
 }
-
-#if 0
-void dt_control_update_recent_films()
-{
-  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-  if(needlock) gdk_threads_enter();
-  /* get the recent film vbox */
-  GtkWidget *sb = glade_xml_get_widget (darktable.gui->main_window, "recent_used_film_rolls_section_box");
-  GtkWidget *recent_used_film_vbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sb)),1);
-
-  /* hide all childs and vbox*/
-  gtk_widget_hide_all (recent_used_film_vbox);
-  GList *childs = gtk_container_get_children (GTK_CONTAINER(recent_used_film_vbox));
-
-  /* query database for recent films */
-  sqlite3_stmt *stmt;
-  int num = 0;
-  const char *filename, *cnt;
-  const int label_cnt = 256;
-  char label[256];
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder,id from film_rolls order by datetime_accessed desc limit 0, 4", -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    filename = (char *)sqlite3_column_text(stmt, 0);
-    cnt = dt_image_film_roll_name(filename);
-    snprintf(label, label_cnt, "%s", cnt);
-    GtkWidget *widget = g_list_nth_data (childs,num);
-    gtk_button_set_label (GTK_BUTTON (widget), label);
-
-    GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(widget)));
-    gtk_label_set_ellipsize (label, PANGO_ELLIPSIZE_START);
-    gtk_label_set_max_width_chars (label, 30);
-
-    g_object_set(G_OBJECT(widget), "tooltip-text", filename, (char *)NULL);
-
-    gtk_widget_show(recent_used_film_vbox);
-    gtk_widget_show(widget);
-
-    num++;
-  }
-
-  if(needlock) gdk_threads_leave();
-}
-#endif
 
