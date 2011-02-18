@@ -638,12 +638,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       hist->module = module;
       hist->params = malloc(module->params_size);
       
-      /* allocate and set blend_params */
+      /* allocate and set hist blend_params */
       hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
       memset(hist->blend_params, 0, sizeof(dt_develop_blend_params_t));
       
       memcpy(hist->params, module->params, module->params_size);
-      if (module->blend_params)
+      if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
       
       if(dev->gui_attached)
@@ -663,7 +663,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
       
-      if(module->blend_params)
+      if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
       
       // if the user changed stuff and the module is still not enabled, do it:
@@ -722,6 +722,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     GList *next = g_list_next(history);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     free(hist->params);
+    free(hist->blend_params);
     free(history->data);
     dev->history = g_list_delete_link(dev->history, history);
     history = next;
@@ -742,6 +743,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     memcpy(module->params, module->default_params, module->params_size);
+    memcpy(module->blend_params, module->default_blendop_params,sizeof(dt_develop_blend_params_t));
     module->enabled = module->default_enabled;
     modules = g_list_next(modules);
   }
@@ -751,6 +753,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     memcpy(hist->module->params, hist->params, hist->module->params_size);
+    memcpy(hist->module->blend_params, hist->blend_params, sizeof(dt_develop_blend_params_t));
     
     hist->module->enabled = hist->enabled;
     history = g_list_next(history);

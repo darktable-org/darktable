@@ -147,7 +147,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
     if(piece->module == hist->module)
     {
       piece->enabled = hist->enabled;
-      dt_iop_commit_params(hist->module, hist->params, pipe, piece);
+      dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
     }
     nodes = g_list_next(nodes);
   }
@@ -163,7 +163,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     piece->hash = 0;
     piece->enabled = piece->module->default_enabled;
-    dt_iop_commit_params(piece->module, piece->module->default_params, pipe, piece);
+    dt_iop_commit_params(piece->module, piece->module->default_params, piece->module->default_blendop_params, pipe, piece);
     nodes = g_list_next(nodes);
   }
   // go through all history items and adjust params

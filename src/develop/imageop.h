@@ -141,7 +141,7 @@ typedef struct dt_iop_module_t
 	/** other stuff that may be needed by the module, not only in gui mode. */
 	dt_iop_global_data_t *data;
 	/** blending params */
-	struct dt_develop_blend_params_t *blend_params;
+	struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
 	/** holder for blending ui control */
 	gpointer blend_data;
 	/** child widget which is added to the GtkExpander. */
@@ -223,7 +223,7 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
 /** commits params and updates piece hash. */
-void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 /** requests the focus for this plugin (to draw overlays over the center image) */

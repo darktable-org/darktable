@@ -287,6 +287,14 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
 
   // now init the instance:
   module->init(module);
+  
+  /* initialize blendop params and default values */
+  module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
+  module->default_blendop_params=g_malloc(sizeof(dt_develop_blend_params_t));
+  memset(module->blend_params, 0, sizeof(dt_develop_blend_params_t));
+  dt_develop_blend_params_t default_blendop_params={DEVELOP_BLEND_DISABLED,100.0,0};
+  memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
+  
   if(module->priority == 0)
   {
     fprintf(stderr, "[iop_load_module] `%s' needs to set priority!\n", so->op);
@@ -301,6 +309,8 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
   module->init_pipe(module, pipe, piece);
   piece->blendop_data = malloc(sizeof(dt_develop_blend_params_t));
   memset(piece->blendop_data, 0, sizeof(dt_develop_blend_params_t));
+  /// FIXME: Commmit params is already done in module
+  dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
 }
 
 static void
@@ -475,7 +485,7 @@ void dt_iop_unload_modules_so()
   }
 }
 
-void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_develop_blend_params_t * blendop_params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   uint64_t hash = 5381;
   piece->hash = 0;
@@ -490,7 +500,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
       memcpy(str+module->params_size,module->blend_params,sizeof(dt_develop_blend_params_t));
-      memcpy(piece->blendop_data,module->blend_params,sizeof(dt_develop_blend_params_t));
+      memcpy(piece->blendop_data,blendop_params,sizeof(dt_develop_blend_params_t));
     }
     
     // assume process_cl is ready, commit_params can overwrite this.
@@ -513,7 +523,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   {
     _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
     
-    gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode);
+    gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode - 1);
     gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
     dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
     fprintf(stderr,"gui_update: mode %d, opacity %f\n",module->blend_params->mode,module->blend_params->opacity);
@@ -630,7 +640,7 @@ static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,_iop_gui_blend_data_t *
   {
     gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(data->opacity_slider),TRUE);
-    data->module->blend_params->mode = gtk_combo_box_get_active(data->blend_modes_combo);
+    data->module->blend_params->mode = 1+gtk_combo_box_get_active(data->blend_modes_combo);
   } 
   else
   {
@@ -703,8 +713,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* create and add blend mode if module supports it */
   if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
   {
-    module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
-    memset(module->blend_params,0,sizeof(dt_develop_blend_params_t));
     module->blend_data = g_malloc(sizeof(_iop_gui_blend_data_t));
     _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
     bd->module = module;
