@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
+#include "common/collection.h"
 #include "views/view.h"
 #include "develop/develop.h"
 #include "control/jobs.h"
@@ -470,6 +471,62 @@ film_strip_activated(const int imgid, void *data)
   dt_control_queue_draw_all();
   // prefetch next few from first selected image on.
   dt_view_film_strip_prefetch();
+}
+
+static void
+dt_dev_jump_image(dt_develop_t *dev, int diff)
+{
+  char query[1024];
+  const gchar *qin = dt_collection_get_query (darktable.collection);
+  int offset = 0;
+  if(qin)
+  {
+    int orig_imgid = -1, imgid = -1;
+    sqlite3_stmt *stmt;
+    dt_image_t *image;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      orig_imgid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+
+    snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, orig_imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      offset = sqlite3_column_int(stmt, 0) - 1;
+    sqlite3_finalize(stmt);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, qin, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      imgid = sqlite3_column_int(stmt, 0);
+
+      if (orig_imgid == imgid)
+      {
+        //nothing to do
+        sqlite3_finalize(stmt);
+        return;
+      }
+
+      image = dt_image_cache_get(imgid, 'r');
+      dt_dev_change_image(dev, image);
+      dt_image_cache_release(dev->image, 'r');
+      select_this_image(dev->image->id);
+      dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
+
+      if(dt_conf_get_bool("plugins/filmstrip/on"))
+      {
+        dt_view_film_strip_prefetch();
+      }
+      dt_control_queue_draw_all();
+    }
+    sqlite3_finalize(stmt);
+  }
 }
 
 static void
@@ -1009,6 +1066,14 @@ int key_pressed(dt_view_t *self, uint16_t which)
   int handled = 0;
   if(dev->gui_module && dev->gui_module->key_pressed) handled = dev->gui_module->key_pressed(dev->gui_module, which);
   if(handled) return handled;
+  switch(which) {
+    case 65:
+      dt_dev_jump_image(dev, 1);
+      return 1;
+    case 22:
+      dt_dev_jump_image(dev, -1);
+      return 1;
+  }
   return 0;
 }
 

@@ -11,8 +11,7 @@
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/6.png" alt="6" width="142px" /></span><div class="headline"><img src="contact.png" alt="contact" width="157px"/></div>
     	<div class="starterText">
-      fastest contact via email: &#104;&#97;&#110;&#97;&#116;&#111;&#115;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;,
-      or, better, irc.freenode.net <em>#darktable</em>,
+      contact us via irc.freenode.net <em>#darktable</em>,
       subscribe to the new <a href="https://lists.sourceforge.net/lists/listinfo/darktable-users">users' mailing list</a> for usage questions and
       experience reports.
       if you want to help developing and are interested in technical details, subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-devel">developer's mailing list</a> (can be about 30 mails per day). for release announcements and similar only, choose
