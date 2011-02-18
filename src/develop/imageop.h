@@ -218,6 +218,8 @@ void dt_iop_unload_modules_so();
 GList *dt_iop_load_modules(struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_cleanup_module(dt_iop_module_t *module);
+/** initialize pipe. */
+void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
 /** commits params and updates piece hash. */

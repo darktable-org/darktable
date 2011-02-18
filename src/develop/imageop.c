@@ -296,6 +296,13 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   return 0;
 }
 
+void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece)
+{
+  module->init_pipe(module, pipe, piece);
+  piece->blendop_data = malloc(sizeof(dt_develop_blend_params_t));
+  memset(piece->blendop_data, 0, sizeof(dt_develop_blend_params_t));
+}
+
 static void
 dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
@@ -483,7 +490,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
       memcpy(str+module->params_size,module->blend_params,sizeof(dt_develop_blend_params_t));
-      // TODO: actually commit blendop params
+      memcpy(piece->blendop_data,module->blend_params,sizeof(dt_develop_blend_params_t));
     }
     
     // assume process_cl is ready, commit_params can overwrite this.

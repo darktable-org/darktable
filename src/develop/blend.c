@@ -43,12 +43,12 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 	float *out =(float *)o;
 	const int ch = piece->colors;
 	_blend_func *blend = NULL;
-	
+	dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 	/* check if blend is disabled */
-	if(!self->blend_params || self->blend_params->mode==0) return;
+	if(!d || d->mode==0) return;
 	
 	/* select the blend operator */
-	switch(self->blend_params->mode)
+	switch(d->mode)
 	{
 		case DEVELOP_BLEND_LIGHTEN:
 			blend = _blend_lighten;
@@ -82,14 +82,12 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 		break;
 	}
 	
-	const dt_develop_blend_params_t *bp = self->blend_params;
-	
-	if (!(bp->mode & DEVELOP_BLEND_MASK_FLAG))
+	if (!(d->mode & DEVELOP_BLEND_MASK_FLAG))
 	{
 		/* blending without mask */
-		const float opacity = bp->opacity/100.0;
+		const float opacity = d->opacity/100.0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in,roi_out,out,blend,bp)
+#pragma omp parallel for default(none) shared(in,roi_out,out,blend,d)
 #endif
 		for(int y=0;y<roi_out->height;y++)
 			for(int x=0;x<roi_out->width;x++)
