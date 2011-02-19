@@ -144,9 +144,371 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   return 1;
 }
 
+static int
+get_grab(float pointerx, float pointery, float startx, float starty, float endx, float endy, float zoom_scale){
+  const float radius = 5.0/zoom_scale;
+
+  if(powf(pointerx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 1;           // center
+  if(powf(pointerx-startx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 2;    // x size
+  if(powf(pointerx, 2)+powf(pointery-starty, 2) <= powf(radius, 2)) return 4;    // y size
+  if(powf(pointerx-endx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 8;      // x falloff
+  if(powf(pointerx, 2)+powf(pointery-endy, 2) <= powf(radius, 2)) return 16;     // y falloff
+
+  return 0;
+}
+
+static void
+draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float zoom_scale)
+{
+  cairo_move_to(cr, 0, 0);
+  cairo_line_to(cr, fx, 0);
+  cairo_move_to(cr, 0, 0);
+  cairo_line_to(cr, 0, -fy);
+  cairo_stroke (cr);
+
+  cairo_save(cr);
+  cairo_scale(cr, 1, y/x);
+  cairo_arc(cr, 0, 0, x, 0, M_PI*2.0);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0, 0, fx, 0, M_PI*2.0);
+  cairo_stroke(cr);
+  cairo_restore(cr);
+
+  const float radius1 = 6.0/zoom_scale;
+  const float radius2 = 4.0/zoom_scale;
+  if(grab ==  1) cairo_arc(cr, 0, 0, radius1, 0, M_PI*2.0);
+  else           cairo_arc(cr, 0, 0, radius2, 0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  2) cairo_arc(cr, x, 0, radius1, 0, M_PI*2.0);
+  else           cairo_arc(cr, x, 0, radius2, 0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  4) cairo_arc(cr, 0, -y, radius1, 0, M_PI*2.0);
+  else           cairo_arc(cr, 0, -y, radius2, 0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  8) cairo_arc(cr, fx, 0, radius1, 0, M_PI*2.0);
+  else           cairo_arc(cr, fx, 0, radius2, 0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab == 16) cairo_arc(cr, 0, -fy, radius1, 0, M_PI*2.0);
+  else           cairo_arc(cr, 0, -fy, radius2, 0, M_PI*2.0);
+  cairo_stroke(cr);
+
+//   if(grab != 0)
+//   {
+//     const float radius = 5.0/zoom_scale;
+//     if     (grab ==  1) cairo_arc(cr, 0, 0, radius, 0, M_PI*2.0);
+//     else if(grab ==  2) cairo_arc(cr, x, 0, radius, 0, M_PI*2.0);
+//     else if(grab ==  4) cairo_arc(cr, 0, y, radius, 0, M_PI*2.0);
+//     else if(grab ==  8) cairo_arc(cr, fx, 0, radius, 0, M_PI*2.0);
+//     else if(grab == 16) cairo_arc(cr, 0, fy, radius, 0, M_PI*2.0);
+//     cairo_stroke(cr);
+//   }
+
+}
+
+//FIXME: For portrait images the overlay is a bit wrong. The coordinates in mouse_moved seem to be ok though. WTF?
+void
+gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+  dt_develop_t *dev             = self->dev;
+//   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
+  dt_iop_vignette_params_t *p   = (dt_iop_vignette_params_t *)self->params;
+
+  int32_t zoom, closeup;
+  float zoom_x, zoom_y;
+  float wd = dev->preview_pipe->backbuf_width;
+  float ht = dev->preview_pipe->backbuf_height;
+  float bigger_side, smaller_side;
+  if(wd >= ht){ bigger_side = wd; smaller_side = ht; }
+  else        { bigger_side = ht; smaller_side = wd; }
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+
+  cairo_translate(cr, width/2.0, height/2.0);
+  cairo_scale(cr, zoom_scale, zoom_scale);
+  cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
+
+  float vignette_x = (p->center.x+1.0)*0.5*wd;
+  float vignette_y = (p->center.y+1.0)*0.5*ht;
+
+  cairo_translate(cr, vignette_x, vignette_y);
+
+  float vignette_w = p->scale*0.01*0.5*wd; // start of falloff
+  float vignette_h = p->scale*0.01*0.5*ht;
+  float vignette_fx = vignette_w + p->falloff_scale*0.01*0.5*wd; // end of falloff
+  float vignette_fy = vignette_h + p->falloff_scale*0.01*0.5*ht;
+
+  if(p->autoratio == FALSE)
+  {
+    float factor1 = bigger_side/smaller_side;
+    if(wd >= ht)
+    {
+      float factor2 = (2.0-p->whratio)*factor1;
+
+      if(p->whratio <= 1)
+      {
+        vignette_h *= factor1;
+        vignette_w *= p->whratio;
+        vignette_fx *= p->whratio;
+        vignette_fy *= factor1;
+      }
+      else
+      {
+        vignette_h *= factor2;
+        vignette_fy *= factor2;
+      }
+    }
+    else
+    {
+      float factor2 = (p->whratio)*factor1;
+
+      if(p->whratio <= 1)
+      {
+        vignette_w *= factor2;
+        vignette_fx *= factor2;
+      }
+      else
+      {
+        vignette_w *= factor1;
+        vignette_h *= (2.0-p->whratio);
+        vignette_fx *= factor1;
+        vignette_fy *= (2.0-p->whratio);
+      }
+    }
+  }
+
+  int grab = get_grab(pzx*wd-vignette_x, pzy*ht-vignette_y, vignette_w, vignette_h, vignette_fx, vignette_fy, zoom_scale);
+
+  cairo_set_line_width(cr, 3.0/zoom_scale);
+  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+  draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
+  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_source_rgba(cr, .8, .8, .8, .8);
+  draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
+
+}
+
+int
+mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
+{
+//   g_print("x: %.4f, y: %.4f, which: %d\n", x, y, which);
+  dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
+  dt_iop_vignette_params_t *p   = (dt_iop_vignette_params_t *)self->params;
+  int32_t zoom, closeup;
+  float wd = self->dev->preview_pipe->backbuf_width;
+  float ht = self->dev->preview_pipe->backbuf_height;
+  float bigger_side, smaller_side;
+  if(wd >= ht){ bigger_side = wd; smaller_side = ht; }
+  else        { bigger_side = ht; smaller_side = wd; }
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+  static int old_grab = -1;
+  int grab = old_grab;
+
+  float vignette_x = (p->center.x+1.0)*0.5*wd;
+  float vignette_y = (p->center.y+1.0)*0.5*ht;
+
+  float vignette_w = p->scale*0.01*0.5*wd; // start of falloff
+  float vignette_h = p->scale*0.01*0.5*ht;
+  float vignette_fx = vignette_w + p->falloff_scale*0.01*0.5*wd; // end of falloff
+  float vignette_fy = vignette_h + p->falloff_scale*0.01*0.5*ht;
+
+  if(p->autoratio == FALSE)
+  {
+    float factor1 = bigger_side/smaller_side;
+    if(wd >= ht)
+    {
+      float factor2 = (2.0-p->whratio)*factor1;
+
+      if(p->whratio <= 1)
+      {
+        vignette_h *= factor1;
+        vignette_w *= p->whratio;
+        vignette_fx *= p->whratio;
+        vignette_fy *= factor1;
+      }
+      else
+      {
+        vignette_h *= factor2;
+        vignette_fy *= factor2;
+      }
+    }
+    else
+    {
+      float factor2 = (p->whratio)*factor1;
+
+      if(p->whratio <= 1)
+      {
+        vignette_w *= factor2;
+        vignette_fx *= factor2;
+      }
+      else
+      {
+        vignette_w *= factor1;
+        vignette_h *= (2.0-p->whratio);
+        vignette_fx *= factor1;
+        vignette_fy *= (2.0-p->whratio);
+      }
+    }
+  }
+
+  if(grab == 0 || !(darktable.control->button_down && darktable.control->button_down_which == 1)){
+    grab = get_grab(pzx*wd-vignette_x, pzy*ht-vignette_y, vignette_w, -vignette_h, vignette_fx, -vignette_fy, zoom_scale);
+  }
+
+  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  {
+    if(grab == 0) // pan the image
+    {
+      dt_control_change_cursor(GDK_HAND1);
+      return 0;
+    }
+    else if(grab == 1) // move the center
+    {
+      dtgtk_slider_set_value(g->center_x, pzx*2.0 - 1.0);
+      dtgtk_slider_set_value(g->center_y, pzy*2.0 - 1.0);
+    }
+    else if(grab ==  2) // change the width
+    {
+      float new_vignette_w = pzx*wd - vignette_x;
+      if(new_vignette_w < 3 || new_vignette_w > bigger_side/2.0)
+        return 1;
+      float ratio = new_vignette_w/vignette_h;
+      // FIXME: When going over the 1.0 boundary from wide to narrow (>1.0 -> <=1.0) the height slightly changes, depending on speed.
+      //        I guess we have to split the computation.
+      if(ratio <= 1.0)
+      {
+        if(which == GDK_CONTROL_MASK)
+        {
+          float new_scale = (200.0 * new_vignette_w) / (bigger_side * p->whratio);
+          dtgtk_slider_set_value(g->scale, new_scale);
+        }
+        else
+        {
+          dtgtk_slider_set_value(g->whratio, ratio);
+        }
+      }
+      else
+      {
+        float new_scale = 200.0 * new_vignette_w / bigger_side;
+        dtgtk_slider_set_value(g->scale, new_scale);
+
+        if(which != GDK_CONTROL_MASK)
+        {
+          float new_whratio = 2.0 - 1.0 / ratio;
+          dtgtk_slider_set_value(g->whratio, new_whratio);
+        }
+      }
+    }
+    else if(grab ==  4) // change the height
+    {
+      float new_vignette_h = vignette_y - pzy*ht;
+      if(new_vignette_h < 3 || new_vignette_h > bigger_side/2.0)
+        return 1;
+      float ratio = new_vignette_h/vignette_w;
+      // FIXME: When going over the 1.0 boundary from narrow to wide (>1.0 -> <=1.0) the width slightly changes, depending on speed.
+      //        I guess we have to split the computation.
+      if(ratio <= 1.0)
+      {
+        if(which == GDK_CONTROL_MASK)
+        {
+          float new_scale = (200.0 * new_vignette_h) / (bigger_side * (2.0 - p->whratio));
+          dtgtk_slider_set_value(g->scale, new_scale);
+        }
+        else
+        {
+          dtgtk_slider_set_value(g->whratio, 2.0-ratio);
+        }
+      }
+      else
+      {
+        float new_scale = 200.0 * new_vignette_h / bigger_side;
+        dtgtk_slider_set_value(g->scale, new_scale);
+
+        if(which != GDK_CONTROL_MASK)
+        {
+          float new_whratio = 1.0 / ratio;
+          dtgtk_slider_set_value(g->whratio, new_whratio);
+        }
+      }
+    }
+    else if(grab ==  8) // change the falloff on the right
+    {
+      //TODO
+    }
+    else if(grab == 16) // change the falloff on the top
+    {
+      //TODO
+    }
+    dt_control_gui_queue_draw();
+    return 1;
+
+  }
+  else if(grab)
+  {
+    if     (grab ==  1) dt_control_change_cursor(GDK_FLEUR);
+    else if(grab ==  2) dt_control_change_cursor(GDK_SB_H_DOUBLE_ARROW);
+    else if(grab ==  4) dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+    else if(grab ==  8) dt_control_change_cursor(GDK_SB_H_DOUBLE_ARROW);
+    else if(grab == 16) dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+  }
+  else
+  {
+    if(old_grab != grab) dt_control_change_cursor(GDK_LEFT_PTR);
+  }
+  old_grab = grab;
+  dt_control_gui_queue_draw();
+  return 0;
+}
+
+int
+button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
+{
+//   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
+//   dt_iop_vignette_params_t   *p = (dt_iop_vignette_params_t *)self->params;
+  if(which == 1)
+  {
+//     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
+    return 1;
+  }
+  return 0;
+}
+
+int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+{
+  return 1;
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+// FIXME: NOP for faster processing while debugging/hacking. DO NOT REMOVE!
+/*
+  const int ch2 = piece->colors;
+  for(int j=0; j<roi_out->height; j++)
+  {
+    const int k = ch2*roi_out->width*j;
+    const float *in = (const float *)ivoid + k;
+    float *out = (float *)ovoid + k;
+    for(int i=0; i<roi_out->width; i++, in+=ch2, out+=ch2)
+    {
+      out[0] = in[0];
+      out[1] = in[1];
+      out[2] = in[2];
+    }
+  }
+  return;
+*/
   const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
   const int ch = piece->colors;
