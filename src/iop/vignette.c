@@ -148,9 +148,9 @@ static int
 get_grab(float pointerx, float pointery, float startx, float starty, float endx, float endy, float zoom_scale){
   const float radius = 5.0/zoom_scale;
 
-  if(powf(pointerx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 1;           // center
   if(powf(pointerx-startx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 2;    // x size
   if(powf(pointerx, 2)+powf(pointery-starty, 2) <= powf(radius, 2)) return 4;    // y size
+  if(powf(pointerx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 1;           // center
   if(powf(pointerx-endx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 8;      // x falloff
   if(powf(pointerx, 2)+powf(pointery-endy, 2) <= powf(radius, 2)) return 16;     // y falloff
 
@@ -381,17 +381,16 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     }
     else if(grab ==  2) // change the width
     {
-      float new_vignette_w = pzx*wd - vignette_x;
-      if(new_vignette_w < 3 || new_vignette_w > bigger_side/2.0)
-        return 1;
+      float max = 0.5*((p->whratio <= 1.0)?bigger_side*p->whratio:bigger_side);
+      float new_vignette_w = MIN(bigger_side*0.5, MAX(0.1, pzx*wd - vignette_x));
       float ratio = new_vignette_w/vignette_h;
+      float new_scale = 100.0 * new_vignette_w / max;
       // FIXME: When going over the 1.0 boundary from wide to narrow (>1.0 -> <=1.0) the height slightly changes, depending on speed.
       //        I guess we have to split the computation.
       if(ratio <= 1.0)
       {
         if(which == GDK_CONTROL_MASK)
         {
-          float new_scale = (200.0 * new_vignette_w) / (bigger_side * p->whratio);
           dtgtk_slider_set_value(g->scale, new_scale);
         }
         else
@@ -401,7 +400,6 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       }
       else
       {
-        float new_scale = 200.0 * new_vignette_w / bigger_side;
         dtgtk_slider_set_value(g->scale, new_scale);
 
         if(which != GDK_CONTROL_MASK)
@@ -413,17 +411,16 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     }
     else if(grab ==  4) // change the height
     {
-      float new_vignette_h = vignette_y - pzy*ht;
-      if(new_vignette_h < 3 || new_vignette_h > bigger_side/2.0)
-        return 1;
+      float new_vignette_h = MIN(bigger_side*0.5, MAX(0.1, vignette_y - pzy*ht));
       float ratio = new_vignette_h/vignette_w;
+      float max = 0.5*((ratio <= 1.0)?bigger_side*(2.0-p->whratio):bigger_side);
       // FIXME: When going over the 1.0 boundary from narrow to wide (>1.0 -> <=1.0) the width slightly changes, depending on speed.
       //        I guess we have to split the computation.
       if(ratio <= 1.0)
       {
         if(which == GDK_CONTROL_MASK)
         {
-          float new_scale = (200.0 * new_vignette_h) / (bigger_side * (2.0 - p->whratio));
+          float new_scale = 100.0 * new_vignette_h / max;
           dtgtk_slider_set_value(g->scale, new_scale);
         }
         else
@@ -433,7 +430,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       }
       else
       {
-        float new_scale = 200.0 * new_vignette_h / bigger_side;
+        float new_scale = 100.0 * new_vignette_h / max;
         dtgtk_slider_set_value(g->scale, new_scale);
 
         if(which != GDK_CONTROL_MASK)
@@ -445,11 +442,19 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     }
     else if(grab ==  8) // change the falloff on the right
     {
-      //TODO
+      float new_vignette_fx = pzx*wd - vignette_x;
+      float max = 0.5*((p->whratio <= 1.0)?bigger_side*p->whratio:bigger_side);
+      float delta_x = MIN(max, MAX(0.0, new_vignette_fx - vignette_w));
+      float new_falloff = 100.0 * delta_x / max;
+      dtgtk_slider_set_value(g->falloff_scale, new_falloff);
     }
     else if(grab == 16) // change the falloff on the top
     {
-      //TODO
+      float new_vignette_fy = vignette_y - pzy*ht;
+      float max = 0.5*((p->whratio > 1.0)?bigger_side*(2.0-p->whratio):bigger_side);
+      float delta_y = MIN(max, MAX(0.0, new_vignette_fy - vignette_h));
+      float new_falloff = 100.0 * delta_y / max;
+      dtgtk_slider_set_value(g->falloff_scale, new_falloff);
     }
     dt_control_gui_queue_draw();
     return 1;
@@ -475,40 +480,20 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 int
 button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
 {
-//   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-//   dt_iop_vignette_params_t   *p = (dt_iop_vignette_params_t *)self->params;
   if(which == 1)
-  {
-//     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
     return 1;
-  }
   return 0;
 }
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
-  return 1;
+  if(which == 1)
+    return 1;
+  return 0;
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-// FIXME: NOP for faster processing while debugging/hacking. DO NOT REMOVE!
-/*
-  const int ch2 = piece->colors;
-  for(int j=0; j<roi_out->height; j++)
-  {
-    const int k = ch2*roi_out->width*j;
-    const float *in = (const float *)ivoid + k;
-    float *out = (float *)ovoid + k;
-    for(int i=0; i<roi_out->width; i++, in+=ch2, out+=ch2)
-    {
-      out[0] = in[0];
-      out[1] = in[1];
-      out[2] = in[2];
-    }
-  }
-  return;
-*/
   const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
   const int ch = piece->colors;
