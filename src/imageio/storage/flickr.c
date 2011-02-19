@@ -697,7 +697,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   // Upload image
   photo_status = _flickr_api_upload_photo( p, fname, caption, description, tags );
   if( !photo_status )
+  {
     result=0;
+    goto cleanup;
+  }
 
 //  int fail = 0;
   // A photoset is only created if we have an album title set
@@ -735,6 +738,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     }
   }
 
+cleanup:
+
   // And remove from filesystem..
   unlink( fname );
   g_free( caption );
@@ -744,7 +749,11 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     g_list_free(desc);
   }
 
-  dt_control_log(_("%d/%d exported to flickr webalbum"), num, total );
+  if (result)
+  {
+    //this makes sense only if the export was successful
+    dt_control_log(_("%d/%d exported to flickr webalbum"), num, total );
+  }
   return result;
 }
 
