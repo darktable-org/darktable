@@ -1238,6 +1238,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GtkWidget *sbody = glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
   GtkWidget *svbox = gtk_vbox_new (FALSE,0);
   GtkWidget *sbutton = gtk_button_new_with_label (_("take snapshot"));
+  g_object_set (sbutton, "tooltip-text", _("take snapshot to compare with another image or the same image at another stage of development"), (char *)NULL);
   gtk_box_pack_start (GTK_BOX (sbody),svbox,FALSE,FALSE,0);
   gtk_box_pack_start (GTK_BOX (sbody),sbutton,FALSE,FALSE,0);
   g_signal_connect(G_OBJECT(sbutton), "clicked", G_CALLBACK(snapshot_add_button_clicked), NULL);

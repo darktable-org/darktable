@@ -346,10 +346,12 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
   // Export Button
   GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
+  g_object_set (exportButton, "tooltip-text", _("export the selected style into a style file"), (char *)NULL);
   g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),exportButton,TRUE,TRUE,0);
   // Import Button
   GtkWidget *importButton = gtk_button_new_with_label(_("import"));
+  g_object_set (importButton, "tooltip-text", _("import style from a style file"), (char *)NULL);
   g_signal_connect (importButton, "clicked", G_CALLBACK(import_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),importButton,TRUE,TRUE,0);
   // add entry completion
