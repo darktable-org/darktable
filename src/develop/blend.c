@@ -103,11 +103,11 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
 		
 		/* get channel max values depending on colorspace */
-		float max[3] = {1.0};
+		float max[3] = {1.0,1.0,1.0};
 		dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
 		
 		/* if module is in lab space, lets set max for L */
-		if (cst == iop_cs_Lab) max[0]=100.0;
+		if (cst == iop_cs_Lab) max[0] = 100.0;
 		
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(in,roi_out,out,blend,d,max)
@@ -117,7 +117,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 			{
 				int index=(y*roi_out->width+x)*ch;
 				for (int k=index;k<(index+3);k++)
-					out[k] = (in[k] * (1.0-opacity)) + (blend(max[k], in[k], out[k]) * opacity);
+					out[k] = (in[k] * (1.0-opacity)) + (blend(max[k-index], in[k], out[k]) * opacity);
 			}	
 	}
 	else
