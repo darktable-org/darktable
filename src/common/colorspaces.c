@@ -623,10 +623,16 @@ dt_colorspaces_create_output_profile(const int imgid)
     sqlite3_finalize(stmt);
   }
   if(!overprofile && profile[0] == '\0')
+  {
     strncpy(profile, "sRGB", 1024);
-  if(profile[0] == '\0')
+  } else if(profile[0] == '\0') {
     strncpy(profile, overprofile, 1024);
-  g_free(overprofile);
+  }
+
+  if(overprofile)
+  {
+    g_free(overprofile);
+  }
 
   cmsHPROFILE output = NULL;
 

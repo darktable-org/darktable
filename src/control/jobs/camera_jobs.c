@@ -118,7 +118,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       }
 
       // set the time property for bracked capture
-      if (t->brackets)
+      if (t->brackets && current_value)
         dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
 
       // Capture image

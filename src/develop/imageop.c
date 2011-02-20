@@ -780,6 +780,9 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   // init gauss with sigma = samples (half footprint)
   float filter[2*samples + 1];
   float sum = 0.0f;
+  
+  memset(filter, 0, sizeof(float)*(2*samples + 1));
+  
   if(samples)
   {
     for(int i=-samples; i<=samples; i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
@@ -871,6 +874,9 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   // init gauss with sigma = samples (half footprint)
   float filter[2*samples + 1];
   float sum = 0.0f;
+
+  memset(filter, 0, sizeof(float)*(2*samples + 1));
+
   if(samples)
   {
     for(int i=-samples; i<=samples; i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));

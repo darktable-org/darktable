@@ -174,6 +174,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float sigma2 = (2.5*2.5)*(radius*roi_in->scale/piece->iscale)*(radius*roi_in->scale/piece->iscale);
     float weight = 0.0f;
 
+    memset(mat, 0, wd*wd*sizeof(float));
+
     m = mat;
     for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
         weight += *m = expf(- (l*l + k*k)/(2.f*sigma2));

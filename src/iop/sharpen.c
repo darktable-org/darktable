@@ -129,6 +129,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *m;
   const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
+
+  memset(mat, 0, sizeof(float)*wd*wd);
+
   // init gaussian kernel
   m = mat;
   for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
