@@ -850,6 +850,8 @@ void dt_dev_read_history(dt_develop_t *dev)
         
     if(sqlite3_column_bytes(stmt, 6) == sizeof(dt_develop_blend_params_t))
       memcpy(hist->blend_params, sqlite3_column_blob(stmt, 6), sizeof(dt_develop_blend_params_t));
+    else
+	memset(hist->blend_params, 0, sizeof(dt_develop_blend_params_t));
     
     fprintf(stderr,"Read: mode %d, opacity %f\n",hist->blend_params->mode,hist->blend_params->opacity);
     // memcpy(hist->module->params, hist->params, hist->module->params_size);
