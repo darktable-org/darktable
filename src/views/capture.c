@@ -277,8 +277,6 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
   lib->image_over = DT_VIEW_DESERT;
-  int32_t mouse_over_id;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   lib->image_id=dt_view_film_strip_get_active_image(darktable.view_manager);
 
   // First of all draw image if availble

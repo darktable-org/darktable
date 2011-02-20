@@ -224,8 +224,6 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
   int areawt[2][3];
   //direction of the CA shift in a tile
   int GRBdir[2][3];
-  //offset data of the plaquette where the optical R/B data are sampled
-  int offset[2][3];
   int	shifthfloor[3], shiftvfloor[3], shifthceil[3], shiftvceil[3];
   //number of tiles in the image
   int vblsz, hblsz, vblock, hblock, vz1, hz1;
@@ -602,10 +600,6 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
 
             //data structure = CAshift[vert/hor][color]
             //j=0=vert, 1=hor
-
-
-            offset[j][c]=floor(CAshift[j][c]);
-            //offset gives NW corner of square containing the min; j=0=vert, 1=hor
 
             if (fabs(CAshift[j][c])<2.0)
             {

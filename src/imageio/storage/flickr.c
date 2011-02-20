@@ -55,6 +55,7 @@ typedef struct _flickr_api_context_t
   char *album_summary;
   int album_public;
   gboolean new_album;
+  gboolean error_occured;
 
 } _flickr_api_context_t;
 
@@ -107,6 +108,26 @@ void static _flickr_api_free( _flickr_api_context_t *ctx )
   g_free( ctx );
 }
 
+static void _flickr_api_error_handler(void *data, const char *message)
+{
+  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *flickr_auth_error_window = gtk_message_dialog_new (GTK_WINDOW (window),
+    GTK_DIALOG_DESTROY_WITH_PARENT,
+    GTK_MESSAGE_WARNING,
+    GTK_BUTTONS_CLOSE,
+    _("flickr authentication"));
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (flickr_auth_error_window),
+    "%s", message);
+
+  gtk_dialog_run (GTK_DIALOG (flickr_auth_error_window));
+  gtk_widget_destroy(flickr_auth_error_window);
+  if (data)
+  {
+    _flickr_api_context_t *ctx = (_flickr_api_context_t *)data;
+    ctx->error_occured = 1;
+  }
+}
 
 _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui)
 {
@@ -121,6 +142,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
   ctx->fc = flickcurl_new ();
   flickcurl_set_api_key (ctx->fc, API_KEY);
   flickcurl_set_shared_secret (ctx->fc, SHARED_SECRET);
+  flickcurl_set_error_handler(ctx->fc, _flickr_api_error_handler, ctx);
 
   if (!ui->user_token)
   {
@@ -156,7 +178,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     return ctx;
 
   }
-  else
+  else if (!ctx->error_occured)
   {
     frob = flickcurl_auth_getFrob(ctx->fc);
     GError *error = NULL;
@@ -237,7 +259,10 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 
   }
 
-  free(perms);
+  if (perms)
+  {
+    free(perms);
+  }
   return NULL;
 }
 
@@ -672,7 +697,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   // Upload image
   photo_status = _flickr_api_upload_photo( p, fname, caption, description, tags );
   if( !photo_status )
+  {
     result=0;
+    goto cleanup;
+  }
 
 //  int fail = 0;
   // A photoset is only created if we have an album title set
@@ -710,6 +738,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     }
   }
 
+cleanup:
+
   // And remove from filesystem..
   unlink( fname );
   g_free( caption );
@@ -719,7 +749,11 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     g_list_free(desc);
   }
 
-  dt_control_log(_("%d/%d exported to flickr webalbum"), num, total );
+  if (result)
+  {
+    //this makes sense only if the export was successful
+    dt_control_log(_("%d/%d exported to flickr webalbum"), num, total );
+  }
   return result;
 }
 

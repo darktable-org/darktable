@@ -64,6 +64,11 @@ static int usage(const char *argv0)
 
 int dt_init(int argc, char *argv[])
 {
+#ifndef __SSE2__
+  fprintf("[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
+  fprintf("[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+  return 1;
+#endif
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
@@ -231,6 +236,9 @@ int dt_init(int argc, char *argv[])
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
+  darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
+  dt_control_init(darktable.control);
+
   // initialize collection query
   darktable.collection_listeners = NULL;
   darktable.collection = dt_collection_new(NULL);
@@ -240,9 +248,6 @@ int dt_init(int argc, char *argv[])
 
   darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
-
-  darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
-  dt_control_init(darktable.control);
 
   int thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
   thumbnails = MIN(1000, MAX(20, thumbnails));

@@ -125,6 +125,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D700",                   { 789261, 332016,  34149}, { 270386,  985748, -129135}, {  4074, -230209,  999008}, {798172, 826721, 673126}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON COOLPIX P7000",          { 804947, 229630,  97717}, { 178146, 1138763, -395233}, { 88699, -282013, 1234650}, {809998, 842819, 682144}},
+
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "SONY DSLR-A100",               { 823853, 374588,  28259}, { 220200,  934509, -108643}, { 48141, -226440, 1062881}, {689651, 715225, 602127}},
 
@@ -154,6 +157,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G1",             { 747467, 300064,  74265}, { 225922, 1028946, -310913}, { 91782, -229019, 1153793}, {846222, 864502, 694458}},
+
+  // Deacon MacMillan, Kodak Q60 (IT8), strobe, well lit
+  { "Panasonic DMC-GF1",            { 802048, 330963,   7477}, { 194519, 968170,  -270004}, { 47211, -246552, 1177536}, {719223, 750900, 614120}},
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G2",             { 753250, 303024,  75287}, { 225540, 1036041, -320923}, { 90927, -233749, 1170151}, {837860, 857056, 687210}},
