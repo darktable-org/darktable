@@ -7,7 +7,7 @@ cd $DT_SRC_DIR;
 
 INSTALL_PREFIX=$1
 if [ "$INSTALL_PREFIX" =  "" ]; then
-	INSTALL_PREFIX=/usr/
+	INSTALL_PREFIX=/opt/darktable/
 fi
 
 BUILD_TYPE=$2
