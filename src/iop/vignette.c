@@ -157,7 +157,6 @@ get_grab(float pointerx, float pointery, float startx, float starty, float endx,
   return 0;
 }
 
-//FIXME: Is there a way to draw ellipses without affecting the line width?
 static void
 draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float zoom_scale)
 {
@@ -184,8 +183,8 @@ draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float 
     cairo_scale(cr, 1.0, y/x);
     cairo_arc(cr, 0.0, 0.0, x, 0.0, M_PI*2.0);
   }
-  cairo_stroke(cr);
   cairo_restore(cr);
+  cairo_stroke(cr);
 
   // outer border of the vignette
   cairo_save(cr);
@@ -199,8 +198,8 @@ draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float 
     cairo_scale(cr, 1.0, fy/fx);
     cairo_arc(cr, 0.0, 0.0, fx, 0.0, M_PI*2.0);
   }
-  cairo_stroke(cr);
   cairo_restore(cr);
+  cairo_stroke(cr);
 
   // the handles
   const float radius_sel = 6.0/zoom_scale;
