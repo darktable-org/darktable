@@ -157,55 +157,73 @@ get_grab(float pointerx, float pointery, float startx, float starty, float endx,
   return 0;
 }
 
+//FIXME: Is there a way to draw ellipses without affecting the line width?
 static void
 draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float zoom_scale)
 {
-  cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, fx, 0);
-  cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, 0, -fy);
-  cairo_stroke (cr);
+  // half width/height of the crosshair
+  float crosshair_w = 10.0/zoom_scale;
+  float crosshair_h = 10.0/zoom_scale;
 
-  cairo_save(cr);
-  cairo_scale(cr, 1, y/x);
-  cairo_arc(cr, 0, 0, x, 0, M_PI*2.0);
+  // center crosshair
+  cairo_move_to(cr, -crosshair_w, 0.0);
+  cairo_line_to(cr,  crosshair_w, 0.0);
+  cairo_move_to(cr, 0.0, -crosshair_h);
+  cairo_line_to(cr, 0.0,  crosshair_h);
   cairo_stroke(cr);
-  cairo_arc(cr, 0, 0, fx, 0, M_PI*2.0);
+
+  // inner border of the vignette
+  cairo_save(cr);
+  if(x <= y)
+  {
+    cairo_scale(cr, x/y, 1.0);
+    cairo_arc(cr, 0.0, 0.0, y, 0.0, M_PI*2.0);
+  }
+  else
+  {
+    cairo_scale(cr, 1.0, y/x);
+    cairo_arc(cr, 0.0, 0.0, x, 0.0, M_PI*2.0);
+  }
   cairo_stroke(cr);
   cairo_restore(cr);
 
-  const float radius1 = 6.0/zoom_scale;
-  const float radius2 = 4.0/zoom_scale;
-  if(grab ==  1) cairo_arc(cr, 0, 0, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, 0, 0, radius2, 0, M_PI*2.0);
+  // outer border of the vignette
+  cairo_save(cr);
+  if(fx <= fy)
+  {
+    cairo_scale(cr, fx/fy, 1.0);
+    cairo_arc(cr, 0.0, 0.0, fy, 0.0, M_PI*2.0);
+  }
+  else
+  {
+    cairo_scale(cr, 1.0, fy/fx);
+    cairo_arc(cr, 0.0, 0.0, fx, 0.0, M_PI*2.0);
+  }
   cairo_stroke(cr);
-  if(grab ==  2) cairo_arc(cr, x, 0, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, x, 0, radius2, 0, M_PI*2.0);
-  cairo_stroke(cr);
-  if(grab ==  4) cairo_arc(cr, 0, -y, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, 0, -y, radius2, 0, M_PI*2.0);
-  cairo_stroke(cr);
-  if(grab ==  8) cairo_arc(cr, fx, 0, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, fx, 0, radius2, 0, M_PI*2.0);
-  cairo_stroke(cr);
-  if(grab == 16) cairo_arc(cr, 0, -fy, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, 0, -fy, radius2, 0, M_PI*2.0);
-  cairo_stroke(cr);
+  cairo_restore(cr);
 
-//   if(grab != 0)
-//   {
-//     const float radius = 5.0/zoom_scale;
-//     if     (grab ==  1) cairo_arc(cr, 0, 0, radius, 0, M_PI*2.0);
-//     else if(grab ==  2) cairo_arc(cr, x, 0, radius, 0, M_PI*2.0);
-//     else if(grab ==  4) cairo_arc(cr, 0, y, radius, 0, M_PI*2.0);
-//     else if(grab ==  8) cairo_arc(cr, fx, 0, radius, 0, M_PI*2.0);
-//     else if(grab == 16) cairo_arc(cr, 0, fy, radius, 0, M_PI*2.0);
-//     cairo_stroke(cr);
-//   }
+  // the handles
+  const float radius_sel = 6.0/zoom_scale;
+  const float radius_reg = 4.0/zoom_scale;
+  if(grab ==  1) cairo_arc(cr, 0.0, 0.0, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, 0.0, 0.0, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  2) cairo_arc(cr, x, 0.0, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, x, 0.0, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  4) cairo_arc(cr, 0.0, -y, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, 0.0, -y, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  8) cairo_arc(cr, fx, 0.0, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, fx, 0.0, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab == 16) cairo_arc(cr, 0.0, -fy, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, 0.0, -fy, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
 
 }
 
-//FIXME: For portrait images the overlay is a bit wrong. The coordinates in mouse_moved seem to be ok though. WTF?
+//FIXME: For portrait images the overlay is a bit off. The coordinates in mouse_moved seem to be ok though. WTF?
 void
 gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
@@ -283,8 +301,8 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
     }
   }
 
-  int grab = get_grab(pzx*wd-vignette_x, pzy*ht-vignette_y, vignette_w, vignette_h, vignette_fx, vignette_fy, zoom_scale);
-
+  int grab = get_grab(pzx*wd-vignette_x, pzy*ht-vignette_y, vignette_w, -vignette_h, vignette_fx, -vignette_fy, zoom_scale);
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
   cairo_set_line_width(cr, 3.0/zoom_scale);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
   draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
@@ -294,10 +312,10 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
 
 }
 
+//FIXME: Pumping of the opposite direction when changing width/height. See two FIXMEs further down.
 int
 mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 {
-//   g_print("x: %.4f, y: %.4f, which: %d\n", x, y, which);
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p   = (dt_iop_vignette_params_t *)self->params;
   int32_t zoom, closeup;
