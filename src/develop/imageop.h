@@ -236,6 +236,15 @@ void dt_iop_reload_defaults(dt_iop_module_t *module);
 /** let plugins have breakpoints: */
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
 
+/** colorspace enums */
+typedef enum dt_iop_colorspace_type_t
+{
+	iop_cs_Lab,
+	iop_cs_rgb
+} dt_iop_colorspace_type_t;
+
+/** find which colorspace the module works within */
+dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module);
 
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride);

@@ -533,6 +533,42 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
+static int _iop_module_colorout,_iop_module_colorin;
+dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
+{
+    /* check if we do know what priority the color* plugins have */
+    if(!_iop_module_colorout && !_iop_module_colorin)
+    {
+      /* lets find out which priority colorin and colorout have */
+      GList *iop = module->dev->iop;
+      while(iop)
+      {
+        dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+        if(m != module)
+        {
+          if(!strcmp(m->op,"colorin"))
+            _iop_module_colorin = m->priority;
+          else if(!strcmp(m->op,"colorout"))
+            _iop_module_colorout = m->priority;
+        }
+    
+        /* do we have both priorities, lets break out... */
+        if(_iop_module_colorout && _iop_module_colorin)
+          break;
+        iop = g_list_next(iop);
+      }
+    }
+    
+    /* let check which colorspace module is within */
+    if (module->priority > _iop_module_colorout)
+      return iop_cs_rgb;
+    else if (module->priority > _iop_module_colorin)
+      return iop_cs_Lab;
+    
+    /* fallback to rgb */
+    return iop_cs_rgb;
+}
+
 static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
 {
   GtkExpander *expander = GTK_EXPANDER (object);
