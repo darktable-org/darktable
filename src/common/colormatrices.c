@@ -64,6 +64,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
   { "Canon EOS 50D",                {1035110, 365005,  -8057}, {-192184,  930511, -477417}, {189545, -233353, 1360870}, {863983, 888763, 730026}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Canon EOS 60D",                { 811844, 271149,  -2258}, { 233673, 1232880, -165558}, {  9354, -396515, 1055908}, {820908, 814270, 703735}},
+
   // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
   { "Canon EOS 350D DIGITAL",       { 784348, 329681, -18875}, { 227249, 1001602, -115692}, { 23834, -270844, 1011185}, {861252, 886368, 721420}},
   { "Canon EOS DIGITAL REBEL XT",   { 784348, 329681, -18875}, { 227249, 1001602, -115692}, { 23834, -270844, 1011185}, {861252, 886368, 721420}},
@@ -95,6 +98,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Pascal de Bruijn, CMP Digital Target 3, camera strobe, well lit
   { "Canon PowerShot S90",          { 866531, 231995,  55756}, {  76965, 1067474, -461502}, {106369, -243286, 1314529}, {807449, 855270, 690750}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Canon PowerShot G12",          { 738434, 188904,  71182}, { 318008, 1222260, -338455}, { 13290, -324036, 1207855}, {803146, 841522, 676529}},
+
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D40X",                   { 801178, 365555,  13702}, { 276398,  988342,  -84167}, { 21378, -264755, 1052521}, {859116, 893936, 739807}},
 
@@ -125,6 +131,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D700",                   { 789261, 332016,  34149}, { 270386,  985748, -129135}, {  4074, -230209,  999008}, {798172, 826721, 673126}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "NIKON COOLPIX P7000",          { 804947, 229630,  97717}, { 178146, 1138763, -395233}, { 88699, -282013, 1234650}, {809998, 842819, 682144}},
+
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "SONY DSLR-A100",               { 823853, 374588,  28259}, { 220200,  934509, -108643}, { 48141, -226440, 1062881}, {689651, 715225, 602127}},
 
@@ -154,6 +163,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G1",             { 747467, 300064,  74265}, { 225922, 1028946, -310913}, { 91782, -229019, 1153793}, {846222, 864502, 694458}},
+
+  // Deacon MacMillan, Kodak Q60 (IT8), strobe, well lit
+  { "Panasonic DMC-GF1",            { 802048, 330963,   7477}, { 194519, 968170,  -270004}, { 47211, -246552, 1177536}, {719223, 750900, 614120}},
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G2",             { 753250, 303024,  75287}, { 225540, 1036041, -320923}, { 90927, -233749, 1170151}, {837860, 857056, 687210}},

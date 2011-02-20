@@ -1036,12 +1036,11 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   dt_develop_t *dev = (dt_develop_t *)view->data;
   dt_dev_zoom_t zoom;
   int closeup;
-  float zoom_x, zoom_y, scale;
+  float zoom_x, zoom_y;
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-  DT_CTL_GET_GLOBAL(scale, dev_zoom_scale);
   if(which > 1)
   {
     if(up) zoom_x -= 0.02;

@@ -368,7 +368,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
 
   dt_dev_zoom_t zoom;
   float zoom_x, zoom_y, scale;
-  int closeup, x, y;
+  int x, y;
 
   // printf("process: %d %d -> %d %d scale %f\n", x, y, dev->capwidth, dev->capheight, scale);
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -383,7 +383,6 @@ restart:
   dt_dev_pixelpipe_change(dev->pipe, dev);
   // determine scale according to new dimensions
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
 
