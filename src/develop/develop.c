@@ -578,7 +578,7 @@ int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32
   }
   // printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op, *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize (stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blend_params = ?7 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blendop_params = ?7 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, h->module->version());
