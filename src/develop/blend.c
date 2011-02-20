@@ -18,24 +18,30 @@
 #include "control/control.h"
 #include "blend.h"
 
-typedef float (_blend_func)(float a,float b);
+typedef float (_blend_func)(float max,float a,float b);
 
 /* normal blend */
-static float _blend_normal(float a,float b) { return b; }
+static float _blend_normal(float max,float a,float b) { return b; }
 /* lighten */
-static float _blend_lighten(float a,float b) { return (a>b)?a:b; }
+static float _blend_lighten(float max, float a,float b) { return (a>b)?a:b; }
 /* darken */
-static float _blend_darken(float a,float b) { return (a<b)?a:b; }
+static float _blend_darken(float max, float a,float b) { return (a<b)?a:b; }
 /* multiply */
-static float _blend_multiply(float a,float b) { return (a*b); }
+static float _blend_multiply(float max, float a,float b) { return (a*b)/max; }
 /* average */
-static float _blend_average(float a,float b) { return (a+b)/2.0; }
+static float _blend_average(float max, float a,float b) { return (a+b)/2.0; }
 /* add */
-static float _blend_add(float a,float b) { return a+b; }
+static float _blend_add(float max, float a,float b) { return fmin(max,a+b); }
 /* substract */
-static float _blend_substract(float a,float b) { return a-b; }
+static float _blend_substract(float max, float a,float b) { return ((a+b<max) ? 0:(b+a-max)); }
 /* difference */
-static float _blend_difference(float a,float b) { return fabs(a-b); }
+static float _blend_difference(float max, float a,float b) { return fabs(a-b); }
+
+/* screen */
+static float _blend_screen(float max, float a,float b) { return max-(((max-a)*(max-b))/max); }
+/* overlay */
+static float _blend_overlay(float max, float a,float b) { return ((a < (max/2.0)) ? (2*b*a/max):(max-2*(max-b)*(max-a)/max)); }
+
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
@@ -45,10 +51,10 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 	_blend_func *blend = NULL;
 	dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 	/* check if blend is disabled */
-	if(!d || d->mode==0) return;
+	if (!d || d->mode==0) return;
 	
 	/* select the blend operator */
-	switch(d->mode)
+	switch (d->mode)
 	{
 		case DEVELOP_BLEND_LIGHTEN:
 			blend = _blend_lighten;
@@ -74,6 +80,12 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 		case DEVELOP_BLEND_DIFFERENCE:
 			blend = _blend_difference;
 		break;
+		case DEVELOP_BLEND_SCREEN:
+			blend = _blend_screen;
+		break;
+		case DEVELOP_BLEND_OVERLAY:
+			blend = _blend_overlay;
+		break;
 		
 		/* fallback to normal blend */
 		case DEVELOP_BLEND_NORMAL:
@@ -85,16 +97,27 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 	if (!(d->mode & DEVELOP_BLEND_MASK_FLAG))
 	{
 		/* blending without mask */
-		const float opacity = d->opacity/100.0;
+		
+		/* get the clipped opacity value  0 - 1 */
+		const float opacity = fmin(fmax(0,(d->opacity/100.0)),1.0);
+
+		
+		/* get channel max values depending on colorspace */
+		float max[3] = {1.0};
+		dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
+		
+		/* if module is in lab space, lets set max for L */
+		if (cst == iop_cs_Lab) max[0]=100.0;
+		
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in,roi_out,out,blend,d)
+#pragma omp parallel for default(none) shared(in,roi_out,out,blend,d,max)
 #endif
-		for(int y=0;y<roi_out->height;y++)
-			for(int x=0;x<roi_out->width;x++)
+		for (int y=0;y<roi_out->height;y++)
+			for (int x=0;x<roi_out->width;x++)
 			{
 				int index=(y*roi_out->width+x)*ch;
-				for(int k=index;k<(index+3);k++)
-					out[k] = (in[k] * (1.0-opacity)) + (blend(in[k],out[k]) * opacity);
+				for (int k=index;k<(index+3);k++)
+					out[k] = (in[k] * (1.0-opacity)) + (blend(max[k], in[k], out[k]) * opacity);
 			}	
 	}
 	else
