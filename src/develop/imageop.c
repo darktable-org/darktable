@@ -533,11 +533,11 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
-static int _iop_module_colorout,_iop_module_colorin;
+static int _iop_module_colorout=0,_iop_module_colorin=0;
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 {
     /* check if we do know what priority the color* plugins have */
-    if(!_iop_module_colorout && !_iop_module_colorin)
+    if(_iop_module_colorout==0 && _iop_module_colorin==0)
     {
       /* lets find out which priority colorin and colorout have */
       GList *iop = module->dev->iop;
@@ -558,7 +558,7 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
         iop = g_list_next(iop);
       }
     }
-    
+
     /* let check which colorspace module is within */
     if (module->priority > _iop_module_colorout)
       return iop_cs_rgb;
@@ -766,6 +766,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("add"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("substract"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("difference"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("screen"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("overlay"));
     
     gtk_widget_set_sensitive(GTK_WIDGET(bd->blend_modes_combo),FALSE);
     gtk_widget_set_sensitive(bd->opacity_slider,FALSE);
