@@ -105,20 +105,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     s*=saturation;
     l*=brightness;
     hsl2rgb(&out[index],&out[index+1],&out[index+2],h,s,l);
-
-/*    out[index] =  CLIP(in[index]*brightness);
-    out[index+1] =  CLIP(in[index+1]*brightness);
-    out[index+2] =  CLIP(in[index+2]*brightness);*/
   }
-
-  int rad = MAX_RADIUS*(fmin(100.0,data->size+1)/100.0);
-  const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
+ 
+  const float w = piece->iwidth*piece->iscale;
+  const float h = piece->iheight*piece->iscale;
+  int mrad = sqrt( w*w + h*h) * 0.01;
+  int rad = mrad*(fmin(100.0,data->size+1)/100.0);
+  const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* horizontal blur out into out */
   const int range = 2*radius+1;
   const int hr = range/2;
 
-  const int size = roi_out->width>roi_out->height?roi_out->width:roi_out->height;
+  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
   float *scanline[3]={0};
   scanline[0]  = malloc((size*sizeof(float))*ch);
   scanline[1]  = malloc((size*sizeof(float))*ch);
@@ -340,7 +339,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->label1 = dtgtk_reset_label_new(_("size"), self, &p->size, sizeof(float));
   g->label2 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
   g->label3 = dtgtk_reset_label_new(_("brightness"), self, &p->brightness, sizeof(float));
-  g->label4 = dtgtk_reset_label_new(_("amount"), self, &p->amount, sizeof(float));
+  g->label4 = dtgtk_reset_label_new(_("mix"), self, &p->amount, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
@@ -360,7 +359,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the size of blur"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the saturation of blur"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the brightness of blur"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("the amount of blur"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("the mix of effect"), (char *)NULL);
   
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (size_callback), self);
