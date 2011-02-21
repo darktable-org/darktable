@@ -124,40 +124,56 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     return;
   }
 
+  float *const tmp = dt_alloc_align(16, sizeof(float)*ch*roi_out->width*roi_out->height);
+
   const int wd = 2*rad+1;
-  float mat[wd*wd];
-  float *m;
+  float mat[wd];
   const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
 
-  memset(mat, 0, sizeof(float)*wd*wd);
-
   // init gaussian kernel
-  m = mat;
-  for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
-      weight += *m = expf(- (l*l + k*k)/(2.f*sigma2));
-  m = mat;
-  for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
-      *m /= weight;
+  for(int l=-rad; l<=rad; l++)
+      weight += mat[l+rad] = expf(- l*l/(2.f*sigma2));
+  for(int l=0; l<wd; l++)
+      mat[l] /= weight;
 
-  // gauss blur the image
+  // gauss blur the image horizontally
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#endif
+  for(int j=0; j<roi_out->height; j++)
+  {
+    const float *in = ((float *)ivoid) + ch*(j*roi_in->width + rad);
+    float *out = tmp + ch*(j*roi_out->width + rad);
+    for(int i=rad; i<roi_out->width-rad; i++)
+    {
+      const float *inp = in - ch*rad;
+      const float *m = mat;
+      float sum = 0.0f;
+      for(int k=-rad; k<=rad; k++,m++,inp+=ch)
+	sum += *m * *inp;
+      *out = sum;
+      out += ch;
+      in += ch;
+    }
+  }
+
+  // gauss blur the image horizontally
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
   for(int j=rad; j<roi_out->height-rad; j++)
   {
-    float *in = ((float *)ivoid) + ch*(j*roi_in->width + rad);
+    const float *in = tmp + ch*(j*roi_in->width + rad);
     float *out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
     for(int i=rad; i<roi_out->width-rad; i++)
     {
-      float *m = mat;
+      const int step = ch*roi_in->width;
+      const float *inp = in - step*rad;
+      const float *m = mat;
       float sum = 0.0f;
-      for(int l=-rad; l<=rad; l++)
-      {
-        float *inp = in + ch*(l*roi_in->width-rad);
-        for(int k=-rad; k<=rad; k++,m++,inp+=ch)
-          sum += *m * *inp;
-      }
+      for(int k=-rad; k<=rad; k++,m++,inp+=step)
+	sum += *m * *inp;
       *out = sum;
       out += ch;
       in += ch;
@@ -169,6 +185,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
   for(int j=roi_out->height-rad; j<roi_out->height; j++)
     memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
+
+  free(tmp);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
