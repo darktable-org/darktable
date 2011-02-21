@@ -372,15 +372,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
 
   // set scrollbar positions, clamp zoom positions
   sqlite3_stmt *stmt = NULL;
-  char newquery[1024];
-  snprintf(newquery, 1024, "select count(id) %s", query + 17);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, newquery, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-  int count = 1;
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  int count = dt_collection_get_count (darktable.collection);
   if(count == 0)
   {
     zoom_x = zoom_y = 0.0f;
