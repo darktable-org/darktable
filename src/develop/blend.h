@@ -32,7 +32,8 @@
 #define DEVELOP_BLEND_SUBSTRACT				0x07
 #define DEVELOP_BLEND_DIFFERENCE				0x08
 #define DEVELOP_BLEND_SCREEN				0x09
-#define DEVELOP_BLEND_OVERLAY				0x10
+#define DEVELOP_BLEND_OVERLAY				0x0A
+#define DEVELOP_BLEND_HARDLIGHT			0x0B
 
 typedef struct dt_develop_blend_params_t {
 	/** blending mode */
