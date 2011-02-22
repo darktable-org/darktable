@@ -360,10 +360,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the size of blur"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the saturation of blur"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the brightness of blur"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("the mix of effect"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the size of blur"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the saturation of blur"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the brightness of blur"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("the mix of effect"), (char *)NULL);
   
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (size_callback), self);

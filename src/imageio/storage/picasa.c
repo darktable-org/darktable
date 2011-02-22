@@ -818,13 +818,13 @@ gui_init (dt_imageio_module_storage_t *self)
   while(it)
   {
     GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
-    gtk_object_set(GTK_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
+    g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (char *)NULL);
     it = g_list_next(it);
   }
   g_list_free(renderers);
 
   ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
-  gtk_object_set(GTK_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), (char *)NULL);
+  g_object_set(G_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), (char *)NULL);
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
   gtk_combo_box_set_row_separator_func(ui->comboBox1,combobox_separator,ui->comboBox1,NULL);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);

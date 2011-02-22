@@ -859,15 +859,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->whratio), TRUE, TRUE, 0);
 
-  gtk_object_set(GTK_OBJECT(g->scale), "tooltip-text", _("the radii scale of vignette for start of fall-off"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->falloff_scale), "tooltip-text", _("the radii scale of vignette for end of fall-off"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->brightness), "tooltip-text", _("strength of effect on brightness"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->autoratio), "tooltip-text", _("enable to have the ratio automatically follow the image size"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale), "tooltip-text", _("the radii scale of vignette for start of fall-off"), (char *)NULL);
+  g_object_set(G_OBJECT(g->falloff_scale), "tooltip-text", _("the radii scale of vignette for end of fall-off"), (char *)NULL);
+  g_object_set(G_OBJECT(g->brightness), "tooltip-text", _("strength of effect on brightness"), (char *)NULL);
+  g_object_set(G_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
+  g_object_set(G_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"), (char *)NULL);
+  g_object_set(G_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"), (char *)NULL);
+  g_object_set(G_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
+  g_object_set(G_OBJECT(g->autoratio), "tooltip-text", _("enable to have the ratio automatically follow the image size"), (char *)NULL);
+  g_object_set(G_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
 
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale),DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->falloff_scale),DARKTABLE_SLIDER_FORMAT_PERCENT);

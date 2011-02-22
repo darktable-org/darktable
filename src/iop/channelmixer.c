@@ -378,7 +378,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-// gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the highlight threshold"), (char *)NULL);
+// g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the highlight threshold"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (red_callback), self);

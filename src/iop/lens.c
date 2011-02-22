@@ -494,7 +494,7 @@ static GtkComboBoxEntry *combo_entry_text (
     gtk_table_attach (GTK_TABLE (container), combo, x+1, x+2, y, y+1, 0, 0, 2, 0);
   else if (GTK_IS_BOX (container))
     gtk_box_pack_start (GTK_BOX (container), combo, TRUE, TRUE, 2);
-  gtk_object_set(GTK_OBJECT(combo), "tooltip-text", tip, (char *)NULL);
+  g_object_set(G_OBJECT(combo), "tooltip-text", tip, (char *)NULL);
 
   return GTK_COMBO_BOX_ENTRY (combo);
 }
@@ -682,7 +682,7 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
   if (!cam)
   {
     gtk_button_set_label(GTK_BUTTON(g->camera_model), "");
-    gtk_object_set(GTK_OBJECT(g->camera_model), "tooltip-text", "", (char *)NULL);
+    g_object_set(G_OBJECT(g->camera_model), "tooltip-text", "", (char *)NULL);
     return;
   }
 
@@ -715,7 +715,7 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
                           "crop factor:\t%.1f"),
                         maker, model, _variant,
                         cam->Mount, cam->CropFactor);
-  gtk_object_set(GTK_OBJECT(g->camera_model), "tooltip-text", fm, (char *)NULL);
+  g_object_set(G_OBJECT(g->camera_model), "tooltip-text", fm, (char *)NULL);
   g_free (fm);
 }
 
@@ -952,7 +952,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   if (!lens)
   {
     gtk_button_set_label(GTK_BUTTON(g->lens_model), "");
-    gtk_object_set(GTK_OBJECT(g->lens_model), "tooltip-text", "", (char *)NULL);
+    g_object_set(G_OBJECT(g->lens_model), "tooltip-text", "", (char *)NULL);
     return;
   }
 
@@ -1001,7 +1001,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
                         maker ? maker : "?", model ? model : "?",
                         focal, aperture, lens->CropFactor,
                         lf_get_lens_type_desc (lens->Type, NULL), mounts);
-  gtk_object_set(GTK_OBJECT(g->lens_model), "tooltip-text", fm, (char *)NULL);
+  g_object_set(G_OBJECT(g->lens_model), "tooltip-text", fm, (char *)NULL);
   g_free (fm);
 
   /* Create the focal/aperture/distance combo boxes */
@@ -1027,7 +1027,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
                     G_CALLBACK(lens_comboentry_focal_update), self);
   GtkWidget* button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (lens_focal_reset), self);
 
@@ -1042,7 +1042,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
                     G_CALLBACK(lens_comboentry_aperture_update), self);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (lens_aperture_reset), self);
 
@@ -1275,7 +1275,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->camera_model), TRUE, TRUE, 0);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("find camera"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("find camera"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (camera_autosearch_clicked), self);
   gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -1290,7 +1290,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->lens_model), TRUE, TRUE, 0);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("find lens"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("find lens"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (lens_autosearch_clicked), self);
   gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -1322,7 +1322,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
 
   g->target_geom = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_object_set(GTK_OBJECT(g->target_geom), "tooltip-text",
+  g_object_set(G_OBJECT(g->target_geom), "tooltip-text",
                  _("target geometry"), (char *)NULL);
   gtk_combo_box_append_text(g->target_geom, _("rectilinear"));
   gtk_combo_box_append_text(g->target_geom, _("fish-eye"));
@@ -1343,7 +1343,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("auto scale"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("auto scale"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (autoscale_pressed), self);
   gtk_table_attach(GTK_TABLE(self->widget), hbox, 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -1353,7 +1353,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // reverse direction
   g->reverse = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("reverse")));
-  gtk_object_set(GTK_OBJECT(g->reverse), "tooltip-text", _("apply distortions instead of correcting them"), (char *)NULL);
+  g_object_set(G_OBJECT(g->reverse), "tooltip-text", _("apply distortions instead of correcting them"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->reverse), 1, 2, 5, 6, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->reverse), "toggled",
@@ -1370,8 +1370,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 1, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
-  gtk_object_set(GTK_OBJECT(g->tca_r), "tooltip-text", _("override transversal chromatic aberration correction for red channel\nleave at 1.0 for defaults"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->tca_b), "tooltip-text", _("override transversal chromatic aberration correction for blue channel\nleave at 1.0 for defaults"), (char *)NULL);
+  g_object_set(G_OBJECT(g->tca_r), "tooltip-text", _("override transversal chromatic aberration correction for red channel\nleave at 1.0 for defaults"), (char *)NULL);
+  g_object_set(G_OBJECT(g->tca_b), "tooltip-text", _("override transversal chromatic aberration correction for blue channel\nleave at 1.0 for defaults"), (char *)NULL);
 }
 
 
