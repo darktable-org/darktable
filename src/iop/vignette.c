@@ -515,11 +515,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const dt_iop_roi_t *buf_in = &piece->buf_in;
   const int ch = piece->colors;
 
-  /* Center coordinates of buf_in */
+  /* Center coordinates of buf_in, these should not consider buf_in->{x,y}! */
   const dt_iop_vector_2d_t buf_center =
   {
-    (buf_in->width - buf_in->x) / 2.0 + buf_in->x,
-    (buf_in->height - buf_in->y) / 2.0 + buf_in->y
+    buf_in->width * .5f,
+    buf_in->height * .5f
   };
   /* Center coordinates of vignette center */
   const dt_iop_vector_2d_t vignette_center =
@@ -569,8 +569,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // Pre-scale the center offset
   const dt_iop_vector_2d_t roi_center_scaled =
   {
-    -roi_center.x * xscale,
-    -roi_center.y * yscale
+    roi_center.x * xscale,
+    roi_center.y * yscale
   };
 
 #ifdef _OPENMP
@@ -586,8 +586,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // current pixel coord translated to local coord
       const dt_iop_vector_2d_t pv =
       {
-        fabsf(i*xscale+roi_center_scaled.x),
-        fabsf(j*yscale+roi_center_scaled.y)
+        fabsf(i*xscale-roi_center_scaled.x),
+        fabsf(j*yscale-roi_center_scaled.y)
       };
 
       // Calculate the pixel weight in vignette
