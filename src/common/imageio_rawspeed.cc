@@ -122,7 +122,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       d->decodeMetaData(meta);
       RawImage r = d->mRaw;
 
-      img->filters = NULL;
+      img->filters = 0;
       if( r->subsampling.x > 1 || r->subsampling.y > 1 )
       {
         img->flags &= ~DT_IMAGE_LDR;
@@ -241,7 +241,7 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
       d->decodeMetaData(meta);
       RawImage r = d->mRaw;
 
-      img->filters = NULL;
+      img->filters = 0;
       if( r->subsampling.x > 1 || r->subsampling.y > 1 )
       {
         img->flags &= ~DT_IMAGE_LDR;
