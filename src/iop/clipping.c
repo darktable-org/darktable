@@ -41,13 +41,6 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 
-#define GUIDE_NONE 0
-#define GUIDE_GRID 1
-#define GUIDE_THIRD 2
-#define GUIDE_DIAGONAL 3
-#define GUIDE_TRIANGL 4
-#define GUIDE_GOLDEN 5
-
 DT_MODULE(3)
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
@@ -629,19 +622,9 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->keystone_v, p->k_v);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
-  // reset aspect combo box
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), 0);
-  // update clip box
-  if (g->current_aspect == 0 || g->current_aspect == -1) {
-    g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
-    g->clip_w = g->clip_h = 1.0;
-    g->old_clip_x = g->old_clip_y = 0.0;
-    g->old_clip_w = g->old_clip_h = 1.0;
-    dt_control_queue_draw_all();
-    dt_iop_request_focus(self);
-  }
-  // reset guide lines combo box
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->guide_lines), GUIDE_NONE);
+  int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
+  if(act < 0 || act > 7) act = 0;
+  gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
 }
 
 void init(dt_iop_module_t *module)
@@ -709,6 +692,13 @@ aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 #define PHI      1.61803398874989479F
 // 1/PHI
 #define INVPHI   0.61803398874989479F
+
+#define GUIDE_NONE 0
+#define GUIDE_GRID 1
+#define GUIDE_THIRD 2
+#define GUIDE_DIAGONAL 3
+#define GUIDE_TRIANGL 4
+#define GUIDE_GOLDEN 5
 
 static void
 guides_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
