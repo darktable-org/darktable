@@ -208,6 +208,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[index+1] = in[index+1]*(1-amount) + out[index+1]*amount;
     out[index+2] = in[index+2]*(1-amount) + out[index+2]*amount;
   }
+
+  for(int i=0; i<3; ++i)
+    if(scanline[i])
+      free(scanline[i]);
 }
 
 static void
@@ -377,3 +381,5 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

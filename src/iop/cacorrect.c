@@ -639,6 +639,9 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
         else
         {
           printf ("blockdenom vanishes \n");
+          if(buffer) free(buffer);
+          if(buffer1) free(buffer1);
+          if(Gtmp) free(Gtmp);
           return;
         }
       }
@@ -760,6 +763,9 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
       if (numblox[1]< 10)
       {
         printf ("numblox = %d \n",numblox[1]);
+        if(buffer) free(buffer);
+        if(buffer1) free(buffer1);
+        if(Gtmp) free(Gtmp);
         return;
       }
     }
@@ -772,6 +778,9 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
         if (res)
         {
           printf ("CA correction pass failed -- can't solve linear equations for color %d direction %d...\n",c,dir);
+          if(buffer) free(buffer);
+          if(buffer1) free(buffer1);
+          if(Gtmp) free(Gtmp);
           return;
         }
       }

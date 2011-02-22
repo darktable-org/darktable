@@ -133,7 +133,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 {
   char *perms = NULL, *frob;
   gchar *token;
-  char *flickr_user_token;
+  char *flickr_user_token = NULL;
   gint result;
   _flickr_api_context_t *ctx = (_flickr_api_context_t *)g_malloc(sizeof(_flickr_api_context_t));
   memset(ctx,0,sizeof(_flickr_api_context_t));
@@ -159,10 +159,11 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
       {
         flickr_user_token = g_strdup(_user_token);
         perms = flickcurl_auth_checkToken(ctx->fc, flickr_user_token);
-        g_free (_username);
-        g_free (_user_token);
       }
+      g_free (_username);
     }
+    if (_user_token)
+      g_free (_user_token);
   }
   else
   {
@@ -765,6 +766,7 @@ get_params(dt_imageio_module_storage_t *self, int *size)
   *size = sizeof(int64_t);
   dt_storage_flickr_gui_data_t *ui =(dt_storage_flickr_gui_data_t *)self->gui_data;
   dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)g_malloc(sizeof(dt_storage_flickr_params_t));
+  if(!d) return NULL;
   memset(d,0,sizeof(dt_storage_flickr_params_t));
   d->hash = 1;
 
@@ -794,13 +796,18 @@ get_params(dt_imageio_module_storage_t *self, int *size)
           {
             // Something went wrong...
             fprintf(stderr,"Something went wrong.. album index %d = NULL\n",index-3 );
+            g_free(d);
             return NULL;
           }
           break;
       }
 
     }
-    else return NULL;
+    else
+    {
+      g_free(d);
+      return NULL;
+    }
 
     d->public_image = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton1));
     d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
@@ -822,6 +829,7 @@ get_params(dt_imageio_module_storage_t *self, int *size)
     set_status(ui,_("not authenticated"), "#e07f7f");
     gtk_widget_set_sensitive(GTK_WIDGET( ui->comboBox1 ) ,FALSE);
     dt_control_log(_("Flickr account not authenticated"));
+    g_free(d);
     return NULL;
   }
   return d;
@@ -861,3 +869,4 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   free(params);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
