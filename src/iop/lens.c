@@ -679,15 +679,16 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
   const char *maker, *model, *variant;
   char _variant [100];
 
-  strncpy(p->camera, cam->Model, 52);
-  p->crop = cam->CropFactor;
-  g->camera = cam;
   if (!cam)
   {
     gtk_button_set_label(GTK_BUTTON(g->camera_model), "");
     gtk_object_set(GTK_OBJECT(g->camera_model), "tooltip-text", "", (char *)NULL);
     return;
   }
+
+  strncpy(p->camera, cam->Model, 52);
+  p->crop = cam->CropFactor;
+  g->camera = cam;
 
   maker = lf_mlstr_get (cam->Maker);
   model = lf_mlstr_get (cam->Model);
@@ -1418,3 +1419,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

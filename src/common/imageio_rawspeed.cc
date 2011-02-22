@@ -113,6 +113,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
     TiffParser t(m);
     t.parseData();
     d = t.getDecoder();
+    if(!d) return DT_IMAGEIO_FILE_CORRUPTED;
     try
     {
       d->checkSupport(meta);
@@ -231,6 +232,7 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
     TiffParser t(m);
     t.parseData();
     d = t.getDecoder();
+    if(!d) return DT_IMAGEIO_FILE_CORRUPTED;
     try
     {
       d->checkSupport(meta);
@@ -399,3 +401,5 @@ dt_imageio_open_rawspeed_sraw_preview(dt_image_t *img, RawImage r)
 }
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

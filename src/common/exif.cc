@@ -960,6 +960,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     // legacy fallback:
     char dtfilename[1024];
     strncpy(dtfilename, filename, 1024);
+    dtfilename[1023] = '\0';
     char *c = dtfilename + strlen(dtfilename);
     while(c > dtfilename && *c != '.') c--;
     sprintf(c, ".dttags");
@@ -1142,3 +1143,4 @@ void dt_exif_cleanup()
   Exiv2::XmpParser::terminate();
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

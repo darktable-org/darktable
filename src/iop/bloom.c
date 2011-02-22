@@ -186,7 +186,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 
-
   /* screen blend lightness with orginal */
 
 #ifdef _OPENMP
@@ -201,6 +200,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     outp[2] = inp[2];
   }
 
+  if(scanline)
+    free(scanline);
+  if(blurlightness)
+    free(blurlightness);
 }
 
 static void
