@@ -158,6 +158,42 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   /* get the count of current collection */
   int count = dt_collection_get_count (darktable.collection);
 
+  if(count == 0)
+  {
+    const float fs = 15.0f;
+    const float ls = 1.5f*fs;
+    const float offy = height*0.2f;
+    const float offx = 60;
+    const float at = 0.3f;
+    cairo_set_font_size(cr, fs);
+    cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_move_to(cr, offx, offy);
+    cairo_show_text(cr, _("this collection is empty."));
+    cairo_move_to(cr, offx, offy + 2*ls);
+    cairo_show_text(cr, _("if you didn't import any images yet"));
+    cairo_move_to(cr, offx, offy + 3*ls);
+    cairo_show_text(cr, _("do that from the top left expander."));
+    cairo_move_to(cr, offx - 10.0f, offy + 3*ls - ls*.25f);
+    cairo_line_to(cr, 0.0f, 10.0f);
+    cairo_set_source_rgba(cr, .7, .7, .7, at);
+    cairo_stroke(cr);
+    cairo_move_to(cr, offx, offy + 5*ls);
+    cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
+    cairo_show_text(cr, _("try to relax the filter settings in the top panel"));
+    cairo_rel_move_to(cr, 10.0f, -ls*.25f);
+    cairo_line_to(cr, width*0.5f, 0.0f);
+    cairo_set_source_rgba(cr, .7, .7, .7, at);
+    cairo_stroke(cr);
+    cairo_move_to(cr, offx, offy + 6*ls);
+    cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
+    cairo_show_text(cr, _("or in the collection plugin in the left panel."));
+    cairo_move_to(cr, offx - 10.0f, offy + 6*ls - ls*0.25f);
+    cairo_rel_line_to(cr, - offx + 10.0f, 0.0f);
+    cairo_set_source_rgba(cr, .7, .7, .7, at);
+    cairo_stroke(cr);
+  }
+
   /* get the collection query */
   const gchar *query=dt_collection_get_query (darktable.collection);
   if(!query)
