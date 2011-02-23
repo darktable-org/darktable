@@ -241,7 +241,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
     }
     else
-    {
+    {      
       slider->is_dragging=TRUE;
       slider->prev_x_root=event->x_root;
       if( slider->type==DARKTABLE_SLIDER_BAR) slider->is_changed=TRUE;
@@ -254,7 +254,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
 static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
 {
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
-
+  
   if( event->button==1 )
   {
     if( !(
@@ -268,7 +268,7 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
         // First get some dimention info
         GdkRectangle vr;
         _slider_get_value_area(widget,&vr);
-
+ 
         // Adjust rect to match dimensions for bar
         vr.x+=DTGTK_SLIDER_BORDER_WIDTH*2;
         vr.width-=(DTGTK_SLIDER_BORDER_WIDTH*4);
@@ -497,14 +497,15 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_SLIDER(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
+  
+  if (widget->allocation.width<=1) return FALSE;
+  
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
   int state = gtk_widget_get_state(widget);
   int width = widget->allocation.width;
   int height = widget->allocation.height;
   
-   if(width<=1) return FALSE;	// VERY STRANGE, expose seemed to be called before a widgetallocation has been made...
-
   /* get value fill rectangle constraints*/
   GdkRectangle vr;
   _slider_get_value_area(widget,&vr);
@@ -512,6 +513,9 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   /* create cairo context */
   cairo_t *cr;
   cr = gdk_cairo_create(widget->window);
+  
+  /* hardcode state for the rest of control */
+  state = GTK_STATE_PRELIGHT;
   
   /* fill value rect */
   gfloat value = gtk_adjustment_get_value(slider->adjustment);
@@ -522,7 +526,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
                           gtk_adjustment_get_lower(slider->adjustment)
                         );
   
-  state = GTK_STATE_PRELIGHT;
+
   cairo_set_source_rgba(cr,
                        (style->bg[state].red/65535.0)*1.7,
                        (style->bg [state].green/65535.0)*1.7,
@@ -549,7 +553,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   gchar *label = (gchar *)g_object_get_data(G_OBJECT(widget),DTGTK_SLIDER_LABEL_KEY);
   if (label)
   {
-    cairo_set_font_size(cr,vr.height*0.45);  
+    cairo_set_font_size(cr,vr.height*0.5);  
     cairo_text_extents(cr, "j`", &ext);
     cairo_move_to(cr, vr.x+(DTGTK_SLIDER_BORDER_WIDTH*2),vr.y+ext.height);
     cairo_show_text(cr, label);
@@ -557,7 +561,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
 
   /* Draw value unit */
   gchar *unit = (gchar *)g_object_get_data (G_OBJECT(slider),DTGTK_SLIDER_VALUE_UNIT_KEY);
-  cairo_set_font_size(cr,vr.height*0.35);  
+  cairo_set_font_size(cr,vr.height*0.45);  
   cairo_text_extents(cr, "%%", &ext);
   int unitwidth = ext.width;
   if(unit)
