@@ -29,8 +29,12 @@
 #include "slider.h"
 #include "gui/gtk.h"
 
-#define DTGTK_SLIDER_ADJUST_BUTTON_WIDTH 12
-#define DTGTK_SLIDER_BORDER_WIDTH 2
+#define DTGTK_SLIDER_LABEL_KEY  "dtgtk_slider_label"
+#define DTGTK_SLIDER_VALUE_UNIT_KEY  "dtgtk_slider_value_unit"
+
+#define DTGTK_SLIDER_CONTROL_MIN_HEIGHT	22
+#define DTGTK_SLIDER_ADJUST_BUTTON_WIDTH 10
+#define DTGTK_SLIDER_BORDER_WIDTH 1
 #define DTGTK_VALUE_SENSITIVITY 5.0
 #define DTGTK_SLIDER_SENSIBILITY_KEY GDK_Control_L
 // Delay before emitting value change while draggin value.. (prevent hogging hostapp)
@@ -65,12 +69,23 @@ static guint _signals[LAST_SIGNAL] = { 0 };
 
 void _slider_get_value_area(GtkWidget *widget,GdkRectangle *rect)
 {
+  rect->x = DTGTK_SLIDER_BORDER_WIDTH;
+  rect->y = DTGTK_SLIDER_BORDER_WIDTH;
+  rect->width=widget->allocation.width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH-rect->x;
+  rect->height= widget->allocation.height-(DTGTK_SLIDER_BORDER_WIDTH*2);
+}
+
+#if 0
+void _slider_get_value_area(GtkWidget *widget,GdkRectangle *rect)
+{
   rect->x = DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+(DTGTK_SLIDER_BORDER_WIDTH*2);
   rect->y = DTGTK_SLIDER_BORDER_WIDTH;
   rect->width=widget->allocation.width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-(DTGTK_SLIDER_BORDER_WIDTH*2)-rect->x;
   rect->height= widget->allocation.height-(DTGTK_SLIDER_BORDER_WIDTH*2);
 }
+#endif
 
+#if 0
 gdouble _slider_translate_value_to_pos(GtkAdjustment *adj,GdkRectangle *value_area,gdouble value)
 {
   double lower=gtk_adjustment_get_lower(adj);
@@ -78,6 +93,7 @@ gdouble _slider_translate_value_to_pos(GtkAdjustment *adj,GdkRectangle *value_ar
   gint barwidth=value_area->width;
   return barwidth*((value-lower)/normrange);
 }
+#endif
 
 gdouble _slider_translate_pos_to_value(GtkAdjustment *adj,GdkRectangle *value_area,gint x)
 {
@@ -115,6 +131,32 @@ static void _slider_class_init (GtkDarktableSliderClass *klass)
                               GTK_TYPE_NONE,0);
 }
 
+
+static void _slider_init (GtkDarktableSlider *slider)
+{
+  slider->is_dragging=FALSE;
+  slider->is_sensibility_key_pressed=FALSE;
+  slider->entry=gtk_entry_new();
+
+  gtk_widget_add_events (GTK_WIDGET (slider),
+                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+                         GDK_ENTER_NOTIFY_MASK |  GDK_LEAVE_NOTIFY_MASK |
+                         GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK |
+                         GDK_POINTER_MOTION_MASK);
+
+  GtkWidget *hbox=gtk_hbox_new(TRUE,0);
+  slider->hbox = GTK_HBOX(hbox);
+
+  gtk_box_pack_start(GTK_BOX(hbox),slider->entry,TRUE,TRUE,0);
+
+  gtk_container_add(GTK_CONTAINER(slider),hbox);
+
+  gtk_entry_set_has_frame (GTK_ENTRY(slider->entry), FALSE);
+  g_signal_connect (G_OBJECT (slider->entry), "key-press-event", G_CALLBACK(_slider_entry_key_event), (gpointer)slider);
+  dt_gui_key_accel_block_on_focus (slider->entry);
+}
+
+#if 0
 static void _slider_init (GtkDarktableSlider *slider)
 {
   slider->is_dragging=FALSE;
@@ -151,6 +193,7 @@ static void _slider_init (GtkDarktableSlider *slider)
   //g_signal_connect (G_OBJECT (slider->entry), "size-allocate", G_CALLBACK(_slider_entry_size_allocate), (gpointer)slider);
 
 }
+#endif
 
 static gboolean _slider_postponed_value_change(gpointer data)
 {
@@ -371,7 +414,7 @@ static void  _slider_size_request(GtkWidget *widget,GtkRequisition *requisition)
   GTK_WIDGET_CLASS(_slider_parent_class)->size_request(widget, requisition);
 
   requisition->width = 100;
-  requisition->height = 20;
+  requisition->height = DTGTK_SLIDER_CONTROL_MIN_HEIGHT;
 }
 
 static void _slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
@@ -414,7 +457,7 @@ static void _slider_realize(GtkWidget *widget)
   attributes.x = widget->allocation.x;
   attributes.y = widget->allocation.y;
   attributes.width = 100;
-  attributes.height = 20;
+  attributes.height = DTGTK_SLIDER_CONTROL_MIN_HEIGHT;
 
   attributes.wclass = GDK_INPUT_OUTPUT;
   attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
@@ -428,6 +471,130 @@ static void _slider_realize(GtkWidget *widget)
 
 }
 
+// helper function to render a filled rectangle with rounded corners, type defined if its ctrl background or value
+static void _slider_draw_rounded_rect(cairo_t *cr,gfloat x,gfloat y,gfloat width,gfloat height,gfloat radius,int type)
+{
+  double degrees = M_PI / 180.0;
+  cairo_new_sub_path (cr);
+  if(type==1)
+  {
+    cairo_move_to(cr,x+width,y);
+    cairo_line_to(cr,x+width,y+height);
+  }
+  else
+  {
+    cairo_arc (cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
+    cairo_arc (cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
+  }
+  cairo_arc (cr, x + radius, y + height - radius, radius, 90 * degrees, 180 * degrees);
+  cairo_arc (cr, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
+  cairo_close_path (cr);
+  cairo_fill (cr);
+}
+
+static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
+{
+  g_return_val_if_fail(widget != NULL, FALSE);
+  g_return_val_if_fail(DTGTK_IS_SLIDER(widget), FALSE);
+  g_return_val_if_fail(event != NULL, FALSE);
+  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
+  GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
+  int state = gtk_widget_get_state(widget);
+  int width = widget->allocation.width;
+  int height = widget->allocation.height;
+  
+   if(width<=1) return FALSE;	// VERY STRANGE, expose seemed to be called before a widgetallocation has been made...
+
+  /* get value fill rectangle constraints*/
+  GdkRectangle vr;
+  _slider_get_value_area(widget,&vr);
+  
+  /* create cairo context */
+  cairo_t *cr;
+  cr = gdk_cairo_create(widget->window);
+  
+  /* fill value rect */
+  gfloat value = gtk_adjustment_get_value(slider->adjustment);
+  
+  /* convert scale value to range 0.0-1.0*/
+  gfloat vscale = (value - gtk_adjustment_get_lower(slider->adjustment)) / 
+                        (gtk_adjustment_get_upper(slider->adjustment) - 
+                          gtk_adjustment_get_lower(slider->adjustment)
+                        );
+  
+  state = GTK_STATE_PRELIGHT;
+  cairo_set_source_rgba(cr,
+                       (style->bg[state].red/65535.0)*1.7,
+                       (style->bg [state].green/65535.0)*1.7,
+                       (style->bg[state].blue/65535.0)*1.7,
+                       0.3
+                      );
+
+  _slider_draw_rounded_rect(cr,vr.x,vr.y,vr.width*vscale,vr.height,3,1);
+ 
+  /* setup font using family from style */
+  const gchar *font_family = pango_font_description_get_family(style->font_desc);    
+  
+  cairo_select_font_face (cr, font_family, CAIRO_FONT_SLANT_NORMAL,
+                               CAIRO_FONT_WEIGHT_NORMAL);
+  cairo_text_extents_t ext;
+ 
+  /* Draw label */
+  cairo_set_source_rgba(cr,
+                             (style->text[state].red/65535.0)*1.7,
+                             (style->text[state].green/65535.0)*1.7,
+                             (style->text[state].blue/65535.0)*1.7,
+                            0.6);
+                            
+  gchar *label = (gchar *)g_object_get_data(G_OBJECT(widget),DTGTK_SLIDER_LABEL_KEY);
+  if (label)
+  {
+    cairo_set_font_size(cr,vr.height*0.45);  
+    cairo_text_extents(cr, "j`", &ext);
+    cairo_move_to(cr, vr.x+(DTGTK_SLIDER_BORDER_WIDTH*2),vr.y+ext.height);
+    cairo_show_text(cr, label);
+  }
+
+  /* Draw value unit */
+  gchar *unit = (gchar *)g_object_get_data (G_OBJECT(slider),DTGTK_SLIDER_VALUE_UNIT_KEY);
+  cairo_set_font_size(cr,vr.height*0.35);  
+  cairo_text_extents(cr, "%%", &ext);
+  int unitwidth = ext.width;
+  if(unit)
+  {
+    cairo_move_to(cr, vr.x+vr.width-ext.width - (DTGTK_SLIDER_BORDER_WIDTH*2) ,vr.y+vr.height-(DTGTK_SLIDER_BORDER_WIDTH*2));
+    cairo_show_text(cr, unit);
+  }
+  
+  
+  /* Draw text value */
+  cairo_select_font_face (cr, font_family, CAIRO_FONT_SLANT_NORMAL,
+                               CAIRO_FONT_WEIGHT_BOLD);
+  char sv[32]= {0};
+  sprintf(sv,"%.*f",slider->digits,value);
+  cairo_set_font_size(cr,vr.height*0.5);  
+  cairo_text_extents(cr, sv, &ext);
+  cairo_move_to(cr, vr.x+vr.width-ext.width - unitwidth -(DTGTK_SLIDER_BORDER_WIDTH*3) ,vr.y+vr.height-(DTGTK_SLIDER_BORDER_WIDTH*2));
+  cairo_show_text(cr, sv);
+  
+  
+  /* draw up/down arrows */
+  dtgtk_cairo_paint_arrow(cr,
+                          width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, DTGTK_SLIDER_BORDER_WIDTH*2,
+                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-2,
+                          CPF_DIRECTION_UP);
+  
+  dtgtk_cairo_paint_arrow(cr,
+                          width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, height-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+2-DTGTK_SLIDER_BORDER_WIDTH*2,
+                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-2,
+                          CPF_DIRECTION_DOWN);
+
+  
+  cairo_destroy(cr);
+  return TRUE;
+}
+
+#if 0
 static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
@@ -550,6 +717,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   }
   return FALSE;
 }
+#endif
 
 /*
 static void _slider_destroy(GtkObject *object)
@@ -613,6 +781,15 @@ void dtgtk_slider_set_format_type(GtkDarktableSlider *slider, darktable_slider_f
   slider->fmt_type=type;
 }
 
+void dtgtk_slider_set_label(GtkDarktableSlider *slider,gchar *label)
+{
+  g_object_set_data (G_OBJECT(slider),DTGTK_SLIDER_LABEL_KEY,label);
+}
+
+void dtgtk_slider_set_unit(GtkDarktableSlider *slider,gchar *unit)
+{
+  g_object_set_data (G_OBJECT(slider),DTGTK_SLIDER_VALUE_UNIT_KEY,unit);
+}
 
 gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider)
 {

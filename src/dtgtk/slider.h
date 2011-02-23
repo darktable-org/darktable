@@ -86,6 +86,10 @@ GtkWidget* dtgtk_slider_new(GtkAdjustment *adjustment);
 GtkWidget* dtgtk_slider_new_with_range (darktable_slider_type_t type,gdouble min,gdouble max,gdouble step,gdouble value, gint digits);
 /** Get the value of the slider */
 gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider);
+/** Set label of slider */
+void dtgtk_slider_set_label(GtkDarktableSlider *slider,gchar *label);
+/** Set label of slider */
+void dtgtk_slider_set_unit(GtkDarktableSlider *slider,gchar *unit);
 /** Set the value of the slider */
 void dtgtk_slider_set_value(GtkDarktableSlider *slider,gdouble value);
 /** Set the type of the slider */
