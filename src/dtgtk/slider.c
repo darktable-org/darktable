@@ -471,6 +471,11 @@ static void _slider_realize(GtkWidget *widget)
 
 }
 
+void dtgtk_slider_set_force_sign(GtkDarktableSlider *slider,gboolean force)
+{
+  slider->force_sign = force;
+}
+
 // helper function to render a filled rectangle with rounded corners, type defined if its ctrl background or value
 static void _slider_draw_rounded_rect(cairo_t *cr,gfloat x,gfloat y,gfloat width,gfloat height,gfloat radius,int type)
 {
@@ -575,7 +580,12 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   cairo_select_font_face (cr, font_family, CAIRO_FONT_SLANT_NORMAL,
                                CAIRO_FONT_WEIGHT_BOLD);
   char sv[32]= {0};
-  sprintf(sv,"%.*f",slider->digits,value);
+  
+  if (slider->force_sign)
+    sprintf(sv,"%+.*f",slider->digits,value);
+  else
+    sprintf(sv,"%.*f",slider->digits,value);
+  
   cairo_set_font_size(cr,vr.height*0.5);  
   cairo_text_extents(cr, sv, &ext);
   cairo_move_to(cr, vr.x+vr.width-ext.width - unitwidth -(DTGTK_SLIDER_BORDER_WIDTH*3) ,vr.y+vr.height-(DTGTK_SLIDER_BORDER_WIDTH*2));

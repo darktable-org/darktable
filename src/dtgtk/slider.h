@@ -54,6 +54,7 @@ typedef struct _GtkDarktableSlider
   gboolean is_sensibility_key_pressed;
   gboolean is_entry_active;
   gboolean is_changed;
+  gboolean force_sign;
   gint prev_x_root;
   gint motion_direction;
   gint digits;
@@ -90,6 +91,8 @@ gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider);
 void dtgtk_slider_set_label(GtkDarktableSlider *slider,gchar *label);
 /** Set label of slider */
 void dtgtk_slider_set_unit(GtkDarktableSlider *slider,gchar *unit);
+/** Set force of sign of positice in displayed value */
+void dtgtk_slider_set_force_sign(GtkDarktableSlider *slider,gboolean force);
 /** Set the value of the slider */
 void dtgtk_slider_set_value(GtkDarktableSlider *slider,gdouble value);
 /** Set the type of the slider */

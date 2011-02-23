@@ -358,6 +358,7 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale2,_("%"));
   dtgtk_slider_set_label(g->scale3,_("brightness"));
   dtgtk_slider_set_unit(g->scale3,_("EV"));
+  dtgtk_slider_set_force_sign(g->scale3, TRUE);
   dtgtk_slider_set_label(g->scale4,_("mix"));
   dtgtk_slider_set_unit(g->scale4,_("%"));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
