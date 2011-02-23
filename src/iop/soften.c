@@ -104,7 +104,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     rgb2hsl(in[index],in[index+1],in[index+2],&h,&s,&l);
     s*=saturation;
     l*=brightness;
-    hsl2rgb(&out[index],&out[index+1],&out[index+2],h,s,l);
+    hsl2rgb(&out[index],&out[index+1],&out[index+2],h,CLIP(s),CLIP(l));
   }
  
   const float w = piece->iwidth*piece->iscale;
@@ -204,9 +204,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     int index = ch*k;    
-    out[index+0] = in[index+0]*(1-amount) + out[index+0]*amount;
-    out[index+1] = in[index+1]*(1-amount) + out[index+1]*amount;
-    out[index+2] = in[index+2]*(1-amount) + out[index+2]*amount;
+    out[index+0] = in[index+0]*(1-amount) + CLIP(out[index+0])*amount;
+    out[index+1] = in[index+1]*(1-amount) + CLIP(out[index+1])*amount;
+    out[index+2] = in[index+2]*(1-amount) + CLIP(out[index+2])*amount;
   }
 
   for(int i=0; i<3; ++i)
