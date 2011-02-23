@@ -337,21 +337,29 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
+  //gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
 
   g->label1 = dtgtk_reset_label_new(_("size"), self, &p->size, sizeof(float));
   g->label2 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
   g->label3 = dtgtk_reset_label_new(_("brightness"), self, &p->brightness, sizeof(float));
   g->label4 = dtgtk_reset_label_new(_("mix"), self, &p->amount, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
+ /* gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label4), TRUE, TRUE, 0);*/
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->size, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->saturation, 2));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.01, p->brightness, 2));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->amount, 2));
+  dtgtk_slider_set_label(g->scale1,_("size"));
+  dtgtk_slider_set_unit(g->scale1,_("px"));
+  dtgtk_slider_set_label(g->scale2,_("saturation"));
+  dtgtk_slider_set_unit(g->scale2,_("%"));
+  dtgtk_slider_set_label(g->scale3,_("brightness"));
+  dtgtk_slider_set_unit(g->scale3,_("EV"));
+  dtgtk_slider_set_label(g->scale4,_("mix"));
+  dtgtk_slider_set_unit(g->scale4,_("%"));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale4,DARKTABLE_SLIDER_FORMAT_PERCENT);
