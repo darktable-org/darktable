@@ -472,7 +472,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
                        (style->bg[state].red/65535.0)*1.7,
                        (style->bg [state].green/65535.0)*1.7,
                        (style->bg[state].blue/65535.0)*1.7,
-                       0.3
+                       0.2
                       );
 
   _slider_draw_rounded_rect(cr,vr.x,vr.y,vr.width*vscale,vr.height,3,1);
@@ -531,12 +531,12 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   /* draw up/down arrows */
   dtgtk_cairo_paint_arrow(cr,
                           width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, DTGTK_SLIDER_BORDER_WIDTH*2,
-                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-2,
+                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-4,
                           CPF_DIRECTION_UP);
   
   dtgtk_cairo_paint_arrow(cr,
-                          width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, height-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+2-DTGTK_SLIDER_BORDER_WIDTH*2,
-                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-2,
+                          width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, height-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+4-DTGTK_SLIDER_BORDER_WIDTH*2,
+                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-4,
                           CPF_DIRECTION_DOWN);
 
   
