@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,19 +96,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out;
   const int ch = piece->colors;
 
-  // Apply velvia saturation
-
   // Get lowest/highest l in image
   float lhigh=0.0;
   float llow=1.0;
 
-  // TODO: openmp reduction
-  // FIXME: this will depend on current view!
   in  = (float *)ivoid;
-  for(int k=0; k<roi_out->width*roi_out->height; k++,in+=ch)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(in,roi_out,lhigh,llow) schedule(static)
+#endif
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
+    int index = k*ch;
     float h,s,l;
-    rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+    rgb2hsl(in[index+0],in[index+1],in[index+2],&h,&s,&l);
     lhigh=fmax(lhigh,l);
     llow=fmin(llow,l);
   }
