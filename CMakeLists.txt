@@ -11,6 +11,7 @@ option(DONT_INSTALL_GCONF_SCHEMAS "Dont install gconf schemas, usefull for packa
 option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
 option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and likely-to-change-soon plugins." OFF)
 option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
+option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 
 #
 # Set platform defaults...
