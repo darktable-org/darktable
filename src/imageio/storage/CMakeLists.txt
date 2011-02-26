@@ -17,7 +17,10 @@ foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/imageio/storage)
 endforeach(module)
 
+ 
+if(INSTALL_IOP_EXPERIMENTAL)
 foreach(module ${MODULES_EXPERIMENTAL})
 	target_link_libraries(${module} ${LIBS})
 	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/imageio/storage)
 endforeach(module)
+endif(INSTALL_IOP_EXPERIMENTAL)
