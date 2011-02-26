@@ -239,7 +239,7 @@ void gui_init     (dt_iop_module_t *self)
 
   g->strength = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 10.0, 0.01, p->strength, 4));
   gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->strength), "tooltip-text", _("strength of stuck pixel correction threshold"), NULL);
+  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of stuck pixel correction threshold"), NULL);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->strength),DARKTABLE_SLIDER_FORMAT_FLOAT);
   g_signal_connect(G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
 

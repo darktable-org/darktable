@@ -471,7 +471,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     0,lightness,0,lightness
   });
-  gtk_object_set(GTK_OBJECT(g->gslider1), "tooltip-text", _("select the hue tone of filter"), (char *)NULL);
+  g_object_set(G_OBJECT(g->gslider1), "tooltip-text", _("select the hue tone of filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
                     G_CALLBACK (hue_callback), self);
 
@@ -485,18 +485,18 @@ void gui_init(struct dt_iop_module_t *self)
   {
     0,lightness,lightness,lightness
   }));
-  gtk_object_set(GTK_OBJECT(g->gslider2), "tooltip-text", _("select the saturation of filter"), (char *)NULL);
+  g_object_set(G_OBJECT(g->gslider2), "tooltip-text", _("select the saturation of filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->gslider2), "value-changed",
                     G_CALLBACK (saturation_callback), self);
 
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->gslider2), TRUE, TRUE, 0);
 
 
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
   /* xgettext:no-c-format */
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("compression of graduation:\n0% = soft, 100% = hard"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("offset of filter in angle of rotation"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("compression of graduation:\n0% = soft, 100% = hard"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("offset of filter in angle of rotation"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (density_callback), self);

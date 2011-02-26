@@ -702,8 +702,8 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   // Let's add some tooltips and hook up some signals...
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (opacity_callback), self);

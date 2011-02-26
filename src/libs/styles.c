@@ -307,13 +307,13 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_model (GTK_TREE_VIEW(d->list), GTK_TREE_MODEL(liststore));
   g_object_unref (liststore);
 
-  gtk_object_set(GTK_OBJECT(d->list), "tooltip-text", _("available styles,\ndoubleclick to apply"), (char *)NULL);
+  g_object_set(G_OBJECT(d->list), "tooltip-text", _("available styles,\ndoubleclick to apply"), (char *)NULL);
   g_signal_connect (d->list, "row-activated", G_CALLBACK(_styles_row_activated_callback), d);
 
   /* filter entry */
   w = gtk_entry_new();
   d->entry=GTK_ENTRY(w);
-  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter style name"), (char *)NULL);
+  g_object_set(G_OBJECT(w), "tooltip-text", _("enter style name"), (char *)NULL);
   g_signal_connect (d->entry, "changed", G_CALLBACK(entry_callback),d);
   g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
 

@@ -300,7 +300,7 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   }
   char tooltip[512];
   snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-  gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
+  g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
 static void
@@ -319,7 +319,7 @@ update_topwidget(dt_iop_module_t *module)
     gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
     char tooltip[512];
     snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
     gtk_box_reorder_child(GTK_BOX(hbox), GTK_WIDGET(button), 0);
@@ -593,7 +593,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
     char tooltip[512];
     snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (button), "toggled",
@@ -611,8 +611,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-  gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
+  g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
+  g_object_set(G_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);

@@ -507,7 +507,12 @@ void dt_image_cache_clear(int32_t id)
     dt_image_init(&(cache->line[res].image));
   }
   // if still locked, at least invalidate the data.
-  else if(res >= 0) cache->line[res].image.film_id = -1;
+  else if(res >= 0) 
+  {
+    cache->line[res].image.film_id = -1;
+    cache->line[res].image.id = -1;
+
+  }
   dt_pthread_mutex_unlock(&(cache->mutex));
 }
 

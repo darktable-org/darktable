@@ -298,11 +298,11 @@ extern "C"
     g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[2], 4));
     g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[3], 4));
     g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[4], 4));
-    gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the gaussian"), (char *)NULL);
-    // gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _(""), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
+    g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the gaussian"), (char *)NULL);
+    // g_object_set(G_OBJECT(g->scale2), "tooltip-text", _(""), (char *)NULL);
+    g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), (char *)NULL);
+    g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), (char *)NULL);
+    g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
 
     dtgtk_slider_set_label(g->scale1,_("radius"));
     dtgtk_slider_set_unit(g->scale1,_(" "));

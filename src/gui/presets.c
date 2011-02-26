@@ -230,16 +230,16 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, name);
   gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
+  g_object_set(G_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
 
   g->description = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->description), "tooltip-text", _("description or further information"), (char *)NULL);
+  g_object_set(G_OBJECT(g->description), "tooltip-text", _("description or further information"), (char *)NULL);
 
   g->autoapply = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto apply this preset to matching images")));
   gtk_box_pack_start(box, GTK_WIDGET(g->autoapply), FALSE, FALSE, 0);
   g->filter = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
-  gtk_object_set(GTK_OBJECT(g->filter), "tooltip-text", _("be very careful with this option. this might be the last time you see your preset."), (char *)NULL);
+  g_object_set(G_OBJECT(g->filter), "tooltip-text", _("be very careful with this option. this might be the last time you see your preset."), (char *)NULL);
   gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
   g_signal_connect(G_OBJECT(g->filter),    "toggled", G_CALLBACK(check_buttons_activated), g);
@@ -254,21 +254,21 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
 
   // model, maker, lens
   g->model = GTK_ENTRY(gtk_entry_new());
-  gtk_object_set(GTK_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"), (char *)NULL);
+  g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("model"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->model), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
   g->maker = GTK_ENTRY(gtk_entry_new());
-  gtk_object_set(GTK_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"), (char *)NULL);
+  g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("maker"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->maker), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
   g->lens  = GTK_ENTRY(gtk_entry_new());
-  gtk_object_set(GTK_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
+  g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
@@ -280,11 +280,11 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
-  gtk_object_set(GTK_OBJECT(g->iso_min), "tooltip-text", _("minimum iso value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum iso value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_min, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->iso_min), FALSE, FALSE, 0);
   g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
-  gtk_object_set(GTK_OBJECT(g->iso_max), "tooltip-text", _("maximum iso value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum iso value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_max, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->iso_max), FALSE, FALSE, 0);
 
@@ -294,8 +294,8 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_object_set(GTK_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->exposure_max), "tooltip-text", _("maximum exposure time"), (char *)NULL);
+  g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
+  g_object_set(G_OBJECT(g->exposure_max), "tooltip-text", _("maximum exposure time"), (char *)NULL);
   for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
     gtk_combo_box_append_text(g->exposure_min, dt_gui_presets_exposure_value_str[k]);
   for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
@@ -309,8 +309,8 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_object_set(GTK_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->aperture_max), "tooltip-text", _("maximum aperture value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->aperture_max), "tooltip-text", _("maximum aperture value"), (char *)NULL);
   for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
     gtk_combo_box_append_text(g->aperture_min, dt_gui_presets_aperture_value_str[k]);
   for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
@@ -326,8 +326,8 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_spin_button_set_digits(g->focal_length_min, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->focal_length_min), FALSE, FALSE, 0);
   g->focal_length_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
-  gtk_object_set(GTK_OBJECT(g->focal_length_min), "tooltip-text", _("minimum focal length"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), (char *)NULL);
+  g_object_set(G_OBJECT(g->focal_length_min), "tooltip-text", _("minimum focal length"), (char *)NULL);
+  g_object_set(G_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), (char *)NULL);
   gtk_spin_button_set_digits(g->focal_length_max, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->focal_length_max), FALSE, FALSE, 0);
 
@@ -539,7 +539,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
     }
     if(module) g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), module);
     else if(pick_callback) g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), callback_data);
-    gtk_object_set(GTK_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
+    g_object_set(G_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt ++;
   }

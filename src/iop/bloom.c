@@ -333,9 +333,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the size of bloom"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the threshold of light"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the strength of bloom"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the size of bloom"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the threshold of light"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the strength of bloom"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (size_callback), self);
