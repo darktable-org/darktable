@@ -811,7 +811,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox, *hbox, *label1;
 
   self->widget = gtk_hbox_new(FALSE, 0);
-  vbox = gtk_vbox_new(FALSE, 0);
+  vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
   label1 = dtgtk_reset_label_new (_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
