@@ -154,6 +154,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
   if( event->button==3)
   {
+    /* right mouse button, bring up the in place edit*/
     char sv[32]= {0};
     slider->is_entry_active=TRUE;
     gdouble value = gtk_adjustment_get_value(slider->adjustment);
@@ -163,20 +164,20 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
     gtk_widget_grab_focus (GTK_WIDGET(slider->entry));
     gtk_widget_queue_draw (widget);
   }
-  else if( event->button==1 )
+  else if (event->button == 1 && event->type == GDK_BUTTON_PRESS)
   {
-    if( event->x > 0 && event->x < (DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+(DTGTK_SLIDER_BORDER_WIDTH*2)) )
+    /* handle single button press */
+    if (event->x > (widget->allocation.width - DTGTK_SLIDER_ADJUST_BUTTON_WIDTH - DTGTK_SLIDER_BORDER_WIDTH))
     {
-      float value = gtk_adjustment_get_value(slider->adjustment)-(gtk_adjustment_get_step_increment(slider->adjustment));
+      /* press event in arrow up/down area of slider control*/
+      float value = gtk_adjustment_get_value(slider->adjustment);
+      if (event->y > (widget->allocation.height/2.0))
+        value -= gtk_adjustment_get_step_increment(slider->adjustment);
+      else
+        value += gtk_adjustment_get_step_increment(slider->adjustment);
+      
       if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
-      gtk_adjustment_set_value(slider->adjustment, value);
-      gtk_widget_draw(widget,NULL);
-      g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
-    }
-    else if( event->x > (widget->allocation.width-(DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+(DTGTK_SLIDER_BORDER_WIDTH*2))) && event->x < widget->allocation.width  )
-    {
-      float value = gtk_adjustment_get_value(slider->adjustment)+(gtk_adjustment_get_step_increment(slider->adjustment));
-      if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+      
       gtk_adjustment_set_value(slider->adjustment, value);
       gtk_widget_draw(widget,NULL);
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
@@ -188,6 +189,10 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       if( slider->type==DARKTABLE_SLIDER_BAR) slider->is_changed=TRUE;
       g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change,widget);
     }
+  }
+  else if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  {
+    /* left mouse second click of doubleclick event */
   }
   return TRUE;
 }
