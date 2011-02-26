@@ -53,7 +53,7 @@ extern "C"
 
   typedef struct dt_iop_bilateral_gui_data_t
   {
-    GtkVBox   *vbox1,  *vbox2;
+    GtkVBox   *vbox;
     GtkLabel  *label1, *label2, *label3, *label4, *label5;
     GtkDarktableSlider *scale1, *scale2, *scale3, *scale4, *scale5;
   }
@@ -290,23 +290,8 @@ extern "C"
     dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)self->params;
 
     self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-    g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-    g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-
-
-    GtkWidget *widget = dtgtk_reset_label_new(_("radius"), self, &p->sigma[0], sizeof(float));
-    gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-    widget = dtgtk_reset_label_new(_("red"), self, &p->sigma[2], sizeof(float));
-    gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-    widget = dtgtk_reset_label_new(_("green"), self, &p->sigma[3], sizeof(float));
-    gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-    widget = dtgtk_reset_label_new(_("blue"), self, &p->sigma[4], sizeof(float));
-    gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-
-
-
+    g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
     g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1.0, 30.0, 1.0, p->sigma[0], 1));
     // g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1.0, 30.0, 1.0, p->sigma[1], 0));
@@ -318,11 +303,21 @@ extern "C"
     gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-    // gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
+
+    dtgtk_slider_set_label(g->scale1,_("radius"));
+    dtgtk_slider_set_unit(g->scale1,_(" "));
+    dtgtk_slider_set_label(g->scale3,_("red"));
+    dtgtk_slider_set_unit(g->scale3,_(" "));
+    dtgtk_slider_set_label(g->scale4,_("green"));
+    dtgtk_slider_set_unit(g->scale4,_(" "));
+    dtgtk_slider_set_label(g->scale5,_("blue"));
+    dtgtk_slider_set_unit(g->scale5,_(" "));
+
+    gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+    // gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
     g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                       G_CALLBACK (sigma_callback), self);

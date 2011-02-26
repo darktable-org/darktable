@@ -112,7 +112,7 @@ void init_presets (dt_iop_module_t *self)
 
 typedef struct dt_iop_graduatednd_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2;                                            // left and right controlboxes
+  GtkVBox   *vbox;                                           
   GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6;            			      // density, compression, rotation, offset, hue, saturation
   GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;        // density, compression, rotation, offset
   GtkDarktableGradientSlider *gslider1,*gslider2;		// hue, saturation
@@ -411,26 +411,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
-  self->widget = gtk_table_new (7,2,FALSE);
-  gtk_table_set_col_spacing(GTK_TABLE(self->widget), 0, 10);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+
 
   /* adding the labels */
 
-  g->label1 = dtgtk_reset_label_new(_("density"), self, &p->density, sizeof(float));
-  g->label2 = dtgtk_reset_label_new(_("compression"), self, &p->compression, sizeof(float));
-  g->label3 = dtgtk_reset_label_new(_("rotation"), self, &p->rotation, sizeof(float));
-  g->label4 = dtgtk_reset_label_new(_("split"), self, &p->offset, sizeof(float));
   g->label5 = dtgtk_reset_label_new(_("hue"), self, &p->hue, sizeof(float));
   g->label6 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
-
-
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label1), 0,1,0,1,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label2), 0,1,1,2,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label3), 0,1,2,3,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label4), 0,1,3,4,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label5), 0,1,4,5,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), GTK_WIDGET (g->label6), 0,1,5,6,GTK_FILL,0,0,0);
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, 0.1, p->density, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compression, 0));
@@ -439,10 +428,19 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->offset, 0));
   dtgtk_slider_set_format_type(g->scale4,DARKTABLE_SLIDER_FORMAT_PERCENT);
 
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale1), 1,2,0,1);
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale2), 1,2,1,2);
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale3), 1,2,2,3);
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale4), 1,2,3,4);
+  dtgtk_slider_set_label(g->scale1,_("density"));
+  dtgtk_slider_set_unit(g->scale1,_("EV"));
+  dtgtk_slider_set_label(g->scale2,_("compression"));
+  dtgtk_slider_set_unit(g->scale2,_("%"));
+  dtgtk_slider_set_label(g->scale3,_("rotation"));
+  dtgtk_slider_set_unit(g->scale3,_("°"));
+  dtgtk_slider_set_label(g->scale4,_("split"));
+  dtgtk_slider_set_unit(g->scale4,_("%"));
+
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
   /* hue slider */
   int lightness=32768;
@@ -477,8 +475,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
                     G_CALLBACK (hue_callback), self);
 
-
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->gslider1), 1,2,4,5);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->gslider1), TRUE, TRUE, 0);
 
   /* saturation slider */
   g->gslider2=DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color((GdkColor)
@@ -492,7 +489,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->gslider2), "value-changed",
                     G_CALLBACK (saturation_callback), self);
 
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->gslider2), 1,2,5,6);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->gslider2), TRUE, TRUE, 0);
 
 
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
