@@ -76,7 +76,6 @@ dt_iop_watermark_data_t;
 
 typedef struct dt_iop_watermark_gui_data_t
 {
-  GtkVBox   *vbox1, *vbox2;
   GtkComboBox *combobox1;		                                             // watermark
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
@@ -650,41 +649,32 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
   self->widget = gtk_hbox_new(FALSE,0);
-  GtkTable *table = GTK_TABLE(gtk_table_new(6,2,FALSE) );
-  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET(table),TRUE,TRUE,5);
-  gtk_table_set_row_spacings(GTK_TABLE(table),2);
-  gtk_table_set_col_spacings(GTK_TABLE(table),8);
+  GtkWidget *vbox = gtk_vbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
   GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char)*64);
-  GtkWidget *label2 = dtgtk_reset_label_new(_("opacity"), self, &p->opacity, sizeof(float));
-  GtkWidget *label3 = dtgtk_reset_label_new(_("scale"), self, &p->scale, sizeof(float));
   GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
-  GtkWidget *label5 = dtgtk_reset_label_new(_("x offset"), self, &p->xoffset, sizeof(float));
-  GtkWidget *label6 = dtgtk_reset_label_new(_("y offset"), self, &p->yoffset, sizeof(float));
-
-  // Add labels to the table
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label1), 0,1,0,1,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label2), 0,1,1,2,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label3), 0,1,2,3,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label4), 0,1,3,4,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label5), 0,1,4,5,GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(label6), 0,1,5,6,GTK_FILL,0,0,0);
 
   // Add the marker combobox
-  GtkWidget *hbox= GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  GtkWidget *hbox= gtk_hbox_new(FALSE,0);
   g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
+  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(hbox), 1,2,0,1,GTK_EXPAND|GTK_FILL,0,0,0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->opacity, 0.5));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 100.0, 1.0, p->scale, 0.5));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->scale1), 1,2,1,2,GTK_EXPAND|GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(g->scale2), 1,2,2,3,GTK_EXPAND|GTK_FILL,0,0,0);
+  dtgtk_slider_set_label(g->scale1,_("opacity"));
+  dtgtk_slider_set_unit(g->scale1,_("%"));
+  dtgtk_slider_set_label(g->scale2,_("scale"));
+  dtgtk_slider_set_unit(g->scale2,_("%"));
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
   // Create the 3x3 gtk table toggle button table...
   GtkTable *bat = GTK_TABLE( gtk_table_new(3,3,TRUE));
@@ -695,13 +685,20 @@ void gui_init(struct dt_iop_module_t *self)
     gtk_table_attach (GTK_TABLE (bat), GTK_WIDGET (g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
     g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);
   }
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET(bat), 1,2,3,4,GTK_EXPAND|GTK_FILL,0,0,0);
+  GtkWidget *hbox2 = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(hbox2),GTK_WIDGET(label4),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(bat), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   // x/y offset
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale3 ), 1,2,4,5,GTK_EXPAND|GTK_FILL,0,0,0);
-  gtk_table_attach(GTK_TABLE(table), GTK_WIDGET( g->scale4 ), 1,2,5,6,GTK_EXPAND|GTK_FILL,0,0,0);
+  dtgtk_slider_set_label(g->scale3,_("x offset"));
+  dtgtk_slider_set_unit(g->scale3,_("px"));
+  dtgtk_slider_set_label(g->scale4,_("y offset"));
+  dtgtk_slider_set_unit(g->scale4,_("px"));
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
 
   // Let's add some tooltips and hook up some signals...
