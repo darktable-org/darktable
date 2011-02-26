@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -181,6 +181,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     strncpy(filename, dt_variables_get_result(d->vp), 1024);
     strncpy(dirname, filename, 1024);
 
+    const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
     for(; c>dirname && *c != '/'; c--);
     if(*c == '/') *c = '\0';
@@ -197,7 +198,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     for(; c>filename && *c != '.' && *c != '/' ; c--);
     if(c <= filename || *c=='/') c = filename + strlen(filename);
 
-    const char *ext = format->extension(fdata);
     sprintf(c,".%s",ext);
 
     /* prevent overwrite of files */

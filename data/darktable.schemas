@@ -1394,6 +1394,19 @@
     </schema>
     
     <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/gallery/file_directory</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/gallery/file_directory</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>$(HOME_FOLDER)/darktable_gallery/</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
       <key>/schemas/apps/darktable/plugins/imageio/storage/email/client</key>
       <applyto>/apps/darktable/plugins/imageio/storage/email/client</applyto>
       <owner>darktable</owner>
