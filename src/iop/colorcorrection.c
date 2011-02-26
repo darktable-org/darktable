@@ -186,16 +186,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-  GtkWidget *label = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(label), TRUE, TRUE, 0);
+  GtkWidget *vbox = gtk_vbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(g->hbox), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation,2));
   g_object_set (GTK_OBJECT(g->scale5), "tooltip-text", _("set the global saturation"), (char *)NULL);
-
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
+  dtgtk_slider_set_label(g->scale5,_("saturation"));
+  dtgtk_slider_set_unit(g->scale5,_(" "));
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
 
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",

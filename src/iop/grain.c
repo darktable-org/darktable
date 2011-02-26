@@ -63,7 +63,7 @@ dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2;
+  GtkVBox   *vbox;
   GtkWidget  *label1,*label2,*label3;	      // channel, scale, strength
   GtkDarktableSlider *scale1,*scale2;       // scale, strength
 }
@@ -496,25 +496,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-
-  g->label2 = dtgtk_reset_label_new(_("coarseness"), self, &p->scale, sizeof(float));
-  g->label3 = dtgtk_reset_label_new(_("strength"), self, &p->strength, sizeof(float));
-
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
+  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 100.0, 3200.0, 20.0, p->scale*53.3, 0));
   dtgtk_slider_set_snap(g->scale1, 20);
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 100.0, 1.0, p->strength, 2));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the grain size (~iso of the film)"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale1,_("coarseness"));
+  dtgtk_slider_set_unit(g->scale1,_("ISO"));
+  dtgtk_slider_set_label(g->scale2,_("strength"));
+  dtgtk_slider_set_unit(g->scale2,_("%"));
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);

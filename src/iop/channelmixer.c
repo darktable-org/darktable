@@ -87,7 +87,7 @@ dt_iop_channelmixer_params_t;
 
 typedef struct dt_iop_channelmixer_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2;
+  GtkVBox   *vbox;
   GtkComboBox *combo1;                                           // Output channel
   GtkDarktableLabel *dtlabel1,*dtlabel2;                      // output channel, source channels
   GtkLabel  *label1,*label2,*label3;	 	                          // red, green, blue
@@ -346,39 +346,29 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->dtlabel2 = DTGTK_LABEL( dtgtk_label_new(_("source channels"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT) );
   GtkBox *hbox = GTK_BOX( gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dtlabel2), TRUE, TRUE, 5);
 
-  g->label1 = GTK_LABEL(gtk_label_new(_("red")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("green")));
-  g->label3 = GTK_LABEL(gtk_label_new(_("blue")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label3), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label3), TRUE, TRUE, 0);
-
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->red[CHANNEL_RED] , 3));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("amount of red channel in the output channel"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale1,_("red"));
+  dtgtk_slider_set_unit(g->scale1,_(" "));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->green[CHANNEL_RED] , 3));
   g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale2,_("green"));
+  dtgtk_slider_set_unit(g->scale2,_(" "));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3));
   g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
-  /*dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_PERCENT);*/
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  dtgtk_slider_set_label(g->scale3,_("blue"));
+  dtgtk_slider_set_unit(g->scale3,_(" "));
+
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
-
-// gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the highlight threshold"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (red_callback), self);

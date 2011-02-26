@@ -44,7 +44,7 @@ dt_iop_sharpen_params_t;
 
 typedef struct dt_iop_sharpen_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2;
+  GtkVBox   *vbox;
   GtkDarktableSlider *scale1, *scale2, *scale3;
 }
 dt_iop_sharpen_gui_data_t;
@@ -350,29 +350,24 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-
-
-  GtkWidget *widget;
-  widget = dtgtk_reset_label_new(_("radius"), self, &p->radius, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new(_("amount"), self, &p->amount, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new(_("threshold"), self, &p->threshold, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
+  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0000, 0.100, p->radius, 3));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the unblurring"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale1,_("radius"));
+  dtgtk_slider_set_unit(g->scale1,_(" "));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0000, 0.010, p->amount, 3));
   g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the sharpen"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale2,_("amount"));
+  dtgtk_slider_set_unit(g->scale2,_(" "));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.001, p->threshold, 3));
   g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("threshold to activate sharpen"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  dtgtk_slider_set_label(g->scale3,_("threshold"));
+  dtgtk_slider_set_unit(g->scale3,_(" "));
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);

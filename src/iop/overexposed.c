@@ -37,8 +37,7 @@ typedef struct dt_iop_overexposed_params_t
 
 typedef struct dt_iop_overexposed_gui_data_t
 {
-  GtkVBox             *vbox1;
-  GtkVBox             *vbox2;
+  GtkVBox             *vbox;
   GtkWidget           *label1;
   GtkWidget           *label2;
   GtkDarktableSlider  *lower;
@@ -254,23 +253,20 @@ void gui_init(struct dt_iop_module_t *self)
 // 	g->mask = NULL;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
+  g->vbox     = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
-  g->label1 = dtgtk_reset_label_new(_("lower threshold"), self, &p->lower, sizeof(float));
-  g->label2 = dtgtk_reset_label_new(_("upper threshold"), self, &p->upper, sizeof(float));
-
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   g->lower = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lower, 2));
   dtgtk_slider_set_format_type(g->lower,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  dtgtk_slider_set_label(g->lower,_("lower threshold"));
+  dtgtk_slider_set_unit(g->lower,_("%"));
   g->upper = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->upper, 2));
   dtgtk_slider_set_format_type(g->upper,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  dtgtk_slider_set_label(g->upper,_("upper threshold"));
+  dtgtk_slider_set_unit(g->upper,_("%"));
 
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->lower), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->lower), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
 
