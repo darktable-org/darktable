@@ -805,37 +805,16 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  GtkWidget *widget;
-
   self->gui_data = malloc(sizeof(dt_iop_vignette_gui_data_t));
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  GtkVBox   *vbox1,  *vbox2;
+  GtkWidget *vbox, *hbox, *label1;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  self->widget = gtk_hbox_new(FALSE, 0);
+  vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
-  widget = dtgtk_reset_label_new (_("scale"), self, &p->scale, sizeof p->scale);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("fall-off strength"), self, &p->falloff_scale, sizeof p->falloff_scale);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("brightness"), self, &p->brightness, sizeof p->brightness);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("saturation"), self, &p->saturation, sizeof p->saturation);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("horizontal center"), self, &p->center.x, sizeof p->center.x);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("vertical center"), self, &p->center.y, sizeof p->center.y);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("shape"), self, &p->shape, sizeof p->shape);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("width/height ratio"), self, &p->whratio, sizeof p->whratio);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  label1 = dtgtk_reset_label_new (_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
 
   g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, p->scale, 2));
   g->falloff_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->falloff_scale, 2));
@@ -847,17 +826,38 @@ void gui_init(struct dt_iop_module_t *self)
   g->autoratio = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("automatic")));
   g->whratio = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0, 0.01, p->shape, 3));
 
+  dtgtk_slider_set_label(g->scale,_("scale"));
+  dtgtk_slider_set_unit(g->scale,_("%"));
+  dtgtk_slider_set_label(g->falloff_scale,_("fall-off strength"));
+  dtgtk_slider_set_unit(g->falloff_scale,_("%"));
+  dtgtk_slider_set_label(g->brightness,_("brightness"));
+  dtgtk_slider_set_unit(g->brightness,_(" "));
+  dtgtk_slider_set_label(g->saturation,_("saturation"));
+  dtgtk_slider_set_unit(g->saturation,_(" "));
+  dtgtk_slider_set_label(g->center_x,_("horizontal center"));
+  dtgtk_slider_set_unit(g->center_x,_(" "));
+  dtgtk_slider_set_label(g->center_y,_("vertical center"));
+  dtgtk_slider_set_unit(g->center_y,_(" "));
+  dtgtk_slider_set_label(g->shape,_("shape"));
+  dtgtk_slider_set_unit(g->shape,_(" "));
+  dtgtk_slider_set_label(g->whratio,_("width/height ratio"));
+  dtgtk_slider_set_unit(g->whratio,_(" "));
+
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->falloff_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->brightness), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->saturation), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->center_x), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->center_y), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->shape), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->whratio), TRUE, TRUE, 0);
+  hbox= gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->falloff_scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->brightness), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->saturation), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->center_x), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->center_y), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->shape), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->whratio), TRUE, TRUE, 0);
 
   gtk_object_set(GTK_OBJECT(g->scale), "tooltip-text", _("the radii scale of vignette for start of fall-off"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->falloff_scale), "tooltip-text", _("the radii scale of vignette for end of fall-off"), (char *)NULL);
