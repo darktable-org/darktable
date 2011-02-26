@@ -9,7 +9,7 @@ if(FLICKCURL_FOUND)
 endif(FLICKCURL_FOUND)
 
 foreach(module ${MODULES} ${MODULES_EXPERIMENTAL})
-	add_library(${module} MODULE "${module}.c")
+	add_library(${module} MODULE "${module}.c" ${CMAKE_CURRENT_BINARY_DIR}/../../metadata_gen.h)
 endforeach(module)
 
 foreach(module ${MODULES})
