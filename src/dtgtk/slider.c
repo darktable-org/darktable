@@ -491,7 +491,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
                              (style->text[state].red/65535.0)*1.7,
                              (style->text[state].green/65535.0)*1.7,
                              (style->text[state].blue/65535.0)*1.7,
-                            0.6);
+                            0.8);
                             
   gchar *label = (gchar *)g_object_get_data(G_OBJECT(widget),DTGTK_SLIDER_LABEL_KEY);
   if (label)
@@ -501,7 +501,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
     cairo_move_to(cr, vr.x+(DTGTK_SLIDER_BORDER_WIDTH*2),vr.y+ext.height);
     cairo_show_text(cr, label);
   }
-
+  
   /* Draw value unit */
   gchar *unit = (gchar *)g_object_get_data (G_OBJECT(slider),DTGTK_SLIDER_VALUE_UNIT_KEY);
   cairo_set_font_size(cr,vr.height*0.45);  
