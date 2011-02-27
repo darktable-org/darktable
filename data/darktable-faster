@@ -10,7 +10,8 @@ echo $* | grep '\-\-library' >/dev/null && dbfile=$(echo $* | sed -e 's/^.*--lib
 if [ -w /dev/shm ]
 then
   echo "[$0] copying $dbfile to ram disk"
-  cp $dbfile /dev/shm/darktable-faster.db
+  rm -f /dev/shm/darktable-faster.db
+  cp -f $dbfile /dev/shm/darktable-faster.db
   # last argument overrides previous --library statement:
   darktable $@ --library /dev/shm/darktable-faster.db
   # terminated for whatever reason, db will be consistent (hopefully)

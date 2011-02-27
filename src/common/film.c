@@ -304,24 +304,15 @@ void dt_film_import1(dt_film_t *film)
 
     if(recursive && g_file_test(filename, G_FILE_TEST_IS_DIR))
     {
-      dt_times_t start;
-      dt_get_times(&start);
       // import in this thread (recursive import is not thread-safe):
       dt_film_import_blocking(filename, 1);
-      dt_show_times(&start, "[recursive import]", "loading `%s'", filename);
     }
-    else
+    else if(dt_image_import(film->id, filename, FALSE))
     {
-      dt_times_t start;
-      dt_get_times(&start);
-      if(dt_image_import(film->id, filename, FALSE))
-      {
-        // dt_pthread_mutex_lock(&film->images_mutex);
-        // darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
-        // dt_pthread_mutex_unlock(&film->images_mutex);
-        // dt_control_queue_draw_all();
-      }
-      dt_show_times(&start, "[image import]", "loading `%s'", filename);
+      dt_pthread_mutex_lock(&film->images_mutex);
+      darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
+      dt_pthread_mutex_unlock(&film->images_mutex);
+      dt_control_queue_draw_all();
     } // else not an image.
   }
 }

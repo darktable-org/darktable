@@ -635,8 +635,6 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   img->film_id = film_id;
   img->dirty = 1;
 
-  dt_times_t start;
-  dt_get_times(&start);
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
   char dtfilename[1024];
@@ -645,9 +643,6 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
   (void)dt_exif_xmp_read(img, dtfilename, 0);
-
-  dt_show_times(&start, "[image import]", "initing exif/xmp");
-  dt_get_times(&start);
 
   // add a tag with the file extension
   guint tagid = 0;
@@ -658,7 +653,6 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   dt_tag_attach(tagid,id);
 
   dt_image_cache_flush_no_sidecars(img);
-  dt_show_times(&start, "[image import]", "initing tags/cache flush");
 
   g_free(imgfname);
 
