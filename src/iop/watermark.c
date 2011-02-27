@@ -649,7 +649,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
   self->widget = gtk_hbox_new(FALSE,0);
-  GtkWidget *vbox = gtk_vbox_new(FALSE,0);
+  GtkWidget *vbox = gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
   GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char)*64);
