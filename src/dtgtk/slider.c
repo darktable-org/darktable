@@ -203,11 +203,8 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
   
   if( event->button==1 )
   {
-    if( !(
-          event->x < (DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+(DTGTK_SLIDER_BORDER_WIDTH*2)) &&
-          event->x > widget->allocation.width-(DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+(DTGTK_SLIDER_BORDER_WIDTH*2))
-        )
-      )
+    /* if x is in slider bar */
+    if (event->x < (widget->allocation.width - DTGTK_SLIDER_ADJUST_BUTTON_WIDTH - DTGTK_SLIDER_BORDER_WIDTH))
     {
       if( slider->type == DARKTABLE_SLIDER_BAR && !slider->is_sensibility_key_pressed )
       {
