@@ -81,12 +81,12 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("remove"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("remove from the collection"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("remove from the collection"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)0);
 
   button = gtk_button_new_with_label(_("delete"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("physically delete from disk"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("physically delete from disk"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)1);
 
@@ -96,10 +96,10 @@ gui_init (dt_lib_module_t *self)
   button = gtk_button_new_with_label(_("create hdr"));
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)7);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("create a high dynamic range image from selected shots"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("create a high dynamic range image from selected shots"), (char *)NULL);
 
   button = gtk_button_new_with_label(_("duplicate"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
 
@@ -108,18 +108,18 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox2 = GTK_BOX(gtk_hbox_new(TRUE, 5));
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)5);
   gtk_box_pack_start(hbox, GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   button = gtk_button_new_with_label(_("reset rotation"));
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("reset rotation to exif data"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("reset rotation to exif data"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
 

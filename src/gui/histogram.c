@@ -31,7 +31,7 @@ void dt_gui_histogram_init(dt_gui_histogram_t *n, GtkWidget *widget)
   n->dragging = 0;
   n->exposure = NULL;
 
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text",
+  g_object_set(G_OBJECT(widget), "tooltip-text",
                  _("drag to change exposure,\ndoubleclick resets"), (char *)NULL);
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_gui_histogram_expose), n);
@@ -182,12 +182,12 @@ gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event
     else if(pos < 0.2)
     {
       n->highlight = 1;
-      gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("drag to change black point,\ndoubleclick resets"), (char *)NULL);
+      g_object_set(G_OBJECT(widget), "tooltip-text", _("drag to change black point,\ndoubleclick resets"), (char *)NULL);
     }
     else
     {
       n->highlight = 2;
-      gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"), (char *)NULL);
+      g_object_set(G_OBJECT(widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"), (char *)NULL);
     }
     gtk_widget_queue_draw(widget);
   }

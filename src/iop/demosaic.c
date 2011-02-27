@@ -897,7 +897,7 @@ void gui_init     (struct dt_iop_module_t *self)
   widget = dtgtk_reset_label_new(_("edge threshold"), self, &p->median_thrs, sizeof(float));
   gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.000, 0.001, p->median_thrs, 3));
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
   gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   widget = dtgtk_reset_label_new(_("color smoothing"), self, &p->color_smoothing, sizeof(uint32_t));
@@ -905,13 +905,13 @@ void gui_init     (struct dt_iop_module_t *self)
   g->color_smoothing = gtk_spin_button_new_with_range(0, 5, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->color_smoothing), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
-  gtk_object_set(GTK_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
+  g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
   gtk_box_pack_start(vbox2, g->color_smoothing, TRUE, TRUE, 0);
 
   widget = dtgtk_reset_label_new(_("match greens"), self, &p->green_eq, sizeof(uint32_t));
   gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
   g->greeneq = GTK_TOGGLE_BUTTON(gtk_check_button_new());
-  gtk_object_set(GTK_OBJECT(g->greeneq), "tooltip-text", _("switch on green equilibration before demosaicing.\nnecessary for some mid-range cameras such as the EOS 400D."), (char *)NULL);
+  g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("switch on green equilibration before demosaicing.\nnecessary for some mid-range cameras such as the EOS 400D."), (char *)NULL);
   gtk_box_pack_start(vbox2, GTK_WIDGET(g->greeneq), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",

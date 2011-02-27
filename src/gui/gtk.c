@@ -1122,7 +1122,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "topfilterhbox");
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
   gtk_box_pack_end(GTK_BOX(widget), button, FALSE, FALSE, 20);
-  gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("show global preferences"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("show global preferences"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (preferences_button_clicked),
                     NULL);

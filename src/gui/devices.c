@@ -144,7 +144,7 @@ void dt_gui_devices_update()
   // Add the rescan button
   GtkButton *scan=GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
   gtk_button_set_alignment(scan, 0.05, 0.5);
-  gtk_object_set(GTK_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
+  g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
   g_signal_connect (G_OBJECT(scan), "clicked",G_CALLBACK (scan_callback), NULL);
   gtk_box_pack_start(GTK_BOX(widget),GTK_WIDGET(scan),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(widget),GTK_WIDGET(gtk_label_new("")),TRUE,TRUE,0);
@@ -165,12 +165,12 @@ void dt_gui_devices_update()
       // Set summary if exists for tooltip
       if( camera->summary.text !=NULL && strlen(camera->summary.text) >0 )
       {
-        gtk_object_set(GTK_OBJECT(label), "tooltip-text", camera->summary.text, (char *)NULL);
+        g_object_set(G_OBJECT(label), "tooltip-text", camera->summary.text, (char *)NULL);
       }
       else
       {
         sprintf(buffer,_("device \"%s\" connected on port \"%s\"."),camera->model,camera->port);
-        gtk_object_set(GTK_OBJECT(label), "tooltip-text", buffer, (char *)NULL);
+        g_object_set(G_OBJECT(label), "tooltip-text", buffer, (char *)NULL);
       }
 
       // Add camera action buttons

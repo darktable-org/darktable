@@ -103,7 +103,7 @@ gui_init (dt_imageio_module_storage_t *self)
   }
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
+  g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
                  "$(ROLL_NAME) - roll of the input image\n"
                  "$(FILE_DIRECTORY) - directory of the input image\n"
                  "$(FILE_NAME) - basename of the input image\n"
@@ -127,7 +127,7 @@ gui_init (dt_imageio_module_storage_t *self)
                                                       ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
+  g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 }

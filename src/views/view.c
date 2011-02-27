@@ -671,7 +671,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
           char* tooltip = dt_history_get_items_as_string(img->id);
           if(tooltip != NULL)
           {
-            gtk_object_set(GTK_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
+            g_object_set(G_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
             g_free(tooltip);
           }
         }

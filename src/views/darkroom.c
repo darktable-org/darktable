@@ -283,7 +283,7 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
     gtk_expander_set_expanded(module->expander, FALSE);
     snprintf(option, 512, _("show %s"), module->name());
   }
-  gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, (char *)NULL);
+  g_object_set(G_OBJECT(module->showhide), "tooltip-text", option, (char *)NULL);
 }
 
 

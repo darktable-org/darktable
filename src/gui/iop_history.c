@@ -70,7 +70,7 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
   {
     GtkToggleButton *b = GTK_TOGGLE_BUTTON( g_list_nth_data (children,i));
     if(b != GTK_TOGGLE_BUTTON(widget))
-      gtk_object_set(GTK_OBJECT(b), "active", FALSE, (char *)NULL);
+      g_object_set(G_OBJECT(b), "active", FALSE, (char *)NULL);
   }
 
   reset = 0;
@@ -213,7 +213,7 @@ dt_gui_iop_history_add_item (long int num, const gchar *label)
 
   /* */
   darktable.gui->reset = 1;
-  gtk_object_set(GTK_OBJECT(widget), "active", TRUE, (char *)NULL);
+  g_object_set(G_OBJECT(widget), "active", TRUE, (char *)NULL);
   darktable.gui->reset = 0;
   return widget;
 }
@@ -238,7 +238,7 @@ dt_gui_iop_history_pop_top()
   gtk_widget_destroy (GTK_WIDGET (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0)) );
 
   /* activate new top */
-  gtk_object_set(GTK_OBJECT (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0)) , "active", TRUE, (char *)NULL);
+  g_object_set(G_OBJECT (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0)) , "active", TRUE, (char *)NULL);
 }
 
 void

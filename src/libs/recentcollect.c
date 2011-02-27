@@ -255,7 +255,7 @@ collection_updated(void *d)
       pretty_print(buf, str);
       g_free(buf);
     }
-    gtk_object_set(GTK_OBJECT(c->item[k].button), "tooltip-text", str, (char *)NULL);
+    g_object_set(G_OBJECT(c->item[k].button), "tooltip-text", str, (char *)NULL);
     const int cut = 45;
     if (g_utf8_strlen(str, -1) > cut) 
     { 

@@ -180,7 +180,7 @@ failure:
 //   {
 //     darktable.gui->center_tooltip = 0;
 //     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-//     gtk_object_set(GTK_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+//     g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
 //   }
 
 

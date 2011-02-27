@@ -378,7 +378,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     0,lightness,lightness,lightness
   }));
-  gtk_object_set (GTK_OBJECT (g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
+  g_object_set(G_OBJECT (g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
                     G_CALLBACK (center_callback), self);
   g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
@@ -390,10 +390,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (hbox), 1,2,1,2);
 
 
-  gtk_object_set(GTK_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
+  g_object_set(G_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
   /* xgettext:no-c-format */
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (ev_callback), self);

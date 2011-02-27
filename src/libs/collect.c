@@ -245,12 +245,12 @@ gui_update (dt_lib_collect_t *d)
     {
       // only clear
       button->icon = dtgtk_cairo_paint_cancel;
-      gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
+      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
     }
     else if(i == active)
     {
       button->icon = dtgtk_cairo_paint_dropdown;
-      gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear this rule or add new rules"), (char *)NULL);
+      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule or add new rules"), (char *)NULL);
     }
     else
     {
@@ -259,7 +259,7 @@ gui_update (dt_lib_collect_t *d)
       if(mode == DT_LIB_COLLECT_MODE_AND)     button->icon = dtgtk_cairo_paint_and;
       if(mode == DT_LIB_COLLECT_MODE_OR)      button->icon = dtgtk_cairo_paint_or;
       if(mode == DT_LIB_COLLECT_MODE_AND_NOT) button->icon = dtgtk_cairo_paint_andnot;
-      gtk_object_set(GTK_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
+      g_object_set(G_OBJECT(button), "tooltip-text", _("clear this rule"), (char *)NULL);
     }
   }
   // update list of proposals
@@ -600,7 +600,7 @@ gui_init (dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(entry_focus_in_callback), d->rule + i);
 
     /* xgettext:no-c-format */
-    gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
+    g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(entry_key_press), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
