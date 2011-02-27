@@ -9,7 +9,7 @@ if(FLICKCURL_FOUND)
 endif(FLICKCURL_FOUND)
 
 foreach(module ${MODULES} ${MODULES_EXPERIMENTAL})
-	add_library(${module} "${module}.c")
+	add_library(${module} MODULE "${module}.c")
 endforeach(module)
 add_dependencies(gallery metadata_dummy)
 
