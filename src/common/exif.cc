@@ -32,6 +32,7 @@ extern "C"
 #include "common/debug.h"
 }
 // #include <libexif/exif-data.h>
+#include <exiv2/easyaccess.hpp>
 #include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
@@ -56,7 +57,7 @@ const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
-                               Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
+                               Exiv2::ExifData::const_iterator &pos, Exiv2::ExifData& exifData)
 {
   std::string str = pos->print(&exifData);
 
@@ -102,7 +103,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     }
 
     /* List of tag names taken from exiv2's printSummary() in actions.cpp */
-    Exiv2::ExifData::iterator pos;
+    Exiv2::ExifData::const_iterator pos;
     /* Read shutter time */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ExposureTime")))
          != exifData.end() )
@@ -200,25 +201,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
     /* Read lens name */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Lens")))
-         != exifData.end() )
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
-    }
-    else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
+
+     /* Read lens name */
+    if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
              ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.LensID"))) != exifData.end() )
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Sony2.LensID"))) != exifData.end() )
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.LensType"))) != exifData.end() )
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
@@ -226,6 +212,11 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
+    else if ( (pos=Exiv2::lensName(exifData)) != exifData.end() )
+    {
+      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+    }
+
 #if 0
     /* Read flash mode */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.Flash")))
