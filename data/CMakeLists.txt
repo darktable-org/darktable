@@ -27,6 +27,12 @@ set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc darktable.glade)
 install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
 
 #
+# web gallery export support files:
+#
+set(WEB_FILES style/style.css style/favicon.ico)
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/style/)
+
+#
 # Install other system shares
 #
 install(FILES darktable.desktop DESTINATION ./share/applications)
