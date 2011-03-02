@@ -282,6 +282,34 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   return 0;
 }
 
+static void
+copy_res(const char *src, const char *dst)
+{
+  char share[1024];
+  dt_get_datadir(share, 1024);
+  gchar *sourcefile = g_build_filename(share, src, NULL);
+  FILE *fin = fopen(sourcefile, "rb");
+  FILE *fout = fopen(dst, "wb");
+  if(fin && fout)
+  {
+    fseek(fin,0,SEEK_END);
+    int end = ftell(fin);
+    rewind(fin);
+    char *content = (char*)g_malloc(sizeof(char)*end);
+    if(content == NULL)
+      goto END;
+    if(fread(content,sizeof(char),end,fin) != end)
+      goto END;
+    if(fwrite(content,sizeof(char),end,fout) != end)
+      goto END;
+    g_free(content);
+    fclose(fout);
+    fclose(fin);
+  }
+END: 
+  g_free(sourcefile);
+}
+
 void
 finalize_store(dt_imageio_module_storage_t *self, void *dd)
 {
@@ -291,6 +319,15 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   char *c = filename + strlen(filename);
   for(; c>filename && *c != '/' ; c--);
   if(c <= filename) c = filename + strlen(filename);
+
+  // also create style/ subdir:
+  sprintf(c, "/style");
+  g_mkdir_with_parents(filename, 0755);
+  sprintf(c, "/style/style.css");
+  copy_res("/style/style.css", filename);
+  sprintf(c, "/style/favicon.ico");
+  copy_res("/style/favicon.ico", filename);
+
   sprintf(c, "/index.html");
 
   // TODO: textbox for this!
