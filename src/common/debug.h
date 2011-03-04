@@ -40,9 +40,17 @@
 
 #endif
 
-#define DT_DEBUG_SQLITE3_EXEC(a,b,c,d,e)       __DT_DEBUG_ASSERT__(sqlite3_exec(a,b,c,d,e))
+#define DT_DEBUG_SQLITE3_EXEC(a,b,c,d,e)		\
+  do{							\
+    dt_print(DT_DEBUG_SQL, "[sql] exec \"%s\"\n", (b));	\
+    __DT_DEBUG_ASSERT__(sqlite3_exec(a,b,c,d,e));	\
+  }while(0)
 
-#define DT_DEBUG_SQLITE3_PREPARE_V2(a,b,c,d,e) __DT_DEBUG_ASSERT__(sqlite3_prepare_v2(a,b,c,d,e))
+#define DT_DEBUG_SQLITE3_PREPARE_V2(a,b,c,d,e)			\
+  do {								\
+    dt_print(DT_DEBUG_SQL, "[sql] prepare \"%s\"\n", (b));	\
+    __DT_DEBUG_ASSERT__(sqlite3_prepare_v2(a,b,c,d,e));		\
+  }while(0)
 
 #define DT_DEBUG_SQLITE3_BIND_INT(a,b,c)       __DT_DEBUG_ASSERT__(sqlite3_bind_int(a,b,c))
 #define DT_DEBUG_SQLITE3_BIND_DOUBLE(a,b,c)    __DT_DEBUG_ASSERT__(sqlite3_bind_double(a,b,c))

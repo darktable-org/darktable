@@ -101,7 +101,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PERF = 16,
   DT_DEBUG_CAMCTL = 32,
   DT_DEBUG_PWSTORAGE = 64,
-  DT_DEBUG_OPENCL = 128
+  DT_DEBUG_OPENCL = 128,
+  DT_DEBUG_SQL = 256,
 }
 dt_debug_thread_t;
 
