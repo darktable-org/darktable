@@ -130,60 +130,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
       img->exif_aperture = pos->toFloat ();
     }
     /* Read ISO speed */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ISOSpeedRatings")))
+    if ( (pos=Exiv2::isoSpeed(exifData) )
          != exifData.end() )
     {
       img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey(
-                                      "Exif.CanonSi.ISOSpeed"))) != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon1.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon2.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(
-                     Exiv2::ExifKey("Exif.MinoltaCsNew.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(
-                     Exiv2::ExifKey("Exif.MinoltaCsOld.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(
-                     Exiv2::ExifKey("Exif.MinoltaCs5D.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey(
-                                      "Exif.MinoltaCs7D.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat();
-    }
-    /* Read focal length */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.FocalLength")))
-         != exifData.end() )
-    {
-      img->exif_focal_length = pos->toFloat();
     }
 #if 0
     /* Read focal length in 35mm equivalent */
@@ -200,9 +150,8 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
-    /* Read lens name */
 
-     /* Read lens name */
+    /* Read lens name */
     if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
              ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
     {
