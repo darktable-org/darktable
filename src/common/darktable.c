@@ -416,6 +416,7 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
     va_start(ap, msg);
     vprintf(msg, ap);
     va_end(ap);
+    fflush(stdout);
   }
 }
 
