@@ -67,16 +67,22 @@
 		</sect3>
 	</sect2>
 
-	&darkroom_module_rawimport;
-	&darkroom_module_exposure;	
-	&darkroom_module_denoise;
+	<!--&darkroom_module_rawimport;-->
+	<!--&darkroom_module_denoise;-->
+	
 	&darkroom_module_whitebalance;
+	&darkroom_module_stuck;
+	&darkroom_module_chromatic; 
+	&darkroom_module_demosaic;
+	&darkroom_module_tonemapping;
+	&darkroom_module_exposure;
 	&darkroom_module_highlightreconstruction;
 	&darkroom_module_graduatedneutraldensity;
 	&darkroom_module_basecurve;
 	&darkroom_module_lenscorrection;
 	&darkroom_module_unbreakinputprofile;
 	&darkroom_module_inputcolorprofile;
+	&darkroom_module_bloom;	
 	&darkroom_module_colortransfer;
 	&darkroom_module_equalizer;
 	&darkroom_module_equalizer2;
@@ -88,12 +94,15 @@
 	&darkroom_module_colorcorrection;
 	&darkroom_module_sharpen;
 	&darkroom_module_grain;
+	&darkroom_module_localcontrast2;	
 	&darkroom_module_clipping;
 	&darkroom_module_outputcolorprofile;
 	&darkroom_module_channelmixer;
-	&darkroom_module_localcontrast;
-	&darkroom_module_velvia;	
+	<!--&darkroom_module_localcontrast;-->
+	&darkroom_module_velvia;
+	&darkroom_module_soften;  	
 	&darkroom_module_vignetting;
 	&darkroom_module_splittoning;
+	&darkroom_module_overexposed;
 	&darkroom_module_watermark;
 </sect1>
