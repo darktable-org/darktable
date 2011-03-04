@@ -193,7 +193,7 @@ gboolean _bailout_of_tethering(gpointer user_data)
 /** Invoked when camera error appear */
 static void _camera_error_callback(const dt_camera_t *camera,dt_camera_error_t error,void *user_data)
 {
-  dt_control_log(_("Connection with camera lost, exiting tethering mode"));
+  dt_control_log(_("connection with camera lost, exiting tethering mode"));
   g_idle_add(_bailout_of_tethering,user_data);
 }
 

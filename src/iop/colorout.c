@@ -685,21 +685,21 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else if(!strcmp(prof->name, "linear_rgb"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
-      gtk_combo_box_append_text(g->cbox3, _("linear rgb"));
-      gtk_combo_box_append_text(g->cbox5, _("linear rgb"));
+      gtk_combo_box_append_text(g->cbox2, _("linear RGB"));
+      gtk_combo_box_append_text(g->cbox3, _("linear RGB"));
+      gtk_combo_box_append_text(g->cbox5, _("linear RGB"));
     }
     else if(!strcmp(prof->name, "sRGB"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("srgb (web-safe)"));
-      gtk_combo_box_append_text(g->cbox3, _("srgb (web-safe)"));
-      gtk_combo_box_append_text(g->cbox5, _("srgb (web-safe)"));
+      gtk_combo_box_append_text(g->cbox2, _("sRGB (web-safe)"));
+      gtk_combo_box_append_text(g->cbox3, _("sRGB (web-safe)"));
+      gtk_combo_box_append_text(g->cbox5, _("sRGB (web-safe)"));
     }
     else if(!strcmp(prof->name, "adobergb"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
-      gtk_combo_box_append_text(g->cbox3, _("adobe rgb"));
-      gtk_combo_box_append_text(g->cbox5, _("adobe rgb"));
+      gtk_combo_box_append_text(g->cbox2, _("Adobe RGB"));
+      gtk_combo_box_append_text(g->cbox3, _("Adobe RGB"));
+      gtk_combo_box_append_text(g->cbox5, _("Adobe RGB"));
     }
     else
     {

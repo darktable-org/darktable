@@ -5,6 +5,11 @@ add_subdirectory(pixmaps)
 add_subdirectory(kernels)
 
 #
+# install darktable faster wrapper
+#
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable-faster DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+#
 # Generate and instal gtkrc
 #
 set(GTKRC_FONT_SIZE 8)
@@ -20,6 +25,12 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_B
 #
 set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc darktable.glade)
 install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
+
+#
+# web gallery export support files:
+#
+set(WEB_FILES style/style.css style/favicon.ico)
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/style/)
 
 #
 # Install other system shares

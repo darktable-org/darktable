@@ -65,3 +65,46 @@ gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gcha
     nstring = g_strdup(string); // otherwise it's a hell to decide whether to free this string later.
   return nstring;
 }
+
+gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigned int count)
+{
+  if(count == 0)
+    return NULL;
+
+  gchar *result = NULL;
+
+  // add the entries to an char* array
+  items = g_list_first(items);
+  gchar** strings = g_malloc(sizeof(gchar*) * (count+1));
+  if(items != NULL)
+  {
+    int i = 0;
+    do
+    {
+      strings[i++] = items->data;
+    }
+    while((items=g_list_next(items)) != NULL);
+    strings[i] = NULL;
+  }
+
+  // join them into a single string
+  result = g_strjoinv(separator, strings);
+
+  // free the GList and the array
+  items = g_list_first(items);
+  if(items != NULL)
+  {
+    do
+    {
+      g_free(items->data);
+    }
+    while((items=g_list_next(items)) != NULL);
+  }
+  g_list_free(items);
+  if(strings != NULL)
+    g_free(strings);
+
+  return result;
+}
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

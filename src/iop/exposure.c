@@ -32,6 +32,9 @@
 #include "gui/gtk.h"
 #include "dtgtk/resetlabel.h"
 
+#define exposure2white(x)	exp2f(-(x))
+#define white2exposure(x)	-dt_log2f(fmaxf(0.001, x))
+
 DT_MODULE(2)
 
 const char *name()
@@ -60,7 +63,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   cl_int err;
   const float black = d->black;
-  const float white = exp2f(-d->exposure);
+  const float white = exposure2white(d->exposure);
   const float scale = 1.0/(white - black);
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
@@ -78,7 +81,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   const float black = d->black;
-  const float white = exp2f(-d->exposure);
+  const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
   const float scale = 1.0/(white - black);
 #ifdef _OPENMP
@@ -121,8 +124,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->black);
-  dtgtk_slider_set_value(g->scale2, p->exposure);
+  dtgtk_slider_set_value(g->black, p->black);
+  dtgtk_slider_set_value(g->exposure, p->exposure);
   // dtgtk_slider_set_value(g->scale3, p->gain);
 }
 
@@ -170,28 +173,78 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
+static void exposure_set_black(struct dt_iop_module_t *self, const float black);
+static void autoexp_disable(dt_iop_module_t *self);
+
+static void exposure_set_white(struct dt_iop_module_t *self, const float white)
+{
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+
+  float exposure = white2exposure(white);
+  if (p->exposure == exposure) return;
+
+  p->exposure = exposure;
+  if (p->black >= white) exposure_set_black(self, white-0.01);
+
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  darktable.gui->reset = 1;
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->exposure), p->exposure);
+  darktable.gui->reset = 0;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale2), -dt_log2f(fmaxf(0.001, white)));
+  autoexp_disable(self);
+  exposure_set_white(self, white);
 }
 
 static float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  return exp2f(-p->exposure);
+  return exposure2white(p->exposure);
+}
+
+static void exposure_set_black(struct dt_iop_module_t *self, const float black)
+{
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+
+  float b = fmaxf(0.0f, black);
+  if (p->black == b) return;
+
+  p->black = b;
+  if (p->black >= exposure2white(p->exposure)) {
+    exposure_set_white(self, p->black+0.01);
+  }
+
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  darktable.gui->reset = 1;
+  dtgtk_slider_set_value(DTGTK_SLIDER(g->black), p->black);
+  darktable.gui->reset = 0;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void dt_iop_exposure_set_black(struct dt_iop_module_t *self, const float black)
 {
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(DTGTK_SLIDER(g->scale1), fmaxf(0.0, black));
+  autoexp_disable(self);
+  exposure_set_black(self, black);
 }
 
 static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   return p->black;
+}
+
+static void
+autoexp_disable(dt_iop_module_t *self)
+{
+  if (!self->request_color_pick) return;
+
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
+  self->request_color_pick = 0;
 }
 
 static void
@@ -205,31 +258,37 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
 }
 
 static void
-white_callback (GtkDarktableSlider *slider, gpointer user_data)
+autoexpp_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->exposure = dtgtk_slider_get_value(slider);
-  // these lines seem to produce bad black points during auto exposure:
-  // dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  // const float white = exp2f(-p->exposure);
-  // float black = dtgtk_slider_get_value(g->scale1);
-  // if(white < black) dtgtk_slider_set_value(g->scale1, white);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(!self->request_color_pick) return;
+
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
+                      * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
+  exposure_set_white(self, white);
+}
+
+static void
+exposure_callback (GtkDarktableSlider *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+
+  autoexp_disable(self);
+  const float exposure = dtgtk_slider_get_value(slider);
+  dt_iop_exposure_set_white(self, exposure2white(exposure));
 }
 
 static void
 black_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  p->black = dtgtk_slider_get_value(slider);
-  float white = exp2f(-dtgtk_slider_get_value(g->scale2));
-  if(white < p->black) dtgtk_slider_set_value(g->scale2, - dt_log2f(p->black));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  const float black = dtgtk_slider_get_value(slider);
+  dt_iop_exposure_set_black(self, black);
 }
 
 #if 0
@@ -251,9 +310,13 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(self->picked_color_max[0] < 0) return FALSE;
   if(!self->request_color_pick) return FALSE;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
                       * (1.0-dtgtk_slider_get_value(DTGTK_SLIDER(g->autoexpp)));
-  dt_iop_exposure_set_white(self, white);
+  const float black = fminf(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
+
+  exposure_set_white(self, white);
+  exposure_set_black(self, black);
   return FALSE;
 }
 
@@ -285,14 +348,14 @@ void gui_init(struct dt_iop_module_t *self)
   widget = dtgtk_reset_label_new(_("exposure"), self, &p->exposure, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.1, 0.1, .001, p->black, 3));
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("adjust the black level"), (char *)NULL);
+  g->black = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.1, 0.1, .001, p->black, 3));
+  g_object_set(G_OBJECT(g->black), "tooltip-text", _("adjust the black level"), (char *)NULL);
 
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure, 3));
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("adjust the exposure correction [ev]"), (char *)NULL);
+  g->exposure = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure, 3));
+  g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction [EV]"), (char *)NULL);
 
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->black), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
   g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
@@ -306,12 +369,14 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_update(self);
   darktable.gui->reset = 0;
 
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
+  g_signal_connect (G_OBJECT (g->black), "value-changed",
                     G_CALLBACK (black_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (white_callback), self);
+  g_signal_connect (G_OBJECT (g->exposure), "value-changed",
+                    G_CALLBACK (exposure_callback), self);
   // g_signal_connect (G_OBJECT (g->scale3), "value-changed",
   // G_CALLBACK (gain_callback), self);
+  g_signal_connect (G_OBJECT (g->autoexpp), "value-changed",
+                    G_CALLBACK (autoexpp_callback), self);
   g_signal_connect (G_OBJECT (g->autoexp), "toggled",
                     G_CALLBACK (autoexp_callback), self);
   g_signal_connect (G_OBJECT(self->widget), "expose-event",

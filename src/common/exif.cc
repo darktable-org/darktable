@@ -214,6 +214,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Sony2.LensID"))) != exifData.end() )
+    {
+      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+    }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.LensType"))) != exifData.end() )
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);

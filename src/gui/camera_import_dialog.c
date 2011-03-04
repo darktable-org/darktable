@@ -258,7 +258,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   // Setup variables
   dt_variables_params_init(&data->vp);
-  data->vp->jobcode=_("My jobcode");
+  data->vp->jobcode=_("my jobcode");
   data->vp->filename="DSC_0235.JPG";
 
   // IMPORT PAGE

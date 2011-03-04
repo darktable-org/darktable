@@ -100,7 +100,7 @@ int dt_init(int argc, char *argv[])
       {
         dbfilenameFromCommand = argv[++k];
       }
-      if(argv[k][1] == 'd' && argc > k+1)
+      else if(argv[k][1] == 'd' && argc > k+1)
       {
         if(!strcmp(argv[k+1], "all"))       darktable.unmuted = 0xffffffff;   // enable all debug information
         else if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module

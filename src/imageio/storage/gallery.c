@@ -24,6 +24,7 @@
 #include "common/variables.h"
 #include "common/metadata.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -114,7 +115,7 @@ gui_init (dt_imageio_module_storage_t *self)
   }
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to create the website gallery:\n"
+  g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to create the website gallery:\n"
                  "$(ROLL_NAME) - roll of the input image\n"
                  "$(FILE_DIRECTORY) - directory of the input image\n"
                  "$(FILE_NAME) - basename of the input image\n"
@@ -138,7 +139,7 @@ gui_init (dt_imageio_module_storage_t *self)
                                                       ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
+  g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 }
@@ -217,19 +218,43 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     // save image to list, in order:
     pair_t *pair = malloc(sizeof(pair_t));
     
-    char *title = NULL, *description = NULL;
-    char query[1024];
-    sqlite3_stmt *stmt;
-    snprintf(query, 1024, "select value from meta_data where id = %d and key = %d", img->id, DT_METADATA_XMP_DC_TITLE);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) title = g_strdup((char *)sqlite3_column_text(stmt, 0));
-    sqlite3_finalize(stmt);
-    snprintf(query, 1024, "select value from meta_data where id = %d and key = %d", img->id, DT_METADATA_XMP_DC_DESCRIPTION);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) description = g_strdup((char *)sqlite3_column_text(stmt, 0));
-    sqlite3_finalize(stmt);
+    char *title = NULL, *description = NULL, *tags = NULL;
+    GList *res;
 
-    // TODO: tags, too!
+    res = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+    if(res)
+    {
+      title = res->data;
+      g_list_free(res);
+    }
+
+    res = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
+    if(res)
+    {
+      description = res->data;
+      g_list_free(res);
+    }
+
+    unsigned int count = 0;
+    res = dt_metadata_get(img->id, "Xmp.dc.subject", &count);
+    if(res)
+    {
+      // don't show the internal tags (darktable|...)
+      res = g_list_first(res);
+      GList *iter = res;
+      while(iter)
+      {
+        GList *next = g_list_next(iter);
+        if(g_str_has_prefix(iter->data, "darktable|"))
+        {
+          g_free(iter->data);
+          res = g_list_delete_link(res, iter);
+          count--;
+        }
+        iter = next;
+      }
+      tags = dt_util_glist_to_str(", ", res, count);
+    }
 
     char relfilename[256], relthumbfilename[256];
     c = filename + strlen(filename);
@@ -247,10 +272,11 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
         "\n"
         "      <div><a href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
         "      <h1>%s</h1>\n"
-        "      %s</div>\n", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;");
+        "      %s<br/><span class=\"tags\">%s</span></div>\n", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
     pair->pos = num;
     g_free(title);
     g_free(description);
+    g_free(tags);
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -282,6 +308,34 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   return 0;
 }
 
+static void
+copy_res(const char *src, const char *dst)
+{
+  char share[1024];
+  dt_get_datadir(share, 1024);
+  gchar *sourcefile = g_build_filename(share, src, NULL);
+  FILE *fin = fopen(sourcefile, "rb");
+  FILE *fout = fopen(dst, "wb");
+  if(fin && fout)
+  {
+    fseek(fin,0,SEEK_END);
+    int end = ftell(fin);
+    rewind(fin);
+    char *content = (char*)g_malloc(sizeof(char)*end);
+    if(content == NULL)
+      goto END;
+    if(fread(content,sizeof(char),end,fin) != end)
+      goto END;
+    if(fwrite(content,sizeof(char),end,fout) != end)
+      goto END;
+    g_free(content);
+    fclose(fout);
+    fclose(fin);
+  }
+END: 
+  g_free(sourcefile);
+}
+
 void
 finalize_store(dt_imageio_module_storage_t *self, void *dd)
 {
@@ -291,6 +345,15 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   char *c = filename + strlen(filename);
   for(; c>filename && *c != '/' ; c--);
   if(c <= filename) c = filename + strlen(filename);
+
+  // also create style/ subdir:
+  sprintf(c, "/style");
+  g_mkdir_with_parents(filename, 0755);
+  sprintf(c, "/style/style.css");
+  copy_res("/style/style.css", filename);
+  sprintf(c, "/style/favicon.ico");
+  copy_res("/style/favicon.ico", filename);
+
   sprintf(c, "/index.html");
 
   // TODO: textbox for this!
@@ -367,3 +430,5 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", d->filename);
   return 0;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

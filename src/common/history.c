@@ -23,6 +23,7 @@
 #include "common/exif.h"
 #include "common/history.h"
 #include "common/debug.h"
+#include "common/utility.h"
 
 
 void dt_history_delete_on_image(int32_t imgid)
@@ -193,9 +194,8 @@ dt_history_get_items_as_string(int32_t imgid)
   }
 
   GList *items = NULL;
-  char *result = NULL;
   const char *onoff[2] = {_("off"), _("on")};
-  unsigned int count = 1;
+  unsigned int count = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -208,39 +208,7 @@ dt_history_get_items_as_string(int32_t imgid)
     items = g_list_append(items, g_strdup(name));
     count++;
   }
-
-  // add the entries to an char* array
-  items = g_list_first(items);
-  char** strings = g_malloc(sizeof(char*) * count);
-  if(items != NULL)
-  {
-    int i = 0;
-    do
-    {
-      strings[i++] = items->data;
-    }
-    while((items=g_list_next(items)) != NULL);
-    strings[i] = NULL;
-  }
-
-  // join them into a single string
-  result = g_strjoinv("\n", strings);
-
-  // free the GList and the array
-  items = g_list_first(items);
-  if(items != NULL)
-  {
-    do
-    {
-      g_free(items->data);
-    }
-    while((items=g_list_next(items)) != NULL);
-  }
-  g_list_free(items);
-  if(strings != NULL)
-    g_free(strings);
-
-  return result;
+  return dt_util_glist_to_str("\n", items, count);
 }
 
 int
@@ -270,3 +238,5 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
   sqlite3_finalize(stmt);
   return res;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

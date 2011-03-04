@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1148,6 +1148,7 @@ void reload_defaults(dt_iop_module_t *module)
   // can't be switched on for non-raw images:
   const uint32_t filters = dt_image_flipped_filter(module->dev->image);
   if(!filters) module->hide_enable_button = 1;
+  else         module->hide_enable_button = 0;
 }
 
 /** init, cleanup, commit to pipeline */
@@ -1199,16 +1200,16 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void gui_update    (dt_iop_module_t *self)
 {
-  // no options.
+  if(self->dev->image->filters)
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
+  else
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction\nonly works for raw images."));
 }
 
 void gui_init      (dt_iop_module_t *self)
 {
   self->gui_data = NULL;
-  if(self->dev->image->filters)
-    self->widget = gtk_label_new(_("automatic chromatic aberration correction"));
-  else
-    self->widget = gtk_label_new(_("automatic chromatic aberration correction\nonly works for raw images."));
+  self->widget = gtk_label_new("");
   gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0, 0.5);
 }
 

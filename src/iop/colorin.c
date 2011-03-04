@@ -554,15 +554,15 @@ void gui_init(struct dt_iop_module_t *self)
     else if(!strcmp(prof->name, "darktable"))
       gtk_combo_box_append_text(g->cbox2, _("enhanced color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
-      gtk_combo_box_append_text(g->cbox2, _("srgb (e.g. jpg)"));
+      gtk_combo_box_append_text(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "adobergb"))
-      gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
+      gtk_combo_box_append_text(g->cbox2, _("Adobe RGB"));
     else if(!strcmp(prof->name, "linear_rgb"))
-      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
+      gtk_combo_box_append_text(g->cbox2, _("linear RGB"));
     else if(!strcmp(prof->name, "infrared"))
-      gtk_combo_box_append_text(g->cbox2, _("linear infrared bgr"));
+      gtk_combo_box_append_text(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
-      gtk_combo_box_append_text(g->cbox2, _("linear xyz"));
+      gtk_combo_box_append_text(g->cbox2, _("linear XYZ"));
     else
       gtk_combo_box_append_text(g->cbox2, prof->name);
     l = g_list_next(l);

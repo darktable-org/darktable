@@ -481,7 +481,8 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
-static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
+static void
+dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
 {
   GtkExpander *expander = GTK_EXPANDER (object);
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -542,7 +543,12 @@ _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpoint
 static gboolean
 popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(event->button == 3)
+  if(event->button == 1)
+  {
+    dt_iop_request_focus(module);
+    return TRUE;
+  }
+  else if(event->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, event->button, event->time);

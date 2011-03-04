@@ -529,7 +529,7 @@
       <default>0</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>Capture view mode</short>
+        <short>capture view mode</short>
         <long></long>
       </locale>
     </schema>
@@ -1414,7 +1414,7 @@
       <default></default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>Default client to use, this overrides detection of default client.</short>
+        <short>default client to use, this overrides detection of default client.</short>
         <long></long>
       </locale>
     </schema>

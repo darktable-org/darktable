@@ -71,12 +71,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 if(WIN32)
-	set(RELATIVE_PATH_FROM_BIN ${CMAKE_INSTALL_PREFIX} CACHE STRING "Relative path to library from binary")
-else(WIN32)
-	set(RELATIVE_PATH_FROM_BIN ${CMAKE_INSTALL_PREFIX} CACHE STRING "Relative path to library from binary")
-endif(WIN32)
-
-if(WIN32)
 	set(SHARE_INSTALL "." CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
 else(WIN32)
 	if(NOT SHARE_INSTALL)

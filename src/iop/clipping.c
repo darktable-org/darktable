@@ -812,7 +812,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("3:2"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("4:3"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("din"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");

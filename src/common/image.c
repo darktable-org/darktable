@@ -17,7 +17,6 @@
 */
 
 #include "common/darktable.h"
-#include "common/fswatch.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -636,8 +635,6 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   img->film_id = film_id;
   img->dirty = 1;
 
-  dt_fswatch_add(darktable.fswatch, DT_FSWATCH_IMAGE, img);
-
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
   char dtfilename[1024];
@@ -714,10 +711,6 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
 
 void dt_image_init(dt_image_t *img)
 {
-  // TODO: this is not initialized, in the general case!
-  if(strcmp(img->filename,"(unknown)")!=0)  // Reuse of img object...
-    dt_fswatch_remove(darktable.fswatch,DT_FSWATCH_IMAGE,img);
-
   for(int k=0; (int)k<(int)DT_IMAGE_MIPF; k++) img->mip[k] = NULL;
   memset(img->lock,0, sizeof(dt_image_lock_t)*DT_IMAGE_NONE);
   img->import_lock = 0;
@@ -838,8 +831,6 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
   else fprintf(stderr, "[image_open2] failed to open image from database: %s\n", sqlite3_errmsg(darktable.db));
   rc = sqlite3_finalize(stmt);
   if(ret) return ret;
-  // add watch for file
-  dt_fswatch_add( darktable.fswatch, DT_FSWATCH_IMAGE, img);
   return rc;
 }
 
