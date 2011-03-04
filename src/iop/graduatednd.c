@@ -182,6 +182,103 @@ static inline void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
 
 }
 
+// static int
+// get_grab(float pointerx, float pointery, float zoom_scale){
+//   const float radius = 5.0/zoom_scale;
+// 
+//   //TODO add correct calculations
+//   if(powf(pointerx-startx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 2;    // x size
+//   if(powf(pointerx, 2)+powf(pointery-starty, 2) <= powf(radius, 2)) return 4;    // y size
+//   if(powf(pointerx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 1;           // center
+//   if(powf(pointerx-endx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 8;      // x falloff
+//   if(powf(pointerx, 2)+powf(pointery-endy, 2) <= powf(radius, 2)) return 16;     // y falloff
+// 
+//   return 0;
+// }
+
+// static void
+// draw_overlay(cairo_t *cr, float wd, float ht, int grab, float zoom_scale)
+// {
+//   const float radius_reg = 4.0/zoom_scale;
+// 
+//   // top-left
+//   cairo_arc(cr, 0.0, 0.0, radius_reg, 0.0, M_PI*2.0);
+//   cairo_stroke(cr);
+// 
+//   // bottom-right
+//   cairo_arc(cr, wd, ht, radius_reg, 0.0, M_PI*2.0);
+//   cairo_stroke(cr);
+// }
+
+void
+gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+{
+
+  dt_develop_t *dev             = self->dev;
+//   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+//   dt_iop_graduatednd_params_t *p   = (dt_iop_graduatednd_params_t *)self->params;
+
+  // general house keeping.
+  int32_t zoom, closeup;
+  float zoom_x, zoom_y;
+  float wd = dev->preview_pipe->backbuf_width;
+  float ht = dev->preview_pipe->backbuf_height;
+  float bigger_side, smaller_side;
+  if(wd >= ht){ bigger_side = wd; smaller_side = ht; }
+  else        { bigger_side = ht; smaller_side = wd; }
+  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+
+  cairo_translate(cr, width/2.0, height/2.0);
+  cairo_scale(cr, zoom_scale, zoom_scale);
+  cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
+
+  // now top-left is (0,0) and bottom-right is (wd,ht)
+
+  //TODO calculate values for and execute cairo_translate() and cairo_rotate().
+  //     of course the results can also be passed to draw_overlay() if it's easier to use them there instead.
+
+  // finally draw the guides. if rotation and translation is done correctly it can be drawn statically in draw_overlay().
+//   int grab = get_grab(pzx*wd*0.5, pzy*ht*0.5, zoom_scale); //FIXME use the calculated offsets in the 1st and 2nd paramter to get correct mouse positions
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_width(cr, 3.0/zoom_scale);
+  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+//   draw_overlay(cr, wd, ht, grab, zoom_scale); //FIXME removed to not annoy users as long as this is just a demo.
+  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_source_rgba(cr, .8, .8, .8, .8);
+//   draw_overlay(cr, wd, ht, grab, zoom_scale); //FIXME removed to not annoy users as long as this is just a demo.
+
+}
+
+int
+mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
+{
+  //TODO see vignette.c ...
+  dt_control_gui_queue_draw();
+  return 0;
+}
+
+int
+button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
+{
+  if(which == 1)
+    return 1;
+  return 0;
+}
+
+int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+{
+  if(which == 1)
+    return 1;
+  return 0;
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -517,3 +614,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
