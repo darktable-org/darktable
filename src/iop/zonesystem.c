@@ -367,7 +367,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* create the zonesystem bar widget */
   g->zones = gtk_drawing_area_new();
-  g_object_set (GTK_OBJECT(g->zones), "tooltip-text", _("lightness zones \nuse mouse scrollwheel to change the numbers of zones \nleft-clic on a frontier to create a marker \nright-clic on a marker to delete it"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->zones), "tooltip-text", _("lightness zones\nuse mouse scrollwheel to change the number of zones\nleft-click on a border to create a marker\nright-click on a marker to delete it"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->zones), "expose-event", G_CALLBACK (dt_iop_zonesystem_bar_expose), self);
   g_signal_connect (G_OBJECT (g->zones), "motion-notify-event", G_CALLBACK (dt_iop_zonesystem_bar_motion_notify), self);
   g_signal_connect (G_OBJECT (g->zones), "leave-notify-event", G_CALLBACK (dt_iop_zonesystem_bar_leave_notify), self);
