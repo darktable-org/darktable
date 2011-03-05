@@ -11,7 +11,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colortransfer stuckpixels)
+set(EXPERIMENTAL_MODULES anlfyeni colortransfer stuckpixels lowlight)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -48,6 +48,7 @@ add_library(atrous MODULE "atrous.c")
 add_library(cacorrect MODULE "cacorrect.c")
 add_library(overexposed MODULE "overexposed.c")
 add_library(stuckpixels MODULE "stuckpixels.c")
+add_library(lowlight MODULE "lowlight.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")
