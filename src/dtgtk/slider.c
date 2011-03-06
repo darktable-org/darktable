@@ -457,6 +457,9 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   cairo_t *cr;
   cr = gdk_cairo_create(widget->window);
   
+  /* hardcode state for the rest of control */
+  state = GTK_STATE_NORMAL;
+  
   /* fill value rect */
   gfloat value = gtk_adjustment_get_value(slider->adjustment);
   
