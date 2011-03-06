@@ -457,9 +457,6 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   cairo_t *cr;
   cr = gdk_cairo_create(widget->window);
   
-  /* hardcode state for the rest of control */
-  state = GTK_STATE_PRELIGHT;
-  
   /* fill value rect */
   gfloat value = gtk_adjustment_get_value(slider->adjustment);
   
@@ -471,9 +468,9 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   
 
   cairo_set_source_rgba(cr,
-                       (style->bg[state].red/65535.0)*1.7,
-                       (style->bg [state].green/65535.0)*1.7,
-                       (style->bg[state].blue/65535.0)*1.7,
+                       (style->fg[state].red/65535.0)*1.7,
+                       (style->fg[state].green/65535.0)*1.7,
+                       (style->fg[state].blue/65535.0)*1.7,
                        0.2
                       );
 
