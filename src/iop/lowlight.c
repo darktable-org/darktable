@@ -132,7 +132,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     V = fminf(1.0f, fmaxf(0.0f,c*(XYZ[1] * ( 1.33f * ( 1.0f + (XYZ[1]+XYZ[2])/XYZ[0]) - 1.68f ))));
 
     // blending coefficient from curve
-    w = lookup(d->lut,XYZ[1]);
+    w = lookup(d->lut,in[0]/100.f);
 
     XYZ_s[0] = V * XYZ_sw[0];
     XYZ_s[1] = V * XYZ_sw[1];
@@ -223,15 +223,15 @@ void init_presets (dt_iop_module_t *self)
   p.transition_x[4] = 0.800000;
   p.transition_x[5] = 1.000000;
 
-  p.transition_y[0] = 0.000000;
-  p.transition_y[1] = 0.000000;
-  p.transition_y[2] = 0.000000;
-  p.transition_y[3] = 0.000000;
-  p.transition_y[4] = 0.000000;
-  p.transition_y[5] = 0.000000;
+  p.transition_y[0] = 1.000000;
+  p.transition_y[1] = 1.000000;
+  p.transition_y[2] = 1.000000;
+  p.transition_y[3] = 1.000000;
+  p.transition_y[4] = 1.000000;
+  p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.5f;
-  dt_gui_presets_add_generic(_("scotopic vision"), self->op, &p, sizeof(p), 1);
+  p.blueness = 0.0f;
+  dt_gui_presets_add_generic(_("daylight"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -240,33 +240,15 @@ void init_presets (dt_iop_module_t *self)
   p.transition_x[4] = 0.800000;
   p.transition_x[5] = 1.000000;
 
-  p.transition_y[0] = 0.000000;
-  p.transition_y[1] = 0.060000;
-  p.transition_y[2] = 0.180000;
-  p.transition_y[3] = 0.450000;
-  p.transition_y[4] = 0.750000;
+  p.transition_y[0] = 0.600000;
+  p.transition_y[1] = 0.800000;
+  p.transition_y[2] = 0.950000;
+  p.transition_y[3] = 0.980000;
+  p.transition_y[4] = 1.000000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.5f;
-  dt_gui_presets_add_generic(_("mesopic vision (dark)"), self->op, &p, sizeof(p), 1);
-
-  p.transition_x[0] = 0.000000;
-  p.transition_x[1] = 0.200000;
-  p.transition_x[2] = 0.400000;
-  p.transition_x[3] = 0.600000;
-  p.transition_x[4] = 0.800000;
-  p.transition_x[5] = 1.000000;
-
-  p.transition_y[0] = 0.000000;
-  p.transition_y[1] = 0.400000;
-  p.transition_y[2] = 0.480000;
-  p.transition_y[3] = 0.520000;
-  p.transition_y[4] = 0.600000;
-  p.transition_y[5] = 1.000000;
-
-
-  p.blueness = 0.4f;
-  dt_gui_presets_add_generic(_("mesopic vision"), self->op, &p, sizeof(p), 1);
+  p.blueness = 0.3f;
+  dt_gui_presets_add_generic(_("indoor bright"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -276,14 +258,14 @@ void init_presets (dt_iop_module_t *self)
   p.transition_x[5] = 1.000000;
 
   p.transition_y[0] = 0.300000;
-  p.transition_y[1] = 0.350000;
-  p.transition_y[2] = 0.500000;
+  p.transition_y[1] = 0.500000;
+  p.transition_y[2] = 0.700000;
   p.transition_y[3] = 0.850000;
-  p.transition_y[4] = 0.980000;
+  p.transition_y[4] = 0.970000;
   p.transition_y[5] = 1.000000;
 
   p.blueness = 0.3f;
-  dt_gui_presets_add_generic(_("mesopic vision (light)"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("indoor dim"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -292,15 +274,32 @@ void init_presets (dt_iop_module_t *self)
   p.transition_x[4] = 0.800000;
   p.transition_x[5] = 1.000000;
 
-  p.transition_y[0] = 1.000000;
-  p.transition_y[1] = 1.000000;
-  p.transition_y[2] = 1.000000;
-  p.transition_y[3] = 1.000000;
-  p.transition_y[4] = 1.000000;
+  p.transition_y[0] = 0.050000;
+  p.transition_y[1] = 0.200000;
+  p.transition_y[2] = 0.400000;
+  p.transition_y[3] = 0.700000;
+  p.transition_y[4] = 0.920000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.0f;
-  dt_gui_presets_add_generic(_("photopic vision"), self->op, &p, sizeof(p), 1);
+  p.blueness = 0.4f;
+  dt_gui_presets_add_generic(_("indoor dark"), self->op, &p, sizeof(p), 1);
+  
+  p.transition_x[0] = 0.000000;
+  p.transition_x[1] = 0.200000;
+  p.transition_x[2] = 0.400000;
+  p.transition_x[3] = 0.600000;
+  p.transition_x[4] = 0.800000;
+  p.transition_x[5] = 1.000000;
+
+  p.transition_y[0] = 0.070000;
+  p.transition_y[1] = 0.100000;
+  p.transition_y[2] = 0.180000;
+  p.transition_y[3] = 0.350000;
+  p.transition_y[4] = 0.750000;
+  p.transition_y[5] = 1.000000;
+
+  p.blueness = 0.5f;
+  dt_gui_presets_add_generic(_("twilight"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -310,14 +309,66 @@ void init_presets (dt_iop_module_t *self)
   p.transition_x[5] = 1.000000;
 
   p.transition_y[0] = 0.000000;
-  p.transition_y[1] = 0.500000;
-  p.transition_y[2] = 0.800000;
-  p.transition_y[3] = 0.950000;
+  p.transition_y[1] = 0.450000;
+  p.transition_y[2] = 0.750000;
+  p.transition_y[3] = 0.930000;
   p.transition_y[4] = 0.990000;
   p.transition_y[5] = 1.000000;
 
   p.blueness = 0.3f;
+  dt_gui_presets_add_generic(_("night street lit"), self->op, &p, sizeof(p), 1);
+
+  p.transition_x[0] = 0.000000;
+  p.transition_x[1] = 0.200000;
+  p.transition_x[2] = 0.400000;
+  p.transition_x[3] = 0.600000;
+  p.transition_x[4] = 0.800000;
+  p.transition_x[5] = 1.000000;
+
+  p.transition_y[0] = 0.000000;
+  p.transition_y[1] = 0.150000;
+  p.transition_y[2] = 0.350000;
+  p.transition_y[3] = 0.800000;
+  p.transition_y[4] = 0.970000;
+  p.transition_y[5] = 1.000000;
+
+  p.blueness = 0.3f;
   dt_gui_presets_add_generic(_("night street"), self->op, &p, sizeof(p), 1);
+
+  p.transition_x[0] = 0.000000;
+  p.transition_x[1] = 0.150000;
+  p.transition_x[2] = 0.400000;
+  p.transition_x[3] = 0.600000;
+  p.transition_x[4] = 0.800000;
+  p.transition_x[5] = 1.000000;
+
+  p.transition_y[0] = 0.000000;
+  p.transition_y[1] = 0.020000;
+  p.transition_y[2] = 0.050000;
+  p.transition_y[3] = 0.200000;
+  p.transition_y[4] = 0.550000;
+  p.transition_y[5] = 1.000000;
+
+  p.blueness = 0.4f;
+  dt_gui_presets_add_generic(_("night street dark"), self->op, &p, sizeof(p), 1);
+
+  p.transition_x[0] = 0.000000;
+  p.transition_x[1] = 0.200000;
+  p.transition_x[2] = 0.400000;
+  p.transition_x[3] = 0.600000;
+  p.transition_x[4] = 0.800000;
+  p.transition_x[5] = 1.000000;
+
+  p.transition_y[0] = 0.000000;
+  p.transition_y[1] = 0.000000;
+  p.transition_y[2] = 0.000000;
+  p.transition_y[3] = 0.000000;
+  p.transition_y[4] = 0.000000;
+  p.transition_y[5] = 0.000000;
+
+
+  p.blueness = 0.5f;
+  dt_gui_presets_add_generic(_("night"), self->op, &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
@@ -365,6 +416,12 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
+  // draw grid
+  cairo_set_line_width(cr, .4);
+  cairo_set_source_rgb (cr, .1, .1, .1);
+  dt_draw_grid(cr, 8, 0, 0, width, height);
+
+
   if(c->mouse_y > 0 || c->dragging)
   {
     // draw min/max curves:
@@ -383,6 +440,8 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     dt_draw_curve_set_point(c->transition_curve, DT_IOP_LOWLIGHT_BANDS+1, p.transition_x[1]+1.0, p.transition_y[DT_IOP_LOWLIGHT_BANDS-1]);
     dt_draw_curve_calc_values(c->transition_curve, 0.0, 1.0, DT_IOP_LOWLIGHT_RES, c->draw_max_xs, c->draw_max_ys);
   }
+
+  cairo_save(cr);
 
   // draw x positions
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
@@ -447,7 +506,38 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_stroke(cr);
   }
 
+  cairo_restore (cr);
+
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+  // draw labels:
+  cairo_text_extents_t ext;
+  cairo_set_source_rgb(cr, .1, .1, .1);
+  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size (cr, .06*height);
+
+  cairo_text_extents (cr, _("dark"), &ext);
+  cairo_move_to (cr, .02*width+ext.height, .5*(height+ext.width));
+  cairo_save (cr);
+  cairo_rotate (cr, -M_PI*.5f);
+  cairo_show_text(cr, _("dark"));
+  cairo_restore (cr);
+
+  cairo_text_extents (cr, _("bright"), &ext);
+  cairo_move_to (cr, .98*width, .5*(height+ext.width));
+  cairo_save (cr);
+  cairo_rotate (cr, -M_PI*.5f);
+  cairo_show_text(cr, _("bright"));
+  cairo_restore (cr);
+
+  cairo_text_extents (cr, _("day vision"), &ext);
+  cairo_move_to (cr, .5*(width-ext.width), .08*height);
+  cairo_show_text(cr, _("day vision"));
+
+  cairo_text_extents (cr, _("night vision"), &ext);
+  cairo_move_to (cr, .5*(width-ext.width), .97*height);
+  cairo_show_text(cr, _("night vision"));
+
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
