@@ -67,7 +67,7 @@ extern "C"
 
   const char *name()
   {
-    return _("denoise (deprecated)");
+    return _("denoise");
   }
 
   int
@@ -76,6 +76,10 @@ extern "C"
     return IOP_GROUP_CORRECT;
   }
 
+int flags()
+{
+	return IOP_FLAGS_DEPRECATED;
+}
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
     dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;

@@ -39,6 +39,7 @@ struct dt_iop_roi_t;
 
 /** Flag for the iop module to be enabled/included by default when creating a style */
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
+#define	IOP_FLAGS_DEPRECATED	2
 
 typedef struct dt_iop_params_t
 {

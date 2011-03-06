@@ -65,7 +65,7 @@ dt_iop_rlce_data_t;
 
 const char *name()
 {
-  return _("local contrast (deprecated)");
+  return _("local contrast");
 }
 
 int
@@ -76,7 +76,7 @@ groups ()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)

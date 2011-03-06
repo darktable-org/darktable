@@ -624,7 +624,7 @@ void enter(dt_view_t *self)
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
-    if(strcmp(module->op, "gamma"))
+    if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       module->showhide = gtk_toggle_button_new();
       char filename[1024], datadir[1024];

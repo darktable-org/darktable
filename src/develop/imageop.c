@@ -224,6 +224,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->dev = dev;
   module->widget = NULL;
   module->topwidget = NULL;
+  module->showhide = NULL;
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
@@ -588,9 +589,11 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
+  char name[1024];
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
+  snprintf(name, 1024, "%s%s",module->name(),(module->flags() & IOP_FLAGS_DEPRECATED)?_(" (deprecated)"):"");
+  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)name));
   // gamma is always needed for display (down to uint8_t)
   // colorin/colorout are essential for La/Lb/L conversion.
   if(!module->hide_enable_button)

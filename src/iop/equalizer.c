@@ -40,7 +40,7 @@ DT_MODULE(1)
 
 const char *name()
 {
-  return _("legacy equalizer (deprecated)");
+  return _("legacy equalizer");
 }
 
 
@@ -50,6 +50,10 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int flags()
+{
+	return IOP_FLAGS_DEPRECATED;
+}
 
 
 

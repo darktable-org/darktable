@@ -54,7 +54,8 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
       /* ignore special module named gamma */
       if(strcmp(module->op, "gamma"))
       {
-        if ( ( !module->showhide || (GTK_IS_TOGGLE_BUTTON (module->showhide) && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) )
+        if ( ( !module->showhide || (GTK_IS_TOGGLE_BUTTON (module->showhide) && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) &&
+			((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
           gtk_widget_show(GTK_WIDGET (module->topwidget));
       }
 
@@ -101,7 +102,8 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
       if(strcmp(module->op, "gamma"))
       {
 
-        if ( (module->groups () & group ) && ( !module->showhide || (module->showhide && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) )
+        if ( (module->groups () & group ) && ( !module->showhide || (module->showhide && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) &&
+			((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
           gtk_widget_show(GTK_WIDGET (module->topwidget));
         else
           gtk_widget_hide(GTK_WIDGET (module->topwidget));

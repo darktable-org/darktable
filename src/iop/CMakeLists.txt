@@ -6,10 +6,9 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	colorin colorout clipping sharpen monochrome basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma 
-	channelmixer graduatednd relight zonesystem demosaic atrous tonemap cacorrect overexposed bloom soften)
+	channelmixer graduatednd relight zonesystem demosaic atrous tonemap cacorrect overexposed bloom soften
+	clahe equalizer)
 
-# old stuff we want to get rid of:
-set(LEGACY_MODULES clahe equalizer)
 
 # new/unfinshed/unstable plugins:
 set(EXPERIMENTAL_MODULES anlfyeni colortransfer stuckpixels)
@@ -75,10 +74,4 @@ if(INSTALL_IOP_EXPERIMENTAL)
   endforeach(module)
 endif(INSTALL_IOP_EXPERIMENTAL)
 
-if(INSTALL_IOP_LEGACY)
-  message("-- Installing legacy iop plugins")
-  foreach(module ${LEGACY_MODULES})
-    install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
-  endforeach(module)
-endif(INSTALL_IOP_LEGACY)
 
