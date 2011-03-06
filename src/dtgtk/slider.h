@@ -59,7 +59,7 @@ typedef struct _GtkDarktableSlider
   gint motion_direction;
   gint digits;
   gint snapsize;
-  gfloat default_value;
+  gdouble default_value;
   darktable_slider_type_t type;
   darktable_slider_format_type_t fmt_type;
 } GtkDarktableSlider;
@@ -89,8 +89,10 @@ GtkWidget* dtgtk_slider_new_with_range (darktable_slider_type_t type,gdouble min
 gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider);
 /** Set label of slider */
 void dtgtk_slider_set_label(GtkDarktableSlider *slider,gchar *label);
-/** Set label of slider */
+/** Set unit of value */
 void dtgtk_slider_set_unit(GtkDarktableSlider *slider,gchar *unit);
+/** Set the default value of slider */
+void dtgtk_slider_set_default_value(GtkDarktableSlider *slider,gdouble val);
 /** Set force of sign of positice in displayed value */
 void dtgtk_slider_set_force_sign(GtkDarktableSlider *slider,gboolean force);
 /** Set the value of the slider */

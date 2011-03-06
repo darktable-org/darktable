@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c)2010 Henrik Andersson.
+    copyright (c) 2010-2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -190,9 +190,10 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change,widget);
     }
   }
-  else if(event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  else if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    /* left mouse second click of doubleclick event */
+  /* left mouse second click of doubleclick event */
+  fprintf(stderr,"DOUBLE CLICK");
   }
   return TRUE;
 }
@@ -597,6 +598,12 @@ void dtgtk_slider_set_force_sign(GtkDarktableSlider *slider,gboolean force)
 {
   slider->force_sign = force;
 }
+
+void dtgtk_slider_set_default_value(GtkDarktableSlider *slider,gdouble val)
+{
+  slider->default_value = value;
+}
+
 
 gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider)
 {
