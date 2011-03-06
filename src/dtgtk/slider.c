@@ -601,7 +601,7 @@ void dtgtk_slider_set_force_sign(GtkDarktableSlider *slider,gboolean force)
 
 void dtgtk_slider_set_default_value(GtkDarktableSlider *slider,gdouble val)
 {
-  slider->default_value = value;
+  slider->default_value = val;
 }
 
 
