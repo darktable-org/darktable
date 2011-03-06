@@ -509,7 +509,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   int unitwidth = ext.width;
   if(unit)
   {
-    cairo_move_to(cr, vr.x+vr.width-ext.width - (DTGTK_SLIDER_BORDER_WIDTH*2) ,vr.y+vr.height-(DTGTK_SLIDER_BORDER_WIDTH*2));
+    cairo_move_to(cr, vr.x+vr.width-ext.width - (DTGTK_SLIDER_BORDER_WIDTH) ,vr.y+vr.height-(DTGTK_SLIDER_BORDER_WIDTH*2));
     cairo_show_text(cr, unit);
   }
   
