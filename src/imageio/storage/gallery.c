@@ -40,6 +40,7 @@ DT_MODULE(1)
 typedef struct gallery_t
 {
   GtkEntry *entry;
+  GtkEntry *title_entry;
 }
 gallery_t;
 
@@ -47,6 +48,8 @@ gallery_t;
 typedef struct dt_imageio_gallery_t
 {
   char filename[1024];
+  char title[1024];
+  char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
   dt_variables_params_t *vp;
   GList *l;
 }
@@ -102,11 +105,13 @@ gui_init (dt_imageio_module_storage_t *self)
 {
   gallery_t *d = (gallery_t *)malloc(sizeof(gallery_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_hbox_new(FALSE, 5);
+  self->widget = gtk_vbox_new(TRUE, 5);
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *widget;
 
   widget = gtk_entry_new();
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   gchar *dir = dt_conf_get_string("plugins/imageio/storage/gallery/file_directory");
   if(dir)
   {
@@ -140,8 +145,18 @@ gui_init (dt_imageio_module_storage_t *self)
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
+
+  hbox = gtk_hbox_new(FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
+  widget = gtk_label_new(_("title"));
+  gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.5f);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+  d->title_entry = GTK_ENTRY(gtk_entry_new());
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
+  dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->title_entry));
+  g_object_set(G_OBJECT(d->title_entry), "tooltip-text", _("enter the title of the website"), (char *)NULL);
 }
 
 void
@@ -155,6 +170,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 {
   gallery_t *d = (gallery_t *)self->gui_data;
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", gtk_entry_get_text(d->entry));
+  dt_conf_set_string("plugins/imageio/storage/gallery/title", gtk_entry_get_text(d->title_entry));
 }
 
 static gint
@@ -187,7 +203,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
       snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
     }
 
-
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
     d->vp->img = img;
@@ -208,6 +223,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       return 1;
     }
+
+    // store away dir.
+    snprintf(d->cached_dirname, 1024, "%s", dirname);
 
     c = filename + strlen(filename);
     for(; c>filename && *c != '.' && *c != '/' ; c--);
@@ -341,10 +359,8 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)dd;
   char filename[1024];
-  snprintf(filename, 1024, "%s", d->filename);
+  snprintf(filename, 1024, "%s", d->cached_dirname);
   char *c = filename + strlen(filename);
-  for(; c>filename && *c != '/' ; c--);
-  if(c <= filename) c = filename + strlen(filename);
 
   // also create style/ subdir:
   sprintf(c, "/style");
@@ -356,8 +372,7 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
 
   sprintf(c, "/index.html");
 
-  // TODO: textbox for this!
-  const char *title = "wellington";
+  const char *title = d->title;
 
   FILE *f = fopen(filename, "wb");
   if(!f) return;
@@ -401,7 +416,7 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)malloc(sizeof(dt_imageio_gallery_t));
   memset(d, 0, sizeof(dt_imageio_gallery_t));
   // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
-  *size = sizeof(dt_imageio_gallery_t) - 2*sizeof(void *);
+  *size = sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - 1024;
   gallery_t *g = (gallery_t *)self->gui_data;
   d->vp = NULL;
   d->l = NULL;
@@ -409,6 +424,9 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
   strncpy(d->filename, text, 1024);
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", d->filename);
+  text = gtk_entry_get_text(GTK_ENTRY(g->title_entry));
+  strncpy(d->title, text, 1024);
+  dt_conf_set_string("plugins/imageio/storage/gallery/title", d->filename);
   return d;
 }
 
@@ -423,11 +441,13 @@ free_params(dt_imageio_module_storage_t *self, void *params)
 int
 set_params(dt_imageio_module_storage_t *self, void *params, int size)
 {
-  if(size != sizeof(dt_imageio_gallery_t) - 2*sizeof(void *)) return 1;
+  if(size != sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - 1024) return 1;
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)params;
   gallery_t *g = (gallery_t *)self->gui_data;
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", d->filename);
+  gtk_entry_set_text(GTK_ENTRY(g->title_entry), d->title);
+  dt_conf_set_string("plugins/imageio/storage/gallery/title", d->title);
   return 0;
 }
 
