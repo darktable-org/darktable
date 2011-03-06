@@ -295,6 +295,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   }
   sqlite3_finalize(stmt);
   dt_gui_background_jobs_destroy (j);
+  dt_film_remove_empty();
   return 0;
 }
 
