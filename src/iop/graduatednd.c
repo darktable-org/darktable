@@ -530,7 +530,7 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->scale2,_("compression"));
   dtgtk_slider_set_unit(g->scale2,_("%"));
   dtgtk_slider_set_label(g->scale3,_("rotation"));
-  dtgtk_slider_set_unit(g->scale3,_("°"));
+  dtgtk_slider_set_unit(g->scale3,_("deg"));
   dtgtk_slider_set_label(g->scale4,_("split"));
   dtgtk_slider_set_unit(g->scale4,_("%"));
 

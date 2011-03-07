@@ -1288,11 +1288,9 @@ void gui_init (struct dt_iop_module_t *self)
   c->mix = dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -2.0f, 2.0f, 0.1f, 1.0f, 3);
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
-  GtkWidget *label = gtk_label_new(_("mix"));
-  g_object_set(G_OBJECT(label),  "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
+  dtgtk_slider_set_label(DTGTK_SLIDER(c->mix), _("mix"));
+  //dtgtk_slider_set_unit(DTGTK_SLIDER(c->mix), _(" "));
   g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5f);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);
 }

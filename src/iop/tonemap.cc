@@ -252,7 +252,6 @@ extern "C"
     dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
 
-    GtkWidget *widget;
     self->widget = gtk_hbox_new(FALSE, 0);
     GtkWidget *vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
     gtk_box_pack_start(GTK_BOX(self->widget), vbox, TRUE, TRUE, 5);

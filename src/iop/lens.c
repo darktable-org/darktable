@@ -1338,6 +1338,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 2.0, 0.005, p->scale, 3));
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
+  dtgtk_slider_set_label(g->scale, _("scale"));
+  //dtgtk_slider_set_unit(g->scale, _(" "));
   hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
 
@@ -1346,10 +1348,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(button), "tooltip-text", _("auto scale"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (autoscale_pressed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  label = dtgtk_reset_label_new(_("scale"), self, &p->scale, sizeof(float));
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   // reverse direction
   g->reverse = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("reverse")));
@@ -1360,14 +1360,14 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (reverse_toggled), self);
 
   // override linear tca (if not 1.0):
-  label = dtgtk_reset_label_new(_("tca R"), self, &p->tca_r, sizeof(float));
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 6, 7, GTK_FILL, 0, 0, 0);
-  label = dtgtk_reset_label_new(_("tca B"), self, &p->tca_b, sizeof(float));
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 7, 8, GTK_FILL, 0, 0, 0);
   g->tca_r = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_r, 5));
   g->tca_b = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_b, 5));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 1, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 1, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  dtgtk_slider_set_label(g->tca_r, _("tca R"));
+  //dtgtk_slider_set_unit(g->tca_r, _(" "));
+  dtgtk_slider_set_label(g->tca_b, _("tca B"));
+  //dtgtk_slider_set_unit(g->tca_b, _(" "));
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
   g_object_set(G_OBJECT(g->tca_r), "tooltip-text", _("override transversal chromatic aberration correction for red channel\nleave at 1.0 for defaults"), (char *)NULL);

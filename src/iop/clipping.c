@@ -773,32 +773,30 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->hflip), "tooltip-text", _("flip image horizontally"), (char *)NULL);
   g_object_set(G_OBJECT(g->vflip), "tooltip-text", _("flip image vertically"), (char *)NULL);
 
-  label = dtgtk_reset_label_new(_("angle"), self, &p->angle, sizeof(float));
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -180.0, 180.0, 0.25, p->angle, 2));
+  dtgtk_slider_set_label(g->scale5, _("angle"));
+  dtgtk_slider_set_unit(g->scale5, _("deg"));
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
   g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale5), 2, 6, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale5), 0, 6, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-
-  label = dtgtk_reset_label_new(_("keystone h"), self, &p->k_h, sizeof(float));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->keystone_h = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
+  dtgtk_slider_set_label(g->keystone_h, _("keystone h"));
+  //dtgtk_slider_set_unit(g->keystone_h, _(" "));  
   g_object_set(G_OBJECT(g->keystone_h), "tooltip-text", _("adjust perspective for horizontal keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_h), "value-changed",
                     G_CALLBACK (keystone_callback_h), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_h), 2, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_h), 0, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-
-  label = dtgtk_reset_label_new(_("keystone v"), self, &p->k_v, sizeof(float));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g->keystone_v = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
+  dtgtk_slider_set_label(g->keystone_v, _("keystone v"));
+  //dtgtk_slider_set_unit(g->keystone_v, _(" "));  
   g_object_set(G_OBJECT(g->keystone_v), "tooltip-text", _("adjust perspective for vertical keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_v), "value-changed",
                     G_CALLBACK (keystone_callback_v), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_v), 2, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_v), 0, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("aspect"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);

@@ -529,23 +529,20 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Additional paramters
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->label5 = dtgtk_reset_label_new (_("balance"), self, &p->balance, sizeof(float));
-  g->label6 = dtgtk_reset_label_new (_("compress"), self, &p->compress, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label5), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label6), TRUE, TRUE, 0);
-
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.010, p->balance, 0));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_RATIO);
+  dtgtk_slider_set_label(g->scale1,_("balance"));
+  dtgtk_slider_set_unit(g->scale1,_("%/%"));
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->compress, 2));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  dtgtk_slider_set_label(g->scale2,_("compress"));
+  dtgtk_slider_set_unit(g->scale2,_("%"));  
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 
