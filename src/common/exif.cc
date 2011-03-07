@@ -135,15 +135,23 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       img->exif_iso = pos->toFloat ();
     }
-#if 0
-    /* Read focal length in 35mm equivalent */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey(
-                                 "Exif.Photo.FocalLengthIn35mmFilm")))
+    
+    /* Read focal length  */
+    if ( (pos=Exiv2::focalLength(exifData))
          != exifData.end() )
     {
       img->exif_focal_length = pos->toFloat ();
     }
-#endif
+    
+    /* Read subject distance  */
+    if ( (pos=Exiv2::subjectDistance(exifData))
+         != exifData.end() )
+    {
+	//TODO: 
+      // where should this value go?
+      // img->exif_distance = pos->toFloat ();
+    }
+
     /** read image orientation */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation")))
          != exifData.end() )
