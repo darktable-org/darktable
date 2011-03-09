@@ -54,6 +54,15 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
         <li>then search for darktable in Synaptic Package Manager and install it.</li>
         <li>Applications - Graphics - Darktable Photography Workflow Software</li>
       </ul>
+      <ul>
+         <li>or if you want to have nice packages on debian you can rebuild the PPA sources for debian.</li>
+         <li>download the darktable_$VERSION.orig.tar.gz and darktable_$VERSION.debian.tar.gz files from one of the PPAs.</li>
+         <li>$ tar zxvf darktable_$VERSION.orig.tar.gz</li>
+         <li>$ cd darktable-$VERSION</li>
+         <li>$ tar zxvf ../darktable_$VERSION.debian.tar.gz</li>
+         <li>$ dpkg-buildpackage -rfakeroot</li>
+      </ul>
+
     	</div>
     	<div class="listtext">
     	<img src="images/foehr.jpg" alt="release" class="img" /><h1>fedora packages</h1>
