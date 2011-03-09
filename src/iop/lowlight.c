@@ -108,9 +108,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
   // empiric coefficient
   const float c = 0.5f;
+  const float threshold = 0.01f;
 
   // scotopic white, blue saturated
-  float Lab_sw[3] = { 100.0f , 0 , d->blueness };
+  float Lab_sw[3] = { 100.0f , 0 , -d->blueness };
   float XYZ_sw[3];
 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
@@ -128,8 +129,20 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
     dt_Lab_to_XYZ(in, XYZ);
 
-    // scaled (using empiric c coefficient) scotopic luminance
-    V = fminf(1.0f, fmaxf(0.0f,c*(XYZ[1] * ( 1.33f * ( 1.0f + (XYZ[1]+XYZ[2])/XYZ[0]) - 1.68f ))));
+    // calculate scotopic luminanse
+    if (XYZ[0] > threshold)
+    {
+        // normal flow
+        V = XYZ[1] * ( 1.33f * ( 1.0f + (XYZ[1]+XYZ[2])/XYZ[0]) - 1.68f );
+    }
+    else
+    {
+        // low red flow, avoids "snow" on dark noisy areas
+        V = XYZ[1] * ( 1.33f * ( 1.0f + (XYZ[1]+XYZ[2])/threshold) - 1.68f );
+    }
+
+    // scale using empiric coefficient and fit inside limits
+    V = fminf(1.0f,fmaxf(0.0f,c*V));
 
     // blending coefficient from curve
     w = lookup(d->lut,in[0]/100.f);
