@@ -298,27 +298,24 @@ int flags()
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
     g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1.0, 30.0, 1.0, p->sigma[0], 1));
-    // g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1.0, 30.0, 1.0, p->sigma[1], 0));
     g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[2], 4));
     g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[3], 4));
     g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0001, .1, 0.001, p->sigma[4], 4));
     g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the gaussian"), (char *)NULL);
-    // g_object_set(G_OBJECT(g->scale2), "tooltip-text", _(""), (char *)NULL);
     g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("how much to blur red"), (char *)NULL);
     g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), (char *)NULL);
     g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
 
     dtgtk_slider_set_label(g->scale1,_("radius"));
-    dtgtk_slider_set_unit(g->scale1,_(" "));
+    //dtgtk_slider_set_unit(g->scale1,_(" "));
     dtgtk_slider_set_label(g->scale3,_("red"));
-    dtgtk_slider_set_unit(g->scale3,_(" "));
+    //dtgtk_slider_set_unit(g->scale3,_(" "));
     dtgtk_slider_set_label(g->scale4,_("green"));
-    dtgtk_slider_set_unit(g->scale4,_(" "));
+    //dtgtk_slider_set_unit(g->scale4,_(" "));
     dtgtk_slider_set_label(g->scale5,_("blue"));
-    dtgtk_slider_set_unit(g->scale5,_(" "));
+    //dtgtk_slider_set_unit(g->scale5,_(" "));
 
     gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-    // gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);

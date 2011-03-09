@@ -259,7 +259,7 @@ extern "C"
     g->contrast = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 5.0000, 0.1, p->contrast, 3));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
     dtgtk_slider_set_label(g->contrast,_("contrast compression"));
-    dtgtk_slider_set_unit(g->contrast,_(" "));
+    //dtgtk_slider_set_unit(g->contrast,_(" "));
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
 
     g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,1.0, 0.2, p->Fsize, 1));
