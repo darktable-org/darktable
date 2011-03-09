@@ -110,7 +110,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   const float c = 0.5f;
 
   // scotopic white, blue saturated
-  float Lab_sw[3] = { 100.0f , 0 , -100.0*d->blueness };
+  float Lab_sw[3] = { 100.0f , 0 , d->blueness };
   float XYZ_sw[3];
 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
@@ -182,7 +182,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale_blueness, p->blueness*100.0);
+  dtgtk_slider_set_value(g->scale_blueness, p->blueness);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -247,7 +247,7 @@ void init_presets (dt_iop_module_t *self)
   p.transition_y[4] = 1.000000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.3f;
+  p.blueness = 30.0f;
   dt_gui_presets_add_generic(_("indoor bright"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
@@ -264,7 +264,7 @@ void init_presets (dt_iop_module_t *self)
   p.transition_y[4] = 0.970000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.3f;
+  p.blueness = 30.0f;
   dt_gui_presets_add_generic(_("indoor dim"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
@@ -281,7 +281,7 @@ void init_presets (dt_iop_module_t *self)
   p.transition_y[4] = 0.920000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.4f;
+  p.blueness = 40.0f;
   dt_gui_presets_add_generic(_("indoor dark"), self->op, &p, sizeof(p), 1);
   
   p.transition_x[0] = 0.000000;
@@ -298,7 +298,7 @@ void init_presets (dt_iop_module_t *self)
   p.transition_y[4] = 0.750000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.5f;
+  p.blueness = 50.0f;
   dt_gui_presets_add_generic(_("twilight"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
@@ -315,7 +315,7 @@ void init_presets (dt_iop_module_t *self)
   p.transition_y[4] = 0.990000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.3f;
+  p.blueness = 30.0f;
   dt_gui_presets_add_generic(_("night street lit"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
@@ -332,7 +332,7 @@ void init_presets (dt_iop_module_t *self)
   p.transition_y[4] = 0.970000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.3f;
+  p.blueness = 30.0f;
   dt_gui_presets_add_generic(_("night street"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
@@ -349,7 +349,7 @@ void init_presets (dt_iop_module_t *self)
   p.transition_y[4] = 0.550000;
   p.transition_y[5] = 1.000000;
 
-  p.blueness = 0.4f;
+  p.blueness = 40.0f;
   dt_gui_presets_add_generic(_("night street dark"), self->op, &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
@@ -367,7 +367,7 @@ void init_presets (dt_iop_module_t *self)
   p.transition_y[5] = 0.000000;
 
 
-  p.blueness = 0.5f;
+  p.blueness = 50.0f;
   dt_gui_presets_add_generic(_("night"), self->op, &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
@@ -659,7 +659,7 @@ blueness_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-  p->blueness = dtgtk_slider_get_value(slider)/100.0;
+  p->blueness = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -700,8 +700,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (lowlight_scrolled), self);
 
-  c->scale_blueness = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 5.0, p->blueness*100.0, 2));
-  dtgtk_slider_set_default_value(c->scale_blueness, p->blueness*100.0);
+  c->scale_blueness = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 5.0, p->blueness, 2));
+  dtgtk_slider_set_default_value(c->scale_blueness, p->blueness);
   dtgtk_slider_set_label(c->scale_blueness,_("blue shift"));
   dtgtk_slider_set_unit(c->scale_blueness,_("%"));
   dtgtk_slider_set_format_type(c->scale_blueness,DARKTABLE_SLIDER_FORMAT_PERCENT);
