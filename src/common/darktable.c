@@ -251,7 +251,7 @@ int dt_init(int argc, char *argv[])
   dt_points_init(darktable.points, dt_get_num_threads());
 
   int thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
-  thumbnails = MIN(1000, MAX(20, thumbnails));
+  thumbnails = MIN(1000000, MAX(20, thumbnails));
 
   darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
   dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);

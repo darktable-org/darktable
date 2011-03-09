@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_bool ("write_sidecar_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
   dt_conf_set_float("preview_subsample", .125f);
-  dt_conf_set_int  ("mipmap_cache_thumbnails", 1000);
+  dt_conf_set_int  ("mipmap_cache_thumbnails", 30000);
   dt_conf_set_int  ("mipmap_cache_full_images", 2);
   dt_conf_set_int  ("cache_memory", 536870912);
   dt_conf_set_int  ("database_cache_quality", 89);
