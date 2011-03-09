@@ -421,8 +421,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       char option[1024];
       snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
       gboolean active = dt_conf_get_bool (option);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
+      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
+      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
@@ -674,8 +674,8 @@ void enter(dt_view_t *self)
       char option[1024];
       snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
       gboolean active = dt_conf_get_bool (option);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
+      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
+      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
