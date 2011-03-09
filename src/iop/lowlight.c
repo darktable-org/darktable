@@ -182,7 +182,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_lowlight_gui_data_t *g = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale_blueness, p->blueness);
+  dtgtk_slider_set_value(g->scale_blueness, p->blueness*100.0);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -659,7 +659,7 @@ blueness_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
-  p->blueness = dtgtk_slider_get_value(slider);
+  p->blueness = dtgtk_slider_get_value(slider)/100.0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -700,17 +700,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (lowlight_scrolled), self);
 
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 5));
-  GtkWidget *label = gtk_label_new(_("blue shift"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-  c->scale_blueness = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.05, p->blueness, 2));
+  c->scale_blueness = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 5.0, p->blueness*100.0, 2));
+  dtgtk_slider_set_default_value(c->scale_blueness, p->blueness*100.0);
+  dtgtk_slider_set_label(c->scale_blueness,_("blue shift"));
+  dtgtk_slider_set_unit(c->scale_blueness,_("%"));
   dtgtk_slider_set_format_type(c->scale_blueness,DARKTABLE_SLIDER_FORMAT_PERCENT);
   g_object_set(G_OBJECT(c->scale_blueness), "tooltip-text", _("blueness in shadows"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 5);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 5);
 
   g_signal_connect (G_OBJECT (c->scale_blueness), "value-changed",
                     G_CALLBACK (blueness_callback), self);

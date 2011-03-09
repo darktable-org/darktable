@@ -694,9 +694,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
   dtgtk_slider_set_label(g->scale3,_("x offset"));
-  dtgtk_slider_set_unit(g->scale3,_("px"));
+//   dtgtk_slider_set_unit(g->scale3,_("px"));
   dtgtk_slider_set_label(g->scale4,_("y offset"));
-  dtgtk_slider_set_unit(g->scale4,_("px"));
+//   dtgtk_slider_set_unit(g->scale4,_("px"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
