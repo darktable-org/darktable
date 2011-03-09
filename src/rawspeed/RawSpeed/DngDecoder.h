@@ -39,6 +39,9 @@ protected:
   TiffIFD *mRootIFD;
   bool mFixLjpeg;
   void printMetaData();
+  bool decodeMaskedAreas(TiffIFD* raw);
+  bool decodeBlackLevels(TiffIFD* raw);
+  void setBlack(TiffIFD* raw);
 };
 
 class DngStrip {

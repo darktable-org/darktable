@@ -31,7 +31,9 @@ namespace RawSpeed {
 RawImageData::RawImageData(void):
     dim(0, 0), bpp(0), isCFA(true),
     blackLevel(-1), whitePoint(65536),
-    dataRefCount(0), data(0), cpp(1) {
+    dataRefCount(0), data(0), cpp(1),
+    uncropped_dim(0, 0) {
+  blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   pthread_mutex_init(&mymutex, NULL);
   subsampling.x = subsampling.y = 1;
 }
@@ -39,7 +41,9 @@ RawImageData::RawImageData(void):
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
     dim(_dim), bpp(_bpc),
     blackLevel(-1), whitePoint(65536),
-    dataRefCount(0), data(0), cpp(cpp) {
+    dataRefCount(0), data(0), cpp(cpp),
+    uncropped_dim(0, 0) {
+  blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   subsampling.x = subsampling.y = 1;
   createData();
   pthread_mutex_init(&mymutex, NULL);
@@ -66,6 +70,7 @@ void RawImageData::createData() {
   data = (uchar8*)_aligned_malloc(pitch * dim.y, 16);
   if (!data)
     ThrowRDE("RawImageData::createData: Memory Allocation failed.");
+  uncropped_dim = dim;
 }
 
 void RawImageData::destroyData() {
@@ -107,9 +112,9 @@ uchar8* RawImageData::getData(uint32 x, uint32 y) {
 }
 
 uchar8* RawImageData::getDataUncropped(uint32 x, uint32 y) {
-  if ((int)x >= dim.x+mOffset.x)
+  if ((int)x >= uncropped_dim.x)
     ThrowRDE("RawImageData::getDataUncropped - X Position outside image requested.");
-  if ((int)y >= dim.y+mOffset.y) {
+  if ((int)y >= uncropped_dim.y) {
     ThrowRDE("RawImageData::getDataUncropped - Y Position outside image requested.");
   }
 
@@ -117,6 +122,16 @@ uchar8* RawImageData::getDataUncropped(uint32 x, uint32 y) {
     ThrowRDE("RawImageData::getDataUncropped - Data not yet allocated.");
 
   return &data[y*pitch+x*bpp];
+}
+
+iPoint2D RawImageData::getUncroppedDim()
+{
+  return uncropped_dim;
+}
+
+iPoint2D RawImageData::getCropOffset()
+{
+  return mOffset;
 }
 
 void RawImageData::subFrame(iPoint2D offset, iPoint2D new_size) {
@@ -140,12 +155,19 @@ void RawImageData::calculateBlackAreas() {
 
   for (uint32 i = 0; i < blackAreas.size(); i++) {
     BlackArea area = blackAreas[i];
+
+    /* Make sure area sizes are multiple of two, 
+       so we have the same amount of pixels for each CFA group */
+    area.size = area.size - (area.size&1);
+
     /* Process horizontal area */
     if (!area.isVertical) {
+      if ((int)area.offset+(int)area.size > uncropped_dim.y)
+        ThrowRDE("RawImageData::calculateBlackAreas: Offset + size is larger than height of image");
       for (uint32 y = area.offset; y < area.offset+area.size; y++) {
         ushort16 *pixel = (ushort16*)getDataUncropped(mOffset.x, y);
         int* localhist = &histogram[(y&1)*(65536*2)];
-        for (int x = mOffset.x; x < dim.x; x++) {
+        for (int x = mOffset.x; x < dim.x+mOffset.x; x++) {
           localhist[((x&1)<<16) + *pixel]++;
         }
       }
@@ -154,15 +176,17 @@ void RawImageData::calculateBlackAreas() {
 
     /* Process vertical area */
     if (area.isVertical) {
-      for (int y = mOffset.y; y < dim.y; y++) {
+      if ((int)area.offset+(int)area.size > uncropped_dim.x)
+        ThrowRDE("RawImageData::calculateBlackAreas: Offset + size is larger than width of image");
+      for (int y = mOffset.y; y < dim.y+mOffset.y; y++) {
         ushort16 *pixel = (ushort16*)getDataUncropped(area.offset, y);
         int* localhist = &histogram[(y&1)*(65536*2)];
-        for (uint32 x = area.offset; x < area.size; x++) {
+        for (uint32 x = area.offset; x < area.size+area.offset; x++) {
           localhist[((x&1)<<16) + *pixel]++;
         }
       }
+      totalpixels += area.size * dim.y;
     }
-    totalpixels += area.size * dim.y;
   }
 
   if (!totalpixels) {
@@ -191,7 +215,7 @@ void RawImageData::calculateBlackAreas() {
 void RawImageData::scaleBlackWhite() {
   const int skipBorder = 150;
   int gw = (dim.x - skipBorder) * cpp;
-  if (blackLevel < 0 || whitePoint == 65536) {  // Estimate
+  if ((blackAreas.empty() && blackLevelSeparate[0] < 0 && blackLevel < 0) || whitePoint == 65536) {  // Estimate
     int b = 65536;
     int m = 0;
     for (int row = skipBorder*cpp;row < (dim.y - skipBorder);row++) {
@@ -209,13 +233,34 @@ void RawImageData::scaleBlackWhite() {
     printf("Estimated black:%d, Estimated white: %d\n", blackLevel, whitePoint);
   }
 
-  calculateBlackAreas();
-  scaleValues();
+  /* If filter has not set separate blacklevel, compute or fetch it */
+  if (blackLevelSeparate[0] < 0)
+    calculateBlackAreas();
+
+  int threads = getThreadCount(); 
+  if (threads <= 1)
+    scaleValues(0, dim.y);
+  else {
+    RawImageWorker **workers = new RawImageWorker*[threads];
+    int y_offset = 0;
+    int y_per_thread = (dim.y + threads - 1) / threads;
+
+    for (int i = 0; i < threads; i++) {
+      int y_end = MIN(y_offset + y_per_thread, dim.y);
+      workers[i] = new RawImageWorker(this, RawImageWorker::TASK_SCALE_VALUES, y_offset, y_end);
+      y_offset = y_end;
+    }
+    for (int i = 0; i < threads; i++) {
+      workers[i]->waitForThread();
+      delete workers[i];
+    }
+    delete[] workers;
+  }
 }
 
 #if _MSC_VER > 1399 || defined(__SSE2__)
 
-void RawImageData::scaleValues() {
+void RawImageData::scaleValues(int start_y, int end_y) {
   bool use_sse2;
 #ifdef _MSC_VER 
   int info[4];
@@ -225,8 +270,9 @@ void RawImageData::scaleValues() {
   use_sse2 = TRUE;
 #endif
 
+  float app_scale = 65535.0f / (whitePoint - blackLevelSeparate[0]);
   // Check SSE2
-  if (use_sse2) {
+  if (use_sse2 && app_scale < 63) {
 
     __m128i sseround;
     __m128i ssesub2;
@@ -256,7 +302,7 @@ void RawImageData::scaleValues() {
     ssesub2 = _mm_set_epi32(32768, 32768, 32768, 32768);
     ssesign = _mm_set_epi32(0x80008000, 0x80008000, 0x80008000, 0x80008000);
 
-    for (int y = 0; y < dim.y; y++) {
+    for (int y = start_y; y < end_y; y++) {
       __m128i* pixel = (__m128i*) & data[(mOffset.y+y)*pitch];
       __m128i ssescale, ssesub;
       if (((y+mOffset.y)&1) == 0) { 
@@ -270,6 +316,7 @@ void RawImageData::scaleValues() {
       for (uint32 x = 0 ; x < gw; x++) {
         __m128i pix_high;
         __m128i temp;
+        _mm_prefetch((char*)(pixel+1), _MM_HINT_T0);
         __m128i pix_low = _mm_load_si128(pixel);
         // Subtract black
         pix_low = _mm_subs_epu16(pix_low, ssesub);
@@ -310,7 +357,7 @@ void RawImageData::scaleValues() {
       mul[i] = (int)(16384.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[v]));
       sub[i] = blackLevelSeparate[v];
     }
-    for (int y = 0; y < dim.y; y++) {
+    for (int y = start_y; y < end_y; y++) {
       ushort16 *pixel = (ushort16*)getData(0, y);
       int *mul_local = &mul[2*(y&1)];
       int *sub_local = &sub[2*(y&1)];
@@ -323,7 +370,7 @@ void RawImageData::scaleValues() {
 
 #else
 
-void RawImageData::scaleValues() {
+void RawImageData::scaleValues(int start_y, int end_y) {
   int gw = dim.x * cpp;
   int mul[4];
   int sub[4];
@@ -336,7 +383,7 @@ void RawImageData::scaleValues() {
     mul[i] = (int)(16384.0f * 65535.0f / (float)(whitePoint - blackLevelSeparate[v]));
     sub[i] = blackLevelSeparate[v];
   }
-  for (int y = 0; y < dim.y; y++) {
+  for (int y = start_y; y < end_y; y++) {
     ushort16 *pixel = (ushort16*)getData(0, y);
     int *mul_local = &mul[2*(y&1)];
     int *sub_local = &sub[2*(y&1)];
@@ -386,5 +433,49 @@ RawImage& RawImage::operator=(const RawImage & p) {
   if (--old->dataRefCount == 0) delete old;
   return *this;
 }
+
+void *RawImageWorkerThread(void *_this) {
+  RawImageWorker* me = (RawImageWorker*)_this;
+  me->_performTask();
+  pthread_exit(NULL);
+  return 0;
+}
+
+RawImageWorker::RawImageWorker( RawImageData *_img, RawImageWorkerTask _task, int _start_y, int _end_y )
+{
+  data = _img;
+  start_y = _start_y;
+  end_y = _end_y;
+  task = _task;
+  startThread();
+}
+
+void RawImageWorker::startThread()
+{
+  /* Initialize and set thread detached attribute */
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+  pthread_create(&threadid, &attr, RawImageWorkerThread, this);
+}
+
+void RawImageWorker::waitForThread()
+{ 
+  void *status;
+  pthread_join(threadid, &status);
+}
+
+void RawImageWorker::_performTask()
+{
+  switch(task)
+  {
+    case TASK_SCALE_VALUES:
+      data->scaleValues(start_y, end_y);
+      break;
+    default:
+      _ASSERTE(false);
+  }
+}
+
 
 } // namespace RawSpeed
