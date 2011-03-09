@@ -65,6 +65,7 @@ src/iop/grain.c
 src/iop/highlights.c
 src/iop/lens.c
 src/iop/localc.c
+src/iop/lowlight.c
 src/iop/monochrome.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
