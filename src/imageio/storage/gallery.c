@@ -157,6 +157,12 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->title_entry));
   g_object_set(G_OBJECT(d->title_entry), "tooltip-text", _("enter the title of the website"), (char *)NULL);
+  dir = dt_conf_get_string("plugins/imageio/storage/gallery/title");
+  if(dir)
+  {
+    gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
+    g_free(dir);
+  }
 }
 
 void
@@ -426,7 +432,7 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", d->filename);
   text = gtk_entry_get_text(GTK_ENTRY(g->title_entry));
   strncpy(d->title, text, 1024);
-  dt_conf_set_string("plugins/imageio/storage/gallery/title", d->filename);
+  dt_conf_set_string("plugins/imageio/storage/gallery/title", d->title);
   return d;
 }
 
