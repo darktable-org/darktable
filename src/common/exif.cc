@@ -912,7 +912,6 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     // legacy fallback:
     char dtfilename[1024];
     g_strlcpy(dtfilename, filename, 1024);
-    dtfilename[1023] = '\0';
     char *c = dtfilename + strlen(dtfilename);
     while(c > dtfilename && *c != '.') c--;
     sprintf(c, ".dttags");

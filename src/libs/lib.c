@@ -407,7 +407,8 @@ dt_lib_load_modules ()
     // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    g_strlcpy(plugin_name, d_name+3, strlen(d_name)-6);
+    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
+    plugin_name[strlen(d_name)-6] = '\0';
     module = (dt_lib_module_t *)malloc(sizeof(dt_lib_module_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_lib_load_module(module, libname, plugin_name))

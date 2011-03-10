@@ -103,7 +103,8 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
     // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    g_strlcpy(plugin_name, d_name+3, strlen(d_name)-6);
+    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
+    plugin_name[strlen(d_name)-6] = '\0';
     module = (dt_imageio_module_format_t *)malloc(sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
@@ -186,7 +187,8 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
     // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    g_strlcpy(plugin_name, d_name+3, strlen(d_name)-6);
+    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
+    plugin_name[strlen(d_name)-6] = '\0';
     module = (dt_imageio_module_storage_t *)malloc(sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))

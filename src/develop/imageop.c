@@ -382,7 +382,8 @@ void dt_iop_load_modules_so()
     // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    g_strlcpy(op, d_name+3, strlen(d_name)-6);
+    strncpy(op, d_name+3, strlen(d_name)-6);
+    op[strlen(d_name)-6] = '\0';
     module = (dt_iop_module_so_t *)malloc(sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
     if(dt_iop_load_module_so(module, libname, op))
