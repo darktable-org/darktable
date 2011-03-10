@@ -46,7 +46,7 @@ gboolean dt_pwstorage_gconf_set(const gchar* slot, GHashTable* table)
     _tmp = g_stpcpy(_tmp, slot);
     _tmp[0] = '/';
     _tmp++;
-    _tmp = g_stpcpy(_tmp, key);
+    g_stpcpy(_tmp, key);
 
     // This would be the place to do manual encryption of the data.
     // I know enough about cryptography to not implement this.
@@ -70,7 +70,7 @@ GHashTable* dt_pwstorage_gconf_get(const gchar* slot)
   if(_path == NULL)
     return table;
   _tmp = g_stpcpy(_tmp, gconf_path);
-  _tmp = g_stpcpy(_tmp, slot);
+  g_stpcpy(_tmp, slot);
 
   GSList* list;
   list = dt_conf_all_string_entries(_path);
@@ -91,7 +91,7 @@ GHashTable* dt_pwstorage_gconf_get(const gchar* slot)
     _tmp = g_stpcpy(_tmp, slot);
     _tmp[0] = '/';
     _tmp++;
-    _tmp = g_stpcpy(_tmp, key);
+    g_stpcpy(_tmp, key);
 
     gchar* value = ((dt_conf_string_entry_t*)next->data)->value;
     g_free(_path);
