@@ -630,7 +630,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
   dt_image_t *img = dt_image_cache_get_uninited(id, 'w');
-  strncpy(img->filename, imgfname, 256);
+  g_strlcpy(img->filename, imgfname, 256);
   img->id = id;
   img->film_id = film_id;
   img->dirty = 1;
@@ -638,7 +638,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
   char dtfilename[1024];
-  strncpy(dtfilename, filename, 1024);
+  g_strlcpy(dtfilename, filename, 1024);
   dt_image_path_append_version(img->id, dtfilename, 1024);
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
@@ -764,9 +764,9 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_model,0, sizeof(img->exif_model));
   memset(img->exif_lens,0, sizeof(img->exif_lens));
   memset(img->filename,0, sizeof(img->filename));
-  strncpy(img->filename, "(unknown)", 10);
+  g_strlcpy(img->filename, "(unknown)", 10);
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
-  strncpy(img->exif_datetime_taken, "0000:00:00 00:00:00\0", 20);
+  g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00", sizeof(img->exif_datetime_taken));
   img->exif_crop = 1.0;
   img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
   for(int k=0; (int)k<(int)DT_IMAGE_NONE; k++) img->mip_buf_size[k] = 0;
@@ -801,19 +801,19 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] =
         img->exif_datetime_taken[0] = '\0';
     str = (char *)sqlite3_column_text(stmt, 4);
-    if(str) strncpy(img->filename,   str, 512);
+    if(str) g_strlcpy(img->filename,   str, 512);
     str = (char *)sqlite3_column_text(stmt, 5);
-    if(str) strncpy(img->exif_maker, str, 32);
+    if(str) g_strlcpy(img->exif_maker, str, 32);
     str = (char *)sqlite3_column_text(stmt, 6);
-    if(str) strncpy(img->exif_model, str, 32);
+    if(str) g_strlcpy(img->exif_model, str, 32);
     str = (char *)sqlite3_column_text(stmt, 7);
-    if(str) strncpy(img->exif_lens,  str, 52);
+    if(str) g_strlcpy(img->exif_lens,  str, 52);
     img->exif_exposure = sqlite3_column_double(stmt, 8);
     img->exif_aperture = sqlite3_column_double(stmt, 9);
     img->exif_iso = sqlite3_column_double(stmt, 10);
     img->exif_focal_length = sqlite3_column_double(stmt, 11);
     str = (char *)sqlite3_column_text(stmt, 12);
-    if(str) strncpy(img->exif_datetime_taken, str, 20);
+    if(str) g_strlcpy(img->exif_datetime_taken, str, 20);
     img->flags = sqlite3_column_int(stmt, 13);
     img->output_width  = sqlite3_column_int(stmt, 14);
     img->output_height = sqlite3_column_int(stmt, 15);

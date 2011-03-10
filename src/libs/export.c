@@ -465,27 +465,27 @@ gui_init (dt_lib_module_t *self)
   d->profiles = NULL;
 
   dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  strcpy(prof->filename, "sRGB");
-  strcpy(prof->name, _("sRGB (web-safe)"));
+  g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
+  g_strlcpy(prof->name, _("sRGB (web-safe)"), sizeof(prof->name));
   int pos;
   prof->pos = 1;
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  strcpy(prof->filename, "adobergb");
-  strcpy(prof->name, _("Adobe RGB"));
+  g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
+  g_strlcpy(prof->name, _("Adobe RGB"), sizeof(prof->name));
   prof->pos = 2;
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  strcpy(prof->filename, "X profile");
-  strcpy(prof->name, "X profile");
+  g_strlcpy(prof->filename, "X profile", sizeof(prof->filename));
+  g_strlcpy(prof->name, "X profile", sizeof(prof->name));
   prof->pos = 3;
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  strcpy(prof->filename, "linear_rgb");
-  strcpy(prof->name, _("linear RGB"));
+  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, _("linear RGB"), sizeof(prof->name));
   pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 
@@ -510,8 +510,8 @@ gui_init (dt_lib_module_t *self)
         dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
         char name[1024];
         cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
-        strcpy(prof->name, name);
-        strcpy(prof->filename, d_name);
+        g_strlcpy(prof->name, name, sizeof(prof->name));
+        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
         cmsCloseProfile(tmpprof);
         d->profiles = g_list_append(d->profiles, prof);

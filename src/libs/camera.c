@@ -276,7 +276,7 @@ _add_property_button_clicked (GtkWidget *widget, gpointer user_data)
       g_signal_connect (G_OBJECT (prop->osd), "clicked", G_CALLBACK (_osd_button_clicked), prop);
 
       gchar key[256]= {"plugins/capture/tethering/properties/"};
-      strcat(key,label);
+      g_strlcat(key, label, 256);
       gchar *p = key;
       while( p++<key+strlen(key) ) if(*p==' ') *p='_';
       dt_conf_set_string(key,property);
@@ -656,3 +656,4 @@ gui_cleanup (dt_lib_module_t *self)
 
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

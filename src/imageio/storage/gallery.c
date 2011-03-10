@@ -214,8 +214,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     d->vp->img = img;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
-    strncpy(filename, dt_variables_get_result(d->vp), 1024);
-    strncpy(dirname, filename, 1024);
+    g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
+    g_strlcpy(dirname, filename, 1024);
 
     const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
@@ -428,10 +428,10 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   d->l = NULL;
   dt_variables_params_init(&d->vp);
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
-  strncpy(d->filename, text, 1024);
+  g_strlcpy(d->filename, text, 1024);
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", d->filename);
   text = gtk_entry_get_text(GTK_ENTRY(g->title_entry));
-  strncpy(d->title, text, 1024);
+  g_strlcpy(d->title, text, 1024);
   dt_conf_set_string("plugins/imageio/storage/gallery/title", d->title);
   return d;
 }

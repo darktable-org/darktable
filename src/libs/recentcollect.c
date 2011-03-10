@@ -318,3 +318,4 @@ gui_cleanup (dt_lib_module_t *self)
   self->data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

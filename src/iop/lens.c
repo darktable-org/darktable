@@ -410,8 +410,8 @@ void reload_defaults(dt_iop_module_t *module)
   // reload image specific stuff
   // get all we can from exif:
   dt_iop_lensfun_params_t tmp;
-  strncpy(tmp.lens, module->dev->image->exif_lens, 52);
-  strncpy(tmp.camera, module->dev->image->exif_model, 52);
+  g_strlcpy(tmp.lens, module->dev->image->exif_lens, 52);
+  g_strlcpy(tmp.camera, module->dev->image->exif_model, 52);
   tmp.crop     = module->dev->image->exif_crop;
   tmp.aperture = module->dev->image->exif_aperture;
   tmp.focal    = module->dev->image->exif_focal_length;
@@ -428,7 +428,7 @@ void reload_defaults(dt_iop_module_t *module)
   // init crop from db:
   dt_image_t *img = module->dev->image;
   char model[100];  // truncate often complex descriptions.
-  strncpy(model, img->exif_model, 100);
+  g_strlcpy(model, img->exif_model, 100);
   for(char cnt = 0, *c = model; c < model+100 && *c != '\0'; c++) if(*c == ' ') if(++cnt == 2) *c = '\0';
   if(img->exif_maker[0] || model[0])
   {
@@ -686,7 +686,7 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
     return;
   }
 
-  strncpy(p->camera, cam->Model, 52);
+  g_strlcpy(p->camera, cam->Model, 52);
   p->crop = cam->CropFactor;
   g->camera = cam;
 
@@ -959,7 +959,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   maker = lf_mlstr_get (lens->Maker);
   model = lf_mlstr_get (lens->Model);
 
-  strncpy(p->lens, model, 52);
+  g_strlcpy(p->lens, model, 52);
 
   if (model)
   {

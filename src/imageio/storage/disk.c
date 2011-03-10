@@ -178,8 +178,8 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     d->vp->img = img;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
-    strncpy(filename, dt_variables_get_result(d->vp), 1024);
-    strncpy(dirname, filename, 1024);
+    g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
+    g_strlcpy(dirname, filename, 1024);
 
     const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
@@ -239,7 +239,7 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
-  strncpy(d->filename, text, 1024);
+  g_strlcpy(d->filename, text, 1024);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   return d;
 }
@@ -262,3 +262,5 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   return 0;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

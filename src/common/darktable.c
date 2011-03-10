@@ -272,7 +272,7 @@ int dt_init(int argc, char *argv[])
   dt_lib_init(darktable.lib);
 
   dt_control_load_config(darktable.control);
-  strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
+  g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
 
   darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
@@ -500,7 +500,7 @@ void dt_get_plugindir(char *datadir, size_t bufsize)
     t--;
   }
   for(; t>datadir && *t!='/'; t--);
-  strcpy(t, "/lib/darktable");
+  g_strlcpy(t, "/lib/darktable", bufsize-(t-datadir));
   g_free(curr);
 #else
   snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
@@ -538,7 +538,7 @@ void dt_get_datadir(char *datadir, size_t bufsize)
     t--;
   }
   for(; t>datadir && *t!='/'; t--);
-  strcpy(t, "/share/darktable");
+  g_strlcpy(t, "/share/darktable", bufsize-(t-datadir));
   g_free(curr);
 #else
   snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
@@ -567,3 +567,5 @@ void dt_show_times(const dt_times_t *start, const char *prefix, const char *suff
     dt_print(DT_DEBUG_PERF, "%s\n", buf);
   }
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

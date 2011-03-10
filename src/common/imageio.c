@@ -293,9 +293,9 @@ dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *fil
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;
     img->exif_focal_length = raw->other.focal_len;
-    strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+    g_strlcpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
     img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
-    strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+    g_strlcpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
     img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
     image = libraw_dcraw_make_mem_thumb(raw, &ret);
@@ -441,9 +441,9 @@ try_full_raw:
     img->exif_exposure = raw->other.shutter;
     img->exif_aperture = raw->other.aperture;
     img->exif_focal_length = raw->other.focal_len;
-    strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+    g_strlcpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
     img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
-    strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+    g_strlcpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
     img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
     dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
@@ -575,9 +575,9 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;
   img->exif_focal_length = raw->other.focal_len;
-  strncpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
+  g_strlcpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
   img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
-  strncpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
+  g_strlcpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
   img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 

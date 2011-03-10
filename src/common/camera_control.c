@@ -524,8 +524,10 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
       char *file=(char *)ifile->data;
       eos=file+strlen(file);
       while( --eos>file && *eos!='/' );
-      strncat(folder,file,eos-file);
-      strcat(filename,eos+1);
+      char *_file = g_strndup(file, eos-file);
+      g_strlcat(folder, _file, 4096);
+      g_strlcat(filename, eos+1, 4096);
+      g_free(_file);
 
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
       if(!fname) fname=filename;
@@ -573,11 +575,8 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
   {
     for(int i=0; i < gp_list_count(files); i++)
     {
-      char file[4096]= {0};
-      strcat(file,path);
-      strcat(file,"/");
       gp_list_get_name (files, i, &filename);
-      strcat(file,filename);
+      char *file = g_strconcat(path, "/", filename, NULL);
 
       // Lets check the type of file...
       CameraFileInfo cfi;
@@ -616,10 +615,14 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
 
         // let's dispatch to host app.. return if we should stop...
         if (!_dispatch_camera_storage_image_filename(c,c->active_camera,file,preview,exif))
+        {
+          g_free(file);
           return 0;
+        }
       }
       else
         dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to get file information of %s in folder %s on device\n",filename,path);
+      g_free(file);
     }
   }
 
@@ -629,10 +632,10 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
     for(int i=0; i < gp_list_count(folders); i++)
     {
       char buffer[4096]= {0};
-      strcat(buffer,path);
-      if(path[1]!='\0') strcat(buffer,"/");
+      g_strlcat(buffer,path, 4096);
+      if(path[1]!='\0') g_strlcat(buffer,"/", 4096);
       gp_list_get_name (folders, i, &foldername);
-      strcat(buffer,foldername);
+      g_strlcat(buffer,foldername, 4096);
       if( !_camctl_recursive_get_previews(c,flags,buffer))
         return 0;
     }
@@ -1232,3 +1235,5 @@ void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_ca
     }
     while((listener=g_list_next(listener))!=NULL);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

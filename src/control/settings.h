@@ -38,13 +38,13 @@
 #define DT_CTL_GET_GLOBAL_STR(x, attrib, n) \
 {\
   dt_pthread_mutex_lock(&(darktable.control->global_mutex)); \
-  strncpy(x, darktable.control->global_settings.attrib, n); \
+  g_strlcpy(x, darktable.control->global_settings.attrib, n); \
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex)); }
 
 #define DT_CTL_SET_GLOBAL_STR(attrib, x, n) \
 {\
   dt_pthread_mutex_lock(&(darktable.control->global_mutex)); \
-  strncpy(darktable.control->global_settings.attrib, x, n); \
+  g_strlcpy(darktable.control->global_settings.attrib, x, n); \
   dt_pthread_mutex_unlock(&(darktable.control->global_mutex))
 
 
@@ -139,3 +139,5 @@ dt_ctl_settings_t;
 enum dt_dev_zoom_t;
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

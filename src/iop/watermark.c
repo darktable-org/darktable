@@ -152,10 +152,10 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
 	gchar configdir[1024],datadir[1024], *filename;
 	dt_get_datadir(datadir, 1024);
 	dt_get_user_config_dir(configdir, 1024);
-	strcat(datadir,"/watermarks/");
-	strcat(configdir,"/watermarks/");
-	strcat(datadir,data->filename);
-	strcat(configdir,data->filename);
+	g_strlcat(datadir,"/watermarks/",1024);
+	g_strlcat(configdir,"/watermarks/",1024);
+	g_strlcat(datadir,data->filename,1024);
+	g_strlcat(configdir,data->filename,1024);
 
 	if (g_file_test(configdir,G_FILE_TEST_EXISTS))
 		filename=configdir;
@@ -448,8 +448,8 @@ static void refresh_watermarks( dt_iop_module_t *self )
 	gchar configdir[1024],datadir[1024],filename[2048];
 	dt_get_datadir(datadir, 1024);
 	dt_get_user_config_dir(configdir, 1024);
-	strcat(datadir,"/watermarks");
-	strcat(configdir,"/watermarks");
+	g_strlcat(datadir,"/watermarks",1024);
+	g_strlcat(configdir,"/watermarks",1024);
 
 	/* read watermarks from datadir */
 	GDir *dir = g_dir_open(datadir, 0, NULL);
@@ -728,7 +728,8 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-	free(self->gui_data);
-	self->gui_data = NULL;
+  free(self->gui_data);
+  self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

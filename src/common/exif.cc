@@ -323,7 +323,7 @@ void *dt_exif_data_new(uint8_t *data,uint32_t size)
     {
       char key[1024]="Exif.Photo.";
       exif_entry_get_value(ed->ifd[ifd_index]->entries[i],value,1024);
-      strcat(key,exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag));
+      g_strlcat(key,exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag), 1024);
       fprintf(stderr,"Adding key '%s' value '%s'\n",key,value);
       (*exifData)[key] = value;
     }
@@ -911,7 +911,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
     // legacy fallback:
     char dtfilename[1024];
-    strncpy(dtfilename, filename, 1024);
+    g_strlcpy(dtfilename, filename, 1024);
     dtfilename[1023] = '\0';
     char *c = dtfilename + strlen(dtfilename);
     while(c > dtfilename && *c != '.') c--;

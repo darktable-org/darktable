@@ -373,7 +373,7 @@ static void _image_cache_backup()
   g_free(filename);
 
   char *src = g_strdup (dbfilename);
-  strcat(dbfilename,".fallback");
+  g_strlcat(dbfilename,".fallback", 1024);
   _image_cache_copy_file (src,dbfilename);
   g_free (src);
 }
@@ -391,7 +391,7 @@ static void _image_cache_restore()
   g_free(filename);
 
   char *dest = g_strdup (dbfilename);
-  strcat(dbfilename,".fallback");
+  g_strlcat(dbfilename,".fallback", 1024);
   _image_cache_copy_file (dbfilename,dest);
   g_free (dest);
 }

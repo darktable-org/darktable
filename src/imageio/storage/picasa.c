@@ -188,8 +188,8 @@ static _picasa_api_context_t *_picasa_api_authenticate(const char *username,cons
     gchar *end=g_strrstr(pa,"\n");
     end[0]='\0';
     char auth[4096]= {0};
-    strcat(auth,"Authorization: GoogleLogin auth=");
-    strcat(auth,pa);
+    g_strlcat(auth,"Authorization: GoogleLogin auth=",4096);
+    g_strlcat(auth,pa,4096);
     ctx->authHeader=g_strdup(auth);
     ctx->curl_headers = curl_slist_append(ctx->curl_headers,auth);
     curl_easy_setopt(ctx->curl_handle,CURLOPT_HTTPHEADER, ctx->curl_headers);
@@ -922,10 +922,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   /* construct a temporary file name */
   char fname[4096]= {0};
   dt_get_user_local_dir (fname,4096);
-  strcat (fname,"/tmp");
+  g_strlcat (fname,"/tmp",4096);
   g_mkdir_with_parents(fname,0700);
-  strcat (fname,"/darktable.XXXXXX.");
-  strcat(fname,ext);
+  g_strlcat (fname,"/darktable.XXXXXX.",4096);
+  g_strlcat(fname,ext,4096);
 
   char *caption="a image";
   char *description="";
@@ -1071,3 +1071,4 @@ free_params(dt_imageio_module_storage_t *self, void *params)
   free(params);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

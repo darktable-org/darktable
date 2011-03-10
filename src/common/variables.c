@@ -50,8 +50,7 @@ gchar *_string_get_first_variable(gchar *string,gchar *variable)
         while( *e!=')' && e < pend) e++;
         if(e < pend && *e==')')
         {
-          strncpy(variable,p,e-p+1);
-          variable[e-p+1]='\0';
+          g_strlcpy(variable,p,e-p+1);
           return p+1;
         }
         else
@@ -78,8 +77,7 @@ gchar *_string_get_next_variable(gchar *string,gchar *variable)
       while( *e!=')' && e < pend) e++;
       if(e < pend && *e==')')
       {
-        strncpy(variable,p,e-p+1);
-        variable[e-p+1]='\0';
+        g_strlcpy(variable,p,e-p+1);
         return p+1;
       }
       else
@@ -252,3 +250,5 @@ void dt_variables_reset_sequence(dt_variables_params_t *params)
 {
   params->data->sequence = 0;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

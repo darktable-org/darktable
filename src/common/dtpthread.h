@@ -99,7 +99,7 @@ dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file, c
       return ret;
     }
   }
-  strncpy(mutex->top_wait_name[min_wait_slot], name, 256);
+  g_strlcpy(mutex->top_wait_name[min_wait_slot], name, 256);
   mutex->top_wait_sum[min_wait_slot] = wait;
   return ret;
 }
@@ -126,7 +126,7 @@ dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file
       return ret;
     }
   }
-  strncpy(mutex->top_wait_name[min_wait_slot], name, 256);
+  g_strlcpy(mutex->top_wait_name[min_wait_slot], name, 256);
   mutex->top_wait_sum[min_wait_slot] = wait;
   return ret;
 }
@@ -154,7 +154,7 @@ dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
   }
   if(min_locked_slot >= 0)
   {
-    strncpy(mutex->top_locked_name[min_locked_slot], name, 256);
+    g_strlcpy(mutex->top_locked_name[min_locked_slot], name, 256);
     mutex->top_locked_sum[min_locked_slot] = locked;
   }
 
@@ -182,3 +182,5 @@ dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
 
 #endif
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

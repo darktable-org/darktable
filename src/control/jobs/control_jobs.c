@@ -160,7 +160,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   const int exif_len = dt_exif_read_blob(exif, pathname, 0, first_imgid);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
-  strcpy(c, "-hdr.dng");
+  g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
   dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter);
   dt_gui_background_jobs_set_progress(j, 1.0f);
 

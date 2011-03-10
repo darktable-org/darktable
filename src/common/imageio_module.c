@@ -47,7 +47,7 @@ static int
 dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *libname, const char *plugin_name)
 {
   module->widget = NULL;
-  strncpy(module->plugin_name, plugin_name, 20);
+  g_strlcpy(module->plugin_name, plugin_name, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
   int (*version)();
@@ -95,7 +95,7 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
-  strcpy(plugindir + strlen(plugindir), "/plugins/imageio/format");
+  g_strlcat(plugindir, "/plugins/imageio/format", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   while((d_name = g_dir_read_name(dir)))
@@ -103,8 +103,7 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
     // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
-    plugin_name[strlen(d_name)-6] = '\0';
+    g_strlcpy(plugin_name, d_name+3, strlen(d_name)-6);
     module = (dt_imageio_module_format_t *)malloc(sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
@@ -138,7 +137,7 @@ static int
 dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char *libname, const char *plugin_name)
 {
   module->widget = NULL;
-  strncpy(module->plugin_name, plugin_name, 20);
+  g_strlcpy(module->plugin_name, plugin_name, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
   int (*version)();
@@ -179,7 +178,7 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
-  strcpy(plugindir + strlen(plugindir), "/plugins/imageio/storage");
+  g_strlcat(plugindir, "/plugins/imageio/storage", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   while((d_name = g_dir_read_name(dir)))
@@ -187,8 +186,7 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
     // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
-    plugin_name[strlen(d_name)-6] = '\0';
+    g_strlcpy(plugin_name, d_name+3, strlen(d_name)-6);
     module = (dt_imageio_module_storage_t *)malloc(sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
@@ -281,3 +279,5 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
   }
   return NULL;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

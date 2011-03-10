@@ -122,7 +122,7 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
   gchar *filename = _get_profile_from_pos(g->profiles, pos);
   if (filename)
   {
-    strcpy(p->iccprofile, filename);
+    g_strlcpy(p->iccprofile, filename, sizeof(p->iccprofile));
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return;
   }
@@ -165,7 +165,7 @@ display_profile_changed (GtkComboBox *widget, gpointer user_data)
   gchar *filename = _get_profile_from_pos(g->profiles, pos);
   if (filename)
   {
-    strcpy(p->displayprofile, filename);
+    g_strlcpy(p->displayprofile, filename, sizeof(p->displayprofile));
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return;
   }
@@ -587,27 +587,27 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->profiles = NULL;
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "sRGB");
-  strcpy(prof->name, "sRGB");
+  g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
+  g_strlcpy(prof->name, "sRGB", sizeof(prof->name));
   int pos;
   prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "adobergb");
-  strcpy(prof->name, "adobergb");
+  g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "adobergb", sizeof(prof->name));
   prof->pos = 1;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "X profile");
-  strcpy(prof->name, "X profile");
+  g_strlcpy(prof->filename, "X profile", sizeof(prof->filename));
+  g_strlcpy(prof->name, "X profile", sizeof(prof->name));
   prof->pos = 2;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "linear_rgb");
-  strcpy(prof->name, "linear_rgb");
+  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
   pos = prof->pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
@@ -632,8 +632,8 @@ void gui_init(struct dt_iop_module_t *self)
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
         cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
-        strcpy(prof->name, name);
-        strcpy(prof->filename, d_name);
+        g_strlcpy(prof->name, name, sizeof(prof->name));
+        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
         cmsCloseProfile(tmpprof);
         g->profiles = g_list_append(g->profiles, prof);

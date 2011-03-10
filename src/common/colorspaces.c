@@ -618,15 +618,15 @@ dt_colorspaces_create_output_profile(const int imgid)
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       params = sqlite3_column_blob(stmt, 0);
-      strncpy(profile, params->iccprofile, 1024);
+      g_strlcpy(profile, params->iccprofile, 1024);
     }
     sqlite3_finalize(stmt);
   }
   if(!overprofile && profile[0] == '\0')
   {
-    strncpy(profile, "sRGB", 1024);
+    g_strlcpy(profile, "sRGB", 1024);
   } else if(profile[0] == '\0') {
-    strncpy(profile, overprofile, 1024);
+    g_strlcpy(profile, overprofile, 1024);
   }
 
   if(overprofile)
@@ -815,3 +815,5 @@ void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
   hue2rgb(m1,m2,h - (1.0/3.0), b);
 
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -164,7 +164,7 @@ int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t 
 
 int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
 {
-  strncpy(module->op, op, 20);
+  g_strlcpy(module->op, op, 20);
   module->data = NULL;
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
@@ -241,7 +241,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
-  strncpy(module->op, so->op, 20);
+  g_strlcpy(module->op, so->op, 20);
 
   // only reference cached results of dlopen:
   module->module = so->module;
@@ -374,7 +374,7 @@ void dt_iop_load_modules_so()
   char plugindir[1024], op[20];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
-  strcpy(plugindir + strlen(plugindir), "/plugins");
+  g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return;
   while((d_name = g_dir_read_name(dir)))
@@ -382,8 +382,7 @@ void dt_iop_load_modules_so()
     // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(op, d_name+3, strlen(d_name)-6);
-    op[strlen(d_name)-6] = '\0';
+    g_strlcpy(op, d_name+3, strlen(d_name)-6);
     module = (dt_iop_module_so_t *)malloc(sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
     if(dt_iop_load_module_so(module, libname, op))
@@ -982,3 +981,4 @@ void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb)
   rgb[2] = yuv[0] + 2.028*yuv[1];
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

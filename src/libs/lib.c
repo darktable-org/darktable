@@ -131,7 +131,7 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(box));
 
   dt_lib_presets_edit_dialog_t *g = (dt_lib_presets_edit_dialog_t *)g_malloc0(sizeof(dt_lib_presets_edit_dialog_t));
-  strncpy(g->plugin_name, minfo->plugin_name, 128);
+  g_strlcpy(g->plugin_name, minfo->plugin_name, 128);
   g->params_size = minfo->params_size;
   g->params = minfo->params;
   g->name = GTK_ENTRY(gtk_entry_new());
@@ -334,7 +334,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
 {
   module->dt = &darktable;
   module->widget = NULL;
-  strncpy(module->plugin_name, plugin_name, 20);
+  g_strlcpy(module->plugin_name, plugin_name, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
   int (*version)();
@@ -399,7 +399,7 @@ dt_lib_load_modules ()
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
-  strcpy(plugindir + strlen(plugindir), "/plugins/lighttable");
+  g_strlcat(plugindir, "/plugins/lighttable", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   while((d_name = g_dir_read_name(dir)))
@@ -407,8 +407,7 @@ dt_lib_load_modules ()
     // get lib*.so
     if(strncmp(d_name, "lib", 3)) continue;
     if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
-    plugin_name[strlen(d_name)-6] = '\0';
+    g_strlcpy(plugin_name, d_name+3, strlen(d_name)-6);
     module = (dt_lib_module_t *)malloc(sizeof(dt_lib_module_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_lib_load_module(module, libname, plugin_name))
@@ -496,7 +495,7 @@ popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
   static dt_lib_module_info_t mi;
   int32_t size = 0;
-  strncpy(mi.plugin_name, module->plugin_name, 128);
+  g_strlcpy(mi.plugin_name, module->plugin_name, 128);
   void *params = module->get_params(module, &size);
   if(params)
   {
@@ -590,3 +589,4 @@ dt_lib_presets_add(const char *name, const char *plugin_name, const void *params
   sqlite3_finalize(stmt);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

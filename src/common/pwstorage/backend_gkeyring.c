@@ -90,7 +90,7 @@ dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
   }
   else
   {
-    strcat(name,slot);
+    g_strlcat(name,slot, 256);
     /* create/update item with attributes */
     result = gnome_keyring_item_create_sync(DARKTABLE_KEYRING,
                                             GNOME_KEYRING_ITEM_GENERIC_SECRET,
@@ -145,3 +145,5 @@ dt_pwstorage_gkeyring_get(const gchar* slot)
   }
   return table;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
