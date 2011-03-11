@@ -447,7 +447,7 @@ void gui_init (struct dt_iop_module_t *self)
   //dtgtk_slider_set_unit(g->scale_tint,_(" "));
   dtgtk_slider_set_label(g->scale_k,_("temperature in"));
   dtgtk_slider_set_unit(g->scale_k,_("K"));
-  dtgtk_slider_set_label(g->scale_k_out,_("temperature in"));
+  dtgtk_slider_set_label(g->scale_k_out,_("temperature out"));
   dtgtk_slider_set_unit(g->scale_k_out,_("K"));
   dtgtk_slider_set_label(g->scale_r,_("red"));
   //dtgtk_slider_set_unit(g->scale_r,_(" "));
