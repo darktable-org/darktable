@@ -259,13 +259,12 @@ extern "C"
     g->contrast = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 5.0000, 0.1, p->contrast, 3));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
     dtgtk_slider_set_label(g->contrast,_("contrast compression"));
-    //dtgtk_slider_set_unit(g->contrast,_(" "));
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
 
     g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,1.0, 0.2, p->Fsize, 1));
     dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
     dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
-    dtgtk_slider_set_unit(g->Fsize,_("%"));
+    dtgtk_slider_set_unit(g->Fsize,"%");
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
     g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);
   }
@@ -277,3 +276,5 @@ extern "C"
   }
 
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

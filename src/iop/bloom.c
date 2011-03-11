@@ -324,11 +324,11 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->scale1,_("size"));
-  dtgtk_slider_set_unit(g->scale1,_("%"));
+  dtgtk_slider_set_unit(g->scale1,"%");
   dtgtk_slider_set_label(g->scale2,_("threshold"));
-  dtgtk_slider_set_unit(g->scale2,_("%"));
+  dtgtk_slider_set_unit(g->scale2,"%");
   dtgtk_slider_set_label(g->scale3,_("strength"));
-  dtgtk_slider_set_unit(g->scale3,_("%"));
+  dtgtk_slider_set_unit(g->scale3,"%");
 
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);

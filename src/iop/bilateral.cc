@@ -307,13 +307,9 @@ int flags()
     g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
 
     dtgtk_slider_set_label(g->scale1,_("radius"));
-    //dtgtk_slider_set_unit(g->scale1,_(" "));
     dtgtk_slider_set_label(g->scale3,_("red"));
-    //dtgtk_slider_set_unit(g->scale3,_(" "));
     dtgtk_slider_set_label(g->scale4,_("green"));
-    //dtgtk_slider_set_unit(g->scale4,_(" "));
     dtgtk_slider_set_label(g->scale5,_("blue"));
-    //dtgtk_slider_set_unit(g->scale5,_(" "));
 
     gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
@@ -340,3 +336,4 @@ int flags()
 
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -259,11 +259,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->lower = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lower, 2));
   dtgtk_slider_set_format_type(g->lower,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->lower,_("lower threshold"));
-  dtgtk_slider_set_unit(g->lower,_("%"));
+  dtgtk_slider_set_unit(g->lower,"%");
   g->upper = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->upper, 2));
   dtgtk_slider_set_format_type(g->upper,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->upper,_("upper threshold"));
-  dtgtk_slider_set_unit(g->upper,_("%"));
+  dtgtk_slider_set_unit(g->upper,"%");
 
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->lower), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
@@ -280,3 +280,5 @@ void gui_cleanup(struct dt_iop_module_t *self)
     free(self->gui_data);
   self->gui_data = NULL;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

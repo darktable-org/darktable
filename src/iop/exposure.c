@@ -342,12 +342,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->black = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -0.1, 0.1, .001, p->black, 3));
   g_object_set(G_OBJECT(g->black), "tooltip-text", _("adjust the black level"), (char *)NULL);
   dtgtk_slider_set_label(g->black,_("black"));
-  //dtgtk_slider_set_unit(g->black,_(" "));
 
   g->exposure = DTGTK_SLIDER(dtgtk_slider_new_with_range( DARKTABLE_SLIDER_BAR, -9.0, 9.0, .02, p->exposure, 3));
   g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
   dtgtk_slider_set_label(g->exposure,_("exposure"));
-  dtgtk_slider_set_unit(g->exposure,_("EV"));
+  dtgtk_slider_set_unit(g->exposure,"EV");
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->black), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
@@ -391,3 +390,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

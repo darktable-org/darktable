@@ -1339,7 +1339,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
   dtgtk_slider_set_label(g->scale, _("scale"));
-  //dtgtk_slider_set_unit(g->scale, _(" "));
   hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
 
@@ -1363,9 +1362,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->tca_r = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_r, 5));
   g->tca_b = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_b, 5));
   dtgtk_slider_set_label(g->tca_r, _("tca R"));
-  //dtgtk_slider_set_unit(g->tca_r, _(" "));
   dtgtk_slider_set_label(g->tca_b, _("tca B"));
-  //dtgtk_slider_set_unit(g->tca_b, _(" "));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);

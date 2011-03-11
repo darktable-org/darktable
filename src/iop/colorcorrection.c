@@ -191,7 +191,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation,2));
   g_object_set (GTK_OBJECT(g->scale5), "tooltip-text", _("set the global saturation"), (char *)NULL);
   dtgtk_slider_set_label(g->scale5,_("saturation"));
-  //dtgtk_slider_set_unit(g->scale5,_(" "));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
 
@@ -407,3 +406,4 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   return TRUE;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

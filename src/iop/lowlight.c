@@ -716,7 +716,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->scale_blueness = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 5.0, p->blueness, 2));
   dtgtk_slider_set_default_value(c->scale_blueness, p->blueness);
   dtgtk_slider_set_label(c->scale_blueness,_("blue shift"));
-  dtgtk_slider_set_unit(c->scale_blueness,_("%"));
+  dtgtk_slider_set_unit(c->scale_blueness,"%");
   dtgtk_slider_set_format_type(c->scale_blueness,DARKTABLE_SLIDER_FORMAT_PERCENT);
   g_object_set(G_OBJECT(c->scale_blueness), "tooltip-text", _("blueness in shadows"), (char *)NULL);
 
@@ -734,3 +734,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

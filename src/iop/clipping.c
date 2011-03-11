@@ -775,7 +775,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -180.0, 180.0, 0.25, p->angle, 2));
   dtgtk_slider_set_label(g->scale5, _("angle"));
-  dtgtk_slider_set_unit(g->scale5, _("deg"));
+  dtgtk_slider_set_unit(g->scale5, "°");
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
   g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
@@ -784,7 +784,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->keystone_h = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
   dtgtk_slider_set_label(g->keystone_h, _("keystone h"));
-  //dtgtk_slider_set_unit(g->keystone_h, _(" "));  
   g_object_set(G_OBJECT(g->keystone_h), "tooltip-text", _("adjust perspective for horizontal keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_h), "value-changed",
                     G_CALLBACK (keystone_callback_h), self);
@@ -792,7 +791,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->keystone_v = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
   dtgtk_slider_set_label(g->keystone_v, _("keystone v"));
-  //dtgtk_slider_set_unit(g->keystone_v, _(" "));  
   g_object_set(G_OBJECT(g->keystone_v), "tooltip-text", _("adjust perspective for vertical keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_v), "value-changed",
                     G_CALLBACK (keystone_callback_v), self);
@@ -1498,3 +1496,4 @@ int key_pressed (struct dt_iop_module_t *self, uint16_t which)
 #undef GUIDE_TRIANGL
 #undef GUIDE_GOLDEN
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

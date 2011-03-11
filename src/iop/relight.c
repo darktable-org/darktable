@@ -352,10 +352,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,-2.0, 2.0,0.05, p->ev, 2));
   g->scale2 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,2, 10, 0.5, p->width, 1));
   dtgtk_slider_set_label(g->scale1, _("exposure"));
-  dtgtk_slider_set_unit(g->scale1, _("EV"));
+  dtgtk_slider_set_unit(g->scale1, "EV");
   dtgtk_slider_set_force_sign(g->scale1, TRUE);
   dtgtk_slider_set_label(g->scale2, _("width"));
-  //dtgtk_slider_set_unit(g->scale2, "");
   
   /* lightnessslider */
   GtkBox *hbox=GTK_BOX (gtk_hbox_new (FALSE,2));
@@ -401,3 +400,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

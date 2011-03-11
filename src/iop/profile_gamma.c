@@ -179,11 +179,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.0001,p->linear,4));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("linear part"), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("linear"));
-  dtgtk_slider_set_unit(g->scale1,_(" "));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.0001,p->gamma,4));
   g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("gamma exponential factor"), (char *)NULL);
   dtgtk_slider_set_label(g->scale2,_("gamma"));
-  dtgtk_slider_set_unit(g->scale2,_(" "));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -216,3 +214,5 @@ static void linear_callback (GtkDarktableSlider *slider, gpointer user_data)
   p->linear = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

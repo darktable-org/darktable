@@ -508,9 +508,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the grain size (~iso of the film)"), (char *)NULL);
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("coarseness"));
-  dtgtk_slider_set_unit(g->scale1,_("ISO"));
+  dtgtk_slider_set_unit(g->scale1,"ISO");
   dtgtk_slider_set_label(g->scale2,_("strength"));
-  dtgtk_slider_set_unit(g->scale2,_("%"));
+  dtgtk_slider_set_unit(g->scale2,"%");
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);
@@ -525,3 +525,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

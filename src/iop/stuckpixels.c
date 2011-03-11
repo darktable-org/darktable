@@ -232,7 +232,6 @@ void gui_init     (dt_iop_module_t *self)
   
   g->strength = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 10.0, 0.01, p->strength, 4));
   dtgtk_slider_set_label(g->strength,_("strength"));
-  //dtgtk_slider_set_unit(g->strength,_(" "));
   g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of stuck pixel correction threshold"), NULL);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->strength),DARKTABLE_SLIDER_FORMAT_FLOAT);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->strength), TRUE, TRUE, 0);  
@@ -256,3 +255,5 @@ void gui_cleanup  (dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

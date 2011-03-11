@@ -827,21 +827,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->whratio = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0, 0.01, p->shape, 3));
 
   dtgtk_slider_set_label(g->scale,_("scale"));
-  dtgtk_slider_set_unit(g->scale,_("%"));
+  dtgtk_slider_set_unit(g->scale,"%");
   dtgtk_slider_set_label(g->falloff_scale,_("fall-off strength"));
-  dtgtk_slider_set_unit(g->falloff_scale,_("%"));
+  dtgtk_slider_set_unit(g->falloff_scale,"%");
   dtgtk_slider_set_label(g->brightness,_("brightness"));
-  //dtgtk_slider_set_unit(g->brightness,_(" "));
   dtgtk_slider_set_label(g->saturation,_("saturation"));
-  //dtgtk_slider_set_unit(g->saturation,_(" "));
   dtgtk_slider_set_label(g->center_x,_("horizontal center"));
-  //dtgtk_slider_set_unit(g->center_x,_(" "));
   dtgtk_slider_set_label(g->center_y,_("vertical center"));
-  //dtgtk_slider_set_unit(g->center_y,_(" "));
   dtgtk_slider_set_label(g->shape,_("shape"));
-  //dtgtk_slider_set_unit(g->shape,_(" "));
   dtgtk_slider_set_label(g->whratio,_("width/height ratio"));
-  //dtgtk_slider_set_unit(g->whratio,_(" "));
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 

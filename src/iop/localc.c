@@ -282,15 +282,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 30.0000, 0.100, p->alpha, 3));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("sensitivity of edge detection"), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("sensitivity"));
-  dtgtk_slider_set_unit(g->scale1,_(" "));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 4.0000, 0.010, p->scale, 3));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the effect around edges"), (char *)NULL);
   dtgtk_slider_set_label(g->scale2,_("scale"));
-  dtgtk_slider_set_unit(g->scale2,_(" "));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 10.0000, 0.001, p->strength, 3));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("strength of the local contrast"), (char *)NULL);
   dtgtk_slider_set_label(g->scale3,_("strength"));
-  dtgtk_slider_set_unit(g->scale3,_(" "));
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
@@ -310,3 +307,4 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

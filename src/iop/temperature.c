@@ -444,17 +444,13 @@ void gui_init (struct dt_iop_module_t *self)
   dtgtk_slider_set_digits((g->scale_g),     3);
   dtgtk_slider_set_digits((g->scale_b),     3);
   dtgtk_slider_set_label(g->scale_tint,_("tint"));
-  //dtgtk_slider_set_unit(g->scale_tint,_(" "));
   dtgtk_slider_set_label(g->scale_k,_("temperature in"));
-  dtgtk_slider_set_unit(g->scale_k,_("K"));
+  dtgtk_slider_set_unit(g->scale_k,"K");
   dtgtk_slider_set_label(g->scale_k_out,_("temperature out"));
-  dtgtk_slider_set_unit(g->scale_k_out,_("K"));
+  dtgtk_slider_set_unit(g->scale_k_out,"K");
   dtgtk_slider_set_label(g->scale_r,_("red"));
-  //dtgtk_slider_set_unit(g->scale_r,_(" "));
   dtgtk_slider_set_label(g->scale_g,_("green"));
-  //dtgtk_slider_set_unit(g->scale_g,_(" "));
   dtgtk_slider_set_label(g->scale_b,_("blue"));
-  //dtgtk_slider_set_unit(g->scale_b,_(" "));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5); 
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_tint), TRUE, TRUE, 0);
@@ -672,3 +668,4 @@ finetune_changed (GtkSpinButton *widget, gpointer user_data)
   apply_preset((dt_iop_module_t *)user_data);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

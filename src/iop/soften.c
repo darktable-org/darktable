@@ -348,14 +348,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.01, p->brightness, 2));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->amount, 2));
   dtgtk_slider_set_label(g->scale1,_("size"));
-  dtgtk_slider_set_unit(g->scale1,_("%"));
+  dtgtk_slider_set_unit(g->scale1,"%");
   dtgtk_slider_set_label(g->scale2,_("saturation"));
-  dtgtk_slider_set_unit(g->scale2,_("%"));
+  dtgtk_slider_set_unit(g->scale2,"%");
   dtgtk_slider_set_label(g->scale3,_("brightness"));
-  dtgtk_slider_set_unit(g->scale3,_("EV"));
+  dtgtk_slider_set_unit(g->scale3,"EV");
   dtgtk_slider_set_force_sign(g->scale3, TRUE);
   dtgtk_slider_set_label(g->scale4,_("mix"));
-  dtgtk_slider_set_unit(g->scale4,_("%"));
+  dtgtk_slider_set_unit(g->scale4,"%");
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale4,DARKTABLE_SLIDER_FORMAT_PERCENT);
