@@ -50,7 +50,8 @@ gchar *_string_get_first_variable(gchar *string,gchar *variable)
         while( *e!=')' && e < pend) e++;
         if(e < pend && *e==')')
         {
-          g_strlcpy(variable,p,e-p+1);
+          strncpy(variable,p,e-p+1);
+          variable[e-p+1]='\0';
           return p+1;
         }
         else
@@ -77,7 +78,8 @@ gchar *_string_get_next_variable(gchar *string,gchar *variable)
       while( *e!=')' && e < pend) e++;
       if(e < pend && *e==')')
       {
-        g_strlcpy(variable,p,e-p+1);
+        strncpy(variable,p,e-p+1);
+        variable[e-p+1]='\0';
         return p+1;
       }
       else
