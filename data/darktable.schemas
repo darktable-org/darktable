@@ -1341,6 +1341,19 @@
       </locale>
     </schema>
 
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/plugins/lighttable/export/high_quality_processing</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/high_quality_processing</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>do high quality resampling during export</short>
+        <long>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</long>
+      </locale>
+    </schema>
+
     <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/export/width</key>
       <applyto>/apps/darktable/plugins/lighttable/export/width</applyto>

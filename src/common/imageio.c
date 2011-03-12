@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -847,36 +847,87 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   }
   g_free(overprofile);
 
-  const int width  = format_params->max_width;
-  const int height = format_params->max_height;
+  // get only once at the beginning, in case the user changes it on the way:
+  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  const int width  = high_quality_processing ? 0 : format_params->max_width;
+  const int height = high_quality_processing ? 0 : format_params->max_height;
   const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
   const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
   const float scale = fminf(scalex, scaley);
-  const int processed_width  = scale*pipe.processed_width  + .5f;
-  const int processed_height = scale*pipe.processed_height + .5f;
+  int processed_width  = scale*pipe.processed_width  + .5f;
+  int processed_height = scale*pipe.processed_height + .5f;
   const int bpp = format->bpp(format_params);
+
+  // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
+  if(bpp == 8 && !high_quality_processing)
+    dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+  else
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+
+
+  // downsampling done last, if high quality processing was requested:
+  uint8_t *outbuf = pipe.backbuf;
+  if(high_quality_processing)
+  {
+    const float scalex = format_params->max_width  > 0 ? fminf(format_params->max_width /(float)pipe.processed_width,  1.0) : 1.0;
+    const float scaley = format_params->max_height > 0 ? fminf(format_params->max_height/(float)pipe.processed_height, 1.0) : 1.0;
+    const float scale = fminf(scalex, scaley);
+    if(scale < 1.0f)
+    {
+      processed_width  = scale*pipe.processed_width  + .5f;
+      processed_height = scale*pipe.processed_height + .5f;
+      outbuf = (uint8_t *)malloc(sizeof(float)*processed_width*processed_height*4);
+      // now downscale into the new buffer:
+      dt_iop_roi_t roi_in, roi_out;
+      roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
+      roi_in.scale = 1.0; roi_out.scale = scale;
+      roi_in.width = pipe.processed_width; roi_in.height = pipe.processed_height;
+      roi_out.width = processed_width; roi_out.height = processed_height;
+      dt_iop_clip_and_zoom((float *)outbuf, (float *)pipe.backbuf, &roi_out, &roi_in, processed_width, pipe.processed_width);
+    }
+  }
+
+  // downconversion to low-precision formats:
   if(bpp == 8)
   {
     // ldr output: char
-    dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     uint8_t *buf8 = pipe.backbuf;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf8) schedule(static)
-#endif
-    for(int k=0; k<processed_width*processed_height; k++)
+    if(high_quality_processing)
     {
-      // convert in place
-      uint8_t tmp = buf8[4*k+0];
-      buf8[4*k+0] = buf8[4*k+2];
-      buf8[4*k+2] = tmp;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(outbuf, buf8, processed_width, processed_height) schedule(static)
+#endif
+      for(int k=0; k<processed_width*processed_height; k++)
+      {
+        // convert in place
+        const uint8_t r = CLAMP(((float *)outbuf)[4*k+0]*0xff, 0, 0xff);
+        const uint8_t g = CLAMP(((float *)outbuf)[4*k+1]*0xff, 0, 0xff);
+        const uint8_t b = CLAMP(((float *)outbuf)[4*k+2]*0xff, 0, 0xff);
+        buf8[4*k+0] = r;
+        buf8[4*k+1] = g;
+        buf8[4*k+2] = b;
+      }
+      outbuf = buf8;
+    }
+    else
+    {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(buf8, processed_width, processed_height) schedule(static)
+#endif
+      // just flip byte order
+      for(int k=0; k<processed_width*processed_height; k++)
+      {
+        uint8_t tmp = buf8[4*k+0];
+        buf8[4*k+0] = buf8[4*k+2];
+        buf8[4*k+2] = tmp;
+      }
     }
   }
   else if(bpp == 16)
   {
     // uint16_t per color channel
-    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-    float    *buff  = (float *)   pipe.backbuf;
-    uint16_t *buf16 = (uint16_t *)pipe.backbuf;
+    float    *buff  = (float *)   outbuf;
+    uint16_t *buf16 = (uint16_t *)outbuf;
     for(int y=0; y<processed_height; y++) for(int x=0; x<processed_width ; x++)
       {
         // convert in place
@@ -884,23 +935,21 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
         for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
       }
   }
-  else if(bpp == 32)
-  {
-    // 32-bit float
-    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-  }
+  // else output float, no further harm done to the pixels :)
 
   int length;
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
   char pathname[1024];
   dt_image_full_path(img->id, pathname, 1024);
   length = dt_exif_read_blob(exif_profile, pathname, sRGB, img->id);
+
   format_params->width  = processed_width;
   format_params->height = processed_height;
-  int res = format->write_image (format_params, filename, pipe.backbuf, exif_profile, length, img->id);
+  const int res = format->write_image (format_params, filename, outbuf, exif_profile, length, img->id);
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
+  if(high_quality_processing && bpp != 8) free(outbuf);
   return res;
 }
 
