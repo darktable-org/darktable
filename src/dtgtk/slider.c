@@ -140,7 +140,6 @@ static void _slider_init (GtkDarktableSlider *slider)
   dt_gui_key_accel_block_on_focus (slider->entry);
 }
 
-#if 0
 static gboolean _slider_postponed_value_change(gpointer data)
 {
   gdk_threads_enter();
@@ -153,7 +152,6 @@ static gboolean _slider_postponed_value_change(gpointer data)
   gdk_threads_leave();
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
 }
-#endif
 
 static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
 {
@@ -193,7 +191,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       slider->is_dragging=TRUE;
       slider->prev_x_root=event->x_root;
       if( slider->type==DARKTABLE_SLIDER_BAR) slider->is_changed=TRUE;
-      // g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change,widget);
+      g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change,widget);
     }
   }
   else if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
