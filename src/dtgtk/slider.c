@@ -183,7 +183,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
     }
     else
-    {      
+    {
       slider->is_dragging=TRUE;
       slider->prev_x_root=event->x_root;
       if( slider->type==DARKTABLE_SLIDER_BAR) slider->is_changed=TRUE;
@@ -192,8 +192,11 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
   }
   else if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-  /* left mouse second click of doubleclick event */
-  fprintf(stderr,"DOUBLE CLICK");
+    /* left mouse second click of doubleclick event */
+    slider->is_dragging=FALSE; // otherwise button_release will overwrite our changes
+    gtk_adjustment_set_value(slider->adjustment, slider->default_value);
+    gtk_widget_draw(widget,NULL);
+    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
   }
   return TRUE;
 }
@@ -207,9 +210,9 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
     /* if x is in slider bar */
     if (event->x < (widget->allocation.width - DTGTK_SLIDER_ADJUST_BUTTON_WIDTH - DTGTK_SLIDER_BORDER_WIDTH))
     {
-      if( slider->type == DARKTABLE_SLIDER_BAR && !slider->is_sensibility_key_pressed )
+      if( slider->type == DARKTABLE_SLIDER_BAR && !slider->is_sensibility_key_pressed && slider->is_dragging)
       {
-        // First get some dimention info
+        // First get some dimension info
         GdkRectangle vr;
         _slider_get_value_area(widget,&vr);
  
@@ -644,3 +647,5 @@ GtkType dtgtk_slider_get_type()
   }
   return dtgtk_slider_type;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
