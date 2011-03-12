@@ -115,8 +115,8 @@ h1, h2{
   text-align:left;
 }
 
-p{
-  text-indent:2em;
+br{
+  margin-bottom:1em;
 }
 
 .text{
