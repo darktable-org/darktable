@@ -53,7 +53,6 @@ dt_iop_soften_params_t;
 typedef struct dt_iop_soften_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2;
-  GtkWidget  *label1,*label2,*label3,*label4;			// size,saturation,brightness,amount
   GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;       // size,saturation,brightness,amount
 }
 dt_iop_soften_gui_data_t;
@@ -339,10 +338,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
 
-  g->label1 = dtgtk_reset_label_new(_("size"), self, &p->size, sizeof(float));
-  g->label2 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
-  g->label3 = dtgtk_reset_label_new(_("brightness"), self, &p->brightness, sizeof(float));
-  g->label4 = dtgtk_reset_label_new(_("mix"), self, &p->amount, sizeof(float));
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->size, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, p->saturation, 2));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 2.0, 0.01, p->brightness, 2));
