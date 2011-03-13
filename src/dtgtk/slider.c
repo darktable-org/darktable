@@ -127,11 +127,15 @@ static void _slider_init (GtkDarktableSlider *slider)
   GtkWidget *hbox=gtk_hbox_new(TRUE,0);
   slider->hbox = GTK_HBOX(hbox);
 
-  gtk_box_pack_start(GTK_BOX(hbox),slider->entry,TRUE,TRUE,0);
+  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, DTGTK_SLIDER_BORDER_WIDTH*2, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+DTGTK_SLIDER_BORDER_WIDTH*2);
+  gtk_container_add(GTK_CONTAINER(alignment), slider->entry);
+  gtk_box_pack_start(GTK_BOX(hbox),alignment,TRUE,TRUE,0);
 
   gtk_container_add(GTK_CONTAINER(slider),hbox);
 
   gtk_entry_set_has_frame (GTK_ENTRY(slider->entry), FALSE);
+  gtk_entry_set_alignment (GTK_ENTRY(slider->entry), 1.0);
   g_signal_connect (G_OBJECT (slider->entry), "key-press-event", G_CALLBACK(_slider_entry_key_event), (gpointer)slider);
   dt_gui_key_accel_block_on_focus (slider->entry);
 }
@@ -192,11 +196,14 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
   }
   else if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    /* left mouse second click of doubleclick event */
-    slider->is_dragging=FALSE; // otherwise button_release will overwrite our changes
-    gtk_adjustment_set_value(slider->adjustment, slider->default_value);
-    gtk_widget_draw(widget,NULL);
-    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
+    if (event->x < (widget->allocation.width - DTGTK_SLIDER_ADJUST_BUTTON_WIDTH - DTGTK_SLIDER_BORDER_WIDTH))
+    {
+      /* left mouse second click of doubleclick event */
+      slider->is_dragging=FALSE; // otherwise button_release will overwrite our changes
+      gtk_adjustment_set_value(slider->adjustment, slider->default_value);
+      gtk_widget_draw(widget,NULL);
+      g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
+    }
   }
   return TRUE;
 }
