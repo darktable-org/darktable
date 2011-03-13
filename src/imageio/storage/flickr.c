@@ -110,18 +110,7 @@ void static _flickr_api_free( _flickr_api_context_t *ctx )
 
 static void _flickr_api_error_handler(void *data, const char *message)
 {
-  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  GtkWidget *flickr_auth_error_window = gtk_message_dialog_new (GTK_WINDOW (window),
-    GTK_DIALOG_DESTROY_WITH_PARENT,
-    GTK_MESSAGE_WARNING,
-    GTK_BUTTONS_CLOSE,
-    _("flickr authentication"));
-
-  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (flickr_auth_error_window),
-    "%s", message);
-
-  gtk_dialog_run (GTK_DIALOG (flickr_auth_error_window));
-  gtk_widget_destroy(flickr_auth_error_window);
+  dt_control_log(_("flickr authentication: %s"), message);
   if (data)
   {
     _flickr_api_context_t *ctx = (_flickr_api_context_t *)data;
