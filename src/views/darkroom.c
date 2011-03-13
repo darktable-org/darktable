@@ -1039,8 +1039,11 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
-  // free zoom
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  int handled = 0;
+  if(dev->gui_module && dev->gui_module->scrolled) handled = dev->gui_module->scrolled(dev->gui_module, x, y, up, state);
+  if(handled) return;
+  // free zoom
   dt_dev_zoom_t zoom;
   int closeup, procw, proch;
   float zoom_x, zoom_y;

@@ -238,6 +238,7 @@ void gui_cleanup  (dt_iop_module_t *self)
 // void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 // int mouse_moved(dt_iop_module_t *self, double x, double y, int which);
 // int button_pressed(dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
-// int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+// int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
+// int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

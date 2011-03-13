@@ -88,7 +88,7 @@ typedef struct dt_iop_module_so_t
   int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
   int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
   int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
-  int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
+  int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
   void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
@@ -179,7 +179,7 @@ typedef struct dt_iop_module_t
   int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
   int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
   int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
-  int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
+  int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
   void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
