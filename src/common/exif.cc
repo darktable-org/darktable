@@ -135,7 +135,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       img->exif_iso = pos->toFloat ();
     }
-    
+#if EXIV2_MINOR_VERSION>19
     /* Read focal length  */
     if ( (pos=Exiv2::focalLength(exifData))
          != exifData.end() )
@@ -151,7 +151,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
       // where should this value go?
       // img->exif_distance = pos->toFloat ();
     }
-
+#endif
     /** read image orientation */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Orientation")))
          != exifData.end() )
