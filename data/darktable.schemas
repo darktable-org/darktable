@@ -836,7 +836,7 @@
     
     <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/collect/item9</key>
-      <applyto>/apps/darktable/plugins/lighttable/collect/item1</applyto>
+      <applyto>/apps/darktable/plugins/lighttable/collect/item9</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>0</default>
