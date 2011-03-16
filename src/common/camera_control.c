@@ -274,7 +274,6 @@ dt_camctl_t *dt_camctl_new()
 	dt_camctl_t *camctl=g_malloc(sizeof(dt_camctl_t));
 	memset(camctl,0,sizeof(dt_camctl_t));
 	dt_print(DT_DEBUG_CAMCTL,"[camera_control] creating new context %lx\n",(unsigned long int)camctl);
-	_enable_debug();
 	
 	// Initialize gphoto2 context and setup dispatch callbacks
 	camctl->gpcontext = gp_context_new();
