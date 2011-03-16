@@ -274,7 +274,10 @@ dt_camctl_t *dt_camctl_new()
   dt_camctl_t *camctl=g_malloc(sizeof(dt_camctl_t));
   memset(camctl,0,sizeof(dt_camctl_t));
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] creating new context %lx\n",(unsigned long int)camctl);
-
+#if _DEBUG
+	_enable_debug();
+#endif
+	
   // Initialize gphoto2 context and setup dispatch callbacks
   camctl->gpcontext = gp_context_new();
   gp_context_set_idle_func( camctl->gpcontext , (GPContextIdleFunc)_idle_func_dispatch, camctl );
@@ -1077,12 +1080,10 @@ void _camera_configuration_commit(const dt_camctl_t *c,const dt_camera_t *camera
   dt_camera_t *cam=(dt_camera_t *)camera;
 
   dt_pthread_mutex_lock(&cam->config_lock);
-  _enable_debug();
   if( gp_camera_set_config( camera->gpcam, camera->configuration, c->gpcontext) != GP_OK )
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] Failed to commit configuration changes to camera\n");
 
   cam->config_changed=FALSE;
-  _disable_debug();
   dt_pthread_mutex_unlock(&cam->config_lock);
 }
 
