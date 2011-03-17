@@ -59,6 +59,8 @@ typedef struct _GtkDarktableSlider
   gint motion_direction;
   gint digits;
   gint snapsize;
+  gint labelwidth;
+  gint labelheight;
   gdouble default_value;
   darktable_slider_type_t type;
   darktable_slider_format_type_t fmt_type;
@@ -108,3 +110,5 @@ void dtgtk_slider_set_snap(GtkDarktableSlider *slider, gint snapsize);
 
 G_END_DECLS
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -196,7 +196,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
   }
   else if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    if (event->x < (widget->allocation.width - DTGTK_SLIDER_ADJUST_BUTTON_WIDTH - DTGTK_SLIDER_BORDER_WIDTH))
+    if(event->x < slider->labelwidth && event->y < slider->labelheight)
     {
       /* left mouse second click of doubleclick event */
       slider->is_dragging=FALSE; // otherwise button_release will overwrite our changes
@@ -511,6 +511,13 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
     cairo_text_extents(cr, "j`", &ext);
     cairo_move_to(cr, vr.x+(DTGTK_SLIDER_BORDER_WIDTH*2),vr.y+ext.height);
     cairo_show_text(cr, label);
+    /* store the size of the label. doing it in dtgtk_slider_set_label doesn't work as the widget isn't created yet. */
+    if(slider->labelwidth == 0 && slider->labelheight == 0)
+    {
+      cairo_text_extents(cr, label, &ext);
+      slider->labelwidth  = vr.x+(DTGTK_SLIDER_BORDER_WIDTH*2)+ext.width+(DTGTK_SLIDER_BORDER_WIDTH*2);
+      slider->labelheight = vr.y+ext.height+(DTGTK_SLIDER_BORDER_WIDTH*2);
+    }
   }
   
   /* Draw value unit */
@@ -564,6 +571,7 @@ GtkWidget *dtgtk_slider_new(GtkAdjustment *adjustment)
   g_return_val_if_fail(adjustment == NULL || GTK_IS_ADJUSTMENT (adjustment), NULL);
   slider = gtk_type_new(dtgtk_slider_get_type());
   slider->adjustment = adjustment;
+  slider->labelwidth = slider->labelheight = 0;
   return (GtkWidget *)slider;
 }
 
@@ -576,6 +584,7 @@ GtkWidget *dtgtk_slider_new_with_range (darktable_slider_type_t type,gdouble min
   slider->digits=digits;
   slider->is_entry_active=FALSE;
   slider->snapsize = 0;
+  slider->labelwidth = slider->labelheight = 0;
   return GTK_WIDGET(slider);
 }
 
@@ -596,6 +605,7 @@ void dtgtk_slider_set_format_type(GtkDarktableSlider *slider, darktable_slider_f
 
 void dtgtk_slider_set_label(GtkDarktableSlider *slider,gchar *label)
 {
+  slider->labelwidth = slider->labelheight = 0;
   g_object_set_data (G_OBJECT(slider),DTGTK_SLIDER_LABEL_KEY,label);
 }
 
