@@ -41,7 +41,7 @@ struct dt_develop_blend_params_t;
 /** Flag for the iop module to be enabled/included by default when creating a style */
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
 #define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
-#define	IOP_FLAGS_DEPRECATED	3
+#define	IOP_FLAGS_DEPRECATED	4
 
 typedef struct dt_iop_params_t
 {
