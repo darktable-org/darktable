@@ -534,7 +534,6 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
-<<<<<<< HEAD
 static int _iop_module_colorout=0,_iop_module_colorin=0;
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 {
