@@ -220,6 +220,24 @@
 		<Alias>Canon EOS Kiss X4</Alias>
 	</Aliases>
   </Camera>
+  <Camera make="Canon" model="Canon EOS 600D">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color>
+      <Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color>
+      <Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="146" y="54" width="0" height="0"/>
+    <Sensor black="2026" white="15303"/>
+	<BlackAreas>
+		<Vertical x="0" width="140"/>
+		<Horizontal y="4" height="44"/>
+	</BlackAreas>
+    <Aliases>
+		<Alias>Canon EOS REBEL T3i</Alias>
+		<Alias>Canon EOS Kiss X5</Alias>
+	</Aliases>
+  </Camera>
   <Camera make="Canon" model="Canon EOS 5D">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -294,6 +312,23 @@
     <Aliases>
 		<Alias>Canon EOS DIGITAL REBEL XS</Alias>
 		<Alias>Canon EOS Kiss Digital F</Alias>
+	</Aliases>
+  </Camera>
+  <Camera make="Canon" model="Canon EOS 1100D">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="64" y="20" width="0" height="0"/>
+    <Sensor black="2036" white="15500"/>
+	<BlackAreas>
+		<Vertical x="0" width="58"/>
+		<Horizontal y="4" height="12"/>
+	</BlackAreas>
+    <Aliases>
+		<Alias>Canon EOS REBEL T3</Alias>
 	</Aliases>
   </Camera>
   <Camera make="Canon" model="Canon EOS 400D DIGITAL">
@@ -1059,6 +1094,16 @@
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="55" white="4095"/>
   </Camera>
+  <Camera make="OLYMPUS IMAGING CORP." model="XZ-1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="-2"/>
+    <Sensor black="55" white="3972"/>
+  </Camera>
   <Camera make="Panasonic" model = "DMC-FX150" mode = "4:3">
     <CFA width="2" height="2">
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
@@ -1073,6 +1118,14 @@
       <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
     </CFA>
     <Crop x="0" y="0" width="3668" height="2754"/>
+    <Sensor black="15" white="3986"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-FZ28">
+    <CFA width="2" height="2">
+        <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
+        <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-56" height="-4"/>
     <Sensor black="15" white="3986"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-G1" mode="4:3">
@@ -1091,6 +1144,14 @@
     <Crop x="0" y="0" width="-32" height="0" />
     <Sensor black="15" white="3986"/>
   </Camera>
+  <Camera make="Panasonic" model = "DMC-G1" mode="3:2">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-44" height="0" />
+    <Sensor black="15" white="3986"/>
+  </Camera>  
   <Camera make="Panasonic" model = "DMC-G2" mode="4:3">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>

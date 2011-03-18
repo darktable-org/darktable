@@ -64,6 +64,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
   { "Canon EOS 50D",                {1035110, 365005,  -8057}, {-192184,  930511, -477417}, {189545, -233353, 1360870}, {863983, 888763, 730026}},
 
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Canon EOS 60D",                { 811844, 271149,  -2258}, { 233673, 1232880, -165558}, {  9354, -396515, 1055908}, {820908, 814270, 703735}},
+
   // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
   { "Canon EOS 350D DIGITAL",       { 784348, 329681, -18875}, { 227249, 1001602, -115692}, { 23834, -270844, 1011185}, {861252, 886368, 721420}},
   { "Canon EOS DIGITAL REBEL XT",   { 784348, 329681, -18875}, { 227249, 1001602, -115692}, { 23834, -270844, 1011185}, {861252, 886368, 721420}},
@@ -94,6 +97,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Pascal de Bruijn, CMP Digital Target 3, camera strobe, well lit
   { "Canon PowerShot S90",          { 866531, 231995,  55756}, {  76965, 1067474, -461502}, {106369, -243286, 1314529}, {807449, 855270, 690750}},
+
+  // Robert Park, ColorChecker Passport, strobe, well lit
+  { "Canon PowerShot G12",          { 738434, 188904,  71182}, { 318008, 1222260, -338455}, { 13290, -324036, 1207855}, {803146, 841522, 676529}},
 
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D40X",                   { 801178, 365555,  13702}, { 276398,  988342,  -84167}, { 21378, -264755, 1052521}, {859116, 893936, 739807}},

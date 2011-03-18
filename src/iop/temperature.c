@@ -423,66 +423,44 @@ void gui_init (struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_temperature_gui_data_t));
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t*)self->default_params;
 
   self->request_color_pick = 0;
-  GtkWidget *label;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
   GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->label1 = GTK_LABEL(gtk_label_new(_("tint")));
-  g->label2 = GTK_LABEL(gtk_label_new(_("temperature out")));
-  gtk_misc_set_alignment(GTK_MISC(g->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(g->label2), 0.0, 0.5);
-  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 5.0, .001,0,0));
-  g->scale_k     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,0,0));
-  g->scale_k_out = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,0,0));
-  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,0,0));
-  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,0,0));
-  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,0,0));
-  dtgtk_slider_set_digits((g->scale_tint),  3);
-  dtgtk_slider_set_digits((g->scale_k),     0);
-  dtgtk_slider_set_digits((g->scale_k_out), 0);
-  dtgtk_slider_set_digits((g->scale_r),     3);
-  dtgtk_slider_set_digits((g->scale_g),     3);
-  dtgtk_slider_set_digits((g->scale_b),     3);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 5);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(g->label1), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale_tint), FALSE, FALSE, 0);
-  label = gtk_label_new(_("temperature in"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(label), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale_k), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(g->label2), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale_k_out), FALSE, FALSE, 0);
+  GtkBox *vbox = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+
+  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 5.0, .001,1.0,3));
+  g->scale_k     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0));
+  g->scale_k_out = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0));
+  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[0],3));
+  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[1],3));
+  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[2],3));
+  dtgtk_slider_set_label(g->scale_tint,_("tint"));
+  dtgtk_slider_set_label(g->scale_k,_("temperature in"));
+  dtgtk_slider_set_unit(g->scale_k,"K");
+  dtgtk_slider_set_label(g->scale_k_out,_("temperature out"));
+  dtgtk_slider_set_unit(g->scale_k_out,"K");
+  dtgtk_slider_set_label(g->scale_r,_("red"));
+  dtgtk_slider_set_label(g->scale_g,_("green"));
+  dtgtk_slider_set_label(g->scale_b,_("blue"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5); 
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_tint), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_k), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_k_out), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), gtk_hseparator_new(), FALSE, FALSE, 5);
-  hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 5);
-
-  label = gtk_label_new(_("red"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(label), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale_r), FALSE, FALSE, 0);
-  label = gtk_label_new(_("green"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(label), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale_g), FALSE, FALSE, 0);
-  label = gtk_label_new(_("blue"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(label), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale_b), FALSE, FALSE, 0);
+  
+  vbox = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING)); 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_r), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_g), TRUE, TRUE, 0);        
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_b), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), gtk_hseparator_new(), FALSE, FALSE, 5);
-  hbox  = GTK_BOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   g->presets = GTK_COMBO_BOX(gtk_combo_box_new_text());
@@ -514,7 +492,7 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_spin_button_set_value (g->finetune, 0);
   gtk_spin_button_set_digits(g->finetune, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->finetune), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->finetune), "tooltip-text", _("fine tune white balance preset"), (char *)NULL);
+  g_object_set(G_OBJECT(g->finetune), "tooltip-text", _("fine tune white balance preset"), (char *)NULL);
 
   self->gui_update(self);
 
@@ -685,3 +663,4 @@ finetune_changed (GtkSpinButton *widget, gpointer user_data)
   apply_preset((dt_iop_module_t *)user_data);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

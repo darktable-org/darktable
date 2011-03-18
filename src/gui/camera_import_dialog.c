@@ -72,6 +72,7 @@ typedef struct _camera_import_dialog_t
     /** Group of general import settings */
     struct
     {
+      GtkWidget *ignore_jpeg;
       GtkWidget *delete_originals;
       GtkWidget *date_override;
       GtkWidget *date_entry;
@@ -104,7 +105,11 @@ _check_button_callback(GtkWidget *cb, gpointer user_data)
 
   _camera_import_dialog_t *cid=(_camera_import_dialog_t*)user_data;
 
-  if( cb == cid->settings.general.delete_originals )
+  if( cb == cid->settings.general.ignore_jpeg )
+  {
+    dt_conf_set_bool ("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.ignore_jpeg)));
+  }
+  else if( cb == cid->settings.general.delete_originals )
   {
     dt_conf_set_bool ("plugins/capture/camera/import/delete_originals", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.delete_originals)));
   }
@@ -258,7 +263,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   // Setup variables
   dt_variables_params_init(&data->vp);
-  data->vp->jobcode=_("My jobcode");
+  data->vp->jobcode=_("my jobcode");
   data->vp->filename="DSC_0235.JPG";
 
   // IMPORT PAGE
@@ -308,6 +313,13 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   // general settings
   gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("general"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
+
+  // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
+  data->settings.general.ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
+  g_object_set(data->settings.general.ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->settings.general.ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
+  gtk_box_pack_start(GTK_BOX(data->settings.page), data->settings.general.ignore_jpeg, FALSE, FALSE, 0);
+  g_signal_connect (G_OBJECT(data->settings.general.ignore_jpeg), "clicked",G_CALLBACK (_check_button_callback),data);
 
   data->settings.general.delete_originals = gtk_check_button_new_with_label(_("delete originals after import"));
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.general.delete_originals ,FALSE,FALSE,0);
@@ -630,3 +642,5 @@ void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *params)
   _camera_import_dialog_run(&data);
   _camera_import_dialog_free(&data);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

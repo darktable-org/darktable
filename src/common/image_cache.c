@@ -373,7 +373,7 @@ static void _image_cache_backup()
   g_free(filename);
 
   char *src = g_strdup (dbfilename);
-  strcat(dbfilename,".fallback");
+  g_strlcat(dbfilename,".fallback", 1024);
   _image_cache_copy_file (src,dbfilename);
   g_free (src);
 }
@@ -391,7 +391,7 @@ static void _image_cache_restore()
   g_free(filename);
 
   char *dest = g_strdup (dbfilename);
-  strcat(dbfilename,".fallback");
+  g_strlcat(dbfilename,".fallback", 1024);
   _image_cache_copy_file (dbfilename,dest);
   g_free (dest);
 }
@@ -507,7 +507,12 @@ void dt_image_cache_clear(int32_t id)
     dt_image_init(&(cache->line[res].image));
   }
   // if still locked, at least invalidate the data.
-  else if(res >= 0) cache->line[res].image.film_id = -1;
+  else if(res >= 0) 
+  {
+    cache->line[res].image.film_id = -1;
+    cache->line[res].image.id = -1;
+
+  }
   dt_pthread_mutex_unlock(&(cache->mutex));
 }
 

@@ -122,7 +122,7 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
   gchar *filename = _get_profile_from_pos(g->profiles, pos);
   if (filename)
   {
-    strcpy(p->iccprofile, filename);
+    g_strlcpy(p->iccprofile, filename, sizeof(p->iccprofile));
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return;
   }
@@ -165,7 +165,7 @@ display_profile_changed (GtkComboBox *widget, gpointer user_data)
   gchar *filename = _get_profile_from_pos(g->profiles, pos);
   if (filename)
   {
-    strcpy(p->displayprofile, filename);
+    g_strlcpy(p->displayprofile, filename, sizeof(p->displayprofile));
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return;
   }
@@ -587,27 +587,27 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->profiles = NULL;
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "sRGB");
-  strcpy(prof->name, "sRGB");
+  g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
+  g_strlcpy(prof->name, "sRGB", sizeof(prof->name));
   int pos;
   prof->pos = 0;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "adobergb");
-  strcpy(prof->name, "adobergb");
+  g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "adobergb", sizeof(prof->name));
   prof->pos = 1;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "X profile");
-  strcpy(prof->name, "X profile");
+  g_strlcpy(prof->filename, "X profile", sizeof(prof->filename));
+  g_strlcpy(prof->name, "X profile", sizeof(prof->name));
   prof->pos = 2;
   g->profiles = g_list_append(g->profiles, prof);
 
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "linear_rgb");
-  strcpy(prof->name, "linear_rgb");
+  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
   pos = prof->pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
@@ -632,8 +632,8 @@ void gui_init(struct dt_iop_module_t *self)
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
         cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
-        strcpy(prof->name, name);
-        strcpy(prof->filename, d_name);
+        g_strlcpy(prof->name, name, sizeof(prof->name));
+        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
         cmsCloseProfile(tmpprof);
         g->profiles = g_list_append(g->profiles, prof);
@@ -685,21 +685,21 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else if(!strcmp(prof->name, "linear_rgb"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
-      gtk_combo_box_append_text(g->cbox3, _("linear rgb"));
-      gtk_combo_box_append_text(g->cbox5, _("linear rgb"));
+      gtk_combo_box_append_text(g->cbox2, _("linear RGB"));
+      gtk_combo_box_append_text(g->cbox3, _("linear RGB"));
+      gtk_combo_box_append_text(g->cbox5, _("linear RGB"));
     }
     else if(!strcmp(prof->name, "sRGB"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("srgb (web-safe)"));
-      gtk_combo_box_append_text(g->cbox3, _("srgb (web-safe)"));
-      gtk_combo_box_append_text(g->cbox5, _("srgb (web-safe)"));
+      gtk_combo_box_append_text(g->cbox2, _("sRGB (web-safe)"));
+      gtk_combo_box_append_text(g->cbox3, _("sRGB (web-safe)"));
+      gtk_combo_box_append_text(g->cbox5, _("sRGB (web-safe)"));
     }
     else if(!strcmp(prof->name, "adobergb"))
     {
-      gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
-      gtk_combo_box_append_text(g->cbox3, _("adobe rgb"));
-      gtk_combo_box_append_text(g->cbox5, _("adobe rgb"));
+      gtk_combo_box_append_text(g->cbox2, _("Adobe RGB"));
+      gtk_combo_box_append_text(g->cbox3, _("Adobe RGB"));
+      gtk_combo_box_append_text(g->cbox5, _("Adobe RGB"));
     }
     else
     {
@@ -722,13 +722,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->cbox3), TRUE, TRUE, 0);
 
   char tooltip[1024];
-  gtk_object_set(GTK_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
+  g_object_set(G_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
   snprintf(tooltip, 1024, _("icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
-  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
+  g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
   snprintf(tooltip, 1024, _("display icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
-  gtk_object_set(GTK_OBJECT(g->cbox3), "tooltip-text", tooltip, (char *)NULL);
+  g_object_set(G_OBJECT(g->cbox3), "tooltip-text", tooltip, (char *)NULL);
   snprintf(tooltip, 1024, _("softproof icc profiles in %s/color/out or %s/color/out"), confdir, datadir);
-  gtk_object_set(GTK_OBJECT(g->cbox5), "tooltip-text", tooltip, (char *)NULL);
+  g_object_set(G_OBJECT(g->cbox5), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox1), "changed",
                     G_CALLBACK (intent_changed),

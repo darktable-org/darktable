@@ -54,11 +54,14 @@ typedef struct _GtkDarktableSlider
   gboolean is_sensibility_key_pressed;
   gboolean is_entry_active;
   gboolean is_changed;
+  gboolean force_sign;
   gint prev_x_root;
   gint motion_direction;
   gint digits;
   gint snapsize;
-  gfloat default_value;
+  gint labelwidth;
+  gint labelheight;
+  gdouble default_value;
   darktable_slider_type_t type;
   darktable_slider_format_type_t fmt_type;
 } GtkDarktableSlider;
@@ -86,6 +89,14 @@ GtkWidget* dtgtk_slider_new(GtkAdjustment *adjustment);
 GtkWidget* dtgtk_slider_new_with_range (darktable_slider_type_t type,gdouble min,gdouble max,gdouble step,gdouble value, gint digits);
 /** Get the value of the slider */
 gdouble dtgtk_slider_get_value(GtkDarktableSlider *slider);
+/** Set label of slider */
+void dtgtk_slider_set_label(GtkDarktableSlider *slider,gchar *label);
+/** Set unit of value */
+void dtgtk_slider_set_unit(GtkDarktableSlider *slider,gchar *unit);
+/** Set the default value of slider */
+void dtgtk_slider_set_default_value(GtkDarktableSlider *slider,gdouble val);
+/** Set force of sign of positice in displayed value */
+void dtgtk_slider_set_force_sign(GtkDarktableSlider *slider,gboolean force);
 /** Set the value of the slider */
 void dtgtk_slider_set_value(GtkDarktableSlider *slider,gdouble value);
 /** Set the type of the slider */
@@ -99,3 +110,5 @@ void dtgtk_slider_set_snap(GtkDarktableSlider *slider, gint snapsize);
 
 G_END_DECLS
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

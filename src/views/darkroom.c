@@ -283,7 +283,7 @@ static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_da
     gtk_expander_set_expanded(module->expander, FALSE);
     snprintf(option, 512, _("show %s"), module->name());
   }
-  gtk_object_set(GTK_OBJECT(module->showhide), "tooltip-text", option, (char *)NULL);
+  g_object_set(G_OBJECT(module->showhide), "tooltip-text", option, (char *)NULL);
 }
 
 
@@ -421,8 +421,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       char option[1024];
       snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
       gboolean active = dt_conf_get_bool (option);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
+      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
+      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
@@ -624,7 +624,7 @@ void enter(dt_view_t *self)
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
-    if(strcmp(module->op, "gamma"))
+    if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       module->showhide = gtk_toggle_button_new();
       char filename[1024], datadir[1024];
@@ -674,8 +674,8 @@ void enter(dt_view_t *self)
       char option[1024];
       snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
       gboolean active = dt_conf_get_bool (option);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
+      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
+      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
@@ -1009,8 +1009,14 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   zoom_y += mouse_off_y/(proch*scale);
   zoom = DT_ZOOM_FREE;
   closeup = 0;
-  if(up) scale += .1f*(1.0f - minscale);
-  else   scale -= .1f*(1.0f - minscale);
+  if(up) {
+    if (scale == 1.0f) return;
+    else scale += .1f*(1.0f - minscale);
+  }
+  else {
+    if (scale == minscale) return;
+    else scale -= .1f*(1.0f - minscale);
+  }
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   if(scale > 0.99)            zoom = DT_ZOOM_1;
   if(scale < minscale + 0.01) zoom = DT_ZOOM_FIT;

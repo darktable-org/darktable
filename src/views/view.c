@@ -99,10 +99,10 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->hscroll_size = view->hscroll_viewport_size = 1.0;
   view->vscroll_pos = view->hscroll_pos = 0.0;
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
-  strncpy(view->module_name, module, 64);
+  g_strlcpy(view->module_name, module, 64);
   char plugindir[1024];
   dt_get_plugindir(plugindir, 1024);
-  strcpy(plugindir + strlen(plugindir), "/views");
+  g_strlcat(plugindir, "/views", 1024);
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!view->module)
@@ -671,7 +671,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
           char* tooltip = dt_history_get_items_as_string(img->id);
           if(tooltip != NULL)
           {
-            gtk_object_set(GTK_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
+            g_object_set(G_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
             g_free(tooltip);
           }
         }

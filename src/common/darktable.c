@@ -54,7 +54,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,perf,pwstorage,opencl}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
+  printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,perf,pwstorage,opencl,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
 #ifdef HAVE_OPENCL
   printf(" [--disable-opencl]");
 #endif
@@ -100,7 +100,7 @@ int dt_init(int argc, char *argv[])
       {
         dbfilenameFromCommand = argv[++k];
       }
-      if(argv[k][1] == 'd' && argc > k+1)
+      else if(argv[k][1] == 'd' && argc > k+1)
       {
         if(!strcmp(argv[k+1], "all"))       darktable.unmuted = 0xffffffff;   // enable all debug information
         else if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
@@ -111,6 +111,7 @@ int dt_init(int argc, char *argv[])
         else if(!strcmp(argv[k+1], "perf"))      darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
         else if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
         else if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
+	else if(!strcmp(argv[k+1], "sql"))       darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
         else return usage(argv[0]);
         k ++;
       }
@@ -250,7 +251,7 @@ int dt_init(int argc, char *argv[])
   dt_points_init(darktable.points, dt_get_num_threads());
 
   int thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
-  thumbnails = MIN(1000, MAX(20, thumbnails));
+  thumbnails = MIN(1000000, MAX(20, thumbnails));
 
   darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
   dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
@@ -271,7 +272,7 @@ int dt_init(int argc, char *argv[])
   dt_lib_init(darktable.lib);
 
   dt_control_load_config(darktable.control);
-  strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
+  g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
 
   darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
@@ -415,6 +416,7 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
     va_start(ap, msg);
     vprintf(msg, ap);
     va_end(ap);
+    fflush(stdout);
   }
 }
 
@@ -498,7 +500,7 @@ void dt_get_plugindir(char *datadir, size_t bufsize)
     t--;
   }
   for(; t>datadir && *t!='/'; t--);
-  strcpy(t, "/lib/darktable");
+  g_strlcpy(t, "/lib/darktable", bufsize-(t-datadir));
   g_free(curr);
 #else
   snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
@@ -536,7 +538,7 @@ void dt_get_datadir(char *datadir, size_t bufsize)
     t--;
   }
   for(; t>datadir && *t!='/'; t--);
-  strcpy(t, "/share/darktable");
+  g_strlcpy(t, "/share/darktable", bufsize-(t-datadir));
   g_free(curr);
 #else
   snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
@@ -565,3 +567,5 @@ void dt_show_times(const dt_times_t *start, const char *prefix, const char *suff
     dt_print(DT_DEBUG_PERF, "%s\n", buf);
   }
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -71,7 +71,7 @@
 						<br/>Horizontal Black Area at Y = <span class="param"><xsl:value-of select="@y"/></span>, height is <span class="param"><xsl:value-of select="@height"/> pixels.</span>
 					</xsl:for-each>					
 					<xsl:for-each select="BlackAreas/Vertical">
-						<br/>Horizontal Black Area at X = <span class="param"><xsl:value-of select="@x"/></span>, width is <span class="param"><xsl:value-of select="@width"/> pixels.</span>
+						<br/>Vertical Black Area at X = <span class="param"><xsl:value-of select="@x"/></span>, width is <span class="param"><xsl:value-of select="@width"/> pixels.</span>
 					</xsl:for-each>					
 					<xsl:for-each select="Hints/Hint">
 					  <br/>

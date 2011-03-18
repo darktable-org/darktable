@@ -131,17 +131,17 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(box));
 
   dt_lib_presets_edit_dialog_t *g = (dt_lib_presets_edit_dialog_t *)g_malloc0(sizeof(dt_lib_presets_edit_dialog_t));
-  strncpy(g->plugin_name, minfo->plugin_name, 128);
+  g_strlcpy(g->plugin_name, minfo->plugin_name, 128);
   g->params_size = minfo->params_size;
   g->params = minfo->params;
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, name);
   gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
+  g_object_set(G_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
 
   g->description = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
-  gtk_object_set(GTK_OBJECT(g->description), "tooltip-text", _("description or further information"), (char *)NULL);
+  g_object_set(G_OBJECT(g->description), "tooltip-text", _("description or further information"), (char *)NULL);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select description from presets where name = ?1 and operation = ?2", -1, &stmt, NULL);
@@ -290,7 +290,7 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       mi = gtk_menu_item_new_with_label((const char *)sqlite3_column_text(stmt, 0));
     }
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), minfo);
-    gtk_object_set(GTK_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
+    g_object_set(G_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt ++;
   }
@@ -334,7 +334,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
 {
   module->dt = &darktable;
   module->widget = NULL;
-  strncpy(module->plugin_name, plugin_name, 20);
+  g_strlcpy(module->plugin_name, plugin_name, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
   int (*version)();
@@ -399,7 +399,7 @@ dt_lib_load_modules ()
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
-  strcpy(plugindir + strlen(plugindir), "/plugins/lighttable");
+  g_strlcat(plugindir, "/plugins/lighttable", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   while((d_name = g_dir_read_name(dir)))
@@ -496,7 +496,7 @@ popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
   static dt_lib_module_info_t mi;
   int32_t size = 0;
-  strncpy(mi.plugin_name, module->plugin_name, 128);
+  g_strlcpy(mi.plugin_name, module->plugin_name, 128);
   void *params = module->get_params(module, &size);
   if(params)
   {
@@ -522,13 +522,13 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-  gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
+  g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   if(module->get_params)
   {
     GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
     gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
-    gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
+    g_object_set(G_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
     gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (presetsbutton), "clicked", G_CALLBACK (popup_callback), module);
   }
@@ -590,3 +590,4 @@ dt_lib_presets_add(const char *name, const char *plugin_name, const void *params
   sqlite3_finalize(stmt);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

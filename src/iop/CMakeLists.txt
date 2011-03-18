@@ -7,14 +7,14 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma 
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
-	cacorrect overexposed bloom highpass)
+	cacorrect overexposed bloom soften clahe equalizer highpass)
 
-# old stuff we want to get rid of:
-set(LEGACY_MODULES clahe equalizer)
+
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colortransfer stuckpixels)
+set(EXPERIMENTAL_MODULES anlfyeni colortransfer stuckpixels lowlight)
 
+add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
 add_library(highpass MODULE "highpass.c")
 add_library(tonemap MODULE "tonemap.cc")
@@ -50,6 +50,7 @@ add_library(atrous MODULE "atrous.c")
 add_library(cacorrect MODULE "cacorrect.c")
 add_library(overexposed MODULE "overexposed.c")
 add_library(stuckpixels MODULE "stuckpixels.c")
+add_library(lowlight MODULE "lowlight.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")
@@ -76,10 +77,4 @@ if(INSTALL_IOP_EXPERIMENTAL)
   endforeach(module)
 endif(INSTALL_IOP_EXPERIMENTAL)
 
-if(INSTALL_IOP_LEGACY)
-  message("-- Installing legacy iop plugins")
-  foreach(module ${LEGACY_MODULES})
-    install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
-  endforeach(module)
-endif(INSTALL_IOP_LEGACY)
 

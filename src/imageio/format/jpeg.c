@@ -645,9 +645,8 @@ gui_init (dt_imageio_module_format_t *self)
   self->widget = box;
   // quality slider
   g->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0, 100, 1, 97, 0));
-  GtkWidget *label = gtk_label_new(_("quality"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+  dtgtk_slider_set_label(g->quality,_("quality"));
+  dtgtk_slider_set_default_value(g->quality, 97);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->quality), "value-changed",
                     G_CALLBACK (quality_changed),

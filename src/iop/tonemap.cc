@@ -252,24 +252,20 @@ extern "C"
     dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
 
-    GtkWidget *widget;
     self->widget = gtk_hbox_new(FALSE, 0);
-    GtkWidget *vbox1 = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-    GtkWidget *vbox2 = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-    gtk_box_pack_start(GTK_BOX(self->widget), vbox1, FALSE, FALSE, 5);
-    gtk_box_pack_start(GTK_BOX(self->widget), vbox2, TRUE, TRUE, 5);
+    GtkWidget *vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+    gtk_box_pack_start(GTK_BOX(self->widget), vbox, TRUE, TRUE, 5);
 
-    widget = dtgtk_reset_label_new(_("contrast compression"), self, &p->contrast, sizeof(float));
-    gtk_box_pack_start(GTK_BOX(vbox1), widget, TRUE, TRUE, 0);
     g->contrast = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 5.0000, 0.1, p->contrast, 3));
-    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
+    dtgtk_slider_set_label(g->contrast,_("contrast compression"));
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
 
-    widget = dtgtk_reset_label_new(_("spatial extent"), self, &p->Fsize, sizeof(float));
-    gtk_box_pack_start(GTK_BOX(vbox1), widget, TRUE, TRUE, 0);
     g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,1.0, 0.2, p->Fsize, 1));
     dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
-    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
+    dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
+    dtgtk_slider_set_unit(g->Fsize,"%");
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
     g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);
   }
 
@@ -280,3 +276,5 @@ extern "C"
   }
 
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -98,16 +98,16 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       GList *list=filter;
       char tmp[64];
       char include[2048]= {0};
-      strcat(include,"num in (");
+      g_strlcat(include,"num in (", 2048);
       do
       {
         if(list!=g_list_first(list))
-          strcat(include,",");
+          g_strlcat(include,",", 2048);
         sprintf(tmp,"%ld",(long int)list->data);
-        strcat(include,tmp);
+        g_strlcat(include,tmp, 2048);
       }
       while ((list=g_list_next(list)));
-      strcat(include,")");
+      g_strlcat(include,")", 2048);
       char query[4096]= {0};
       sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled) select ?1, num,module,operation,op_params,enabled from history where imgid=?2 and %s",include);
       DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
@@ -590,3 +590,4 @@ dt_styles_get_id_by_name (const char *name)
   return id;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

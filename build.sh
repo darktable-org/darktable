@@ -7,7 +7,7 @@ cd $DT_SRC_DIR;
 
 INSTALL_PREFIX=$1
 if [ "$INSTALL_PREFIX" =  "" ]; then
-	INSTALL_PREFIX=/usr/
+	INSTALL_PREFIX=/opt/darktable/
 fi
 
 BUILD_TYPE=$2
@@ -37,4 +37,7 @@ if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
 	MAKE_TASKS=1
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DINSTALL_IOP_EXPERIMENTAL=On -DINSTALL_IOP_LEGACY=Off .. && make -j $MAKE_TASKS && sudo make install
+cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DINSTALL_IOP_EXPERIMENTAL=On -DINSTALL_IOP_LEGACY=Off .. && make -j $MAKE_TASKS 
+
+echo "Darktable finished building, to actually install darktable you need to type:"
+echo "# cd build; sudo make install"

@@ -149,9 +149,9 @@ static int
 get_grab(float pointerx, float pointery, float startx, float starty, float endx, float endy, float zoom_scale){
   const float radius = 5.0/zoom_scale;
 
-  if(powf(pointerx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 1;           // center
   if(powf(pointerx-startx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 2;    // x size
   if(powf(pointerx, 2)+powf(pointery-starty, 2) <= powf(radius, 2)) return 4;    // y size
+  if(powf(pointerx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 1;           // center
   if(powf(pointerx-endx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 8;      // x falloff
   if(powf(pointerx, 2)+powf(pointery-endy, 2) <= powf(radius, 2)) return 16;     // y falloff
 
@@ -161,52 +161,69 @@ get_grab(float pointerx, float pointery, float startx, float starty, float endx,
 static void
 draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float zoom_scale)
 {
-  cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, fx, 0);
-  cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, 0, -fy);
-  cairo_stroke (cr);
+  // half width/height of the crosshair
+  float crosshair_w = 10.0/zoom_scale;
+  float crosshair_h = 10.0/zoom_scale;
 
+  // center crosshair
+  cairo_move_to(cr, -crosshair_w, 0.0);
+  cairo_line_to(cr,  crosshair_w, 0.0);
+  cairo_move_to(cr, 0.0, -crosshair_h);
+  cairo_line_to(cr, 0.0,  crosshair_h);
+  cairo_stroke(cr);
+
+  // inner border of the vignette
   cairo_save(cr);
-  cairo_scale(cr, 1, y/x);
-  cairo_arc(cr, 0, 0, x, 0, M_PI*2.0);
-  cairo_stroke(cr);
-  cairo_arc(cr, 0, 0, fx, 0, M_PI*2.0);
-  cairo_stroke(cr);
+  if(x <= y)
+  {
+    cairo_scale(cr, x/y, 1.0);
+    cairo_arc(cr, 0.0, 0.0, y, 0.0, M_PI*2.0);
+  }
+  else
+  {
+    cairo_scale(cr, 1.0, y/x);
+    cairo_arc(cr, 0.0, 0.0, x, 0.0, M_PI*2.0);
+  }
   cairo_restore(cr);
-
-  const float radius1 = 6.0/zoom_scale;
-  const float radius2 = 4.0/zoom_scale;
-  if(grab ==  1) cairo_arc(cr, 0, 0, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, 0, 0, radius2, 0, M_PI*2.0);
-  cairo_stroke(cr);
-  if(grab ==  2) cairo_arc(cr, x, 0, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, x, 0, radius2, 0, M_PI*2.0);
-  cairo_stroke(cr);
-  if(grab ==  4) cairo_arc(cr, 0, -y, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, 0, -y, radius2, 0, M_PI*2.0);
-  cairo_stroke(cr);
-  if(grab ==  8) cairo_arc(cr, fx, 0, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, fx, 0, radius2, 0, M_PI*2.0);
-  cairo_stroke(cr);
-  if(grab == 16) cairo_arc(cr, 0, -fy, radius1, 0, M_PI*2.0);
-  else           cairo_arc(cr, 0, -fy, radius2, 0, M_PI*2.0);
   cairo_stroke(cr);
 
-//   if(grab != 0)
-//   {
-//     const float radius = 5.0/zoom_scale;
-//     if     (grab ==  1) cairo_arc(cr, 0, 0, radius, 0, M_PI*2.0);
-//     else if(grab ==  2) cairo_arc(cr, x, 0, radius, 0, M_PI*2.0);
-//     else if(grab ==  4) cairo_arc(cr, 0, y, radius, 0, M_PI*2.0);
-//     else if(grab ==  8) cairo_arc(cr, fx, 0, radius, 0, M_PI*2.0);
-//     else if(grab == 16) cairo_arc(cr, 0, fy, radius, 0, M_PI*2.0);
-//     cairo_stroke(cr);
-//   }
+  // outer border of the vignette
+  cairo_save(cr);
+  if(fx <= fy)
+  {
+    cairo_scale(cr, fx/fy, 1.0);
+    cairo_arc(cr, 0.0, 0.0, fy, 0.0, M_PI*2.0);
+  }
+  else
+  {
+    cairo_scale(cr, 1.0, fy/fx);
+    cairo_arc(cr, 0.0, 0.0, fx, 0.0, M_PI*2.0);
+  }
+  cairo_restore(cr);
+  cairo_stroke(cr);
+
+  // the handles
+  const float radius_sel = 6.0/zoom_scale;
+  const float radius_reg = 4.0/zoom_scale;
+  if(grab ==  1) cairo_arc(cr, 0.0, 0.0, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, 0.0, 0.0, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  2) cairo_arc(cr, x, 0.0, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, x, 0.0, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  4) cairo_arc(cr, 0.0, -y, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, 0.0, -y, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab ==  8) cairo_arc(cr, fx, 0.0, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, fx, 0.0, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
+  if(grab == 16) cairo_arc(cr, 0.0, -fy, radius_sel, 0.0, M_PI*2.0);
+  else           cairo_arc(cr, 0.0, -fy, radius_reg, 0.0, M_PI*2.0);
+  cairo_stroke(cr);
 
 }
 
-//FIXME: For portrait images the overlay is a bit wrong. The coordinates in mouse_moved seem to be ok though. WTF?
+//FIXME: For portrait images the overlay is a bit off. The coordinates in mouse_moved seem to be ok though. WTF?
 void
 gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
@@ -284,8 +301,8 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
     }
   }
 
-  int grab = get_grab(pzx*wd-vignette_x, pzy*ht-vignette_y, vignette_w, vignette_h, vignette_fx, vignette_fy, zoom_scale);
-
+  int grab = get_grab(pzx*wd-vignette_x, pzy*ht-vignette_y, vignette_w, -vignette_h, vignette_fx, -vignette_fy, zoom_scale);
+  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
   cairo_set_line_width(cr, 3.0/zoom_scale);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
   draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
@@ -295,10 +312,10 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
 
 }
 
+//FIXME: Pumping of the opposite direction when changing width/height. See two FIXMEs further down.
 int
 mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 {
-//   g_print("x: %.4f, y: %.4f, which: %d\n", x, y, which);
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p   = (dt_iop_vignette_params_t *)self->params;
   int32_t zoom, closeup;
@@ -382,17 +399,16 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     }
     else if(grab ==  2) // change the width
     {
-      float new_vignette_w = pzx*wd - vignette_x;
-      if(new_vignette_w < 3 || new_vignette_w > bigger_side/2.0)
-        return 1;
+      float max = 0.5*((p->whratio <= 1.0)?bigger_side*p->whratio:bigger_side);
+      float new_vignette_w = MIN(bigger_side*0.5, MAX(0.1, pzx*wd - vignette_x));
       float ratio = new_vignette_w/vignette_h;
+      float new_scale = 100.0 * new_vignette_w / max;
       // FIXME: When going over the 1.0 boundary from wide to narrow (>1.0 -> <=1.0) the height slightly changes, depending on speed.
       //        I guess we have to split the computation.
       if(ratio <= 1.0)
       {
         if(which == GDK_CONTROL_MASK)
         {
-          float new_scale = (200.0 * new_vignette_w) / (bigger_side * p->whratio);
           dtgtk_slider_set_value(g->scale, new_scale);
         }
         else
@@ -402,7 +418,6 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       }
       else
       {
-        float new_scale = 200.0 * new_vignette_w / bigger_side;
         dtgtk_slider_set_value(g->scale, new_scale);
 
         if(which != GDK_CONTROL_MASK)
@@ -414,17 +429,16 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     }
     else if(grab ==  4) // change the height
     {
-      float new_vignette_h = vignette_y - pzy*ht;
-      if(new_vignette_h < 3 || new_vignette_h > bigger_side/2.0)
-        return 1;
+      float new_vignette_h = MIN(bigger_side*0.5, MAX(0.1, vignette_y - pzy*ht));
       float ratio = new_vignette_h/vignette_w;
+      float max = 0.5*((ratio <= 1.0)?bigger_side*(2.0-p->whratio):bigger_side);
       // FIXME: When going over the 1.0 boundary from narrow to wide (>1.0 -> <=1.0) the width slightly changes, depending on speed.
       //        I guess we have to split the computation.
       if(ratio <= 1.0)
       {
         if(which == GDK_CONTROL_MASK)
         {
-          float new_scale = (200.0 * new_vignette_h) / (bigger_side * (2.0 - p->whratio));
+          float new_scale = 100.0 * new_vignette_h / max;
           dtgtk_slider_set_value(g->scale, new_scale);
         }
         else
@@ -434,7 +448,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       }
       else
       {
-        float new_scale = 200.0 * new_vignette_h / bigger_side;
+        float new_scale = 100.0 * new_vignette_h / max;
         dtgtk_slider_set_value(g->scale, new_scale);
 
         if(which != GDK_CONTROL_MASK)
@@ -446,11 +460,19 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     }
     else if(grab ==  8) // change the falloff on the right
     {
-      //TODO
+      float new_vignette_fx = pzx*wd - vignette_x;
+      float max = 0.5*((p->whratio <= 1.0)?bigger_side*p->whratio:bigger_side);
+      float delta_x = MIN(max, MAX(0.0, new_vignette_fx - vignette_w));
+      float new_falloff = 100.0 * delta_x / max;
+      dtgtk_slider_set_value(g->falloff_scale, new_falloff);
     }
     else if(grab == 16) // change the falloff on the top
     {
-      //TODO
+      float new_vignette_fy = vignette_y - pzy*ht;
+      float max = 0.5*((p->whratio > 1.0)?bigger_side*(2.0-p->whratio):bigger_side);
+      float delta_y = MIN(max, MAX(0.0, new_vignette_fy - vignette_h));
+      float new_falloff = 100.0 * delta_y / max;
+      dtgtk_slider_set_value(g->falloff_scale, new_falloff);
     }
     dt_control_gui_queue_draw();
     return 1;
@@ -476,49 +498,29 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 int
 button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
 {
-//   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-//   dt_iop_vignette_params_t   *p = (dt_iop_vignette_params_t *)self->params;
   if(which == 1)
-  {
-//     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
     return 1;
-  }
   return 0;
 }
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
-  return 1;
+  if(which == 1)
+    return 1;
+  return 0;
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-// FIXME: NOP for faster processing while debugging/hacking. DO NOT REMOVE!
-/*
-  const int ch2 = piece->colors;
-  for(int j=0; j<roi_out->height; j++)
-  {
-    const int k = ch2*roi_out->width*j;
-    const float *in = (const float *)ivoid + k;
-    float *out = (float *)ovoid + k;
-    for(int i=0; i<roi_out->width; i++, in+=ch2, out+=ch2)
-    {
-      out[0] = in[0];
-      out[1] = in[1];
-      out[2] = in[2];
-    }
-  }
-  return;
-*/
   const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
   const int ch = piece->colors;
 
-  /* Center coordinates of buf_in */
+  /* Center coordinates of buf_in, these should not consider buf_in->{x,y}! */
   const dt_iop_vector_2d_t buf_center =
   {
-    (buf_in->width - buf_in->x) / 2.0 + buf_in->x,
-    (buf_in->height - buf_in->y) / 2.0 + buf_in->y
+    buf_in->width * .5f,
+    buf_in->height * .5f
   };
   /* Center coordinates of vignette center */
   const dt_iop_vector_2d_t vignette_center =
@@ -568,8 +570,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // Pre-scale the center offset
   const dt_iop_vector_2d_t roi_center_scaled =
   {
-    -roi_center.x * xscale,
-    -roi_center.y * yscale
+    roi_center.x * xscale,
+    roi_center.y * yscale
   };
 
 #ifdef _OPENMP
@@ -585,8 +587,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // current pixel coord translated to local coord
       const dt_iop_vector_2d_t pv =
       {
-        fabsf(i*xscale+roi_center_scaled.x),
-        fabsf(j*yscale+roi_center_scaled.y)
+        fabsf(i*xscale-roi_center_scaled.x),
+        fabsf(j*yscale-roi_center_scaled.y)
       };
 
       // Calculate the pixel weight in vignette
@@ -808,37 +810,16 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  GtkWidget *widget;
-
   self->gui_data = malloc(sizeof(dt_iop_vignette_gui_data_t));
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  GtkVBox   *vbox1,  *vbox2;
+  GtkWidget *vbox, *hbox, *label1;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  self->widget = gtk_hbox_new(FALSE, 0);
+  vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
-  widget = dtgtk_reset_label_new (_("scale"), self, &p->scale, sizeof p->scale);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("fall-off strength"), self, &p->falloff_scale, sizeof p->falloff_scale);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("brightness"), self, &p->brightness, sizeof p->brightness);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("saturation"), self, &p->saturation, sizeof p->saturation);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("horizontal center"), self, &p->center.x, sizeof p->center.x);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("vertical center"), self, &p->center.y, sizeof p->center.y);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("shape"), self, &p->shape, sizeof p->shape);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new (_("width/height ratio"), self, &p->whratio, sizeof p->whratio);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  label1 = dtgtk_reset_label_new (_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
 
   g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, p->scale, 2));
   g->falloff_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->falloff_scale, 2));
@@ -850,27 +831,42 @@ void gui_init(struct dt_iop_module_t *self)
   g->autoratio = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("automatic")));
   g->whratio = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0, 0.01, p->shape, 3));
 
+  dtgtk_slider_set_label(g->scale,_("scale"));
+  dtgtk_slider_set_unit(g->scale,"%");
+  dtgtk_slider_set_label(g->falloff_scale,_("fall-off strength"));
+  dtgtk_slider_set_unit(g->falloff_scale,"%");
+  dtgtk_slider_set_label(g->brightness,_("brightness"));
+  dtgtk_slider_set_label(g->saturation,_("saturation"));
+  dtgtk_slider_set_label(g->center_x,_("horizontal center"));
+  dtgtk_slider_set_label(g->center_y,_("vertical center"));
+  dtgtk_slider_set_label(g->shape,_("shape"));
+  dtgtk_slider_set_label(g->whratio,_("width/height ratio"));
+
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->falloff_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->brightness), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->saturation), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->center_x), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->center_y), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->shape), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->whratio), TRUE, TRUE, 0);
+  hbox= gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
 
-  gtk_object_set(GTK_OBJECT(g->scale), "tooltip-text", _("the radii scale of vignette for start of fall-off"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->falloff_scale), "tooltip-text", _("the radii scale of vignette for end of fall-off"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->brightness), "tooltip-text", _("strength of effect on brightness"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->autoratio), "tooltip-text", _("enable to have the ratio automatically follow the image size"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->falloff_scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->brightness), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->saturation), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->center_x), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->center_y), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->shape), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->whratio), TRUE, TRUE, 0);
+
+  g_object_set(G_OBJECT(g->scale), "tooltip-text", _("the radii scale of vignette for start of fall-off"), (char *)NULL);
+  g_object_set(G_OBJECT(g->falloff_scale), "tooltip-text", _("the radii scale of vignette for end of fall-off"), (char *)NULL);
+  g_object_set(G_OBJECT(g->brightness), "tooltip-text", _("strength of effect on brightness"), (char *)NULL);
+  g_object_set(G_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
+  g_object_set(G_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"), (char *)NULL);
+  g_object_set(G_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"), (char *)NULL);
+  g_object_set(G_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
+  g_object_set(G_OBJECT(g->autoratio), "tooltip-text", _("enable to have the ratio automatically follow the image size"), (char *)NULL);
+  g_object_set(G_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
 
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->scale),DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->falloff_scale),DARKTABLE_SLIDER_FORMAT_PERCENT);

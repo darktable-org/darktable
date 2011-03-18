@@ -83,7 +83,7 @@
       <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>1000</default>
+      <default>30000</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>small thumbnails to keep in main memory cache</short>
@@ -529,7 +529,7 @@
       <default>0</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>Capture view mode</short>
+        <short>capture view mode</short>
         <long></long>
       </locale>
     </schema>
@@ -1394,6 +1394,32 @@
     </schema>
     
     <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/gallery/file_directory</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/gallery/file_directory</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>$(HOME_FOLDER)/darktable_gallery/</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/imageio/storage/gallery/title</key>
+      <applyto>/apps/darktable/plugins/imageio/storage/gallery/title</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default>darktable gallery</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
       <key>/schemas/apps/darktable/plugins/imageio/storage/email/client</key>
       <applyto>/apps/darktable/plugins/imageio/storage/email/client</applyto>
       <owner>darktable</owner>
@@ -1401,7 +1427,7 @@
       <default></default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>Default client to use, this overrides detection of default client.</short>
+        <short>default client to use, this overrides detection of default client.</short>
         <long></long>
       </locale>
     </schema>

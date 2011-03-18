@@ -209,10 +209,16 @@ if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 endif(NOT WIN32)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse -march=native -g")
+if(NOT BINARY_PACKAGE_BUILD)
+	set(MARCH "-march=native")	
+else()
+	set(MARCH "-mtune=generic")
+endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse ${MARCH} -g")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse -march=native -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse ${MARCH} -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
   
@@ -231,6 +237,7 @@ add_custom_command(
    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
 )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPERTIES GENERATED 1)
 
 #
 # Generate mapping of key strings to internal metadata id
@@ -239,6 +246,11 @@ add_custom_command(
    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c
    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_metadata.sh ${CMAKE_CURRENT_SOURCE_DIR}/../tools/metadata.txt ${CMAKE_CURRENT_BINARY_DIR}
 )
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c PROPERTIES GENERATED 1)
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h PROPERTIES GENERATED 1)
+# this is a dummy library whose sole purpose is to serve as a dependency for subdirs, such as imageio/storage/gallery.
+# cmake can't depend on custom targets in other directories than the current one.
+add_library(metadata_dummy ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h)
 
 #
 # build libdarktable
@@ -288,7 +300,7 @@ add_subdirectory(libs)
 # Compile darkroom modules
 add_subdirectory(iop)
 
-# Compile darkroom modules
+# Compile export modules
 add_subdirectory(imageio)
 
 

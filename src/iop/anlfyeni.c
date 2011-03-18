@@ -56,7 +56,7 @@ dt_iop_anlfyeni_params_t;
 typedef struct dt_iop_anlfyeni_gui_data_t
 {
   GtkDarktableSlider *scale1, *scale2, *scale3; // this is needed by gui_update
-  GtkVBox   *vbox1, *vbox2;
+  GtkVBox   *vbox;
 }
 dt_iop_anlfyeni_gui_data_t;
 
@@ -268,25 +268,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_anlfyeni_params_t *p = (dt_iop_anlfyeni_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-
-  GtkWidget *widget;
-  widget = dtgtk_reset_label_new(_("alpha"), self, &p->alpha, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new(_("scale"), self, &p->scale, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new(_("strength"), self, &p->strength, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
+  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.001, 0.07, 0.001, p->alpha, 3));
+  g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("sensitivity of edge detection"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale1,_("sensitivity"));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 6.0000, 0.010, p->scale, 3));
+  g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("spatial extent of the effect around edges"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale2,_("scale"));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 10.0000, 0.001, p->strength, 3));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("strength of the local contrast"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale3,_("strength"));
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (alpha_callback), self);
@@ -303,3 +299,4 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

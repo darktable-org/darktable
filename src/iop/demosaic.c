@@ -888,31 +888,32 @@ void gui_init     (struct dt_iop_module_t *self)
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+  GtkBox *vbox = GTK_BOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
-  GtkWidget *widget;
-  widget = dtgtk_reset_label_new(_("edge threshold"), self, &p->median_thrs, sizeof(float));
-  gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.000, 0.001, p->median_thrs, 3));
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
+  dtgtk_slider_set_label(g->scale1,_("edge threshold"));
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
+  GtkWidget *widget;  
   widget = dtgtk_reset_label_new(_("color smoothing"), self, &p->color_smoothing, sizeof(uint32_t));
-  gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
+  GtkWidget *hbox1 = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
   g->color_smoothing = gtk_spin_button_new_with_range(0, 5, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->color_smoothing), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
-  gtk_object_set(GTK_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
-  gtk_box_pack_start(vbox2, g->color_smoothing, TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->color_smoothing), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
   widget = dtgtk_reset_label_new(_("match greens"), self, &p->green_eq, sizeof(uint32_t));
-  gtk_box_pack_start(vbox1, widget, TRUE, TRUE, 0);
+  GtkWidget *hbox2 = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(widget), TRUE, TRUE, 0);
   g->greeneq = GTK_TOGGLE_BUTTON(gtk_check_button_new());
-  gtk_object_set(GTK_OBJECT(g->greeneq), "tooltip-text", _("switch on green equilibration before demosaicing.\nnecessary for some mid-range cameras such as the EOS 400D."), (char *)NULL);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(g->greeneq), TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("switch on green equilibration before demosaicing.\nnecessary for some mid-range cameras such as the EOS 400D."), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(g->greeneq), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (median_thrs_callback), self);
@@ -928,3 +929,4 @@ void gui_cleanup  (struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

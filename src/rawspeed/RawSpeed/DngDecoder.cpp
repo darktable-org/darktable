@@ -83,8 +83,7 @@ RawImage DngDecoder::decodeRaw() {
   try {
     mRaw->dim.x = raw->getEntry(IMAGEWIDTH)->getInt();
     mRaw->dim.y = raw->getEntry(IMAGELENGTH)->getInt();
-    // get bits per pixel and round to next byte multiple:
-    mRaw->bpp = (raw->getEntry(BITSPERSAMPLE)->getShort()+7)/8;
+    mRaw->bpp = 2;
   } catch (TiffParserException) {
     ThrowRDE("DNG Decoder: Could not read basic image information.");
   }
@@ -350,60 +349,17 @@ RawImage DngDecoder::decodeRaw() {
     }
   }
 
-  new_size = mRaw->dim;
-
-  // Default white level is (2 ** BitsPerSample) - 1
+ // Default white level is (2 ** BitsPerSample) - 1
   mRaw->whitePoint = (1 >> raw->getEntry(BITSPERSAMPLE)->getShort()) - 1;
-  // Black defaults to 0
-  int black = 0; 
 
   if (raw->hasEntry(WHITELEVEL)) {
     TiffEntry *whitelevel = raw->getEntry(WHITELEVEL);
     if (whitelevel->isInt())
       mRaw->whitePoint = whitelevel->getInt();
   }
+  // Set black
+  setBlack(raw);
 
-
-  if (raw->hasEntry(BLACKLEVELREPEATDIM)) {
-    black = 65536;
-    const ushort16 *blackdim = raw->getEntry(BLACKLEVELREPEATDIM)->getShortArray();
-    if (blackdim[0] != 0 && blackdim[1] != 0) {
-      if (raw->hasEntry(BLACKLEVELDELTAV)) {
-        const uint32 *blackarray = raw->getEntry(BLACKLEVEL)->getIntArray();
-        int blackbase = blackarray[0] / blackarray[1];
-        const int *blackarrayv = (const int*)raw->getEntry(BLACKLEVELDELTAV)->getIntArray();
-        for (int i = 0; i < new_size.y; i++)
-          if (blackarrayv[i*2+1])
-            black = MIN(black, blackbase + blackarrayv[i*2] / blackarrayv[i*2+1]);
-      } else {
-        TiffEntry* black_entry = raw->getEntry(BLACKLEVEL);
-        if (black_entry->type == TIFF_LONG) {
-          const uint32* blackarray = black_entry->getIntArray();
-          if (blackarray[1])
-            black = blackarray[0] / blackarray[1];
-          else
-            black = 0;
-        } else if (black_entry->isFloat()) {
-          black = (int)black_entry->getFloat();
-        }
-      }
-    } else {
-      black = 0;
-    }
-  } else if (raw->hasEntry(BLACKLEVEL)) {
-    // Attempt to read a single value as black
-    TiffEntry *blacklevel = raw->getEntry(BLACKLEVEL);
-    if (blacklevel->count >= 1 && (blacklevel->isInt()))
-      black = blacklevel->getInt();
-    if (blacklevel->count >= 1 && blacklevel->type == TIFF_RATIONAL) {
-      const uint32* blackarray = (const uint32*)blacklevel->getData();
-      if (blackarray[1])
-        black = blackarray[0] / blackarray[1];
-      else
-        black = 0;
-    }
-  }
-  mRaw->blackLevel = black;
   return mRaw;
 }
 
@@ -419,4 +375,140 @@ void DngDecoder::checkSupport(CameraMetaData *meta) {
   this->checkCameraSupported(meta, make, model, "dng");
 }
 
+/* Decodes DNG masked areas into blackareas in the image */
+bool DngDecoder::decodeMaskedAreas(TiffIFD* raw) {
+  TiffEntry *masked = raw->getEntry(MASKEDAREAS);
+  int nrects = masked->count/4;
+
+  if (0 == nrects)
+    return FALSE;
+
+  /* Since we may both have short or int, copy it to int array. */
+  int *rects = new int[nrects*4];
+  if (masked->type == TIFF_SHORT) {
+    const ushort16* r = masked->getShortArray();
+    for (int i = 0; i< nrects*4; i++)
+      rects[i] = r[i];
+  } else if (masked->type == TIFF_LONG) {
+    const uint32* r = masked->getIntArray();
+    for (int i = 0; i< nrects*4; i++)
+      rects[i] = r[i];
+  } else {
+    delete[] rects;
+    return FALSE;
+  }
+
+  iPoint2D top = mRaw->getCropOffset();
+
+  for (int i=0; i<nrects; i++) {
+    iPoint2D topleft = iPoint2D(rects[i*4+1], rects[i*4]);
+    iPoint2D bottomright = iPoint2D(rects[i*4+3], rects[i*4+2]);
+    // Is this a horizontal box, only add it if it covers the active width of the image
+    if (topleft.x <= top.x && bottomright.x >= (mRaw->dim.x+top.x))
+      mRaw->blackAreas.push_back(BlackArea(topleft.y, bottomright.y-topleft.y, FALSE));
+    // Is it a vertical box, only add it if it covers the active height of the image
+    else if (topleft.y <= top.y && bottomright.y >= (mRaw->dim.y+top.y)) {
+        mRaw->blackAreas.push_back(BlackArea(topleft.x, bottomright.x-topleft.x, TRUE));
+    }
+  }
+  delete[] rects;
+  return !!mRaw->blackAreas.size();
+}
+
+bool DngDecoder::decodeBlackLevels(TiffIFD* raw) {
+  iPoint2D blackdim(1,1);
+  if (raw->hasEntry(BLACKLEVELREPEATDIM)) {
+    const ushort16 *dim = raw->getEntry(BLACKLEVELREPEATDIM)->getShortArray();
+    blackdim = iPoint2D(dim[0], dim[1]);
+  }
+
+  if (blackdim.x == 0 || blackdim.y == 0)
+    return FALSE;
+
+  if (!raw->hasEntry(BLACKLEVEL))
+    return TRUE;
+
+  if (mRaw->getCpp() != 1)
+    return FALSE;
+
+  TiffEntry* black_entry = raw->getEntry(BLACKLEVEL);
+  const uint32* iblackarray = NULL;
+  const ushort16* sblackarray = NULL;
+  if (black_entry->type == TIFF_SHORT)
+    sblackarray = black_entry->getShortArray();
+  else
+    iblackarray = black_entry->getIntArray();
+
+  if (blackdim.x < 2 || blackdim.y < 2) {
+    // We so not have enough to fill all individually, read a single and copy it
+    for (int y = 0; y < 2; y++) {
+      for (int x = 0; x < 2; x++) {
+        int offset = 0;
+        if (black_entry->type == TIFF_RATIONAL) {
+          if (iblackarray[offset*2+1])
+            mRaw->blackLevelSeparate[y*2+x] = iblackarray[offset*2] / iblackarray[offset*2+1];
+          else
+            mRaw->blackLevelSeparate[y*2+x] = 0;
+        } else if (black_entry->type == TIFF_LONG) {
+          mRaw->blackLevelSeparate[y*2+x] = iblackarray[offset];
+        } else if (black_entry->type == TIFF_SHORT) {
+          mRaw->blackLevelSeparate[y*2+x] = sblackarray[offset];
+        }
+      }
+    }
+  } else {
+    for (int y = 0; y < 2; y++) {
+      for (int x = 0; x < 2; x++) {
+        int offset = y*blackdim.x+x;
+        if (black_entry->type == TIFF_RATIONAL) {
+          if (iblackarray[offset*2+1])
+            mRaw->blackLevelSeparate[y*2+x] = iblackarray[offset*2] / iblackarray[offset*2+1];
+          else
+            mRaw->blackLevelSeparate[y*2+x] = 0;
+        } else if (black_entry->type == TIFF_LONG) {
+          mRaw->blackLevelSeparate[y*2+x] = iblackarray[offset];
+        } else if (black_entry->type == TIFF_SHORT) {
+          mRaw->blackLevelSeparate[y*2+x] = sblackarray[offset];
+        }
+      }
+    }
+  }
+
+  // DNG Spec says we must add black in deltav and deltah
+  if (raw->hasEntry(BLACKLEVELDELTAV)) {
+    const int *blackarrayv = (const int*)raw->getEntry(BLACKLEVELDELTAV)->getIntArray();
+    float black_sum[2] = {0.0f, 0.0f};
+    for (int i = 0; i < mRaw->dim.y; i++)
+      if (blackarrayv[i*2+1])
+        black_sum[i&1] += blackarrayv[i*2] / blackarrayv[i*2+1];
+
+    for (int i = 0; i < 4; i++)
+      mRaw->blackLevelSeparate[i] += (int)(black_sum[i>>1] / (float)mRaw->dim.y * 2.0f);
+  } 
+
+  if (raw->hasEntry(BLACKLEVELDELTAH)){
+    const int *blackarrayh = (const int*)raw->getEntry(BLACKLEVELDELTAH)->getIntArray();
+    float black_sum[2] = {0.0f, 0.0f};
+    for (int i = 0; i < mRaw->dim.x; i++)
+      if (blackarrayh[i*2+1])
+        black_sum[i&1] += blackarrayh[i*2] / blackarrayh[i*2+1];
+
+    for (int i = 0; i < 4; i++)
+      mRaw->blackLevelSeparate[i] += (int)(black_sum[i&1] / (float)mRaw->dim.x * 2.0f);
+  }
+  return TRUE;
+}
+
+void DngDecoder::setBlack(TiffIFD* raw) {
+
+  if (raw->hasEntry(MASKEDAREAS))
+    if (decodeMaskedAreas(raw))
+      return;
+
+  // Black defaults to 0
+  memset(mRaw->blackLevelSeparate,0,sizeof(mRaw->blackLevelSeparate)); 
+
+  if (raw->hasEntry(BLACKLEVEL))
+    decodeBlackLevels(raw);
+}
 } // namespace RawSpeed

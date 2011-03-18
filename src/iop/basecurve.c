@@ -59,7 +59,7 @@ static const char leica[] = N_("leica like");
 static const char kodak_easyshare[] = N_("kodak easyshare like");
 static const char konica_minolta[] = N_("konica minolta like");
 static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
-static const char fotogenetic_v42[] = N_("fotogenetic (ev3)");
+static const char fotogenetic_v42[] = N_("fotogenetic (EV3)");
 
 typedef struct basecurve_preset_t
 {
@@ -589,6 +589,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->x_move = -1;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("abscissa: input, ordinate: output \nworks on RGB channels"), (char *)NULL);
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));

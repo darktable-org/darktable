@@ -795,7 +795,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
 
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker2, CPF_STYLE_FLAT);
-  gtk_object_set(GTK_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
 
@@ -813,7 +813,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
 
-  gtk_object_set(GTK_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
+  g_object_set(G_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 

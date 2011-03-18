@@ -1248,16 +1248,16 @@ void gui_init (struct dt_iop_module_t *self)
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("luma")));
-  gtk_object_set(GTK_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change lightness at each feature size"), NULL);
+  g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change lightness at each feature size"), NULL);
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("chroma")));
-  gtk_object_set(GTK_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change color saturation at each feature size"), NULL);
+  g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change color saturation at each feature size"), NULL);
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("sharpness")));
-  gtk_object_set(GTK_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("sharpness of edges at each feature size"), NULL);
+  g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("sharpness of edges at each feature size"), NULL);
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
 
-  gtk_object_set(GTK_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
+  g_object_set(G_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
@@ -1288,11 +1288,8 @@ void gui_init (struct dt_iop_module_t *self)
   c->mix = dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -2.0f, 2.0f, 0.1f, 1.0f, 3);
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
-  GtkWidget *label = gtk_label_new(_("mix"));
-  gtk_object_set(GTK_OBJECT(label),  "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5f);
-  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+  dtgtk_slider_set_label(DTGTK_SLIDER(c->mix), _("mix"));
+  g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);
 }
@@ -1306,3 +1303,4 @@ void gui_cleanup  (struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

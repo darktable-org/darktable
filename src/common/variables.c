@@ -252,3 +252,5 @@ void dt_variables_reset_sequence(dt_variables_params_t *params)
 {
   params->data->sequence = 0;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

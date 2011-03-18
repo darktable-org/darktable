@@ -39,6 +39,7 @@
 #else
 #include <stdexcept>
 #endif
+#include <malloc.h>
 #else // if unix
 #ifdef _XOPEN_SOURCE
 #if (_XOPEN_SOURCE < 600)
@@ -55,7 +56,6 @@
 #include <string.h>
 #include <assert.h>
 #endif // __unix__
-#include <malloc.h>
 #include <math.h>
 #include "pthread.h"
 // STL

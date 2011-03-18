@@ -307,13 +307,13 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_model (GTK_TREE_VIEW(d->list), GTK_TREE_MODEL(liststore));
   g_object_unref (liststore);
 
-  gtk_object_set(GTK_OBJECT(d->list), "tooltip-text", _("available styles,\ndoubleclick to apply"), (char *)NULL);
+  g_object_set(G_OBJECT(d->list), "tooltip-text", _("available styles,\ndoubleclick to apply"), (char *)NULL);
   g_signal_connect (d->list, "row-activated", G_CALLBACK(_styles_row_activated_callback), d);
 
   /* filter entry */
   w = gtk_entry_new();
   d->entry=GTK_ENTRY(w);
-  gtk_object_set(GTK_OBJECT(w), "tooltip-text", _("enter style name"), (char *)NULL);
+  g_object_set(G_OBJECT(w), "tooltip-text", _("enter style name"), (char *)NULL);
   g_signal_connect (d->entry, "changed", G_CALLBACK(entry_callback),d);
   g_signal_connect (d->entry, "activate", G_CALLBACK(entry_activated),d);
 
@@ -346,10 +346,12 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
   // Export Button
   GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
+  g_object_set (exportButton, "tooltip-text", _("export the selected style into a style file"), (char *)NULL);
   g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),exportButton,TRUE,TRUE,0);
   // Import Button
   GtkWidget *importButton = gtk_button_new_with_label(_("import"));
+  g_object_set (importButton, "tooltip-text", _("import style from a style file"), (char *)NULL);
   g_signal_connect (importButton, "clicked", G_CALLBACK(import_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),importButton,TRUE,TRUE,0);
   // add entry completion

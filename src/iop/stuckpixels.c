@@ -222,39 +222,32 @@ void gui_update    (dt_iop_module_t *self)
 
 void gui_init     (dt_iop_module_t *self)
 {
-  GtkWidget *widget;
-
   self->gui_data = malloc(sizeof(dt_iop_stuckpixels_gui_data_t));
   dt_iop_stuckpixels_gui_data_t *g = (dt_iop_stuckpixels_gui_data_t*)self->gui_data;
   dt_iop_stuckpixels_params_t *p = (dt_iop_stuckpixels_params_t*)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  GtkVBox *vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  GtkVBox *vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
-
-  widget = dtgtk_reset_label_new (_("strength"), self, &p->strength, sizeof p->strength);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
-
+  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  
   g->strength = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 10.0, 0.01, p->strength, 4));
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->strength), "tooltip-text", _("strength of stuck pixel correction threshold"), NULL);
+  dtgtk_slider_set_label(g->strength,_("strength"));
+  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of stuck pixel correction threshold"), NULL);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->strength),DARKTABLE_SLIDER_FORMAT_FLOAT);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->strength), TRUE, TRUE, 0);  
   g_signal_connect(G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
 
-  widget = gtk_label_new ("");	// Need a spacer so the labels align properly
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
 
   g->markfixed  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("mark fixed pixels")));
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->markfixed), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->markfixed), "toggled", G_CALLBACK(markfixed_callback), self);
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->markfixed), TRUE, TRUE, 0);  
+  g_signal_connect(G_OBJECT(g->markfixed), "toggled", G_CALLBACK(markfixed_callback), self); 
 
-  widget = gtk_label_new (""); // Need a spacer so the labels align properly
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
   g->message = GTK_LABEL(gtk_label_new ("")); // This gets filled in by process
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(g->message), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), TRUE, TRUE, 0);
+  
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox1), TRUE, TRUE, 0); 
 }
 
 void gui_cleanup  (dt_iop_module_t *self)
@@ -262,3 +255,5 @@ void gui_cleanup  (dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -196,7 +196,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
 
   if(film->id<=0)
     return 0;
-  strcpy(film->dirname,directory);
+  g_strlcpy(film->dirname,directory,sizeof(film->dirname));
   film->last_loaded = 0;
   return film->id;
 }
@@ -245,7 +245,7 @@ dt_film_import_blocking(const char *dirname, const int blocking)
   }
 
   film->last_loaded = 0;
-  strncpy(film->dirname, dirname, 512);
+  g_strlcpy(film->dirname, dirname, 512);
   film->dir = g_dir_open(film->dirname, 0, NULL);
 
   // TODO: set film->num_images for progress bar!
@@ -391,3 +391,4 @@ void dt_film_remove(const int id)
   // dt_control_update_recent_films();
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

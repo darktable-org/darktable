@@ -52,11 +52,11 @@ void init_presets (dt_iop_module_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
 
-  dt_gui_presets_add_generic(_("Fill-light 0.25EV with 4 zones"), self->op, &(dt_iop_relight_params_t)
+  dt_gui_presets_add_generic(_("fill-light 0.25EV with 4 zones"), self->op, &(dt_iop_relight_params_t)
   {
     0.25,0.25,4.0
   } , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("Fill-shadow -0.25EV with 4 zones"), self->op, &(dt_iop_relight_params_t)
+  dt_gui_presets_add_generic(_("fill-shadow -0.25EV with 4 zones"), self->op, &(dt_iop_relight_params_t)
   {
     -0.25,0.25,4.0
   } , sizeof(dt_iop_relight_params_t), 1);
@@ -345,29 +345,17 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
 
-  self->widget = gtk_table_new (3,2,FALSE);
+  self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
   g_signal_connect (G_OBJECT (self->widget), "expose-event", G_CALLBACK (expose), self);
 
-  gtk_table_set_col_spacing (GTK_TABLE (self->widget), 0, 10);
-  gtk_table_set_row_spacings(GTK_TABLE (self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
-
   /* adding the labels */
-  GtkWidget *label1 = dtgtk_reset_label_new (_("exposure"), self, &p->ev, sizeof(float));     // EV
-  GtkWidget *label2 = dtgtk_reset_label_new (_("center"), self, &p->center, sizeof(float));
-  GtkWidget *label3 = dtgtk_reset_label_new (_("width"), self, &p->width, sizeof(float));
-
-  gtk_table_attach (GTK_TABLE (self->widget), label1, 0,1,0,1,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), label2, 0,1,1,2,GTK_FILL,0,0,0);
-  gtk_table_attach (GTK_TABLE (self->widget), label3, 0,1,2,3,GTK_FILL,0,0,0);
-
   g->scale1 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,-2.0, 2.0,0.05, p->ev, 2));
   g->scale2 = DTGTK_SLIDER (dtgtk_slider_new_with_range (DARKTABLE_SLIDER_BAR,2, 10, 0.5, p->width, 1));
-
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale1), 1,2,0,1);
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (g->scale2), 1,2,2,3);
-
-
-
+  dtgtk_slider_set_label(g->scale1, _("exposure"));
+  dtgtk_slider_set_unit(g->scale1, "EV");
+  dtgtk_slider_set_force_sign(g->scale1, TRUE);
+  dtgtk_slider_set_label(g->scale2, _("width"));
+  
   /* lightnessslider */
   GtkBox *hbox=GTK_BOX (gtk_hbox_new (FALSE,2));
   int lightness=32768;
@@ -378,7 +366,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     0,lightness,lightness,lightness
   }));
-  gtk_object_set (GTK_OBJECT (g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
+  g_object_set(G_OBJECT (g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
                     G_CALLBACK (center_callback), self);
   g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
@@ -387,13 +375,17 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start (hbox,GTK_WIDGET (g->gslider1),TRUE,TRUE,0);
   gtk_box_pack_start (hbox,GTK_WIDGET (g->tbutton1),FALSE,FALSE,0);
-  gtk_table_attach_defaults (GTK_TABLE (self->widget), GTK_WIDGET (hbox), 1,2,1,2);
+  
+  /* add controls to widget ui */
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET (g->scale1),TRUE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET (hbox), TRUE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET (g->scale2),TRUE,FALSE,0);
+  
 
-
-  gtk_object_set(GTK_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
+  g_object_set(G_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
   /* xgettext:no-c-format */
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (ev_callback), self);
@@ -408,3 +400,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

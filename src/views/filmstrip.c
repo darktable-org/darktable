@@ -110,9 +110,8 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
 
-// TODO: in darkroom the image belongs to the same drawing area as the filmstrip which makes pointer coordinates unusable.
-//   if(darktable.gui->center_tooltip == 1)
-//     darktable.gui->center_tooltip++;
+  if(darktable.gui->center_tooltip == 1)
+    darktable.gui->center_tooltip++;
 
   strip->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
@@ -165,7 +164,10 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
         DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
       }
       cairo_save(cr);
-      dt_view_image_expose(image, &(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
+      // FIXME find out where the y translation is done, how big the value is and use it directly instead of getting it from the matrix ...
+      cairo_matrix_t m;
+      cairo_get_matrix(cr, &m);
+      dt_view_image_expose(image, &(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery-m.y0+darktable.control->tabborder);
       cairo_restore(cr);
       dt_image_cache_release(image, 'r');
     }
@@ -175,13 +177,12 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
 failure:
   sqlite3_finalize(stmt);
 
-// TODO: in darkroom the image belongs to the same drawing area as the filmstrip which makes pointer coordinates unusable.
-//   if(darktable.gui->center_tooltip == 2) // not set in this round
-//   {
-//     darktable.gui->center_tooltip = 0;
-//     GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-//     gtk_object_set(GTK_OBJECT(widget), "tooltip-text", "", (char *)NULL);
-//   }
+  if(darktable.gui->center_tooltip == 2) // not set in this round
+  {
+    darktable.gui->center_tooltip = 0;
+    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+  }
 
 
 #ifdef _DEBUG
@@ -355,6 +356,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   {
     case DT_VIEW_DESERT:
       break;
+    case DT_VIEW_REJECT:
     case DT_VIEW_STAR_1:
     case DT_VIEW_STAR_2:
     case DT_VIEW_STAR_3:
@@ -363,6 +365,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
       image->dirty = 1;
       if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
+      else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
       else
       {
         image->flags &= ~0x7;
@@ -413,3 +416,5 @@ void scrolled(dt_view_t *view, double x, double y, int up, int state)
   // expose will take care of bounds checking
   dt_control_queue_draw_all();
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

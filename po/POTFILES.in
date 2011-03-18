@@ -40,6 +40,7 @@ src/imageio/format/tiff.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
 src/imageio/storage/flickr.c
+src/imageio/storage/gallery.c
 src/imageio/storage/picasa.c
 src/iop/anlfyeni.c
 src/iop/atrous.c
@@ -64,12 +65,15 @@ src/iop/grain.c
 src/iop/highlights.c
 src/iop/lens.c
 src/iop/localc.c
+src/iop/lowlight.c
 src/iop/monochrome.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
 src/iop/relight.c
 src/iop/sharpen.c
+src/iop/soften.c
 src/iop/splittoning.c
+src/iop/stuckpixels.c
 src/iop/temperature.c
 src/iop/tonecurve.c
 src/iop/tonemap.cc

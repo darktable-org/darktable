@@ -65,7 +65,7 @@ dt_iop_rlce_data_t;
 
 const char *name()
 {
-  return _("local contrast (deprecated)");
+  return _("local contrast");
 }
 
 int
@@ -76,7 +76,7 @@ groups ()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -352,8 +352,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("size of features to preserve"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the effect"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("size of features to preserve"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("strength of the effect"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);

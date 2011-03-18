@@ -18,5 +18,6 @@
 
 	<sect3><title>Usage</title>
 		<para>You can set intent and profile for both display and output. You can go to "Input profile" to have details on the different available options.</para>			
-	</sect3>
+	 <para> The softproof profile, available thanks to "space", allows you to define a printer profile and see on screen how the picture will be rendered after printing.</para>
+  </sect3>
 </sect2>

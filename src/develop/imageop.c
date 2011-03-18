@@ -174,7 +174,7 @@ int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t 
 
 int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
 {
-  strncpy(module->op, op, 20);
+  g_strlcpy(module->op, op, 20);
   module->data = NULL;
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
@@ -234,6 +234,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->dev = dev;
   module->widget = NULL;
   module->topwidget = NULL;
+  module->showhide = NULL;
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
@@ -250,7 +251,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
-  strncpy(module->op, so->op, 20);
+  g_strlcpy(module->op, so->op, 20);
 
   // only reference cached results of dlopen:
   module->module = so->module;
@@ -327,7 +328,7 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   }
   char tooltip[512];
   snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-  gtk_object_set(GTK_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
+  g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
 static void
@@ -346,7 +347,7 @@ update_topwidget(dt_iop_module_t *module)
     gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
     char tooltip[512];
     snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
     gtk_box_reorder_child(GTK_BOX(hbox), GTK_WIDGET(button), 0);
@@ -400,7 +401,7 @@ void dt_iop_load_modules_so()
   char plugindir[1024], op[20];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
-  strcpy(plugindir + strlen(plugindir), "/plugins");
+  g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return;
   while((d_name = g_dir_read_name(dir)))
@@ -533,6 +534,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
+<<<<<<< HEAD
 static int _iop_module_colorout=0,_iop_module_colorin=0;
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 {
@@ -569,7 +571,8 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
     return iop_cs_rgb;
 }
 
-static void dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
+static void
+dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
 {
   GtkExpander *expander = GTK_EXPANDER (object);
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -630,7 +633,12 @@ _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpoint
 static gboolean
 popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(event->button == 3)
+  if(event->button == 1)
+  {
+    dt_iop_request_focus(module);
+    return TRUE;
+  }
+  else if(event->button == 3)
   {
     dt_gui_presets_popup_menu_show_for_module(module);
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, event->button, event->time);
@@ -704,9 +712,11 @@ _blendop_opacity_callback (GtkDarktableSlider *slider, _iop_gui_blend_data_t *da
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
+  char name[1024];
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
+  snprintf(name, 1024, "%s%s",module->name(),(module->flags() & IOP_FLAGS_DEPRECATED)?_(" (deprecated)"):"");
+  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)name));
   // gamma is always needed for display (down to uint8_t)
   // colorin/colorout are essential for La/Lb/L conversion.
   if(!module->hide_enable_button)
@@ -715,7 +725,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
     char tooltip[512];
     snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    gtk_object_set(GTK_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
+    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (button), "toggled",
@@ -733,8 +743,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-  gtk_object_set(GTK_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
+  g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
+  g_object_set(G_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
   gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
@@ -959,6 +969,9 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   // init gauss with sigma = samples (half footprint)
   float filter[2*samples + 1];
   float sum = 0.0f;
+  
+  memset(filter, 0, sizeof(float)*(2*samples + 1));
+  
   if(samples)
   {
     for(int i=-samples; i<=samples; i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
@@ -1050,6 +1063,9 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   // init gauss with sigma = samples (half footprint)
   float filter[2*samples + 1];
   float sum = 0.0f;
+
+  memset(filter, 0, sizeof(float)*(2*samples + 1));
+
   if(samples)
   {
     for(int i=-samples; i<=samples; i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
@@ -1146,3 +1162,4 @@ void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb)
   rgb[2] = yuv[0] + 2.028*yuv[1];
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

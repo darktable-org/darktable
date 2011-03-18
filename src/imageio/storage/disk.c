@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -103,7 +103,7 @@ gui_init (dt_imageio_module_storage_t *self)
   }
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
+  g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to put exported images:\n"
                  "$(ROLL_NAME) - roll of the input image\n"
                  "$(FILE_DIRECTORY) - directory of the input image\n"
                  "$(FILE_NAME) - basename of the input image\n"
@@ -127,7 +127,7 @@ gui_init (dt_imageio_module_storage_t *self)
                                                       ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
+  g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 }
@@ -178,9 +178,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     d->vp->img = img;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
-    strncpy(filename, dt_variables_get_result(d->vp), 1024);
-    strncpy(dirname, filename, 1024);
+    g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
+    g_strlcpy(dirname, filename, 1024);
 
+    const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
     for(; c>dirname && *c != '/'; c--);
     if(*c == '/') *c = '\0';
@@ -197,7 +198,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     for(; c>filename && *c != '.' && *c != '/' ; c--);
     if(c <= filename || *c=='/') c = filename + strlen(filename);
 
-    const char *ext = format->extension(fdata);
     sprintf(c,".%s",ext);
 
     /* prevent overwrite of files */
@@ -239,7 +239,7 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
-  strncpy(d->filename, text, 1024);
+  g_strlcpy(d->filename, text, 1024);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   return d;
 }
@@ -262,3 +262,5 @@ set_params(dt_imageio_module_storage_t *self, void *params, int size)
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   return 0;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

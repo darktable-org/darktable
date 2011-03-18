@@ -44,7 +44,7 @@ dt_iop_sharpen_params_t;
 
 typedef struct dt_iop_sharpen_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2;
+  GtkVBox   *vbox;
   GtkDarktableSlider *scale1, *scale2, *scale3;
 }
 dt_iop_sharpen_gui_data_t;
@@ -124,37 +124,56 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     return;
   }
 
+  float *const tmp = dt_alloc_align(16, sizeof(float)*ch*roi_out->width*roi_out->height);
+
   const int wd = 2*rad+1;
-  float mat[wd*wd];
-  float *m;
+  float mat[wd];
   const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
-  // init gaussian kernel
-  m = mat;
-  for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
-      weight += *m = expf(- (l*l + k*k)/(2.f*sigma2));
-  m = mat;
-  for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
-      *m /= weight;
 
-  // gauss blur the image
+  // init gaussian kernel
+  for(int l=-rad; l<=rad; l++)
+      weight += mat[l+rad] = expf(- l*l/(2.f*sigma2));
+  for(int l=0; l<wd; l++)
+      mat[l] /= weight;
+
+  // gauss blur the image horizontally
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#endif
+  for(int j=0; j<roi_out->height; j++)
+  {
+    const float *in = ((float *)ivoid) + ch*(j*roi_in->width + rad);
+    float *out = tmp + ch*(j*roi_out->width + rad);
+    for(int i=rad; i<roi_out->width-rad; i++)
+    {
+      const float *inp = in - ch*rad;
+      const float *m = mat;
+      float sum = 0.0f;
+      for(int k=-rad; k<=rad; k++,m++,inp+=ch)
+	sum += *m * *inp;
+      *out = sum;
+      out += ch;
+      in += ch;
+    }
+  }
+
+  // gauss blur the image horizontally
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
   for(int j=rad; j<roi_out->height-rad; j++)
   {
-    float *in = ((float *)ivoid) + ch*(j*roi_in->width + rad);
+    const float *in = tmp + ch*(j*roi_in->width + rad);
     float *out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
     for(int i=rad; i<roi_out->width-rad; i++)
     {
-      float *m = mat;
+      const int step = ch*roi_in->width;
+      const float *inp = in - step*rad;
+      const float *m = mat;
       float sum = 0.0f;
-      for(int l=-rad; l<=rad; l++)
-      {
-        float *inp = in + ch*(l*roi_in->width-rad);
-        for(int k=-rad; k<=rad; k++,m++,inp+=ch)
-          sum += *m * *inp;
-      }
+      for(int k=-rad; k<=rad; k++,m++,inp+=step)
+	sum += *m * *inp;
       *out = sum;
       out += ch;
       in += ch;
@@ -166,6 +185,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
   for(int j=roi_out->height-rad; j<roi_out->height; j++)
     memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
+
+  free(tmp);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
@@ -328,26 +350,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-
-
-  GtkWidget *widget;
-  widget = dtgtk_reset_label_new(_("radius"), self, &p->radius, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new(_("amount"), self, &p->amount, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
-  widget = dtgtk_reset_label_new(_("threshold"), self, &p->threshold, sizeof(float));
-  gtk_box_pack_start(GTK_BOX(g->vbox1), widget, TRUE, TRUE, 0);
+  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0000, 0.100, p->radius, 3));
+  g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the unblurring"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale1,_("radius"));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0000, 0.010, p->amount, 3));
+  g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the sharpen"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale2,_("amount"));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.001, p->threshold, 3));
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("threshold to activate sharpen"), (char *)NULL);
+  dtgtk_slider_set_label(g->scale3,_("threshold"));
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);
@@ -364,3 +381,5 @@ void gui_cleanup(struct dt_iop_module_t *self)
 }
 
 #undef MAXR
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

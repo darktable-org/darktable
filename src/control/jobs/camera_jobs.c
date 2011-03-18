@@ -118,7 +118,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       }
 
       // set the time property for bracked capture
-      if (t->brackets)
+      if (t->brackets && current_value)
         dt_camctl_camera_set_property(darktable.camctl, NULL, "shutterspeed", current_value->data);
 
       // Capture image
@@ -271,7 +271,7 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  dt_film_image_import(t->film,filename, TRUE);
+  dt_film_image_import(t->film,filename, FALSE);
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
   t->fraction+=1.0/g_list_length(t->images);
@@ -387,3 +387,5 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_pthread_mutex_unlock(&t->film->images_mutex);
   return 0;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

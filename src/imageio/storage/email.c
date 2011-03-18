@@ -92,13 +92,14 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   /* construct a temporary file name */
   char tmpdir[4096]= {0};
   dt_get_user_local_dir (tmpdir,4096);
-  strcat (tmpdir,"/tmp");
+  g_strlcat (tmpdir,"/tmp",4096);
   g_mkdir_with_parents(tmpdir,0700);
 
   char dirname[4096];
   dt_image_full_path(img->id, dirname, 1024);
   const gchar * filename = g_basename( dirname );
-  strcpy( g_strrstr( filename,".")+1, format->extension(fdata));
+  gchar * end = g_strrstr( filename,".")+1;
+  g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
 
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
 
@@ -231,3 +232,5 @@ int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_mod
 
   return 1;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

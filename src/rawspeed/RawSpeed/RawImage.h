@@ -27,9 +27,11 @@
 namespace RawSpeed {
 
 class RawImage;
+class RawImageWorker;
+
 class RawImageData
 {
-
+  friend class RawImageWorker;
 public:
   virtual ~RawImageData(void);
   iPoint2D dim;
@@ -43,6 +45,8 @@ public:
   uchar8* getData(uint32 x, uint32 y);    // Not super fast, but safe. Don't use per pixel.
   uchar8* getDataUncropped(uint32 x, uint32 y);
   virtual void subFrame( iPoint2D offset, iPoint2D new_size );
+  iPoint2D getUncroppedDim();
+  iPoint2D getCropOffset();
   void scaleBlackWhite();
   bool isCFA;
   ColorFilterArray cfa;
@@ -52,7 +56,7 @@ public:
   vector<BlackArea> blackAreas;
   iPoint2D subsampling;
   bool isAllocated() {return !!data;}
-  void scaleValues();
+  void scaleValues(int start_y, int end_y);
 protected:
   RawImageData(void);
   RawImageData(iPoint2D dim, uint32 bpp, uint32 cpp=1);
@@ -63,8 +67,23 @@ protected:
   friend class RawImage;
   pthread_mutex_t mymutex;
   iPoint2D mOffset;
+  iPoint2D uncropped_dim;
 };
 
+class RawImageWorker {
+public:
+  typedef enum {TASK_SCALE_VALUES} RawImageWorkerTask;
+  RawImageWorker(RawImageData *img, RawImageWorkerTask task, int start_y, int end_y);
+  void waitForThread();
+  void _performTask();
+protected:
+  void startThread();
+  pthread_t threadid;
+  RawImageData* data;
+  RawImageWorkerTask task;
+  int start_y;
+  int end_y;
+};
 
  class RawImage {
  public:

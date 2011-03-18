@@ -32,6 +32,7 @@ extern "C"
 #include "common/debug.h"
 }
 // #include <libexif/exif-data.h>
+#include <exiv2/easyaccess.hpp>
 #include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
@@ -56,7 +57,7 @@ const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
 // inspired by ufraw_exiv2.cc:
 
 static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
-                               Exiv2::ExifData::iterator &pos, Exiv2::ExifData& exifData)
+                               Exiv2::ExifData::const_iterator &pos, Exiv2::ExifData& exifData)
 {
   std::string str = pos->print(&exifData);
 
@@ -102,7 +103,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     }
 
     /* List of tag names taken from exiv2's printSummary() in actions.cpp */
-    Exiv2::ExifData::iterator pos;
+    Exiv2::ExifData::const_iterator pos;
     /* Read shutter time */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ExposureTime")))
          != exifData.end() )
@@ -129,68 +130,26 @@ int dt_exif_read(dt_image_t *img, const char* path)
       img->exif_aperture = pos->toFloat ();
     }
     /* Read ISO speed */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ISOSpeedRatings")))
+    if ( (pos=Exiv2::isoSpeed(exifData) )
          != exifData.end() )
     {
       img->exif_iso = pos->toFloat ();
     }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey(
-                                      "Exif.CanonSi.ISOSpeed"))) != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon1.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon2.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(
-                     Exiv2::ExifKey("Exif.MinoltaCsNew.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(
-                     Exiv2::ExifKey("Exif.MinoltaCsOld.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat ();
-    }
-    else if ( (pos=exifData.findKey(
-                     Exiv2::ExifKey("Exif.MinoltaCs5D.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat();
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey(
-                                      "Exif.MinoltaCs7D.ISOSpeed")))
-              != exifData.end() )
-    {
-      img->exif_iso = pos->toFloat();
-    }
-    /* Read focal length */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.FocalLength")))
-         != exifData.end() )
-    {
-      img->exif_focal_length = pos->toFloat();
-    }
-#if 0
-    /* Read focal length in 35mm equivalent */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey(
-                                 "Exif.Photo.FocalLengthIn35mmFilm")))
+#if EXIV2_MINOR_VERSION>19
+    /* Read focal length  */
+    if ( (pos=Exiv2::focalLength(exifData))
          != exifData.end() )
     {
       img->exif_focal_length = pos->toFloat ();
+    }
+    
+    /* Read subject distance  */
+    if ( (pos=Exiv2::subjectDistance(exifData))
+         != exifData.end() )
+    {
+	//TODO: 
+      // where should this value go?
+      // img->exif_distance = pos->toFloat ();
     }
 #endif
     /** read image orientation */
@@ -199,22 +158,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
+
     /* Read lens name */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Nikon3.Lens")))
-         != exifData.end() )
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
-    }
-    else if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
+    if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
              ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Minolta.LensID"))) != exifData.end() )
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Pentax.LensType"))) != exifData.end() )
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
@@ -222,6 +169,11 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
+    else if ( (pos=Exiv2::lensName(exifData)) != exifData.end() )
+    {
+      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+    }
+
 #if 0
     /* Read flash mode */
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.Flash")))
@@ -371,7 +323,7 @@ void *dt_exif_data_new(uint8_t *data,uint32_t size)
     {
       char key[1024]="Exif.Photo.";
       exif_entry_get_value(ed->ifd[ifd_index]->entries[i],value,1024);
-      strcat(key,exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag));
+      g_strlcat(key,exif_tag_get_name(ed->ifd[ifd_index]->entries[i]->tag), 1024);
       fprintf(stderr,"Adding key '%s' value '%s'\n",key,value);
       (*exifData)[key] = value;
     }
@@ -959,7 +911,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
     // legacy fallback:
     char dtfilename[1024];
-    strncpy(dtfilename, filename, 1024);
+    g_strlcpy(dtfilename, filename, 1024);
     char *c = dtfilename + strlen(dtfilename);
     while(c > dtfilename && *c != '.') c--;
     sprintf(c, ".dttags");
@@ -1142,3 +1094,4 @@ void dt_exif_cleanup()
   Exiv2::XmpParser::terminate();
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

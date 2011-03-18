@@ -98,7 +98,7 @@ profile_changed (GtkComboBox *widget, gpointer user_data)
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(pp->pos == pos)
     {
-      strcpy(p->iccprofile, pp->filename);
+      g_strlcpy(p->iccprofile, pp->filename, sizeof(p->iccprofile));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       return;
     }
@@ -424,7 +424,7 @@ void init(dt_iop_module_t *module)
   dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
   {"darktable", DT_INTENT_PERCEPTUAL
   };
-  if(dt_image_is_ldr(module->dev->image)) strcpy(tmp.iccprofile, "sRGB");
+  if(dt_image_is_ldr(module->dev->image)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }
@@ -448,8 +448,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // get color matrix from raw image:
   dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "cmatrix");
-  strcpy(prof->name, "cmatrix");
+  g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));
+  g_strlcpy(prof->name, "cmatrix", sizeof(prof->name));
   g->profiles = g_list_append(g->profiles, prof);
   int pos = prof->pos = 0;
 
@@ -461,8 +461,8 @@ void gui_init(struct dt_iop_module_t *self)
     if(!strcmp(makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
-      strcpy(prof->filename, "darktable");
-      strcpy(prof->name, "darktable");
+      g_strlcpy(prof->filename, "darktable", sizeof(prof->filename));
+      g_strlcpy(prof->name, "darktable", sizeof(prof->name));
       g->profiles = g_list_append(g->profiles, prof);
       prof->pos = ++pos;
       break;
@@ -471,36 +471,36 @@ void gui_init(struct dt_iop_module_t *self)
 
   // sRGB for ldr image input
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "sRGB");
-  strcpy(prof->name, "sRGB");
+  g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
+  g_strlcpy(prof->name, "sRGB", sizeof(prof->name));
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
   // adobe rgb built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "adobergb");
-  strcpy(prof->name, "adobergb");
+  g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "adobergb", sizeof(prof->name));
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
   // add std RGB profile:
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "linear_rgb");
-  strcpy(prof->name, "linear_rgb");
+  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
   // XYZ built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "XYZ");
-  strcpy(prof->name, "XYZ");
+  g_strlcpy(prof->filename, "XYZ", sizeof(prof->filename));
+  g_strlcpy(prof->name, "XYZ", sizeof(prof->name));
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
   // infrared built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  strcpy(prof->filename, "infrared");
-  strcpy(prof->name, "infrared");
+  g_strlcpy(prof->filename, "infrared", sizeof(prof->filename));
+  g_strlcpy(prof->name, "infrared", sizeof(prof->name));
   g->profiles = g_list_append(g->profiles, prof);
   prof->pos = ++pos;
 
@@ -526,9 +526,9 @@ void gui_init(struct dt_iop_module_t *self)
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
         cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
-        strcpy(prof->name, name);
+        g_strlcpy(prof->name, name, sizeof(prof->name));
 
-        strcpy(prof->filename, d_name);
+        g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         cmsCloseProfile(tmpprof);
         g->profiles = g_list_append(g->profiles, prof);
         prof->pos = ++pos;
@@ -554,15 +554,15 @@ void gui_init(struct dt_iop_module_t *self)
     else if(!strcmp(prof->name, "darktable"))
       gtk_combo_box_append_text(g->cbox2, _("enhanced color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
-      gtk_combo_box_append_text(g->cbox2, _("srgb (e.g. jpg)"));
+      gtk_combo_box_append_text(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "adobergb"))
-      gtk_combo_box_append_text(g->cbox2, _("adobe rgb"));
+      gtk_combo_box_append_text(g->cbox2, _("Adobe RGB"));
     else if(!strcmp(prof->name, "linear_rgb"))
-      gtk_combo_box_append_text(g->cbox2, _("linear rgb"));
+      gtk_combo_box_append_text(g->cbox2, _("linear RGB"));
     else if(!strcmp(prof->name, "infrared"))
-      gtk_combo_box_append_text(g->cbox2, _("linear infrared bgr"));
+      gtk_combo_box_append_text(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
-      gtk_combo_box_append_text(g->cbox2, _("linear xyz"));
+      gtk_combo_box_append_text(g->cbox2, _("linear XYZ"));
     else
       gtk_combo_box_append_text(g->cbox2, prof->name);
     l = g_list_next(l);
@@ -572,7 +572,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   char tooltip[1024];
   snprintf(tooltip, 1024, _("icc profiles in %s/color/in or %s/color/in"), confdir, datadir);
-  gtk_object_set(GTK_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
+  g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox2), "changed",
                     G_CALLBACK (profile_changed),
@@ -591,3 +591,5 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

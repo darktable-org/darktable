@@ -120,7 +120,7 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       prop->values=GTK_COMBO_BOX(gtk_combo_box_new_text());
 
       prop->osd=DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye,0));
-      gtk_object_set (GTK_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"), (char *)NULL);
+      g_object_set(G_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"), (char *)NULL);
       do
       {
         gtk_combo_box_append_text(prop->values, value);
@@ -193,7 +193,7 @@ gboolean _bailout_of_tethering(gpointer user_data)
 /** Invoked when camera error appear */
 static void _camera_error_callback(const dt_camera_t *camera,dt_camera_error_t error,void *user_data)
 {
-  dt_control_log(_("Connection with camera lost, exiting tethering mode"));
+  dt_control_log(_("connection with camera lost, exiting tethering mode"));
   g_idle_add(_bailout_of_tethering,user_data);
 }
 
@@ -276,7 +276,7 @@ _add_property_button_clicked (GtkWidget *widget, gpointer user_data)
       g_signal_connect (G_OBJECT (prop->osd), "clicked", G_CALLBACK (_osd_button_clicked), prop);
 
       gchar key[256]= {"plugins/capture/tethering/properties/"};
-      strcat(key,label);
+      g_strlcat(key, label, 256);
       gchar *p = key;
       while( p++<key+strlen(key) ) if(*p==' ') *p='_';
       dt_conf_set_string(key,property);
@@ -454,13 +454,13 @@ gui_init (dt_lib_module_t *self)
   lib->gui.button1=gtk_button_new_with_label(_("capture image(s)"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), FALSE, FALSE, 5);
 
-  gtk_object_set (GTK_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), (char *)NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.tb3), "tooltip-text", _("toggle bracketed capture mode"), (char *)NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), (char *)NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), (char *)NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb3), "tooltip-text", _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."), (char *)NULL);
-  gtk_object_set (GTK_OBJECT( lib->gui.sb4), "tooltip-text", _("the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\nwith other words, 3 steps is 1EV exposure step between brackets."), (char *)NULL);
+  g_object_set(G_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->gui.tb3), "tooltip-text", _("toggle bracketed capture mode"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), (char *)NULL);
+  g_object_set(G_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjuction with delayed mode to create stop-motion sequences."), (char *)NULL);
+  g_object_set(G_OBJECT( lib->gui.sb3), "tooltip-text", _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."), (char *)NULL);
+  g_object_set(G_OBJECT( lib->gui.sb4), "tooltip-text", _("the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\nwith other words, 3 steps is 1EV exposure step between brackets."), (char *)NULL);
 
   g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
@@ -656,3 +656,4 @@ gui_cleanup (dt_lib_module_t *self)
 
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
