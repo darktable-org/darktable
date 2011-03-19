@@ -772,11 +772,12 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("darken"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("multiply"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("average"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("add"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("addition"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("substract"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("difference"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("screen"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("overlay"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("softlight"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("hardlight"));
     
     gtk_widget_set_sensitive(GTK_WIDGET(bd->blend_modes_combo),FALSE);

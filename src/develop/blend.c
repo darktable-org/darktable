@@ -18,6 +18,8 @@
 #include "control/control.h"
 #include "blend.h"
 
+#define CLIP_MAX(x) (fmax(0,fmin(max,x)))
+
 typedef float (_blend_func)(float max,float a,float b);
 
 /* normal blend */
@@ -31,18 +33,34 @@ static float _blend_multiply(float max, float a,float b) { return (a*b); }
 /* average */
 static float _blend_average(float max, float a,float b) { return (a+b)/2.0; }
 /* add */
-static float _blend_add(float max, float a,float b) { return fmin(max,a+b); }
+static float _blend_add(float max, float a,float b) { return CLIP_MAX(a+b); }
 /* substract */
 static float _blend_substract(float max, float a,float b) { return ((a+b<max) ? 0:(b+a-max)); }
 /* difference */
 static float _blend_difference(float max, float a,float b) { return fabs(a-b); }
 
 /* screen */
-static float _blend_screen(float max, float a,float b) { return max - (max-a) * (max-b); }
+static float _blend_screen(float max, float a,float b) { return max - (max-a) * (max-b); } // Broken
+
 /* overlay */
-static float _blend_overlay(float max, float a,float b) { return (a>(max/2.0))? max-(max-2*(a-(max/2)) * (max-b)) : (2*a)*b;}
+static float _blend_overlay(float max, float a,float b) { 
+	const float halfmax=max/2.0;
+	const float doublemax=max*2.0;
+	return (a>halfmax) ? max - (max - doublemax*(a-halfmax)) * (max-b) : (doublemax*a) * b;
+} 
+
+/* softlight */
+static float _blend_softlight(float max, float a,float b) { 
+	const float halfmax=max/2.0;
+	return (a>halfmax) ? max - (max-a) * (max - (b-halfmax)) : a * (b+halfmax);
+}
+
 /* hardlight */
-static float _blend_hardlight(float max, float a,float b) { return (b>(max/2.0))? max-(1-a)/(2*(a-(max/2.0))) : a/(1-2*b); }
+static float _blend_hardlight(float max, float a,float b) { 
+	const float halfmax=max/2.0;
+	const float doublemax=max*2.0;
+	return (a>halfmax) ? max - (max-a) * (max - doublemax*(b-halfmax)) : a * (b+halfmax);
+}
 
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
@@ -88,6 +106,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 		case DEVELOP_BLEND_OVERLAY:
 			blend = _blend_overlay;
 		break;
+		case DEVELOP_BLEND_SOFTLIGHT:
+			blend = _blend_softlight;
+		break;
 		case DEVELOP_BLEND_HARDLIGHT:
 			blend = _blend_hardlight;
 		break;
@@ -110,7 +131,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 		
 		/* get channel max values depending on colorspace */
 		float max[3] = {1.0,1.0,1.0};
-		dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
+		const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
 		
 		/* if module is in lab space, lets set max for L */
 		if (cst == iop_cs_Lab) {
@@ -124,13 +145,24 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 			for (int x=0;x<roi_out->width;x++)
 			{
 				int index=(y*roi_out->width+x)*ch;
-				for (int k=index;k<(index+channels);k++)
-					out[k] = (in[k] * (1.0-opacity)) + (blend(max[k-index], in[k], out[k]) * opacity);
+				if (cst == iop_cs_Lab) 
+				{
+					/* if in Lab space, just blend Lightness and copy ab from source */
+					out[index] = (in[index] * (1.0-opacity)) + (blend(max[0], in[index], out[index]) * opacity);
+					out[index+1] = in[index+1];
+					out[index+2] = in[index+2];
+				}					
+				else
+				{
+					/* else assume rgb, and blend each channel */
+					for (int k=index;k<(index+channels);k++)
+						out[k] = (in[k] * (1.0-opacity)) + (blend(max[k-index], in[k], out[k]) * opacity);
+				}
 			}	
 	}
 	else
 	{
-		/* blending without mask */
+		/* blending with mask */
 		dt_control_log("blending using masks is not yet implemented.");
 		
 	}
