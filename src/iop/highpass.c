@@ -301,25 +301,18 @@ void gui_init(struct dt_iop_module_t *self)
 	dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
 	dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
 
-	self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-	g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-	g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
-	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
-
-	g->label1 = dtgtk_reset_label_new(_("sharpness"), self, &p->sharpness, sizeof(float));
-	g->label2 = dtgtk_reset_label_new(_("contrast"), self, &p->contrast, sizeof(float));
-	gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label1), TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
+	self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
 	g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->sharpness, 2));
 	g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->contrast, 2));
-	dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-	dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
+	dtgtk_slider_set_label(g->scale1,_("sharpness"));
+	dtgtk_slider_set_unit(g->scale1,"%");
+	dtgtk_slider_set_label(g->scale2,_("contrast boost"));
+	dtgtk_slider_set_unit(g->scale2,"%");
 	
-	gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 	gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the sharpness of highpass filter"), (char *)NULL);
-	gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of highpassfilter"), (char *)NULL);
+	gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of highpass filter"), (char *)NULL);
 	
 	g_signal_connect (G_OBJECT (g->scale1), "value-changed",
 										G_CALLBACK (sharpness_callback), self);
