@@ -197,6 +197,58 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/plugins/collection/film_id</key>
+      <applyto>/apps/darktable/plugins/collection/film_id</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/collection/rating</key>
+      <applyto>/apps/darktable/plugins/collection/rating</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/collection/query_flags</key>
+      <applyto>/apps/darktable/plugins/collection/query_flags</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>3</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/collection/filter_flags</key>
+      <applyto>/apps/darktable/plugins/collection/filter_flags</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>3</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/plugins/capture/jobcode</key>
       <applyto>/apps/darktable/plugins/capture/jobcode</applyto>
       <owner>darktable</owner>

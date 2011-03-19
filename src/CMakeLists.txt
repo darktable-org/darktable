@@ -164,6 +164,12 @@ if(OPENCL_FOUND)
   add_definitions("-DHAVE_OPENCL")
 endif(OPENCL_FOUND)
 
+# build opengl slideshow viewer?
+find_package(SDL)
+find_package(OpenGL)
+if(SDL_FOUND AND OPENGL_FOUND)
+  add_subdirectory(dtview)
+endif(SDL_FOUND AND OPENGL_FOUND)
 
 
 #
