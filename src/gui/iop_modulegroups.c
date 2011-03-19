@@ -27,6 +27,7 @@
 
 static GList *_iop_modulegroups_modules=NULL;
 
+static GtkWidget *_iop_modulegroups_activepipe_widget=NULL;
 static GtkWidget *_iop_modulegroups_basic_widget=NULL;
 static GtkWidget *_iop_modulegroups_correct_widget=NULL;
 static GtkWidget *_iop_modulegroups_color_widget=NULL;
@@ -41,6 +42,7 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
   /* is none of the buttons on, let's show all enabled modules.. */
 
   if (  _iop_modulegroups_modules &&
+        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_activepipe_widget)) == FALSE &&
         gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_basic_widget)) == FALSE &&
         gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_correct_widget)) == FALSE &&
         gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_color_widget)) == FALSE &&
@@ -55,7 +57,7 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
       if(strcmp(module->op, "gamma"))
       {
         if ( ( !module->showhide || (GTK_IS_TOGGLE_BUTTON (module->showhide) && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) &&
-			((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
+      ((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
           gtk_widget_show(GTK_WIDGET (module->topwidget));
       }
 
@@ -69,22 +71,26 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
   /* radiobutton behaviour */
 
   /* prevent toggled signal emittion */
+  g_signal_handlers_block_matched ( _iop_modulegroups_activepipe_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_block_matched ( _iop_modulegroups_basic_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_block_matched ( _iop_modulegroups_correct_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_block_matched ( _iop_modulegroups_color_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_block_matched ( _iop_modulegroups_effect_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
 
+  if( button != _iop_modulegroups_activepipe_widget) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_activepipe_widget),FALSE);
   if( button != _iop_modulegroups_basic_widget) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_basic_widget),FALSE);
   if( button != _iop_modulegroups_correct_widget) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_correct_widget),FALSE);
   if( button != _iop_modulegroups_color_widget) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_color_widget),FALSE);
   if( button != _iop_modulegroups_effect_widget) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_effect_widget),FALSE);
 
+  gtk_widget_queue_draw (_iop_modulegroups_activepipe_widget);
   gtk_widget_queue_draw (_iop_modulegroups_basic_widget);
   gtk_widget_queue_draw (_iop_modulegroups_correct_widget);
   gtk_widget_queue_draw (_iop_modulegroups_color_widget);
   gtk_widget_queue_draw (_iop_modulegroups_effect_widget);
 
   /* ublock toggled signal emittion */
+  g_signal_handlers_unblock_matched ( _iop_modulegroups_activepipe_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_unblock_matched ( _iop_modulegroups_basic_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_unblock_matched ( _iop_modulegroups_correct_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_unblock_matched ( _iop_modulegroups_color_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
@@ -101,9 +107,17 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
       dt_iop_module_t *module=(dt_iop_module_t*)modules->data;
       if(strcmp(module->op, "gamma"))
       {
-
-        if ( (module->groups () & group ) && ( !module->showhide || (module->showhide && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) &&
-			((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
+        
+        if(group == IOP_SPECIAL_GROUP_ACTIVE_PIPE )
+        {
+          if(module->enabled)
+            gtk_widget_show(GTK_WIDGET (module->topwidget));
+          else
+            gtk_widget_hide(GTK_WIDGET (module->topwidget));
+        }
+        else if ( (module->groups () & group ) && 
+              ( !module->showhide || (module->showhide && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (module->showhide))==TRUE) ) &&
+              ((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
           gtk_widget_show(GTK_WIDGET (module->topwidget));
         else
           gtk_widget_hide(GTK_WIDGET (module->topwidget));
@@ -124,16 +138,18 @@ dt_gui_iop_modulegroups_switch(int group)
   else if(group&IOP_GROUP_CORRECT) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_correct_widget),TRUE);
   else if(group&IOP_GROUP_COLOR) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_color_widget),TRUE);
   else if(group&IOP_GROUP_EFFECT) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_effect_widget ),TRUE);
+  else if(group&IOP_SPECIAL_GROUP_ACTIVE_PIPE) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_activepipe_widget ),TRUE);
 }
 
 int
-dt_gui_iop_modulegroups_get()
+dt_gui_iop_modulegroups_get ()
 {
   int group = 0;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_iop_modulegroups_basic_widget)))   group |= IOP_GROUP_BASIC;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_iop_modulegroups_correct_widget))) group |= IOP_GROUP_CORRECT;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_iop_modulegroups_color_widget)))   group |= IOP_GROUP_COLOR;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_iop_modulegroups_effect_widget)))  group |= IOP_GROUP_EFFECT;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_iop_modulegroups_activepipe_widget)))  group |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
   return group;
 }
 
@@ -148,20 +164,23 @@ void dt_gui_iop_modulegroups_set_list (GList *modules)
   g_signal_handlers_block_matched ( _iop_modulegroups_correct_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_block_matched ( _iop_modulegroups_color_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_block_matched ( _iop_modulegroups_effect_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  g_signal_handlers_block_matched ( _iop_modulegroups_activepipe_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_basic_widget),FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_correct_widget),FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_color_widget),FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_effect_widget),FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_activepipe_widget),FALSE);
 
   /* ublock toggled signal emittion */
   g_signal_handlers_unblock_matched ( _iop_modulegroups_basic_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_unblock_matched ( _iop_modulegroups_correct_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_unblock_matched ( _iop_modulegroups_color_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
   g_signal_handlers_unblock_matched ( _iop_modulegroups_effect_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
+  g_signal_handlers_unblock_matched ( _iop_modulegroups_activepipe_widget,G_SIGNAL_MATCH_FUNC,0,0,NULL,_iop_modulegroups_toggle,NULL);
 
   /* default behavior is to enable view of basic group when entering develop mode */
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_basic_widget),TRUE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_iop_modulegroups_activepipe_widget),TRUE);
 
 }
 
@@ -170,6 +189,12 @@ void dt_gui_iop_modulegroups_init ()
   /* create the button box*/
   GtkWidget *bbox=gtk_hbox_new(TRUE,2);
   gtk_widget_set_size_request (bbox,-1,22);
+
+  /* add buttong for active pipe */
+  _iop_modulegroups_activepipe_widget = gtk_toggle_button_new_with_label(_("active"));
+  g_signal_connect (_iop_modulegroups_activepipe_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_SPECIAL_GROUP_ACTIVE_PIPE);
+  g_object_set (_iop_modulegroups_activepipe_widget,"tooltip-text",_("the modules used in active pipe"),(char *)NULL);
+  gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_activepipe_widget,TRUE,TRUE,0);
 
   /* add button for basic plugins */
   //_iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
