@@ -35,6 +35,9 @@
 #define DEVELOP_BLEND_OVERLAY				0x0A
 #define DEVELOP_BLEND_SOFTLIGHT			0x0B
 #define DEVELOP_BLEND_HARDLIGHT			0x0C
+#define DEVELOP_BLEND_VIVIDLIGHT			0x0D
+#define DEVELOP_BLEND_LINEARLIGHT			0x0E
+#define DEVELOP_BLEND_PINLIGHT				0x0F
 
 typedef struct dt_develop_blend_params_t {
 	/** blending mode */

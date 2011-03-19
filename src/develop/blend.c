@@ -40,7 +40,7 @@ static float _blend_substract(float max, float a,float b) { return ((a+b<max) ? 
 static float _blend_difference(float max, float a,float b) { return fabs(a-b); }
 
 /* screen */
-static float _blend_screen(float max, float a,float b) { return max - (max-a) * (max-b); } // Broken
+static float _blend_screen(float max, float a,float b) { return max - (max-a) * (max-b); }
 
 /* overlay */
 static float _blend_overlay(float max, float a,float b) { 
@@ -62,6 +62,26 @@ static float _blend_hardlight(float max, float a,float b) {
 	return (a>halfmax) ? max - (max-a) * (max - doublemax*(b-halfmax)) : a * (b+halfmax);
 }
 
+/* vividlight */
+static float _blend_vividlight(float max, float a,float b) { 
+	const float halfmax=max/2.0;
+	const float doublemax=max*2.0;
+	return (a>halfmax) ? max - (max-a) / (doublemax*(b-halfmax)) : a / (max-doublemax*b);
+}
+
+/* linearlight */
+static float _blend_linearlight(float max, float a,float b) { 
+	const float halfmax=max/2.0;
+	const float doublemax=max*2.0;
+	return (a>halfmax) ? a + doublemax*(b-halfmax) : a +doublemax*b-max;
+}
+
+/* pinlight */
+static float _blend_pinlight(float max, float a,float b) { 
+	const float halfmax=max/2.0;
+	const float doublemax=max*2.0;
+	return (a>halfmax) ? fmax(a,doublemax*(b-halfmax)) : fmin(a,doublemax*b);
+}
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
@@ -111,6 +131,15 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 		break;
 		case DEVELOP_BLEND_HARDLIGHT:
 			blend = _blend_hardlight;
+		break;
+		case DEVELOP_BLEND_VIVIDLIGHT:
+			blend = _blend_vividlight;
+		break;
+		case DEVELOP_BLEND_LINEARLIGHT:
+			blend = _blend_linearlight;
+		break;
+		case DEVELOP_BLEND_PINLIGHT:
+			blend = _blend_pinlight;
 		break;
 		
 		/* fallback to normal blend */
