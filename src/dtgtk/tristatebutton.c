@@ -155,9 +155,9 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
       float rs=1.0,gs=1.0,bs=1.0;
     
       if(DTGTK_TRISTATEBUTTON(widget)->state == 1)
-        rs=gs=bs=4.0;
+        rs=gs=bs=3.0;
       else if(DTGTK_TRISTATEBUTTON(widget)->state == 2)
-        rs=4.0;
+        rs=3.0;
       
       cairo_set_source_rgba (cr,
                              (style->bg[state].red/65535.0)*rs,
