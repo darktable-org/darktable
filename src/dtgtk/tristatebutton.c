@@ -226,7 +226,7 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   return FALSE;
 }
 
-static gboolean _tristatebutton_button_release(GtkWidget *widget,  GdkEventButton *eb, gpointer data)
+static gboolean _tristatebutton_button_press(GtkWidget *widget,  GdkEventButton *eb, gpointer data)
 {
   /* handle left click on tristate button */
   if(eb->button==1)
@@ -247,8 +247,8 @@ dtgtk_tristatebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
   button = gtk_type_new(dtgtk_tristatebutton_get_type());
   button->icon=paint;
   button->icon_flags=paintflags;
-  g_signal_connect(G_OBJECT(button), "button-release-event",
-        G_CALLBACK(_tristatebutton_button_release), NULL);
+  g_signal_connect(G_OBJECT(button), "button-press-event",
+        G_CALLBACK(_tristatebutton_button_press), NULL);
 
   return (GtkWidget *)button;
 }
