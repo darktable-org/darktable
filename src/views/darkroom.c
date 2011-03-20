@@ -264,24 +264,27 @@ void reset(dt_view_t *self)
 }
 
 
-static void module_tristate_pressed_callback(GtkWidget *button, gpointer user_data)
+static void module_tristate_changed_callback(GtkWidget *button,gint state, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   char option[512]={0};
  
-  gint state = dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(button));
   if(state==0)
   {
+    /* module is hidden lets set gconf values */
     gtk_widget_hide(GTK_WIDGET(module->topwidget));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, FALSE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
     gtk_expander_set_expanded(module->expander, FALSE);
+    
+    /* construct tooltip text into option */
     snprintf(option, 512, _("show %s"), module->name());
   }
   else if(state==1)
   {
+    /* module is shown lets set gconf values */
     dt_gui_iop_modulegroups_switch(module->groups());
     gtk_widget_show(GTK_WIDGET(module->topwidget));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
@@ -290,10 +293,13 @@ static void module_tristate_pressed_callback(GtkWidget *button, gpointer user_da
     dt_conf_set_bool (option, FALSE);
     
     gtk_expander_set_expanded(module->expander, TRUE);
-    snprintf(option, 512, _("favorite %s"), module->name());
+
+    /* construct tooltip text into option */
+    snprintf(option, 512, _("%s as favorite"), module->name());
   }
   else if(state==2)
   {
+    /* module is shown and favorite lets set gconf values */
     dt_gui_iop_modulegroups_switch(module->groups());
     gtk_widget_show(GTK_WIDGET(module->topwidget));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
@@ -302,10 +308,12 @@ static void module_tristate_pressed_callback(GtkWidget *button, gpointer user_da
     dt_conf_set_bool (option, TRUE);
     
     gtk_expander_set_expanded(module->expander, TRUE);
+    
+    /* construct tooltip text into option */
     snprintf(option, 512, _("hide %s"), module->name());
   }
-  g_object_set(G_OBJECT(module->showhide), "tooltip-text", option, (char *)NULL);
   
+  g_object_set(G_OBJECT(button), "tooltip-text", option, (char *)NULL);
 }
 
 
@@ -666,8 +674,8 @@ void enter(dt_view_t *self)
         snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);
       GtkWidget *image = gtk_image_new_from_file(filename);
       gtk_button_set_image(GTK_BUTTON(module->showhide), image);
-      g_signal_connect(G_OBJECT(module->showhide), "pressed",
-                       G_CALLBACK(module_tristate_pressed_callback), module);
+      g_signal_connect(G_OBJECT(module->showhide), "tristate-changed",
+                       G_CALLBACK(module_tristate_changed_callback), module);
       gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
                        GTK_FILL | GTK_EXPAND | GTK_SHRINK,
                        GTK_SHRINK,
