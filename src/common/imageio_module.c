@@ -38,7 +38,8 @@ dt_imageio_sort_modules_format (gconstpointer a, gconstpointer b)
 }
 
 /** Default implementation of dimension module function, used if format modules does not implements dimension() */
-int _default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, uint32_t *height)
+static int
+_default_format_dimension(dt_imageio_module_format_t *module, uint32_t *width, uint32_t *height)
 {
   return 0;
 }
@@ -124,12 +125,14 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
 }
 
 /** Default implementation of supported function, used if storage modules not implements supported() */
-int _default_supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format)
+static int
+_default_supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format)
 {
   return 1;
 }
 /** Default implementation of dimension module function, used if storage modules does not implements dimension() */
-int _default_storage_dimension(struct dt_imageio_module_storage_t *self,uint32_t *width, uint32_t *height)
+static int
+_default_storage_dimension(struct dt_imageio_module_storage_t *self,uint32_t *width, uint32_t *height)
 {
   return 0;
 }
