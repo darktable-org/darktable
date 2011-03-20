@@ -488,7 +488,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
 static gboolean
 expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(event->button == 1 && event->state == GDK_SHIFT_MASK) // TODO: this can also be done when some auto-collapse option is set ...
+  if(event->button == 1 && (event->state & GDK_SHIFT_MASK)) // TODO: this can also be done when some auto-collapse option is set ...
   {
     int current_group = dt_gui_iop_modulegroups_get();
     GList *iop = g_list_first(module->dev->iop);
