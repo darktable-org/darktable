@@ -412,6 +412,17 @@ void gui_update(struct dt_iop_module_t *self)
   if(strcmp(p->iccprofile, "darktable")) fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
 }
 
+void reload_defaults(dt_iop_module_t *module)
+{
+  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
+  {
+    "darktable", DT_INTENT_PERCEPTUAL
+  };
+  if(dt_image_is_ldr(module->dev->image)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
+  memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
+}
+
 void init(dt_iop_module_t *module)
 {
   // module->data = malloc(sizeof(dt_iop_colorin_data_t));
@@ -421,12 +432,6 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->priority = 300;
   module->hide_enable_button = 1;
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
-  {"darktable", DT_INTENT_PERCEPTUAL
-  };
-  if(dt_image_is_ldr(module->dev->image)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)

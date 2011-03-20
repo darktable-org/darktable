@@ -1023,12 +1023,12 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
     size *= 4*sizeof(float);
     ptr = (void *)(img->mipf);
   }
-  else if(mip == DT_IMAGE_FULL || (img->filters == 0))
+  else if(mip == DT_IMAGE_FULL && (img->filters == 0))
   {
     size *= 4*sizeof(float);
     ptr = (void *)(img->pixels);
   }
-  else if(mip == DT_IMAGE_FULL || (img->filters != 0))
+  else if(mip == DT_IMAGE_FULL && (img->filters != 0))
   {
     size *= img->bpp;
     ptr = (void *)(img->pixels);

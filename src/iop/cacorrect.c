@@ -1146,9 +1146,8 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
 
   // can't be switched on for non-raw images:
-  const uint32_t filters = dt_image_flipped_filter(module->dev->image);
-  if(!filters) module->hide_enable_button = 1;
-  else         module->hide_enable_button = 0;
+  if(module->dev->image->flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
+  else                                         module->hide_enable_button = 1;
 }
 
 /** init, cleanup, commit to pipeline */

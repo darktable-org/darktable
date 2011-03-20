@@ -142,6 +142,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       {
         img->flags &= ~DT_IMAGE_LDR;
         img->flags |= DT_IMAGE_RAW;
+        if(r->bpp == 4) img->flags |= DT_IMAGE_HDR;
       }
 
       // also include used override in orient:
@@ -257,6 +258,12 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
       if(r->bpp != 4) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->bpp);
       img->bpp = r->bpp;
       img->filters = r->cfa.getDcrawFilter();
+      if(img->filters)
+      {
+        img->flags &= ~DT_IMAGE_LDR;
+        img->flags |= DT_IMAGE_RAW;
+        if(r->bpp == 4) img->flags |= DT_IMAGE_HDR;
+      }
 
       // also include used override in orient:
       const int orientation = dt_image_orientation(img);
