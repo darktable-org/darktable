@@ -854,8 +854,8 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
   const float scaley = height > 0 ? fminf(height/(float)pipe.processed_height, 1.0) : 1.0;
   const float scale = fminf(scalex, scaley);
-  int processed_width  = scale*pipe.processed_width  + .5f;
-  int processed_height = scale*pipe.processed_height + .5f;
+  int processed_width  = scale*pipe.processed_width;
+  int processed_height = scale*pipe.processed_height;
   const int bpp = format->bpp(format_params);
 
   // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
