@@ -218,7 +218,7 @@ void dt_gui_iop_modulegroups_init ()
   //gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_activepipe_widget,TRUE,TRUE,0);
  
   /* add buttong for active pipe */
-  _iop_modulegroups_userdefined_widget = gtk_toggle_button_new_with_label(_("user"));
+  _iop_modulegroups_userdefined_widget = gtk_toggle_button_new_with_label(_("favorite"));
   g_signal_connect (_iop_modulegroups_userdefined_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_SPECIAL_GROUP_USER_DEFINED);
   g_object_set (_iop_modulegroups_userdefined_widget,"tooltip-text",_("show modules explicit specified by user"),(char *)NULL);
   //gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_userdefined_widget,TRUE,TRUE,0);
