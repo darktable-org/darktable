@@ -22,6 +22,7 @@
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/iop_modulegroups.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 
@@ -482,6 +483,25 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
+// FIXME: When the module is already expanded and it's shift-clicked, then it is turned off and on again.
+//        This is especially annoying when shift is pressed, the title bar is clicked and the mouse button is _not_ released immediately.
+static gboolean
+expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
+{
+  if(event->button == 1 && event->state == GDK_SHIFT_MASK) // TODO: this can also be done when some auto-collapse option is set ...
+  {
+    int current_group = dt_gui_iop_modulegroups_get();
+    GList *iop = g_list_first(module->dev->iop);
+    while(iop)
+    {
+      dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+      if(/*m != module &&*/ (current_group == 0 || (current_group & m->groups()) )) gtk_expander_set_expanded(m->expander, FALSE);
+      iop = g_list_next(iop);
+    }
+  }
+  return FALSE;
+}
+
 static void
 dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
 {
@@ -493,16 +513,6 @@ dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer u
     gtk_widget_show(module->widget);
     // register to receive draw events
     dt_iop_request_focus(module);
-    // hide all other module widgets
-#if 0 // TODO: make this an option. it is quite annoying when using expose/tonecurve together.
-    GList *iop = module->dev->iop;
-    while(iop)
-    {
-      dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-      if(m != module) gtk_expander_set_expanded(m->expander, FALSE);
-      iop = g_list_next(iop);
-    }
-#endif
     GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
     gtk_container_set_focus_child(box, module->topwidget);
     // redraw gui (in case post expose is set)
@@ -645,6 +655,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
+  g_signal_connect(G_OBJECT(module->expander), "button-press-event", G_CALLBACK(expander_button_callback), module);
   return evb;
 }
 
