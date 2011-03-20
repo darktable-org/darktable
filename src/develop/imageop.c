@@ -495,9 +495,18 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-      if(/*m != module &&*/ (current_group == 0 || (current_group & m->groups()) )) gtk_expander_set_expanded(m->expander, FALSE);
+      
+      /* if module is the current, always expand it */
+      if(m==module)
+        gtk_expander_set_expanded(m->expander, TRUE);
+      else if((current_group == 0 || (current_group & m->groups()) )) 
+        gtk_expander_set_expanded(m->expander, FALSE);
+      
       iop = g_list_next(iop);
     }
+    
+    /* prevent expander to handle the button press because we alread did :) */
+    return TRUE;
   }
   return FALSE;
 }
