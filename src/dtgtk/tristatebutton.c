@@ -20,6 +20,8 @@
 #include "tristatebutton.h"
 #include "button.h"
 
+ static guint _tristatebutton_signals[LAST_SIGNAL] = { 0 };
+ 
 static void _tristatebutton_class_init(GtkDarktableTriStateButtonClass *klass);
 static void _tristatebutton_init(GtkDarktableTriStateButton *slider);
 static void _tristatebutton_size_request(GtkWidget *widget, GtkRequisition *requisition);
@@ -28,6 +30,14 @@ static void _tristatebutton_size_request(GtkWidget *widget, GtkRequisition *requ
 static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event);
 //static void _tristatebutton_destroy(GtkObject *object);
 
+static void _tristate_emit_state_changed_signal(GtkDarktableTriStateButton *ts)
+{
+  g_signal_emit (ts,
+                         _tristatebutton_signals[STATE_CHANGED],
+                         0,
+                         ts->state);
+}
+ 
 static void _tristatebutton_class_init (GtkDarktableTriStateButtonClass *klass)
 {
   GtkWidgetClass *widget_class=(GtkWidgetClass *) klass;
@@ -37,6 +47,17 @@ static void _tristatebutton_class_init (GtkDarktableTriStateButtonClass *klass)
   //widget_class->size_allocate = _tristatebutton_size_allocate;
   widget_class->expose_event = _tristatebutton_expose;
   //object_class->destroy = _tristatebutton_destroy;
+  
+  _tristatebutton_signals[STATE_CHANGED] = g_signal_new (
+     "tristate-changed",
+     G_OBJECT_CLASS_TYPE (klass),
+     G_SIGNAL_RUN_FIRST,
+     G_STRUCT_OFFSET (GtkDarktableTriStateButtonClass, state_changed),
+     NULL, NULL,
+      g_cclosure_marshal_VOID__INT,
+     G_TYPE_NONE, 1,
+     G_TYPE_INT);
+  
 }
 
 static void _tristatebutton_init(GtkDarktableTriStateButton *slider)
@@ -228,14 +249,18 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
 
 static gboolean _tristatebutton_button_press(GtkWidget *widget,  GdkEventButton *eb, gpointer data)
 {
+  gint cs = DTGTK_TRISTATEBUTTON(widget)->state + 1;
   /* handle left click on tristate button */
-  if(eb->button==1)
-    DTGTK_TRISTATEBUTTON(widget)->state = (++DTGTK_TRISTATEBUTTON(widget)->state) % 3;
+  if(eb->button == 1)
+    cs %= 3;
   /* handle right click on tristate button */
-  else if(eb->button==2)
-    DTGTK_TRISTATEBUTTON(widget)->state = 0;
+  else if(eb->button == 2)
+    cs = 0;
   
+  dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(widget), cs);
   gtk_widget_queue_draw(widget);
+  
+  /* lets other connected get the signal... */
   return FALSE;
 }
 
@@ -265,7 +290,7 @@ dtgtk_tristatebutton_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc
 void dtgtk_tristatebutton_set_state(GtkDarktableTriStateButton *ts, gint state)
 {
   ts->state = fmax(0,fmin(3,state));
-  gtk_widget_queue_draw(GTK_WIDGET(ts));
+  _tristate_emit_state_changed_signal(ts);
 }
 
 gint dtgtk_tristatebutton_get_state(const GtkDarktableTriStateButton *ts)
