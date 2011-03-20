@@ -22,6 +22,7 @@
 #include "control/jobs.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -263,27 +264,48 @@ void reset(dt_view_t *self)
 }
 
 
-static void module_show_callback(GtkToggleButton *togglebutton, gpointer user_data)
+static void module_tristate_pressed_callback(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  char option[512];
-  snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-  if(gtk_toggle_button_get_active(togglebutton))
-  {
-    dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->topwidget));
-    dt_conf_set_bool (option, TRUE);
-    gtk_expander_set_expanded(module->expander, TRUE);
-    snprintf(option, 512, _("hide %s"), module->name());
-  }
-  else
+  char option[512]={0};
+ 
+  gint state = dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(button));
+  if(state==0)
   {
     gtk_widget_hide(GTK_WIDGET(module->topwidget));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, FALSE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
     gtk_expander_set_expanded(module->expander, FALSE);
     snprintf(option, 512, _("show %s"), module->name());
   }
+  else if(state==1)
+  {
+    dt_gui_iop_modulegroups_switch(module->groups());
+    gtk_widget_show(GTK_WIDGET(module->topwidget));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, TRUE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    dt_conf_set_bool (option, FALSE);
+    
+    gtk_expander_set_expanded(module->expander, TRUE);
+    snprintf(option, 512, _("favorite %s"), module->name());
+  }
+  else if(state==2)
+  {
+    dt_gui_iop_modulegroups_switch(module->groups());
+    gtk_widget_show(GTK_WIDGET(module->topwidget));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, TRUE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    dt_conf_set_bool (option, TRUE);
+    
+    gtk_expander_set_expanded(module->expander, TRUE);
+    snprintf(option, 512, _("hide %s"), module->name());
+  }
   g_object_set(G_OBJECT(module->showhide), "tooltip-text", option, (char *)NULL);
+  
 }
 
 
@@ -421,9 +443,17 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       char option[1024];
       snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
       gboolean active = dt_conf_get_bool (option);
-      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
-      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
-
+      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
+      gboolean favorite = dt_conf_get_bool (option);
+      gint state=0;
+      if(active) {
+        state++;
+        if(favorite) state++;
+      }
+      
+      if(module->showhide) 
+        dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
+      
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
       gtk_expander_set_expanded (module->expander, active);
@@ -614,6 +644,8 @@ void enter(dt_view_t *self)
   // get top level vbox containing all expanders, plugins_vbox:
   GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
   GtkTable *module_list = GTK_TABLE(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
+  gtk_table_set_row_spacings(module_list,2);
+  gtk_table_set_col_spacings(module_list,2);
   GList *modules = g_list_last(dev->iop);
   int ti = 0, tj = 0;
   while(modules)
@@ -626,7 +658,7 @@ void enter(dt_view_t *self)
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      module->showhide = gtk_toggle_button_new();
+      module->showhide = dtgtk_tristatebutton_new(NULL,0);
       char filename[1024], datadir[1024];
       dt_get_datadir(datadir, 1024);
       snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
@@ -634,8 +666,8 @@ void enter(dt_view_t *self)
         snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);
       GtkWidget *image = gtk_image_new_from_file(filename);
       gtk_button_set_image(GTK_BUTTON(module->showhide), image);
-      g_signal_connect(G_OBJECT(module->showhide), "toggled",
-                       G_CALLBACK(module_show_callback), module);
+      g_signal_connect(G_OBJECT(module->showhide), "pressed",
+                       G_CALLBACK(module_tristate_pressed_callback), module);
       gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
                        GTK_FILL | GTK_EXPAND | GTK_SHRINK,
                        GTK_SHRINK,
@@ -674,8 +706,16 @@ void enter(dt_view_t *self)
       char option[1024];
       snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
       gboolean active = dt_conf_get_bool (option);
-      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), !active);
-      if(module->showhide) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->showhide), active);
+      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
+      gboolean favorite = dt_conf_get_bool (option);
+      gint state=0;
+      if(active) {
+        state++;
+        if(favorite) state++;
+      }
+      
+      if(module->showhide) 
+        dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
