@@ -55,8 +55,11 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Wim Koorenneef, Wolf Faust IT8, direct sunlight, well lit
   { "Canon EOS 20D",                { 885468, 342117,  20798}, { 278702, 1194733, -164246}, { 42389, -302963, 1147125}, {741379, 771881, 664261}},
 
+  // Martin Fahrendorf, Wolf Faust IT8, direct sunlight, well lit
+  { "Canon EOS 30D",                { 955612, 353485, -33371}, { 220200, 1250488, -146393}, { 51956, -361450, 1201355}, {680405, 707977, 597366}},
+
   // Roy Niswanger, ColorChecker DC, direct sunlight, experimental
-  { "Canon EOS 30D",                { 840195, 148773, -67017}, { 112915, 1104553, -369720}, {240005,  -19562, 1468338}, {827255, 873337, 715317}},
+  // { "Canon EOS 30D",             { 840195, 148773, -67017}, { 112915, 1104553, -369720}, {240005,  -19562, 1468338}, {827255, 873337, 715317}},
 
   // Pascal de Bruijn, CMP Digital Target 3, strobe, well lit
   { "Canon EOS 40D",                { 845901, 325760, -13077}, { 110809,  960724, -213577}, { 82230, -218063, 1110229}, {837906, 868393, 705704}},
