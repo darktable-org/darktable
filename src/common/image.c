@@ -768,7 +768,7 @@ void dt_image_init(dt_image_t *img)
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
   g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00", sizeof(img->exif_datetime_taken));
   img->exif_crop = 1.0;
-  img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
+  img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = img->exif_focus_distance = 0;
   for(int k=0; (int)k<(int)DT_IMAGE_NONE; k++) img->mip_buf_size[k] = 0;
   for(int k=0; (int)k<(int)DT_IMAGE_FULL; k++) img->mip_width[k] = img->mip_height[k] = 0;
 }
