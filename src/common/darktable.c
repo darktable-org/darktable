@@ -288,7 +288,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_lib_init(darktable.lib);
 
     dt_control_load_config(darktable.control);
-    strncpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
+    g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
 
     darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
     dt_imageio_init(darktable.imageio);
