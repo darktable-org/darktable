@@ -419,7 +419,8 @@ void reload_defaults(dt_iop_module_t *module)
   tmp.inverse  = 0;
   tmp.modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING |
                      LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
-  tmp.distance = module->dev->image->exif_focus_distance;
+  tmp.distance = module->dev->image->exif_focus_distance > 0
+                 ? module->dev->image->exif_focus_distance : 5;
   tmp.target_geom = LF_RECTILINEAR;
   tmp.tca_override = 0;
   tmp.tca_r = 1.0;
