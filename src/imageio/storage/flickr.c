@@ -680,7 +680,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_image_cache_release(img, 'r');
 
 #ifdef _OPENMP
-#pragma omp critical
+  #pragma omp critical
 #endif
 //TODO: Check if this could be done in threads, so we enhace export time by using
 //      upload time for one image to export another image to disk.

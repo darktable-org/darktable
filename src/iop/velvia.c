@@ -95,7 +95,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
     for(int k=0; k<roi_out->width*roi_out->height; k++)
     {
@@ -250,7 +250,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the amount of saturation to apply"), (char *)NULL);
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the vibrance amount"), (char *)NULL);
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("how much to spare highlights and shadows"), (char *)NULL);
-  
+
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (saturation_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",

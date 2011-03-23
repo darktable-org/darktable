@@ -82,7 +82,7 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
   if(!orientation)
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+    #pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
     for(int j=0; j<ht; j++) memcpy(out+j*bpp*wd, in+j*stride, bpp*wd);
     return;
@@ -105,7 +105,7 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
     si = -si;
   }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
 #endif
   for(int j=0; j<ht; j++)
   {
@@ -127,7 +127,7 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
   if(!orientation)
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+    #pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
     for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
     return;
@@ -150,7 +150,7 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
     si = -si;
   }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
 #endif
   for(int j=0; j<ht; j++)
   {
@@ -465,7 +465,7 @@ try_full_raw:
     {
       // use 1:1
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(img, rawpx, raw, p_wd)
+      #pragma omp parallel for default(none) schedule(static) shared(img, rawpx, raw, p_wd)
 #endif
       for(int j=0; j<raw_ht; j++) for(int i=0; i<raw_wd; i++)
         {
@@ -590,7 +590,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   }
   dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(img, image, raw)
+  #pragma omp parallel for schedule(static) default(none) shared(img, image, raw)
 #endif
   for(int k=0; k<img->width*img->height; k++)
     ((uint16_t *)img->pixels)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
@@ -880,9 +880,12 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
       // now downscale into the new buffer:
       dt_iop_roi_t roi_in, roi_out;
       roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
-      roi_in.scale = 1.0; roi_out.scale = scale;
-      roi_in.width = pipe.processed_width; roi_in.height = pipe.processed_height;
-      roi_out.width = processed_width; roi_out.height = processed_height;
+      roi_in.scale = 1.0;
+      roi_out.scale = scale;
+      roi_in.width = pipe.processed_width;
+      roi_in.height = pipe.processed_height;
+      roi_out.width = processed_width;
+      roi_out.height = processed_height;
       dt_iop_clip_and_zoom((float *)outbuf, (float *)pipe.backbuf, &roi_out, &roi_in, processed_width, pipe.processed_width);
     }
   }
@@ -895,7 +898,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     if(high_quality_processing)
     {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(outbuf, buf8, processed_width, processed_height) schedule(static)
+      #pragma omp parallel for default(none) shared(outbuf, buf8, processed_width, processed_height) schedule(static)
 #endif
       for(int k=0; k<processed_width*processed_height; k++)
       {
@@ -912,7 +915,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     else
     {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(buf8, processed_width, processed_height) schedule(static)
+      #pragma omp parallel for default(none) shared(buf8, processed_width, processed_height) schedule(static)
 #endif
       // just flip byte order
       for(int k=0; k<processed_width*processed_height; k++)

@@ -163,7 +163,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float c = (data->width/10.0)/2.0;      				                    // Width
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
@@ -355,7 +355,7 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale1, "EV");
   dtgtk_slider_set_force_sign(g->scale1, TRUE);
   dtgtk_slider_set_label(g->scale2, _("width"));
-  
+
   /* lightnessslider */
   GtkBox *hbox=GTK_BOX (gtk_hbox_new (FALSE,2));
   int lightness=32768;
@@ -375,12 +375,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start (hbox,GTK_WIDGET (g->gslider1),TRUE,TRUE,0);
   gtk_box_pack_start (hbox,GTK_WIDGET (g->tbutton1),FALSE,FALSE,0);
-  
+
   /* add controls to widget ui */
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET (g->scale1),TRUE,FALSE,0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET (hbox), TRUE,FALSE,0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET (g->scale2),TRUE,FALSE,0);
-  
+
 
   g_object_set(G_OBJECT(g->tbutton1), "tooltip-text", _("toggle tool for picking median lightness in image"), (char *)NULL);
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);

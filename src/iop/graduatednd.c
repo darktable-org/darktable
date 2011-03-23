@@ -112,7 +112,7 @@ void init_presets (dt_iop_module_t *self)
 
 typedef struct dt_iop_graduatednd_gui_data_t
 {
-  GtkVBox   *vbox;                                           
+  GtkVBox   *vbox;
   GtkWidget  *label1,*label2,*label3,*label4,*label5,*label6;            			      // density, compression, rotation, offset, hue, saturation
   GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;        // density, compression, rotation, offset
   GtkDarktableGradientSlider *gslider1,*gslider2;		// hue, saturation
@@ -185,14 +185,14 @@ static inline void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
 // static int
 // get_grab(float pointerx, float pointery, float zoom_scale){
 //   const float radius = 5.0/zoom_scale;
-// 
+//
 //   //TODO add correct calculations
 //   if(powf(pointerx-startx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 2;    // x size
 //   if(powf(pointerx, 2)+powf(pointery-starty, 2) <= powf(radius, 2)) return 4;    // y size
 //   if(powf(pointerx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 1;           // center
 //   if(powf(pointerx-endx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 8;      // x falloff
 //   if(powf(pointerx, 2)+powf(pointery-endy, 2) <= powf(radius, 2)) return 16;     // y falloff
-// 
+//
 //   return 0;
 // }
 
@@ -200,11 +200,11 @@ static inline void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
 // draw_overlay(cairo_t *cr, float wd, float ht, int grab, float zoom_scale)
 // {
 //   const float radius_reg = 4.0/zoom_scale;
-// 
+//
 //   // top-left
 //   cairo_arc(cr, 0.0, 0.0, radius_reg, 0.0, M_PI*2.0);
 //   cairo_stroke(cr);
-// 
+//
 //   // bottom-right
 //   cairo_arc(cr, wd, ht, radius_reg, 0.0, M_PI*2.0);
 //   cairo_stroke(cr);
@@ -224,8 +224,16 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
   float bigger_side, smaller_side;
-  if(wd >= ht){ bigger_side = wd; smaller_side = ht; }
-  else        { bigger_side = ht; smaller_side = wd; }
+  if(wd >= ht)
+  {
+    bigger_side = wd;
+    smaller_side = ht;
+  }
+  else
+  {
+    bigger_side = ht;
+    smaller_side = wd;
+  }
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
@@ -303,7 +311,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, color, data) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, color, data) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {

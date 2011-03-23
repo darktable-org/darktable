@@ -146,7 +146,8 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 }
 
 static int
-get_grab(float pointerx, float pointery, float startx, float starty, float endx, float endy, float zoom_scale){
+get_grab(float pointerx, float pointery, float startx, float starty, float endx, float endy, float zoom_scale)
+{
   const float radius = 5.0/zoom_scale;
 
   if(powf(pointerx-startx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 2;    // x size
@@ -236,8 +237,16 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
   float bigger_side, smaller_side;
-  if(wd >= ht){ bigger_side = wd; smaller_side = ht; }
-  else        { bigger_side = ht; smaller_side = wd; }
+  if(wd >= ht)
+  {
+    bigger_side = wd;
+    smaller_side = ht;
+  }
+  else
+  {
+    bigger_side = ht;
+    smaller_side = wd;
+  }
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
@@ -322,8 +331,16 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   float wd = self->dev->preview_pipe->backbuf_width;
   float ht = self->dev->preview_pipe->backbuf_height;
   float bigger_side, smaller_side;
-  if(wd >= ht){ bigger_side = wd; smaller_side = ht; }
-  else        { bigger_side = ht; smaller_side = wd; }
+  if(wd >= ht)
+  {
+    bigger_side = wd;
+    smaller_side = ht;
+  }
+  else
+  {
+    bigger_side = ht;
+    smaller_side = wd;
+  }
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, closeup ? 2 : 1, 1);
@@ -381,7 +398,8 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     }
   }
 
-  if(grab == 0 || !(darktable.control->button_down && darktable.control->button_down_which == 1)){
+  if(grab == 0 || !(darktable.control->button_down && darktable.control->button_down_which == 1))
+  {
     grab = get_grab(pzx*wd-vignette_x, pzy*ht-vignette_y, vignette_w, -vignette_h, vignette_fx, -vignette_fy, zoom_scale);
   }
 
@@ -575,7 +593,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   };
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data, yscale, xscale) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data, yscale, xscale) schedule(static)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {

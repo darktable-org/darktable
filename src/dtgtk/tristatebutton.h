@@ -26,13 +26,13 @@ G_BEGIN_DECLS
 #define DTGTK_IS_TRISTATEBUTTON(obj) GTK_CHECK_TYPE(obj, dtgtk_tristatebutton_get_type())
 #define DTGTK_IS_TRISTATEBUTTON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_tristatebutton_get_type())
 
- enum
- {
-   STATE_CHANGED,
-   LAST_SIGNAL
- };
- 
- 
+enum
+{
+  STATE_CHANGED,
+  LAST_SIGNAL
+};
+
+
 typedef struct _GtkDarktableTriStateButton
 {
   GtkButton widget;

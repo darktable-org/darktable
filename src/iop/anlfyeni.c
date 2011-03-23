@@ -125,7 +125,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   //optional: parallelize it!
   //TODO: IMPORTANT!! I am not 100% sure if this can actually be parallised. I
   //should check that omp really only parallises the outer loop.
-#pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,d, piece) private(mu_f, mu_b, highpass)
+  #pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,d, piece) private(mu_f, mu_b, highpass)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {

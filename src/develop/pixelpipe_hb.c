@@ -319,7 +319,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         {
           // fast branch for 1:1 pixel copies.
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(pipe,roi_out,roi_in,output)
+          #pragma omp parallel for schedule(static) default(none) shared(pipe,roi_out,roi_in,output)
 #endif
           for(int j=0; j<MIN(roi_out->height, pipe->iheight-roi_in.y); j++)
             memcpy(((char *)*output) + bpp*j*roi_out->width, ((char *)pipe->input) + bpp*(roi_in.x + (roi_in.y + j)*pipe->iwidth), bpp*roi_out->width);

@@ -117,7 +117,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o, XYZ_sw)
+  #pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o, XYZ_sw)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
@@ -132,13 +132,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     // calculate scotopic luminanse
     if (XYZ[0] > threshold)
     {
-        // normal flow
-        V = XYZ[1] * ( 1.33f * ( 1.0f + (XYZ[1]+XYZ[2])/XYZ[0]) - 1.68f );
+      // normal flow
+      V = XYZ[1] * ( 1.33f * ( 1.0f + (XYZ[1]+XYZ[2])/XYZ[0]) - 1.68f );
     }
     else
     {
-        // low red flow, avoids "snow" on dark noisy areas
-        V = XYZ[1] * ( 1.33f * ( 1.0f + (XYZ[1]+XYZ[2])/threshold) - 1.68f );
+      // low red flow, avoids "snow" on dark noisy areas
+      V = XYZ[1] * ( 1.33f * ( 1.0f + (XYZ[1]+XYZ[2])/threshold) - 1.68f );
     }
 
     // scale using empiric coefficient and fit inside limits
@@ -153,8 +153,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
     XYZ[0] = w * XYZ[0] + (1.0f - w) * XYZ_s[0];
     XYZ[1] = w * XYZ[1] + (1.0f - w) * XYZ_s[1];
-    XYZ[2] = w * XYZ[2] + (1.0f - w) * XYZ_s[2]; 
-    
+    XYZ[2] = w * XYZ[2] + (1.0f - w) * XYZ_s[2];
+
     dt_XYZ_to_Lab(XYZ,out);
   }
 }
@@ -296,7 +296,7 @@ void init_presets (dt_iop_module_t *self)
 
   p.blueness = 40.0f;
   dt_gui_presets_add_generic(_("indoor dark"), self->op, &p, sizeof(p), 1);
-  
+
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
   p.transition_x[2] = 0.400000;
@@ -697,7 +697,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_drawing_area_size(c->area, 195, 195);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area),FALSE, FALSE, 0); 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area),FALSE, FALSE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",

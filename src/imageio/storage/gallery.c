@@ -121,27 +121,27 @@ gui_init (dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (d->entry));
   g_object_set(G_OBJECT(widget), "tooltip-text", _("enter the path where to create the website gallery:\n"
-                 "$(ROLL_NAME) - roll of the input image\n"
-                 "$(FILE_DIRECTORY) - directory of the input image\n"
-                 "$(FILE_NAME) - basename of the input image\n"
-                 "$(FILE_EXTENSION) - extension of the input image\n"
-                 "$(SEQUENCE) - sequence number\n"
-                 "$(YEAR) - year\n"
-                 "$(MONTH) - month\n"
-                 "$(DAY) - day\n"
-                 "$(HOUR) - hour\n"
-                 "$(MINUTE) - minute\n"
-                 "$(SECOND) - second\n"
-                 "$(EXIF_YEAR) - exif year\n"
-                 "$(EXIF_MONTH) - exif month\n"
-                 "$(EXIF_DAY) - exif day\n"
-                 "$(EXIF_HOUR) - exif hour\n"
-                 "$(EXIF_MINUTE) - exif minute\n"
-                 "$(EXIF_SECOND) - exif second\n"
-                 "$(PICTURES_FOLDER) - pictures folder\n"
-                 "$(HOME_FOLDER) - home folder\n"
-                 "$(DESKTOP_FOLDER) - desktop folder"
-                                                      ), (char *)NULL);
+               "$(ROLL_NAME) - roll of the input image\n"
+               "$(FILE_DIRECTORY) - directory of the input image\n"
+               "$(FILE_NAME) - basename of the input image\n"
+               "$(FILE_EXTENSION) - extension of the input image\n"
+               "$(SEQUENCE) - sequence number\n"
+               "$(YEAR) - year\n"
+               "$(MONTH) - month\n"
+               "$(DAY) - day\n"
+               "$(HOUR) - hour\n"
+               "$(MINUTE) - minute\n"
+               "$(SECOND) - second\n"
+               "$(EXIF_YEAR) - exif year\n"
+               "$(EXIF_MONTH) - exif month\n"
+               "$(EXIF_DAY) - exif day\n"
+               "$(EXIF_HOUR) - exif hour\n"
+               "$(EXIF_MINUTE) - exif minute\n"
+               "$(EXIF_SECOND) - exif second\n"
+               "$(PICTURES_FOLDER) - pictures folder\n"
+               "$(HOME_FOLDER) - home folder\n"
+               "$(DESKTOP_FOLDER) - desktop folder"
+                                                  ), (char *)NULL);
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
@@ -241,7 +241,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     // save image to list, in order:
     pair_t *pair = malloc(sizeof(pair_t));
-    
+
     char *title = NULL, *description = NULL, *tags = NULL;
     GList *res;
 
@@ -293,10 +293,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     sprintf(c, "-thumb.%s", ext);
 
     snprintf(pair->line, 4096,
-        "\n"
-        "      <div><a href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
-        "      <h1>%s</h1>\n"
-        "      %s<br/><span class=\"tags\">%s</span></div>\n", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "\n"
+             "      <div><a href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
+             "      <h1>%s</h1>\n"
+             "      %s<br/><span class=\"tags\">%s</span></div>\n", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
     pair->pos = num;
     g_free(title);
     g_free(description);
@@ -356,7 +356,7 @@ copy_res(const char *src, const char *dst)
     fclose(fout);
     fclose(fin);
   }
-END: 
+END:
   g_free(sourcefile);
 }
 
@@ -383,18 +383,18 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   FILE *f = fopen(filename, "wb");
   if(!f) return;
   fprintf(f,
-"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-"  <head>\n"
-"    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-"    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-"    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-"    <title>%s</title>\n"
-"  </head>\n"
-"  <body>\n"
-"    <div class=\"title\">%s</div>\n"
-"    <div class=\"page\">\n",
-      title, title);
+          "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
+          "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+          "  <head>\n"
+          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
+          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
+          "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
+          "    <title>%s</title>\n"
+          "  </head>\n"
+          "  <body>\n"
+          "    <div class=\"title\">%s</div>\n"
+          "    <div class=\"page\">\n",
+          title, title);
 
   while(d->l)
   {
@@ -403,19 +403,19 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
     free(p);
     d->l = g_list_delete_link(d->l, d->l);
   }
-  
+
   fprintf(f,
-"        <p style=\"clear:both;\"></p>\n"
-"    </div>\n"
-"    <div class=\"footer\">\n"
-"      <script language=\"JavaScript\" type=\"text/javascript\">\n"
-"      document.write(\"download all: <em>wget -r -np -nc -k \" + document.documentURI + \"</em>\")\n"
-"      </script><br />\n"
-"      created with darktable "PACKAGE_VERSION"\n"
-"    </div>\n"
-"  </body>\n"
-"</html>\n"
-  );
+          "        <p style=\"clear:both;\"></p>\n"
+          "    </div>\n"
+          "    <div class=\"footer\">\n"
+          "      <script language=\"JavaScript\" type=\"text/javascript\">\n"
+          "      document.write(\"download all: <em>wget -r -np -nc -k \" + document.documentURI + \"</em>\")\n"
+          "      </script><br />\n"
+          "      created with darktable "PACKAGE_VERSION"\n"
+          "    </div>\n"
+          "  </body>\n"
+          "</html>\n"
+         );
   fclose(f);
 }
 

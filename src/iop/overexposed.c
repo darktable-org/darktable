@@ -85,7 +85,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 // 	char *mask = (char*)((dt_iop_overexposed_gui_data_t*)self->gui_data)->mask;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower) schedule(static)
 // 	#pragma omp parallel for default(none) shared(roi_out, in, out, upper, lower, mask, stride) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
@@ -269,7 +269,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->upper), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
   g_object_set(G_OBJECT(g->upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
-  
+
   g_signal_connect (G_OBJECT (g->lower), "value-changed", G_CALLBACK (lower_callback), self);
   g_signal_connect (G_OBJECT (g->upper), "value-changed", G_CALLBACK (upper_callback), self);
 }

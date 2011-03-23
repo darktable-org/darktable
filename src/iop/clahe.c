@@ -88,7 +88,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *luminance=(float *)malloc((roi_out->width*roi_out->height)*sizeof(float));
   //double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid)
+  #pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
@@ -113,7 +113,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // CLAHE
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid,ovoid)
+  #pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid,ovoid)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {

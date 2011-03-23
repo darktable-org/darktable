@@ -267,8 +267,8 @@ void reset(dt_view_t *self)
 static void module_tristate_changed_callback(GtkWidget *button,gint state, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  char option[512]={0};
- 
+  char option[512]= {0};
+
   if(state==0)
   {
     /* module is hidden lets set gconf values */
@@ -278,7 +278,7 @@ static void module_tristate_changed_callback(GtkWidget *button,gint state, gpoin
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
     gtk_expander_set_expanded(module->expander, FALSE);
-    
+
     /* construct tooltip text into option */
     snprintf(option, 512, _("show %s"), module->name());
   }
@@ -291,7 +291,7 @@ static void module_tristate_changed_callback(GtkWidget *button,gint state, gpoin
     dt_conf_set_bool (option, TRUE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
-    
+
     gtk_expander_set_expanded(module->expander, TRUE);
 
     /* construct tooltip text into option */
@@ -306,13 +306,13 @@ static void module_tristate_changed_callback(GtkWidget *button,gint state, gpoin
     dt_conf_set_bool (option, TRUE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, TRUE);
-    
+
     gtk_expander_set_expanded(module->expander, TRUE);
-    
+
     /* construct tooltip text into option */
     snprintf(option, 512, _("hide %s"), module->name());
   }
-  
+
   g_object_set(G_OBJECT(button), "tooltip-text", option, (char *)NULL);
 }
 
@@ -454,14 +454,15 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
       gboolean favorite = dt_conf_get_bool (option);
       gint state=0;
-      if(active) {
+      if(active)
+      {
         state++;
         if(favorite) state++;
       }
-      
-      if(module->showhide) 
+
+      if(module->showhide)
         dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
-      
+
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
       gtk_expander_set_expanded (module->expander, active);
@@ -717,12 +718,13 @@ void enter(dt_view_t *self)
       snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
       gboolean favorite = dt_conf_get_bool (option);
       gint state=0;
-      if(active) {
+      if(active)
+      {
         state++;
         if(favorite) state++;
       }
-      
-      if(module->showhide) 
+
+      if(module->showhide)
         dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
@@ -1060,11 +1062,13 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   zoom_y += mouse_off_y/(proch*scale);
   zoom = DT_ZOOM_FREE;
   closeup = 0;
-  if(up) {
+  if(up)
+  {
     if (scale == 1.0f) return;
     else scale += .1f*(1.0f - minscale);
   }
-  else {
+  else
+  {
     if (scale == minscale) return;
     else scale -= .1f*(1.0f - minscale);
   }
@@ -1122,7 +1126,8 @@ int key_pressed(dt_view_t *self, uint16_t which)
   int handled = 0;
   if(dev->gui_module && dev->gui_module->key_pressed) handled = dev->gui_module->key_pressed(dev->gui_module, which);
   if(handled) return handled;
-  switch(which) {
+  switch(which)
+  {
     case 65:
       dt_dev_jump_image(dev, 1);
       return 1;

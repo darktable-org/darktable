@@ -89,7 +89,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   int fixed = 0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o) reduction(+:fixed) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, i, o) reduction(+:fixed) schedule(static)
 #endif
   for (int row=2; row<roi_out->height-2; row++)
   {
@@ -229,25 +229,25 @@ void gui_init     (dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  
+
   g->strength = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 10.0, 0.01, p->strength, 4));
   dtgtk_slider_set_label(g->strength,_("strength"));
   g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of stuck pixel correction threshold"), NULL);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->strength),DARKTABLE_SLIDER_FORMAT_FLOAT);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->strength), TRUE, TRUE, 0);  
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
 
   GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
 
   g->markfixed  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("mark fixed pixels")));
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->markfixed), TRUE, TRUE, 0);  
-  g_signal_connect(G_OBJECT(g->markfixed), "toggled", G_CALLBACK(markfixed_callback), self); 
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->markfixed), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->markfixed), "toggled", G_CALLBACK(markfixed_callback), self);
 
   g->message = GTK_LABEL(gtk_label_new ("")); // This gets filled in by process
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), TRUE, TRUE, 0);
-  
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox1), TRUE, TRUE, 0); 
+
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 }
 
 void gui_cleanup  (dt_iop_module_t *self)

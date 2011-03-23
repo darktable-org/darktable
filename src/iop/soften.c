@@ -62,7 +62,7 @@ typedef struct dt_iop_soften_data_t
   float size;
   float saturation;
   float brightness;
-   float amount;
+  float amount;
 }
 dt_iop_soften_data_t;
 
@@ -94,7 +94,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float saturation = data->saturation/100.0;
   /* create overexpose image and then blur */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
+  #pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
@@ -105,7 +105,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     l*=brightness;
     hsl2rgb(&out[index],&out[index+1],&out[index+2],h,CLIP(s),CLIP(l));
   }
- 
+
   const float w = piece->iwidth*piece->iscale;
   const float h = piece->iheight*piece->iscale;
   int mrad = sqrt( w*w + h*h) * 0.01;
@@ -117,7 +117,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int hr = range/2;
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *scanline[3]={0};
+  float *scanline[3]= {0};
   scanline[0]  = malloc((size*sizeof(float))*ch);
   scanline[1]  = malloc((size*sizeof(float))*ch);
   scanline[2]  = malloc((size*sizeof(float))*ch);
@@ -127,7 +127,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int index=0;
     for(int y=0; y<roi_out->height; y++)
     {
-      for(int k=0;k<3;k++)
+      for(int k=0; k<3; k++)
       {
         float L=0;
         int hits = 0;
@@ -147,10 +147,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           }
           if(x>=0)
             scanline[k][x] = L/hits;
-        }  
+        }
       }
 
-      for (int k=0;k<3;k++)
+      for (int k=0; k<3; k++)
         for (int x=0; x<roi_out->width; x++)
           out[(index+x)*ch+k] = scanline[k][x];
 
@@ -162,7 +162,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int npoffs = (hr)*roi_out->width;
     for(int x=0; x < roi_out->width; x++)
     {
-      for(int k=0;k<3;k++)
+      for(int k=0; k<3; k++)
       {
         float L=0;
         int hits=0;
@@ -188,21 +188,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         }
       }
 
-      for(int k=0;k<3;k++)
+      for(int k=0; k<3; k++)
         for (int y=0; y<roi_out->height; y++)
           out[(y*roi_out->width+x)*ch+k] = scanline[k][y];
 
     }
   }
-  
-  
+
+
   const float amount = data->amount/100.0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    int index = ch*k;    
+    int index = ch*k;
     out[index+0] = in[index+0]*(1-amount) + CLIP(out[index+0])*amount;
     out[index+1] = in[index+1]*(1-amount) + CLIP(out[index+1])*amount;
     out[index+2] = in[index+2]*(1-amount) + CLIP(out[index+2])*amount;
@@ -354,7 +354,7 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale4,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  
+
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
@@ -363,13 +363,13 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the saturation of blur"), (char *)NULL);
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the brightness of blur"), (char *)NULL);
   g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("the mix of effect"), (char *)NULL);
-  
+
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (size_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (saturation_callback), self);  
+                    G_CALLBACK (saturation_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    G_CALLBACK (brightness_callback), self);  
+                    G_CALLBACK (brightness_callback), self);
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
                     G_CALLBACK (amount_callback), self);
 

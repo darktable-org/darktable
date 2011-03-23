@@ -36,7 +36,7 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
   const int st = step/2;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
+  #pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
 #endif
   for(int j=0; j<height; j++)
   {
@@ -58,7 +58,7 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
     if(i < width) for(ch=0; ch<3; ch++) gbuf(buf, i, j) += gbuf(buf, i-st, j)*.5f;
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
+  #pragma omp parallel for default(none) shared(weight_a,buf) private(ch) schedule(static)
 #endif
   for(int i=0; i<width; i++)
   {
@@ -88,7 +88,7 @@ void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int 
   const int wd = (int)(1 + (width>>(l-1)));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(weight_a,buf) schedule(static)
+  #pragma omp parallel for default(none) shared(weight_a,buf) schedule(static)
 #endif
   for(int i=0; i<width; i++)
   {
@@ -109,7 +109,7 @@ void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int 
     if(j < height) for(int ch=0; ch<3; ch++) gbuf(buf, i, j) += gbuf(buf, i, j-st);
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(weight_a,buf) schedule(static)
+  #pragma omp parallel for default(none) shared(weight_a,buf) schedule(static)
 #endif
   for(int j=0; j<height; j++)
   {

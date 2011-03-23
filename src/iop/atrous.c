@@ -134,7 +134,7 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
   const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j=0; j<height; j++)
   {
@@ -186,7 +186,7 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
   const __m128 boost     = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j=0; j<height; j++)
   {

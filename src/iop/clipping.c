@@ -322,7 +322,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(d,ovoid,ivoid,roi_in,roi_out)
+    #pragma omp parallel for schedule(static) default(none) shared(d,ovoid,ivoid,roi_in,roi_out)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
@@ -339,7 +339,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out)
+    #pragma omp parallel for schedule(static) default(none) shared(d,ivoid,ovoid,roi_in,roi_out)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?
@@ -840,7 +840,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->guide_lines, _("golden mean"));
   gtk_combo_box_set_active(g->guide_lines, GUIDE_NONE);
   g_object_set(G_OBJECT(g->guide_lines), "tooltip-text", _("with this option, you can display guide lines "
-                  "to help compose your photograph."), (char *)NULL);
+               "to help compose your photograph."), (char *)NULL);
   g_signal_connect (G_OBJECT (g->guide_lines), "changed",
                     G_CALLBACK (guides_presets_changed), self);
   label = gtk_label_new(_("type"));

@@ -583,16 +583,16 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-      
+
       /* if module is the current, always expand it */
       if(m==module)
         gtk_expander_set_expanded(m->expander, TRUE);
-      else if((current_group == 0 || (current_group & m->groups()) )) 
+      else if((current_group == 0 || (current_group & m->groups()) ))
         gtk_expander_set_expanded(m->expander, FALSE);
-      
+
       iop = g_list_next(iop);
     }
-    
+
     /* prevent expander to handle the button press because we alread did :) */
     return TRUE;
   }
@@ -910,7 +910,7 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
   // init gauss with sigma = samples (half footprint)
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out)
+  #pragma omp parallel for default(none) shared(out)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
@@ -994,9 +994,9 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   // init gauss with sigma = samples (half footprint)
   float filter[2*samples + 1];
   float sum = 0.0f;
-  
+
   memset(filter, 0, sizeof(float)*(2*samples + 1));
-  
+
   if(samples)
   {
     for(int i=-samples; i<=samples; i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
@@ -1019,7 +1019,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
   const __m128 ff  = _mm_set1_ps(1.0f/65535.0f);
   // const __m128 one = _mm_set1_ps(1.0f);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, filter) schedule(static)
+  #pragma omp parallel for default(none) shared(out, filter) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
@@ -1110,7 +1110,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, filter) schedule(static)
+  #pragma omp parallel for default(none) shared(out, filter) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {

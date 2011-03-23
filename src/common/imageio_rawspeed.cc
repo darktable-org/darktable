@@ -57,7 +57,7 @@ scale_black_white(uint16_t *const buf, const uint16_t black, const uint16_t whit
 {
   const float scale = 65535.0f/(white-black);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j=0; j<height; j++)
   {

@@ -95,7 +95,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -128,7 +128,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     else
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
         memcpy(out+ch*y*roi_out->width, in+ch*y*roi_out->width, ch*sizeof(float)*roi_out->width);
@@ -137,7 +137,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     if (modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_out, out, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -165,7 +165,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     if (modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_in, out, modifier, d) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_in, out, modifier, d) schedule(static)
 #endif
       for (int y = 0; y < roi_in->height; y++)
       {
@@ -191,7 +191,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -227,7 +227,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       const size_t len = sizeof(float)*ch*roi_out->width*roi_out->height;
       const float *const input = (d->tmpbuf_len >= len) ? d->tmpbuf : in;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
+      #pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
         memcpy(out+ch*y*roi_out->width, input+ch*y*roi_out->width, ch*sizeof(float)*roi_out->width);
@@ -1341,7 +1341,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->target_geom = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g_object_set(G_OBJECT(g->target_geom), "tooltip-text",
-                 _("target geometry"), (char *)NULL);
+               _("target geometry"), (char *)NULL);
   gtk_combo_box_append_text(g->target_geom, _("rectilinear"));
   gtk_combo_box_append_text(g->target_geom, _("fish-eye"));
   gtk_combo_box_append_text(g->target_geom, _("panoramic"));

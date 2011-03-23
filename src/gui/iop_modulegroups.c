@@ -60,7 +60,7 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
       if(strcmp(module->op, "gamma"))
       {
         if ( ( !module->showhide || (DTGTK_IS_TRISTATEBUTTON (module->showhide) && dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide))>0) ) &&
-      ((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
+             ((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
           gtk_widget_show(GTK_WIDGET (module->topwidget));
       }
 
@@ -114,7 +114,7 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
       dt_iop_module_t *module=(dt_iop_module_t*)modules->data;
       if(strcmp(module->op, "gamma"))
       {
-        
+
         if(group == IOP_SPECIAL_GROUP_ACTIVE_PIPE )
         {
           /* handle special case group */
@@ -122,18 +122,19 @@ _iop_modulegroups_toggle(GtkWidget *button,gpointer data)
             gtk_widget_show(GTK_WIDGET (module->topwidget));
           else
             gtk_widget_hide(GTK_WIDGET (module->topwidget));
-        } 
+        }
         else if(group == IOP_SPECIAL_GROUP_USER_DEFINED )
         {
           /* handle special case group */
           if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
-             gtk_widget_show(GTK_WIDGET (module->topwidget));
+            gtk_widget_show(GTK_WIDGET (module->topwidget));
           else
-             gtk_widget_hide(GTK_WIDGET (module->topwidget));
-          
-        } else if ( (module->groups () & group ) && 
-              ( !module->showhide || (module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))>0 )) &&
-              ((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
+            gtk_widget_hide(GTK_WIDGET (module->topwidget));
+
+        }
+        else if ( (module->groups () & group ) &&
+                  ( !module->showhide || (module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))>0 )) &&
+                  ((!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled)))
           gtk_widget_show(GTK_WIDGET (module->topwidget));
         else
           gtk_widget_hide(GTK_WIDGET (module->topwidget));
@@ -209,26 +210,26 @@ void dt_gui_iop_modulegroups_init ()
 {
   /* create the button box*/
   GtkWidget *table = gtk_table_new(2,4,TRUE);
- // gtk_widget_set_size_request (bbox,-1,22);
+// gtk_widget_set_size_request (bbox,-1,22);
 
   /* add buttong for active pipe */
   _iop_modulegroups_activepipe_widget = gtk_toggle_button_new_with_label(_("active"));
   g_signal_connect (_iop_modulegroups_activepipe_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_SPECIAL_GROUP_ACTIVE_PIPE);
   g_object_set (_iop_modulegroups_activepipe_widget,"tooltip-text",_("the modules used in active pipe"),(char *)NULL);
   //gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_activepipe_widget,TRUE,TRUE,0);
- 
+
   /* add buttong for active pipe */
   _iop_modulegroups_userdefined_widget = gtk_toggle_button_new_with_label(_("favorite"));
   g_signal_connect (_iop_modulegroups_userdefined_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_SPECIAL_GROUP_USER_DEFINED);
   g_object_set (_iop_modulegroups_userdefined_widget,"tooltip-text",_("show modules explicit specified by user"),(char *)NULL);
   //gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_userdefined_widget,TRUE,TRUE,0);
-  
+
   /* add button for basic plugins */
   //_iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
   _iop_modulegroups_basic_widget = gtk_toggle_button_new_with_label(_("basic"));
   g_signal_connect (_iop_modulegroups_basic_widget,"toggled",G_CALLBACK (_iop_modulegroups_toggle),(gpointer)IOP_GROUP_BASIC);
   g_object_set (_iop_modulegroups_basic_widget,"tooltip-text",_("basic group"),(char *)NULL);
- // gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
+// gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
 
   /* add button for color plugins */
   //_iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
@@ -251,7 +252,7 @@ void dt_gui_iop_modulegroups_init ()
   g_object_set (_iop_modulegroups_effect_widget,"tooltip-text",_("effect group"),(char *)NULL);
   //gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_effect_widget,TRUE,TRUE,0);
 
-  
+
   /* top row */
   gtk_table_attach(GTK_TABLE(table),_iop_modulegroups_activepipe_widget,0,1,0,1,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
   gtk_table_attach(GTK_TABLE(table),_iop_modulegroups_userdefined_widget,1,2,0,1,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
@@ -260,7 +261,7 @@ void dt_gui_iop_modulegroups_init ()
   gtk_table_attach(GTK_TABLE(table),_iop_modulegroups_color_widget,1,2,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
   gtk_table_attach(GTK_TABLE(table),_iop_modulegroups_correct_widget,2,3,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
   gtk_table_attach(GTK_TABLE(table),_iop_modulegroups_effect_widget,3,4,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
- 
+
   gtk_container_add (GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox")),table);
   gtk_widget_show_all(table);
 

@@ -115,7 +115,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
   // optional: parallelize it!
-#pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out,d)
+  #pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out,d)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {

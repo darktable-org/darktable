@@ -52,7 +52,7 @@ groups ()
 
 int flags()
 {
-	return IOP_FLAGS_DEPRECATED;
+  return IOP_FLAGS_DEPRECATED;
 }
 
 

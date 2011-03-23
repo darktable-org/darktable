@@ -185,7 +185,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     /* gauss blur the L channel */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) private(in, out, m) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+    #pragma omp parallel for default(none) private(in, out, m) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
     for(int j=rad; j<roi_out->height-rad; j++)
     {
@@ -212,7 +212,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 //     in  = (float *)ivoid;
     out = (float *)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out,out,buffer,g,zonemap) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out,out,buffer,g,zonemap) schedule(static)
 #endif
     for (int k=0; k<roi_out->width*roi_out->height; k++)
     {
@@ -226,7 +226,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   in  = (float *)ivoid;
   out = (float *)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, in, out, zonemap) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap) schedule(static)
 #endif
   for (int k=0; k<roi_out->width*roi_out->height; k++)
   {

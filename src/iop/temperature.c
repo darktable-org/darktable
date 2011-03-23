@@ -169,7 +169,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
@@ -182,7 +182,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp == 4)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
@@ -196,7 +196,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     const int ch = piece->colors;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
@@ -447,17 +447,17 @@ void gui_init (struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->scale_g,_("green"));
   dtgtk_slider_set_label(g->scale_b,_("blue"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5); 
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_tint), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_k), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_k_out), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), gtk_hseparator_new(), FALSE, FALSE, 5);
-  
-  vbox = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING)); 
+
+  vbox = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_r), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_g), TRUE, TRUE, 0);        
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_g), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_b), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), gtk_hseparator_new(), FALSE, FALSE, 5);

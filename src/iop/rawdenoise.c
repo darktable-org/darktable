@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-  #include "config.h"
+#include "config.h"
 #endif
 #include "common/darktable.h"
 #include "develop/imageop.h"
@@ -58,7 +58,7 @@ const char *name()
 int
 groups ()
 {
-	return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT;
 }
 
 int
@@ -123,7 +123,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   for (int c=0; c<nc; c++)	/* denoise R,G1,B,G3 individually */
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c) schedule(static)
+    #pragma omp parallel for default(none) shared(c) schedule(static)
 #endif
     for (int row=c&1; row<roi->height; row+=2)
     {
@@ -131,50 +131,50 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       int col = (c&2)>>1;
       const float *inp = in + row*roi->width + col;
       for (; col<roi->width; col+=2, fimgp++, inp+=2)
-	*fimgp = sqrt(*inp);
+        *fimgp = sqrt(*inp);
     }
     for (hpass=lev=0; lev < 5; lev++)
     {
       lpass = size*((lev & 1)+1);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev, lpass, hpass) schedule(static)
+      #pragma omp parallel for default(none) shared(lev, lpass, hpass) schedule(static)
 #endif
       for (int row=0; row < halfheight; row++)
       {
-	float temp[tempsize];
-	hat_transform(temp, fimg+hpass+row*halfwidth, 1, halfwidth, 1 << lev);
-	float *fimgp = fimg + lpass + row*halfwidth;
+        float temp[tempsize];
+        hat_transform(temp, fimg+hpass+row*halfwidth, 1, halfwidth, 1 << lev);
+        float *fimgp = fimg + lpass + row*halfwidth;
         for (int col=0; col < halfwidth; col++, fimgp++)
-	  *fimgp = temp[col] * 0.25;
+          *fimgp = temp[col] * 0.25;
       }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev, hpass, lpass) schedule(static)
+      #pragma omp parallel for default(none) shared(lev, hpass, lpass) schedule(static)
 #endif
       for (int col=0; col < halfwidth; col++)
       {
-	float temp[tempsize];
-	hat_transform(temp, fimg+lpass+col, halfwidth, halfheight, 1 << lev);
-	float *fimgp = fimg + lpass + col;
-	for (int row=0; row < halfheight; row++, fimgp+=halfwidth)
-	  *fimgp = temp[row] * 0.25;
+        float temp[tempsize];
+        hat_transform(temp, fimg+lpass+col, halfwidth, halfheight, 1 << lev);
+        float *fimgp = fimg + lpass + col;
+        for (int row=0; row < halfheight; row++, fimgp+=halfwidth)
+          *fimgp = temp[row] * 0.25;
       }
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lpass, hpass)
+      #pragma omp parallel for default(none) shared(lpass, hpass)
 #endif
       for (int i=0; i < size; i++)
       {
-	float *fimgp = fimg + i;
-	fimgp[hpass] -= fimgp[lpass];
-	if	(fimgp[hpass] < -thold) fimgp[hpass] += thold;
-	else if (fimgp[hpass] >  thold) fimgp[hpass] -= thold;
-	else	 fimgp[hpass] = 0;
-	if (hpass) fimgp[0] += fimgp[hpass];
+        float *fimgp = fimg + i;
+        fimgp[hpass] -= fimgp[lpass];
+        if	(fimgp[hpass] < -thold) fimgp[hpass] += thold;
+        else if (fimgp[hpass] >  thold) fimgp[hpass] -= thold;
+        else	 fimgp[hpass] = 0;
+        if (hpass) fimgp[0] += fimgp[hpass];
       }
       hpass = lpass;
     }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c, lpass) schedule(static)
+    #pragma omp parallel for default(none) shared(c, lpass) schedule(static)
 #endif
     for (int row=c&1; row<roi->height; row+=2)
     {
@@ -183,8 +183,8 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       float *outp = out + row*roi->width + col;
       for (; col<roi->width; col+=2, fimgp++, outp+=2)
       {
-	float d = fimgp[0] + fimgp[lpass];
-	*outp = d * d;
+        float d = fimgp[0] + fimgp[lpass];
+        *outp = d * d;
       }
     }
   }
@@ -207,22 +207,22 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
     {
       while (wlast < row+1)
       {
-	for (wlast++, i=0; i < 4; i++)
-	  window[(i+3) & 3] = window[i];
-	for (col = FC(wlast,1) & 1; col < width; col+=2)
-	  window[2][col] = BAYER(wlast,col);
+        for (wlast++, i=0; i < 4; i++)
+          window[(i+3) & 3] = window[i];
+        for (col = FC(wlast,1) & 1; col < width; col+=2)
+          window[2][col] = BAYER(wlast,col);
       }
       for (col = (FC(row,0) & 1)+1; col < width-1; col+=2)
       {
-	float avg = ( window[0][col-1] + window[0][col+1] +
-		      window[2][col-1] + window[2][col+1] - blk[~row & 1]*4 )
-	            * mul[row & 1] + (window[1][col] + blk[row & 1]) * 0.5;
-	avg = avg < 0 ? 0 : sqrt(avg);
-	float diff = sqrt(BAYER(row,col)) - avg;
-	if      (diff < -thold) diff += thold;
-	else if (diff >  thold) diff -= thold;
-	else diff = 0;
-	BAYER(row,col) = SQR(avg+diff);
+        float avg = ( window[0][col-1] + window[0][col+1] +
+                      window[2][col-1] + window[2][col+1] - blk[~row & 1]*4 )
+                    * mul[row & 1] + (window[1][col] + blk[row & 1]) * 0.5;
+        avg = avg < 0 ? 0 : sqrt(avg);
+        float diff = sqrt(BAYER(row,col)) - avg;
+        if      (diff < -thold) diff += thold;
+        else if (diff >  thold) diff -= thold;
+        else diff = 0;
+        BAYER(row,col) = SQR(avg+diff);
       }
     }
   }
@@ -242,7 +242,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 void reload_defaults(dt_iop_module_t *module)
 {
   // init defaults:
-  dt_iop_rawdenoise_params_t tmp = (dt_iop_rawdenoise_params_t){0.01};
+  dt_iop_rawdenoise_params_t tmp = (dt_iop_rawdenoise_params_t)
+  {
+    0.01
+  };
   memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
 
