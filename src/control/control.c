@@ -405,6 +405,8 @@ void dt_control_init(dt_control_t *s)
       // add columns where needed. will just fail otherwise:
       sqlite3_exec(darktable.db, "alter table images add column orientation integer", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "update images set orientation = -1 where orientation is NULL", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "alter table images add column focus_distance real", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "update images set focus_distance = -1 where focus_distance is NULL", NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }

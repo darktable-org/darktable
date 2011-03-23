@@ -33,7 +33,7 @@
 #include <glib/gstdio.h>
 #include <assert.h>
 
-#define DT_IMAGE_CACHE_FILE_VERSION 3
+#define DT_IMAGE_CACHE_FILE_VERSION 4
 #define DT_IMAGE_CACHE_FILE_NAME "mipmaps"
 
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
