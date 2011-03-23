@@ -62,7 +62,7 @@ static int usage(const char *argv0)
   return 1;
 }
 
-int dt_init(int argc, char *argv[])
+int dt_init(int argc, char *argv[], const int init_gui)
 {
 #ifndef __SSE2__
   fprintf("[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
@@ -72,6 +72,9 @@ int dt_init(int argc, char *argv[])
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
+
+  // init all pointers to 0:
+  memset(&darktable, 0, sizeof(darktable_t));
 
   darktable.progname = argv[0];
 
@@ -102,7 +105,7 @@ int dt_init(int argc, char *argv[])
       }
       else if(argv[k][1] == 'd' && argc > k+1)
       {
-        if(!strcmp(argv[k+1], "all"))       darktable.unmuted = 0xffffffff;   // enable all debug information
+        if(!strcmp(argv[k+1], "all"))            darktable.unmuted = 0xffffffff;   // enable all debug information
         else if(!strcmp(argv[k+1], "cache"))     darktable.unmuted |= DT_DEBUG_CACHE;   // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k+1], "control"))   darktable.unmuted |= DT_DEBUG_CONTROL; // enable debugging for scheduler module
         else if(!strcmp(argv[k+1], "dev"))       darktable.unmuted |= DT_DEBUG_DEV; // develop module
@@ -111,7 +114,7 @@ int dt_init(int argc, char *argv[])
         else if(!strcmp(argv[k+1], "perf"))      darktable.unmuted |= DT_DEBUG_PERF; // performance measurements
         else if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
         else if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
-	else if(!strcmp(argv[k+1], "sql"))       darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
+        else if(!strcmp(argv[k+1], "sql"))       darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
         else return usage(argv[0]);
         k ++;
       }
@@ -238,7 +241,15 @@ int dt_init(int argc, char *argv[])
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
 
   darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
-  dt_control_init(darktable.control);
+  if(init_gui)
+  {
+    dt_control_init(darktable.control);
+  }
+  else
+  {
+    darktable.control->running = 0;
+    dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
+  }
 
   // initialize collection query
   darktable.collection_listeners = NULL;
@@ -262,23 +273,29 @@ int dt_init(int argc, char *argv[])
   darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
-  darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
-  if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
+  if(init_gui)
+  {
+    darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
+    if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
+  }
 
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
-  darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
-  dt_lib_init(darktable.lib);
+  if(init_gui)
+  {
+    darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
+    dt_lib_init(darktable.lib);
 
-  dt_control_load_config(darktable.control);
-  g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
+    dt_control_load_config(darktable.control);
+    g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
 
-  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
-  dt_imageio_init(darktable.imageio);
+    darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
+    dt_imageio_init(darktable.imageio);
+  }
 
   int id = 0;
-  if(image_to_load)
+  if(init_gui && image_to_load)
   {
     char* filename;
     if(g_str_has_prefix(image_to_load, "file://"))
@@ -356,7 +373,7 @@ int dt_init(int argc, char *argv[])
     }
     g_free(filename);
   }
-  if(!id)
+  if(init_gui && !id)
   {
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }

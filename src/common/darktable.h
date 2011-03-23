@@ -144,7 +144,7 @@ dt_times_t;
 extern darktable_t darktable;
 extern const char dt_supported_extensions[];
 
-int dt_init(int argc, char *argv[]);
+int dt_init(int argc, char *argv[], const int init_gui);
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...);
 void dt_gettime_t(char *datetime, time_t t);

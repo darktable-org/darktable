@@ -242,9 +242,9 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
   // . . . . .
   // .   .   .   .   .
   // cut off too fine ones, if image is not detailed enough (due to roi_in->scale)
-  const float scale = roi_in->scale;
+  const float scale = roi_in->scale/piece->iscale;
   // largest desired filter on input buffer (20% of input dim)
-  const float supp0 = MIN(2*(2<<(MAX_NUM_SCALES-1)) + 1, MAX(piece->buf_in.height, piece->buf_in.width) * 0.2f);
+  const float supp0 = MIN(2*(2<<(MAX_NUM_SCALES-1)) + 1, MAX(piece->buf_in.height*piece->iscale, piece->buf_in.width*piece->iscale) * 0.2f);
   const float i0 = dt_log2f((supp0 - 1.0f)*.5f);
   int i=0;
   for(; i<MAX_NUM_SCALES; i++)

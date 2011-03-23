@@ -73,6 +73,7 @@ src/iop/relight.c
 src/iop/sharpen.c
 src/iop/soften.c
 src/iop/splittoning.c
+src/iop/spots.c
 src/iop/stuckpixels.c
 src/iop/temperature.c
 src/iop/tonecurve.c

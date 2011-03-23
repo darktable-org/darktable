@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2011 henrik andersson, johannes hanika
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,8 +96,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       free(weight);
       goto error;
     }
-    filter = img->filters;
     dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+    filter = img->filters;
     if(mip != DT_IMAGE_FULL)
     {
       dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);

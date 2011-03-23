@@ -142,14 +142,11 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       img->exif_focal_length = pos->toFloat ();
     }
-    
-    /* Read subject distance  */
+
     if ( (pos=Exiv2::subjectDistance(exifData))
          != exifData.end() )
     {
-	//TODO: 
-      // where should this value go?
-      // img->exif_distance = pos->toFloat ();
+      img->exif_focus_distance = pos->toFloat ();
     }
 #endif
     /** read image orientation */

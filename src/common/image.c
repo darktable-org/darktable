@@ -768,7 +768,7 @@ void dt_image_init(dt_image_t *img)
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
   g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00", sizeof(img->exif_datetime_taken));
   img->exif_crop = 1.0;
-  img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = 0;
+  img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = img->exif_focus_distance = 0;
   for(int k=0; (int)k<(int)DT_IMAGE_NONE; k++) img->mip_buf_size[k] = 0;
   for(int k=0; (int)k<(int)DT_IMAGE_FULL; k++) img->mip_width[k] = img->mip_height[k] = 0;
 }
@@ -824,7 +824,8 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->black   = sqlite3_column_double(stmt, 20);
     img->maximum = sqlite3_column_double(stmt, 21);
     img->orientation = sqlite3_column_int(stmt, 22);
-    if(img->orientation >= 0) img->exif_inited = 1;
+    img->exif_focus_distance = sqlite3_column_double(stmt,23);
+    if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
 
     ret = 0;
   }
@@ -1023,12 +1024,12 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
     size *= 4*sizeof(float);
     ptr = (void *)(img->mipf);
   }
-  else if(mip == DT_IMAGE_FULL || (img->filters == 0))
+  else if(mip == DT_IMAGE_FULL && (img->filters == 0))
   {
     size *= 4*sizeof(float);
     ptr = (void *)(img->pixels);
   }
-  else if(mip == DT_IMAGE_FULL || (img->filters != 0))
+  else if(mip == DT_IMAGE_FULL && (img->filters != 0))
   {
     size *= img->bpp;
     ptr = (void *)(img->pixels);

@@ -419,7 +419,8 @@ void reload_defaults(dt_iop_module_t *module)
   tmp.inverse  = 0;
   tmp.modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING |
                      LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
-  tmp.distance = 5.0;
+  tmp.distance = module->dev->image->exif_focus_distance > 0
+                 ? module->dev->image->exif_focus_distance : 5;
   tmp.target_geom = LF_RECTILINEAR;
   tmp.tca_override = 0;
   tmp.tca_r = 1.0;
@@ -917,6 +918,18 @@ static void lens_aperture_reset(
   entry = GTK_ENTRY (GTK_BIN (g->cbe[1])->child);
   gtk_entry_set_text (entry, txt);
 }
+static void lens_distance_reset(GtkWidget *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  char txt[30];
+  float val = ((dt_iop_lensfun_params_t *)self->default_params)->distance;
+  snprintf(txt, sizeof(txt), "%.*f", precision (val, 10.0), val);
+  GtkEntry *entry;
+  entry = GTK_ENTRY(GTK_BIN(g->cbe[2])->child);
+  gtk_entry_set_text(entry, txt);
+}
+
 static void lens_comboentry_distance_update (GtkComboBox *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
@@ -1051,6 +1064,11 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
                 p->distance, 0.25, 1000, 1.41421356237309504880, 10.0);
   g_signal_connect (G_OBJECT(g->cbe[2]), "changed",
                     G_CALLBACK(lens_comboentry_distance_update), self);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
+  g_signal_connect (G_OBJECT (button), "clicked",
+                    G_CALLBACK (lens_distance_reset), self);
 
   gtk_widget_show_all (g->lens_param_box);
 }

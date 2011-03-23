@@ -158,15 +158,11 @@ dt_collection_reset(const dt_collection_t *collection)
   params->film_id = 1;
   params->rating = 1;
 
-  /* check if stored query parameters exist */
-  if (dt_conf_key_exists ("plugins/collection/filter_flags"))
-  {
-    /* apply stored query parameters from previous darktable session */
-    params->film_id = dt_conf_get_int("plugins/collection/film_id");
-    params->rating = dt_conf_get_int("plugins/collection/rating");
-    params->query_flags = dt_conf_get_int("plugins/collection/query_flags");
-    params->filter_flags= dt_conf_get_int("plugins/collection/filter_flags");
-  }
+  /* apply stored query parameters from previous darktable session */
+  params->film_id      = dt_conf_get_int("plugins/collection/film_id");
+  params->rating       = dt_conf_get_int("plugins/collection/rating");
+  params->query_flags  = dt_conf_get_int("plugins/collection/query_flags");
+  params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
   dt_collection_update_query (collection);
 }
 
@@ -234,11 +230,8 @@ dt_collection_set_rating (const dt_collection_t *collection, uint32_t rating)
 static int
 _dt_collection_store (const dt_collection_t *collection, gchar *query)
 {
-  if (collection->query && strcmp (collection->query,query) == 0)
-    return 0;
-
   /* store flags to gconf */
-  if (!collection->clone)
+  if (collection == darktable.collection)
   {
     dt_conf_set_int ("plugins/collection/query_flags",collection->params.query_flags);
     dt_conf_set_int ("plugins/collection/filter_flags",collection->params.filter_flags);

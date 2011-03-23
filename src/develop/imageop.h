@@ -59,157 +59,157 @@ struct dt_iop_module_so_t;
 struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
-	/** opened module. */
-	GModule *module;
-	/** string identifying this operation. */
-	dt_dev_operation_t op;
-	/** other stuff that may be needed by the module, not only in gui mode. inited only once, has to be read-only then. */
-	dt_iop_global_data_t *data;
+  /** opened module. */
+  GModule *module;
+  /** string identifying this operation. */
+  dt_dev_operation_t op;
+  /** other stuff that may be needed by the module, not only in gui mode. inited only once, has to be read-only then. */
+  dt_iop_global_data_t *data;
 
-	/** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
-	void (*init_presets)    (struct dt_iop_module_so_t *self);
-	/** called once per module, at startup. */
-	void (*init_global)     (struct dt_iop_module_so_t *self);
-	/** called once per module, at shutdown. */
-	void (*cleanup_global)  (struct dt_iop_module_so_t *self);
+  /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
+  void (*init_presets)    (struct dt_iop_module_so_t *self);
+  /** called once per module, at startup. */
+  void (*init_global)     (struct dt_iop_module_so_t *self);
+  /** called once per module, at shutdown. */
+  void (*cleanup_global)  (struct dt_iop_module_so_t *self);
 
-	/** callbacks, loaded once, referenced by the instances. */
-	int (*version)          ();
-	const char* (*name)     ();
-	int (*groups)           ();
-	int (*flags)            ();
-	int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** callbacks, loaded once, referenced by the instances. */
+  int (*version)          ();
+  const char* (*name)     ();
+  int (*groups)           ();
+  int (*flags)            ();
+  int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 
-	void (*gui_update)      (struct dt_iop_module_t *self);
-	void (*gui_init)        (struct dt_iop_module_t *self);
-	void (*gui_cleanup)     (struct dt_iop_module_t *self);
-	void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+  void (*gui_update)      (struct dt_iop_module_t *self);
+  void (*gui_init)        (struct dt_iop_module_t *self);
+  void (*gui_cleanup)     (struct dt_iop_module_t *self);
+  void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 
-	int  (*mouse_leave)     (struct dt_iop_module_t *self);
-	int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
-	int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-	int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
-	int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
-	int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
-	void (*configure)       (struct dt_iop_module_t *self, int width, int height);
+  int  (*mouse_leave)     (struct dt_iop_module_t *self);
+  int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
+  int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
+  int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+  int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
+  int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
+  void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
-	void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
-	void (*cleanup)         (struct dt_iop_module_t *self);
-	void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-	void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-	void (*reload_defaults) (struct dt_iop_module_t *self);
-	void (*cleanup_pipe)    (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-	void (*modify_roi_in)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
-	void (*modify_roi_out)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
-	int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
+  void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
+  void (*cleanup)         (struct dt_iop_module_t *self);
+  void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*reload_defaults) (struct dt_iop_module_t *self);
+  void (*cleanup_pipe)    (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*modify_roi_in)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
+  void (*modify_roi_out)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
+  int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
 
-	void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
-	void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 }
 dt_iop_module_so_t;
 
 typedef struct dt_iop_module_t
 {
-	/** opened module. */
-	GModule *module;
-	/** string identifying this operation. */
-	dt_dev_operation_t op;
-	/** used to identify this module in the history stack. */
-	int32_t instance;
-	/** order in which plugins are stacked. */
-	int32_t priority;
-	/** module sets this if the enable checkbox should be hidden. */
-	int32_t hide_enable_button;
-	/** set to 1 if you want an input color picked during next eval. gui mode only. */
-	int32_t request_color_pick;
-	/** bounding box in which the mean color is requested. */
-	float color_picker_box[4];
-	/** place to store the picked color. */
-	float picked_color[3], picked_color_min[3], picked_color_max[3];
-	float picked_color_Lab[3], picked_color_min_Lab[3], picked_color_max_Lab[3];
-	/** reference for dlopened libs. */
-	darktable_t *dt;
-	/** the module is used in this develop module. */
-	struct dt_develop_t *dev;
-	/** non zero if this node should be processed. */
-	int32_t enabled, default_enabled, factory_enabled;
-	/** parameters for the operation. will be replaced by history revert. */
-	dt_iop_params_t *params, *default_params, *factory_params;
-	/** exclusive access to params is needed, as gui and gegl processing is async. */
-	dt_pthread_mutex_t params_mutex;
-	/** size of individual params struct. */
-	int32_t params_size;
-	/** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
-	dt_iop_gui_data_t *gui_data;
-	/** other stuff that may be needed by the module, not only in gui mode. */
-	dt_iop_global_data_t *data;
-	/** blending params */
-	struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
-	/** holder for blending ui control */
-	gpointer blend_data;
-	/** child widget which is added to the GtkExpander. */
-	GtkWidget *widget;
-	/** off button, somewhere in header, common to all plug-ins. */
-	GtkDarktableToggleButton *off;
-	/** this widget contains all of the module: expander and label decoration. */
-	GtkWidget *topwidget;
-	/** button used to show/hide this module in the plugin list. */
-	GtkWidget *showhide;
-	/** expander containing the widget. */
-	GtkExpander *expander;
+  /** opened module. */
+  GModule *module;
+  /** string identifying this operation. */
+  dt_dev_operation_t op;
+  /** used to identify this module in the history stack. */
+  int32_t instance;
+  /** order in which plugins are stacked. */
+  int32_t priority;
+  /** module sets this if the enable checkbox should be hidden. */
+  int32_t hide_enable_button;
+  /** set to 1 if you want an input color picked during next eval. gui mode only. */
+  int32_t request_color_pick;
+  /** bounding box in which the mean color is requested. */
+  float color_picker_box[4];
+  /** place to store the picked color. */
+  float picked_color[3], picked_color_min[3], picked_color_max[3];
+  float picked_color_Lab[3], picked_color_min_Lab[3], picked_color_max_Lab[3];
+  /** reference for dlopened libs. */
+  darktable_t *dt;
+  /** the module is used in this develop module. */
+  struct dt_develop_t *dev;
+  /** non zero if this node should be processed. */
+  int32_t enabled, default_enabled, factory_enabled;
+  /** parameters for the operation. will be replaced by history revert. */
+  dt_iop_params_t *params, *default_params, *factory_params;
+  /** exclusive access to params is needed, as gui and gegl processing is async. */
+  dt_pthread_mutex_t params_mutex;
+  /** size of individual params struct. */
+  int32_t params_size;
+  /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
+  dt_iop_gui_data_t *gui_data;
+  /** other stuff that may be needed by the module, not only in gui mode. */
+  dt_iop_global_data_t *data;
+/** blending params */
+struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
+/** holder for blending ui control */
+gpointer blend_data;
+  /** child widget which is added to the GtkExpander. */
+  GtkWidget *widget;
+  /** off button, somewhere in header, common to all plug-ins. */
+  GtkDarktableToggleButton *off;
+  /** this widget contains all of the module: expander and label decoration. */
+  GtkWidget *topwidget;
+  /** button used to show/hide this module in the plugin list. */
+  GtkWidget *showhide;
+  /** expander containing the widget. */
+  GtkExpander *expander;
 
-	/** version of the parameters in the database. */
-	int (*version)          ();
-	/** get name of the module, to be translated. */
-	const char* (*name)     ();
-	/** get the groups this module belongs to. */
-	int (*groups)           ();
-	/** get the iop module flags. */
-	int (*flags)            ();
-	/** how many bytes per pixel in the output. */
-	int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** version of the parameters in the database. */
+  int (*version)          ();
+  /** get name of the module, to be translated. */
+  const char* (*name)     ();
+  /** get the groups this module belongs to. */
+  int (*groups)           ();
+  /** get the iop module flags. */
+  int (*flags)            ();
+  /** how many bytes per pixel in the output. */
+  int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 
-	/** callback methods for gui. */
-	/** synch gtk interface with gui params, if necessary. */
-	void (*gui_update)      (struct dt_iop_module_t *self);
-	/** construct widget. */
-	void (*gui_init)        (struct dt_iop_module_t *self);
-	/** destroy widget. */
-	void (*gui_cleanup)     (struct dt_iop_module_t *self);
-	/** optional method called after darkroom expose. */
-	void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+  /** callback methods for gui. */
+  /** synch gtk interface with gui params, if necessary. */
+  void (*gui_update)      (struct dt_iop_module_t *self);
+  /** construct widget. */
+  void (*gui_init)        (struct dt_iop_module_t *self);
+  /** destroy widget. */
+  void (*gui_cleanup)     (struct dt_iop_module_t *self);
+  /** optional method called after darkroom expose. */
+  void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 
-	/** optional event callbacks */
-	int  (*mouse_leave)     (struct dt_iop_module_t *self);
-	int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
-	int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-	int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
-	int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
-	int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up);
-	void (*configure)       (struct dt_iop_module_t *self, int width, int height);
+  /** optional event callbacks */
+  int  (*mouse_leave)     (struct dt_iop_module_t *self);
+  int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
+  int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
+  int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+  int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
+  int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
+  void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
-	void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
-	void (*cleanup)         (struct dt_iop_module_t *self);
-	/** this inits the piece of the pipe, allocing piece->data as necessary. */
-	void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-	/** this resets the params to factory defaults. used at the beginning of each history synch. */
-	/** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
-	void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-	/** this is the chance to update default parameters, after the full raw is loaded. */
-	void (*reload_defaults) (struct dt_iop_module_t *self);
-	/** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
-	void (*cleanup_pipe)    (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-	void (*modify_roi_in)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
-	void (*modify_roi_out)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
-	int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
+  void (*init)            (struct dt_iop_module_t *self); // this MUST set params_size!
+  void (*cleanup)         (struct dt_iop_module_t *self);
+  /** this inits the piece of the pipe, allocing piece->data as necessary. */
+  void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** this resets the params to factory defaults. used at the beginning of each history synch. */
+  /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
+  void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** this is the chance to update default parameters, after the full raw is loaded. */
+  void (*reload_defaults) (struct dt_iop_module_t *self);
+  /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
+  void (*cleanup_pipe)    (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*modify_roi_in)   (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
+  void (*modify_roi_out)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
+  int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
 
-	/** this is the temp homebrew callback to operations, as long as gegl is so slow.
-		* x,y, and scale are just given for orientation in the framebuffer. i and o are
-		* scaled to the same size width*height and contain a max of 3 floats. other color
-		* formats may be filled by this callback, if the pipeline can handle it. */
-	void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
-	/** the opencl equivalent of process(). */
-	void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  /** this is the temp homebrew callback to operations, as long as gegl is so slow.
+    * x,y, and scale are just given for orientation in the framebuffer. i and o are
+    * scaled to the same size width*height and contain a max of 3 floats. other color
+    * formats may be filled by this callback, if the pipeline can handle it. */
+  void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  /** the opencl equivalent of process(). */
+  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 }
 dt_iop_module_t;
 

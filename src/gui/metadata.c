@@ -77,6 +77,10 @@ void dt_gui_metadata_update()
     snprintf(lbl, ll, "%.0f", img->exif_focal_length);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
+    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_focus_distance");
+    snprintf(lbl, ll, "%.0f", img->exif_focus_distance);
+    gtk_label_set_text(GTK_LABEL(widget), lbl);
+    gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
     widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_iso");
     snprintf(lbl, ll, "%.0f", img->exif_iso);
     gtk_label_set_text(GTK_LABEL(widget), lbl);

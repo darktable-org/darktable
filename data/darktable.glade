@@ -406,7 +406,7 @@ file manager</property>
                                             <property name="visible">True</property>
                                             <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                                             <property name="border_width">5</property>
-                                            <property name="n_rows">15</property>
+                                            <property name="n_rows">16</property>
                                             <property name="n_columns">2</property>
                                             <child>
                                               <widget class="GtkLabel" id="label20">
@@ -542,8 +542,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">date/time</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">7</property>
-                                                <property name="bottom_attach">8</property>
+                                                <property name="top_attach">8</property>
+                                                <property name="bottom_attach">9</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -556,8 +556,8 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">7</property>
-                                                <property name="bottom_attach">8</property>
+                                                <property name="top_attach">8</property>
+                                                <property name="bottom_attach">9</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -568,8 +568,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">iso</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">6</property>
-                                                <property name="bottom_attach">7</property>
+                                                <property name="top_attach">7</property>
+                                                <property name="bottom_attach">8</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -582,8 +582,8 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">6</property>
-                                                <property name="bottom_attach">7</property>
+                                                <property name="top_attach">7</property>
+                                                <property name="bottom_attach">8</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -620,8 +620,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">lens</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">8</property>
-                                                <property name="bottom_attach">9</property>
+                                                <property name="top_attach">9</property>
+                                                <property name="bottom_attach">10</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -634,8 +634,8 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">8</property>
-                                                <property name="bottom_attach">9</property>
+                                                <property name="top_attach">9</property>
+                                                <property name="bottom_attach">10</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -646,8 +646,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">width</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">9</property>
-                                                <property name="bottom_attach">10</property>
+                                                <property name="top_attach">10</property>
+                                                <property name="bottom_attach">11</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -659,8 +659,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">height</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">10</property>
-                                                <property name="bottom_attach">11</property>
+                                                <property name="top_attach">11</property>
+                                                <property name="bottom_attach">12</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -673,8 +673,8 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">9</property>
-                                                <property name="bottom_attach">10</property>
+                                                <property name="top_attach">10</property>
+                                                <property name="bottom_attach">11</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -686,8 +686,8 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">10</property>
-                                                <property name="bottom_attach">11</property>
+                                                <property name="top_attach">11</property>
+                                                <property name="bottom_attach">12</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -698,8 +698,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">film roll</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">11</property>
-                                                <property name="bottom_attach">12</property>
+                                                <property name="top_attach">12</property>
+                                                <property name="bottom_attach">13</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -713,8 +713,8 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">11</property>
-                                                <property name="bottom_attach">12</property>
+                                                <property name="top_attach">12</property>
+                                                <property name="bottom_attach">13</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -725,8 +725,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">title</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">12</property>
-                                                <property name="bottom_attach">13</property>
+                                                <property name="top_attach">13</property>
+                                                <property name="bottom_attach">14</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -740,8 +740,8 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">12</property>
-                                                <property name="bottom_attach">13</property>
+                                                <property name="top_attach">13</property>
+                                                <property name="bottom_attach">14</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -752,8 +752,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">creator</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">13</property>
-                                                <property name="bottom_attach">14</property>
+                                                <property name="top_attach">14</property>
+                                                <property name="bottom_attach">15</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -767,8 +767,8 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">13</property>
-                                                <property name="bottom_attach">14</property>
+                                                <property name="top_attach">14</property>
+                                                <property name="bottom_attach">15</property>
                                               </packing>
                                             </child>
                                             <child>
@@ -779,8 +779,8 @@ file manager</property>
                                                 <property name="label" translatable="yes">rights</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">14</property>
-                                                <property name="bottom_attach">15</property>
+                                                <property name="top_attach">15</property>
+                                                <property name="bottom_attach">16</property>
                                                 <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
@@ -794,8 +794,34 @@ file manager</property>
                                               <packing>
                                                 <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">14</property>
-                                                <property name="bottom_attach">15</property>
+                                                <property name="top_attach">15</property>
+                                                <property name="bottom_attach">16</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="metadata_label_focus_distance">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="label" translatable="yes">-</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="left_attach">1</property>
+                                                <property name="right_attach">2</property>
+                                                <property name="top_attach">6</property>
+                                                <property name="bottom_attach">7</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="label2">
+                                                <property name="visible">True</property>
+                                                <property name="xalign">0</property>
+                                                <property name="xpad">5</property>
+                                                <property name="label" translatable="yes">distance</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="top_attach">6</property>
+                                                <property name="bottom_attach">7</property>
+                                                <property name="x_options">GTK_FILL</property>
                                               </packing>
                                             </child>
                                           </widget>
