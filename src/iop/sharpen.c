@@ -133,13 +133,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // init gaussian kernel
   for(int l=-rad; l<=rad; l++)
-      weight += mat[l+rad] = expf(- l*l/(2.f*sigma2));
+    weight += mat[l+rad] = expf(- l*l/(2.f*sigma2));
   for(int l=0; l<wd; l++)
-      mat[l] /= weight;
+    mat[l] /= weight;
 
   // gauss blur the image horizontally
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+  #pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
@@ -151,7 +151,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *m = mat;
       float sum = 0.0f;
       for(int k=-rad; k<=rad; k++,m++,inp+=ch)
-	sum += *m * *inp;
+        sum += *m * *inp;
       *out = sum;
       out += ch;
       in += ch;
@@ -160,7 +160,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // gauss blur the image horizontally
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+  #pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
   for(int j=rad; j<roi_out->height-rad; j++)
   {
@@ -173,7 +173,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *m = mat;
       float sum = 0.0f;
       for(int k=-rad; k<=rad; k++,m++,inp+=step)
-	sum += *m * *inp;
+        sum += *m * *inp;
       *out = sum;
       out += ch;
       in += ch;
@@ -189,7 +189,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   free(tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)
+  #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
   for(int j=rad; j<roi_out->height-rad; j++)
   {
@@ -201,7 +201,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[ch*i] = in[ch*i];
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
+  #pragma omp parallel for default(none) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
   // subtract blurred image, if diff > thrs, add *amount to orginal image
   for(int j=0; j<roi_out->height; j++)

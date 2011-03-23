@@ -179,9 +179,9 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
         value -= gtk_adjustment_get_step_increment(slider->adjustment);
       else
         value += gtk_adjustment_get_step_increment(slider->adjustment);
-      
+
       if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
-      
+
       gtk_adjustment_set_value(slider->adjustment, value);
       gtk_widget_draw(widget,NULL);
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
@@ -211,7 +211,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
 static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
 {
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
-  
+
   if( event->button==1 )
   {
     /* if x is in slider bar */
@@ -222,7 +222,7 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
         // First get some dimension info
         GdkRectangle vr;
         _slider_get_value_area(widget,&vr);
- 
+
         // Adjust rect to match dimensions for bar
         vr.x+=DTGTK_SLIDER_BORDER_WIDTH*2;
         vr.width-=(DTGTK_SLIDER_BORDER_WIDTH*4);
@@ -451,63 +451,63 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_SLIDER(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
-  
+
   if (widget->allocation.width<=1) return FALSE;
-  
+
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
   GtkDarktableSlider *slider=DTGTK_SLIDER(widget);
   int state = gtk_widget_get_state(widget);
   int width = widget->allocation.width;
   int height = widget->allocation.height;
-  
+
   /* get value fill rectangle constraints*/
   GdkRectangle vr;
   _slider_get_value_area(widget,&vr);
-  
+
   /* create cairo context */
   cairo_t *cr;
   cr = gdk_cairo_create(widget->window);
-  
+
   /* hardcode state for the rest of control */
   state = GTK_STATE_NORMAL;
-  
+
   /* fill value rect */
   gfloat value = gtk_adjustment_get_value(slider->adjustment);
-  
+
   /* convert scale value to range 0.0-1.0*/
-  gfloat vscale = (value - gtk_adjustment_get_lower(slider->adjustment)) / 
-                        (gtk_adjustment_get_upper(slider->adjustment) - 
-                          gtk_adjustment_get_lower(slider->adjustment)
-                        );
-  
+  gfloat vscale = (value - gtk_adjustment_get_lower(slider->adjustment)) /
+                  (gtk_adjustment_get_upper(slider->adjustment) -
+                   gtk_adjustment_get_lower(slider->adjustment)
+                  );
+
 
   cairo_set_source_rgba(cr,
-                       (style->fg[state].red/65535.0)*1.7,
-                       (style->fg[state].green/65535.0)*1.7,
-                       (style->fg[state].blue/65535.0)*1.7,
-                       0.2
-                      );
+                        (style->fg[state].red/65535.0)*1.7,
+                        (style->fg[state].green/65535.0)*1.7,
+                        (style->fg[state].blue/65535.0)*1.7,
+                        0.2
+                       );
 
   _slider_draw_rounded_rect(cr,vr.x,vr.y,vr.width*vscale,vr.height,3,1);
- 
+
   /* setup font using family from style */
-  const gchar *font_family = pango_font_description_get_family(style->font_desc);    
-  
+  const gchar *font_family = pango_font_description_get_family(style->font_desc);
+
   cairo_select_font_face (cr, font_family, CAIRO_FONT_SLANT_NORMAL,
-                               CAIRO_FONT_WEIGHT_NORMAL);
+                          CAIRO_FONT_WEIGHT_NORMAL);
   cairo_text_extents_t ext;
- 
+
   /* Draw label */
   cairo_set_source_rgba(cr,
-                             (style->text[state].red/65535.0)*1.7,
-                             (style->text[state].green/65535.0)*1.7,
-                             (style->text[state].blue/65535.0)*1.7,
-                            0.8);
-                            
+                        (style->text[state].red/65535.0)*1.7,
+                        (style->text[state].green/65535.0)*1.7,
+                        (style->text[state].blue/65535.0)*1.7,
+                        0.8);
+
   gchar *label = (gchar *)g_object_get_data(G_OBJECT(widget),DTGTK_SLIDER_LABEL_KEY);
   if (label)
   {
-    cairo_set_font_size(cr,vr.height*0.5);  
+    cairo_set_font_size(cr,vr.height*0.5);
     cairo_text_extents(cr, "j`", &ext);
     cairo_move_to(cr, vr.x+(DTGTK_SLIDER_BORDER_WIDTH*2),vr.y+ext.height);
     cairo_show_text(cr, label);
@@ -519,10 +519,10 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
       slider->labelheight = vr.y+ext.height+(DTGTK_SLIDER_BORDER_WIDTH*2);
     }
   }
-  
+
   /* Draw value unit */
   gchar *unit = (gchar *)g_object_get_data (G_OBJECT(slider),DTGTK_SLIDER_VALUE_UNIT_KEY);
-  cairo_set_font_size(cr,vr.height*0.45);  
+  cairo_set_font_size(cr,vr.height*0.45);
   cairo_text_extents(cr, "%%", &ext);
   int unitwidth = ext.width;
   if(unit)
@@ -530,36 +530,36 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
     cairo_move_to(cr, vr.x+vr.width-ext.width - (DTGTK_SLIDER_BORDER_WIDTH) ,vr.y+vr.height-(DTGTK_SLIDER_BORDER_WIDTH*2));
     cairo_show_text(cr, unit);
   }
-  
-  
+
+
   /* Draw text value */
   cairo_select_font_face (cr, font_family, CAIRO_FONT_SLANT_NORMAL,
-                               CAIRO_FONT_WEIGHT_BOLD);
+                          CAIRO_FONT_WEIGHT_BOLD);
   char sv[32]= {0};
-  
+
   if (slider->force_sign)
     sprintf(sv,"%+.*f",slider->digits,value);
   else
     sprintf(sv,"%.*f",slider->digits,value);
-  
-  cairo_set_font_size(cr,vr.height*0.5);  
+
+  cairo_set_font_size(cr,vr.height*0.5);
   cairo_text_extents(cr, sv, &ext);
   cairo_move_to(cr, vr.x+vr.width-ext.width - unitwidth -(DTGTK_SLIDER_BORDER_WIDTH*3) ,vr.y+vr.height-(DTGTK_SLIDER_BORDER_WIDTH*2));
   cairo_show_text(cr, sv);
-  
-  
+
+
   /* draw up/down arrows */
   dtgtk_cairo_paint_arrow(cr,
                           width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, DTGTK_SLIDER_BORDER_WIDTH*2,
                           DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-4,
                           CPF_DIRECTION_UP);
-  
+
   dtgtk_cairo_paint_arrow(cr,
                           width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, height-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+4-DTGTK_SLIDER_BORDER_WIDTH*2,
                           DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-4,
                           CPF_DIRECTION_DOWN);
 
-  
+
   cairo_destroy(cr);
   return TRUE;
 }

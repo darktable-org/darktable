@@ -102,7 +102,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   in  = (float *)ivoid;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in,roi_out,lhigh,llow) schedule(static)
+  #pragma omp parallel for default(none) shared(in,roi_out,lhigh,llow) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
@@ -115,7 +115,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   const float compress=(data->compress/110.0)/2.0;  // Dont allow 100% compression..
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out,data) private(in,out) schedule(static)
+  #pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out,data) private(in,out) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {

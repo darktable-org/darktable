@@ -76,10 +76,10 @@ extern "C"
     return IOP_GROUP_CORRECT;
   }
 
-int flags()
-{
-	return IOP_FLAGS_DEPRECATED;
-}
+  int flags()
+  {
+    return IOP_FLAGS_DEPRECATED;
+  }
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
     dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
@@ -119,7 +119,7 @@ int flags()
       for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
           m[l*wd + k] /= weight;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,m,mat,isig2col) private(in,out)
+      #pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,m,mat,isig2col) private(in,out)
 #endif
       for(int j=rad; j<roi_out->height-rad; j++)
       {

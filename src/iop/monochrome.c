@@ -90,7 +90,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   const int ch = piece->colors;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {

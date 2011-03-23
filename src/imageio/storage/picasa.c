@@ -904,7 +904,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   int fail = 0;
 #ifdef _OPENMP // synch parallel store
-#pragma omp critical
+  #pragma omp critical
 #endif
   if( p->picasa_api->current_album == NULL )
     if( _picasa_api_create_album( p->picasa_api ) != 201 )
@@ -965,7 +965,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   gchar *data =g_mapped_file_get_contents( imgfile );
 
 #ifdef _OPENMP
-#pragma omp critical
+  #pragma omp critical
 #endif
   // Upload image to picasa
   if( _picasa_api_upload_photo( p->picasa_api, mime , data, size , caption, description, tags ) == 201 )

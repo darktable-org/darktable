@@ -85,7 +85,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   const float scale = 1.0/(white - black);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
@@ -214,7 +214,8 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
   if (p->black == b) return;
 
   p->black = b;
-  if (p->black >= exposure2white(p->exposure)) {
+  if (p->black >= exposure2white(p->exposure))
+  {
     exposure_set_white(self, p->black+0.01);
   }
 
@@ -362,8 +363,8 @@ void gui_init(struct dt_iop_module_t *self)
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexp), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
-  
-  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(hbox), TRUE, TRUE, 0); 
+
+  gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   darktable.gui->reset = 1;
   self->gui_update(self);

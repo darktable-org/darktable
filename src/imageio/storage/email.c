@@ -111,7 +111,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_control_log(_("%d/%d exported to `%s%s'"), num, total, trunc != filename ? ".." : "", trunc);
 
 #ifdef _OPENMP // store can be called in parallel, so synch access to shared memory
-#pragma omp critical
+  #pragma omp critical
 #endif
   d->images = g_list_append( d->images, attachment );
 

@@ -127,7 +127,7 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, c
       int rows = 3;
       if(FC(rows,3,filters) != c && FC(rows,4,filters) != c) rows++;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(rows,c,out) schedule(static)
+      #pragma omp parallel for default(none) shared(rows,c,out) schedule(static)
 #endif
       for (int row=rows; row<roi->height-3; row+=2)
       {
@@ -175,7 +175,7 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, c
   for (int pass=0; pass < num_passes; pass++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+    #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
     for (int row=3; row<roi->height-3; row++)
     {
@@ -230,7 +230,7 @@ color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const int num_pas
       for (int j=0; j<roi_out->height; j++) for(int i=0; i<roi_out->width; i++,outp+=4)
           outp[3] = outp[c];
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out,c)
+      #pragma omp parallel for schedule(static) default(none) shared(out,c)
 #endif
       for (int j=1; j<roi_out->height-1; j++)
       {
@@ -290,7 +290,7 @@ green_equilibration(float *out, const float *const in, const int width, const in
   memcpy(out,in,height*width*sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out,oi,oj)
+  #pragma omp parallel for schedule(static) default(none) shared(out,oi,oj)
 #endif
   for(int j=oj; j<height-2; j+=2)
   {
@@ -371,7 +371,7 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
   }
   // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_in, roi_out, in, out) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, in, out) schedule(static)
 #endif
   for (int j=offy; j < roi_out->height-offY; j++)
   {
@@ -447,7 +447,7 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
 
   // for all pixels: interpolate colors into float array
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_in, roi_out, out) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, out) schedule(static)
 #endif
   for (int j=1; j < roi_out->height-1; j++)
   {
@@ -896,7 +896,7 @@ void gui_init     (struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->scale1,_("edge threshold"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
-  GtkWidget *widget;  
+  GtkWidget *widget;
   widget = dtgtk_reset_label_new(_("color smoothing"), self, &p->color_smoothing, sizeof(uint32_t));
   GtkWidget *hbox1 = gtk_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);

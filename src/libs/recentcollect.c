@@ -257,8 +257,8 @@ collection_updated(void *d)
     }
     g_object_set(G_OBJECT(c->item[k].button), "tooltip-text", str, (char *)NULL);
     const int cut = 45;
-    if (g_utf8_strlen(str, -1) > cut) 
-    { 
+    if (g_utf8_strlen(str, -1) > cut)
+    {
       g_utf8_strncpy(str_cut, str, cut);
       snprintf(str_pretty, 200, "%s...", str_cut);
       gtk_button_set_label(GTK_BUTTON(c->item[k].button), str_pretty);

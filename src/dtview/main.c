@@ -52,13 +52,13 @@ int init(int argc, char *arg[])
     fprintf( stderr, "[%s] video initialization failed: %s\n", arg[0], SDL_GetError() );
     exit(1);
   }
-  
+
   info = SDL_GetVideoInfo( );
 
   width  = info->current_w;
   height = info->current_h;
   pixels = (float *)malloc(sizeof(float)*4*width*height);
-  for(int k=0;k<width*height*4;k++) pixels[k] = 1.0f;
+  for(int k=0; k<width*height*4; k++) pixels[k] = 1.0f;
 
   if( !info )
   {
@@ -98,12 +98,13 @@ int init(int argc, char *arg[])
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-  
+
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, texID);
 
   glMatrixMode(GL_PROJECTION);
-  glPushMatrix();  glLoadIdentity();
+  glPushMatrix();
+  glLoadIdentity();
   gluOrtho2D(0, 1, 1, 0);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -153,10 +154,14 @@ update(const int frame)
     glDisable(GL_BLEND);
   }
   glBegin(GL_QUADS);
-  glTexCoord2d(0.0f, 1.0f); glVertex2f(0.0f, 1.0f);
-  glTexCoord2d(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
-  glTexCoord2d(1.0f, 0.0f); glVertex2f(1.0f, 0.0f);
-  glTexCoord2d(1.0f, 1.0f); glVertex2f(1.0f, 1.0f);
+  glTexCoord2d(0.0f, 1.0f);
+  glVertex2f(0.0f, 1.0f);
+  glTexCoord2d(0.0f, 0.0f);
+  glVertex2f(0.0f, 0.0f);
+  glTexCoord2d(1.0f, 0.0f);
+  glVertex2f(1.0f, 0.0f);
+  glTexCoord2d(1.0f, 1.0f);
+  glVertex2f(1.0f, 1.0f);
   glEnd();
   SDL_GL_SwapBuffers();
 }
@@ -175,11 +180,11 @@ write_image (dt_imageio_module_data_t *data, const char *filename, const void *i
   float *out = pixels + (offy * width  + offx )* 4;
   const float *rd = in;
   memset(pixels, 0, 4*sizeof(float)*width*height);
-  for(int j=0;j<MIN(data->height, height);j++)
+  for(int j=0; j<MIN(data->height, height); j++)
   {
-    for(int i=0;i<MIN(data->width, width);i++)
+    for(int i=0; i<MIN(data->width, width); i++)
     {
-      for(int c=0;c<3;c++) out[4*i+c] = rd[4*i+c];
+      for(int c=0; c<3; c++) out[4*i+c] = rd[4*i+c];
       out[4*i+3] = .5f;
     }
     out += 4*width;
@@ -245,7 +250,7 @@ process_next_image()
 int main(int argc, char *arg[])
 {
   random_state = use_random = 0;
-  for(int k=1;k<argc;k++)
+  for(int k=1; k<argc; k++)
   {
     if(!strcmp(arg[k], "--random")) use_random = 1;
     else if(!strcmp(arg[k], "-h") || !strcmp(arg[k], "--help"))
@@ -264,7 +269,7 @@ int main(int argc, char *arg[])
     pump_events();
     if(!running) break;
     if(process_next_image()) break;
-    for(int k=0;k<=10;k++)
+    for(int k=0; k<=10; k++)
     {
       update(k);
       usleep(30000);

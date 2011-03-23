@@ -351,7 +351,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to pixelpipe iscale)
   const double filtermul = piece->iscale/(roi_out->scale*wd);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, roi_in, ovoid, ivoid, data)
+  #pragma omp parallel for default(none) shared(roi_out, roi_in, ovoid, ivoid, data)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {

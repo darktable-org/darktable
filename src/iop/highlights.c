@@ -184,7 +184,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data, piece) private(in, out, inc, lch, lchc, lchi)
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out, data, piece) private(in, out, inc, lch, lchc, lchi)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
@@ -215,7 +215,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out) private(in, out, inc, lch, lchc, lchi)
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_out) private(in, out, inc, lch, lchc, lchi)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {

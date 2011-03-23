@@ -160,8 +160,8 @@ write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, voi
   png_set_compression_buffer_size(png_ptr, 8192);
 
   png_set_IHDR(png_ptr, info_ptr, width, height,
-  p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-  PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+               p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+               PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
   png_write_info(png_ptr, info_ptr);
 

@@ -163,7 +163,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
 #endif
     for(int k=0; k<roi_out->width*roi_out->height; k++)
     {
@@ -205,7 +205,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     // FIXME: for some unapparent reason even this breaks lcms2 :(
 #if 0//def _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
 #endif
     for(int k=0; k<roi_out->height; k++)
     {

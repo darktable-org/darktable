@@ -625,7 +625,9 @@ dt_colorspaces_create_output_profile(const int imgid)
   if(!overprofile && profile[0] == '\0')
   {
     g_strlcpy(profile, "sRGB", 1024);
-  } else if(profile[0] == '\0') {
+  }
+  else if(profile[0] == '\0')
+  {
     g_strlcpy(profile, overprofile, 1024);
   }
 

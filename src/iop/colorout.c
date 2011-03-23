@@ -231,7 +231,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   {
     //fprintf(stderr,"Using cmatrix codepath\n");
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, i, o)
+    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, i, o)
 #endif
     for (int k=0; k<roi_out->width*roi_out->height; k++)
     {
@@ -260,7 +260,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
     // FIXME: breaks :(
 #if 0//def _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, rowsize)
+    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, rowsize)
 #endif
     for (int k=0; k<roi_out->height; k++)
     {

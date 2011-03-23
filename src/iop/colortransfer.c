@@ -236,7 +236,7 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
     for(int k=0; k<n; k++) cnt[k] = 0;
     // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi,col,var,mean,mean_out,cnt)
+    #pragma omp parallel for default(none) schedule(static) shared(roi,col,var,mean,mean_out,cnt)
 #endif
     for(int s=0; s<samples; s++)
     {
@@ -249,24 +249,24 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
         // determine dist to mean_out
         const int c = get_cluster(Lab, n, mean_out);
 #ifdef _OPENMP
-#pragma omp atomic
+        #pragma omp atomic
 #endif
         cnt[c]++;
         // update mean, var
 #ifdef _OPENMP
-#pragma omp atomic
+        #pragma omp atomic
 #endif
         var[c][0]  += Lab[1]*Lab[1];
 #ifdef _OPENMP
-#pragma omp atomic
+        #pragma omp atomic
 #endif
         var[c][1]  += Lab[2]*Lab[2];
 #ifdef _OPENMP
-#pragma omp atomic
+        #pragma omp atomic
 #endif
         mean[c][0] += Lab[1];
 #ifdef _OPENMP
-#pragma omp atomic
+        #pragma omp atomic
 #endif
         mean[c][1] += Lab[2];
       }
@@ -327,7 +327,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int hist[HISTN];
     capture_histogram(in, roi_in, hist);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi_out,data,in,out,hist)
+    #pragma omp parallel for default(none) schedule(static) shared(roi_out,data,in,out,hist)
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
@@ -351,7 +351,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     // for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi_out,data,mean,var,mapio,in,out)
+    #pragma omp parallel for default(none) schedule(static) shared(roi_out,data,mean,var,mapio,in,out)
 #endif
     for(int k=0; k<roi_out->height; k++)
     {

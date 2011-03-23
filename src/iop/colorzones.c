@@ -121,7 +121,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o)
+  #pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {

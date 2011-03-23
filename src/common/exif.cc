@@ -158,7 +158,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
 
     /* Read lens name */
     if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
-             ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
+        ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }

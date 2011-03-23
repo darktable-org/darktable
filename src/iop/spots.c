@@ -79,7 +79,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float *in = (float *)i;
   float *out = (float *)o;
   // .. just a few spots:
-  for(int i=0;i<d->num_spots;i++)
+  for(int i=0; i<d->num_spots; i++)
   {
     // convert from world space:
     const int x  = (d->spot[i].x *piece->buf_in.width)/scale - roi_in->x, y  = (d->spot[i].y *piece->buf_in.height)/scale - roi_in->y;
@@ -88,15 +88,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int um = MIN(rad, MIN(x, xc)), uM = MIN(rad, MIN(roi_in->width -1-xc, roi_in->width -1-x));
     const int vm = MIN(rad, MIN(y, yc)), vM = MIN(rad, MIN(roi_in->height-1-yc, roi_in->height-1-y));
     float filter[2*rad + 1];
-    for(int k=-rad;k<=rad;k++) filter[rad + k] = expf(-k*k*2.f/(rad*rad));
-    for(int u=-um;u<=uM;u++) for(int v=-vm;v<=vM;v++)
-    {
-      const float f = filter[rad+u]*filter[rad+v];
-      for(int c=0;c<ch;c++)
-        out[4*(roi_out->width*(y+v) + x+u) + c] =
-        out[4*(roi_out->width*(y+v) + x+u) + c] * (1.0f-f) +
-        in[4*(roi_in->width*(yc+v) + xc+u) + c] * f;
-    }
+    for(int k=-rad; k<=rad; k++) filter[rad + k] = expf(-k*k*2.f/(rad*rad));
+    for(int u=-um; u<=uM; u++) for(int v=-vm; v<=vM; v++)
+      {
+        const float f = filter[rad+u]*filter[rad+v];
+        for(int c=0; c<ch; c++)
+          out[4*(roi_out->width*(y+v) + x+u) + c] =
+            out[4*(roi_out->width*(y+v) + x+u) + c] * (1.0f-f) +
+            in[4*(roi_in->width*(yc+v) + xc+u) + c] * f;
+      }
   }
 }
 
@@ -115,7 +115,10 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_spots_params_t tmp = (dt_iop_spots_params_t){0};
+  dt_iop_spots_params_t tmp = (dt_iop_spots_params_t)
+  {
+    0
+  };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_spots_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_spots_params_t));
@@ -196,7 +199,7 @@ void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t 
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
 
-  for(int i=0;i<p->num_spots;i++)
+  for(int i=0; i<p->num_spots; i++)
   {
     if(i == g->dragging) continue;
     if(i == g->selected) cairo_set_line_width(cr, 2.0/zoom_scale);
@@ -245,15 +248,15 @@ int mouse_moved(dt_iop_module_t *self, double x, double y, int which)
   int selected = -1;
   const int old_sel = g->selected;
   g->selected = -1;
-  if(g->dragging < 0) for(int i=0;i<p->num_spots;i++)
-  {
-    const float dist = (pzx - p->spot[i].x)*(pzx - p->spot[i].x) + (pzy - p->spot[i].y)*(pzy - p->spot[i].y);
-    if(dist < mind)
+  if(g->dragging < 0) for(int i=0; i<p->num_spots; i++)
     {
-      mind = dist;
-      selected = i;
+      const float dist = (pzx - p->spot[i].x)*(pzx - p->spot[i].x) + (pzy - p->spot[i].y)*(pzy - p->spot[i].y);
+      if(dist < mind)
+      {
+        mind = dist;
+        selected = i;
+      }
     }
-  }
   else
   {
     p->spot[g->dragging].xc = pzx;
@@ -295,7 +298,8 @@ int button_pressed(dt_iop_module_t *self, double x, double y, int which, int typ
         return 1;
       }
       dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
-      g->button_down_zoom_x += 0.5f; g->button_down_zoom_y += 0.5f;
+      g->button_down_zoom_x += 0.5f;
+      g->button_down_zoom_y += 0.5f;
       const int i = p->num_spots++;
       g->dragging = i;
       // on *wd|*ht scale, radius on *min(wd, ht).
@@ -317,7 +321,8 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   if(which == 1 && g->dragging >= 0)
   {
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
-    g->button_down_zoom_x += 0.5f; g->button_down_zoom_y += 0.5f;
+    g->button_down_zoom_x += 0.5f;
+    g->button_down_zoom_y += 0.5f;
     const int i = g->dragging;
     p->spot[i].xc = g->button_down_zoom_x;
     p->spot[i].yc = g->button_down_zoom_y;

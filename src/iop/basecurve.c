@@ -187,7 +187,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out,out,d,in) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out,out,d,in) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
@@ -598,15 +598,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
-  G_CALLBACK (dt_iop_basecurve_expose), self);
+                    G_CALLBACK (dt_iop_basecurve_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
-  G_CALLBACK (dt_iop_basecurve_button_press), self);
+                    G_CALLBACK (dt_iop_basecurve_button_press), self);
   g_signal_connect (G_OBJECT (c->area), "button-release-event",
-  G_CALLBACK (dt_iop_basecurve_button_release), self);
+                    G_CALLBACK (dt_iop_basecurve_button_release), self);
   g_signal_connect (G_OBJECT (c->area), "motion-notify-event",
-  G_CALLBACK (dt_iop_basecurve_motion_notify), self);
+                    G_CALLBACK (dt_iop_basecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
-  G_CALLBACK (dt_iop_basecurve_leave_notify), self);
+                    G_CALLBACK (dt_iop_basecurve_leave_notify), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

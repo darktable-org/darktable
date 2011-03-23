@@ -132,7 +132,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float aperture = M_PI * powf(efl / (2.0f * eap), 2.0f);
     const float cal = 100.0f/(aperture*img->exif_exposure*img->exif_iso);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
+    #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
 #endif
     for(int k=0; k<wd*ht; k++)
     {
@@ -149,7 +149,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     dt_image_cache_release(img, 'r');
   }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight)
+  #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight)
 #endif
   for(int k=0; k<wd*ht; k++) pixels[k] = fmaxf(0.0f, fminf(10000000.0f, pixels[k]/(65535.0f*weight[k])));
 
@@ -455,7 +455,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
-#pragma omp parallel default(none) private(imgid, size) shared(j, fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads)
+  #pragma omp parallel default(none) private(imgid, size) shared(j, fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads)
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
@@ -468,7 +468,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
     {
 #ifdef _OPENMP
-#pragma omp critical
+      #pragma omp critical
 #endif
       {
         imgid = (long int)t->data;
@@ -495,7 +495,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
         }
       }
 #ifdef _OPENMP
-#pragma omp critical
+      #pragma omp critical
 #endif
       {
         fraction+=1.0/total;
@@ -503,8 +503,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       }
     }
 #ifdef _OPENMP
-#pragma omp barrier
-#pragma omp master
+    #pragma omp barrier
+    #pragma omp master
 #endif
     {
       dt_gui_background_jobs_destroy (j);
