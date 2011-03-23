@@ -824,7 +824,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
     img->black   = sqlite3_column_double(stmt, 20);
     img->maximum = sqlite3_column_double(stmt, 21);
     img->orientation = sqlite3_column_int(stmt, 22);
-    img->exif_focus_distance = sqlite3_column_real(stmt,23);
+    img->exif_focus_distance = sqlite3_column_double(stmt,23);
     if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
 
     ret = 0;
