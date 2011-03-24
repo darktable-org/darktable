@@ -586,9 +586,9 @@ int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, image->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, num);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, h->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
-  
+
   fprintf(stderr,"Write: mode %d, opacity %f\n",h->blend_params->mode,h->blend_params->opacity);
-  
+
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
   return 0;
@@ -636,15 +636,15 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       hist->enabled = module->enabled;
       hist->module = module;
       hist->params = malloc(module->params_size);
-      
+
       /* allocate and set hist blend_params */
       hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
       memset(hist->blend_params, 0, sizeof(dt_develop_blend_params_t));
-      
+
       memcpy(hist->params, module->params, module->params_size);
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
-      
+
       if(dev->gui_attached)
       {
         char label[512]; // print on/off
@@ -661,10 +661,10 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
       memcpy(hist->params, module->params, module->params_size);
-      
+
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
-      
+
       // if the user changed stuff and the module is still not enabled, do it:
       if(strcmp(module->op, "rawimport") && !hist->enabled && !module->enabled)
       {
@@ -753,7 +753,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     memcpy(hist->module->params, hist->params, hist->module->params_size);
     memcpy(hist->module->blend_params, hist->blend_params, sizeof(dt_develop_blend_params_t));
-    
+
     hist->module->enabled = hist->enabled;
     history = g_list_next(history);
   }
@@ -847,12 +847,12 @@ void dt_dev_read_history(dt_develop_t *dev)
     {
       memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     }
-        
+
     if(sqlite3_column_bytes(stmt, 6) == sizeof(dt_develop_blend_params_t))
       memcpy(hist->blend_params, sqlite3_column_blob(stmt, 6), sizeof(dt_develop_blend_params_t));
     else
-	memset(hist->blend_params, 0, sizeof(dt_develop_blend_params_t));
-    
+      memset(hist->blend_params, 0, sizeof(dt_develop_blend_params_t));
+
     fprintf(stderr,"Read: mode %d, opacity %f\n",hist->blend_params->mode,hist->blend_params->opacity);
     // memcpy(hist->module->params, hist->params, hist->module->params_size);
     // hist->module->enabled = hist->enabled;

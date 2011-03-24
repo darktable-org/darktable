@@ -42,7 +42,7 @@ typedef struct _iop_gui_blend_data_t
   GtkToggleButton *enable;
   GtkComboBox *blend_modes_combo;
   GtkWidget *opacity_slider;
-}_iop_gui_blend_data_t;
+} _iop_gui_blend_data_t;
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
@@ -289,14 +289,14 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
 
   // now init the instance:
   module->init(module);
-  
+
   /* initialize blendop params and default values */
   module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
   module->default_blendop_params=g_malloc(sizeof(dt_develop_blend_params_t));
   memset(module->blend_params, 0, sizeof(dt_develop_blend_params_t));
-  dt_develop_blend_params_t default_blendop_params={DEVELOP_BLEND_DISABLED,100.0,0};
+  dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
   memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
-  
+
   if(module->priority == 0)
   {
     fprintf(stderr, "[iop_load_module] `%s' needs to set priority!\n", so->op);
@@ -497,20 +497,20 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     int length = module->params_size+sizeof(dt_develop_blend_params_t);
     char *str = malloc(length);
     memcpy(str,module->params,module->params_size);
-    
+
     /* if module supports blend op add blend params into account */
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
       memcpy(str+module->params_size,module->blend_params,sizeof(dt_develop_blend_params_t));
       memcpy(piece->blendop_data,blendop_params,sizeof(dt_develop_blend_params_t));
     }
-    
+
     // assume process_cl is ready, commit_params can overwrite this.
     if(module->process_cl) piece->process_cl_ready = 1;
     module->commit_params(module, params, pipe, piece);
     for(int i=0; i<length; i++) hash = ((hash << 5) + hash) ^ str[i];
     piece->hash = hash;
-    
+
     free(str);
   }
   // printf("commit params hash += module %s: %lu, enabled = %d\n", piece->module->op, piece->hash, piece->enabled);
@@ -524,12 +524,12 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
     _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
-    
+
     gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode - 1);
     gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
     dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
     fprintf(stderr,"gui_update: mode %d, opacity %f\n",module->blend_params->mode,module->blend_params->opacity);
-    
+
   }
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   darktable.gui->reset = reset;
@@ -538,41 +538,41 @@ void dt_iop_gui_update(dt_iop_module_t *module)
 static int _iop_module_demosaic=0,_iop_module_colorout=0,_iop_module_colorin=0;
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 {
-    /* check if we do know what priority the color* plugins have */
-    if(_iop_module_colorout==0 && _iop_module_colorin==0)
+  /* check if we do know what priority the color* plugins have */
+  if(_iop_module_colorout==0 && _iop_module_colorin==0)
+  {
+    /* lets find out which priority colorin and colorout have */
+    GList *iop = module->dev->iop;
+    while(iop)
     {
-      /* lets find out which priority colorin and colorout have */
-      GList *iop = module->dev->iop;
-      while(iop)
+      dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+      if(m != module)
       {
-        dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-        if(m != module)
-        {
-          if(!strcmp(m->op,"colorin"))
-            _iop_module_colorin = m->priority;
-          else if(!strcmp(m->op,"colorout"))
-            _iop_module_colorout = m->priority; 
-	  else if(!strcmp(m->op,"demosaic"))
-            _iop_module_demosaic = m->priority;
-        }
-    
-        /* do we have both priorities, lets break out... */
-        if(_iop_module_colorout && _iop_module_colorin && _iop_module_demosaic)
-          break;
-        iop = g_list_next(iop);
+        if(!strcmp(m->op,"colorin"))
+          _iop_module_colorin = m->priority;
+        else if(!strcmp(m->op,"colorout"))
+          _iop_module_colorout = m->priority;
+        else if(!strcmp(m->op,"demosaic"))
+          _iop_module_demosaic = m->priority;
       }
-    }
 
-    /* let check which colorspace module is within */
-    if (module->priority > _iop_module_colorout)
-      return iop_cs_rgb;
-    else if (module->priority > _iop_module_colorin)
-      return iop_cs_Lab;
-    else if (module->priority < _iop_module_demosaic)
-      return iop_cs_RAW;
-    
-    /* fallback to rgb */
+      /* do we have both priorities, lets break out... */
+      if(_iop_module_colorout && _iop_module_colorin && _iop_module_demosaic)
+        break;
+      iop = g_list_next(iop);
+    }
+  }
+
+  /* let check which colorspace module is within */
+  if (module->priority > _iop_module_colorout)
     return iop_cs_rgb;
+  else if (module->priority > _iop_module_colorin)
+    return iop_cs_Lab;
+  else if (module->priority < _iop_module_demosaic)
+    return iop_cs_RAW;
+
+  /* fallback to rgb */
+  return iop_cs_rgb;
 }
 
 // FIXME: When the module is already expanded and it's shift-clicked, then it is turned off and on again.
@@ -702,12 +702,12 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
 static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,_iop_gui_blend_data_t *data)
 {
-  if (gtk_toggle_button_get_active(b)) 
+  if (gtk_toggle_button_get_active(b))
   {
     gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(data->opacity_slider),TRUE);
     data->module->blend_params->mode = 1+gtk_combo_box_get_active(data->blend_modes_combo);
-  } 
+  }
   else
   {
     gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),FALSE);
@@ -772,11 +772,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
-  
+
   /* add module widget to container */
   GtkWidget * iopw = gtk_vbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
-  
+
 
   /* create and add blend mode if module supports it */
   if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
@@ -784,7 +784,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     module->blend_data = g_malloc(sizeof(_iop_gui_blend_data_t));
     _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
     bd->module = module;
-    
+
     GtkWidget *bvb = gtk_vbox_new(FALSE,0);
     GtkWidget *bhb = gtk_hbox_new(FALSE,0);
     bd->enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend")));
@@ -807,37 +807,37 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("vividlight"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("linearlight"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("pinlight"));
-    
+
     gtk_widget_set_sensitive(GTK_WIDGET(bd->blend_modes_combo),FALSE);
     gtk_widget_set_sensitive(bd->opacity_slider,FALSE);
     gtk_combo_box_set_active(bd->blend_modes_combo,0);
     gtk_object_set(GTK_OBJECT(bd->enable), "tooltip-text", _("enable blending mode"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
-    
+
     g_signal_connect (G_OBJECT (bd->enable), "toggled",
-                    G_CALLBACK (_iop_gui_enabled_blend_cb), bd);
+                      G_CALLBACK (_iop_gui_enabled_blend_cb), bd);
     g_signal_connect (G_OBJECT (bd->opacity_slider), "value-changed",
-                    G_CALLBACK (_blendop_opacity_callback), bd);
+                      G_CALLBACK (_blendop_opacity_callback), bd);
     g_signal_connect (G_OBJECT (bd->blend_modes_combo), "changed",
-                    G_CALLBACK (_blendop_mode_callback), bd);
-  
+                      G_CALLBACK (_blendop_mode_callback), bd);
+
     gtk_box_pack_start(GTK_BOX(bhb), GTK_WIDGET(bd->enable), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bhb), GTK_WIDGET(bd->blend_modes_combo), TRUE, TRUE, 0);
-    
+
     gtk_box_pack_start(GTK_BOX(bvb),gtk_hseparator_new(),TRUE,TRUE,4);
     gtk_box_pack_start(GTK_BOX(bvb),bhb,TRUE,TRUE,2);
     gtk_box_pack_start(GTK_BOX(bvb), bd->opacity_slider,TRUE,TRUE,2);
-    
+
     gtk_box_pack_start(GTK_BOX(iopw),bvb,TRUE,TRUE,4);
-    
+
   }
 
   /* add the iopw widget to aligment widget */
   gtk_container_add(GTK_CONTAINER(al), iopw);
   gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
 
-  
+
   g_signal_connect (G_OBJECT (resetbutton), "clicked",
                     G_CALLBACK (dt_iop_gui_reset_callback), module);
   g_signal_connect (G_OBJECT (presetsbutton), "clicked",

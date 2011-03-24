@@ -39,13 +39,14 @@
 #define DEVELOP_BLEND_LINEARLIGHT			0x0E
 #define DEVELOP_BLEND_PINLIGHT				0x0F
 
-typedef struct dt_develop_blend_params_t {
-	/** blending mode */
-	unsigned char mode;
-	/** mixing opacity */
-	float opacity;
-	/** id of mask in current pipeline */
-	unsigned int mask_id;
+typedef struct dt_develop_blend_params_t
+{
+  /** blending mode */
+  unsigned char mode;
+  /** mixing opacity */
+  float opacity;
+  /** id of mask in current pipeline */
+  unsigned int mask_id;
 } dt_develop_blend_params_t;
 
 #define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)

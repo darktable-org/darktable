@@ -47,7 +47,7 @@ struct dt_develop_blend_params_t;
 
 typedef struct dt_iop_params_t
 {
-	int keep;
+  int keep;
 }
 dt_iop_params_t;
 typedef void dt_iop_gui_data_t;
@@ -143,10 +143,10 @@ typedef struct dt_iop_module_t
   dt_iop_gui_data_t *gui_data;
   /** other stuff that may be needed by the module, not only in gui mode. */
   dt_iop_global_data_t *data;
-/** blending params */
-struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
-/** holder for blending ui control */
-gpointer blend_data;
+  /** blending params */
+  struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
+  /** holder for blending ui control */
+  gpointer blend_data;
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
@@ -242,9 +242,9 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 /** colorspace enums */
 typedef enum dt_iop_colorspace_type_t
 {
-	iop_cs_RAW,
-	iop_cs_Lab,
-	iop_cs_rgb
+  iop_cs_RAW,
+  iop_cs_Lab,
+  iop_cs_rgb
 } dt_iop_colorspace_type_t;
 
 /** find which colorspace the module works within */
@@ -259,7 +259,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
-														uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
+                            uint8_t *o, int32_t ox, int32_t oy, int32_t ow, int32_t oh, int32_t obw, int32_t obh);
 
 void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);

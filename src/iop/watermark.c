@@ -76,10 +76,10 @@ dt_iop_watermark_data_t;
 
 typedef struct dt_iop_watermark_gui_data_t
 {
-	GtkComboBox *combobox1;		                                             // watermark
-	GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
-	GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
-	GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
+  GtkComboBox *combobox1;		                                             // watermark
+  GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
+  GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
+  GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
 }
 dt_iop_watermark_gui_data_t;
 
@@ -644,90 +644,90 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-	self->gui_data = malloc(sizeof(dt_iop_watermark_gui_data_t));
-	dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-	dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  self->gui_data = malloc(sizeof(dt_iop_watermark_gui_data_t));
+  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-	self->widget = gtk_hbox_new(FALSE,0);
-	GtkWidget *vbox = gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
-	gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  self->widget = gtk_hbox_new(FALSE,0);
+  GtkWidget *vbox = gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
-	GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char)*64);
-	GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
+  GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char)*64);
+  GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
 
-	// Add the marker combobox
-	GtkWidget *hbox= gtk_hbox_new(FALSE,0);
-	g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
-	g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
-	gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
-	gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
-	gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  // Add the marker combobox
+  GtkWidget *hbox= gtk_hbox_new(FALSE,0);
+  g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
+  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-	// Add opacity/scale sliders to table
-	g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->opacity, 0.5));
-	g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 100.0, 1.0, p->scale, 0.5));
-	dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-	dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-	dtgtk_slider_set_label(g->scale1,_("opacity"));
-	dtgtk_slider_set_unit(g->scale1,"%");
-	dtgtk_slider_set_label(g->scale2,_("scale"));
-	dtgtk_slider_set_unit(g->scale2,"%");
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  // Add opacity/scale sliders to table
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->opacity, 0.5));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 100.0, 1.0, p->scale, 0.5));
+  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  dtgtk_slider_set_label(g->scale1,_("opacity"));
+  dtgtk_slider_set_unit(g->scale1,"%");
+  dtgtk_slider_set_label(g->scale2,_("scale"));
+  dtgtk_slider_set_unit(g->scale2,"%");
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
-	// Create the 3x3 gtk table toggle button table...
-	GtkTable *bat = GTK_TABLE( gtk_table_new(3,3,TRUE));
-	for(int i=0; i<9; i++)
-	{
-		g->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<(i+1))));
-		gtk_widget_set_size_request (GTK_WIDGET (g->dtba[i]),16,16);
-		gtk_table_attach (GTK_TABLE (bat), GTK_WIDGET (g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
-		g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);
-	}
-	GtkWidget *hbox2 = gtk_hbox_new(FALSE,0);
-	gtk_box_pack_start(GTK_BOX(hbox2),GTK_WIDGET(label4),TRUE,TRUE,0);
-	gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(bat), TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
+  // Create the 3x3 gtk table toggle button table...
+  GtkTable *bat = GTK_TABLE( gtk_table_new(3,3,TRUE));
+  for(int i=0; i<9; i++)
+  {
+    g->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<(i+1))));
+    gtk_widget_set_size_request (GTK_WIDGET (g->dtba[i]),16,16);
+    gtk_table_attach (GTK_TABLE (bat), GTK_WIDGET (g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
+    g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);
+  }
+  GtkWidget *hbox2 = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(hbox2),GTK_WIDGET(label4),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(bat), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
-	// x/y offset
-	g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
-	g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
-	dtgtk_slider_set_label(g->scale3,_("x offset"));
-	dtgtk_slider_set_label(g->scale4,_("y offset"));
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
-
-
-	// Let's add some tooltips and hook up some signals...
-	g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
-	g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
-
-	g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-										G_CALLBACK (opacity_callback), self);
-	g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-										G_CALLBACK (scale_callback), self);
-
-	g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-										G_CALLBACK (xoffset_callback), self);
-
-	g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-										G_CALLBACK (yoffset_callback), self);
+  // x/y offset
+  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->xoffset,3));
+  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
+  dtgtk_slider_set_label(g->scale3,_("x offset"));
+  dtgtk_slider_set_label(g->scale4,_("y offset"));
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
 
-	g_signal_connect (G_OBJECT (g->dtbutton1), "clicked",G_CALLBACK (refresh_callback), self);
+  // Let's add some tooltips and hook up some signals...
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
 
-	refresh_watermarks( self );
+  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
+                    G_CALLBACK (opacity_callback), self);
+  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
+                    G_CALLBACK (scale_callback), self);
+
+  g_signal_connect (G_OBJECT (g->scale3), "value-changed",
+                    G_CALLBACK (xoffset_callback), self);
+
+  g_signal_connect (G_OBJECT (g->scale4), "value-changed",
+                    G_CALLBACK (yoffset_callback), self);
 
 
-	g_signal_connect (G_OBJECT (g->combobox1), "changed",
-										G_CALLBACK (watermark_callback), self);
+  g_signal_connect (G_OBJECT (g->dtbutton1), "clicked",G_CALLBACK (refresh_callback), self);
+
+  refresh_watermarks( self );
+
+
+  g_signal_connect (G_OBJECT (g->combobox1), "changed",
+                    G_CALLBACK (watermark_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-	free(self->gui_data);
-	self->gui_data = NULL;
+  free(self->gui_data);
+  self->gui_data = NULL;
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

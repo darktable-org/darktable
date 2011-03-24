@@ -37,12 +37,12 @@ history_compress_clicked (GtkWidget *widget, gpointer user_data)
   // make sure the right history is in there:
   dt_dev_write_history(darktable.develop);
   sqlite3_stmt *stmt;
- 
+
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "create temporary table temp_history as select * from history as a where imgid = ?1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  
+
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
