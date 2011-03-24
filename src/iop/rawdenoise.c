@@ -55,6 +55,11 @@ const char *name()
   return _("raw denoise");
 }
 
+int flags()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 int
 groups ()
 {
