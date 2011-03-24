@@ -151,7 +151,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 	
 	if (!(d->mode & DEVELOP_BLEND_MASK_FLAG))
 	{
-		/* blending without mask */
+		/* defaults to 3 cannels */
 		int channels = 3;
 		
 		/* get the clipped opacity value  0 - 1 */
@@ -159,31 +159,40 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
 		
 		/* get channel max values depending on colorspace */
-		float max[3] = {1.0,1.0,1.0};
+		float max[4] = {1.0,1.0,1.0,1.0};
 		const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
 		
 		/* if module is in lab space, lets set max for L */
 		if (cst == iop_cs_Lab) {
 			max[0] = 100.0;
 			channels = 1;	// in Lab space, only blend Lightness
-		}
+		} 
+		else if(cst == iop_cs_RAW)
+			channels = 1;	// R G1 B G2
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(in,roi_out,out,blend,d,max,channels)
 #endif
 		for (int y=0;y<roi_out->height;y++)
 			for (int x=0;x<roi_out->width;x++)
 			{
-				int index=(y*roi_out->width+x)*ch;
+				int index=(y*roi_out->width+x);
 				if (cst == iop_cs_Lab) 
 				{
+					index*=ch;
 					/* if in Lab space, just blend Lightness and copy ab from source */
 					out[index] = (in[index] * (1.0-opacity)) + (blend(max[0], in[index], out[index]) * opacity);
 					out[index+1] = in[index+1];
 					out[index+2] = in[index+2];
-				}					
+				}
+				else if (cst == iop_cs_RAW) 
+				{
+					/* handle blend of raw data */
+					out[index] = (in[index] * (1.0-opacity)) + (blend(max[0], in[index], out[index]) * opacity);
+				}
 				else
 				{
-					/* else assume rgb, and blend each channel */
+					index*=ch;
+					/* else assume raw,rgb, and blend each channel */
 					for (int k=index;k<(index+channels);k++)
 						out[k] = (in[k] * (1.0-opacity)) + (blend(max[k-index], in[k], out[k]) * opacity);
 				}
