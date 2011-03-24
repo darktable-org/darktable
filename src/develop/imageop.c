@@ -535,7 +535,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
-static int _iop_module_colorout=0,_iop_module_colorin=0;
+static int _iop_module_demosaic=0,_iop_module_colorout=0,_iop_module_colorin=0;
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 {
     /* check if we do know what priority the color* plugins have */
@@ -551,11 +551,13 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
           if(!strcmp(m->op,"colorin"))
             _iop_module_colorin = m->priority;
           else if(!strcmp(m->op,"colorout"))
-            _iop_module_colorout = m->priority;
+            _iop_module_colorout = m->priority; 
+	  else if(!strcmp(m->op,"demosaic"))
+            _iop_module_demosaic = m->priority;
         }
     
         /* do we have both priorities, lets break out... */
-        if(_iop_module_colorout && _iop_module_colorin)
+        if(_iop_module_colorout && _iop_module_colorin && _iop_module_demosaic)
           break;
         iop = g_list_next(iop);
       }
@@ -566,6 +568,8 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
       return iop_cs_rgb;
     else if (module->priority > _iop_module_colorin)
       return iop_cs_Lab;
+    else if (module->priority < _iop_module_demosaic)
+      return iop_cs_RAW;
     
     /* fallback to rgb */
     return iop_cs_rgb;

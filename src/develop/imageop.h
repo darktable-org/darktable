@@ -242,6 +242,7 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 /** colorspace enums */
 typedef enum dt_iop_colorspace_type_t
 {
+	iop_cs_RAW,
 	iop_cs_Lab,
 	iop_cs_rgb
 } dt_iop_colorspace_type_t;
