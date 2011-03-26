@@ -45,6 +45,7 @@ set(RAWSPEED_SOURCES
   "RawSpeed/TiffParserOlympus.cpp"
   "RawSpeed/RawImageDataU16.cpp"
   "RawSpeed/RawImageDataFloat.cpp"
+  "RawSpeed/SrwDecoder.cpp"
     )
 
 #
