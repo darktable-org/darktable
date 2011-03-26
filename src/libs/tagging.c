@@ -401,6 +401,7 @@ gui_init (dt_lib_module_t *self)
 
   // related tree view
   w = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_size_request(w,-1,100);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->related = GTK_TREE_VIEW(gtk_tree_view_new());
