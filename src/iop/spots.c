@@ -49,6 +49,7 @@ dt_iop_spots_params_t;
 
 typedef struct dt_iop_spots_gui_data_t
 {
+  GtkLabel *label;
   int dragging;
   int selected;
   gboolean hoover_c; // is the pointer over the "clone from" end?
@@ -69,6 +70,7 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+// FIXME: doesn't work if source is outside of ROI
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
@@ -156,22 +158,34 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 /** gui callbacks, these are needed. */
 void gui_update    (dt_iop_module_t *self)
 {
+  dt_iop_spots_params_t *p = (dt_iop_spots_params_t *)self->params;
+  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  char str[3];
+  snprintf(str,3,"%d",p->num_spots);
+  gtk_label_set_text(g->label, str);
 }
 
 void gui_init     (dt_iop_module_t *self)
 {
-  // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_spots_gui_data_t));
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   g->dragging = -1;
   g->selected = -1;
-  self->widget = gtk_label_new(_("click on a spot and drag on canvas to heal.\nuse the mouse wheel to adjust size.\nright click to remove a stroke."));
-  gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0f, 0.5f);
+  self->widget = gtk_vbox_new(FALSE, 5);
+  GtkWidget *label = gtk_label_new(_("click on a spot and drag on canvas to heal.\nuse the mouse wheel to adjust size.\nright click to remove a stroke."));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
+  GtkWidget * hbox = gtk_hbox_new(FALSE, 5);
+  label = gtk_label_new(_("number of strokes:"));
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+  g->label = GTK_LABEL(gtk_label_new("-1"));
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 }
 
 void gui_cleanup  (dt_iop_module_t *self)
 {
-  // nothing else necessary, gtk will clean up the label
+  // nothing else necessary, gtk will clean up the labels
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -369,6 +383,10 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     g->selected = -1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     g->dragging = -1;
+    char str[3];
+    snprintf(str,3,"%d",p->num_spots);
+    gtk_label_set_text(g->label, str);
+
     return 1;
   }
   else if(which == 3 && g->selected >= 0)
@@ -378,6 +396,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(i > 0) memcpy(p->spot + g->selected, p->spot + i, sizeof(spot_t));
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     g->selected = -1;
+    char str[3];
+    snprintf(str,3,"%d",p->num_spots);
+    gtk_label_set_text(g->label, str);
   }
   return 0;
 }
