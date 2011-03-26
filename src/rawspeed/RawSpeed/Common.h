@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef COMMON_H
+#define COMMON_H
+
 
 #if !defined(__unix__) && !defined(__MINGW32__)
 #include <intrin.h>
@@ -119,5 +121,21 @@ inline Endianness getHostEndianness() {
 }
 inline uint32 clampbits(int x, uint32 n) { uint32 _y_temp; if( (_y_temp=x>>n) ) x = ~_y_temp >> (32-n); return x;}
 
+/* Remove all spaces at the end of a string */
+
+inline void TrimSpaces(string& str) {
+  // Trim Both leading and trailing spaces
+  size_t startpos = str.find_first_not_of(" \t"); // Find the first character position after excluding leading blank spaces
+  size_t endpos = str.find_last_not_of(" \t"); // Find the first character position from reverse af
+
+  // if all spaces or empty return an empty string
+  if ((string::npos == startpos) || (string::npos == endpos)) {
+    str = "";
+  } else
+    str = str.substr(startpos, endpos - startpos + 1);
+}
+
 
 } // namespace RawSpeed
+
+#endif

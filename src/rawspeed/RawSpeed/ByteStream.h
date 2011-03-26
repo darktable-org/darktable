@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef BYTE_STREAM_H
+#define BYTE_STREAM_H
+
 #include "IOException.h"
 
 namespace RawSpeed {
@@ -48,3 +50,5 @@ protected:
 };
 
 } // namespace RawSpeed
+
+#endif

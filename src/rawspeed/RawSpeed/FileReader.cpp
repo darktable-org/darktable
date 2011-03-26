@@ -80,6 +80,9 @@ FileMap* FileReader::readFile() {
   LARGE_INTEGER f_size;
   GetFileSizeEx(file_h , &f_size);
 
+  if (!f_size.LowPart)
+    throw FileIOException("File is 0 bytes.");
+
   FileMap *fileData = new FileMap(f_size.LowPart);
 
   DWORD bytes_read;

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef ORF_DECODER_H
+#define ORF_DECODER_H
+
 #include "RawDecoder.h"
 #include "LJpegPlain.h"
 #include "TiffIFD.h"
@@ -43,3 +45,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

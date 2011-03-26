@@ -163,7 +163,7 @@ void LJpegPlain::decodeScanLeftGeneric() {
     slice_width[i] = slicesW[i] / pixGroup / maxSuperH; // This is a guess, but works for sRaw1+2.
 
   for (slice = 0; slice < slices; slice++) {
-    offset[slice] = ((t_x + offX) * mRaw->bpp + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
+    offset[slice] = ((t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
     _ASSERTE((offset[slice]&0x0fffffff) < mRaw->pitch*mRaw->dim.y);
     t_y += maxSuperV;
     if (t_y >= (frame.h - skipY)) {
@@ -300,7 +300,7 @@ void LJpegPlain::decodeScanLeft4_2_0() {
     slice_width[i] = slicesW[i] / COMPS;
 
   for (slice = 0; slice < slices; slice++) {
-    offset[slice] = ((t_x + offX) * mRaw->bpp + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
+    offset[slice] = ((t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
     _ASSERTE((offset[slice]&0x0fffffff) < mRaw->pitch*mRaw->dim.y);
     t_y += 2;
     if (t_y >= (frame.h - skipY)) {
@@ -426,7 +426,7 @@ void LJpegPlain::decodeScanLeft4_2_2() {
     slice_width[i] = slicesW[i] / 2;
 
   for (slice = 0; slice < slices; slice++) {
-    offset[slice] = ((t_x + offX) * mRaw->bpp + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
+    offset[slice] = ((t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
     _ASSERTE((offset[slice]&0x0fffffff) < mRaw->pitch*mRaw->dim.y);
     t_y ++;
     if (t_y >= (frame.h - skipY)) {
@@ -527,7 +527,7 @@ void LJpegPlain::decodeScanLeft2Comps() {
   uint32 slice = 0;
   uint32 cw = (frame.w - skipX);
   for (slice = 0; slice < slices; slice++) {
-    offset[slice] = ((t_x + offX) * mRaw->bpp + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
+    offset[slice] = ((t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
     _ASSERTE((offset[slice]&0x0fffffff) < mRaw->pitch*mRaw->dim.y);
     t_y++;
     if (t_y == (frame.h - skipY)) {
@@ -615,7 +615,7 @@ void LJpegPlain::decodeScanLeft3Comps() {
   uint32 t_s = 0;
   uint32 slice = 0;
   for (slice = 0; slice < slices; slice++) {
-    offset[slice] = ((t_x + offX) * mRaw->bpp + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
+    offset[slice] = ((t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
     _ASSERTE((offset[slice]&0x0fffffff) < mRaw->pitch*mRaw->dim.y);
     t_y++;
     if (t_y == (frame.h - skipY)) {
@@ -711,7 +711,7 @@ void LJpegPlain::decodeScanLeft4Comps() {
   uint32 t_s = 0;
   uint32 slice = 0;
   for (slice = 0; slice < slices; slice++) {
-    offset[slice] = ((t_x + offX) * mRaw->bpp + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
+    offset[slice] = ((t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
     _ASSERTE((offset[slice]&0x0fffffff) < mRaw->pitch*mRaw->dim.y);
     t_y++;
     if (t_y == (frame.h - skipY)) {

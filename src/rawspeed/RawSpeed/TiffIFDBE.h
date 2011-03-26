@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TIFF_IFDBE_H
+#define TIFF_IFDBE_H
+
 #include "TiffIFD.h"
 /* 
     RawSpeed - RAW file decoder.
@@ -34,3 +36,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

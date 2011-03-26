@@ -1,4 +1,6 @@
-#pragma once
+#ifndef RW2_DECODER_H
+#define RW2_DECODER_H
+
 #include "RawDecoder.h"
 #include "TiffIFD.h"
 #include "BitPumpPlain.h"
@@ -60,3 +62,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

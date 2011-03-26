@@ -1,4 +1,6 @@
-#pragma once
+#ifndef DNG_DECODER_H
+#define DNG_DECODER_H
+
 #include "LJpegPlain.h"
 #include "TiffIFD.h"
 #include "DngDecoderSlices.h"
@@ -55,3 +57,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

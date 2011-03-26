@@ -135,14 +135,14 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
       }
 
       // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
-      if(r->bpp != 4) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->bpp);
-      img->bpp = r->bpp;
+      if(r->getDataType() != TYPE_FLOAT32) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->getBpp());
+      img->bpp = r->getBpp();
       img->filters = r->cfa.getDcrawFilter();
       if(img->filters)
       {
         img->flags &= ~DT_IMAGE_LDR;
         img->flags |= DT_IMAGE_RAW;
-        if(r->bpp == 4) img->flags |= DT_IMAGE_HDR;
+        if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
       }
 
       // also include used override in orient:
@@ -156,8 +156,8 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
         if (m) delete m;
         return DT_IMAGEIO_CACHE_FULL;
       }
-      dt_image_check_buffer(img, DT_IMAGE_FULL, r->dim.x*r->dim.y*r->bpp);
-      dt_imageio_flip_buffers((char *)img->pixels, (char *)r->getData(), r->bpp, r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
+      dt_image_check_buffer(img, DT_IMAGE_FULL, r->dim.x*r->dim.y*r->getBpp());
+      dt_imageio_flip_buffers((char *)img->pixels, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
     }
     catch (RawDecoderException e)
     {
@@ -255,14 +255,14 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
       }
 
       // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
-      if(r->bpp != 4) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->bpp);
-      img->bpp = r->bpp;
+      if(r->getDataType() != TYPE_FLOAT32) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->getBpp());
+      img->bpp = r->getBpp();
       img->filters = r->cfa.getDcrawFilter();
       if(img->filters)
       {
         img->flags &= ~DT_IMAGE_LDR;
         img->flags |= DT_IMAGE_RAW;
-        if(r->bpp == 4) img->flags |= DT_IMAGE_HDR;
+        if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
       }
 
       // also include used override in orient:
@@ -270,14 +270,14 @@ dt_imageio_open_rawspeed_preview(dt_image_t *img, const char *filename)
       img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
       img->height = (orientation & 4) ? r->dim.x : r->dim.y;
 
-      buf = (uint16_t *)dt_alloc_align(16, r->dim.x*r->dim.y*r->bpp);
+      buf = (uint16_t *)dt_alloc_align(16, r->dim.x*r->dim.y*r->getBpp());
       if(!buf)
       {
         if (d) delete d;
         if (m) delete m;
         return DT_IMAGEIO_CACHE_FULL;
       }
-      dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->bpp, r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
+      dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
     }
     catch (RawDecoderException e)
     {

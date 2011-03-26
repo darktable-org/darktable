@@ -77,7 +77,6 @@ RawImage Cr2Decoder::decodeRaw() {
     ThrowRDE("CR2 Decoder: No Slices found.");
   }
 
-  mRaw->bpp = 2;
   mRaw->dim = iPoint2D(slices[0].w, completeH);
 
   if (raw->hasEntry((TiffTag)0xc6c5)) {

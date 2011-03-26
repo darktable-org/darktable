@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CAMERA_META_DATA_H
+#define CAMERA_META_DATA_H
+
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
@@ -41,3 +43,5 @@ protected:
 };
 
 } // namespace RawSpeed
+
+#endif

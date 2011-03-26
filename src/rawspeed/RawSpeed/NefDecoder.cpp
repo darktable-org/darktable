@@ -83,7 +83,6 @@ RawImage NefDecoder::decodeRaw() {
   uint32 bitPerPixel = raw->getEntry(BITSPERSAMPLE)->getInt();
 
   mRaw->dim = iPoint2D(width, height);
-  mRaw->bpp = 2;
   mRaw->createData();
 
   data = mRootIFD->getIFDsWithTag(MAKERNOTE);
@@ -177,7 +176,6 @@ void NefDecoder::DecodeUncompressed() {
     ThrowRDE("NEF Decoder: No valid slices found. File probably truncated.");
 
   mRaw->dim = iPoint2D(width, offY);
-  mRaw->bpp = 2;
   mRaw->createData();
   if (bitPerPixel == 14 && width*slices[0].h*2 == slices[0].count)
     bitPerPixel = 16; // D3

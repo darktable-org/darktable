@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef BIT_PUMP_JPEG_H
+#define BIT_PUMP_JPEG_H
+
 #include "ByteStream.h"
 #include "IOException.h"
 
@@ -117,3 +119,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

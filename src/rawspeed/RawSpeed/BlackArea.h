@@ -1,4 +1,6 @@
-#pragma once
+#ifndef BLACK_AREA_H
+#define BLACK_AREA_H
+
 /* 
     RawSpeed - RAW file decoder.
 
@@ -33,3 +35,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

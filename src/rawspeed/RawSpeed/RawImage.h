@@ -1,4 +1,6 @@
-#pragma once
+#ifndef RAW_IMAGE_H
+#define RAW_IMAGE_H
+
 #include "ColorFilterArray.h"
 #include "BlackArea.h"
 
@@ -28,26 +30,29 @@ namespace RawSpeed {
 
 class RawImage;
 class RawImageWorker;
+typedef enum {TYPE_USHORT16, TYPE_FLOAT32} RawImageType;
 
 class RawImageData
 {
   friend class RawImageWorker;
 public:
   virtual ~RawImageData(void);
-  iPoint2D dim;
-  uint32 bpp;      // Bytes per pixel.
   uint32 getCpp() const { return cpp; }
+  uint32 getBpp() const { return bpp; }
   void setCpp(uint32 val);
-  uint32 pitch;
   virtual void createData();
   virtual void destroyData();
+  RawSpeed::RawImageType getDataType() const { return dataType; }
   uchar8* getData();
   uchar8* getData(uint32 x, uint32 y);    // Not super fast, but safe. Don't use per pixel.
   uchar8* getDataUncropped(uint32 x, uint32 y);
   virtual void subFrame( iPoint2D offset, iPoint2D new_size );
   iPoint2D getUncroppedDim();
   iPoint2D getCropOffset();
-  void scaleBlackWhite();
+  virtual void scaleBlackWhite() = 0;
+  bool isAllocated() {return !!data;}
+  iPoint2D dim;
+  uint32 pitch;
   bool isCFA;
   ColorFilterArray cfa;
   int blackLevel;
@@ -55,19 +60,46 @@ public:
   int whitePoint;
   vector<BlackArea> blackAreas;
   iPoint2D subsampling;
-  bool isAllocated() {return !!data;}
-  void scaleValues(int start_y, int end_y);
 protected:
+  RawImageType dataType;
   RawImageData(void);
   RawImageData(iPoint2D dim, uint32 bpp, uint32 cpp=1);
-  void calculateBlackAreas();
+  virtual void calculateBlackAreas() = 0;
+  virtual void scaleValues(int start_y, int end_y) = 0;
   uint32 dataRefCount;
   uchar8* data;
   uint32 cpp;      // Components per pixel
+  uint32 bpp;      // Bytes per pixel.
   friend class RawImage;
   pthread_mutex_t mymutex;
   iPoint2D mOffset;
   iPoint2D uncropped_dim;
+};
+
+class RawImageDataU16 : public RawImageData
+{
+public:
+  virtual void scaleBlackWhite();
+
+protected:
+  virtual void calculateBlackAreas();
+  virtual void scaleValues(int start_y, int end_y);
+  RawImageDataU16(void);
+  RawImageDataU16(iPoint2D dim, uint32 cpp=1);
+  friend class RawImage;
+};
+
+class RawImageDataFloat : public RawImageData
+{
+public:
+  virtual void scaleBlackWhite();
+
+protected:
+  virtual void calculateBlackAreas();
+  virtual void scaleValues(int start_y, int end_y);
+  RawImageDataFloat(void);
+  RawImageDataFloat(iPoint2D dim, uint32 cpp=1);
+  friend class RawImage;
 };
 
 class RawImageWorker {
@@ -87,8 +119,8 @@ protected:
 
  class RawImage {
  public:
-   static RawImage create();
-   static RawImage create(iPoint2D dim, uint32 bytesPerComponent, uint32 componentsPerPixel = 1);
+   static RawImage create(RawImageType type = TYPE_USHORT16);
+   static RawImage create(iPoint2D dim, RawImageType type = TYPE_USHORT16, uint32 componentsPerPixel = 1);
    RawImageData* operator-> ();
    RawImageData& operator* ();
    RawImage(RawImageData* p);  // p must not be NULL
@@ -100,8 +132,30 @@ protected:
    RawImageData* p_;    // p_ is never NULL
  };
 
-inline RawImage RawImage::create()  { return new RawImageData(); }
-inline RawImage RawImage::create(iPoint2D dim, uint32 bytesPerPixel, uint32 componentsPerPixel)
-{ return new RawImageData(dim, bytesPerPixel, componentsPerPixel); }
+inline RawImage RawImage::create(RawImageType type)  { 
+  switch (type)
+  {
+    case TYPE_USHORT16:
+      return new RawImageDataU16();
+    case TYPE_FLOAT32:
+      return new RawImageDataFloat();
+    default:
+      printf("RawImage::create: Unknown Image type!\n");
+  }
+  return NULL; 
+}
+
+inline RawImage RawImage::create(iPoint2D dim, RawImageType type, uint32 componentsPerPixel)
+{   
+  switch (type) {
+    case TYPE_USHORT16:
+      return new RawImageDataU16(dim, componentsPerPixel);
+    default:
+      printf("RawImage::create: Unknown Image type!\n");
+  }
+  return NULL; 
+}
 
 } // namespace RawSpeed
+
+#endif

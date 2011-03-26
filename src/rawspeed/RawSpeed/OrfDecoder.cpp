@@ -63,7 +63,6 @@ RawImage OrfDecoder::decodeRaw() {
     ThrowRDE("ORF Decoder: Truncated file");
 
   mRaw->dim = iPoint2D(width, height);
-  mRaw->bpp = 2;
   mRaw->createData();
 
   data = mRootIFD->getIFDsWithTag(MAKERNOTE);

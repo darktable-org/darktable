@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef BIT_PUMP_PLAIN_H
+#define BIT_PUMP_PLAIN_H
+
 #include "ByteStream.h"
 
 namespace RawSpeed {
@@ -54,3 +56,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

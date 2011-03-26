@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef CAMERA_METADATA_EXCEPTION_H
+#define CAMERA_METADATA_EXCEPTION_H
+
 
 namespace RawSpeed {
 
@@ -33,3 +35,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

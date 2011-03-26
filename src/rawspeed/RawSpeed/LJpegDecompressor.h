@@ -1,4 +1,6 @@
-#pragma once
+#ifndef LJPEG_DECOMPRESSOR_H
+#define LJPEG_DECOMPRESSOR_H
+
 #include "RawDecoder.h"
 #include "BitPumpMSB.h"
 /* 
@@ -194,3 +196,5 @@ protected:
 };
 
 } // namespace RawSpeed
+
+#endif

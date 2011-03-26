@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TIFF_ENTRY_BE_H
+#define TIFF_ENTRY_BE_H
+
 #include "TiffEntry.h"
 
 /* 
@@ -41,3 +43,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

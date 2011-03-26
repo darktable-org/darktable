@@ -25,7 +25,7 @@
 namespace RawSpeed {
 
 BlackArea::BlackArea( int _offset, int _size, bool _isVertical ) :
-offset(_offset), size(_size), isVertical(isVertical)
+offset(_offset), size(_size), isVertical(_isVertical)
 {
 
 }

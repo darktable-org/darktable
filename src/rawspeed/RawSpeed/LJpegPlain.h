@@ -1,4 +1,6 @@
-#pragma once
+#ifndef LJPEG_PLAIN_H
+#define LJPEG_PLAIN_H
+
 #include "LJpegDecompressor.h"
 #include "BitPumpMSB.h"
 /* 
@@ -49,3 +51,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif
