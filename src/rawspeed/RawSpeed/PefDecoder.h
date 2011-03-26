@@ -1,4 +1,6 @@
-#pragma once
+#ifndef PEF_DECODER_H
+#define PEF_DECODER_H
+
 #include "RawDecoder.h"
 #include "TiffIFD.h"
 #include "PentaxDecompressor.h"
@@ -39,3 +41,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

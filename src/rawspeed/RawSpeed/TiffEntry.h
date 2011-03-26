@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TIFF_ENTRY_H
+#define TIFF_ENTRY_H
+
 #include "TiffParserException.h"
 #include "FileMap.h"
 
@@ -92,3 +94,5 @@ protected:
 };
 
 } // namespace RawSpeed
+
+#endif

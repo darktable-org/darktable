@@ -1,4 +1,6 @@
-#pragma once
+#ifndef RAW_DECODER_H
+#define RAW_DECODER_H
+
 #include "RawDecoderException.h"
 #include "FileMap.h"
 #include "BitPumpJPEG.h" // Includes bytestream
@@ -84,6 +86,13 @@ public:
   /* Remember this is automatically refcounted, so a reference is retained until this class is destroyed */
   RawImage mRaw; 
 
+  /* You can set this if you do not want Rawspeed to attempt to decode images, */
+  /* where it does not have reliable information about CFA, cropping, black and white point */
+  /* It is pretty safe to leave this disabled (default behaviour), but if you do not want to */
+  /* support unknown cameras, you can enable this */
+  /* DNGs are always attempted to be decoded, so this variable has no effect on DNGs */
+  bool failOnUnknown;
+
   /* Vector containing silent errors that occurred doing decoding, that may have lead to */
   /* an incomplete image. */
   vector<const char*> errors;
@@ -117,11 +126,9 @@ protected:
   /* Faster version for unpacking 12 bit LSB data */
   void Decode12BitRaw(ByteStream &input, uint32 w, uint32 h);
 
-  /* Remove all spaces at the end of a string */
-  void TrimSpaces( string& str);
-
   /* Generic decompressor for uncompressed images */
-  void decodeUncompressed(TiffIFD *rawIFD);
+  /* MSBOrder: true -  bits are read from MSB (JPEG style) False: Read from LSB. */
+  void decodeUncompressed(TiffIFD *rawIFD, bool MSBOrder);
 
   /* The Raw input file to be decoded */
   FileMap *mFile; 
@@ -147,3 +154,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef BYTE_STREAM_SWAP_H
+#define BYTE_STREAM_SWAP_H
+
 #include "ByteStream.h"
 
 #include "IOException.h"
@@ -17,3 +19,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

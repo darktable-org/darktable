@@ -21,7 +21,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef IOEXCEPTION_H
+#define IOEXCEPTION_H
+
 
 namespace RawSpeed {
 
@@ -36,3 +38,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

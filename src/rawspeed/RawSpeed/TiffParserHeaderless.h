@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TIFF_PARSER_HEADERLESS_H
+#define TIFF_PARSER_HEADERLESS_H
+
 #include "TiffParser.h"
 /* 
     RawSpeed - RAW file decoder.
@@ -35,3 +37,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

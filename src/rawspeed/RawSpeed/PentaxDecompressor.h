@@ -1,4 +1,6 @@
-#pragma once
+#ifndef PENTAX_DECOMPRESSOR_H
+#define PENTAX_DECOMPRESSOR_H
+
 #include "LJpegDecompressor.h"
 #include "BitPumpMSB.h"
 #include "TiffIFD.h"
@@ -39,3 +41,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

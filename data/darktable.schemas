@@ -770,6 +770,71 @@
     </schema>
     
     <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/recentcollect/line5</key>
+      <applyto>/apps/darktable/plugins/lighttable/recentcollect/line5</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/recentcollect/line6</key>
+      <applyto>/apps/darktable/plugins/lighttable/recentcollect/line6</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/recentcollect/line7</key>
+      <applyto>/apps/darktable/plugins/lighttable/recentcollect/line7</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/recentcollect/line8</key>
+      <applyto>/apps/darktable/plugins/lighttable/recentcollect/line8</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/recentcollect/line9</key>
+      <applyto>/apps/darktable/plugins/lighttable/recentcollect/line9</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
       <key>/schemas/apps/darktable/plugins/lighttable/styles/expanded</key>
       <applyto>/apps/darktable/plugins/lighttable/styles/expanded</applyto>
       <owner>darktable</owner>

@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef ARW_DECODER_H
+#define ARW_DECODER_H
+
 #include "RawDecoder.h"
 #include "LJpegPlain.h"
 #include "TiffIFD.h"
@@ -46,3 +48,5 @@ protected:
 };
 
 } // namespace RawSpeed
+
+#endif

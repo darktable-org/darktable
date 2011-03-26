@@ -20,7 +20,9 @@
     http://www.klauspost.com
 */
 
-#pragma once
+#ifndef TIFF_PARSER_H
+#define TIFF_PARSER_H
+
 #include "FileMap.h"
 #include "TiffIFD.h"
 #include "TiffIFDBE.h"
@@ -33,6 +35,7 @@
 #include "NefDecoder.h"
 #include "OrfDecoder.h"
 #include "Rw2Decoder.h"
+#include "SrwDecoder.h"
 
 namespace RawSpeed {
 
@@ -54,3 +57,5 @@ protected:
 };
 
 } // namespace RawSpeed
+
+#endif

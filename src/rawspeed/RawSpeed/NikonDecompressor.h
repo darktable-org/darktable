@@ -1,4 +1,6 @@
-#pragma once
+#ifndef NIKON_DECOMPRESSOR_H
+#define NIKON_DECOMPRESSOR_H
+
 #include "LJpegDecompressor.h"
 #include "BitPumpMSB.h"
 /* 
@@ -55,3 +57,5 @@ static const uchar8 nikon_tree[][32] = {
   7,6,8,5,9,4,10,3,11,12,2,0,1,13,14 } };
   
 } // namespace RawSpeed
+
+#endif

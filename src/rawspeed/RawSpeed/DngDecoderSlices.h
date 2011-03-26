@@ -1,4 +1,6 @@
-#pragma once
+#ifndef DNG_DECODER_SLICES_H
+#define DNG_DECODER_SLICES_H
+
 #include "RawDecoder.h"
 #include <queue>
 #include "LJpegPlain.h"
@@ -72,3 +74,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

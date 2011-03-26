@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CR2_DECODER_H
+#define CR2_DECODER_H
+
 #include "RawDecoder.h"
 #include "LJpegPlain.h"
 #include "TiffIFD.h"
@@ -56,3 +58,4 @@ public:
 };
 
 } // namespace RawSpeed
+#endif

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TIFF_PARSER_OLYMPUS_H
+#define TIFF_PARSER_OLYMPUS_H
+
 #include "TiffParser.h"
 /* 
     RawSpeed - RAW file decoder.
@@ -34,3 +36,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

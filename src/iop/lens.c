@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -142,9 +142,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       for (int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting and CCI */
-        // actually this way row stride does not matter. but give a buffer pointer
-        // offset by -roi_in.x
-        float *buf = out - ch*(roi_out->width*roi_out->y + roi_out->x);
+        // actually this way row stride does not matter.
+        float *buf = out;
         lf_modifier_apply_color_modification (modifier,
                                               buf + ch*roi_out->width*y, roi_out->x, roi_out->y + y,
                                               roi_out->width, 1, pixelformat, ch*roi_out->width);
@@ -170,9 +169,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       for (int y = 0; y < roi_in->height; y++)
       {
         /* Colour correction: vignetting and CCI */
-        // actually this way row stride does not matter. but give a buffer pointer
-        // offset by -roi_in.x
-        float *buf = d->tmpbuf - ch*(roi_in->width*roi_in->y + roi_in->x);
+        // actually this way row stride does not matter.
+        float *buf = d->tmpbuf;
         lf_modifier_apply_color_modification (modifier,
                                               buf + ch*roi_in->width*y, roi_in->x, roi_in->y + y,
                                               roi_in->width, 1, pixelformat, ch*roi_in->width);

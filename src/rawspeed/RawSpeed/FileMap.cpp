@@ -25,6 +25,8 @@
 namespace RawSpeed {
 
 FileMap::FileMap(uint32 _size) : size(_size) {
+  if (!size)
+    throw FileIOException("Filemap of 0 bytes not possible");
   data = (uchar8*)_aligned_malloc(size + 4, 16);
   if (!data) {
     throw FileIOException("Not enough memory to open file.");

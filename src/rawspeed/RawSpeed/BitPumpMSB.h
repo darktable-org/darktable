@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef BIT_PUMP_MSB_H
+#define BIT_PUMP_MSB_H
+
 #include "ByteStream.h"
 
 #define BITS_PER_LONG (8*sizeof(uint32))
@@ -152,3 +154,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

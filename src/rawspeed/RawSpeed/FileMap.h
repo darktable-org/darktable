@@ -1,4 +1,6 @@
-#pragma once
+#ifndef FILE_MAP_H
+#define FILE_MAP_H
+
 #include "FileIOException.h"
 /* 
     RawSpeed - RAW file decoder.
@@ -55,3 +57,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

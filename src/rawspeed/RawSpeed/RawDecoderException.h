@@ -1,4 +1,6 @@
-#pragma once
+#ifndef RAW_DECODER_EXCEPTION_H
+#define RAW_DECODER_EXCEPTION_H
+
 /* 
     RawSpeed - RAW file decoder.
 
@@ -34,3 +36,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif

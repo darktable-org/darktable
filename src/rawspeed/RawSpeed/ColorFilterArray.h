@@ -1,4 +1,6 @@
-#pragma once
+#ifndef COLOR_FILTER_ARRAY_H
+#define COLOR_FILTER_ARRAY_H
+
 #include "RawDecoderException.h"
 /* 
     RawSpeed - RAW file decoder.
@@ -66,3 +68,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

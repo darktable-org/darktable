@@ -1,13 +1,15 @@
-#ifndef DNG_DECODER_H
-#define DNG_DECODER_H
+#ifndef SRW_DECODER_H
+#define SRW_DECODER_H
 
+#include "RawDecoder.h"
 #include "LJpegPlain.h"
 #include "TiffIFD.h"
-#include "DngDecoderSlices.h"
+#include "BitPumpPlain.h"
+
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2010 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -28,32 +30,17 @@
 
 namespace RawSpeed {
 
-class DngDecoder : 
+class SrwDecoder :
   public RawDecoder
 {
 public:
-  DngDecoder(TiffIFD *rootIFD, FileMap* file);
-  virtual ~DngDecoder(void);
+  SrwDecoder(TiffIFD *rootIFD, FileMap* file);
+  virtual ~SrwDecoder(void);
   virtual RawImage decodeRaw();
   virtual void decodeMetaData(CameraMetaData *meta);
   virtual void checkSupport(CameraMetaData *meta);
-protected:
+private:
   TiffIFD *mRootIFD;
-  bool mFixLjpeg;
-  void printMetaData();
-  bool decodeMaskedAreas(TiffIFD* raw);
-  bool decodeBlackLevels(TiffIFD* raw);
-  void setBlack(TiffIFD* raw);
-};
-
-class DngStrip {
-public:
-  DngStrip() { h = offset = count = offsetY = 0;};
-  ~DngStrip() {};
-  uint32 h;
-  uint32 offset; // Offset in bytes
-  uint32 count;
-  uint32 offsetY;
 };
 
 } // namespace RawSpeed

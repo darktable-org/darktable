@@ -30,7 +30,6 @@ void srand48(long int);
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
-#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL/SDL.h>
@@ -220,12 +219,15 @@ process_next_image()
   const uint32_t cnt = dt_collection_get_count (darktable.collection);
   // enumerated all images?
   if(++counter >= cnt) return 1;
-  // get random number up to next power of two greater than cnt:
-  const uint32_t zeros = __builtin_clz(cnt);
-  uint32_t ran;
-  // pull radical inverses only in our desired range:
-  do ran = next_random() >> zeros;
-  while(ran >= cnt);
+  uint32_t ran = counter - 1;
+  if(use_random)
+  {
+    // get random number up to next power of two greater than cnt:
+    const uint32_t zeros = __builtin_clz(cnt);
+    // pull radical inverses only in our desired range:
+    do ran = next_random() >> zeros;
+    while(ran >= cnt);
+  }
   const int32_t rand = ran % cnt;
   const gchar *query = dt_collection_get_query (darktable.collection);
   if(!query) return 1;

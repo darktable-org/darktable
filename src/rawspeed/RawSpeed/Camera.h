@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CAMERA_H
+#define CAMERA_H
+
 #include "ColorFilterArray.h"
 #include <libxml/parser.h>
 #include "BlackArea.h"
@@ -58,3 +60,5 @@ protected:
 };
 
 } // namespace RawSpeed
+
+#endif

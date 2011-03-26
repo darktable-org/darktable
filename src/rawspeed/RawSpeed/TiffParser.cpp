@@ -107,6 +107,7 @@ RawDecoder* TiffParser::getDecoder() {
   if (!potentials.empty()) {  // We have make entry
     for (vector<TiffIFD*>::iterator i = potentials.begin(); i != potentials.end(); ++i) {
       string make = (*i)->getEntry(MAKE)->getString();
+      TrimSpaces(make);
       if (!make.compare("Canon")) {
         return new Cr2Decoder(mRootIFD, mInput);
       }
@@ -116,11 +117,8 @@ RawDecoder* TiffParser::getDecoder() {
       if (!make.compare("NIKON")) {
         return new NefDecoder(mRootIFD, mInput);
       }
-      if (!make.compare("OLYMPUS IMAGING CORP.  ")) {
+      if (!make.compare("OLYMPUS IMAGING CORP.")) {
         return new OrfDecoder(mRootIFD, mInput);
-      }
-      if (!make.compare("SONY ")) {
-        return new ArwDecoder(mRootIFD, mInput);
       }
       if (!make.compare("SONY")) {
         return new ArwDecoder(mRootIFD, mInput);
@@ -128,11 +126,14 @@ RawDecoder* TiffParser::getDecoder() {
       if (!make.compare("PENTAX Corporation ")) {
         return new PefDecoder(mRootIFD, mInput);
       }
-      if (!make.compare("PENTAX             ")) {
+      if (!make.compare("PENTAX")) {
         return new PefDecoder(mRootIFD, mInput);
       }
       if (!make.compare("Panasonic")) {
         return new Rw2Decoder(mRootIFD, mInput);
+      }
+      if (!make.compare("SAMSUNG")) {
+        return new SrwDecoder(mRootIFD, mInput);
       }
     }
   }

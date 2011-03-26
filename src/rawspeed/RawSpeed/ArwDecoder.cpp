@@ -70,7 +70,6 @@ RawImage ArwDecoder::decodeRaw() {
     height += 8;
 
   mRaw->dim = iPoint2D(width, height);
-  mRaw->bpp = 2;
   mRaw->createData();
 
   const ushort16* c = raw->getEntry(SONY_CURVE)->getShortArray();

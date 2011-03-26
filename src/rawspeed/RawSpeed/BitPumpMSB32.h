@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef BIT_PUMP_MSB32_H
+#define BIT_PUMP_MSB32_H
+
 #include "ByteStream.h"
 
 #ifdef MIN_GET_BITS
@@ -74,3 +76,5 @@ private:
 };
 
 } // namespace RawSpeed
+
+#endif

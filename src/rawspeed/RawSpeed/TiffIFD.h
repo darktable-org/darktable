@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TIFF_IFD_H
+#define TIFF_IFD_H
+
 #include "FileMap.h"
 #include "TiffEntry.h"
 #include "TiffParserException.h"
@@ -68,3 +70,5 @@ inline Endianness getTiffEndianness(const ushort16* tifftag) {
 }
 
 } // namespace RawSpeed
+
+#endif

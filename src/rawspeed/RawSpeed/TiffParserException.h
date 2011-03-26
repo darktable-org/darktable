@@ -19,7 +19,9 @@
 
     http://www.klauspost.com
 */
-#pragma once
+#ifndef TIFF_PARSER_EXCEPTION_H
+#define TIFF_PARSER_EXCEPTION_H
+
 
 namespace RawSpeed {
 
@@ -32,3 +34,5 @@ public:
 };
 
 } // namespace RawSpeed
+
+#endif
