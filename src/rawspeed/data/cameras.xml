@@ -850,7 +850,17 @@
   <Hints>
     <Hint name="coolpixmangled" value=""/>
   </Hints>
-  </Camera>  
+  </Camera>
+  <Camera make="NIKON" model="E8400" supported="no">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">BLUE</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">RED</Color>
+    </CFA>
+    <Crop x="0" y="0" width="3280" height="2454"/>
+    <Sensor black="0" white="4095"/>
+  </Camera>
   <Camera make="NIKON" model="E8800" supported="no">
     <CFA width="2" height="2">
       <Color x="0" y="0">BLUE</Color>
@@ -1508,7 +1518,7 @@
     <Crop x="2" y="2" width="-44" height="0"/>
     <Sensor black="90" white="4095"/>
   </Camera>
-  <Camera make="PENTAX" model="PENTAX K200D">
+  <Camera make="PENTAX" model="PENTAX K200D" mode="dng" supported="no">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
