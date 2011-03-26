@@ -69,6 +69,7 @@ src/iop/lowlight.c
 src/iop/monochrome.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
+src/iop/rawdenoise.c
 src/iop/relight.c
 src/iop/sharpen.c
 src/iop/soften.c
