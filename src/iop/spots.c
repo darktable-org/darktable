@@ -174,6 +174,17 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+static void draw_overlay(cairo_t *cr, float rad, float x1, float y1, float x2, float y2, float x3, float y3)
+{
+  cairo_arc (cr, x1, y1, rad, 0, 2.0*M_PI);
+  cairo_stroke (cr);
+  cairo_arc (cr, x2, y2, rad, 0, 2.0*M_PI);
+  cairo_stroke (cr);
+  cairo_move_to (cr, x3, y3);
+  cairo_line_to (cr, x2, y2);
+  cairo_stroke (cr);
+}
+
 void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_develop_t *dev = self->dev;
@@ -201,36 +212,40 @@ void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
   for(int i=0; i<p->num_spots; i++)
   {
-    if(i == g->dragging) continue;
-    if(i == g->selected) cairo_set_line_width(cr, 2.0/zoom_scale);
-    else                 cairo_set_line_width(cr, 1.0/zoom_scale);
     const float rad = MIN(wd, ht)*p->spot[i].radius;
-    cairo_arc (cr, p->spot[i].x*wd, p->spot[i].y*ht, rad, 0, 2.0*M_PI);
-    cairo_stroke (cr);
-    cairo_arc (cr, p->spot[i].xc*wd, p->spot[i].yc*ht, rad, 0, 2.0*M_PI);
-    cairo_stroke (cr);
     const float dx = p->spot[i].xc - p->spot[i].x;
     const float dy = p->spot[i].yc - p->spot[i].y;
     const float ol = 1.0f/sqrtf(dx*dx*wd*wd + dy*dy*ht*ht);
     const float d  = rad * ol;
-    cairo_move_to (cr, (p->spot[i].x + d*dx)*wd, (p->spot[i].y + d*dy)*ht);
-    cairo_line_to (cr, p->spot[i].xc*wd, p->spot[i].yc*ht);
-    cairo_stroke (cr);
+
+    cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+    if(i == g->dragging) continue;
+    if(i == g->selected) cairo_set_line_width(cr, 5.0/zoom_scale);
+    else                 cairo_set_line_width(cr, 3.0/zoom_scale);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    draw_overlay(cr, rad, p->spot[i].x*wd, p->spot[i].y*ht, p->spot[i].xc*wd, p->spot[i].yc*ht, (p->spot[i].x + d*dx)*wd, (p->spot[i].y + d*dy)*ht);
+
+    if(i == g->selected) cairo_set_line_width(cr, 2.0/zoom_scale);
+    else                 cairo_set_line_width(cr, 1.0/zoom_scale);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    draw_overlay(cr, rad, p->spot[i].x*wd, p->spot[i].y*ht, p->spot[i].xc*wd, p->spot[i].yc*ht, (p->spot[i].x + d*dx)*wd, (p->spot[i].y + d*dy)*ht);
+
   }
   cairo_set_line_width(cr, 2.0/zoom_scale);
   if(g->dragging >= 0)
   {
     const float rad = MIN(wd, ht)*p->spot[g->dragging].radius;
     const float bzx = g->button_down_zoom_x, bzy = g->button_down_zoom_y;
-    cairo_arc (cr, bzx*wd, bzy*ht, rad, 0, 2.0*M_PI);
-    cairo_stroke (cr);
-    cairo_arc (cr, pzx*wd, pzy*ht, rad, 0, 2.0*M_PI);
-    cairo_stroke (cr);
     const float ol = 1.0f/sqrtf((pzx-bzx)*(pzx-bzx)*wd*wd + (pzy-bzy)*(pzy-bzy)*ht*ht);
     const float d  = rad * ol;
-    cairo_move_to (cr, (bzx + d*(pzx-bzx))*wd, (bzy + d*(pzy-bzy))*ht);
-    cairo_line_to (cr, pzx*wd, pzy*ht);
-    cairo_stroke (cr);
+
+    cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+    cairo_set_line_width(cr, 3.0/zoom_scale);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    draw_overlay(cr, rad, bzx*wd, bzy*ht, pzx*wd, pzy*ht, (bzx + d*(pzx-bzx))*wd, (bzy + d*(pzy-bzy))*ht);
+    cairo_set_line_width(cr, 1.0/zoom_scale);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    draw_overlay(cr, rad, bzx*wd, bzy*ht, pzx*wd, pzy*ht, (bzx + d*(pzx-bzx))*wd, (bzy + d*(pzy-bzy))*ht);
   }
 }
 
@@ -342,3 +357,4 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return 0;
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
