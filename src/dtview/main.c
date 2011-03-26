@@ -30,7 +30,6 @@ void srand48(long int);
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
-#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL/SDL.h>

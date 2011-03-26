@@ -167,10 +167,9 @@ endif(OPENCL_FOUND)
 # build opengl slideshow viewer?
 find_package(SDL)
 find_package(OpenGL)
-find_package(Glew)
-if(SDL_FOUND AND OPENGL_FOUND AND GLEW_FOUND)
+if(SDL_FOUND AND OPENGL_FOUND)
   add_subdirectory(dtview)
-endif(SDL_FOUND AND OPENGL_FOUND AND GLEW_FOUND)
+endif(SDL_FOUND AND OPENGL_FOUND)
 
 
 #
