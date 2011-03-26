@@ -24,6 +24,8 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
+#define EPSILON -0.00001
+
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
@@ -49,7 +51,7 @@ typedef struct dt_iop_spots_gui_data_t
 {
   int dragging;
   int selected;
-  float button_down_zoom_x, button_down_zoom_y;
+  gboolean hoover_c; // is the pointer over the "clone from" end?
 }
 dt_iop_spots_gui_data_t;
 
@@ -174,14 +176,14 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-static void draw_overlay(cairo_t *cr, float rad, float x1, float y1, float x2, float y2, float x3, float y3)
+static void draw_overlay(cairo_t *cr, float rad, float x, float y, float xc, float yc, float xr, float yr)
 {
-  cairo_arc (cr, x1, y1, rad, 0, 2.0*M_PI);
+  cairo_arc (cr, x, y, rad, 0, 2.0*M_PI);
   cairo_stroke (cr);
-  cairo_arc (cr, x2, y2, rad, 0, 2.0*M_PI);
+  cairo_arc (cr, xc, yc, rad, 0, 2.0*M_PI);
   cairo_stroke (cr);
-  cairo_move_to (cr, x3, y3);
-  cairo_line_to (cr, x2, y2);
+  cairo_move_to (cr, xr, yr);
+  cairo_line_to (cr, xc, yc);
   cairo_stroke (cr);
 }
 
@@ -214,38 +216,26 @@ void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t 
   {
     const float rad = MIN(wd, ht)*p->spot[i].radius;
     const float dx = p->spot[i].xc - p->spot[i].x;
-    const float dy = p->spot[i].yc - p->spot[i].y;
+    float dy = p->spot[i].yc - p->spot[i].y;
+    if(dx == 0.0 && dy == 0.0) dy = EPSILON; // otherwise we'll have ol = 1.0/0.0 ==> xr = yr = -nan
     const float ol = 1.0f/sqrtf(dx*dx*wd*wd + dy*dy*ht*ht);
     const float d  = rad * ol;
 
-    cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-    if(i == g->dragging) continue;
-    if(i == g->selected) cairo_set_line_width(cr, 5.0/zoom_scale);
-    else                 cairo_set_line_width(cr, 3.0/zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    draw_overlay(cr, rad, p->spot[i].x*wd, p->spot[i].y*ht, p->spot[i].xc*wd, p->spot[i].yc*ht, (p->spot[i].x + d*dx)*wd, (p->spot[i].y + d*dy)*ht);
-
-    if(i == g->selected) cairo_set_line_width(cr, 2.0/zoom_scale);
-    else                 cairo_set_line_width(cr, 1.0/zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    draw_overlay(cr, rad, p->spot[i].x*wd, p->spot[i].y*ht, p->spot[i].xc*wd, p->spot[i].yc*ht, (p->spot[i].x + d*dx)*wd, (p->spot[i].y + d*dy)*ht);
-
-  }
-  cairo_set_line_width(cr, 2.0/zoom_scale);
-  if(g->dragging >= 0)
-  {
-    const float rad = MIN(wd, ht)*p->spot[g->dragging].radius;
-    const float bzx = g->button_down_zoom_x, bzy = g->button_down_zoom_y;
-    const float ol = 1.0f/sqrtf((pzx-bzx)*(pzx-bzx)*wd*wd + (pzy-bzy)*(pzy-bzy)*ht*ht);
-    const float d  = rad * ol;
+    const float x = p->spot[i].x*wd, y = p->spot[i].y*ht;
+    const float xc = p->spot[i].xc*wd, yc = p->spot[i].yc*ht;
+    const float xr = (p->spot[i].x + d*dx)*wd, yr = (p->spot[i].y + d*dy)*ht;
 
     cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-    cairo_set_line_width(cr, 3.0/zoom_scale);
+    if(i == g->selected || i == g->dragging) cairo_set_line_width(cr, 5.0/zoom_scale);
+    else                                     cairo_set_line_width(cr, 3.0/zoom_scale);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    draw_overlay(cr, rad, bzx*wd, bzy*ht, pzx*wd, pzy*ht, (bzx + d*(pzx-bzx))*wd, (bzy + d*(pzy-bzy))*ht);
-    cairo_set_line_width(cr, 1.0/zoom_scale);
+    draw_overlay(cr, rad, x, y, xc, yc, xr, yr);
+
+    if(i == g->selected || i == g->dragging) cairo_set_line_width(cr, 2.0/zoom_scale);
+    else                                     cairo_set_line_width(cr, 1.0/zoom_scale);
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    draw_overlay(cr, rad, bzx*wd, bzy*ht, pzx*wd, pzy*ht, (bzx + d*(pzx-bzx))*wd, (bzy + d*(pzy-bzy))*ht);
+    draw_overlay(cr, rad, x, y, xc, yc, xr, yr);
+
   }
 }
 
@@ -262,23 +252,43 @@ int mouse_moved(dt_iop_module_t *self, double x, double y, int which)
   float mind = FLT_MAX;
   int selected = -1;
   const int old_sel = g->selected;
+  gboolean hoover_c = g->hoover_c;
   g->selected = -1;
   if(g->dragging < 0) for(int i=0; i<p->num_spots; i++)
     {
-      const float dist = (pzx - p->spot[i].x)*(pzx - p->spot[i].x) + (pzy - p->spot[i].y)*(pzy - p->spot[i].y);
+      float dist = (pzx - p->spot[i].x)*(pzx - p->spot[i].x) + (pzy - p->spot[i].y)*(pzy - p->spot[i].y);
       if(dist < mind)
       {
         mind = dist;
         selected = i;
+        hoover_c = FALSE;
+      }
+      dist = (pzx - p->spot[i].xc)*(pzx - p->spot[i].xc) + (pzy - p->spot[i].yc)*(pzy - p->spot[i].yc);
+      if(dist < mind)
+      {
+        mind = dist;
+        selected = i;
+        hoover_c = TRUE;
       }
     }
   else
   {
-    p->spot[g->dragging].xc = pzx;
-    p->spot[g->dragging].yc = pzy;
+    if(g->hoover_c)
+    {
+      p->spot[g->dragging].xc = pzx;
+      p->spot[g->dragging].yc = pzy;
+    }
+    else
+    {
+      p->spot[g->dragging].x = pzx;
+      p->spot[g->dragging].y = pzy;
+    }
   }
   if(selected >= 0 && mind < p->spot[selected].radius * p->spot[selected].radius)
+  {
     g->selected = selected;
+    g->hoover_c = hoover_c;
+  }
   if(g->dragging >= 0 || g->selected != old_sel) dt_control_gui_queue_draw();
   return 1;
 }
@@ -312,16 +322,22 @@ int button_pressed(dt_iop_module_t *self, double x, double y, int which, int typ
         dt_control_log(_("spot removal only supports up to 32 spots"));
         return 1;
       }
-      dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
-      g->button_down_zoom_x += 0.5f;
-      g->button_down_zoom_y += 0.5f;
+      float pzx, pzy;
+      dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+      pzx += 0.5f;
+      pzy += 0.5f;
       const int i = p->num_spots++;
       g->dragging = i;
       // on *wd|*ht scale, radius on *min(wd, ht).
-      p->spot[i].x = p->spot[i].xc = g->button_down_zoom_x;
-      p->spot[i].y = p->spot[i].yc = g->button_down_zoom_y;
+      p->spot[i].x = p->spot[i].xc = pzx;
+      p->spot[i].y = p->spot[i].yc = pzy;
       p->spot[i].radius = 0.01f;
       g->selected = i;
+      g->hoover_c = TRUE;
+    }
+    else
+    {
+      g->dragging = g->selected;
     }
     return 1;
   }
@@ -335,12 +351,21 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
   if(which == 1 && g->dragging >= 0)
   {
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
-    g->button_down_zoom_x += 0.5f;
-    g->button_down_zoom_y += 0.5f;
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
     const int i = g->dragging;
-    p->spot[i].xc = g->button_down_zoom_x;
-    p->spot[i].yc = g->button_down_zoom_y;
+    if(g->hoover_c)
+    {
+      p->spot[i].xc = pzx;
+      p->spot[i].yc = pzy;
+    }
+    else
+    {
+      p->spot[i].x = pzx;
+      p->spot[i].y = pzy;
+    }
     g->selected = -1;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     g->dragging = -1;
