@@ -28,7 +28,7 @@ DT_MODULE(1)
 /** this module stores recently used image collection queries and displays
   * them as one-click buttons to the user. */
 
-#define NUM_LINES 5
+#define NUM_LINES 10
 
 typedef struct dt_lib_recentcollect_item_t
 {
@@ -280,7 +280,6 @@ collection_updated(void *d)
 void
 gui_reset (dt_lib_module_t *self)
 {
-  printf("gui reset\n");
   dt_conf_set_int("plugins/lighttable/recentcollect/num_items", 0);
   char confname[200];
   for(int k=0; k<NUM_LINES; k++)
