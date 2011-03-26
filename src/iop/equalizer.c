@@ -267,7 +267,7 @@ void init_presets (dt_iop_module_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
   }
-  dt_gui_presets_add_generic(_("sharpen"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("equalizer", "sharpen"), self->op, &p, sizeof(p), 1);
   for(int ch=0; ch<3; ch++)
   {
     for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) p.equalizer_x[ch][k] = k/(float)(DT_IOP_EQUALIZER_BANDS-1);
