@@ -1,7 +1,7 @@
 <sect2 status="draft"><title>Equalizer II</title>
 	<sect3><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='100%'/>
+				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
@@ -25,7 +25,7 @@
     scale. </para>
 
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='100%'/>
+				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
@@ -43,7 +43,7 @@
 		</informaltable>
 
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='100%'/>
+				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
@@ -60,7 +60,7 @@
 		</informaltable>
 
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='100%'/>
+				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
@@ -77,7 +77,7 @@
 		</informaltable>
 
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='100%'/>
+				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
@@ -94,7 +94,7 @@
 		</informaltable>
 
      <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='100%'/>
+				<colspec colwidth='70%'/>
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
