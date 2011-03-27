@@ -8,5 +8,10 @@
 <xsl:param name="chunk.section.depth" select="0"></xsl:param>
 <xsl:param name="html.stylesheet.type">text/css</xsl:param>
 <xsl:param name="html.stylesheet" select="'usermanual.css'"/> 
-  
+<xsl:param name="callout.graphics" select="'1'"></xsl:param>
+<xsl:param name="callout.graphics.path"></xsl:param> 
+<xsl:param name="chunk.section.depth" select="2"></xsl:param>
+<xsl:param name="section.autolabel" select="1"></xsl:param>
+<xsl:param name="section.autolabel.max.depth" select="3"></xsl:param>
+
 </xsl:stylesheet>
