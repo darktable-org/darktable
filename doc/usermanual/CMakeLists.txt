@@ -30,7 +30,7 @@ endif()
 
 if(can_build_usermanual)
 
-	# regular usermanual
+	# draft usermanual
 	add_custom_command(
 		OUTPUT darktable-usermanual.pdf
 		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual.fo xsl/darktable_fo.xsl darktable.xml
@@ -43,6 +43,18 @@ if(can_build_usermanual)
 	add_dependencies(usermanual darktable-usermanual)
 	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable-usermanual.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
 
+	# draft html usermanual for web
+	add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/html/index.html xsl/darktable_html.xsl darktable.xml
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS darktable.xml
+		COMMENT "Building html usermanual" VERBATIM
+	)
+	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/html/index.html DESTINATION ./share/doc/darktable/usermanual/html OPTIONAL)
+	
+	
 	# final usermanual
 	add_custom_command(
 		OUTPUT darktable-usermanual-final.pdf
