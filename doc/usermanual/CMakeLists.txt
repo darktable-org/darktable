@@ -114,7 +114,8 @@ if(can_build_usermanual)
 	#
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/html/index.html xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/html/index.tmp xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMAND cat  ${CMAKE_CURRENT_BINARY_DIR}/html/index.tmp | sed "s/${binary_path}\\/media\\///g" > ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html/
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
