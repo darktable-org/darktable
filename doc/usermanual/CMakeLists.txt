@@ -75,7 +75,7 @@ if(can_build_usermanual)
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.tmp xsl/darktable_profile.xsl darktable.xml
-		COMMAND cat ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.tmp | sed "s/fileref=\"\\(.*\\)\\(\\/images\\/\\)\\(.*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g" > ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMAND cat ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.tmp | sed "s/fileref=\"\\([^>]*\\)\\(\\/images\\/\\)\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g ; s/fileref=\"images\\/\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1.jpg\"/g" > ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS darktable.xml
 		COMMENT "Generating the main docbook xml file" VERBATIM
