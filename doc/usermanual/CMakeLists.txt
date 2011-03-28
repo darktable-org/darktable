@@ -36,7 +36,7 @@ endif()
 if(can_build_usermanual)
 
 	set(TARGET_MEDIA_COMPRESSION_QUALITY "90")
-	set(TARGET_MEDIA_RESIZE "800x800")
+	set(TARGET_MEDIA_RESIZE "800x800>")
 	
 	# Create directory tree for media target image transformation
 	foreach(image ${IMAGE_FILES})
@@ -113,15 +113,22 @@ if(can_build_usermanual)
 	# draft html usermanual for web
 	#
 	add_custom_command(
+		OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/usermanual.css ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/usermanual.css
+		COMMENT "Updating usermanual.css" VERBATIM
+	)
+	
+	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
 		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/html/index.tmp xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		COMMAND cat  ${CMAKE_CURRENT_BINARY_DIR}/html/index.tmp | sed "s/${binary_path}\\/media\\///g" > ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html/
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
 		COMMENT "Building html usermanual" VERBATIM
 	)
-	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html)
+	add_custom_target(darktable-usermanual-html DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html )
 	add_dependencies(darktable-usermanual-html target_media_images darktable_single_xml )
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
 	
