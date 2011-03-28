@@ -11,6 +11,10 @@
   <img id="teaser" style='border-style:solid;border-width:1px;border-color:#6a6868' width='692' alt='header' src=''/>
 </div>
   <script language="JavaScript" type="text/javascript">
-  document.getElementById("teaser").src = "images/header/header" + (Math.floor(Math.random()*21) + 1) + ".jpg"
+	if(typeof showEyeCatcher != 'undefined' && !showEyeCatcher)
+	{
+		document.getElementById("eyeCatcher").style = document.getElementById("eyeCatcher").style+" display: none;";
+	}
+  	document.getElementById("teaser").src = "images/header/header" + (Math.floor(Math.random()*21) + 1) + ".jpg"
   </script>
   <!-- <img src="header.jpg" width="692" alt="header"/>-->
