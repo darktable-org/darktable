@@ -17,6 +17,7 @@
 	
 	<body style="counter-reset: chapter; counter-increment: chapter 0;">
 	<div class="page">
+		<!--#include virtual="navigation.html" -->
 		<div id="usermanualDiv" target="usermanualFrame"></div>
 		<iframe id='usermanualFrame'  name='usermanualFrame' src="usermanual/index.html" frameborder="0" scrolling="no" width="100%" style="display:none;"></iframe> 
 		
