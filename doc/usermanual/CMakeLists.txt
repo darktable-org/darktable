@@ -110,7 +110,7 @@ if(can_build_usermanual)
 	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable-usermanual.pdf DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
 
 	#
-	# draft html usermanual for web
+	# draft chunked html usermanual for web
 	#
 	add_custom_command(
 		OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
@@ -121,8 +121,9 @@ if(can_build_usermanual)
 	
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-		COMMAND xsltproc --output ${CMAKE_CURRENT_BINARY_DIR}/html/index.tmp xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
-		COMMAND cat  ${CMAKE_CURRENT_BINARY_DIR}/html/index.tmp | sed "s/${binary_path}\\/media\\///g" > ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+		COMMAND xsltproc --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/html/ xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
+		#COMMAND sed -i s/${binary_path}\\/media\\///g "${CMAKE_CURRENT_BINARY_DIR}/html/*.html
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html/
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
