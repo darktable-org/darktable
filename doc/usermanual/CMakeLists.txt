@@ -123,7 +123,7 @@ if(can_build_usermanual)
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
 		COMMAND xsltproc --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/html/ xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
-		#COMMAND sed -i s/${binary_path}\\/media\\///g "${CMAKE_CURRENT_BINARY_DIR}/html/*.html
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/html -name *.html -exec sed -i "s/<body[^>]*>/<body class='usermanual' onLoad='parent.onContentLoad(this);'>/g" {} \;
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/html/
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml ${CMAKE_CURRENT_BINARY_DIR}/html/usermanual.css
