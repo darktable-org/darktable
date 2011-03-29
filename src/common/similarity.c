@@ -50,12 +50,14 @@ void dt_similarity_match_image(uint32_t imgid)
   gboolean all_ok_for_match = TRUE;
   dt_similarity_histogram_t orginal,test;
   sqlite3_stmt *stmt;
-  
+
   /* create temporary mem table */
+  fprintf(stderr,"Creating mem table...\n");
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temporary table if not exists similar_images (id integer,score real)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from similar_images", NULL, NULL, NULL);
   
   /* get the histogram data for image to match against */
+  fprintf(stderr,"Getting target histogram...\n"); 
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select histogram from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if (sqlite3_step(stmt) == SQLITE_ROW)
@@ -75,11 +77,15 @@ void dt_similarity_match_image(uint32_t imgid)
     char query[4096]={0};
     
     /* set an extended collection query for viewing the result of match */
-    dt_collection_set_extended_where(darktable.collection,"id in (select id from similar_images order by score)");
+    dt_collection_set_extended_where(darktable.collection, "id in (select id from similar_images order by score)");
+    dt_collection_set_query_flags( darktable.collection,
+        dt_collection_get_query_flags(darktable.collection) | COLLECTION_QUERY_USE_ONLY_WHERE_EXT);
+    dt_collection_update(darktable.collection);
     
     /* add target image with 1.0 in score into result */
     sprintf(query,"insert into similar_images(id,score) values(%d,%f)",imgid,1.0);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+    dt_control_queue_draw_all();
     
     /* loop thru images and generate score table */
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram from images", -1, &stmt, NULL);
@@ -94,9 +100,10 @@ void dt_similarity_match_image(uint32_t imgid)
         
         /* get score for histogram similarity */
         score = _similarity_match_histogram_rgb(&orginal,&test);
-        
+        fprintf(stderr,"image %d scored %.3f\n",sqlite3_column_int(stmt, 0),score);
+         
         /* if above score threshold \todo user configurable ??? */
-        if(score > 0.5)
+        if(score > 0.9)
         {
           sprintf(query,"insert into similar_images(id,score) values(%d,%f)",sqlite3_column_int(stmt, 0),score);
           DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
@@ -107,7 +114,9 @@ void dt_similarity_match_image(uint32_t imgid)
         
       }
     }
-  }
+  } else
+    fprintf(stderr,"all ok for match is FALSE\n");
+
   
   sqlite3_finalize (stmt);  
 }
