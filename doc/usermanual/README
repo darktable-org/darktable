@@ -37,7 +37,7 @@ Building final translated manual
 when building a translated manual the content would only include sections with status "final" 
 and where status is not set. so with other words, no section with status "draft" will occur.
 
-make sv
+make darktable-usermanual-sv
 
 
 
@@ -45,10 +45,9 @@ Translators
 --------------------------------------------------------
 To add you language just simple edit po/LINGUAS and add your language code.
 
-To initialize the po file enter the po directory and execute 'make <language code>' to initialize a new <language code>.po file
-from the template.
+make update-template updates the pot file.
 
-For updating po file from the template just enter the po directory and execute 'make <language code>'
+For updating po file from the template just enter the po directory and execute 'make update-usermanual-nl'
 
 
 
