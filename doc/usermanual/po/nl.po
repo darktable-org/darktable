@@ -2,10 +2,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-17 11:29+0200\n"
-"PO-Revision-Date: 2010-09-22 09:09+0100\n"
+"POT-Creation-Date: 2011-01-20 14:17+0100\n"
+"PO-Revision-Date: 2011-03-29 18:57+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,530 +14,559 @@ msgstr ""
 "X-Poedit-Country: NETHERLANDS\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: ../build/darktable-usermanual_profiled_final.xml:5(para)
-msgid "Legal notice ..."
-msgstr "juridische opmerking ..."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:5(para)
+msgid "The owner of the Darktable project is Johannes Hanika. Main developers are Johannes Hanika and Henrik Andersson. Darktable is a free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version."
+msgstr "Eigenaar van het Darktable project is Johannes Hanika. Hoofdontwikkelaars zijn Johannes Hanika en Henrik Andersson. Darktable is vrije software: je mag het verspreiden en aanpassen onder de condities van de GNU General Public License zoals gepubliceerd is door de Free Software Foundation, cq versie 3 van de License, of (naar uw mening) een latere versie."
 
-#: ../build/darktable-usermanual_profiled_final.xml:10(firstname)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:14(para)
+msgid "Darktable is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details."
+msgstr "Darktable wordt zonder garanties verspreidt; zelfs zonder de impliciete garantie van verkoopbaarheid of of bruikbaarheid voor privé doeleinden. Bekijk de GNU General Public License voor meer details. "
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:20(para)
+msgid "You should have received a copy of the GNU General Public License along with Darktable. If not, see <emphasis> http://www.gnu.org/licenses/</emphasis>."
+msgstr "U heeft samen met Darktable een kopie van de GNU General Public License ontvangen. Zo niet, bekijk <emphasis> http://www.gnu.org/licenses/</emphasis>."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:26(para)
+msgid "The present user manual is under license <emphasis>cc by-nc-sa </emphasis>, meaning <emphasis>Attribution Non-Commercial Share Alike </emphasis>. You can visit <emphasis>http://creativecommons.org/about/licenses/</emphasis> to get more information."
+msgstr "De huidige gebruikers handleiding is onder licentie <emphasis>cc by-nc-sa </emphasis>, dit betekent <emphasis>Attribution naamsvermelding, niet commercieel en gelijk delen Alike </emphasis>. Bezoek <emphasis>http://creativecommons.org/about/licenses/</emphasis> voor aanvullende informatie."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:33(firstname)
 msgid "Henrik"
 msgstr "Henrik"
 
-#: ../build/darktable-usermanual_profiled_final.xml:11(surname)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:34(surname)
 msgid "Andersson"
 msgstr "Andersson"
 
-#: ../build/darktable-usermanual_profiled_final.xml:14(year)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:37(year)
 msgid "2010"
 msgstr "2010"
 
-#: ../build/darktable-usermanual_profiled_final.xml:15(holder)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:38(holder)
 msgid "P.H. Andersson"
 msgstr "P.H. Andersson"
 
-#: ../build/darktable-usermanual_profiled_final.xml:18(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:41(title)
 msgid "Darktable"
 msgstr "Darktable"
 
-#: ../build/darktable-usermanual_profiled_final.xml:19(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:42(title)
 msgid "Preface to darktable"
 msgstr "Inleiding op Darktable"
 
-#: ../build/darktable-usermanual_profiled_final.xml:20(para)
-msgid "<indexterm significance=\"normal\"><primary>Darktable</primary></indexterm><indexterm significance=\"normal\"><primary>Preface</primary></indexterm> This is the preface. It contains of a paragrapgh, a list and a link. This paragraph contains useless words only. Its mere purpose is to have some text in order to see the paragraphs end."
-msgstr "<indexterm significance=\"normal\"><primary>Darktable</primary></indexterm><indexterm significance=\"normal\"><primary>Preface</primary></indexterm> Dit is een voorwoord. Het bevat uit een paragraaf, een lijst en een link. Deze paragraaf bevat nutteloze woorden. Het hoofddoel is om bepaalde tekst teneinde de paragraaf einden te kunnen zien ."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:43(para)
+msgid "<indexterm significance=\"normal\"><primary>Darktable</primary></indexterm><indexterm significance=\"normal\"><primary>Preface</primary></indexterm> The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable Darktable version are listed below: <informaltable frame=\"none\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry/><entry>version</entry><entry>date</entry></row><row><entry>user manual</entry><entry/><entry>27/10/10</entry></row><row><entry>Darktable</entry><entry>darktable 0.6+429~g6de9bfb</entry><entry>27/10/10</entry></row></tbody></tgroup></informaltable>"
+msgstr "<indexterm significance=\"normal\"><primary>Darktable</primary></indexterm><indexterm significance=\"normal\"><primary>Preface</primary></indexterm> De huidige handleiding is een concept. Het is in een schrijvers beginstadium. De gebruikershandleiding en Darktable versies worden hieronder benoemd: <informaltable frame=\"none\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry/><entry>version</entry><entry>date</entry></row><row><entry>user manual</entry><entry/><entry>27/10/10</entry></row><row><entry>Darktable</entry><entry>darktable 0.6+429~g6de9bfb</entry><entry>27/10/10</entry></row></tbody></tgroup></informaltable>"
 
-#: ../build/darktable-usermanual_profiled_final.xml:31(keyword)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:67(para)
+msgid "Please note that every key accelerators given in this manual is only applicable on english keyboards layout. The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard. For example, the <emphasis>z</emphasis> allowing a full-screen view on english keyboards, becomes <emphasis>w</emphasis> on french keyboard."
+msgstr "Let op, elke genoemde toetsenbord combinatie in deze handleiding geldt voor Engelse toetsenbord indelingen. Ze worden niet toegekend aan een speciale letter maar aan een bepaalde positie in het toetsenbord. Bijvoorbeeld, de <emphasis>z</emphasis> geeft een volledige scherm weergave bij Engelse toetsenbord indeling, voor een franse indeling is dat <emphasis>w</emphasis>."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:75(keyword)
 msgid "darktable"
 msgstr "Darktable"
 
-#: ../build/darktable-usermanual_profiled_final.xml:32(keyword)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:76(keyword)
 msgid "overview"
 msgstr "overzicht"
 
-#: ../build/darktable-usermanual_profiled_final.xml:33(keyword)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:77(keyword)
 msgid "application"
 msgstr "Applicatie"
 
-#: ../build/darktable-usermanual_profiled_final.xml:36(title)
-#: ../build/darktable-usermanual_profiled_final.xml:145(title)
-#: ../build/darktable-usermanual_profiled_final.xml:218(title)
-#: ../build/darktable-usermanual_profiled_final.xml:298(title)
-#: ../build/darktable-usermanual_profiled_final.xml:327(title)
-#: ../build/darktable-usermanual_profiled_final.xml:362(title)
-#: ../build/darktable-usermanual_profiled_final.xml:419(title)
-#: ../build/darktable-usermanual_profiled_final.xml:487(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:80(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:196(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:282(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:413(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:441(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:479(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:538(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:606(title)
 msgid "Overview"
 msgstr "overzicht"
 
-#: ../build/darktable-usermanual_profiled_final.xml:37(para)
-msgid "Darktable is an application to manage and develop your digital images..."
-msgstr "Met Darktable kun je digitale afbeeldingen organiseren en ontwikkelen..."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:81(para)
+msgid "Darktable is an application to manage and develop your digital images."
+msgstr "Darktable is een applicatie om digitale afbeeldingen te organiseren en te ontwikkelen..."
 
-#: ../build/darktable-usermanual_profiled_final.xml:38(title)
-msgid "Userinterface"
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:82(para)
+msgid "It is fully non-destructive and works on a 32 bit floating point format per channel. Most of the actions on the pixelpipe are done in CIELab."
+msgstr "Het is volledig niet-destructief en werkt met een 32bit floating point format per kanaal. Het merendeel wordt verricht in CIELab kleurenruimte."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:85(title)
+msgid "Preferences"
+msgstr "Voorkeuren"
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:86(para)
+msgid "A recently introduced button located at the upper panel allows you to define various parameters."
+msgstr "Een onlangs geïntroduceerde button, aan de bovenkant van het paneel, staat u  toe om diverse parameter voorkeuren vast te leggen. "
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:90(title)
+msgid "User interface"
 msgstr "Gebruikersinterface"
 
-#: ../build/darktable-usermanual_profiled_final.xml:44(entry)
-msgid "This section describes the layout of the userinterface."
-msgstr "Dit deel verduidelijkt de lay-out van de gebruikersinterface."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:96(emphasis)
+msgid "f7"
+msgstr "f7"
 
-#: ../build/darktable-usermanual_profiled_final.xml:54(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:96(emphasis)
+msgid "f8"
+msgstr "f8"
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:96(entry)
+msgid "This section describes the layout of the user interface. You can change Darktable contrast by using <placeholder-1/> and <placeholder-2/>."
+msgstr "Deze sectie geeft een lay-out uitleg van de gebruikersinterface. U kunt het Darktable contrast wijzigen met <placeholder-1/> en <placeholder-2/>."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:106(title)
 msgid "Views"
 msgstr "Weergaven"
 
-#: ../build/darktable-usermanual_profiled_final.xml:55(para)
-msgid "Darktable consist of several views also mentions as modes, for time beeing there is three available views as described in this section, the current view is identified by the label at top of right panel. There are key accelerators to access the different views as descibed in the table below. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>l</emphasis></entry><entry>switches to lighttable view</entry></row><row><entry><emphasis>d</emphasis></entry><entry>switches to darkroom view</entry></row><row><entry><emphasis>t</emphasis></entry><entry>switches to camera tethering view</entry></row></tbody></tgroup></informaltable>"
-msgstr "Darktable kent meerdere weergaven ook wel bekend als modules. Vooralsnog bestaan er drie verschillende weergaven zoals ok wordt beschreven in deze paragraaf, De naam van de huidige weergave kun je rechts bovenin aflezen. Door middel van key accelerators heb je toegang tot de verschillende weergaven zoals ook is beschreven in hieronder staande tabel. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>l</emphasis></entry><entry>schakelt om naar de Lighttable weergave</entry></row><row><entry><emphasis>d</emphasis></entry><entry>schakelt om naar de Darkroom weergave</entry></row><row><entry><emphasis>t</emphasis></entry><entry>schakelt om naar de camera tethering weergave</entry></row></tbody></tgroup></informaltable>"
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:107(para)
+msgid "Darktable consists of several views also mentioned as modes. For the time being, there are three available views as described in this section. The current view is identified by the label at the top of the right panel. Some key accelerators, allowing to access the different views, are described in the table below: <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>l</emphasis></entry><entry>switches to lighttable view</entry></row><row><entry><emphasis>d</emphasis></entry><entry>switches to darkroom view</entry></row><row><entry><emphasis>t</emphasis></entry><entry>switches to camera tethering view</entry></row></tbody></tgroup></informaltable>"
+msgstr "Darktable kent meerdere weergaven ook wel bekend als modules. Vooralsnog bestaan er drie verschillende weergaven zoals ook wordt beschreven in deze paragraaf. De huidige weergave wordt rechts bovenin weergegeven. Met sommige snelkoppelingen heb je toegang tot de verschillende weergaven zoals beschreven in in onderstaande tabel. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>l</emphasis></entry><entry>schakelt over op Lighttable</entry></row><row><entry><emphasis>d</emphasis></entry><entry>schakelt over op Darkroom</entry></row><row><entry><emphasis>t</emphasis></entry><entry>schakelt over op camera tethering</entry></row></tbody></tgroup></informaltable>"
 
-#: ../build/darktable-usermanual_profiled_final.xml:74(title)
-#: ../build/darktable-usermanual_profiled_final.xml:138(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:126(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:189(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:198(title)
 msgid "Lighttable"
 msgstr "Lighttable"
 
-#: ../build/darktable-usermanual_profiled_final.xml:75(para)
-msgid "The lighttable view is where you manage you images and filmrolls, it's in this view you rate, add tags, add colorlabels, export images among other actions."
-msgstr "De Lighttable weergave kunt u afbeeldingen en series van afbeeldingen managen. U kunt hier uw afbeeldingen waarderen, labelen, kleurenlabels geven, exporteren en nog veel meer."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:127(para)
+msgid "The lighttable view is where you manage your images and filmrolls; it's in that view that you rate, add tags, add colorlabels, export images among other actions."
+msgstr "In de Lighttable weergave kunt u afbeeldingen en series beheren. U kunt hier afbeeldingen waarderen, labelen, kleur labels geven of bijvoorbeeld exporteren."
 
-#: ../build/darktable-usermanual_profiled_final.xml:79(title)
-#: ../build/darktable-usermanual_profiled_final.xml:211(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:131(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:275(title)
 msgid "Darkroom"
 msgstr "doka"
 
-#: ../build/darktable-usermanual_profiled_final.xml:80(para)
-msgid "In the darkroom view you develop a specific image using the modules available."
-msgstr "In de darkroom weergave ontwikkel je een bepaalde afbeelding met hulp van de beschikbare modules."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:132(para)
+msgid "In the darkroom view you develop a specific image using the available modules."
+msgstr "In de darkroom weergave ontwikkel je een bepaalde afbeelding met hulp van beschikbare modules."
 
-#: ../build/darktable-usermanual_profiled_final.xml:83(title)
-msgid "Tehtering"
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:135(title)
+msgid "Tethering"
 msgstr "Tehtering"
 
-#: ../build/darktable-usermanual_profiled_final.xml:84(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:136(para)
 msgid "This view is where you do camera tethering."
 msgstr "In deze weergaven kun je de camera therering uitvoeren."
 
-#: ../build/darktable-usermanual_profiled_final.xml:89(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:141(title)
 msgid "Filmstrip"
 msgstr "Serie"
 
-#: ../build/darktable-usermanual_profiled_final.xml:90(para)
-msgid "The filmstrip views the same images as is viewed in lighttable with respect to filter and sort orders and are turned on/off with key accel ctrl-f. Filmstrip provides some actions to apply on images when you are not in lighttable mode, you can for an example when in darkroom mode and developing an image, switch to another image to develop by doubleclicking the thumb in the filmstrip..."
-msgstr ""
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:142(para)
+msgid "The filmstrip shows the same images as lighttable with respect to filter and sort orders and are turned on/off with key accelerator <emphasis>ctrl-f</emphasis>. You can navigate along the filmstrip by wheel scrolling. The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image, switch to another image to develop by double clicking the thumb in the filmstrip."
+msgstr "De fotoreeks toont dezelfde afbeeldingen als in Lighttable (ook kijkt die naar sorteeropdrachten) schakel de reeks in/uit met <emphasis>ctrl-f</emphasis>. Je kunt door de reeks navigeren met het muiswiel. De reeks maakt interactie mogelijk buiten de lightable modus om.  Je kunt bijvoorbeeld als je in de darkroom modus bent een afbeelding ontwikkelen en vervolgens naar een volgende afbeelding gaan door te dubbelklikken ergens in de reeks."
 
-#: ../build/darktable-usermanual_profiled_final.xml:96(para)
-msgid "The filmstrip does also provide some actions to be performed on image under the mousepointer and here follows a table of available key accelerators for specific actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack onto the image</entry></row></tbody></tgroup></informaltable>"
-msgstr ""
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:148(para)
+msgid "The filmstrip also provides some actions to be performed on image under the mouse pointer and here follows a table of available key accelerators for specific actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>set a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack onto the image</entry></row></tbody></tgroup></informaltable>"
+msgstr "De filmstrip biedt u nog wat extra mogelijkheden. Hier een lijst met beschikbare sneltoetsen. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>bepaal de waardering voor een afbeelding; als die 1 ster had en u toetst <emphasis>1</emphasis> krijgt de afbeelding geen waardering</entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>bepaal de kleurlabel van de afbeelding</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>kopieert de geschiedenisstapel van de afbeelding</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>past de geschiedenisstapel op de afbeelding toe</entry></row></tbody></tgroup></informaltable>"
 
-#: ../build/darktable-usermanual_profiled_final.xml:121(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:173(title)
 msgid "Darktable workflow"
 msgstr "Darktable werk procedure"
 
-#: ../build/darktable-usermanual_profiled_final.xml:134(keyword)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:185(keyword)
 msgid "lighttable"
 msgstr "Lighttable"
 
-#: ../build/darktable-usermanual_profiled_final.xml:135(keyword)
-#: ../build/darktable-usermanual_profiled_final.xml:208(keyword)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:186(keyword)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:272(keyword)
 msgid "view"
 msgstr "Weergave"
 
-#: ../build/darktable-usermanual_profiled_final.xml:139(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:190(para)
 msgid "The lighttable is where you manage all your images, ratings, exporting and much more..."
 msgstr "Met de weergave Lighttable kun je al je afbeeldingen beheersen, waarderen, exporteren en nog veel meer..."
 
-#: ../build/darktable-usermanual_profiled_final.xml:141(screeninfo)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:192(screeninfo)
 msgid "The lighttable view"
 msgstr "De Lighttable weergave"
 
-#: ../build/darktable-usermanual_profiled_final.xml:147(title)
-msgid "Ligthtable"
-msgstr "lichttafel"
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:204(entry)
+msgid "In this centerview, your images are shown as thumbs; each thumb has a frame and while mouse is over an image, the information of rating, colorlabels and if image is altered in darkroom <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> is shown. Also when mouse hovers over an image frame the specific image metadata is shown in the metadata panel."
+msgstr "In deze weergave worden afbeeldingen weergegeven als miniaturen. Wanneer de muis over een afbeelding gaat wordt de informatie over waardering en kleurlabels <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> getoond. Ook wordt de informatie in het metadata paneel vertoond."
 
-#: ../build/darktable-usermanual_profiled_final.xml:153(entry)
-msgid "In this centerview, your images are shown as thumbs; each thumb has a frame and while mouse is over an image, the information of rating, colorlabels and if image is altered in darkroom <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> is viewed. Also when mouse hovers over an imageframe the specific image metadata is shown in the metadata panel."
-msgstr "In this centerview, your images are shown as thumbs; each thumb has a frame and while mouse is over an image, the information of rating, colorlabels and if image is altered in darkroom <inlinegraphic fileref=\"images/lighttable_thumb_icon_altered.png\" scalefit=\"1\" width=\"3mm\"/> is shown. Also when mouse hovers over an image frame the specific image metadata is shown in the metadata panel."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:217(para)
+msgid "In order to locate where you are in your collection, you have read-only sliders at the extreme border of the window : left/right for your vertical position in the collection, top/bottom (when in zoomable lighttable mode, see below) for your zoom level."
+msgstr "Om aan te geven waar u staat in uw collectie bestaan er schuifbalken: links/rechts voor uw verticale positie  in the collectie, op/neer (in de zoomable lighttable modus, zie hieronder) voor de zoom status."
 
-#: ../build/darktable-usermanual_profiled_final.xml:166(para)
-msgid "While mouse is over an imageframe, you have additional actions accessed from keyboard to apply on image; here follows an table of key accelerators and assigned actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image, if an image has 1 star and you hit the 1 key the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>sets a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry></row><row><entry><emphasis>e</emphasis></entry><entry>opens the image in darkroom view for developing</entry></row><row><entry><emphasis>z</emphasis></entry><entry>shows a fullscreen view of the image</entry></row></tbody></tgroup></informaltable>"
-msgstr "Wanneer de muis cursor over de afbeelding schuift worden, via het toetsenbord, extra mogelijkheden gegeven om de afbeelding aan te passen. Kijk in deze tabel voor de keuze mogelijkheden. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>Waardeer een afbeelding. Had de afbeelding 1 ster en u toets een 1 dan wordt de waardering weggehaald </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>geeft een kleurwaardering</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>Kopieert de afbeeldings bewerkingsgeschiedenis</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>past de gekopieerde bewerkingsgeschiedenis toe</entry></row><row><entry><emphasis>e</emphasis></entry><entry>opent de afbeelding in de darkroom weergave zodat u die kunt aanpassen</entry></row><row><entry><emphasis>z</emphasis></entry><entry>geeft u fullscreen weergave van de afbeelding</entry></row></tbody></tgroup></informaltable>"
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:220(para)
+msgid "While mouse is over an image frame, you have additional actions accessed from keyboard to apply on image; here follows a table of key accelerators and assigned actions. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated </entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>set a color label for the image</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack on the image</entry></row><row><entry><emphasis>e</emphasis></entry><entry>open the image in darkroom view for developing</entry></row><row><entry><emphasis>z</emphasis></entry><entry>show a fullscreen view of the image</entry></row></tbody></tgroup></informaltable>"
+msgstr "Wanneer de muis cursor over de afbeelding schuift worden, via het toetsenbord, extra mogelijkheden gegeven om de afbeelding aan te passen. Kijk in deze tabel voor de keuze mogelijkheden. <informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"3cm\"/><tbody><row><entry><emphasis>1 - 4</emphasis></entry><entry>bepaal de waardering van de afbeelding; als de waardering 1 ster was en u toetst <emphasis>1</emphasis> dan krijgt de afbeelding geen waardering</entry></row><row><entry><emphasis>F1 - F3</emphasis></entry><entry>bepaalt de kleurwaardering van de afbeelding</entry></row><row><entry><emphasis>ctrl-c</emphasis></entry><entry>kopieert de geschiedenisstapel van de afbeelding</entry></row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>past de geschiedenisstapel toe op de afbeelding</entry></row><row><entry><emphasis>e</emphasis></entry><entry>opent de afbeelding in Darkroom</entry></row><row><entry><emphasis>z</emphasis></entry><entry>toont een volledige weergave van de afbeelding</entry></row></tbody></tgroup></informaltable>"
 
-#: ../build/darktable-usermanual_profiled_final.xml:194(para)
-msgid "At the bottom you have an option to choose a zoomable lighttable view or a filemanger view of the thumbnails."
-msgstr "Aan de onderkant is een optie aanwezig om te kiezen tussen de zoombare lighttable of de bestandsmanager miniaturen weergave."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:248(para)
+msgid "At the bottom you have an option to choose between zoomable lighttable view or filemanger view of the thumbnails."
+msgstr "Aan de onderkant is een optie om te kiezen tussen zoombare lighttable of bestandsmanager miniaturen weergave."
 
-#: ../build/darktable-usermanual_profiled_final.xml:207(keyword)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:250(para)
+msgid "Using the zoomable lighttable view, scroll with your mouse wheel to zoom in and out. The <emphasis>hold left-click</emphasis> allows you to navigate through your collection."
+msgstr "Bij het gebruik van de zoombare Lighttable weergave, scrol je met de muis in en uit.  Met de <emphasis>hold left-click</emphasis> kun je door de collectie navigeren."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:253(para)
+msgid "While in filemanager you can use <emphasis>ctrl-(mouse wheel)</emphasis> to change the number of thumbs displayed in a row. That action is a key accelerator of the counter that can be found beside the filemanager option. Use your mouse wheel to navigate through your collection."
+msgstr "In de bestandsmanager kun je gebruik maken van <emphasis>ctrl-(muiswiel)</emphasis> om het aantal getoonde miniaturen in een rij te bepalen. Deze actie is een key accelerator van de teller die je terugvindt naast de bestandsmanager. Gebruik het muiswiel om door de collectie te navigeren."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:257(para)
+msgid "While in filemanager, by pressing <emphasis>w/s</emphasis> you can scroll (not select) up and down through your collection. In zoomable lighttable <emphasis>a/d/w/s</emphasis> allow you to move left/right/up/down through your collection."
+msgstr "Terwijl in bestandsmanager, toets <emphasis>w/s</emphasis> kunt u scrollen (niet selecteren) op en neer door de collectie. In zoomable lighttable <emphasis>a/d/w/s</emphasis> kunt u schuiven links/rechts/op/neer door de collectie."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:271(keyword)
 msgid "darkroom"
 msgstr "doka"
 
-#: ../build/darktable-usermanual_profiled_final.xml:212(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:276(para)
 msgid "The darkroom view is where you develop your image..."
 msgstr "In de Darkroom weergaven kunt u afbeeldingen ontwikkelen..."
 
-#: ../build/darktable-usermanual_profiled_final.xml:214(screeninfo)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:278(screeninfo)
 msgid "The darkroom view"
 msgstr "De Darkroom (Doka) weergave"
 
-#: ../build/darktable-usermanual_profiled_final.xml:219(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:283(para)
 msgid "In darkroom you are in develop mode for the specific image; here you have a lot of tools (named module) to develop you image."
 msgstr "In de darkroom weergave kun je een bepaalde afbeelding ontwikkelen. Hier heeft het programma diverse mogelijkheden om een afbeelding te wijzingen. "
 
-#: ../build/darktable-usermanual_profiled_final.xml:222(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:286(para)
 msgid "On the left side you have the navigation, snapshots and history panels, each of them being described below; in the right panel you can see the histogram and then a list of available modules to use when working with your image. At the bottom of the right panel you can enable/disable view of individual modules."
 msgstr "Aan de linkerkant vind u de panelen voor navigeren, momentopnamen en geschiedenis. Elk paneel is hieronder beschreven. In het rechterpaneel vind u het histogram en een reeks van beschikbare modules. Aan de onderkant van het rechter paneel kun je de zichtbaarheid van de diverse modules in of uitschakelen."
 
-#: ../build/darktable-usermanual_profiled_final.xml:228(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:290(para)
+msgid "Since darktable 0.6.1, modules are grouped into four groups: basic, color, correct, effect. However, you can view all modules by selecting no group."
+msgstr "Vanaf versie 0.6.1 worden modules gegroepeerd in vier groepen: basis, kleur, afbeelding en effecten. Alle modules zijn zichtbaar door geen groep te selecteren."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:293(para)
+msgid "For those interested in how it works, modules are applied on images following a bottom-to-top order. That means, that if you activated the view of all modules (by selecting no groups), the first module to be applied will be \"import a RAW\" at the bottom of the right panel, whereas the last one will be \"splittoning\" at the top of the right panel. That order can not be changed by user, so modules are always applied following the same order."
+msgstr "Voor wie er in is geïnteresseerd. De module bewerkingen worden van onderaf en naar boven toe toegepast. Dat wil zeggen, als een module weergave is geactiveerd (zonder dat daarbij een groep is geselecteerd), de als eerste toegepaste module is \"importeer RAW\"  en de laatste zal dan zijn  \"duotoning\". Die volgorde kan niet door de gebruiker worden gewijzigd, Modules worden dus altijd in dezelfde volgorde toegepast"
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:300(para)
+msgid "You can use middle-click to zoom 1:1. A double middle-click takes you to 2:1."
+msgstr "Met de middelste muisknop zoomt u in op 1:1. Een dubbele klikt zoomt in op 2:1."
+
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:304(title)
 msgid "Panels"
 msgstr "Panelen"
 
-#: ../build/darktable-usermanual_profiled_final.xml:230(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:306(title)
 msgid "Snapshots"
 msgstr "momentopnamen"
 
-#: ../build/darktable-usermanual_profiled_final.xml:236(entry)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:312(entry)
 msgid "You can take a snapshot of what is displayed in the center view; this snapshot can then be selected and is overlayed in the current center view to help you with a side by side comparasion (left: snapshot, right: active) when you are tuning parameters of a module. In the active view, history remains usable in order to compare with the snapshot."
 msgstr "U kunt een momentopname nemen van wat nu wordt weergegeven. Deze momentopname kan later worden geselecteerd en over de huidige weergaven worden gelegd. Door ze zo naast elkaar te vergelijken kunt u de  module parameters afstellen."
 
-#: ../build/darktable-usermanual_profiled_final.xml:255(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:331(title)
 msgid "Modules"
 msgstr "Modulen"
 
-#: ../build/darktable-usermanual_profiled_final.xml:256(para)
-msgid "Each correction, enhancement or effect is implemented as modules, and this section includes documentation of each module and its specific parameters. A module consists of an expander bar <inlinegraphic fileref=\"../images/darkroom_module_expander.png\"/> where the <inlinegraphic fileref=\"../images/darkroom_module_icon_enable.png\"/> icon is used to turn then module on or off, then there are a title of the module press this to expand the module to see the parameters userinterface. <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> icon is the preset icon to access the available presets stored for the module or to create new ones. The <inlinegraphic fileref=\"../images/darkroom_module_icon_reset.png\"/> icon is used to reset the module parameters to their default values."
-msgstr ""
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:332(para)
+msgid "Each correction, enhancement or effect is implemented as modules, and this section includes documentation of each module and its specific parameters. A module consists of an expander bar <inlinegraphic fileref=\"images/darkroom_module_expander.png\"/> where the <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png\"/> icon is used to turn then module on or off, then there are a title of the module press this to expand the module to see the parameters user interface. <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon is the preset icon to access the available presets stored for the module or to create new ones. The <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\"/> icon is used to reset the module parameters to their default values."
+msgstr "Elke wijziging, verbetering of effect wordt geïmplementeerd als module en deze sectie bevat documentatie over elke module en de parameters. Een module is uitklapbaar <inlinegraphic fileref=\"images/darkroom_module_expander.png\"/> waarbij het <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png\"/> icoon wordt gebruikt voor in/uitschakelen. Dan is er nog de module titel. Drukt u hierop dan wordt de module in/uitgeklapt.  <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icoon is een voorkeurs ikoon waarmee toegang wordt verkregen tot de beschikbare opgeslagen voorkeursinstellingen of om een nieuwe op te slaan. Met het <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\"/> icoon kunt waarden resetten."
 
-#: ../build/darktable-usermanual_profiled_final.xml:262(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:339(title)
 msgid "Presets"
 msgstr "Voorkeuren"
 
-#: ../build/darktable-usermanual_profiled_final.xml:263(para)
-msgid "Presets are stored configurations for the module parameters both internal and userdefined is available through clicking the <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text."
-msgstr "Voorkeuren zijn intern opgeslagen instellingen voor de modules. Die worden standaard mee geinstalleerd maar kunnen ook door U als gebruiker worden gedefinieerd.U verkrijgt ze door te klikken op het <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> ikoon. Er wordt u dan een lijst van te kiezen beschikbare voorkeuren getoond. De gekozen en geactiveerde voorkeur wordt in het vet weergegeven."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:340(para)
+msgid "Presets are stored configurations for the module parameters both internal and user-defined is available through clicking the <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text."
+msgstr "Voorkeuren zijn intern opgeslagen instellingen. Zowel standaard als door gebruiker gedefinieerde voorkeuren zijn verkrijgbaar door te klikken op het <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> ikoon. Een lijst van beschikbare voorkeuren wordt getoond. De gekozen en geactiveerde voorkeur wordt vet weergegeven."
 
-#: ../build/darktable-usermanual_profiled_final.xml:267(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:344(para)
 msgid "The preset system does also support automatic preset selection based on image data such as focal length, iso, camera model and much more fields."
 msgstr "Het voorkeurssysteem ondersteund tevens een geautomatiseerde voorkeursinstelling gebaseerd op de afbeeldingsdata dat zoals de brandpuntsinstelling, ISO waarde, camera model en nog veel meer waarden."
 
-#: ../build/darktable-usermanual_profiled_final.xml:271(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:348(title)
 msgid "Creating a new preset"
 msgstr "Creëer een nieuwe voorkeur"
 
-#: ../build/darktable-usermanual_profiled_final.xml:272(para)
-msgid "Configure the specific module of choice as you like then you click the <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> icon and select store new preset menu choice. Following dialog will be shown to configure the preset:"
-msgstr "Configureer een module van uw keur naar wens en klik dan op de <inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> ikoon en kies daarna voor opslaan van de nieuwe voorkeur menu. Het nu volgende dialogenvenster wordt vertoond om de voorkeur te configureren:"
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:349(para)
+msgid "Configure the specific module of choice as you like then you click the <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> icon and select store new preset menu choice. Following dialog will be shown to configure the preset:"
+msgstr "Configureer een module naar wens en klik dan op  <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\"/> ikoon en kies voor opslaan nieuwe voorkeur. Een dialogenvenster wordt getoond om uw voorkeur te configureren:"
 
-#: ../build/darktable-usermanual_profiled_final.xml:278(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:355(para)
 msgid "The first two fields are used for setting a name and a description of the preset."
 msgstr "De eerste velden worden gebruikt het instellen van een naam en een omschrijving van de voorkeur."
 
-#: ../build/darktable-usermanual_profiled_final.xml:281(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:358(para)
 msgid "In the example i have also checked the auto apply option which brings up the image selection fields where you can define a filter that is used to decide if the preset should be applied the image or not. The example dialog above does set up following rules, if lens name matches and aperture is &gt;= 8 and focal length is in range 24 - 35mm the preset will be automatically applied, it will also only show in the preset list if the image does match this rule."
 msgstr "In het voorbeeld van hierboven is de automatische toepassing aangevinkt. Daardoor worden keuze velden zichtbaar. U kunt daar een te filter definiëren waarvan de voorkeur instellingen wel of niet wordt toegepast. Het dialogen voorbeeld van hierboven stelt de te volgende regels is. Als de lens naam overeenkomt en de diafragma is &gt;= 8 en het brandpunt is in het bereik van 24 - 35mm dan worden de voorkeursinstellingen automatisch toegepast. Nota bene. Het wordt alleen getoond bij de voorkeurlijst  als de afbeeldings gegevens overeenkomen met deze regel."
 
-#: ../build/darktable-usermanual_profiled_final.xml:287(para)
-msgid "The data used is the exif information so if you want a preset to be applied to all images from a specific camera, then leave all fields at default values and lookup model string in metadata panel and enter it into the model field."
-msgstr "De gebruikte data is de EXIF informatie. Indien u wilt dat een voorkeur wordt toegepast op alle afbeeldingen van een bepaalde camera, laat dan alle instellingen op de standaardwaarde staan, zoek de fabriekswaarden op en voer die in voor het type camera.  "
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:364(para)
+msgid "The data used is the EXIF information so if you want a preset to be applied to all images from a specific camera, then leave all fields at default values, lookup model string in metadata panel and enter it into the model field."
+msgstr "De gebruikte data is EXIF informatie. Indien u een voorkeur op alle afbeeldingen wilt toepassen, laat dan alle instellingen op de standaardwaarde staan, zoek de fabriekswaarden op en voer die in voor het type camera.  "
 
-#: ../build/darktable-usermanual_profiled_final.xml:297(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:412(title)
 msgid "Crop and rotate"
 msgstr "Verklein en roteer"
 
-#: ../build/darktable-usermanual_profiled_final.xml:304(entry)
-msgid "This module is used for crop, rotate and correct perspective of your image, it does also include many helpful guidelines that assist you using the tools."
-msgstr "Dit gereedschap helpt u bij het verkleinen, roteren en het corrigeren van het perspectief van een afbeelding. Het bevat ook handzame help functies  die je assisteren bij het gebruik van het gereedschap."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:419(entry)
+msgid "This module is used to crop, rotate and correct perspective of your image. It also includes many helpful guidelines that assist you using the tools."
+msgstr "Deze module helpt u bij verkleinen, roteren of corrigeren van het perspectief van een afbeelding. Al of niet met hulp van handzame hulplijnen."
 
-#: ../build/darktable-usermanual_profiled_final.xml:315(para)
-msgid "First off select what aspect ratio you want and size the crop bounds by dragging border and corner handles, use ctrl-x to swap potrait/landscape rotation of the crop rectangle. You can move around the crop rectangle by holding down left mouse button and move around... When you finished and want to execute the crop, hit enter key or double click in crop rectangle."
-msgstr ""
-
-#: ../build/darktable-usermanual_profiled_final.xml:326(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:440(title)
 msgid "Velvia"
 msgstr "Velvia"
 
-#: ../build/darktable-usermanual_profiled_final.xml:333(entry)
-msgid "The velvia module does enhance the saturation in the image, it increases saturation on lower saturated pixeks more than high satured pixels."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:447(entry)
+msgid "The velvia module enhances the saturation in the image; it increases saturation on lower saturated pixels more than on high saturated pixels."
 msgstr "De velvia module verbetert de verzadiging van een afbeelding. Het verhoogd de verzadiging van minder verzadigde pixels meer dan die van de sterk verzadigde pixels."
 
-#: ../build/darktable-usermanual_profiled_final.xml:345(title)
-#: ../build/darktable-usermanual_profiled_final.xml:392(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:459(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:509(title)
 msgid "Usage"
 msgstr "Gebruik"
 
-#: ../build/darktable-usermanual_profiled_final.xml:346(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:460(title)
 msgid "Saturation"
 msgstr "verzadiging"
 
-#: ../build/darktable-usermanual_profiled_final.xml:347(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:461(para)
 msgid "This slider controls the strength of saturation for the effect."
 msgstr "Deze schuifregelaar bepaald voor dit effect de kracht van verzadiging. "
 
-#: ../build/darktable-usermanual_profiled_final.xml:349(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:463(title)
 msgid "Vibrance"
 msgstr "Levendigheid"
 
-#: ../build/darktable-usermanual_profiled_final.xml:350(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:464(para)
 msgid "Vibrance controls how much of the saturation is applied to weighted pixels."
 msgstr "Vibrance bepaald hoeveel van de verzadiging wordt toegepast op de meegewogen pixels."
 
-#: ../build/darktable-usermanual_profiled_final.xml:353(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:467(title)
 msgid "Mid-tones bias"
 msgstr "onzuiverheid voor midtonen"
 
-#: ../build/darktable-usermanual_profiled_final.xml:354(para)
-msgid "This slider controls preservation of saturation in mid-tones."
-msgstr "Deze schuifregelaar controleert het behoud van verzadiging voor de midden kleuren."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:468(para)
+msgid "This slider controls saturation preservation in mid-tones. It is expressed as the lightness repartition between mid-tones and shadows/highlights. The greater the first number, the stronger the effect."
+msgstr "Deze schuifregelaar bepaald het behoud van verzadiging voor de mid-tones. Het wordt uitgedrukt als een verdeling van de helderheid tussen de mid-tonen en de schaduw en hooglichten. Hoe hoger het eerste nummer, hoe sterker het effect."
 
-#: ../build/darktable-usermanual_profiled_final.xml:361(title)
-#: ../build/darktable-usermanual_profiled_final.xml:470(para)
-#: ../build/darktable-usermanual_profiled_final.xml:535(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:478(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:589(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:654(para)
 msgid "Splittoning"
 msgstr "Duotoon"
 
-#: ../build/darktable-usermanual_profiled_final.xml:368(entry)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:485(entry)
 msgid "Original splittoning method creates a two color linear toning effect where the shadows and highlights are represented by two different colors. In the example image below you can see an original black and white image and one where a splittoning effect are applied with blue in shadows and yellow-ish color in highlights."
 msgstr "Standaard duotoon methoden creëren een tweekleurige lineair toon effect waarbij de schaduwen en de hooglichten worden getoond door twee verschillende kleuren. In het voorbeeld hieronder zie je een origineel monochrome afbeelding en een afbeelding waarop duotoon is toegepast met behulp van blauw voor de schaduwkleuren en een gelige kleur voor de hooglichten."
 
-#: ../build/darktable-usermanual_profiled_final.xml:381(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:498(para)
 msgid "Darktable splittoning module has more parameters that impacts on the default above behavior, we have balance which offsets the 50% gray level in image and compression that does compress toning in the shadows and highlights which leaves a gap which are untouched by the effect. Read more and see examples of these additional parameters to splittoning module in \"usage\" section."
 msgstr "De Darktable duotoon plugin heeft nog meer parameters die van invloed zijn op de bovenstaande standaard gedrag. Er is een balans die het 50% grijs niveau verschuift. Er is een compressie mogelijkheid die de schaduw- en hooglichten kleuren comprimeert. Hiermee ontstaat een gat wat niet door het effect wordt beïnvloed. Lees meer en bekijk de voorbeelden van deze extra parameters voor de duotoon plugin in de sectie parameters."
 
-#: ../build/darktable-usermanual_profiled_final.xml:386(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:503(para)
 msgid "The splittoning module does not convert image to black and white and works extensible nice on color images, soo if you want to do traditional splittoning, use the monochrome module to make the image black and white before playing around with splittoning effect."
 msgstr "Met de module duo toning wordt een afbeelding niet omgezet in monochroom, het werkt juist bijzonder goed op gekleurde afbeeldingen. Wil je een traditionele duotoning uitvoeren maak dan gebruik van de module voor monochroom."
 
-#: ../build/darktable-usermanual_profiled_final.xml:393(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:510(para)
 msgid "..."
 msgstr "..."
 
-#: ../build/darktable-usermanual_profiled_final.xml:394(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:511(title)
 msgid "Shadows and Highlights color"
 msgstr "Schaduw en hooglichten kleuren"
 
-#: ../build/darktable-usermanual_profiled_final.xml:395(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:512(para)
 msgid "These controls are used to set the color of the splittoning effect, you select the desire color and saturation for both shadows and highlights, you can also click the color preview box too bring up a common color picker dialog."
 msgstr "Deze instellingen worden gebruikt om de kleur van het duotoon effect te bepalen. Je kunt de gewenste kleur en verzadiging voor beide schaduw- en hooglichten kleuren. Je kunt ook het kleurvoorbeeld box aanvinken om gebruik te maken van een algemene kleurenkeuze venster."
 
-#: ../build/darktable-usermanual_profiled_final.xml:399(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:516(title)
 msgid "Balance"
 msgstr "Balans"
 
-#: ../build/darktable-usermanual_profiled_final.xml:400(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:517(para)
 msgid "The balance is presented as an ratio bar and default value is 50/50 which means that 50% of lightness range in image are used for shadows toning and the other 50% for highlights toning."
 msgstr "De balans wordt gepresenteerd als een verhoudingsbalk met een standaard waarde van 50/50. Dit houdt in dat 50% van het bereik voor de helderheid in de afbeelding  wordt gebruikt voor de schaduw kleuren en de andere 50% wordt gebruikt voor de hooglichten."
 
-#: ../build/darktable-usermanual_profiled_final.xml:404(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:521(title)
 msgid "Compression"
 msgstr "Compressie"
 
-#: ../build/darktable-usermanual_profiled_final.xml:405(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:522(para)
 msgid "Compression is a percentage of total lightness range that not is affected by color toning, default value is set to 33% which not is the default behaviour of a original splittoning which would be 0% compression. The choice of 33% as default is to invite you exprimenting with these parameters and how it extends the original splittoning method..."
 msgstr "Compressie is een percentage van de totale helderheidsweergave welke niet wordt beïnvloed door een kleur toning. De standaard waarde is gezet op 33%. Dit is niet de standaard instelling van een originele duotoning. Dat ou 0% moeten zijn. De keuze voor een standaard waarde van 33% nodigt U uit om te experimenteren hoe het op de standaard duotoning aanvult..."
 
-#: ../build/darktable-usermanual_profiled_final.xml:417(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:536(title)
 msgid "Examples"
 msgstr "Voorbeelden"
 
-#: ../build/darktable-usermanual_profiled_final.xml:418(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:537(title)
 msgid "Cross-processing"
 msgstr "Cross-processing"
 
-#: ../build/darktable-usermanual_profiled_final.xml:425(entry)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:544(entry)
 msgid "Cross-processing is a analog processing technique where slide film (normally developped thanks to an E6 solution) is processed in chemicals used for processing print film (C41). The resulting images get skewed colors usually a cyan hue and increased contrast and saturation."
 msgstr "Cross-processing is een techniek uit het analoge tijdperk. Waarbij een filmrolletje in worden ontwikkeld in de verkeerde chemicaliën. Het resultaat geeft war overdreven kleuren doorgaans met een cyaan gekleurde tint, een verhoogd contrast en verzadiging."
 
-#: ../build/darktable-usermanual_profiled_final.xml:437(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:556(para)
 msgid "The standard way for doing digital cross-processing is to use a channel curve tool but Darktable lacks this tool for the moment and another way to accomodiate the effect is used."
 msgstr "De standaard uitvoer methode voor een digitale cross-processing is met hulp van een kanaal curve gereedschap. Op dit moment bezit Darktable die mogelijkheid niet en wordt een andere methode gebruikt om het effect te realiseren."
 
-#: ../build/darktable-usermanual_profiled_final.xml:441(title)
-#: ../build/darktable-usermanual_profiled_final.xml:505(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:560(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:624(title)
 msgid "Procedure"
 msgstr "Werkwijze"
 
-#: ../build/darktable-usermanual_profiled_final.xml:442(para)
-#: ../build/darktable-usermanual_profiled_final.xml:506(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:561(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:625(para)
 msgid "This procedure uses tonecurve, channelmixer and splittoning modules."
 msgstr "Deze procedure gebruikt de modules; tonecurve, kanaalmixer en duotone."
 
-#: ../build/darktable-usermanual_profiled_final.xml:446(para)
-#: ../build/darktable-usermanual_profiled_final.xml:510(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:565(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:629(para)
 msgid "Image preparation"
 msgstr "Afbeeldingen voorbereiden"
 
-#: ../build/darktable-usermanual_profiled_final.xml:447(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:566(para)
 msgid "Prepare the image for the cross process steps by adjusting the base settings such as exposure,whitebalance etc. for a correctly looking image."
 msgstr "Voordat u een cross-process uitvoert moeten eerst een aantal basis al instellingen zijn uitgevoerd. Denk daarbij aan de belichting en de witbalans."
 
-#: ../build/darktable-usermanual_profiled_final.xml:451(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:570(para)
 msgid "Boost contrast"
 msgstr "Versterk het contrast"
 
-#: ../build/darktable-usermanual_profiled_final.xml:452(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:571(para)
 msgid "Select the medium contrast curve preset for tonecurve module to boost the overall contrast in the image. You later might get back here to tune the curve for better result."
 msgstr "Kies voor de voorkeursinstelling midden contrast curve van de module tooncurve om daarmee het gehele contrast van de afbeelding te versterken. Later kunt u nog eens terugkeren om, voor een verbetert resultaat, de curve fijn af te stellen. "
 
-#: ../build/darktable-usermanual_profiled_final.xml:458(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:577(para)
 msgid "Color cast"
 msgstr "Kleur beheren"
 
-#: ../build/darktable-usermanual_profiled_final.xml:459(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:578(para)
 msgid "This step does change the colorcast as the base for the effect using the channel mixer. You might later get back to this and finetune the colorcast of the final result."
 msgstr "Deze stap wijzigt de kleurwijziging als basis  met hulp van de kanalen mixer. Later kun je hiernaar terugkeren om de kleur aanpassingen op het eindresultaat preciezer af te stellen."
 
-#: ../build/darktable-usermanual_profiled_final.xml:463(para)
-#: ../build/darktable-usermanual_profiled_final.xml:525(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:582(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:644(para)
 msgid "Enable the channel mixer module"
 msgstr "Activeer de module voor kanalen mixer"
 
-#: ../build/darktable-usermanual_profiled_final.xml:464(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:583(para)
 msgid "Select blue channel and set blue color value to 0.8"
 msgstr "Selecteer het kanaal voor blauw en stel de waarde in op 0.8"
 
-#: ../build/darktable-usermanual_profiled_final.xml:465(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:584(para)
 msgid "Select red channel and change blue color value to 0.1"
 msgstr "Selecteer het kanaal voor rood en wijzig de waarde voor blauw naar 0.1"
 
-#: ../build/darktable-usermanual_profiled_final.xml:466(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:585(para)
 msgid "Select green channel and change blue color value to 0.1"
 msgstr "Selecteer het kanaal voor groen en wijzig de waarde voor blauw naar 0.1"
 
-#: ../build/darktable-usermanual_profiled_final.xml:471(para)
-msgid "We use splittoning for add some more coloring to the result for cyan/blue shadows and yellow highlight."
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:590(para)
+msgid "We use splittoning to add some more coloring to the result for cyan/blue shadows and yellow highlight."
 msgstr "We gebruiken duotoon om meer kleur te geven aan het resultaat van cyaan/blauwe schaduwkleuren en de gele hooglichten."
 
-#: ../build/darktable-usermanual_profiled_final.xml:475(para)
-#: ../build/darktable-usermanual_profiled_final.xml:541(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:594(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:660(para)
 msgid "Enable the splittoning module"
 msgstr "Activeer de module voor splittoning"
 
-#: ../build/darktable-usermanual_profiled_final.xml:476(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:595(para)
 msgid "Select a cyan/blue tone for shadows and set saturation around 50%"
 msgstr "Selecteer een cyaan/blauwe kleurtoon voor de schaduwen en stel de verzadiging in op 50%."
 
-#: ../build/darktable-usermanual_profiled_final.xml:477(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:596(para)
 msgid "Select a yellow/orange tone for highlights and set saturation around 70%"
 msgstr "Kies een geel/oranje kleurtoon voor de hooglichten en stel de verzadiging in op 70%."
 
-#: ../build/darktable-usermanual_profiled_final.xml:478(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:597(para)
 msgid "Set compression to 10%"
 msgstr "Stel de compressie in op 10%"
 
-#: ../build/darktable-usermanual_profiled_final.xml:479(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:598(para)
 msgid "Use the balance slider to tune the splittoning effect due this differs on every image due to it's exposure, motive etc."
 msgstr "Gebruik de balans schuifregelaar om het duotoon effect te bepalen. Vanwege verschillen per afbeelding in bijvoorbeeld belichtingen of motief is dit telkens iets anders."
 
-#: ../build/darktable-usermanual_profiled_final.xml:486(title)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:605(title)
 msgid "Cyan toned image"
 msgstr "Cyaan gekleurde afbeelding"
 
-#: ../build/darktable-usermanual_profiled_final.xml:493(entry)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:612(entry)
 msgid "Cyan is a nice color touchup for black and white images, this example guides you through how to make this with Darktable and how to control the tone. You can choose any tone of your like for this tutorial..."
 msgstr "Cyaan geeft een mooie kleur verbetering voor monochrome afbeeldingen. Dit voorbeeld helpt je erbij om het te realiseren in Darktable en kleurentonen te beheersen. U kunt voor deze les elke willekeurige kleur kiezen. "
 
-#: ../build/darktable-usermanual_profiled_final.xml:511(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:630(para)
 msgid "Prepare the image for the cyan toned steps by adjusting the base settings such as exposure,black level, contrast etc. for a correctly looking image."
 msgstr "Voordat u het cross-process wordt uitgevoerd moeten de basis instellingen zijn uitgevoerd. Denk daarbij aan de belichting, zwart niveau, contrast etc."
 
-#: ../build/darktable-usermanual_profiled_final.xml:515(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:634(para)
 msgid "Black and white"
 msgstr "zwart en wit"
 
-#: ../build/darktable-usermanual_profiled_final.xml:516(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:635(para)
 msgid "Enable the monochrome module to make the image black and white."
 msgstr "Activeer de monochroom module om de afbeelding naar zwart en wit om te zetten."
 
-#: ../build/darktable-usermanual_profiled_final.xml:520(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:639(para)
 msgid "Add color tone"
 msgstr "Voeg een kleur toon toe"
 
-#: ../build/darktable-usermanual_profiled_final.xml:521(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:640(para)
 msgid "This step selects the basetone of the image using channel mixer, we are going for cyan tone but you can choose the tone of your like here."
 msgstr "Deze stap selecteert de basis kleuren van de afbeelding met hulp van de kanaalmixer, we kiezen voor een cyaan kleur maar je mag ook een andere kleurtoon nemen."
 
-#: ../build/darktable-usermanual_profiled_final.xml:526(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:645(para)
 msgid "Select red channel and set red color value to 0.7"
 msgstr "Selecteer het kanaal voor rood en stel de waarde in op 0.7"
 
-#: ../build/darktable-usermanual_profiled_final.xml:527(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:646(para)
 msgid "Select green channel and red color value to 0.150"
 msgstr "Kies voor het groene en rode kanaal de waarde 0.150"
 
-#: ../build/darktable-usermanual_profiled_final.xml:528(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:647(para)
 msgid "Select blue channel and red color value to 0.150"
 msgstr "Kies voor het blauwe en rode kanaal de waarde 0.150"
 
-#: ../build/darktable-usermanual_profiled_final.xml:530(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:649(para)
 msgid "As you notice we mix blue and green color to get a cyan tone, we substract 0.3 from red channel and add them to blue and green."
 msgstr "Zoals je ziet mengen we blauwe en groene om een cyaan kleur te krijgen, we verminderen rood met 0.3 en tellen dat weer op bij blauw en groen."
 
-#: ../build/darktable-usermanual_profiled_final.xml:536(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:655(para)
 msgid "The result of previous step does also add a colorcast on highlight that we actually want to have white for a prettier result. We also wants to add some blue color cast to the shadows to emphasis them."
 msgstr "Bovendien verhoogd het resultaat van de voorgaande stap een kleur wijziging van hooglichten. Die willen meer meer wit maken voor een aangenamer resultaat. Ook willen we de schaduw kleuren benadrukken door er een kleur aan te voegen."
 
-#: ../build/darktable-usermanual_profiled_final.xml:542(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:661(para)
 msgid "Select a blue/cyan tone for shadows and set saturation around 50%"
 msgstr "Kies een blauw/cyaan kleurtoon voor de schaduwen en kies voor een verzadiging van ongeveer 50%"
 
-#: ../build/darktable-usermanual_profiled_final.xml:543(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:662(para)
 msgid "Set highlights saturation to zero, to remove saturation on highlights."
 msgstr "Stel de hooglichten verzadiging in op nul om daarmee verzadiging van hooglichten te verwijderen."
 
-#: ../build/darktable-usermanual_profiled_final.xml:544(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:663(para)
 msgid "Set compression to zero"
 msgstr "Stel de compressie in op nul"
 
-#: ../build/darktable-usermanual_profiled_final.xml:545(para)
+#: /home/houz/programming/darktable/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:664(para)
 msgid "Use the balance slider to tune the effect, our example uses a balance of 70/30"
 msgstr "Gebruik de balans schuifregelaar om het effect af te stemmen, ons voorbeeld gebruikt een balans van 70/30"
 
+#~ msgid "Legal notice ..."
+#~ msgstr "juridische opmerking ..."
 #~ msgid ""
-#~ "Using the zoomable lighttable view, scroll with your mouse wheel to zoom "
-#~ "in and out. The <emphasis>hold left-click</emphasis> allows you to "
-#~ "navigate through your collection."
+#~ "<indexterm significance=\"normal\"><primary>Darktable</primary></"
+#~ "indexterm><indexterm significance=\"normal\"><primary>Preface</primary></"
+#~ "indexterm> This is the preface. It contains of a paragrapgh, a list and a "
+#~ "link. This paragraph contains useless words only. Its mere purpose is to "
+#~ "have some text in order to see the paragraphs end."
 #~ msgstr ""
-#~ "Bij het gebruik van de zoombare Lighttable weergave, scrol je met de muis "
-#~ "in en uit.  Met de <emphasis>hold left-click</emphasis> kun je door de "
-#~ "collectie navigeren."
-#~ msgid ""
-#~ "While in filemanager you can use <emphasis>ctrl-(mouse wheel)</emphasis> "
-#~ "to change the number of thumbs displayed in a row. That action is a key "
-#~ "accelerator of the counter that can be found beside the filemanager "
-#~ "option. Use your mouse wheel to navigate through your collection."
+#~ "<indexterm significance=\"normal\"><primary>Darktable</primary></"
+#~ "indexterm><indexterm significance=\"normal\"><primary>Preface</primary></"
+#~ "indexterm> Dit is een voorwoord. Het bevat uit een paragraaf, een lijst "
+#~ "en een link. Deze paragraaf bevat nutteloze woorden. Het hoofddoel is om "
+#~ "bepaalde tekst teneinde de paragraaf einden te kunnen zien ."
+#~ msgid "This section describes the layout of the userinterface."
+#~ msgstr "Dit deel verduidelijkt de lay-out van de gebruikersinterface."
+#~ msgid "Ligthtable"
+#~ msgstr "lichttafel"
+#~ msgid "This slider controls preservation of saturation in mid-tones."
 #~ msgstr ""
-#~ "In de bestandsmanager kun je gebruik maken van <emphasis>ctrl-(muiswiel)</"
-#~ "emphasis> om het aantal getoonde miniaturen in een rij te bepalen. Deze "
-#~ "actie is een key accelerator van de teller die je terugvindt naast de "
-#~ "bestandsmanager. Gebruik het muiswiel om door de collectie te navigeren."
-#~ msgid ""
-#~ "Since darktable 0.6.1, modules are grouped into four groups: basic, "
-#~ "color, correct, effect. However, you can view all modules by selecting no "
-#~ "group."
-#~ msgstr ""
-#~ "Vanaf versie 0.6.1 worden modules gegroepeerd in vier groepen: basis, "
-#~ "kleur, afbeelding en effecten. Alle modules zijn zichtbaar door geen "
-#~ "groep te selecteren."
-#~ msgid ""
-#~ "For those interested in how it works, modules are applied on images "
-#~ "following a bottom-to-top order. That means, that if you activated the "
-#~ "view of all modules (by selecting no groups), the first module to be "
-#~ "applied will be \"import a RAW\" at the bottom of the right panel, "
-#~ "whereas the last one will be \"splittoning\" at the top of the right "
-#~ "panel. That order can not be changed by user, so modules are always "
-#~ "applied following the same order."
-#~ msgstr ""
-#~ "Voor wie er in is geïnteresseerd. De module bewerkingen worden van "
-#~ "onderaf en naar boven toe toegepast. Dat wil zeggen, als een module "
-#~ "weergave is geactiveerd (zonder dat daarbij een groep is geselecteerd), "
-#~ "de als eerste toegepaste module is \"importeer RAW\"  en de laatste zal "
-#~ "dan zijn  \"duotoning\". Die volgorde kan niet door de gebruiker worden "
-#~ "gewijzigd, Modules worden dus altijd in dezelfde volgorde toegepast"
-#~ msgid ""
-#~ "This slider controls saturation preservation in mid-tones. It is "
-#~ "expressed as the lightness repartition between mid-tones and shadows/"
-#~ "highlights. The greater the first number, the stronger the effect."
-#~ msgstr ""
-#~ "Deze schuifregelaar bepaald het behoud van verzadiging voor de mid-tones. "
-#~ "Het wordt uitgedrukt als een verdeling van de helderheid tussen de mid-"
-#~ "tonen en de schaduw en hooglichten. Hoe hoger het eerste nummer, hoe "
-#~ "sterker het effect."
+#~ "Deze schuifregelaar controleert het behoud van verzadiging voor de midden "
+#~ "kleuren."
 #~ msgid "( --- )"
 #~ msgstr "( --- )"
 #~ msgid "-"
