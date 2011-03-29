@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@
 #include "gui/gtk.h"
 #include "control/control.h"
 #include "common/opencl.h"
+#include "common/similarity.h"
 
 #include <assert.h>
 #include <string.h>
@@ -557,9 +559,23 @@ post_process_collect_info:
           uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
           dev->histogram[4*lum+3] ++;
         }
+      
       for(int k=0; k<4*64; k++) dev->histogram[k] = logf(1.0 + dev->histogram[k]);
       // don't count <= 0 pixels
       for(int k=19; k<4*64; k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
+
+      /* average histogram data into 4 buckets and store it to database
+        this is used for image similarity histogram matching scoring. */
+      dt_similarity_histogram_t avghist;
+      int buckdiv = 64/DT_SIMILARITY_HISTOGRAM_BUCKETS;
+      memset(&avghist,0,sizeof(dt_similarity_histogram_t));
+      for(int k=0;k<64;k++)
+        for(int j=0;j<4;j++) 
+          avghist.rgbl[(int)(k/buckdiv)][j] = dev->histogram[k*4+j]/buckdiv;
+  
+      /* store the averaged histogram for future use */
+      dt_similarity_store_histogram(dev->image->id, &avghist);
+        
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       dt_control_queue_draw(glade_xml_get_widget (darktable.gui->main_window, "histogram"));
     }
