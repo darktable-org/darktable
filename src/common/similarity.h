@@ -28,10 +28,10 @@ typedef struct dt_similarity_histogram_t
 	
 
 /** \brief stores the histogram with the imgid to database
-	\note a histogram is generated ina 4x4 float array.
+	\note a histogram is generated in a DT_SIMILARITY_HISTOGRAM_BUCKETSx4 float array.
 	\see dt_dev_pixelpipe_process_rec()
 */
 void dt_similarity_store_histogram(uint32_t imgid, const dt_similarity_histogram_t *histogram);
-
+void dt_similarity_match_image(uint32_t imgid);
 
 #endif
