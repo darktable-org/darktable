@@ -151,10 +151,12 @@ body.navbody{
 
 .headline{
   position:relative;
-  margin-bottom:10pt;
+  margin-bottom:5pt;
   margin-left:2em;
   color:#6a6868;
   vertical-align:text-top;
+  font-size: 44pt;
+  font-weight: bold;
 }
 h1, h2{
   position:relative;
