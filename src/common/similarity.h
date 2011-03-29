@@ -20,7 +20,7 @@
 
 #include <inttypes.h>
 
-#define DT_SIMILARITY_HISTOGRAM_BUCKETS 4
+#define DT_SIMILARITY_HISTOGRAM_BUCKETS 8
 typedef struct dt_similarity_histogram_t
 {
 	float rgbl[DT_SIMILARITY_HISTOGRAM_BUCKETS][4];
