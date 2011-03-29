@@ -373,7 +373,7 @@ void dt_control_merge_hdr()
   dt_control_add_job(darktable.control, &j);
 }
 
-void dt_control_match_similar_hdr()
+void dt_control_match_similar()
 {
   dt_job_t j;
   dt_control_match_similar_job_init(&j);

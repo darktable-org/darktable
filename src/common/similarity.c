@@ -56,7 +56,7 @@ void dt_similarity_match_image(uint32_t imgid)
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from similar_images", NULL, NULL, NULL);
   
   /* get the histogram data for image to match against */
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select histogram from images id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select histogram from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if (sqlite3_step(stmt) == SQLITE_ROW)
   {
