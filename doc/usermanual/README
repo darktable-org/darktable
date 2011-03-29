@@ -1,3 +1,6 @@
+All invocations of 'make' have to be done inside of your build/ dir after running cmake!
+
+
 
 Writing guidelines
 ---------------------------------------------------------
