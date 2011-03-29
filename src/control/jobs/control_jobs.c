@@ -24,6 +24,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_dng.h"
+#include "common/similarity.h"
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/imageio_module.h"
@@ -66,6 +67,16 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     dt_image_cache_release(img, 'r');
     t = g_list_delete_link(t, t);
   }
+  return 0;
+}
+
+int32_t dt_control_match_similar_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  imgid = (long int)t->data;
+  dt_similarity_match_image(imgid);
   return 0;
 }
 
@@ -314,6 +325,14 @@ void dt_control_merge_hdr_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_init(t);
 }
 
+void dt_control_match_similar_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "match similar images");
+  job->execute = &dt_control_match_similar_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+}
+
 void dt_control_duplicate_images_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "duplicate images");
@@ -351,6 +370,13 @@ void dt_control_merge_hdr()
 {
   dt_job_t j;
   dt_control_merge_hdr_job_init(&j);
+  dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_match_similar_hdr()
+{
+  dt_job_t j;
+  dt_control_match_similar_job_init(&j);
   dt_control_add_job(darktable.control, &j);
 }
 
