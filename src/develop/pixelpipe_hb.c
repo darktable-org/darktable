@@ -564,7 +564,7 @@ post_process_collect_info:
       // don't count <= 0 pixels
       for(int k=19; k<4*64; k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
 
-      /* average histogram data into 4 buckets and store it to database
+      /* average histogram data into buckets and store it to database
         this is used for image similarity histogram matching scoring. */
       dt_similarity_histogram_t avghist;
       int buckdiv = 64/DT_SIMILARITY_HISTOGRAM_BUCKETS;
