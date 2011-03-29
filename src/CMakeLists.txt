@@ -26,6 +26,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_rawspeed.cc" 
   "common/metadata.c" 
   "common/styles.c" 
+  "common/similarity.c" 
   "common/tags.c" 
   "common/utility.c" 
   "common/variables.c" 
