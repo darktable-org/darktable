@@ -75,8 +75,11 @@ int32_t dt_control_match_similar_job_run(dt_job_t *job)
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
-  imgid = (long int)t->data;
-  dt_similarity_match_image(imgid);
+  if(t) {
+    imgid = (long int)t->data;
+    dt_similarity_match_image(imgid);
+  } else
+    dt_control_log(_("select an image as target for search of similar images"));
   return 0;
 }
 
