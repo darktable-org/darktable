@@ -9,7 +9,7 @@
   <body style="counter-reset: chapter; counter-increment: chapter 6;"> <!-- chapter number goes here! -->
     <div class="page">
       <!--#include virtual="navigation.html" -->
-    	<span class="number"><img src="style/6.png" alt="6" width="142px" /></span><div class="headline"><img src="contact.png" alt="contact" width="157px"/></div>
+    	<span class="number"><img src="style/6.png" alt="6" width="142px" /></span><div class="headline">contact</div>
     	<div class="starterText">
       contact us via irc.freenode.net <em>#darktable</em>,
       subscribe to the new <a href="https://lists.sourceforge.net/lists/listinfo/darktable-users">users' mailing list</a> for usage questions and

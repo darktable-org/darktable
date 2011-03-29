@@ -4,12 +4,12 @@
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="stylesheet" href="style/style.css" type="text/css" /> 
-    <title>darktable | resources</title>
+    <title>resources | darktable</title>
   </head>
   <body style="counter-reset: chapter; counter-increment: chapter 5;"> <!-- chapter number goes here! -->
     <div class="page">
       <!--#include virtual="navigation.html" -->
-    	<span class="number"><img src="style/5.png" alt="5" width="142px" /></span><div class="headline"><img src="documentation.png" alt="documentation" width="324px"/></div>
+    	<span class="number"><img src="style/5.png" alt="5" width="142px" /></span><div class="headline">resources</div>
     	<div class="starterText">
       on this page, there are a few demonstrations of darktable's tools, as well as hack-level tricks.
       the documentation package can be downloaded from <a href="https://sourceforge.net/projects/darktable/files/darktable/0.8/darktable-doc-0.8.tar.bz2/download">the sourceforge download manager</a>.

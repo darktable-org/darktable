@@ -9,7 +9,7 @@
   <body style="counter-reset: chapter; counter-increment: chapter 4;"> <!-- chapter number goes here! -->
     <div class="page">
       <!--#include virtual="navigation.html" -->
-    	<span class="number"><img src="style/4.png" alt="4" width="142px" /></span><div class="headline"><img src="install.png" alt="install" width="128px"/></div>
+    	<span class="number"><img src="style/4.png" alt="4" width="142px" /></span>install</div>
     	<div class="starterText">
       there are two principal ways to get darktable: get a stable release
       or get an up-to-date <a href="#git">snapshot via git</a>. pick one:

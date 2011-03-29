@@ -9,7 +9,7 @@
   <body style="counter-reset: chapter; counter-increment: chapter 2;"> <!-- chapter number goes here! -->
     <div class="page">
       <!--#include virtual="navigation.html" -->
-    	<span class="number"><img src="style/2.png" alt="2" width="142px" /></span><div class="headline"><img src="features.png" alt="features" width="177px"/></div>
+    	<span class="number"><img src="style/2.png" alt="2" width="142px" /></span><div class="headline">features</div>
     	<div class="starterText">
       these are some of the current features, and a coarse preview of the roadmap for future releases.
     	</div>
