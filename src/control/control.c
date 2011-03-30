@@ -674,6 +674,10 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
   return 0;
 }
 
+/* Background jobs will be timestamped and added to queue
+    the queue will then check ts and detect if its background job
+    and place it on the job_res if its available... 
+*/
 int32_t dt_control_add_background_job(dt_control_t *s, dt_job_t *job, time_t delay)
 {
   /* setup timestamps */
@@ -681,32 +685,38 @@ int32_t dt_control_add_background_job(dt_control_t *s, dt_job_t *job, time_t del
   job->ts_execute = job->ts_added+delay;
   
   /* pass the job further to scheduled jobs worker */
-  return dt_control_add_job_res(s,job,DT_CTL_WORKER_7);
+  return dt_control_add_job(s,job);
 }
 
 int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
   int32_t i;
   
-  /* set ts_added if needed */
-  if(job->ts_added==0)
+  /* set ts_added if unset */
+  if (job->ts_added == 0)
      job->ts_added = time(NULL);
   
   dt_pthread_mutex_lock(&s->queue_mutex);
+  
+  /* check if equivalent job exist in queue, and discard job
+      if duplicate found .*/
   for(i=0; i<s->queued_top; i++)
   {
-    // find equivalent job and quit if already there
     const int j = s->queued[i];
     if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
     {
       dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
+      _control_job_set_state (job,DT_JOB_STATE_DISCARDED);
       dt_pthread_mutex_unlock(&s->queue_mutex);
       return -1;
     }
   }
+  
   dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", s->idle_top);
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
+  
+  /* add job to queue if not full, otherwise discard the job */
   if(s->idle_top != 0)
   {
     i = --s->idle_top;
