@@ -72,7 +72,120 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 
 int32_t dt_control_indexer_job_run(dt_job_t *job)
 {
-  /* reschedule the indexer */
+  
+  /* 
+   * generate histograms for those images thats missing it or have corrupt ones
+   */
+  GList *images=NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    /* validate histogram data, if fail add to list of regeneration 
+      \TODO check also for image->flags & needs_indexing
+    */
+    uint32_t size = sqlite3_column_bytes(stmt,0);
+    if (size!=sizeof(dt_similarity_histogram_t))
+      images = g_list_append(images,(gpointer)sqlite3_column_int(stmt,0));
+  }
+  
+  /* regenerate histogram for images in list */
+  GList *imgitem = g_list_first(images);
+  if(imgitem)
+  {
+    
+    char message[512]= {0};
+    double fraction=0;
+    int total = g_list_length(images);
+    snprintf(message, 512, ngettext ("regenerates %d histogram", "regenerates %d histograms", total), total );
+    dt_control_log(message);
+    const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+    
+    do {
+      /* get image from imgid */
+      dt_image_t *img = dt_image_cache_get((uint32_t)imgitem->data, 'r');
+      
+      /* get image data */
+      /*dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+      if(mip != DT_IMAGE_FULL)
+      {
+        dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
+        dt_image_cache_release(img, 'r');
+        continue;
+      }*/
+      
+      /* setup one export pipe Max x Height 320x320 */
+      dt_develop_t dev;
+      dt_dev_init(&dev, 0);
+      dt_dev_load_image(&dev, img);
+    
+      const int wd = dev.image->width;
+      const int ht = dev.image->height;
+      
+      dt_dev_pixelpipe_t pipe;
+      dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+      dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
+      dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+      dt_dev_pixelpipe_synch_all(&pipe, &dev);
+      dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+      /* set scaling */
+      const float scalex = fminf(320/(float)pipe.processed_width,  1.0);
+      const float scaley = fminf(320/(float)pipe.processed_height, 1.0);
+      const float scale = fminf(scalex, scaley);
+      const int dest_width=pipe.processed_width*scale, dest_height=pipe.processed_height*scale;
+      
+      /* process the pipe */
+      dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, dest_width, dest_height, scale);
+      
+      /* lets generate a histogram */
+      uint8_t *pixel = pipe.backbuf;
+      
+      /* generate histogram */
+      dt_similarity_histogram_t histogram;
+      int bucketdiv = 0xff/DT_SIMILARITY_HISTOGRAM_BUCKETS;
+      for(int j=0; j<dest_height; j+=4) 
+        for(int i=0; i<dest_width; i+=4)
+        {
+          uint8_t rgb[3];
+          for(int k=0; k<3; k++)
+            rgb[k] = pixel[4*j*dest_width+4*i+2-k];
+
+          /* distribute rgb into buckets */
+          for(int k=0; k<3; k++)
+            histogram.rgbl[rgb[k]/bucketdiv][k] ++;
+          
+          /* distribute lum into buckets */
+          uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+          histogram.rgbl[lum/bucketdiv][3]++;
+        }
+        
+      /* rescale */
+      for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
+        for (int j=0;j<4;j++) 
+          histogram.rgbl[k][j]= logf(1.0 + histogram.rgbl[k][j]);
+      
+      /* store the histogram data */
+      dt_similarity_store_histogram(img->id, &histogram);
+      
+      dt_dev_pixelpipe_cleanup(&pipe);
+      dt_dev_cleanup(&dev);
+      
+      /* update background progress */
+      fraction+=1.0/total;
+      dt_gui_background_jobs_set_progress(j, fraction);
+      
+      dt_image_cache_release(img, 'r');
+    } while ((imgitem=g_list_next(imgitem)));
+    
+    dt_gui_background_jobs_set_progress(j, 1.0f);
+    dt_gui_background_jobs_destroy (j);
+  }
+  
+  
+  
+  /* 
+   * Indexing opertions finished, lets reschedule the indexer 
+   */
   dt_control_start_indexer();
   return 0;
 }
@@ -89,7 +202,7 @@ int32_t dt_control_match_similar_job_run(dt_job_t *job)
     dt_control_log(_("select an image as target for search of similar images"));
   return 0;
 }
-
+  
 int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -579,7 +692,7 @@ void dt_control_export()
 void dt_control_start_indexer() {
   dt_job_t j;
   dt_control_indexer_job_init(&j);
-  dt_control_add_background_job(darktable.control, &j, 60);
+  dt_control_add_background_job(darktable.control, &j, 5);
 }
 
 
