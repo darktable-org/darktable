@@ -33,7 +33,7 @@
 #define DT_CONTROL_JOB_DEBUG
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers
-#define DT_CTL_WORKER_RESERVED 7
+#define DT_CTL_WORKER_RESERVED 8
 #define DT_CTL_WORKER_1 0 // dev load raw
 #define DT_CTL_WORKER_2 1 // dev zoom 1
 #define DT_CTL_WORKER_3 2 // dev zoom fill
@@ -253,7 +253,7 @@ typedef struct dt_control_t
   dt_pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
-  pthread_t *thread;
+  pthread_t *thread,kick_on_workers_thread;
   GList *queue;
   dt_job_t job_res[DT_CTL_WORKER_RESERVED];
   uint8_t new_res[DT_CTL_WORKER_RESERVED];
