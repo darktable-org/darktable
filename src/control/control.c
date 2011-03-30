@@ -628,22 +628,21 @@ int32_t dt_control_run_job(dt_control_t *s)
       that is up for execution.*/
   time_t ts_now = time(NULL);
   GList *jobitem=g_list_first(s->queue);
-  while(jobitem)
-  {
-    dt_job_t *tj = jobitem->data;
-    
-    /* check if it's a scheduled job and is waiting to be executed */
-    if(!bj && (tj->ts_execute > tj->ts_added) && tj->ts_execute <= ts_now)
-      bj = tj;
-    else if ((tj->ts_execute > tj->ts_added) && !j) 
-      j = tj;
-    
-    /* if we got a normal job, and a background job, we are finished */
-    if(bj && j) break;
-    
-    /* get next item */
-    jobitem = g_list_next(jobitem);
-  } 
+  if(jobitem)
+    do
+    {
+      dt_job_t *tj = jobitem->data;
+      
+      /* check if it's a scheduled job and is waiting to be executed */
+      if(!bj && (tj->ts_execute > tj->ts_added) && tj->ts_execute <= ts_now)
+        bj = tj;
+      else if ((tj->ts_execute > tj->ts_added) && !j) 
+        j = tj;
+      
+      /* if we got a normal job, and a background job, we are finished */
+      if(bj && j) break;
+      
+    } while ((jobitem = g_list_next(jobitem)));
 
   /* remove the found jobs from queue */
   if (bj)
@@ -681,9 +680,13 @@ int32_t dt_control_run_job(dt_control_t *s)
     dt_print(DT_DEBUG_CONTROL, "[run_job-] %02d %f ", DT_CTL_WORKER_RESERVED+dt_control_get_threadid(), dt_get_wtime());
     dt_control_job_print(j);
     dt_print(DT_DEBUG_CONTROL, "\n");
+    
+    /* free job */
+    g_free(j);
   }
   dt_pthread_mutex_unlock (&j->wait_mutex);
 
+  fprintf(stderr,"Job finish\n");
   return 0;
 }
 
@@ -696,6 +699,7 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
   dt_print(DT_DEBUG_CONTROL, "\n");
   _control_job_set_state (job,DT_JOB_STATE_QUEUED);
   s->job_res[res] = *job;
+  g_free(job);
   s->new_res[res] = 1;
   dt_pthread_mutex_unlock(&s->queue_mutex);
   dt_pthread_mutex_lock(&s->cond_mutex);
@@ -738,7 +742,7 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
         dt_pthread_mutex_unlock(&s->queue_mutex);
         return -1;
       }
-    } while((jobitem=g_list_next(s->queue)));
+    } while((jobitem=g_list_next(jobitem)));
     
   dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", g_list_length(s->queue));
   dt_control_job_print(job);
@@ -779,17 +783,18 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
   
   /* find equivalent job and move it to top of the stack */
   GList *jobitem = g_list_first(s->queue);
-  do {
-    if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
-    {
-      s->queue = g_list_remove_link(s->queue, jobitem);
-      s->queue = g_list_insert(s->queue, jobitem->data, 0);
-      g_free(jobitem);
-      found_j = 1;
-      break;
-    }
-  } while((jobitem=g_list_next(s->queue)));
- 
+  if (jobitem)
+    do {
+      if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
+      {
+        s->queue = g_list_remove_link(s->queue, jobitem);
+        s->queue = g_list_insert(s->queue, jobitem->data, 0);
+        g_free(jobitem);
+        found_j = 1;
+        break;
+      }
+    } while((jobitem=g_list_next(jobitem)));
+
   /* unlock the queue */
   dt_pthread_mutex_unlock(&s->queue_mutex);
   
