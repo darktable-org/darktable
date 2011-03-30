@@ -36,6 +36,7 @@
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
+#include "control/jobs/control_jobs.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
@@ -378,6 +379,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
+  /* start the indexer background job */
+  dt_control_start_indexer();
   return 0;
 }
 
