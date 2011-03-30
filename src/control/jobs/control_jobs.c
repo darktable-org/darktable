@@ -70,6 +70,13 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   return 0;
 }
 
+int32_t dt_control_indexer_job_run(dt_job_t *job)
+{
+  /* reschedule the indexer */
+  dt_control_start_indexer();
+  return 0;
+}
+
 int32_t dt_control_match_similar_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -328,6 +335,12 @@ void dt_control_merge_hdr_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_init(t);
 }
 
+void dt_control_indexer_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "image indexer");
+  job->execute = &dt_control_indexer_job_run;
+}
+
 void dt_control_match_similar_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "match similar images");
@@ -562,5 +575,12 @@ void dt_control_export()
   dt_control_export_job_init(&j);
   dt_control_add_job(darktable.control, &j);
 }
+
+void dt_control_start_indexer() {
+  dt_job_t j;
+  dt_control_indexer_job_init(&j);
+  dt_control_add_background_job(darktable.control, &j, 60);
+}
+
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
