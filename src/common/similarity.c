@@ -22,7 +22,6 @@
 #include "common/darktable.h"
 #include "common/similarity.h"
 
-#if 0
 static void dump_histogram(uint32_t imgid, const dt_similarity_histogram_t *histogram)
 {
   fprintf(stderr, "histogram for %d:",imgid);
@@ -30,7 +29,6 @@ static void dump_histogram(uint32_t imgid, const dt_similarity_histogram_t *hist
     fprintf(stderr," [%f, %f, %f, %f]",histogram->rgbl[j][0],histogram->rgbl[j][1],histogram->rgbl[j][2],histogram->rgbl[j][3]);
   fprintf(stderr,"\n");
 }
-#endif
 
 /* matches the rgb histogram and returns a score for the match */
 float _similarity_match_histogram_rgb( const dt_similarity_histogram_t *target, const dt_similarity_histogram_t *source)
@@ -129,5 +127,5 @@ void dt_similarity_store_histogram(uint32_t imgid, const dt_similarity_histogram
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
-  //dump_histogram(imgid,histogram);
+  dump_histogram(imgid,histogram);
 }
