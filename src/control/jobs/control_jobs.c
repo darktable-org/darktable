@@ -105,16 +105,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       /* get image from imgid */
       dt_image_t *img = dt_image_cache_get((uint32_t)imgitem->data, 'r');
       
-      /* get image data */
-      /*dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
-      if(mip != DT_IMAGE_FULL)
-      {
-        dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
-        dt_image_cache_release(img, 'r');
-        continue;
-      }*/
-      
-      /* setup one export pipe Max x Height 320x320 */
+      /* setup a pipe Max x Height 320x320 */
       dt_develop_t dev;
       dt_dev_init(&dev, 0);
       dt_dev_load_image(&dev, img);
@@ -128,6 +119,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       dt_dev_pixelpipe_create_nodes(&pipe, &dev);
       dt_dev_pixelpipe_synch_all(&pipe, &dev);
       dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+    
       /* set scaling */
       const float scalex = fminf(320/(float)pipe.processed_width,  1.0);
       const float scaley = fminf(320/(float)pipe.processed_height, 1.0);
@@ -143,27 +135,27 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       /* generate histogram */
       dt_similarity_histogram_t histogram;
       int bucketdiv = 0xff/DT_SIMILARITY_HISTOGRAM_BUCKETS;
-      for(int j=0; j<dest_height; j+=4) 
-        for(int i=0; i<dest_width; i+=4)
-        {
-          uint8_t rgb[3];
-          for(int k=0; k<3; k++)
-            rgb[k] = pixel[4*j*dest_width+4*i+2-k];
+      for(int j=0;j<(4*dest_width*dest_height);j+=4)
+      {
+        /* swap rgb */
+        uint8_t rgb[3];
+        for(int k=0; k<3; k++)
+          rgb[k] = pixel[j+2-k];
 
-          /* distribute rgb into buckets */
-          for(int k=0; k<3; k++)
-            histogram.rgbl[rgb[k]/bucketdiv][k] ++;
-          
-          /* distribute lum into buckets */
-          uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-          histogram.rgbl[lum/bucketdiv][3]++;
-        }
+        /* distribute rgb into buckets */
+        for(int k=0; k<3; k++)
+          histogram.rgbl[rgb[k]/bucketdiv][k]++;
         
-      /* rescale */
+        /* distribute lum into buckets */
+        uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+        histogram.rgbl[lum/bucketdiv][3]++;
+      }
+       
       for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
         for (int j=0;j<4;j++) 
           histogram.rgbl[k][j]= logf(1.0 + histogram.rgbl[k][j]);
       
+        
       /* store the histogram data */
       dt_similarity_store_histogram(img->id, &histogram);
       
