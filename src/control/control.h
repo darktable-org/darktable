@@ -254,10 +254,7 @@ typedef struct dt_control_t
   pthread_cond_t cond;
   int32_t num_threads;
   pthread_t *thread;
-  dt_job_t job[DT_CONTROL_MAX_JOBS];
-  int32_t idle[DT_CONTROL_MAX_JOBS];
-  int32_t queued[DT_CONTROL_MAX_JOBS];
-  int32_t idle_top, queued_top;
+  GList *queue;
   dt_job_t job_res[DT_CTL_WORKER_RESERVED];
   uint8_t new_res[DT_CTL_WORKER_RESERVED];
   pthread_t thread_res[DT_CTL_WORKER_RESERVED];
