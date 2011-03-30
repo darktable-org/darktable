@@ -59,4 +59,6 @@ void dt_control_export();
 void dt_control_merge_hdr();
 void dt_control_match_similar();
 
+void dt_control_start_indexer();
+
 #endif
