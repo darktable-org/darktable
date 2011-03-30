@@ -33,13 +33,14 @@
 #define DT_CONTROL_JOB_DEBUG
 #define DT_CONTROL_DESCRIPTION_LEN 256
 // reserved workers
-#define DT_CTL_WORKER_RESERVED 6
+#define DT_CTL_WORKER_RESERVED 7
 #define DT_CTL_WORKER_1 0 // dev load raw
 #define DT_CTL_WORKER_2 1 // dev zoom 1
 #define DT_CTL_WORKER_3 2 // dev zoom fill
 #define DT_CTL_WORKER_4 3 // dev zoom fit
 #define DT_CTL_WORKER_5 4 // dev small prev
 #define DT_CTL_WORKER_6 5 // dev prefetch
+#define DT_CTL_WORKER_7 6 // scheduled jobs nice level
 
 // keycodes mapped to dvorak keyboard layout for easier usage
 #if defined(__APPLE__) || defined(__MACH__)
@@ -180,6 +181,12 @@ typedef struct dt_job_t
   int32_t (*execute) (struct dt_job_t *job);
   int32_t result;
 
+  /* timestamp of job added to queue */
+  time_t ts_added;
+  /* if job is a delayed job it will be run as a backgroundjob
+      and ts_execute will be the timestamp of when to start job */
+  time_t ts_execute;
+  
   dt_pthread_mutex_t state_mutex;
   dt_pthread_mutex_t wait_mutex;
 
@@ -267,6 +274,8 @@ int dt_control_write_config(dt_control_t *c);
 
 int32_t dt_control_run_job(dt_control_t *s);
 int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job);
+/** adds a job to queue tagged as background job and with a delay */
+int32_t dt_control_add_background_job(dt_control_t *s, dt_job_t *job, time_t delay);
 int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job);
 int32_t dt_control_run_job_res(dt_control_t *s, int32_t res);
 int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res);
