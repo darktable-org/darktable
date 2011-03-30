@@ -637,7 +637,7 @@ int32_t dt_control_run_job(dt_control_t *s)
       /* check if it's a scheduled job and is waiting to be executed */
       if(!bj && (tj->ts_execute > tj->ts_added) && tj->ts_execute <= ts_now)
         bj = tj;
-      else if ((tj->ts_execute > tj->ts_added) && !j) 
+      else if ((tj->ts_execute < tj->ts_added) && !j) 
         j = tj;
       
       /* if we got a normal job, and a background job, we are finished */
@@ -656,9 +656,11 @@ int32_t dt_control_run_job(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->queue_mutex);
 
   /* push background job on reserved backgruond worker */
-  if(bj)
+ if(bj)
+ {
     dt_control_add_job_res(s,bj,DT_CTL_WORKER_7);
-  
+    g_free (bj);
+ }
   /* dont continue if we dont have have a job to execute */
   if(!j)
     return -1;
@@ -687,7 +689,6 @@ int32_t dt_control_run_job(dt_control_t *s)
   }
   dt_pthread_mutex_unlock (&j->wait_mutex);
 
-  fprintf(stderr,"Job finish\n");
   return 0;
 }
 
@@ -700,7 +701,6 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
   dt_print(DT_DEBUG_CONTROL, "\n");
   _control_job_set_state (job,DT_JOB_STATE_QUEUED);
   s->job_res[res] = *job;
-  g_free(job);
   s->new_res[res] = 1;
   dt_pthread_mutex_unlock(&s->queue_mutex);
   dt_pthread_mutex_lock(&s->cond_mutex);
