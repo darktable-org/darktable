@@ -730,15 +730,16 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   /* check if equivalent job exist in queue, and discard job
       if duplicate found .*/
   GList *jobitem = g_list_first(s->queue);
-  do {
-    if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
-    {
-      dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
-      _control_job_set_state (job,DT_JOB_STATE_DISCARDED);
-      dt_pthread_mutex_unlock(&s->queue_mutex);
-      return -1;
-    }
-  } while((jobitem=g_list_next(s->queue)));
+  if(jobitem)
+    do {
+      if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
+      {
+        dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
+        _control_job_set_state (job,DT_JOB_STATE_DISCARDED);
+        dt_pthread_mutex_unlock(&s->queue_mutex);
+        return -1;
+      }
+    } while((jobitem=g_list_next(s->queue)));
     
   dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", g_list_length(s->queue));
   dt_control_job_print(job);
