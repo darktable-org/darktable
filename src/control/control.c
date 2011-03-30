@@ -664,9 +664,24 @@ int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res)
   return 0;
 }
 
+int32_t dt_control_add_background_job(dt_control_t *s, dt_job_t *job, time_t delay)
+{
+  /* setup timestamps */
+  job->ts_added = time(NULL);
+  job->ts_execute = job->ts_added+delay;
+  
+  /* pass the job further to scheduled jobs worker */
+  return dt_control_add_job_res(s,job,DT_CTL_WORKER_7);
+}
+
 int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
   int32_t i;
+  
+  /* set ts_added if needed */
+  if(job->ts_added==0)
+     job->ts_added = time(NULL);
+  
   dt_pthread_mutex_lock(&s->queue_mutex);
   for(i=0; i<s->queued_top; i++)
   {
