@@ -663,7 +663,7 @@ int32_t dt_control_run_job(dt_control_t *s)
  }
   /* dont continue if we dont have have a job to execute */
   if(!j)
-    return -1;
+    return 0;
   
   /* change state to running */
   dt_pthread_mutex_lock (&j->wait_mutex);
