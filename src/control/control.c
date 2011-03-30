@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -318,19 +319,15 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
   dt_pthread_mutex_init(&s->run_mutex, NULL);
 
-  int k;
-  for(k=0; k<DT_CONTROL_MAX_JOBS; k++) s->idle[k] = k;
-  s->idle_top = DT_CONTROL_MAX_JOBS;
-  s->queued_top = 0;
   // start threads
   s->num_threads = dt_ctl_get_num_procs()+1;
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
   dt_pthread_mutex_lock(&s->run_mutex);
   s->running = 1;
   dt_pthread_mutex_unlock(&s->run_mutex);
-  for(k=0; k<s->num_threads; k++)
+  for(int k=0; k<s->num_threads; k++)
     pthread_create(&s->thread[k], NULL, dt_control_work, s);
-  for(k=0; k<DT_CTL_WORKER_RESERVED; k++)
+  for(int k=0; k<DT_CTL_WORKER_RESERVED; k++)
   {
     s->new_res[k] = 0;
     pthread_create(&s->thread_res[k], NULL, dt_control_work_res, s);
@@ -614,21 +611,58 @@ int32_t dt_control_run_job_res(dt_control_t *s, int32_t res)
   return 0;
 }
 
+
 int32_t dt_control_run_job(dt_control_t *s)
 {
-  dt_job_t *j;
-  int32_t i;
+  dt_job_t *j=NULL,*bj=NULL;
   dt_pthread_mutex_lock(&s->queue_mutex);
-  // dt_print(DT_DEBUG_CONTROL, "[run_job] %d\n", s->queued_top);
-  if(s->queued_top == 0)
+  
+  /* check if queue is empty */
+  if(g_list_length(s->queue) == 0)
   {
     dt_pthread_mutex_unlock(&s->queue_mutex);
     return -1;
   }
-  i = s->queued[--s->queued_top];
-  j = s->job + i;
+    
+  /* go thru the queue and find one normal job and a background job
+      that is up for execution.*/
+  time_t ts_now = time(NULL);
+  GList *jobitem=g_list_first(s->queue);
+  while(jobitem)
+  {
+    dt_job_t *tj = jobitem->data;
+    
+    /* check if it's a scheduled job and is waiting to be executed */
+    if(!bj && (tj->ts_execute > tj->ts_added) && tj->ts_execute <= ts_now)
+      bj = tj;
+    else if ((tj->ts_execute > tj->ts_added) && !j) 
+      j = tj;
+    
+    /* if we got a normal job, and a background job, we are finished */
+    if(bj && j) break;
+    
+    /* get next item */
+    jobitem = g_list_next(jobitem);
+  } 
+
+  /* remove the found jobs from queue */
+  if (bj)
+     s->queue = g_list_remove(s->queue, bj);
+  
+  if (j)
+     s->queue = g_list_remove(s->queue, j);
+  
+  /* unlock the queue */
   dt_pthread_mutex_unlock(&s->queue_mutex);
 
+  /* push background job on reserved backgruond worker */
+  if(bj)
+    dt_control_add_job_res(s,bj,DT_CTL_WORKER_7);
+  
+  /* dont continue if we dont have have a job to execute */
+  if(!j)
+    return -1;
+  
   /* change state to running */
   dt_pthread_mutex_lock (&j->wait_mutex);
   if (dt_control_job_get_state (j) == DT_JOB_STATE_QUEUED)
@@ -650,10 +684,6 @@ int32_t dt_control_run_job(dt_control_t *s)
   }
   dt_pthread_mutex_unlock (&j->wait_mutex);
 
-  dt_pthread_mutex_lock(&s->queue_mutex);
-  assert(s->idle_top < DT_CONTROL_MAX_JOBS);
-  s->idle[s->idle_top++] = i;
-  dt_pthread_mutex_unlock(&s->queue_mutex);
   return 0;
 }
 
@@ -690,8 +720,6 @@ int32_t dt_control_add_background_job(dt_control_t *s, dt_job_t *job, time_t del
 
 int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
 {
-  int32_t i;
-  
   /* set ts_added if unset */
   if (job->ts_added == 0)
      job->ts_added = time(NULL);
@@ -700,29 +728,29 @@ int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job)
   
   /* check if equivalent job exist in queue, and discard job
       if duplicate found .*/
-  for(i=0; i<s->queued_top; i++)
-  {
-    const int j = s->queued[i];
-    if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
+  GList *jobitem = g_list_first(s->queue);
+  do {
+    if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
     {
       dt_print(DT_DEBUG_CONTROL, "[add_job] found job already in queue\n");
       _control_job_set_state (job,DT_JOB_STATE_DISCARDED);
       dt_pthread_mutex_unlock(&s->queue_mutex);
       return -1;
     }
-  }
-  
-  dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", s->idle_top);
+  } while((jobitem=g_list_next(s->queue)));
+    
+  dt_print(DT_DEBUG_CONTROL, "[add_job] %d ", g_list_length(s->queue));
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
   
   /* add job to queue if not full, otherwise discard the job */
-  if(s->idle_top != 0)
+  if( g_list_length(s->queue) < DT_CONTROL_MAX_JOBS)
   {
-    i = --s->idle_top;
-    _control_job_set_state (job,DT_JOB_STATE_QUEUED);
-    s->job[s->idle[i]] = *job;
-    s->queued[s->queued_top++] = s->idle[i];
+    /* allocate storage for the job, and set job state */
+    dt_job_t *thejob = g_malloc(sizeof(dt_job_t));
+    memcpy(thejob,job,sizeof(dt_job_t));
+    _control_job_set_state (thejob,DT_JOB_STATE_QUEUED);
+    s->queue = g_list_append(s->queue, thejob);
     dt_pthread_mutex_unlock(&s->queue_mutex);
   }
   else
@@ -747,21 +775,24 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
   dt_print(DT_DEBUG_CONTROL, "[revive_job] ");
   dt_control_job_print(job);
   dt_print(DT_DEBUG_CONTROL, "\n");
-  for(int i=0; i<s->queued_top; i++)
-  {
-    // find equivalent job and push it up on top of the stack.
-    const int j = s->queued[i];
-    if(!memcmp(job, s->job + j, sizeof(dt_job_t)))
+  
+  /* find equivalent job and move it to top of the stack */
+  GList *jobitem = g_list_first(s->queue);
+  do {
+    if(!memcmp(job, jobitem->data, sizeof(dt_job_t)))
     {
-      found_j = j;
-      dt_print(DT_DEBUG_CONTROL, "[revive_job] found job in queue at position %d, moving to %d\n", i, s->queued_top);
-      memmove(s->queued + i, s->queued + i + 1, sizeof(int32_t) * (s->queued_top - i - 1));
-      s->queued[s->queued_top-1] = j;
+      s->queue = g_list_remove_link(s->queue, jobitem);
+      s->queue = g_list_insert(s->queue, jobitem->data, 0);
+      g_free(jobitem);
+      found_j = 1;
+      break;
     }
-  }
+  } while((jobitem=g_list_next(s->queue)));
+ 
+  /* unlock the queue */
   dt_pthread_mutex_unlock(&s->queue_mutex);
-
-  // notify workers
+  
+  /* notify workers */
   dt_pthread_mutex_lock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
   dt_pthread_mutex_unlock(&s->cond_mutex);
