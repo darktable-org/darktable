@@ -78,13 +78,13 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
    */
   GList *images=NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram from images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* validate histogram data, if fail add to list of regeneration 
       \TODO check also for image->flags & needs_indexing
     */
-    uint32_t size = sqlite3_column_bytes(stmt,0);
+    uint32_t size = sqlite3_column_bytes(stmt,1);
     if (size!=sizeof(dt_similarity_histogram_t))
       images = g_list_append(images,(gpointer)sqlite3_column_int(stmt,0));
   }
