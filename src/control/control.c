@@ -48,6 +48,11 @@
 #include <string.h>
 #include <glib/gstdio.h>
 
+/* the queue can have scheduled jobs but all
+    the workers is sleeping, so this kicks the workers
+    on timed interval.
+*/
+static void * _control_worker_kicker(void *ptr);
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
@@ -327,6 +332,10 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->run_mutex);
   for(int k=0; k<s->num_threads; k++)
     pthread_create(&s->thread[k], NULL, dt_control_work, s);
+  
+  /* create queue kicker thread */
+  pthread_create(&s->kick_on_workers_thread, NULL, _control_worker_kicker, s);
+  
   for(int k=0; k<DT_CTL_WORKER_RESERVED; k++)
   {
     s->new_res[k] = 0;
@@ -339,8 +348,7 @@ void dt_control_init(dt_control_t *s)
       struct sched_param sched_params;
       sched_params.sched_priority = sched_get_priority_min(SCHED_FIFO);
       pthread_setschedparam(s->thread_res[k], SCHED_RR, &sched_params);
-    }
-    
+    } 
   }
   s->button_down = 0;
   s->button_down_which = 0;
@@ -662,7 +670,7 @@ int32_t dt_control_run_job(dt_control_t *s)
  }
   /* dont continue if we dont have have a job to execute */
   if(!j)
-    return 0;
+    return -1;
   
   /* change state to running */
   dt_pthread_mutex_lock (&j->wait_mutex);
@@ -840,6 +848,18 @@ void *dt_control_work_res(void *ptr)
       dt_pthread_mutex_unlock(&s->cond_mutex);
       pthread_setcancelstate(old, NULL);
     }
+  }
+  return NULL;
+}
+
+void * _control_worker_kicker(void *ptr) {
+  dt_control_t *s = (dt_control_t *)ptr;
+  while(dt_control_running())
+  {
+      sleep(2);
+      dt_pthread_mutex_lock(&s->cond_mutex);
+      pthread_cond_broadcast(&s->cond);
+      dt_pthread_mutex_unlock(&s->cond_mutex);
   }
   return NULL;
 }
