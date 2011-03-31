@@ -108,57 +108,64 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       dt_develop_t dev;
       dt_dev_init(&dev, 0);
       dt_dev_load_image(&dev, img);
-    
-      const int wd = dev.image->width;
-      const int ht = dev.image->height;
       
-      dt_dev_pixelpipe_t pipe;
-      dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-      dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
-      dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-      dt_dev_pixelpipe_synch_all(&pipe, &dev);
-      dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-    
-      /* set scaling */
-      const float scalex = fminf(320/(float)pipe.processed_width,  1.0);
-      const float scaley = fminf(320/(float)pipe.processed_height, 1.0);
-      const float scale = fminf(scalex, scaley);
-      const int dest_width=pipe.processed_width*scale, dest_height=pipe.processed_height*scale;
-      
-      /* process the pipe */
-      dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, dest_width, dest_height, scale);
-      
-      /* lets generate a histogram */
-      uint8_t *pixel = pipe.backbuf;
-      
-      /* generate histogram */
-      dt_similarity_histogram_t histogram;
-      int bucketdiv = 0xff/DT_SIMILARITY_HISTOGRAM_BUCKETS;
-      for(int j=0;j<(4*dest_width*dest_height);j+=4)
+      /* check that we actually got image pixels... 
+          if not this will SIGKILL down the pipe...
+      */
+      if(dev.image->pixels)
       {
-        /* swap rgb */
-        uint8_t rgb[3];
-        for(int k=0; k<3; k++)
-          rgb[k] = pixel[j+2-k];
+        const int wd = dev.image->width;
+        const int ht = dev.image->height;
+        
+        dt_dev_pixelpipe_t pipe;
+        dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+        dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
+        dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+        dt_dev_pixelpipe_synch_all(&pipe, &dev);
+        dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+            
+        /* set scaling */
+        const float scalex = fminf(320/(float)pipe.processed_width,  1.0);
+        const float scaley = fminf(320/(float)pipe.processed_height, 1.0);
+        const float scale = fminf(scalex, scaley);
+        const int dest_width=pipe.processed_width*scale, dest_height=pipe.processed_height*scale;
+        
+        /* process the pipe */
+        dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, dest_width, dest_height, scale);
+        
+        /* lets generate a histogram */
+        uint8_t *pixel = pipe.backbuf;
+        
+        /* generate histogram */
+        dt_similarity_histogram_t histogram;
+        int bucketdiv = 0xff/DT_SIMILARITY_HISTOGRAM_BUCKETS;
+        for(int j=0;j<(4*dest_width*dest_height);j+=4)
+        {
+          /* swap rgb */
+          uint8_t rgb[3];
+          for(int k=0; k<3; k++)
+            rgb[k] = pixel[j+2-k];
 
-        /* distribute rgb into buckets */
-        for(int k=0; k<3; k++)
-          histogram.rgbl[rgb[k]/bucketdiv][k]++;
+          /* distribute rgb into buckets */
+          for(int k=0; k<3; k++)
+            histogram.rgbl[rgb[k]/bucketdiv][k]++;
+          
+          /* distribute lum into buckets */
+          uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+          histogram.rgbl[lum/bucketdiv][3]++;
+        }
+         
+        for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
+          for (int j=0;j<4;j++) 
+            histogram.rgbl[k][j] = logf(1.0 + histogram.rgbl[k][j]);
         
-        /* distribute lum into buckets */
-        uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-        histogram.rgbl[lum/bucketdiv][3]++;
+          
+        /* store the histogram data */
+        dt_similarity_store_histogram(img->id, &histogram);
+        
+        dt_dev_pixelpipe_cleanup(&pipe);
       }
-       
-      for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
-        for (int j=0;j<4;j++) 
-          histogram.rgbl[k][j] /= (dest_width*dest_height) ;//logf(1.0 + histogram.rgbl[k][j]);
       
-        
-      /* store the histogram data */
-      dt_similarity_store_histogram(img->id, &histogram);
-      
-      dt_dev_pixelpipe_cleanup(&pipe);
       dt_dev_cleanup(&dev);
       
       /* update background progress */
@@ -171,8 +178,6 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
     dt_gui_background_jobs_set_progress(j, 1.0f);
     dt_gui_background_jobs_destroy (j);
   }
-  
-  
   
   /* 
    * Indexing opertions finished, lets reschedule the indexer 
@@ -521,10 +526,10 @@ void dt_control_remove_images()
     GtkWidget *dialog;
     GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_MESSAGE_QUESTION,
-                                    GTK_BUTTONS_YES_NO,
-                                    _("do you really want to remove all selected images from the collection?"));
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_QUESTION,
+            GTK_BUTTONS_YES_NO,
+            _("do you really want to remove all selected images from the collection?"));
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -542,10 +547,10 @@ void dt_control_delete_images()
     GtkWidget *dialog;
     GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_MESSAGE_QUESTION,
-                                    GTK_BUTTONS_YES_NO,
-                                    _("do you really want to physically delete all selected images from disk?"));
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_QUESTION,
+            GTK_BUTTONS_YES_NO,
+            _("do you really want to physically delete all selected images from disk?"));
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -617,35 +622,35 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       #pragma omp critical
 #endif
       {
-        imgid = (long int)t->data;
-        t = g_list_delete_link(t, t);
-        num = total - g_list_length(t);
+  imgid = (long int)t->data;
+  t = g_list_delete_link(t, t);
+  num = total - g_list_length(t);
       }
       // check if image still exists:
       char imgfilename[1024];
       dt_image_t *image = dt_image_cache_get(imgid, 'r');
       if(image)
       {
-        dt_image_full_path(image->id, imgfilename, 1024);
-        if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
-        {
-          dt_control_log(_("image `%s' is currently unavailable"), image->filename);
-          fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
-          // dt_image_remove(imgid);
-          dt_image_cache_release(image, 'r');
-        }
-        else
-        {
-          dt_image_cache_release(image, 'r');
-          mstorage->store(sdata, imgid, mformat, fdata, num, total);
-        }
+  dt_image_full_path(image->id, imgfilename, 1024);
+  if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
+  {
+    dt_control_log(_("image `%s' is currently unavailable"), image->filename);
+    fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
+    // dt_image_remove(imgid);
+    dt_image_cache_release(image, 'r');
+  }
+  else
+  {
+    dt_image_cache_release(image, 'r');
+    mstorage->store(sdata, imgid, mformat, fdata, num, total);
+  }
       }
 #ifdef _OPENMP
       #pragma omp critical
 #endif
       {
-        fraction+=1.0/total;
-        dt_gui_background_jobs_set_progress( j, fraction );
+  fraction+=1.0/total;
+  dt_gui_background_jobs_set_progress( j, fraction );
       }
     }
 #ifdef _OPENMP
