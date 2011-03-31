@@ -426,6 +426,7 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(darktable.db, "alter table images add column focus_distance real", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "update images set focus_distance = -1 where focus_distance is NULL", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "alter table images add column histogram blob", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "alter table images add column lightmap blob", NULL, NULL, NULL);
      
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
@@ -438,7 +439,7 @@ void dt_control_init(dt_control_t *s)
 create_tables:
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, focus_distance real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer,histogram blob)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, focus_distance real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer,histogram blob,lightmap blob)", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer)", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tags (id integer primary key, name varchar, icon blob, description varchar, flags integer)", NULL, NULL, NULL);
