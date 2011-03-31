@@ -640,7 +640,8 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 {
   // module->enabled = module->default_enabled; // will not propagate correctly anyways ;)
   memcpy(module->params, module->default_params, module->params_size);
-  module->gui_update(module);
+  memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+  dt_iop_gui_update(module);
   if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
@@ -708,15 +709,11 @@ static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,_iop_gui_blend_data_t *
 {
   if (gtk_toggle_button_get_active(b))
   {
-    gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(data->opacity_slider),TRUE);
     gtk_widget_show(GTK_WIDGET(data->box));
     data->module->blend_params->mode = 1+gtk_combo_box_get_active(data->blend_modes_combo);
   }
   else
   {
-    gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),FALSE);
-    gtk_widget_set_sensitive(GTK_WIDGET(data->opacity_slider),FALSE);
     gtk_widget_hide(GTK_WIDGET(data->box));
     data->module->blend_params->mode = DEVELOP_BLEND_DISABLED;
   }
@@ -818,8 +815,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("linearlight"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("pinlight"));
 
-    gtk_widget_set_sensitive(GTK_WIDGET(bd->blend_modes_combo),FALSE);
-    gtk_widget_set_sensitive(bd->opacity_slider,FALSE);
     gtk_combo_box_set_active(bd->blend_modes_combo,0);
     gtk_object_set(GTK_OBJECT(bd->enable), "tooltip-text", _("enable blending mode"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
