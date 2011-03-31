@@ -134,7 +134,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       if ( (idximg->flags&_INDEXER_UPDATE_HISTOGRAM) ||  (idximg->flags&_INDEXER_UPDATE_LIGHTMAP) )
       {
         /* get image from imgid */
-        dt_image_t *img = dt_image_cache_get((uint32_t)imgitem->data, 'r');
+        dt_image_t *img = dt_image_cache_get(idximg->id, 'r');
         
         /* setup a pipe Max x Height 320x320 */
         dt_develop_t dev;
