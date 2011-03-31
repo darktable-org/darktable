@@ -502,6 +502,13 @@ void dt_control_shutdown(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->run_mutex);
   dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
+
+  /* cancel background job if any */
+  dt_control_job_cancel(&s->job_res[DT_CTL_WORKER_7]);
+  
+  /* first wait for kick_on_workers_thread */
+  pthread_join(s->kick_on_workers_thread, NULL);
+  
   // gdk_threads_leave();
   int k;
   for(k=0; k<s->num_threads; k++)
@@ -510,6 +517,8 @@ void dt_control_shutdown(dt_control_t *s)
   for(k=0; k<DT_CTL_WORKER_RESERVED; k++)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
+  
+   
   // gdk_threads_enter();
 }
 
