@@ -40,6 +40,7 @@ typedef struct _iop_gui_blend_data_t
 {
   dt_iop_module_t *module;
   GtkToggleButton *enable;
+  GtkVBox *box;
   GtkComboBox *blend_modes_combo;
   GtkWidget *opacity_slider;
 } _iop_gui_blend_data_t;
@@ -575,8 +576,6 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
   return iop_cs_rgb;
 }
 
-// FIXME: When the module is already expanded and it's shift-clicked, then it is turned off and on again.
-//        This is especially annoying when shift is pressed, the title bar is clicked and the mouse button is _not_ released immediately.
 static gboolean
 expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
 {
@@ -612,6 +611,11 @@ dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer u
   if (gtk_expander_get_expanded (expander))
   {
     gtk_widget_show(content);
+    // Hack: in views/darkroom.c we use gtk_widget_show_all() which also shows the to be hidden blend box when entering darkroom mode.
+    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+    if(bd != NULL && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->enable)) == FALSE)
+      gtk_widget_hide(GTK_WIDGET(bd->box));
+
     // register to receive draw events
     dt_iop_request_focus(module);
     GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
@@ -706,12 +710,14 @@ static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,_iop_gui_blend_data_t *
   {
     gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(data->opacity_slider),TRUE);
+    gtk_widget_show(GTK_WIDGET(data->box));
     data->module->blend_params->mode = 1+gtk_combo_box_get_active(data->blend_modes_combo);
   }
   else
   {
     gtk_widget_set_sensitive(GTK_WIDGET(data->blend_modes_combo),FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(data->opacity_slider),FALSE);
+    gtk_widget_hide(GTK_WIDGET(data->box));
     data->module->blend_params->mode = DEVELOP_BLEND_DISABLED;
   }
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
@@ -774,7 +780,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
 
   /* add module widget to container */
-  GtkWidget * iopw = gtk_vbox_new(FALSE,0);
+  GtkWidget * iopw = gtk_vbox_new(FALSE,4);
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
 
 
@@ -785,9 +791,13 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
     bd->module = module;
 
-    GtkWidget *bvb = gtk_vbox_new(FALSE,0);
+    bd->box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
+    GtkWidget *btb = gtk_hbox_new(FALSE,5);
     GtkWidget *bhb = gtk_hbox_new(FALSE,0);
+    GtkWidget *dummybox = gtk_hbox_new(FALSE,0); // hack to indent the drop down box
+
     bd->enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend")));
+    GtkWidget *label = gtk_label_new(_("mode"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
     bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, 100.0, 2));
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
@@ -822,15 +832,19 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->blend_modes_combo), "changed",
                       G_CALLBACK (_blendop_mode_callback), bd);
 
-    gtk_box_pack_start(GTK_BOX(bhb), GTK_WIDGET(bd->enable), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bhb), GTK_WIDGET(bd->blend_modes_combo), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(btb), GTK_WIDGET(bd->enable), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(btb), GTK_WIDGET(gtk_hseparator_new()), TRUE, TRUE, 0);
 
-    gtk_box_pack_start(GTK_BOX(bvb),gtk_hseparator_new(),TRUE,TRUE,4);
-    gtk_box_pack_start(GTK_BOX(bvb),bhb,TRUE,TRUE,2);
-    gtk_box_pack_start(GTK_BOX(bvb), bd->opacity_slider,TRUE,TRUE,2);
+    gtk_box_pack_start(GTK_BOX(bhb), GTK_WIDGET(label), FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(bhb), GTK_WIDGET(bd->blend_modes_combo), TRUE, TRUE, 5);
 
-    gtk_box_pack_start(GTK_BOX(iopw),bvb,TRUE,TRUE,4);
+    gtk_box_pack_start(GTK_BOX(dummybox), bd->opacity_slider, TRUE, TRUE, 5);
 
+    gtk_box_pack_start(GTK_BOX(iopw), btb,TRUE,TRUE,0);
+    gtk_box_pack_start(GTK_BOX(bd->box), bhb,TRUE,TRUE,0);
+    gtk_box_pack_start(GTK_BOX(bd->box), dummybox,TRUE,TRUE,0);
+
+    gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->box),TRUE,TRUE,0);
   }
 
   /* add the iopw widget to aligment widget */
