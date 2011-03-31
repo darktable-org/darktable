@@ -345,9 +345,12 @@ void dt_control_init(dt_control_t *s)
         set scheduling information for the thread to nice level. */
     if (k == DT_CTL_WORKER_7)
     {
+      int res;
       struct sched_param sched_params;
-      sched_params.sched_priority = sched_get_priority_min(SCHED_FIFO);
-      pthread_setschedparam(s->thread_res[k], SCHED_RR, &sched_params);
+      sched_params.sched_priority = sched_get_priority_min(SCHED_RR);
+      if((res=pthread_setschedparam(s->thread_res[k], SCHED_RR, &sched_params))!=0)
+        fprintf(stderr,"Failed to set background thread schedueling to nice level: %d.",res);
+
     } 
   }
   s->button_down = 0;
