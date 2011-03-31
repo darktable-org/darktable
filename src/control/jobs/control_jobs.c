@@ -211,24 +211,40 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
           if ((idximg->flags&_INDEXER_UPDATE_LIGHTMAP))
           {
             dt_similarity_lightmap_t lightmap;
+            memset(&lightmap,0,sizeof(dt_similarity_lightmap_t));
             
-            /* alloc temp buffer for image 4 bytes per pixel */
-            uint8_t *spixel = g_malloc(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE*4);
+            /* 
+             * create a pixbuf out of the image for downscaling 
+             */
             
-            dt_iop_clip_and_zoom_8(pixel, 
-                            0, 0, dest_width, dest_height, 
-                            dest_width, dest_height,
-                            spixel,
-                            0,0, DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE,
-                            DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE
-            );
+            /* first of setup a standard rgb buffer, swap bgr in same routine */
+            uint8_t *rgbbuf = g_malloc(dest_width*dest_height*3);
+            for(int j=0;j<(dest_width*dest_height);j++)
+              for(int k=0;k<3;k++)
+                rgbbuf[3*j+k] = pixel[4*j+2-k];
+           
+            /* then create pixbuf and scale down to lightmap size */
+            GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf,GDK_COLORSPACE_RGB,FALSE,8,dest_width,dest_height,(dest_width*3),NULL,NULL);
+            GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source,DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE,GDK_INTERP_HYPER);
             
-            /* average lightness and put it into lightmap */
+            /* copy scaled data into lightmap */
+            uint8_t *spixels = gdk_pixbuf_get_pixels(scaled);
             for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
             {
-              lightmap.pixels[j] = (spixel[4*j+0] + spixel[4*j+1] + spixel[4*j+2])/3.0;
+              /* copy rgb */
+              for(int k=0;k<3;k++)
+                lightmap.pixels[4*j+k] = spixels[3*j+k];
+              
+              /* average intensity into 4th channel */
+              lightmap.pixels[4*j+3] =  (lightmap.pixels[4*j+0]+ lightmap.pixels[4*j+1]+ lightmap.pixels[4*j+2])/3.0;
+              
             }
-            g_free(spixel);
+            
+            /* free some resources */
+            gdk_pixbuf_unref(scaled);
+            gdk_pixbuf_unref(source);
+            
+            g_free(rgbbuf);
             
             /* store the lightmap */
             dt_similarity_lightmap_store(idximg->id, &lightmap);

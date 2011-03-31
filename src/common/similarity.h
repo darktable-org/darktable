@@ -26,11 +26,13 @@ typedef struct dt_similarity_histogram_t
 	float rgbl[DT_SIMILARITY_HISTOGRAM_BUCKETS][4];
 }dt_similarity_histogram_t;
 	
-#define DT_SIMILARITY_LIGHTMAP_SIZE 24
-typedef struct dt_similarity_lightmap_t
+#define DT_SIMILARITY_LIGHTMAP_SIZE 16
+typedef struct dt_similarity_imagemap_t
 {
-	uint8_t pixels[DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE];
+	uint8_t pixels[DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE*4];
 } dt_similarity_lightmap_t;
+
+void dt_similarity_image_dirty(uint32_t imgid);
 
 /** \brief stores the histogram with the imgid to database
 	\note a histogram is generated in a DT_SIMILARITY_HISTOGRAM_BUCKETSx4 float array.

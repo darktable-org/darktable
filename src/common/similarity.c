@@ -22,6 +22,8 @@
 #include "common/darktable.h"
 #include "common/similarity.h"
 
+#define CLIP(x) (fmax(0,fmin(1.0,x)))
+
 static void _similarity_dump_histogram(uint32_t imgid, const dt_similarity_histogram_t *histogram)
 {
   fprintf(stderr, "histogram for %d:",imgid);
@@ -44,33 +46,67 @@ static float _similarity_match_histogram_rgb(const dt_similarity_histogram_t *ta
   return score;
 }
 
+/* scoring match of lightmap */
+static float _similarity_match_lightmap(const dt_similarity_lightmap_t *target, const dt_similarity_lightmap_t *source, int channel)
+{
+  float score=0;
+  
+  for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++) 
+    score += 1.0-fabs((float)(target->pixels[4*j+channel] - source->pixels[4*j+channel])/0xff);
+  
+  score /= (DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);
+  
+  return score;
+}
+
 void dt_similarity_match_image(uint32_t imgid)
 {
-  gboolean all_ok_for_match = TRUE;
-  dt_similarity_histogram_t orginal,test;
   sqlite3_stmt *stmt;
-
-  /* create temporary mem table */
+  gboolean all_ok_for_match = TRUE;
+  dt_similarity_histogram_t orginal_histogram,test_histogram;
+  dt_similarity_lightmap_t orginal_lightmap,test_lightmap;
+ 
+  /* create temporary mem table for matches */
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temporary table if not exists similar_images (id integer,score real)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from similar_images", NULL, NULL, NULL);
   
-  /* get the histogram data for image to match against */
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select histogram from images where id = ?1", -1, &stmt, NULL);
+  /* 
+   * get the histogram and lightmap data for image to match against 
+   */
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select histogram,lightmap from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if (sqlite3_step(stmt) == SQLITE_ROW)
   {
-    /* verify size of histogram blob */
+    /* get the histogram data */
     uint32_t size = sqlite3_column_bytes(stmt,0);
-    if (size!=sizeof(dt_similarity_histogram_t)) {
+    if (size!=sizeof(dt_similarity_histogram_t)) 
+    {
       all_ok_for_match = FALSE;
       dt_control_log(_("this image has not been indexed yet."));
-    } else 
-      memcpy(&orginal, sqlite3_column_blob(stmt, 0), sizeof(dt_similarity_histogram_t));
+    } 
+    else 
+      memcpy(&orginal_histogram, sqlite3_column_blob(stmt, 0), sizeof(dt_similarity_histogram_t));
+
+    /* get the lightmap data */
+    size = sqlite3_column_bytes(stmt,1);
+    if (size!=sizeof(dt_similarity_lightmap_t)) 
+    {
+      all_ok_for_match = FALSE;
+      dt_control_log(_("this image has not been indexed yet."));
+    } 
+    else 
+      memcpy(&orginal_lightmap, sqlite3_column_blob(stmt, 1), sizeof(dt_similarity_lightmap_t));
+    
   }
   sqlite3_reset(stmt);
   sqlite3_clear_bindings(stmt);
   
-  if (all_ok_for_match) {
+  
+  /*
+   * if all ok lets begin matching
+   */
+  if (all_ok_for_match) 
+  {
     char query[4096]={0};
     
     /* set an extended collection query for viewing the result of match */
@@ -85,34 +121,57 @@ void dt_similarity_match_image(uint32_t imgid)
     dt_control_queue_draw_all();
     
     /* loop thru images and generate score table */
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram from images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram,lightmap from images", -1, &stmt, NULL);
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      /* verify size of histogram blob */
-      uint32_t size = sqlite3_column_bytes(stmt,1);
-      if (size == sizeof(dt_similarity_histogram_t)) 
+      float score_histogram=0, score_lightmap=0;
+      
+      /* verify size of histogram abnd lightmap blob of test image */
+      if ( 
+                  (sqlite3_column_bytes(stmt,1) == sizeof(dt_similarity_histogram_t)) && 
+                  (sqlite3_column_bytes(stmt,2) == sizeof(dt_similarity_lightmap_t))
+      )
       {
-        float score = 0;
-        memcpy(&test, sqlite3_column_blob(stmt, 1), sizeof(dt_similarity_histogram_t));
-        
-        /* get score for histogram similarity */
-        score = _similarity_match_histogram_rgb(&orginal,&test);
-        //fprintf(stderr,"image %d scored %.3f\n",sqlite3_column_int(stmt, 0),score);
+        /*
+         * Get the histogram blob and calculate the similarity score
+         */
+        memcpy(&test_histogram, sqlite3_column_blob(stmt, 1), sizeof(dt_similarity_histogram_t));
+        score_histogram = _similarity_match_histogram_rgb(&orginal_histogram,&test_histogram);
          
-        /* if above score threshold \todo user configurable ??? */
-        if(score >= 0.96)
-        {
-          sprintf(query,"insert into similar_images(id,score) values(%d,%f)",sqlite3_column_int(stmt, 0),score);
-          DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
-          
-          /* new image added, lets redraw the view */
-          dt_control_queue_draw_all();
-        }
+        /*
+         * Get the lightmap blob and calculate the similarity score
+         *  1.08 is a tuned constant that works well with threshold
+         */
+        memcpy(&test_lightmap, sqlite3_column_blob(stmt, 2), sizeof(dt_similarity_lightmap_t));
+        score_lightmap = _similarity_match_lightmap(&orginal_lightmap,&test_lightmap,3);
+       
+      }
+     
+
+      /* caluculate the similarity score */
+      float score = (score_histogram+score_lightmap)/2.0;
+      fprintf(stderr,"Image score %f\n",score);
+      
+      /* 
+       * If current images scored, lets add it to similar_images table 
+       */
+      if(score >= 0.9)
+      {
+        sprintf(query,"insert into similar_images(id,score) values(%d,%f)",sqlite3_column_int(stmt, 0),score);
+        DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
         
+        /* new image added, lets redraw the view */
+        dt_control_queue_draw_all();
       }
     }
   }
   sqlite3_finalize (stmt);  
+}
+
+void dt_similarity_image_dirty(uint32_t imgid)
+{
+  dt_similarity_histogram_dirty(imgid);
+  dt_similarity_lightmap_dirty(imgid);
 }
 
 void dt_similarity_histogram_dirty(uint32_t imgid)
