@@ -785,58 +785,70 @@ void dt_dev_read_history(dt_develop_t *dev)
 
     GList *modules = dev->iop;
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
-    hist->module = NULL;
-    while(modules)
+    if( opname && sqlite3_column_bytes(stmt,3)>0)
     {
-      dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-      if(!strcmp(module->op, opname))
+    
+      hist->module = NULL;
+      while(modules)
       {
-        hist->module = module;
-        break;
+        dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+        if(!strcmp(module->op, opname))
+        {
+          hist->module = module;
+          break;
+        }
+        modules = g_list_next(modules);
       }
-      modules = g_list_next(modules);
-    }
-    if(!hist->module)
-    {
-      fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image->filename);
-      free(hist);
-      continue;
-    }
-    int modversion = sqlite3_column_int(stmt, 2);
-    assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
-
-    hist->params = malloc(hist->module->params_size);
-    if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
-        strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
-    {
-      if(!hist->module->legacy_params ||
-          hist->module->legacy_params(hist->module, sqlite3_column_blob(stmt, 4), labs(modversion), hist->params, labs(hist->module->version())))
+      if(!hist->module)
       {
-        free(hist->params);
-        fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
-        const char *fname = dev->image->filename + strlen(dev->image->filename);
-        while(fname > dev->image->filename && *fname != '/') fname --;
-        if(fname > dev->image->filename) fname++;
-        dt_control_log(_("%s: module `%s' version mismatch: %d != %d"), fname, hist->module->op, hist->module->version(), modversion);
+        fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image->filename);
         free(hist);
         continue;
       }
-    }
+      int modversion = sqlite3_column_int(stmt, 2);
+      assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
+
+      hist->params = malloc(hist->module->params_size);
+      if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
+          strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
+      {
+        if(!hist->module->legacy_params ||
+            hist->module->legacy_params(hist->module, sqlite3_column_blob(stmt, 4), labs(modversion), hist->params, labs(hist->module->version())))
+        {
+          free(hist->params);
+          fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
+          const char *fname = dev->image->filename + strlen(dev->image->filename);
+          while(fname > dev->image->filename && *fname != '/') fname --;
+          if(fname > dev->image->filename) fname++;
+          dt_control_log(_("%s: module `%s' version mismatch: %d != %d"), fname, hist->module->op, hist->module->version(), modversion);
+          free(hist);
+          continue;
+        }
+      }
+      else
+      {
+        memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
+      }
+      // memcpy(hist->module->params, hist->params, hist->module->params_size);
+      // hist->module->enabled = hist->enabled;
+      // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
+      dev->history = g_list_append(dev->history, hist);
+      dev->history_end ++;
+
+      if(dev->gui_attached)
+      {
+        char label[256];
+        dt_dev_get_history_item_label(hist, label, 256);
+        dt_control_add_history_item(dev->history_end-1, label);
+      }
+    } 
     else
     {
-      memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
-    }
-    // memcpy(hist->module->params, hist->params, hist->module->params_size);
-    // hist->module->enabled = hist->enabled;
-    // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
-    dev->history = g_list_append(dev->history, hist);
-    dev->history_end ++;
-
-    if(dev->gui_attached)
-    {
-      char label[256];
-      dt_dev_get_history_item_label(hist, label, 256);
-      dt_control_add_history_item(dev->history_end-1, label);
+      /* we got a row but failed to get opname string, this might be due to
+        memory problems or a corrupt database with NULL values..
+      */
+      fprintf(stderr,"Failed to get opname histitemid %d size reported %d sqlite error code %d\n",
+            sqlite3_column_int(stmt,0),sqlite3_column_bytes(stmt,3) ,sqlite3_errcode(darktable.db));
     }
   }
   if(dev->gui_attached)
