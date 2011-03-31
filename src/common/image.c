@@ -881,7 +881,9 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
   else if(mip == DT_IMAGE_FULL)
   {
     // after _open, the full buffer will be 'r' locked.
-    ret = dt_imageio_open(img, filename);
+    if ((ret = dt_imageio_open(img, filename))!=DT_IMAGEIO_OK) 
+	return 0;
+    
     dt_image_raw_to_preview(img, img->pixels);
     dt_image_validate(img, DT_IMAGE_MIPF);
   }
