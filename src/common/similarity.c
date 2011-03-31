@@ -97,7 +97,7 @@ void dt_similarity_match_image(uint32_t imgid)
         
         /* get score for histogram similarity */
         score = _similarity_match_histogram_rgb(&orginal,&test);
-        fprintf(stderr,"image %d scored %.3f\n",sqlite3_column_int(stmt, 0),score);
+        //fprintf(stderr,"image %d scored %.3f\n",sqlite3_column_int(stmt, 0),score);
          
         /* if above score threshold \todo user configurable ??? */
         if(score >= 0.96)
