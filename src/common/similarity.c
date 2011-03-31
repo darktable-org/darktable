@@ -111,10 +111,7 @@ void dt_similarity_match_image(uint32_t imgid)
         
       }
     }
-  } else
-    fprintf(stderr,"all ok for match is FALSE\n");
-
-  
+  }
   sqlite3_finalize (stmt);  
 }
 
