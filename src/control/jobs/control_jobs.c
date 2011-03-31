@@ -70,113 +70,186 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   return 0;
 }
 
+
+#define _INDEXER_UPDATE_HISTOGRAM		1
+#define _INDEXER_UPDATE_LIGHTMAP		2
+typedef struct _control_indexer_img_t
+{
+  uint32_t id;
+  uint32_t flags;
+} _control_indexer_img_t;
+
 int32_t dt_control_indexer_job_run(dt_job_t *job)
 {
   
   /* 
-   * generate histograms for those images thats missing it or have corrupt ones
+   * First pass run thru images and collect the ones who needs to update
    */
   GList *images=NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram from images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram,lightmap from images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    /* validate histogram data, if fail add to list of regeneration 
-      \TODO check also for image->flags & needs_indexing
-    */
-    uint32_t size = sqlite3_column_bytes(stmt,1);
-    if (size!=sizeof(dt_similarity_histogram_t))
-      images = g_list_append(images,(gpointer)sqlite3_column_int(stmt,0));
+    _control_indexer_img_t *idximg=g_malloc(sizeof( _control_indexer_img_t));
+    idximg->id = sqlite3_column_int(stmt,0);
+    
+    /* check if histogram should be updated */
+    if (sqlite3_column_bytes(stmt, 1) != sizeof(dt_similarity_histogram_t))
+      idximg->flags |= _INDEXER_UPDATE_HISTOGRAM;
+
+    /* check if lightmap should be updated */
+    if (sqlite3_column_bytes(stmt, 2) != sizeof(dt_similarity_lightmap_t))
+      idximg->flags |= _INDEXER_UPDATE_LIGHTMAP;
+    
+    /* if image is flagged add to collection */
+    if (idximg->flags)
+      images = g_list_append(images, idximg);
+    else
+      g_free(idximg);
   }
+  sqlite3_finalize(stmt);
   
-  /* regenerate histogram for images in list */
+  
+  /*
+   * Second pass, run thru collected images
+   */
+  
   GList *imgitem = g_list_first(images);
   if(imgitem)
   {
     char message[512]= {0};
     double fraction=0;
     int total = g_list_length(images);
-    snprintf(message, 512, ngettext ("regenerates %d histogram", "regenerates %d histograms", total), total );
+    snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
     const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
     
     do {
-      /* get image from imgid */
-      dt_image_t *img = dt_image_cache_get((uint32_t)imgitem->data, 'r');
+      /* get the _control_indexer_img_t pointer */
+      _control_indexer_img_t *idximg = imgitem->data;
       
-      /* setup a pipe Max x Height 320x320 */
-      dt_develop_t dev;
-      dt_dev_init(&dev, 0);
-      dt_dev_load_image(&dev, img);
-      
-      /* check that we actually got image pixels... 
-          if not this will SIGKILL down the pipe...
-      */
-      if(dev.image->pixels)
+      /*
+       *  Check if image histogram or lightmap should be updated
+       *   those indexing that involves a image pipe should fall into this
+       */
+      if ( (idximg->flags&_INDEXER_UPDATE_HISTOGRAM) ||  (idximg->flags&_INDEXER_UPDATE_LIGHTMAP) )
       {
-        const int wd = dev.image->width;
-        const int ht = dev.image->height;
+        /* get image from imgid */
+        dt_image_t *img = dt_image_cache_get((uint32_t)imgitem->data, 'r');
         
-        dt_dev_pixelpipe_t pipe;
-        dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-        dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
-        dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-        dt_dev_pixelpipe_synch_all(&pipe, &dev);
-        dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-            
-        /* set scaling */
-        const float scalex = fminf(320/(float)pipe.processed_width,  1.0);
-        const float scaley = fminf(320/(float)pipe.processed_height, 1.0);
-        const float scale = fminf(scalex, scaley);
-        const int dest_width=pipe.processed_width*scale, dest_height=pipe.processed_height*scale;
+        /* setup a pipe Max x Height 320x320 */
+        dt_develop_t dev;
+        dt_dev_init(&dev, 0);
+        dt_dev_load_image(&dev, img);
         
-        /* process the pipe */
-        dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, dest_width, dest_height, scale);
-        
-        /* lets generate a histogram */
-        uint8_t *pixel = pipe.backbuf;
-        
-        /* generate histogram */
-        dt_similarity_histogram_t histogram;
-        float bucketscale = (float)DT_SIMILARITY_HISTOGRAM_BUCKETS/(float)0xff;
-        for(int j=0;j<(4*dest_width*dest_height);j+=4)
+        /* check that we actually got image pixels... 
+            if not this will SIGKILL down the pipe...
+        */
+        if(dev.image->pixels)
         {
-          /* swap rgb and scale to bucket index*/
-          uint8_t rgb[3];
+          const int wd = dev.image->width;
+          const int ht = dev.image->height;
           
-          for(int k=0; k<3; k++)
-            rgb[k] = (int)((float)pixel[j+2-k] * bucketscale);
+          dt_dev_pixelpipe_t pipe;
+          dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+          dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
+          dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+          dt_dev_pixelpipe_synch_all(&pipe, &dev);
+          dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+              
+          /* set scaling */
+          const float scalex = fminf(320/(float)pipe.processed_width,  1.0);
+          const float scaley = fminf(320/(float)pipe.processed_height, 1.0);
+          const float scale = fminf(scalex, scaley);
+          const int dest_width=pipe.processed_width*scale, dest_height=pipe.processed_height*scale;
+          
+          /* process the pipe */
+          dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, dest_width, dest_height, scale);
+          
+          /* lets generate a histogram */
+          uint8_t *pixel = pipe.backbuf;
+          
+          /*
+           * Generate histogram data if requested
+           */
+          if ((idximg->flags&_INDEXER_UPDATE_HISTOGRAM))
+          {
+            dt_similarity_histogram_t histogram;
+            float bucketscale = (float)DT_SIMILARITY_HISTOGRAM_BUCKETS/(float)0xff;
+            for(int j=0;j<(4*dest_width*dest_height);j+=4)
+            {
+              /* swap rgb and scale to bucket index*/
+              uint8_t rgb[3];
+              
+              for(int k=0; k<3; k++)
+                rgb[k] = (int)((float)pixel[j+2-k] * bucketscale);
 
-          /* distribute rgb into buckets */
-          for(int k=0; k<3; k++)
-            histogram.rgbl[rgb[k]][k]++;
+              /* distribute rgb into buckets */
+              for(int k=0; k<3; k++)
+                histogram.rgbl[rgb[k]][k]++;
+              
+              /* distribute lum into buckets */
+              uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+              histogram.rgbl[lum][3]++;
+            }
+             
+            for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
+              for (int j=0;j<4;j++) 
+                histogram.rgbl[k][j] /= (dest_width*dest_height);
+              
+            /* store the histogram data */
+            dt_similarity_histogram_store(img->id, &histogram);
+            
+          }                  
           
-          /* distribute lum into buckets */
-          uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-          histogram.rgbl[lum][3]++;
+          /*
+           * Generate scaledowned lightness map if requested
+           */
+          if ((idximg->flags&_INDEXER_UPDATE_HISTOGRAM))
+          {
+            dt_similarity_lightmap_t lightmap;
+            
+            /* alloc temp buffer for image 4 bytes per pixel */
+            uint8_t *spixel = g_malloc(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE*4);
+            
+            dt_iop_clip_and_zoom_8(pixel, 
+                            0, 0, dest_width, dest_height, 
+                            dest_width, dest_height,
+                            spixel,
+                            0,0, DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE,
+                            DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE
+            );
+            
+            /* average lightness and put it into lightmap */
+            for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
+            {
+              lightmap.pixels[j] = (spixel[4*j+0] + spixel[4*j+1] + spixel[4*j+2])/3.0;
+            }
+            g_free(spixel);
+            
+            /* store the lightmap */
+            dt_similarity_lightmap_store(img->id, &lightmap);
+            
+          }
+    
+    
+          dt_dev_pixelpipe_cleanup(&pipe);
         }
-         
-        for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
-          for (int j=0;j<4;j++) 
-            histogram.rgbl[k][j] /= (dest_width*dest_height);
-          
-        /* store the histogram data */
-        dt_similarity_histogram_store(img->id, &histogram);
         
-        dt_dev_pixelpipe_cleanup(&pipe);
+        dt_dev_cleanup(&dev);
+        
+        dt_image_cache_release(img, 'r');
       }
-      
-      dt_dev_cleanup(&dev);
       
       /* update background progress */
       fraction+=1.0/total;
       dt_gui_background_jobs_set_progress(j, fraction);
       
-      dt_image_cache_release(img, 'r');
     } while ((imgitem=g_list_next(imgitem)) && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED);
     
     dt_gui_background_jobs_set_progress(j, 1.0f);
     dt_gui_background_jobs_destroy (j);
   }
+  
   
   /* 
    * Indexing opertions finished, lets reschedule the indexer 
