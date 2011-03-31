@@ -181,8 +181,11 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
   
   /* 
    * Indexing opertions finished, lets reschedule the indexer 
+   * unless control is shutting down...
    */
-  dt_control_start_indexer();
+  if(dt_control_running())
+    dt_control_start_indexer();
+  
   return 0;
 }
 
