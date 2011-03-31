@@ -138,26 +138,27 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
         
         /* generate histogram */
         dt_similarity_histogram_t histogram;
-        int bucketdiv = 0xff/DT_SIMILARITY_HISTOGRAM_BUCKETS;
+        float bucketscale = (float)DT_SIMILARITY_HISTOGRAM_BUCKETS/(float)0xff;
         for(int j=0;j<(4*dest_width*dest_height);j+=4)
         {
-          /* swap rgb */
+          /* swap rgb and scale to bucket index*/
           uint8_t rgb[3];
+          
           for(int k=0; k<3; k++)
-            rgb[k] = pixel[j+2-k];
+            rgb[k] = (int)((float)pixel[j+2-k] * bucketscale);
 
           /* distribute rgb into buckets */
           for(int k=0; k<3; k++)
-            histogram.rgbl[rgb[k]/bucketdiv][k]++;
+            histogram.rgbl[rgb[k]][k]++;
           
           /* distribute lum into buckets */
           uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-          histogram.rgbl[lum/bucketdiv][3]++;
+          histogram.rgbl[lum][3]++;
         }
          
         for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
           for (int j=0;j<4;j++) 
-            histogram.rgbl[k][j] = logf(1.0 + (histogram.rgbl[k][j]/(dest_width*dest_height)));
+            histogram.rgbl[k][j] = logf(1.0 + histogram.rgbl[k][j]);
         
           
         /* store the histogram data */
