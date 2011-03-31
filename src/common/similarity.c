@@ -64,7 +64,7 @@ void dt_similarity_match_image(uint32_t imgid)
     uint32_t size = sqlite3_column_bytes(stmt,0);
     if (size!=sizeof(dt_similarity_histogram_t)) {
       all_ok_for_match = FALSE;
-      dt_control_log(_("histogram is corrupted, please open target image in darkroom and retry match."));
+      dt_control_log(_("this image has not been indexed yet and lacks and histogram."));
     } else 
       memcpy(&orginal, sqlite3_column_blob(stmt, 0), sizeof(dt_similarity_histogram_t));
   }
