@@ -137,3 +137,22 @@ void dt_similarity_histogram_store(uint32_t imgid, const dt_similarity_histogram
   sqlite3_finalize (stmt);
   _similarity_dump_histogram(imgid,histogram);
 }
+
+void dt_similarity_lightmap_store(uint32_t imgid, const dt_similarity_lightmap_t *lightmap)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set lightmap =?1 where id = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, lightmap,sizeof(dt_similarity_lightmap_t),SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize (stmt);
+}
+
+void dt_similarity_lightmap_dirty(uint32_t imgid)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set lightmap = NULL where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize (stmt);
+}
