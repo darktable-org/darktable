@@ -161,7 +161,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
             histogram.rgbl[k][j] /= (dest_width*dest_height);
           
         /* store the histogram data */
-        dt_similarity_store_histogram(img->id, &histogram);
+        dt_similarity_histogram_store(img->id, &histogram);
         
         dt_dev_pixelpipe_cleanup(&pipe);
       }
