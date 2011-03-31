@@ -171,8 +171,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
           
           /* lets generate a histogram */
           uint8_t *pixel = pipe.backbuf;
-          fprintf(stderr,"Image %d Flags %d\n",idximg->id,idximg->flags);
-
+        
           /*
            * Generate similarity histogram data if requested
            */
