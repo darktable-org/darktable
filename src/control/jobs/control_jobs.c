@@ -157,7 +157,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
          
         for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
           for (int j=0;j<4;j++) 
-            histogram.rgbl[k][j] = logf(1.0 + histogram.rgbl[k][j]);
+            histogram.rgbl[k][j] = logf(1.0 + (histogram.rgbl[k][j]/(dest_width*dest_height)));
         
           
         /* store the histogram data */
