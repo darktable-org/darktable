@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-27 00:22+0100\n"
-"PO-Revision-Date: 2011-03-27 00:20+0100\n"
+"POT-Creation-Date: 2011-03-31 11:38+0200\n"
+"PO-Revision-Date: 2011-03-31 11:41+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -435,7 +435,8 @@ msgstr "Titel"
 msgid "width"
 msgstr "Breite"
 
-#: ../data/darktable.glade.h:53
+#. FIXME: Hack to get a translated name without the need to touch the .po files
+#: ../data/darktable.glade.h:53 ../src/libs/file_manager.c:40
 msgid ""
 "zoomable light table\n"
 "file manager"
@@ -1692,7 +1693,7 @@ msgstr "Empfindlichkeit"
 msgid "spatial extent of the effect around edges"
 msgstr "Ausdehnung des Effekts entlang von Kanten"
 
-#: ../src/iop/anlfyeni.c:279 ../src/iop/lens.c:1357 ../src/iop/localc.c:287
+#: ../src/iop/anlfyeni.c:279 ../src/iop/lens.c:1358 ../src/iop/localc.c:287
 #: ../src/iop/vignette.c:847 ../src/iop/watermark.c:674
 msgid "scale"
 msgstr "Skalierung"
@@ -2691,7 +2692,7 @@ msgstr "mische h"
 msgid "lens correction"
 msgstr "Linsenkorrektur"
 
-#: ../src/iop/lens.c:711
+#: ../src/iop/lens.c:712
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -2704,7 +2705,7 @@ msgstr ""
 "Anschluss:\t%s\n"
 "Crop-Faktor:\t%.1f"
 
-#: ../src/iop/lens.c:1005
+#: ../src/iop/lens.c:1006
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -2723,89 +2724,89 @@ msgstr ""
 "Typ:\t\t\t\t%s\n"
 "Anschlüsse:\t\t%s"
 
-#: ../src/iop/lens.c:1035
+#: ../src/iop/lens.c:1036
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1035
+#: ../src/iop/lens.c:1036
 msgid "focal length (mm)"
 msgstr "Brennweite (mm)"
 
-#: ../src/iop/lens.c:1041 ../src/iop/lens.c:1056 ../src/iop/lens.c:1067
+#: ../src/iop/lens.c:1042 ../src/iop/lens.c:1057 ../src/iop/lens.c:1068
 msgid "reset from exif data"
 msgstr "auf EXIF-Angabe zurücksetzen"
 
-#: ../src/iop/lens.c:1050
+#: ../src/iop/lens.c:1051
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1050
+#: ../src/iop/lens.c:1051
 msgid "f-number (aperture)"
 msgstr "Blendenzahl"
 
-#: ../src/iop/lens.c:1061
+#: ../src/iop/lens.c:1062
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1061
+#: ../src/iop/lens.c:1062
 msgid "distance to subject"
 msgstr "Entfernung"
 
-#: ../src/iop/lens.c:1294
+#: ../src/iop/lens.c:1295
 msgid "find camera"
 msgstr "Kamera finden"
 
-#: ../src/iop/lens.c:1309
+#: ../src/iop/lens.c:1310
 msgid "find lens"
 msgstr "Objektiv finden"
 
 #. target geometry
-#: ../src/iop/lens.c:1337
+#: ../src/iop/lens.c:1338
 msgid "geometry"
 msgstr "Geometrie"
 
-#: ../src/iop/lens.c:1342
+#: ../src/iop/lens.c:1343
 msgid "target geometry"
 msgstr "Zielgeometrie"
 
-#: ../src/iop/lens.c:1343
+#: ../src/iop/lens.c:1344
 msgid "rectilinear"
 msgstr "geradlinig"
 
-#: ../src/iop/lens.c:1344
+#: ../src/iop/lens.c:1345
 msgid "fish-eye"
 msgstr "Fischauge"
 
-#: ../src/iop/lens.c:1345
+#: ../src/iop/lens.c:1346
 msgid "panoramic"
 msgstr "Panorama"
 
-#: ../src/iop/lens.c:1346
+#: ../src/iop/lens.c:1347
 msgid "equirectangular"
 msgstr "Equirectangular"
 
-#: ../src/iop/lens.c:1363
+#: ../src/iop/lens.c:1364
 msgid "auto scale"
 msgstr "automatisch skalieren"
 
 #. reverse direction
-#: ../src/iop/lens.c:1370
+#: ../src/iop/lens.c:1371
 msgid "reverse"
 msgstr "umkehren"
 
-#: ../src/iop/lens.c:1371
+#: ../src/iop/lens.c:1372
 msgid "apply distortions instead of correcting them"
 msgstr "füge Verzerrung hinzu statt sie zu korrigieren"
 
-#: ../src/iop/lens.c:1380
+#: ../src/iop/lens.c:1381
 msgid "tca R"
 msgstr "TCA R"
 
-#: ../src/iop/lens.c:1381
+#: ../src/iop/lens.c:1382
 msgid "tca B"
 msgstr "TCA R"
 
-#: ../src/iop/lens.c:1386
+#: ../src/iop/lens.c:1387
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -2814,7 +2815,7 @@ msgstr ""
 "Aberrationskorrektur für den Rot-Kanal.\n"
 "für Standardwert bei 1.0 belassen"
 
-#: ../src/iop/lens.c:1387
+#: ../src/iop/lens.c:1388
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
@@ -3823,6 +3824,24 @@ msgstr "exportieren"
 #: ../src/libs/export.c:573
 msgid "export with current settings (ctrl-e)"
 msgstr "mit aktuellen Einstellungen exportieren (Strg-e)"
+
+#: ../src/libs/file_manager.c:78
+msgid ""
+"ls\t\t\t\t\tlist content of directory\n"
+"cd <dir>\t\t\tchange directory\n"
+"mkdir <dir>\t\t\tcreate directory\n"
+"mv <src> <dst>\tmove <src> to <dst>\n"
+"cp <src> <dst>\t\tcopy <src> to <dst>\n"
+"rm <file>\t\t\tdelete <file>\n"
+"rmdir <dir>\t\t\tdelete empty directory"
+msgstr ""
+"ls\t\t\t\t\tzeige Inhalt des Verzeichnisses\n"
+"cd <verz>\t\t\tVerzeichnis wechseln\n"
+"mkdir <verz>\t\tVerzeichnis erstellen\n"
+"mv <src> <dst>\tverschiebe <src> nach <dst>\n"
+"cp <src> <dst>\t\tkopiere <src> nach <dst>\n"
+"rm <datei>\t\t\tlösche <datei>\n"
+"rmdir <verz>\t\tlösche leeres Verzeichnis"
 
 #: ../src/libs/image.c:39
 msgid "selected image[s]"

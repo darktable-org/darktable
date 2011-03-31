@@ -13,6 +13,11 @@ add_library(collect MODULE "collect.c")
 add_library(recentcollect MODULE "recentcollect.c")
 add_library(metadata MODULE "metadata.c")
 
+if(VTE_FOUND)
+	add_library(file_manager MODULE "file_manager.c")
+	set(MODULES ${MODULES} file_manager)
+endif(VTE_FOUND)
+
 # check if gphoto2 found and add build of camera modules...
 if(GPHOTO2_FOUND)
 	add_library(capture MODULE "capture.c")

@@ -90,6 +90,7 @@ src/libs/collect.c
 src/libs/collect.h
 src/libs/copy_history.c
 src/libs/export.c
+src/libs/file_manager.c
 src/libs/image.c
 src/libs/lib.c
 src/libs/metadata.c
