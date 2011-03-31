@@ -97,7 +97,6 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
     double fraction=0;
     int total = g_list_length(images);
     snprintf(message, 512, ngettext ("regenerates %d histogram", "regenerates %d histograms", total), total );
-    dt_control_log(message);
     const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
     
     do {
