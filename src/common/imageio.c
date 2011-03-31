@@ -963,6 +963,10 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 {
+  /* first of all, check if file exists, dont bother to test loading if not exists */
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+    return !DT_IMAGEIO_OK;
+  
   // first try hdr and raw loading
   dt_imageio_retval_t ret;
 #ifdef HAVE_RAWSPEED
@@ -977,6 +981,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
   if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
   img->flags &= ~DT_IMAGE_THUMBNAIL;
   img->dirty = 1;
+  
   return ret;
 }
 
