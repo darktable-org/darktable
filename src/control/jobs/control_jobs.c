@@ -93,7 +93,6 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
   GList *imgitem = g_list_first(images);
   if(imgitem)
   {
-    
     char message[512]= {0};
     double fraction=0;
     int total = g_list_length(images);
@@ -153,7 +152,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
        
       for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
         for (int j=0;j<4;j++) 
-          histogram.rgbl[k][j]= logf(1.0 + histogram.rgbl[k][j]);
+          histogram.rgbl[k][j] /= (dest_width*dest_height) ;//logf(1.0 + histogram.rgbl[k][j]);
       
         
       /* store the histogram data */
@@ -167,7 +166,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       dt_gui_background_jobs_set_progress(j, fraction);
       
       dt_image_cache_release(img, 'r');
-    } while ((imgitem=g_list_next(imgitem)));
+    } while ((imgitem=g_list_next(imgitem)) && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED);
     
     dt_gui_background_jobs_set_progress(j, 1.0f);
     dt_gui_background_jobs_destroy (j);
@@ -684,7 +683,7 @@ void dt_control_export()
 void dt_control_start_indexer() {
   dt_job_t j;
   dt_control_indexer_job_init(&j);
-  dt_control_add_background_job(darktable.control, &j, 5);
+  dt_control_add_background_job(darktable.control, &j, 30);
 }
 
 
