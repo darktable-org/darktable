@@ -24,6 +24,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
+#include "common/similarity.h"
 #include "gui/gtk.h"
 
 #include <glib/gprintf.h>
@@ -696,6 +697,9 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   }
 #endif
 
+  /* invalidate histogram */
+  dt_similarity_histogram_dirty(dev->image->id);
+  
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
