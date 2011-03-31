@@ -83,7 +83,10 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 {
   
   /* 
-   * First pass run thru images and collect the ones who needs to update
+   * First pass run thru ALL images and collect the ones who needs to update
+   *  \TODO in the future lets have a indexer table with ids filed with images
+   *  thats need some kind of reindexing.. all mark dirty functions adds image
+   *  to this table--
    */
   GList *images=NULL;
   sqlite3_stmt *stmt;
@@ -91,6 +94,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     _control_indexer_img_t *idximg=g_malloc(sizeof( _control_indexer_img_t));
+    memset(idximg,0,sizeof(_control_indexer_img_t));
     idximg->id = sqlite3_column_int(stmt,0);
     
     /* check if histogram should be updated */
@@ -102,7 +106,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       idximg->flags |= _INDEXER_UPDATE_LIGHTMAP;
     
     /* if image is flagged add to collection */
-    if (idximg->flags)
+    if (idximg->flags != 0)
       images = g_list_append(images, idximg);
     else
       g_free(idximg);
@@ -111,9 +115,9 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
   
   
   /*
-   * Second pass, run thru collected images
+   * Second pass, run thru collected images thats
+   *  need reindexing...
    */
-  
   GList *imgitem = g_list_first(images);
   if(imgitem)
   {
@@ -128,7 +132,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       _control_indexer_img_t *idximg = imgitem->data;
       
       /*
-       *  Check if image histogram or lightmap should be updated
+       *  Check if image histogram or lightmap should be updated.
        *   those indexing that involves a image pipe should fall into this
        */
       if ( (idximg->flags&_INDEXER_UPDATE_HISTOGRAM) ||  (idximg->flags&_INDEXER_UPDATE_LIGHTMAP) )
@@ -167,9 +171,10 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
           
           /* lets generate a histogram */
           uint8_t *pixel = pipe.backbuf;
-          
+          fprintf(stderr,"Image %d Flags %d\n",idximg->id,idximg->flags);
+
           /*
-           * Generate histogram data if requested
+           * Generate similarity histogram data if requested
            */
           if ((idximg->flags&_INDEXER_UPDATE_HISTOGRAM))
           {
@@ -197,14 +202,14 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
                 histogram.rgbl[k][j] /= (dest_width*dest_height);
               
             /* store the histogram data */
-            dt_similarity_histogram_store(img->id, &histogram);
+            dt_similarity_histogram_store(idximg->id, &histogram);
             
           }                  
           
           /*
-           * Generate scaledowned lightness map if requested
+           * Generate scaledowned similarity lightness map if requested
            */
-          if ((idximg->flags&_INDEXER_UPDATE_HISTOGRAM))
+          if ((idximg->flags&_INDEXER_UPDATE_LIGHTMAP))
           {
             dt_similarity_lightmap_t lightmap;
             
@@ -227,8 +232,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
             g_free(spixel);
             
             /* store the lightmap */
-            dt_similarity_lightmap_store(img->id, &lightmap);
-            
+            dt_similarity_lightmap_store(idximg->id, &lightmap);
           }
     
     
@@ -236,7 +240,6 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
         }
         
         dt_dev_cleanup(&dev);
-        
         dt_image_cache_release(img, 'r');
       }
       
@@ -763,7 +766,7 @@ void dt_control_export()
 void dt_control_start_indexer() {
   dt_job_t j;
   dt_control_indexer_job_init(&j);
-  dt_control_add_background_job(darktable.control, &j, 30);
+  dt_control_add_background_job(darktable.control, &j, 10);
 }
 
 
