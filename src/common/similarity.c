@@ -22,7 +22,7 @@
 #include "common/darktable.h"
 #include "common/similarity.h"
 
-static void dump_histogram(uint32_t imgid, const dt_similarity_histogram_t *histogram)
+static void _similarity_dump_histogram(uint32_t imgid, const dt_similarity_histogram_t *histogram)
 {
   fprintf(stderr, "histogram for %d:",imgid);
   for(int j=0;j<DT_SIMILARITY_HISTOGRAM_BUCKETS;j++)
@@ -31,7 +31,7 @@ static void dump_histogram(uint32_t imgid, const dt_similarity_histogram_t *hist
 }
 
 /* matches the rgb histogram and returns a score for the match */
-float _similarity_match_histogram_rgb(const dt_similarity_histogram_t *target, const dt_similarity_histogram_t *source)
+static float _similarity_match_histogram_rgb(const dt_similarity_histogram_t *target, const dt_similarity_histogram_t *source)
 {
   float score=0;
   
@@ -118,7 +118,16 @@ void dt_similarity_match_image(uint32_t imgid)
   sqlite3_finalize (stmt);  
 }
 
-void dt_similarity_store_histogram(uint32_t imgid, const dt_similarity_histogram_t *histogram)
+void dt_similarity_histogram_dirty(uint32_t imgid)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set histogram = NULL where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize (stmt);
+}
+
+void dt_similarity_histogram_store(uint32_t imgid, const dt_similarity_histogram_t *histogram)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set histogram =?1 where id = ?2", -1, &stmt, NULL);
@@ -126,5 +135,5 @@ void dt_similarity_store_histogram(uint32_t imgid, const dt_similarity_histogram
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
-  dump_histogram(imgid,histogram);
+  _similarity_dump_histogram(imgid,histogram);
 }
