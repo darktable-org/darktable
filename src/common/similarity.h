@@ -20,6 +20,15 @@
 
 #include <inttypes.h>
 
+typedef struct dt_similarity_t
+{
+	float histogram_weight;
+	float lightmap_weight;
+	float redmap_weight;
+	float greenmap_weight;
+	float bluemap_weight;
+} dt_similarity_t;
+
 #define DT_SIMILARITY_HISTOGRAM_BUCKETS 8
 typedef struct dt_similarity_histogram_t
 {
@@ -45,6 +54,6 @@ void dt_similarity_histogram_dirty(uint32_t imgid);
 void dt_similarity_lightmap_store(uint32_t imgid, const dt_similarity_lightmap_t *lightmap);
 void dt_similarity_lightmap_dirty(uint32_t imgid);
 
-void dt_similarity_match_image(uint32_t imgid);
+void dt_similarity_match_image(uint32_t imgid, dt_similarity_t *data);
 
 #endif
