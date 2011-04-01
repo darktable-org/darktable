@@ -56,7 +56,10 @@ static float _similarity_match_lightmap(const dt_similarity_lightmap_t *target, 
   
   score /= (DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);
   
-  return score;
+  /* scale score for sensitivity */
+  score *=1.15;
+  
+  return CLIP(score);
 }
 
 void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
@@ -148,15 +151,18 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
       }
      
 
-      /* caluculate the similarity score */
+      /* 
+       * calculate the similarity score
+       */
       float total_weight = data->histogram_weight+data->lightmap_weight;
-      float score = ((score_histogram*data->histogram_weight) + (score_lightmap*data->lightmap_weight)) / total_weight;
-      fprintf(stderr,"Image score %f\n",score);
+      float weighted_score = ((score_histogram*data->histogram_weight) + (score_lightmap*data->lightmap_weight)) / total_weight;
+      float score = weighted_score;
+      fprintf(stderr,"Image score %f\n",weighted_score);
       
       /* 
        * If current images scored, lets add it to similar_images table 
        */
-      if(score >= 0.9)
+      if(score >= 0.96)
       {
         sprintf(query,"insert into similar_images(id,score) values(%d,%f)",sqlite3_column_int(stmt, 0),score);
         DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
