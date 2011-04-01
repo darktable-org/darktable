@@ -228,6 +228,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
             GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source,DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE,GDK_INTERP_HYPER);
             
             /* copy scaled data into lightmap */
+            uint8_t min=0,max=0;
             uint8_t *spixels = gdk_pixbuf_get_pixels(scaled);
             for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
             {
@@ -237,9 +238,17 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
               
               /* average intensity into 4th channel */
               lightmap.pixels[4*j+3] =  (lightmap.pixels[4*j+0]+ lightmap.pixels[4*j+1]+ lightmap.pixels[4*j+2])/3.0;
-              
+              min = fmin(min, lightmap.pixels[4*j+3]);
+              max = fmax(max, lightmap.pixels[4*j+3]);
             }
-            
+      
+            /* contrast stretch each channel in lightmap */
+            for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
+            {
+              for(int k=0;k<4;k++)
+                lightmap.pixels[4*j+k] = (lightmap.pixels[4*j+k]-min)*(0xff/(max-min));
+            }
+              
             /* free some resources */
             gdk_pixbuf_unref(scaled);
             gdk_pixbuf_unref(source);
