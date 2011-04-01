@@ -55,7 +55,9 @@ void gui_reset(dt_lib_module_t *self)
 #ifdef VTE_DEPRECATED
   d->pid = vte_terminal_fork_command(d->terminal, NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 #else
-  vte_terminal_fork_command_full(d->terminal, VTE_PTY_DEFAULT, NULL, NULL, NULL, 0, NULL, NULL, &d->pid, NULL);
+  char* argv[2] = {g_strdup(g_getenv("SHELL")), NULL};
+  vte_terminal_fork_command_full(d->terminal, VTE_PTY_DEFAULT, NULL, argv, NULL, 0, NULL, NULL, &d->pid, NULL);
+  g_free(argv[0]);
 #endif
   vte_terminal_reset(d->terminal, TRUE, TRUE);
 }
@@ -81,7 +83,9 @@ void gui_init(dt_lib_module_t *self)
 #ifdef VTE_DEPRECATED
   d->pid = vte_terminal_fork_command(d->terminal, NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 #else
-  vte_terminal_fork_command_full(d->terminal, VTE_PTY_DEFAULT, NULL, NULL, NULL, 0, NULL, NULL, &d->pid, NULL);
+  char* argv[2] = {g_strdup(g_getenv("SHELL")), NULL};
+  vte_terminal_fork_command_full(d->terminal, VTE_PTY_DEFAULT, NULL, argv, NULL, 0, NULL, NULL, &d->pid, NULL);
+  g_free(argv[0]);
 #endif
   g_object_set(G_OBJECT(d->terminal), "tooltip-text", _("\
 ls\t\t\t\t\tlist content of directory\n\
