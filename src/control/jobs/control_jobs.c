@@ -73,6 +73,8 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 
 #define _INDEXER_UPDATE_HISTOGRAM		1
 #define _INDEXER_UPDATE_LIGHTMAP		2
+#define _INDEXER_IMAGE_FILE_REMOVED		4
+
 typedef struct _control_indexer_img_t
 {
   uint32_t id;
@@ -90,21 +92,28 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
    */
   GList *images=NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram,lightmap from images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select images.id,film_rolls.folder||'/'||images.filename,images.histogram,images.lightmap from images,film_rolls where film_rolls.id = images.film_id", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     _control_indexer_img_t *idximg=g_malloc(sizeof( _control_indexer_img_t));
     memset(idximg,0,sizeof(_control_indexer_img_t));
     idximg->id = sqlite3_column_int(stmt,0);
+
+    /* first check if image file exists on disk */
+    const char *filename = (const char *)sqlite3_column_text(stmt, 1);
+    if (filename && !g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+      idximg->flags |= _INDEXER_IMAGE_FILE_REMOVED;
+   
     
     /* check if histogram should be updated */
-    if (sqlite3_column_bytes(stmt, 1) != sizeof(dt_similarity_histogram_t))
+    if (sqlite3_column_bytes(stmt, 2) != sizeof(dt_similarity_histogram_t))
       idximg->flags |= _INDEXER_UPDATE_HISTOGRAM;
 
     /* check if lightmap should be updated */
-    if (sqlite3_column_bytes(stmt, 2) != sizeof(dt_similarity_lightmap_t))
+    if (sqlite3_column_bytes(stmt, 3) != sizeof(dt_similarity_lightmap_t))
       idximg->flags |= _INDEXER_UPDATE_LIGHTMAP;
     
+
     /* if image is flagged add to collection */
     if (idximg->flags != 0)
       images = g_list_append(images, idximg);
@@ -130,6 +139,27 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
     do {
       /* get the _control_indexer_img_t pointer */
       _control_indexer_img_t *idximg = imgitem->data;
+      
+      /*
+       * Check if image has been delete from disk
+       */
+      if ((idximg->flags&_INDEXER_IMAGE_FILE_REMOVED))
+      {
+        /* file does not exist on disk lets delete image reference from database */
+        char query[512]={0};
+        
+        // \TODO dont delete move to an temp table and let user to revalidate
+        
+        /*sprintf(query,"delete from history where imgid=%d",idximg->id); 
+        DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+        sprintf(query,"delete from tagged_images where imgid=%d",idximg->id); 
+        DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+        sprintf(query,"delete from images where id=%d",idximg->id); 
+        DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);*/
+      
+        /* no need to additional work */
+        continue;
+      }
       
       /*
        *  Check if image histogram or lightmap should be updated.
@@ -561,7 +591,7 @@ void dt_control_indexer_job_init(dt_job_t *job)
 
 void dt_control_match_similar_job_init(dt_job_t *job, uint32_t imgid,dt_similarity_t *data)
 {
-  dt_control_job_init(job, "match similar images");
+  dt_control_job_init(job, "match similar images");  
   job->execute = &dt_control_match_similar_job_run;
   _control_match_similar_job_param_t *t = (_control_match_similar_job_param_t *)job->param;
   t->imgid = imgid;
