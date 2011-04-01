@@ -59,7 +59,7 @@ static float _similarity_match_lightmap(const dt_similarity_lightmap_t *target, 
   return score;
 }
 
-void dt_similarity_match_image(uint32_t imgid)
+void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
 {
   sqlite3_stmt *stmt;
   gboolean all_ok_for_match = TRUE;
