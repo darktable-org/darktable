@@ -16,6 +16,9 @@ add_library(metadata MODULE "metadata.c")
 if(VTE_FOUND)
 	add_library(file_manager MODULE "file_manager.c")
 	set(MODULES ${MODULES} file_manager)
+	if(VTE_VERSION LESS "0.26.0")
+		add_definitions(-DVTE_DEPRECATED=1)
+	endif(VTE_VERSION LESS "0.26.0")
 endif(VTE_FOUND)
 
 # check if gphoto2 found and add build of camera modules...

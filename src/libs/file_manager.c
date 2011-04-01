@@ -52,7 +52,11 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_file_manager_t *d = (dt_lib_file_manager_t*) self->data;
   kill(d->pid, SIGHUP);
+#ifdef VTE_DEPRECATED
   d->pid = vte_terminal_fork_command(d->terminal, NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
+#else
+  vte_terminal_fork_command_full(d->terminal, VTE_PTY_DEFAULT, NULL, NULL, NULL, 0, NULL, NULL, &d->pid, NULL);
+#endif
   vte_terminal_reset(d->terminal, TRUE, TRUE);
 }
 
@@ -74,7 +78,11 @@ void gui_init(dt_lib_module_t *self)
 #else
   vte_terminal_set_font_from_string(d->terminal, "Monospace 8");
 #endif
+#ifdef VTE_DEPRECATED
   d->pid = vte_terminal_fork_command(d->terminal, NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
+#else
+  vte_terminal_fork_command_full(d->terminal, VTE_PTY_DEFAULT, NULL, NULL, NULL, 0, NULL, NULL, &d->pid, NULL);
+#endif
   g_object_set(G_OBJECT(d->terminal), "tooltip-text", _("\
 ls\t\t\t\t\tlist content of directory\n\
 cd <dir>\t\t\tchange directory\n\
