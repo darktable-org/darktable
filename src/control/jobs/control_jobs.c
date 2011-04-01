@@ -146,7 +146,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
       if ((idximg->flags&_INDEXER_IMAGE_FILE_REMOVED))
       {
         /* file does not exist on disk lets delete image reference from database */
-        char query[512]={0};
+        //char query[512]={0};
         
         // \TODO dont delete move to an temp table and let user to revalidate
         
