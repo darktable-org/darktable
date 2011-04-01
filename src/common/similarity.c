@@ -149,7 +149,8 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
      
 
       /* caluculate the similarity score */
-      float score = (score_histogram+score_lightmap)/2.0;
+      float total_weight = data->histogram_weight+data->lightmap_weight;
+      float score = ((score_histogram*data->histogram_weight) + (score_lightmap*data->lightmap_weight)) / total_weight;
       fprintf(stderr,"Image score %f\n",score);
       
       /* 
