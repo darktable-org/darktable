@@ -35,7 +35,7 @@ typedef struct dt_similarity_histogram_t
 	float rgbl[DT_SIMILARITY_HISTOGRAM_BUCKETS][4];
 }dt_similarity_histogram_t;
 	
-#define DT_SIMILARITY_LIGHTMAP_SIZE 20
+#define DT_SIMILARITY_LIGHTMAP_SIZE 10
 typedef struct dt_similarity_imagemap_t
 {
 	uint8_t pixels[DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE*4];
