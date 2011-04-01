@@ -50,6 +50,12 @@ int position ()
 }
 
 
+static void _button_callback (GtkWidget *w, gpointer user_data)
+{
+  dt_similarity_t *data = ( dt_similarity_t *)user_data;
+  dt_control_match_similar(data);
+}
+
 static void _histogram_weight_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_similarity_t *data = ( dt_similarity_t *)user_data;
@@ -85,6 +91,10 @@ void gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of lightness matching"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
  
+  GtkWidget *button = gtk_button_new_with_label(_("view similar"));
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_button_callback),data);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("match images with selected image and views the result"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
 }
 
 void gui_cleanup (dt_lib_module_t *self)
