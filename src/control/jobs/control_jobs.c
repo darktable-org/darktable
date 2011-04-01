@@ -279,16 +279,16 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
   return 0;
 }
 
+
+typedef struct _control_match_similar_job_param_t {
+  uint32_t imgid;
+  dt_similarity_t data;
+} _control_match_similar_job_param_t;
+
 int32_t dt_control_match_similar_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
-  if(t) {
-    imgid = (long int)t->data;
-    dt_similarity_match_image(imgid);
-  } else
-    dt_control_log(_("select an image as target for search of similar images"));
+  _control_match_similar_job_param_t *t = (_control_match_similar_job_param_t *)job->param;
+  dt_similarity_match_image(t->imgid, &t->data);
   return 0;
 }
   
@@ -543,12 +543,13 @@ void dt_control_indexer_job_init(dt_job_t *job)
   job->execute = &dt_control_indexer_job_run;
 }
 
-void dt_control_match_similar_job_init(dt_job_t *job)
+void dt_control_match_similar_job_init(dt_job_t *job, uint32_t imgid,dt_similarity_t *data)
 {
   dt_control_job_init(job, "match similar images");
   job->execute = &dt_control_match_similar_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  _control_match_similar_job_param_t *t = (_control_match_similar_job_param_t *)job->param;
+  t->imgid = imgid;
+  t->data = *data;
 }
 
 void dt_control_duplicate_images_job_init(dt_job_t *job)
@@ -591,11 +592,16 @@ void dt_control_merge_hdr()
   dt_control_add_job(darktable.control, &j);
 }
 
-void dt_control_match_similar()
+void dt_control_match_similar(dt_similarity_t *data)
 {
   dt_job_t j;
-  dt_control_match_similar_job_init(&j);
-  dt_control_add_job(darktable.control, &j);
+  GList *selected = dt_collection_get_selected(darktable.collection);
+  if(selected)
+  {
+    dt_control_match_similar_job_init(&j, (uint32_t)selected->data, data);
+    dt_control_add_job(darktable.control, &j);
+  } else
+    dt_control_log(_("select an image as target for search of similar images"));
 }
 
 void dt_control_duplicate_images()
