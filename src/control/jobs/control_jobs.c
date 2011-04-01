@@ -607,7 +607,7 @@ void dt_control_match_similar(dt_similarity_t *data)
   GList *selected = dt_collection_get_selected(darktable.collection);
   if(selected)
   {
-    dt_control_match_similar_job_init(&j, (uint32_t)selected->data, data);
+    dt_control_match_similar_job_init(&j, (long int)selected->data, data);
     dt_control_add_job(darktable.control, &j);
   } else
     dt_control_log(_("select an image as target for search of similar images"));
