@@ -59,14 +59,14 @@ static void _button_callback (GtkWidget *w, gpointer user_data)
 static void _histogram_weight_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_similarity_t *data = ( dt_similarity_t *)user_data;
-  data->histogram_weight = dtgtk_slider_get_value(slider);
+  data->histogram_weight = dtgtk_slider_get_value(slider)/100.0;
   dt_control_match_similar(data);
 }
 
 static void _lightmap_weight_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_similarity_t *data = ( dt_similarity_t *)user_data;
-  data->lightmap_weight = dtgtk_slider_get_value(slider);
+  data->lightmap_weight = dtgtk_slider_get_value(slider)/100.0;
   dt_control_match_similar(data);
 }
 
