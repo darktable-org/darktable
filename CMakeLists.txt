@@ -12,7 +12,7 @@ option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
 option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and likely-to-change-soon plugins." OFF)
 option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
 option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
-option(APRILS_FOOL "Add the \"file manager\" (a shell) to lighttable mode" OFF)
+option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
 
 #
 # Set platform defaults...

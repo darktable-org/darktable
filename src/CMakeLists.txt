@@ -173,13 +173,13 @@ if(SDL_FOUND AND OPENGL_FOUND)
 endif(SDL_FOUND AND OPENGL_FOUND)
 
 # needed for the file manager
-if(APRILS_FOOL)
+if(APRIL_FOOLS)
   find_package(VTE)
   if(VTE_FOUND)
     include_directories(${VTE_INCLUDE_DIRS})
     list(APPEND LIBS ${VTE_LIBRARIES})
   endif(VTE_FOUND)
-endif(APRILS_FOOL)
+endif(APRIL_FOOLS)
 
 #
 # Add HAVE_xxx defines used by darktable

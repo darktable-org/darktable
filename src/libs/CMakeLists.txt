@@ -13,7 +13,7 @@ add_library(collect MODULE "collect.c")
 add_library(recentcollect MODULE "recentcollect.c")
 add_library(metadata MODULE "metadata.c")
 
-if(APRILS_FOOL)
+if(APRIL_FOOLS)
 	if(VTE_FOUND)
 		add_library(file_manager MODULE "file_manager.c")
 		set(MODULES ${MODULES} file_manager)
@@ -24,7 +24,7 @@ if(APRILS_FOOL)
 			message("--- vte >= 0.26 - using recent function")
 		endif(VTE_VERSION LESS "0.26.0")
 	endif(VTE_FOUND)
-endif(APRILS_FOOL)
+endif(APRIL_FOOLS)
 
 # check if gphoto2 found and add build of camera modules...
 if(GPHOTO2_FOUND)
