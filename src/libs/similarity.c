@@ -60,40 +60,47 @@ static void _histogram_weight_callback (GtkDarktableSlider *slider, gpointer use
 {
   dt_similarity_t *data = ( dt_similarity_t *)user_data;
   data->histogram_weight = dtgtk_slider_get_value(slider)/100.0;
+  dt_conf_set_float("plugins/lighttable/similarity/histogram_weight", data->histogram_weight);
 }
 
 static void _lightmap_weight_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_similarity_t *data = ( dt_similarity_t *)user_data;
   data->lightmap_weight = dtgtk_slider_get_value(slider)/100.0;
+  dt_conf_set_float("plugins/lighttable/similarity/lightmap_weight", data->lightmap_weight);
 }
 
 void gui_init (dt_lib_module_t *self)
 {
-  dt_similarity_t *data = g_malloc(sizeof(dt_similarity_t));
-  self->data = data;
-
+  dt_similarity_t *d = g_malloc(sizeof(dt_similarity_t));
+  memset(d,0,sizeof(dt_similarity_t));
+  self->data = d;
+  d->histogram_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/histogram_weight");
+  d->lightmap_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/lightmap_weight");
+  
   self->widget = gtk_vbox_new(TRUE, 5);
 
-  GtkDarktableSlider *slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, 100.0, 2));
+  GtkDarktableSlider *slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->histogram_weight, 2));
   dtgtk_slider_set_label(slider,_("histogram score weight"));
   dtgtk_slider_set_unit(slider,"%");
-  g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_histogram_weight_callback),data);
+  g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_histogram_weight_callback),d);
   g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of histogram matching"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
  
-  slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, 100.0, 2));
+  slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->lightmap_weight, 2));
   dtgtk_slider_set_label(slider,_("lightness weight"));
   dtgtk_slider_set_unit(slider,"%");
-  g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_lightmap_weight_callback),data);
+  g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_lightmap_weight_callback),d);
   g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of lightness matching"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
  
   GtkWidget *button = gtk_button_new_with_label(_("view similar"));
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_button_callback),data);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_button_callback),d);
   g_object_set(G_OBJECT(button), "tooltip-text", _("match images with selected image and views the result"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
+  
 }
+
 
 void gui_cleanup (dt_lib_module_t *self)
 {
