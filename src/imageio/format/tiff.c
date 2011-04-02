@@ -78,8 +78,8 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 150.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 150.0);
+  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.0);
+  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.0);
   TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
 
   const uint8_t  *in8 =(const uint8_t  *)in_void;

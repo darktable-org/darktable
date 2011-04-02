@@ -9,7 +9,7 @@
   <body style="counter-reset: chapter; counter-increment: chapter 3;"> <!-- chapter number goes here! -->
     <div class="page">
       <!--#include virtual="navigation.html" -->
-    	<span class="number"><img src="style/3.png" alt="3" width="142px" /></span><div class="headline"><img src="screenshots.png" alt="screenshots" width="251px"/></div>
+    	<span class="number"><img src="style/3.png" alt="3" width="142px" /></span><div class="headline">screenshots</div>
     	<div class="starterText">
       here are some of the nice, obligatory screenshots. see darktable in action. the interface is loosely split in two parts:
       the lighttable and the darkroom. in the lighttable, the mouse is used to zoom into the picture collection and to pan around.

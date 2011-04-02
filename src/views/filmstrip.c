@@ -361,6 +361,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     case DT_VIEW_STAR_2:
     case DT_VIEW_STAR_3:
     case DT_VIEW_STAR_4:
+    case DT_VIEW_STAR_5:
     {
       dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
       image->dirty = 1;

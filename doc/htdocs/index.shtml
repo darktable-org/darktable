@@ -4,12 +4,12 @@
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="stylesheet" href="style/style.css" type="text/css" /> 
-    <title>darktable | news</title>
+    <title>news | darktable</title>
   </head>
   <body style="counter-reset: chapter; counter-increment: chapter 0;"> <!-- chapter number goes here! -->
     <div class="page">
       <!--#include virtual="navigation.html" -->
-    	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline"><img src="news.png" alt="news" width="109px" /></div>
+    	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline">news</div>
 
       <div class="listtext">
     	<img src="images/donau.jpg" class="img" alt="dreggn" /><h1>released 0.8</h1>

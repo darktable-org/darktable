@@ -718,7 +718,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("sharpen"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op, &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);

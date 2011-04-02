@@ -69,6 +69,7 @@ src/iop/lowlight.c
 src/iop/monochrome.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
+src/iop/rawdenoise.c
 src/iop/relight.c
 src/iop/sharpen.c
 src/iop/soften.c
@@ -89,6 +90,7 @@ src/libs/collect.c
 src/libs/collect.h
 src/libs/copy_history.c
 src/libs/export.c
+src/libs/file_manager.c
 src/libs/image.c
 src/libs/lib.c
 src/libs/metadata.c

@@ -116,6 +116,7 @@ dt_imageio_open_rawspeed(dt_image_t *img, const char *filename)
     if(!d) return DT_IMAGEIO_FILE_CORRUPTED;
     try
     {
+      d->failOnUnknown = true;
       d->checkSupport(meta);
 
       d->decodeRaw();

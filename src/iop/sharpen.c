@@ -64,7 +64,7 @@ dt_iop_sharpen_global_data_t;
 
 const char *name()
 {
-  return _("sharpen");
+  return C_("sharpen", "sharpen");
 }
 
 
