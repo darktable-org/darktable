@@ -37,10 +37,10 @@ dt_lib_file_manager_t;
 const char* name()
 {
   // FIXME: Hack to get a translated name without the need to touch the .po files
-  char* n = _("zoomable light table\nfile manager");
-  while(*n != '\n') n++; n++;
-  return n;
-//   return _("file manager");
+//   char* n = _("zoomable light table\nfile manager");
+//   while(*n != '\n') n++; n++;
+//   return n;
+  return _("file manager");
 }
 
 uint32_t views()
