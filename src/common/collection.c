@@ -105,14 +105,14 @@ dt_collection_update (const dt_collection_t *collection)
     }
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," where %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
     else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," where %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s id in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," where  %s id in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
     else if (collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s id not in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
+      g_snprintf (wq+strlen(wq),2048-strlen(wq)," where %s id not in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
 
     /* add where ext if wanted */
     if ((collection->params.query_flags&COLLECTION_QUERY_USE_WHERE_EXT))
@@ -124,14 +124,16 @@ dt_collection_update (const dt_collection_t *collection)
 
 
   /* build select part includes where */
-  if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    g_snprintf (selq,512,"select distinct id from (select * from images where %s) as a left outer join color_labels as b on a.id = b.imgid",wq);
+  if ( !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT) &&
+        sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
+  )
+    g_snprintf (selq,512,"select distinct id from (select * from images %s) as a left outer join color_labels as b on a.id = b.imgid",wq);
   else
-    g_snprintf(selq,512, "select distinct id from images where %s",wq);
+    g_snprintf(selq,512, "select distinct images.id from images %s",wq);
 
 
   /* build sort order part */
-  if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
+  if (!(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT)  && (collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
   {
     if (sort == DT_LIB_SORT_DATETIME)           g_snprintf (sq, 512, ORDER_BY_QUERY, "datetime_taken");
     else if(sort == DT_LIB_SORT_RATING)         g_snprintf (sq, 512, ORDER_BY_QUERY, "flags & 7 desc");
@@ -254,7 +256,8 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   uint32_t count=1;
   const gchar *query = dt_collection_get_query(collection);
   char countquery[2048]= {0};
-  snprintf(countquery, 2048, "select count(id) %s", query + 18);
+  query = strstr(query,"from");
+  snprintf(countquery, 2048, "select count(images.id) %s", query);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, countquery, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
@@ -272,23 +275,27 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
 
   /* get collection order */
   char sq[512]= {0};
-  if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
+  if (
+       !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT)  &&
+      (collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
   {
-    if (sort == DT_LIB_SORT_DATETIME)           g_snprintf (sq, 512, ORDER_BY_QUERY, "datetime_taken");
-    else if(sort == DT_LIB_SORT_RATING)         g_snprintf (sq, 512, ORDER_BY_QUERY, "flags & 7 desc");
-    else if(sort == DT_LIB_SORT_FILENAME)       g_snprintf (sq, 512, ORDER_BY_QUERY, "filename");
-    else if(sort == DT_LIB_SORT_ID)             g_snprintf (sq, 512, ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)          g_snprintf (sq, 512, ORDER_BY_QUERY, "color desc,id");
+    if (sort == DT_LIB_SORT_DATETIME)           g_snprintf (sq, 512, ORDER_BY_QUERY, "images.datetime_taken");
+    else if(sort == DT_LIB_SORT_RATING)         g_snprintf (sq, 512, ORDER_BY_QUERY, "images.flags & 7 desc");
+    else if(sort == DT_LIB_SORT_FILENAME)       g_snprintf (sq, 512, ORDER_BY_QUERY, "images.filename");
+    else if(sort == DT_LIB_SORT_ID)             g_snprintf (sq, 512, ORDER_BY_QUERY, "images.id");
+    else if(sort == DT_LIB_SORT_COLOR)          g_snprintf (sq, 512, ORDER_BY_QUERY, "images.color desc,id");
   }
 
 
   sqlite3_stmt *stmt = NULL;
   char query[2048]= {0};
 
-  if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  if ( !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT)  &&
+      sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT)
+  )
     g_snprintf (query,512,"select distinct a.imgid as id from (select imgid from selected_images) as a left outer join color_labels as b on a.imgid = b.imgid %s",sq);
   else
-    g_snprintf(query,512, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
+    g_snprintf(query,512, "select distinct images.id from images where id in (select imgid from selected_images) %s",sq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db,query, -1, &stmt, NULL);
 
@@ -393,12 +400,13 @@ void
 dt_collection_update_query(const dt_collection_t *collection)
 {
   char query[1024], confname[200];
-  char complete_query[4096];
+  char complete_query[4096]={0};
   int pos = 0;
 
   const int num_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
   char *conj[] = {"and", "or", "and not"};
-  complete_query[pos++] = '(';
+  strcat(complete_query," where (");
+  pos = strlen(complete_query);
   for(int i=0; i<num_rules; i++)
   {
     snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
