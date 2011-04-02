@@ -841,11 +841,12 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
     gtk_box_pack_start(GTK_BOX(dummybox), bd->opacity_slider, TRUE, TRUE, 5);
 
-    gtk_box_pack_start(GTK_BOX(iopw), btb,TRUE,TRUE,0);
     gtk_box_pack_start(GTK_BOX(bd->box), bhb,TRUE,TRUE,0);
     gtk_box_pack_start(GTK_BOX(bd->box), dummybox,TRUE,TRUE,0);
 
-    gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->box),TRUE,TRUE,0);
+    gtk_box_pack_end(GTK_BOX(iopw), GTK_WIDGET(bd->box),TRUE,TRUE,0);
+    gtk_box_pack_end(GTK_BOX(iopw), btb,TRUE,TRUE,0);
+    
   }
 
   /* add the iopw widget to aligment widget */
