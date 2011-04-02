@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-31 11:38+0200\n"
-"PO-Revision-Date: 2011-03-31 11:41+0100\n"
+"POT-Creation-Date: 2011-04-02 12:10+0200\n"
+"PO-Revision-Date: 2011-04-02 12:16+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -435,8 +435,7 @@ msgstr "Titel"
 msgid "width"
 msgstr "Breite"
 
-#. FIXME: Hack to get a translated name without the need to touch the .po files
-#: ../data/darktable.glade.h:53 ../src/libs/file_manager.c:40
+#: ../data/darktable.glade.h:53
 msgid ""
 "zoomable light table\n"
 "file manager"
@@ -491,24 +490,24 @@ msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
 msgid "error loading directory `%s'"
 msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
 
-#: ../src/common/darktable.c:359 ../src/gui/gtk.c:811
+#: ../src/common/darktable.c:359 ../src/gui/gtk.c:814
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:371 ../src/gui/gtk.c:796
+#: ../src/common/darktable.c:371 ../src/gui/gtk.c:799
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
 
 #: ../src/common/history.c:169 ../src/common/history.c:197
-#: ../src/common/styles.c:235 ../src/develop/develop.c:921
+#: ../src/common/styles.c:235 ../src/develop/develop.c:949
 #: ../src/gui/styles_dialog.c:323
 msgid "on"
 msgstr "ein"
 
 #: ../src/common/history.c:169 ../src/common/history.c:197
-#: ../src/common/styles.c:235 ../src/develop/develop.c:921
+#: ../src/common/styles.c:235 ../src/develop/develop.c:949
 #: ../src/gui/styles_dialog.c:323
 msgid "off"
 msgstr "aus"
@@ -549,16 +548,16 @@ msgstr "Stil ‚%s‘ erfolgreich gespeichert"
 msgid "style %s was sucessfully imported"
 msgstr "Stil ‚%s‘ erfolgreich importiert"
 
-#: ../src/control/control.c:905 ../src/control/control.c:908
+#: ../src/control/control.c:908 ../src/control/control.c:911
 msgid "working.."
 msgstr "Arbeite …"
 
-#: ../src/control/control.c:989
+#: ../src/control/control.c:992
 #, c-format
 msgid "switch to %s mode"
 msgstr "in den %s-Modus wechseln"
 
-#: ../src/control/control.c:997
+#: ../src/control/control.c:1000
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>%s-Modus</b></big></span>"
@@ -708,35 +707,120 @@ msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 msgid "loading image %s"
 msgstr "Bild %s laden"
 
-#: ../src/develop/develop.c:820
+#: ../src/develop/develop.c:841
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: Modul ‚%s‘ hat unpassende Version: %d != %d"
 
-#: ../src/develop/imageop.c:304 ../src/develop/imageop.c:323
-#: ../src/develop/imageop.c:623
+#: ../src/develop/imageop.c:332 ../src/develop/imageop.c:351
+#: ../src/develop/imageop.c:758
 #, c-format
 msgid "%s is switched on"
 msgstr "%s ist eingeschaltet"
 
-#: ../src/develop/imageop.c:304 ../src/develop/imageop.c:323
-#: ../src/develop/imageop.c:623
+#: ../src/develop/imageop.c:332 ../src/develop/imageop.c:351
+#: ../src/develop/imageop.c:758
 #, c-format
 msgid "%s is switched off"
 msgstr "%s ist ausgeschaltet"
 
 # siehe equalizer (deprecated)
-#: ../src/develop/imageop.c:614
+#: ../src/develop/imageop.c:749
 msgid " (deprecated)"
 msgstr " (überholt)"
 
-#: ../src/develop/imageop.c:642 ../src/libs/lib.c:525
+#: ../src/develop/imageop.c:777 ../src/libs/lib.c:525
 msgid "reset parameters"
 msgstr "Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:643 ../src/libs/lib.c:531
+#: ../src/develop/imageop.c:778 ../src/libs/lib.c:531
 msgid "presets"
 msgstr "Voreinstellungen"
+
+#. hack to indent the drop down box
+#: ../src/develop/imageop.c:802
+msgid "blend"
+msgstr "Überblenden"
+
+#: ../src/develop/imageop.c:803
+msgid "mode"
+msgstr "Modus"
+
+#: ../src/develop/imageop.c:806 ../src/iop/watermark.c:672
+msgid "opacity"
+msgstr "Deckkraft"
+
+#: ../src/develop/imageop.c:808
+msgid "normal"
+msgstr "Normal"
+
+#: ../src/develop/imageop.c:809
+msgid "lighten"
+msgstr "Aufhellen"
+
+#: ../src/develop/imageop.c:810
+msgid "darken"
+msgstr "Abdunkeln"
+
+#: ../src/develop/imageop.c:811
+msgid "multiply"
+msgstr "Multiplikation"
+
+#: ../src/develop/imageop.c:812
+msgid "average"
+msgstr "Durchschnitt"
+
+#: ../src/develop/imageop.c:813
+msgid "addition"
+msgstr "Addition"
+
+#: ../src/develop/imageop.c:814
+msgid "subtract"
+msgstr "Abziehen"
+
+#: ../src/develop/imageop.c:815
+msgid "difference"
+msgstr "Unterschied"
+
+#: ../src/develop/imageop.c:816
+msgid "screen"
+msgstr "Bildschirm"
+
+#: ../src/develop/imageop.c:817
+msgid "overlay"
+msgstr "Überlagern"
+
+#: ../src/develop/imageop.c:818
+msgid "softlight"
+msgstr "Weiche Kanten"
+
+#: ../src/develop/imageop.c:819
+msgid "hardlight"
+msgstr "Harte Kanten"
+
+#: ../src/develop/imageop.c:820
+msgid "vividlight"
+msgstr ""
+
+#: ../src/develop/imageop.c:821
+msgid "linearlight"
+msgstr ""
+
+#: ../src/develop/imageop.c:822
+msgid "pinlight"
+msgstr ""
+
+#: ../src/develop/imageop.c:825
+msgid "enable blending"
+msgstr "Überblenden aktivieren"
+
+#: ../src/develop/imageop.c:826
+msgid "set the opacity of the blending"
+msgstr "Deckkraft des Überblendens anpassen"
+
+#: ../src/develop/imageop.c:827
+msgid "choose blending mode"
+msgstr "Modus des Überblendens wählen"
 
 #: ../src/dtgtk/resetlabel.c:61
 msgid "double-click to reset"
@@ -790,11 +874,11 @@ msgid "general"
 msgstr "allgemein"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:318 ../src/gui/gtk.c:703
+#: ../src/gui/camera_import_dialog.c:318 ../src/gui/gtk.c:706
 msgid "ignore jpeg files"
 msgstr "JPEG-Dateien ignorieren"
 
-#: ../src/gui/camera_import_dialog.c:319 ../src/gui/gtk.c:704
+#: ../src/gui/camera_import_dialog.c:319 ../src/gui/gtk.c:707
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -1013,42 +1097,42 @@ msgstr "* Mitwirkende *"
 msgid "translator-credits"
 msgstr "Tobias Ellinghaus"
 
-#: ../src/gui/gtk.c:676
+#: ../src/gui/gtk.c:679
 msgid "import film"
 msgstr "Film importieren"
 
-#: ../src/gui/gtk.c:695
+#: ../src/gui/gtk.c:698
 msgid "import directories recursively"
 msgstr "Verzeichnisse rekursiv importieren"
 
-#: ../src/gui/gtk.c:696
+#: ../src/gui/gtk.c:699
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "Verzeichnisse rekursiv importieren. Jedes Verzeichnis kommt in eine eigene "
 "Filmrolle."
 
-#: ../src/gui/gtk.c:747
+#: ../src/gui/gtk.c:750
 msgid "import image"
 msgstr "Bild importieren"
 
-#: ../src/gui/gtk.c:772
+#: ../src/gui/gtk.c:775
 msgid "supported images"
 msgstr "unterstütze Bilder"
 
-#: ../src/gui/gtk.c:777 ../src/libs/copy_history.c:77 ../src/libs/styles.c:241
+#: ../src/gui/gtk.c:780 ../src/libs/copy_history.c:77 ../src/libs/styles.c:241
 msgid "all files"
 msgstr "alle Dateien"
 
-#: ../src/gui/gtk.c:1125
+#: ../src/gui/gtk.c:1128
 msgid "show global preferences"
 msgstr "Zeige globale Voreinstellungen"
 
-#: ../src/gui/gtk.c:1240
+#: ../src/gui/gtk.c:1243
 msgid "take snapshot"
 msgstr "Snapshot erstellen"
 
-#: ../src/gui/gtk.c:1241
+#: ../src/gui/gtk.c:1244
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -1694,7 +1778,7 @@ msgid "spatial extent of the effect around edges"
 msgstr "Ausdehnung des Effekts entlang von Kanten"
 
 #: ../src/iop/anlfyeni.c:279 ../src/iop/lens.c:1358 ../src/iop/localc.c:287
-#: ../src/iop/vignette.c:847 ../src/iop/watermark.c:674
+#: ../src/iop/vignette.c:852 ../src/iop/watermark.c:674
 msgid "scale"
 msgstr "Skalierung"
 
@@ -1962,7 +2046,7 @@ msgstr "Farbton"
 #: ../src/iop/colorzones.c:792 ../src/iop/colorzones.c:810
 #: ../src/iop/graduatednd.c:527 ../src/iop/soften.c:347
 #: ../src/iop/splittoning.c:426 ../src/iop/splittoning.c:485
-#: ../src/iop/velvia.c:237 ../src/iop/vignette.c:852
+#: ../src/iop/velvia.c:237 ../src/iop/vignette.c:857
 msgid "saturation"
 msgstr "Sättigung"
 
@@ -2937,7 +3021,7 @@ msgstr "Gamma"
 msgid "raw denoise"
 msgstr "RAW-Entrauschen"
 
-#: ../src/iop/rawdenoise.c:330
+#: ../src/iop/rawdenoise.c:335
 msgid "noise threshold"
 msgstr "Rausch-Schwellwert"
 
@@ -2993,7 +3077,7 @@ msgstr "Schwellwert zum Aktivieren des Schärfens"
 msgid "soften"
 msgstr "Weichmachen"
 
-#: ../src/iop/soften.c:349 ../src/iop/vignette.c:851
+#: ../src/iop/soften.c:349 ../src/iop/vignette.c:856
 msgid "brightness"
 msgstr "Helligkeit"
 
@@ -3195,63 +3279,63 @@ msgstr "Menge an Lebendigkeit"
 msgid "how much to spare highlights and shadows"
 msgstr "wie sehr sollen Spitzlichter und Schatten ausgenommen werden"
 
-#: ../src/iop/vignette.c:108
+#: ../src/iop/vignette.c:109
 msgid "vignetting"
 msgstr "Vignettierung"
 
-#: ../src/iop/vignette.c:835
+#: ../src/iop/vignette.c:840
 msgid "automatic ratio"
 msgstr "autom. Verhältnis"
 
-#: ../src/iop/vignette.c:844
+#: ../src/iop/vignette.c:849
 msgid "automatic"
 msgstr "automatisch"
 
-#: ../src/iop/vignette.c:849
+#: ../src/iop/vignette.c:854
 msgid "fall-off strength"
 msgstr "Abfallstärke"
 
-#: ../src/iop/vignette.c:853
+#: ../src/iop/vignette.c:858
 msgid "horizontal center"
 msgstr "horizontale Mitte"
 
-#: ../src/iop/vignette.c:854
+#: ../src/iop/vignette.c:859
 msgid "vertical center"
 msgstr "vertikale Mitte"
 
-#: ../src/iop/vignette.c:855
+#: ../src/iop/vignette.c:860
 msgid "shape"
 msgstr "Form"
 
-#: ../src/iop/vignette.c:856
+#: ../src/iop/vignette.c:861
 msgid "width/height ratio"
 msgstr "Verhältnis Breite/Höhe"
 
-#: ../src/iop/vignette.c:874
+#: ../src/iop/vignette.c:879
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "Radius der Vignette für den Start des Abfalls"
 
-#: ../src/iop/vignette.c:875
+#: ../src/iop/vignette.c:880
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "Radius der Vignette für das Ende des Abfalls"
 
-#: ../src/iop/vignette.c:876
+#: ../src/iop/vignette.c:881
 msgid "strength of effect on brightness"
 msgstr "Stärke des Effekts auf die Helligkeit"
 
-#: ../src/iop/vignette.c:877
+#: ../src/iop/vignette.c:882
 msgid "strength of effect on saturation"
 msgstr "Stärke des Effekts auf die Sättigung"
 
-#: ../src/iop/vignette.c:878
+#: ../src/iop/vignette.c:883
 msgid "horizontal offset of center of the effect"
 msgstr "horizontaler Versatz der Mitte des Effekts"
 
-#: ../src/iop/vignette.c:879
+#: ../src/iop/vignette.c:884
 msgid "vertical offset of center of the effect"
 msgstr "vertikaler Versatz der Mitte des Effekts"
 
-#: ../src/iop/vignette.c:880
+#: ../src/iop/vignette.c:885
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -3263,13 +3347,13 @@ msgstr ""
 "1 ergibt einen Kreis oder Ellipse\n"
 "2 ergibt einen Diamanten"
 
-#: ../src/iop/vignette.c:881
+#: ../src/iop/vignette.c:886
 msgid "enable to have the ratio automatically follow the image size"
 msgstr ""
 "aktivieren, damit das Seitenverhältnis automatisch an die Bildgröße "
 "angepasst wird"
 
-#: ../src/iop/vignette.c:882
+#: ../src/iop/vignette.c:887
 msgid "width-to-height ratio"
 msgstr "Verhältnis Breite zu Höhe"
 
@@ -3285,10 +3369,6 @@ msgstr "Zeichen"
 #: ../src/iop/watermark.c:656
 msgid "alignment"
 msgstr "Position"
-
-#: ../src/iop/watermark.c:672
-msgid "opacity"
-msgstr "Deckkraft"
 
 #: ../src/iop/watermark.c:696
 msgid "x offset"
@@ -3825,7 +3905,15 @@ msgstr "exportieren"
 msgid "export with current settings (ctrl-e)"
 msgstr "mit aktuellen Einstellungen exportieren (Strg-e)"
 
-#: ../src/libs/file_manager.c:78
+#. FIXME: Hack to get a translated name without the need to touch the .po files
+#. char* n = _("zoomable light table\nfile manager");
+#. while(*n != '\n') n++; n++;
+#. return n;
+#: ../src/libs/file_manager.c:43
+msgid "file manager"
+msgstr "Dateiverwaltung"
+
+#: ../src/libs/file_manager.c:90
 msgid ""
 "ls\t\t\t\t\tlist content of directory\n"
 "cd <dir>\t\t\tchange directory\n"
@@ -4259,7 +4347,3 @@ msgstr "Filterregeln in der oberen Leiste anpassen"
 #: ../src/views/lighttable.c:190
 msgid "or in the collection plugin in the left panel."
 msgstr "oder links im Sammlungs-Plugin."
-
-#, fuzzy
-#~ msgid "file manager"
-#~ msgstr "Dateiname"
