@@ -510,6 +510,9 @@ lighttable_layout_changed (GtkComboBox *widget, gpointer user_data)
 static void
 update_query()
 {
+  /* sometimes changes, for similarity search e.g. */
+  dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
+
   /* updates query */
   dt_collection_update_query (darktable.collection);
 
