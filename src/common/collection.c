@@ -257,7 +257,12 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   const gchar *query = dt_collection_get_query(collection);
   char countquery[2048]= {0};
   query = strstr(query,"from");
-  snprintf(countquery, 2048, "select count(images.id) %s", query);
+  
+  if ( !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT) )
+    snprintf(countquery, 2048, "select count(id) %s", query);
+  else  
+    snprintf(countquery, 2048, "select count(images.id) %s", query);
+  
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, countquery, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
