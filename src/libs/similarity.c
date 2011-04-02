@@ -70,6 +70,18 @@ static void _lightmap_weight_callback (GtkDarktableSlider *slider, gpointer user
   dt_conf_set_float("plugins/lighttable/similarity/lightmap_weight", data->lightmap_weight);
 }
 
+/* for now, equally weight r,g,b map scoring might be useful
+    having this individually controlled.
+*/
+static void _rgb_weight_callback (GtkDarktableSlider *slider, gpointer user_data)
+{
+  dt_similarity_t *data = ( dt_similarity_t *)user_data;
+  data->redmap_weight = data->greenmap_weight = data->bluemap_weight = dtgtk_slider_get_value(slider)/100.0;
+  dt_conf_set_float("plugins/lighttable/similarity/rmap_weight", data->redmap_weight);
+  dt_conf_set_float("plugins/lighttable/similarity/gmap_weight", data->greenmap_weight);
+  dt_conf_set_float("plugins/lighttable/similarity/bmap_weight", data->bluemap_weight);
+}
+
 void gui_init (dt_lib_module_t *self)
 {
   dt_similarity_t *d = g_malloc(sizeof(dt_similarity_t));
@@ -78,20 +90,32 @@ void gui_init (dt_lib_module_t *self)
   d->histogram_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/histogram_weight");
   d->lightmap_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/lightmap_weight");
   
+  /* for now, just take red and set all color maps weighting from that */
+  d->redmap_weight = d->greenmap_weight = d->bluemap_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/redmap_weight");
   self->widget = gtk_vbox_new(TRUE, 5);
 
+  /* add the histogram slider */
   GtkDarktableSlider *slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->histogram_weight, 2));
-  dtgtk_slider_set_label(slider,_("histogram score weight"));
+  dtgtk_slider_set_label(slider,_("histogram weight"));
   dtgtk_slider_set_unit(slider,"%");
   g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_histogram_weight_callback),d);
   g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of histogram matching"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
  
+  /* add the lightmap slider */
   slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->lightmap_weight, 2));
-  dtgtk_slider_set_label(slider,_("lightness weight"));
+  dtgtk_slider_set_label(slider,_("light map weight"));
   dtgtk_slider_set_unit(slider,"%");
   g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_lightmap_weight_callback),d);
-  g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of lightness matching"), (char *)NULL);
+  g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of light map matching"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
+  
+  /* add the rgbmap weighting slider */
+  slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->redmap_weight, 2));
+  dtgtk_slider_set_label(slider,_("color map weight"));
+  dtgtk_slider_set_unit(slider,"%");
+  g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_rgb_weight_callback),d);
+  g_object_set(G_OBJECT(slider), "tooltip-text", _("set the score weight of color map matching"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
  
   GtkWidget *button = gtk_button_new_with_label(_("view similar"));
