@@ -34,6 +34,43 @@
 			   </listitem>		   
 			</orderedlist>
 	</sect2>
+	<sect2 status="draft"><title>Blending operators</title>
+		<para>Blending operators uses is a blend functionality that works on the incoming image information and 
+				the output of the current module. Not all modules does support blending because it would not work
+				and break the use of the module.
+		</para>
+		<para>Modules that does support blending inherits additional controls to the bottom of module userinterface for controlling
+				the blending, a checkbox will be available to turn blend on/off.
+		</para>
+		<sect3><title>Operators</title>
+			<para>There are a few operators implemented and more can be added, but for now the common ones are there and
+					you will recognize a few of them from other imaging softwares.
+			</para>
+			<sect4 status="draft"><title>Normal</title>
+				<para>This will probably be the most used blending operator, it does just mix input and output and will be used
+					to control the modules effect amount for an example. Perfect for better controlling raw denoise result.
+				</para>			
+			</sect4>
+			<sect4 status="draft"><title>Add</title>
+				<para></para>			
+			</sect4>
+		</sect3>
+		
+		<sect3><title>Examples</title>
+			<sect4 status="draft"><title>Texturing an image</title>
+				<para>The watermark module does support svg files with embedded images and with that we can easily texturing an 
+						image using the watermark module in conjunction with a blending operator.
+				</para>
+			</sect4>
+			
+			<sect4 status="draft"><title>Gritty image effect</title>
+				<para>When introducing the blending operators into darktable, a new module was added named highpass which produces
+					a highpass filter of the image to be explicit used with blending for commonly used effect produced with other imaging softwares.
+				</para>
+			</sect4>
+			
+		</sect3>
+	</sect2>
 	<sect2 status="final"><title>Presets</title>
 		<para>
 			Presets are stored configurations for the module parameters both internal and user-defined is available
