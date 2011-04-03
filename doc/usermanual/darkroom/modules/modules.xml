@@ -35,13 +35,15 @@
 			</orderedlist>
 	</sect2>
 	<sect2 status="draft"><title>Blending operators</title>
-		<para>Blending operators uses is a blend functionality that works on the incoming image information and 
+		<para>Blending operators is a blend functionality that works on the incoming image information and 
 				the output of the current module. Not all modules does support blending because it would not work
 				and break the use of the module.
 		</para>
-		<para>Modules that does support blending inherits additional controls to the bottom of module userinterface for controlling
-				the blending, a checkbox will be available to turn blend on/off.
+		<para>Modules that do support blending, inherits additional controls to the bottom of module userinterface for controlling
+				parameters of the blending, a checkbox will be available to turn blend on/off.
 		</para>
+		
+		<!--
 		<sect3><title>Operators</title>
 			<para>There are a few operators implemented and more can be added, but for now the common ones are there and
 					you will recognize a few of them from other imaging softwares.
@@ -93,7 +95,7 @@
 			<sect4 status="draft"><title>Pin light</title>
 				<para></para>			
 			</sect4>
-		</sect3>
+		</sect3> -->
 		
 		<sect3><title>Examples</title>
 			<sect4 status="draft"><title>Texturing an image</title>
@@ -102,9 +104,52 @@
 				</para>
 			</sect4>
 			
-			<sect4 status="draft"><title>Gritty image effect</title>
-				<para>When introducing the blending operators into darktable, a new module was added named highpass which produces
-					a highpass filter of the image to be explicit used with blending for commonly used effect produced with other imaging softwares.
+			<sect4 status="draft"><title>Gritty details</title>
+				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+						<colspec colwidth='70%'/>
+						<colspec colwidth='30%'/>
+						<tbody>
+							<row>						
+								<entry>When introducing the blending operators into darktable, a new module was added named highpass which produces
+										a highpass filter of the image to be explicit used with blending, it is used to produce a gritty detailed image and
+										is a commonly used workflow with other imaging softwares.				
+								</entry>
+								<entry>
+									<graphic fileref="darkroom/modules/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
+								</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</informaltable>
+			
+				<para>
+					<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+							<colspec colwidth='30%'/>
+							<colspec colwidth='70%'/>
+							<tbody>
+								<row>
+									<entry>
+										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
+									</entry>						
+									<entry>
+										<para>This is the original image, pretty heavy processed, first black and white, then some blue splittoning but as you see
+											it does lack the pop in deatils, a bit out of focus...
+										</para>
+									</entry>
+								</row>
+								<row>
+									<entry>
+										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
+									</entry>						
+									<entry>
+										<para>Here we have applied the highpass filter with the values as shown in the images above of the module userinterface, 
+											you can now see that the details are very boosted and we got a really gritty detailed image.. 
+										</para>
+									</entry>
+								</row>
+							</tbody>
+						</tgroup>
+					</informaltable>
 				</para>
 			</sect4>
 			
@@ -148,6 +193,7 @@
 	
 	&darkroom_module_whitebalance;
 	&darkroom_module_stuck;
+	&darkroom_module_rawdenoise;
 	&darkroom_module_chromatic; 
 	&darkroom_module_demosaic;
 	&darkroom_module_tonemapping;
@@ -159,14 +205,16 @@
 	&darkroom_module_unbreakinputprofile;
 	&darkroom_module_inputcolorprofile;
 	&darkroom_module_bloom;	
+	&darkroom_module_spotremoval;	
 	&darkroom_module_colortransfer;
 	&darkroom_module_equalizer;
 	&darkroom_module_equalizer2;
+	&darkroom_module_colorzones;
+	&darkroom_module_lowlight;
 	&darkroom_module_monochrome;
 	&darkroom_module_zonesystem;
 	&darkroom_module_tonecurve;
 	&darkroom_module_relight;
-	&darkroom_module_colorzones;
 	&darkroom_module_colorcorrection;
 	&darkroom_module_sharpen;
 	&darkroom_module_grain;
@@ -177,8 +225,9 @@
 	<!--&darkroom_module_localcontrast;-->
 	&darkroom_module_velvia;
 	&darkroom_module_soften;  	
+	&darkroom_module_highpass;  	
 	&darkroom_module_vignetting;
 	&darkroom_module_splittoning;
-	&darkroom_module_overexposed;
 	&darkroom_module_watermark;
+	&darkroom_module_overexposed;
 </sect1>

@@ -21,4 +21,42 @@
 		<para>use mouse scroll-wheel over the stroke to change size.</para>
 		<para>right-click on a stroke to delete.</para>		
 	</sect3>
+	
+	<sect3><title>Examples</title>
+		<para>
+			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+					<colspec colwidth='30%'/>
+					<colspec colwidth='70%'/>
+					<tbody>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/spotremoval_ex1_1.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry><para>Lets use this portrait as example and we want to remove some dirt and unwanted catchlight from camera popup strobe.</para></entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/spotremoval_ex1_2.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>I have marked all the spots that I want to remove from the image.I start first by pressing the spot and drag to an area that
+									should be used as reference for removing the spot. The handle (circle) which has a line that ends in the center of the circle
+									indicates reference source.
+								</para>
+							</entry>
+						</row>
+						<row>
+							<entry>
+								<graphic fileref="darkroom/modules/images/spotremoval_ex1_3.png" scalefit="1" width="90%" align="center" />
+							</entry>						
+							<entry>
+								<para>And here is the result image of the spotremoval.
+								</para>
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>	
+	</sect3>
 </sect2>

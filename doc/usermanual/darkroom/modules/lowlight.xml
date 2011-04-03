@@ -6,11 +6,11 @@
 				<tbody>
 					<row>						
 						<entry>Low light module allows to simulate human lowlight vision, thus providing ability to make lowlight pictures look closer to reality.
-							It can also be used to perform a day to night conversion.
-							<para>
-							The idea is to calculate scotopic vision image (http://en.wikipedia.org/wiki/Scotopic_vision) which is perceived by rods rather than than cones in the eye under low light.
-							Scotopic lightness then is mixed with photopic value (regular color image pixel) using some blending function.
-							Also plugin is simulating Purkinje effect by adding some blueness to the dark parts of the image (http://en.wikipedia.org/wiki/Purkinje_effect).</para>				
+								It can also be used to perform a day to night conversion.
+							<para>The idea is to calculate scotopic vision image (http://en.wikipedia.org/wiki/Scotopic_vision) which is perceived by rods rather than 
+								than cones in the eye under low light. Scotopic lightness then is mixed with photopic value (regular color image pixel) using some blending function.
+								Also plugin is simulating Purkinje effect by adding some blueness to the dark parts of the image (http://en.wikipedia.org/wiki/Purkinje_effect).
+							</para>				
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/lowlight.png" scalefit="1" width="80%" align="center" />
