@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-30 10:58+0200\n"
-"PO-Revision-Date: 2011-03-31 08:55+0100\n"
+"POT-Creation-Date: 2011-04-03 13:49+0200\n"
+"PO-Revision-Date: 2011-04-03 13:50+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: \n"
@@ -213,7 +213,7 @@ msgstr "Importeren afbeeldingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:179(para)
 msgid "To begin with Darktable, you first need to import images. You can either import from your filesystem or from your camera if supported."
-msgstr ""
+msgstr "Om te starten met Darktable moet je eerst afbeelding importeren vanuit je computer of vanuit je camera (mits die wordt ondersteund)."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:181(para)
 msgid "You can add a picture to filmroll by simply cliking again on \"import filmroll\", then selecting the folder matching your filmroll. Darktable will analyse its content, detect the images already imported and import only the new pictures."
@@ -392,11 +392,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:376(title)
 msgid "select untouched"
-msgstr ""
+msgstr "onaangeraakt"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:377(para)
 msgid "Select all images that has not been developed yet."
-msgstr ""
+msgstr "Selecteer alle nog niet bewerkte afbeeldingen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:382(title)
 msgid "Selected image(s)"
@@ -404,7 +404,7 @@ msgstr "geselecteerde afbeelding(en)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:388(entry)
 msgid "This panel allows to perform some actions on selected images."
-msgstr ""
+msgstr "Hier krijgt u de kans om geselecteerde afbeeldingen te bewerken."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:397(title)
 msgid "remove"
@@ -421,11 +421,11 @@ msgstr "verwijder"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:403(para)
 msgid "Physically delete selected images from filesystem."
-msgstr ""
+msgstr "Verwijder geselecteerde afbeeldingen fysiek. "
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:406(title)
 msgid "write sidecar files"
-msgstr ""
+msgstr "schrijf xmp"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:407(para)
 msgid "Write .xmp sidecar files."
@@ -462,11 +462,11 @@ msgstr "kopieer"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:440(para)
 msgid "Copy the history stack (development) of the first selected image."
-msgstr ""
+msgstr "Kopieer bewerkingsstappen van de als eerst geselecteerde afbeelding."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:443(title)
 msgid "discard"
-msgstr ""
+msgstr "wissen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:444(para)
 msgid "Physically delete the history stack (development) of the selected images. Beware, this action can not be undone!"
@@ -474,7 +474,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:448(title)
 msgid "overwrite/append"
-msgstr ""
+msgstr "overschrijven/toevoegen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:449(para)
 msgid "Describes how a new history stack must behave if pasted on an image having already an history stack. 'Overwrite' will delete previous history stack whereas 'append' will add the two history stacks."
@@ -486,11 +486,11 @@ msgstr "plak"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:455(para)
 msgid "Paste a previously copied history stack on another image."
-msgstr ""
+msgstr "Past een recent gekopieerde bewerkingsstap toe op een andere afbeelding."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:458(title)
 msgid "load sidecar file"
-msgstr ""
+msgstr "laad xmp bestand"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:459(para)
 msgid "Prompt a dialog box to allow you to select a .xmp file, thus loading an history stack that you will past (thanks to 'past' button) on images."
@@ -506,7 +506,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:482(title)
 msgid "create duplicate"
-msgstr ""
+msgstr "creëer een kloon"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:483(para)
 msgid "When applying a style on selected images, activate this box lets you create a duplicate before applying the styles and thus avoiding you to create multiple duplicates before trying various styles on it."
@@ -526,7 +526,7 @@ msgstr "koppel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:510(para)
 msgid "Attach the selected tag(s) from the list below to all selected images."
-msgstr ""
+msgstr "Koppel geselecteerde label(s) uit de hieronderstaande lijst aan alle geselecteerde afbeeldingen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:513(title)
 msgid "detach"
@@ -534,7 +534,7 @@ msgstr "ontkoppel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:514(para)
 msgid "Detach selected tag(s) from the list above from all selected images."
-msgstr ""
+msgstr "Ontkoppel geselecteerde label(s) uit de hieronderstaande lijst aan alle geselecteerde afbeeldingen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:517(title)
 msgid "new"
@@ -546,7 +546,7 @@ msgstr "Creëer een nieuw label voor deze lijst"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:522(para)
 msgid "Delete a tag from the list."
-msgstr ""
+msgstr "Verwijder een label uit de lijst."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:527(title)
 msgid "Collect images"
@@ -610,7 +610,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:609(para)
 msgid "The filmstrip can be switch on and off using <emphasis>ctrl-f</emphasis> shortcut."
-msgstr ""
+msgstr "De fotoreeks kan in- of uitgeschakeld worden met snelkoppeling <emphasis>ctrl-f</emphasis>"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:612(title)
 msgid "Navigation"
@@ -630,7 +630,7 @@ msgstr "U kunt een momentopname nemen van wat nu wordt weergegeven. Deze momento
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:649(para)
 msgid "Shows the metadata for an image, same as in lighttable mode."
-msgstr ""
+msgstr "Toont de afbeeldings metadate zoals in de Lighttable modus."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:652(title)
 msgid "History"
@@ -666,11 +666,11 @@ msgstr "Elke wijziging, verbetering of effect wordt geïmplementeerd als module 
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:707(title)
 msgid "Interacting with modules"
-msgstr ""
+msgstr "Interactie met modules"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:708(para)
 msgid "For each slider, you can interact in three different ways, depending on the level of control you need."
-msgstr ""
+msgstr "Met elke schuifbalk kun je in drie richtingen reageren afhankelijk van het gewenste controle niveau."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:712(para)
 msgid "Arrows"
@@ -686,11 +686,11 @@ msgstr "Muiswiel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:718(para)
 msgid "Hover a slider with your mouse, then use your mouse wheel to adjust by step the value."
-msgstr ""
+msgstr "Verplaats de schuif met je muis en gebruik het muiswiel om de waarde in te stellen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:722(para)
 msgid "Right-click"
-msgstr ""
+msgstr "Klik rechts"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:723(para)
 msgid "Your mouse being over a slider, right-click gives you numerical access the slider values. Note that the numerical value needed to be entered is sometimes different from the one displayed. For example, the percentage repartition is displayed as X/Y (eg 70/30) but numerical value to be entered is -1 for 0/100, 0 for 50/50 and 1 for 0/100."
@@ -698,11 +698,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:730(para)
 msgid "Double-click on parameter label"
-msgstr ""
+msgstr "Dubbel klik op het parameter label"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:731(para)
 msgid "In some modules, you can double-click on a parameter label to reset its value to default."
-msgstr ""
+msgstr "In sommige modules kun je door te dubbelklikken op de parameter resetten naar de standaard."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:736(title)
 msgid "Presets"
@@ -787,7 +787,7 @@ msgstr "temperaturen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:795(para)
 msgid "Set the tint, temperature in and temperature out (in Kelvin)."
-msgstr ""
+msgstr "Bepaal de tint en temperatuur in en uit (in Kelvin)."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:797(title)
 msgid "channels"
@@ -795,11 +795,11 @@ msgstr "kanalen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:798(para)
 msgid "Set the channel values on a scale from 0 to 5."
-msgstr ""
+msgstr "Bepaal de kanaal waarden op een schaal van 0 tot 5."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:800(title)
 msgid "predefined values"
-msgstr ""
+msgstr "vooraf gedefinieerde instellingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:801(para)
 msgid "You can choose between various predefined white balance. You can choose your camera white balance. A spot white balance is also available, using a zone you can draw with your mouse."
@@ -839,7 +839,7 @@ msgstr "Cromatische aberraties"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:840(entry)
 msgid "This module allows you to correct chromatic aberrations."
-msgstr ""
+msgstr "Met deze module kun je chromatische aberraties corrigeren. "
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:852(para)
 msgid "This module has no option."
@@ -847,16 +847,16 @@ msgstr "Deze module heeft geen optie."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:856(title)
 msgid "Demosaic"
-msgstr ""
+msgstr "mozaïek wegwerken"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:863(entry)
 msgid "This module allows you to control how the demosaic is processed."
-msgstr ""
+msgstr "Met deze module bepaalt u hoe een mozaïek wordt verwerkt"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:875(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:908(para)
 msgid "Demosaic is done on display only when zoom is greater than 50%."
-msgstr ""
+msgstr "Een mozaïek wegwerken gebeurt alleen als wordt ingezoomd op meer dan 50%."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:876(title)
 msgid "edge threshold"
@@ -864,11 +864,11 @@ msgstr "rand drempelwaarde"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:877(para)
 msgid "Set the threshold for the median pass."
-msgstr ""
+msgstr "Bepaal de drempel voor de median pass."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:879(title)
 msgid "color smoothing"
-msgstr ""
+msgstr "kleuren vervagen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:880(para)
 msgid "Number of passes for color smoothing."
@@ -880,7 +880,7 @@ msgstr "groen matchen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:883(para)
 msgid "Greens correction, useful for some camera."
-msgstr ""
+msgstr "Groen correctie, zinvol bij sommige camera's."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:889(title)
 msgid "Tonemapping"
@@ -888,7 +888,7 @@ msgstr "Toonmapping"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:896(entry)
 msgid "This module allows to recreate some contrast for HDR images."
-msgstr ""
+msgstr "Met deze module kun je wat contrast in HDR afbeeldingen regenereren."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:909(title)
 msgid "contrast"
@@ -900,11 +900,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:912(title)
 msgid "spatial extent"
-msgstr ""
+msgstr "omvang"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:913(para)
 msgid "Set the spatial extent of the module."
-msgstr ""
+msgstr "Bepaal de omvang voor de module"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:919(title)
 msgid "Exposure"
@@ -929,7 +929,7 @@ msgstr "belichting"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:944(para)
 msgid "Adjust the exposure correction [ev]."
-msgstr ""
+msgstr "Bepaal de exposure correctie [ev]."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:946(title)
 msgid "auto"
@@ -1001,7 +1001,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1050(title)
 msgid "split"
-msgstr ""
+msgstr "splitsen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1051(para)
 msgid "Set split to offset the filter, i.e. to move the transition zone above or below the centerline. Expressed as a percentage, values above 50% set the transition zone above the centerline."
@@ -1017,7 +1017,7 @@ msgstr "tint (h)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1057(para)
 msgid "Set the hue to add a colorcast to the gradient."
-msgstr ""
+msgstr "Bepaal de tint om daarmee een bepaalde kleurzweem toe te voegen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1059(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2015(title)
@@ -1027,7 +1027,7 @@ msgstr "verzadiging"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1060(para)
 msgid "Set the saturation to add a colorcast to the gradient."
-msgstr ""
+msgstr "Bepaal de verzadiging om daarmee een bepaalde kleurzweem toe te voegen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1062(para)
 msgid "TIP: If you know you intend to use the GND filter before actually making a shot with your camera you might want to underexpose by one or two thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the GND filter cannot produce a pleasing results, this is a limitation that is inherent to digital postprocessing. For instructions on how to intentionally underexpose, please consult your camera's manual, look for 'exposure compensation'."
@@ -1081,11 +1081,11 @@ msgstr "..."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1154(title)
 msgid "Unbreak input profile"
-msgstr ""
+msgstr "Doorbreek het ingaande profiel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1161(entry)
 msgid "This module allows to correct an input profile."
-msgstr ""
+msgstr "Met deze module kun je het ingaande profiel wijzigen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1173(title)
 msgid "linear"
@@ -1093,7 +1093,7 @@ msgstr "lineair"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1174(para)
 msgid "Set the linear value."
-msgstr ""
+msgstr "Bepaal de lineaire waarde."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1176(title)
 msgid "gamma"
@@ -1105,11 +1105,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1182(title)
 msgid "Input color profile"
-msgstr ""
+msgstr "Ingaand kleur profiel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1189(entry)
 msgid "This module sets up the input color profile."
-msgstr ""
+msgstr "Deze module bepaalt het ingaande kleur profiel."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1201(title)
 msgid "intent"
@@ -1193,7 +1193,7 @@ msgstr "verkrijgen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1323(para)
 msgid "Acquire the colors of the current image."
-msgstr ""
+msgstr "Verkrijg de kleuren van de huidige afbeelding."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1325(title)
 msgid "apply"
@@ -1209,11 +1209,11 @@ msgstr "Equalizer"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1332(title)
 msgid "Deprecation Warning"
-msgstr ""
+msgstr "Afkeur waarschuwing"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1332(sect3)
 msgid "<placeholder-1/> This module is superseeded by Equalizer II and should not be used anymore!"
-msgstr ""
+msgstr "<placeholder-1/> Deze module is vervangen door Equalizer II en moet niet meer gebruikt worden!"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1341(entry)
 msgid "This module is an equalizer based on edge-avoiding wavelets. It allows to smooth or enhance details by acting on luminance frequencies and multiplying them by a factor."
@@ -1289,7 +1289,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1530(para)
 msgid "The lightness is processed on the L* channel from CIELAB."
-msgstr ""
+msgstr "De helderheid wordt toegepast op het L* kanaal van CIELAB."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1531(para)
 msgid "The center view shows the image broken down in zones."
@@ -1306,15 +1306,15 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1548(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1892(para)
 msgid "This is the original image use it as reference for the changes below..."
-msgstr ""
+msgstr "Dit is de originele afbeelding wat als referentie voor onderstaande wijzigingen wordt gebruikt..."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1555(para)
 msgid "Here i have compressed some darker zones and lighter zones to increase contrast, then expanded the upper parts of darker zones..."
-msgstr ""
+msgstr "Hier zijn een aantal donkere en lichtere zones gecomprimeerd voor een beter contrast, daarna zijn de bovenste delen van donkere zones vergroot..."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1568(title)
 msgid "Tonecurve"
-msgstr ""
+msgstr "Toon curve"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1575(entry)
 msgid "This module is a classical tool in digital photography. On the horizontal line is represented the lightness of the image pixels. The vertical line represents the lightness of the result image pixels. Thus, a straight line does not change anything. A point above the default diagonal increases the lightness whereas a point under decreases it."
@@ -1322,7 +1322,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1589(para)
 msgid "The tonecurve works on Lightness channel only."
-msgstr ""
+msgstr "De tooncurve beïnvloed alleen het helderheidskanaal"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1590(para)
 msgid "The horizontal axis is split in 5 zones thanks to 4 triangles. Those triangles have a constant vertical value, thus moving them modifies the curve so their output value is kept."
@@ -1334,7 +1334,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1595(title)
 msgid "Fill-light"
-msgstr ""
+msgstr "Lichtopvulling"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1602(entry)
 msgid "This module allows the local modification of the exposition based on pixel lightness."
@@ -1346,7 +1346,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1616(para)
 msgid "Set the fill-light exposure in [ev]."
-msgstr ""
+msgstr "Bepaal de lichtopvullings belichting in [ev]"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1618(title)
 msgid "center"
@@ -1386,11 +1386,11 @@ msgstr "Kleur correctie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1660(entry)
 msgid "This module can be used to modify the global saturation or to give a tint."
-msgstr ""
+msgstr "Met deze module bepaal je de tint door de algehele verzadiging te wijzigen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1672(para)
 msgid "Use the saturation slider to correct the global saturation."
-msgstr ""
+msgstr "Corrigeer met de verzadigingsschuif de algehele verzadiging."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1673(para)
 msgid "You can also draw an area on the color diagram to give a global tint to the image."
@@ -1402,7 +1402,7 @@ msgstr "Verscherpen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1684(entry)
 msgid "This is an standard UnSharp Mask tool for sharpen the details of an image."
-msgstr ""
+msgstr "Dit is een standaard onscherp masker waarmee de afbeeldingsdetails worden verscherpt."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1699(title)
 msgid "Grain"
@@ -1414,7 +1414,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1718(para)
 msgid "The grain is processed on the L* channel from CIELAB."
-msgstr ""
+msgstr "De korrel wordt uitgevoerd op het L kanaal van CIELAB."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1719(title)
 msgid "coarseness"
@@ -1422,16 +1422,15 @@ msgstr "ruwheid"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1720(para)
 msgid "Set the grain size, which has been scaled to simulate an ISO number."
-msgstr ""
+msgstr "Bepaal de geschaalde korrelgrootte om een ISO number te simuleren. "
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1728(title)
-#, fuzzy
 msgid "Local contrast 2"
-msgstr "Versterk het contrast"
+msgstr "Local contrast 2"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1735(entry)
 msgid "This module allows you to change the local contrast of your image."
-msgstr ""
+msgstr "Met deze module kun je het lokaal contrast van de afbeelding wijzigen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1748(title)
 msgid "alpha"
@@ -1449,7 +1448,7 @@ msgstr "schaal"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1752(para)
 msgid "Set the desired scale. Spatial extent of the effect around edges."
-msgstr ""
+msgstr "Bepaal de schaal en het effect rondom de randen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1761(title)
 msgid "Crop and rotate"
@@ -1501,7 +1500,7 @@ msgstr "vrij"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1813(entry)
 msgid "free forming the rectangle without any ratio restrictions"
-msgstr ""
+msgstr "bepaald zelf de vierkant verhouding zonder beperkingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1816(emphasis)
 msgid "image"
@@ -1509,7 +1508,7 @@ msgstr "afbeelding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1816(entry)
 msgid "this option constrains the ratio to be equal to image ratio"
-msgstr ""
+msgstr "deze optie dwingt tot een verhouding gelijk aan de afbeeldingsverhouding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1819(emphasis)
 msgid "golden cut"
@@ -1517,7 +1516,7 @@ msgstr "gulden snede"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1819(entry)
 msgid "this option constrains the ratio to be equal the golden number"
-msgstr ""
+msgstr "deze optie dwingt tot een verhouding gelijk aan het gouden nummer"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1822(emphasis)
 msgid "square"
@@ -1525,7 +1524,7 @@ msgstr "vierkant"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1822(entry)
 msgid "this option constrains the ratio to be 1"
-msgstr ""
+msgstr "de optie dwingt tot een verhouding van 1"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1828(title)
 msgid "Guides"
@@ -1533,15 +1532,15 @@ msgstr "Hulplijnen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1829(para)
 msgid "Many self-explaining guides are available to help you compose your image."
-msgstr ""
+msgstr "Veel vanzelfsprekende hulplijnen om een compositie te bepalen zijn beschikbaar. "
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1835(title)
 msgid "Output profile"
-msgstr ""
+msgstr "Uitgaande profiel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1842(entry)
 msgid "This module manages the output profile both for display and for output."
-msgstr ""
+msgstr "Deze module bepaald het uitgaande profiel voor zowel weergave als output."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1854(para)
 msgid "You can set intent and profile for both display and output. You can go to \"Input profile\" to have details on the different available options."
@@ -1569,7 +1568,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1902(para)
 msgid "Due to the images nature, i needed to lighten it up with 0.1 EV"
-msgstr ""
+msgstr "Vanwege de afbeelding moest ik dit oplichten met 0.1 EV"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1910(para)
 msgid "In this example we use a rgb mix of 0.4, 0.75, -0.15, the difference with the previous example here is that we use more green than red which brings some features back but we will still reduce the blue channel in the mix to dampen artefacts.."
@@ -1577,11 +1576,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1919(title)
 msgid "Table of mixing values for some b/w films"
-msgstr ""
+msgstr "Tabel voor gemixte waarden voor sommige b/w films."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1920(para)
 msgid "Select gray as output mixing channel, and try out the values descibed below for your like..."
-msgstr ""
+msgstr "Kies grijs als uitgaand kanaal en probeer zelf gewenste waarden uit zoals hiervoor beschreven..."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1925(entry)
 msgid "Film Type"
@@ -1786,7 +1785,7 @@ msgstr "0.60"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1943(entry)
 msgid "Generic B/W"
-msgstr ""
+msgstr "Algemene B/W"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:1943(entry)
 msgid "0.68"
@@ -1842,12 +1841,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2013(para)
 msgid "Set the size of blur of the overexposured image in the process, the bigger the softer."
-msgstr ""
+msgstr "Bepaal de omvang van vervaging voor de overbelichte afbeelding, hoe groter hoe zachter."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2016(para)
-#, fuzzy
 msgid "Set the saturation of the overexposured image."
-msgstr "hoogte van de geëxporteerde file"
+msgstr "Bepaal de verzadiging van de overbelichte afbeelding."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2018(title)
 msgid "brightness"
@@ -1871,7 +1869,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2053(para)
 msgid "This version is the same as above but with 25% saturation."
-msgstr ""
+msgstr "Deze versie is gelijk aan bovenstaande met 25% verzadiging."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2065(title)
 msgid "Vignetting"
@@ -1887,11 +1885,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2086(para)
 msgid "Set radii of the vignetting beginning."
-msgstr ""
+msgstr "Bepaal de straal van het begin van het vignet."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2088(title)
 msgid "fall-off strength"
-msgstr ""
+msgstr "kracht van vermindering"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2089(para)
 msgid "Set the progressiveness of the fall-off."
@@ -1903,7 +1901,7 @@ msgstr "uniformiteit"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2095(para)
 msgid "Set the uniformity of the effect."
-msgstr ""
+msgstr "Bepaal het uniforme effect."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2097(title)
 msgid "b/s ratio"
@@ -1919,7 +1917,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2103(title)
 msgid "fall-off"
-msgstr ""
+msgstr "verminderen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2104(para)
 msgid "Invert the effect of brightness. By default the vignetting darkens at the border. Using this button you can brighter it."
@@ -2009,7 +2007,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2218(para)
 msgid "Watermark module does"
-msgstr ""
+msgstr "Module watermerk doe"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2219(title)
 msgid "marker"
@@ -2025,7 +2023,7 @@ msgstr "dekking"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2225(para)
 msgid "Set the opacity of the render of watermark."
-msgstr ""
+msgstr "Bepaal de doorschijnbaarheid van het watermerk."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2228(para)
 msgid "Scale the watermark pixelindependent."
@@ -2218,7 +2216,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2399(title)
 msgid "The obvious way: monochrome module"
-msgstr ""
+msgstr "De voor de hand liggende methode: monochroom"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2400(para)
 msgid "To perform such conversion, just activate the monochrome module. You can then simulate a color filter, by dragging the circle above the colours you want to filter. Filter size can be modified thanks to wheel scrolling."
@@ -2226,15 +2224,15 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2405(title)
 msgid "The simple way: color correction module"
-msgstr ""
+msgstr "De eenvoudigste manier: kleur correctie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2406(para)
 msgid "To perform such conversion we use the color correction module."
-msgstr ""
+msgstr "Om zoiets om te zetten gebruiken we kleur correctie."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2410(para)
 msgid "Activate the color correction module"
-msgstr ""
+msgstr "Activeer module kleur correctie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2413(para)
 msgid "Use the bottom slider to set saturation to zero"
@@ -2242,15 +2240,15 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2417(title)
 msgid "The artistic way: color zones module"
-msgstr ""
+msgstr "De artistieke manier: module kleurzones"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2418(para)
 msgid "To perform such conversion we use the color zone module."
-msgstr ""
+msgstr "Om zo'n omzetting uit te voeren gebruiken we module kleurzones."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2422(para)
 msgid "Activate the colour zones module"
-msgstr ""
+msgstr "Activeer de module kleur zones."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2425(para)
 msgid "By default, the first radio-buttons row is set to \"colorness\" whereas the second is set to \"hue\" wich means that color are selected according to their hue (horizontal scale) and you can change for each hue its \"colorness\" (vertical scale). You simply need to set all points to the minimum of the vertical scale to de-saturate every hue."
@@ -2265,23 +2263,20 @@ msgid "You can also use presets that perform black and white conversion, keeping
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2442(title)
-#, fuzzy
 msgid "The sophisticated way: channel mixer module"
-msgstr "Activeer de module voor kanalen mixer"
+msgstr "De geavanceerde methode: kanalen mixer"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2443(para)
-#, fuzzy
 msgid "To perform such conversion we use the channel mixer module."
-msgstr "Activeer de module voor kanalen mixer"
+msgstr "Om deze omzetting uit te voeren gebruiken we de kanalen mixer."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2447(para)
-#, fuzzy
 msgid "Activate the channel mixer module"
 msgstr "Activeer de module voor kanalen mixer"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2450(para)
 msgid "Select the gray output channel"
-msgstr ""
+msgstr "Bepaal het grijze uitgaande kanaal"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled_final.xml:2453(para)
 msgid "Set the proportion of each color, the sum having to equal 1 if you want to keep your global lightness."
