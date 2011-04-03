@@ -529,8 +529,6 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode - 1);
     gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
     dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
-    fprintf(stderr,"gui_update: mode %d, opacity %f\n",module->blend_params->mode,module->blend_params->opacity);
-
   }
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   darktable.gui->reset = reset;
