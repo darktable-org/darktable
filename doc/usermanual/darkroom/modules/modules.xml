@@ -42,6 +42,8 @@
 		<para>Modules that does support blending inherits additional controls to the bottom of module userinterface for controlling
 				the blending, a checkbox will be available to turn blend on/off.
 		</para>
+		
+		<!--
 		<sect3><title>Operators</title>
 			<para>There are a few operators implemented and more can be added, but for now the common ones are there and
 					you will recognize a few of them from other imaging softwares.
@@ -93,7 +95,7 @@
 			<sect4 status="draft"><title>Pin light</title>
 				<para></para>			
 			</sect4>
-		</sect3>
+		</sect3> -->
 		
 		<sect3><title>Examples</title>
 			<sect4 status="draft"><title>Texturing an image</title>
@@ -102,9 +104,52 @@
 				</para>
 			</sect4>
 			
-			<sect4 status="draft"><title>Gritty image effect</title>
-				<para>When introducing the blending operators into darktable, a new module was added named highpass which produces
-					a highpass filter of the image to be explicit used with blending for commonly used effect produced with other imaging softwares.
+			<sect4 status="draft"><title>Gritty details</title>
+				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+						<colspec colwidth='70%'/>
+						<colspec colwidth='30%'/>
+						<tbody>
+							<row>						
+								<entry>When introducing the blending operators into darktable, a new module was added named highpass which produces
+										a highpass filter of the image to be explicit used with blending, it is used to produce a gritty detailed image and
+										is a commonly used workflow with other imaging softwares.				
+								</entry>
+								<entry>
+									<graphic fileref="darkroom/modules/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
+								</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</informaltable>
+			
+				<para>
+					<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+							<colspec colwidth='30%'/>
+							<colspec colwidth='70%'/>
+							<tbody>
+								<row>
+									<entry>
+										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
+									</entry>						
+									<entry>
+										<para>This is the original image, pretty heavy processed, first black and white, then some blue splittoning but as you see
+											it does lack the pop in deatils, a bit out of focus...
+										</para>
+									</entry>
+								</row>
+								<row>
+									<entry>
+										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
+									</entry>						
+									<entry>
+										<para>Here we have applied the highpass filter with the values as shown in the images above of the module userinterface, 
+											you can now see that the details are very boosted and we got a really gritty detailed image.. 
+										</para>
+									</entry>
+								</row>
+							</tbody>
+						</tgroup>
+					</informaltable>
 				</para>
 			</sect4>
 			
