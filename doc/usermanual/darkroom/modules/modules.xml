@@ -51,7 +51,46 @@
 					to control the modules effect amount for an example. Perfect for better controlling raw denoise result.
 				</para>			
 			</sect4>
+			<sect4 status="draft"><title>Lighten</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Darken</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Multiply</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Average</title>
+				<para></para>			
+			</sect4>
 			<sect4 status="draft"><title>Add</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Substract</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Difference</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Screen</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Overlay</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Soft light</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Hard light</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Vivid light</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Linear light</title>
+				<para></para>			
+			</sect4>
+			<sect4 status="draft"><title>Pin light</title>
 				<para></para>			
 			</sect4>
 		</sect3>
@@ -109,7 +148,6 @@
 	
 	&darkroom_module_whitebalance;
 	&darkroom_module_stuck;
-	&darkroom_module_rawdenoise;
 	&darkroom_module_chromatic; 
 	&darkroom_module_demosaic;
 	&darkroom_module_tonemapping;
@@ -121,16 +159,14 @@
 	&darkroom_module_unbreakinputprofile;
 	&darkroom_module_inputcolorprofile;
 	&darkroom_module_bloom;	
-	&darkroom_module_spotremoval;	
 	&darkroom_module_colortransfer;
 	&darkroom_module_equalizer;
 	&darkroom_module_equalizer2;
-	&darkroom_module_colorzones;
-	&darkroom_module_lowlight;	
 	&darkroom_module_monochrome;
 	&darkroom_module_zonesystem;
 	&darkroom_module_tonecurve;
 	&darkroom_module_relight;
+	&darkroom_module_colorzones;
 	&darkroom_module_colorcorrection;
 	&darkroom_module_sharpen;
 	&darkroom_module_grain;
@@ -140,8 +176,7 @@
 	&darkroom_module_channelmixer;
 	<!--&darkroom_module_localcontrast;-->
 	&darkroom_module_velvia;
-	&darkroom_module_soften;  
-	&darkroom_module_highpass;	
+	&darkroom_module_soften;  	
 	&darkroom_module_vignetting;
 	&darkroom_module_splittoning;
 	&darkroom_module_overexposed;
