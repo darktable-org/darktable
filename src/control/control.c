@@ -340,7 +340,8 @@ void dt_control_init(dt_control_t *s)
   {
     s->new_res[k] = 0;
     pthread_create(&s->thread_res[k], NULL, dt_control_work_res, s);
-    
+
+#if 0
     /* check if thread created is the worker thread, then
         set scheduling information for the thread to nice level. */
     if (k == DT_CTL_WORKER_7)
@@ -352,10 +353,13 @@ void dt_control_init(dt_control_t *s)
         fprintf(stderr,"Failed to set background thread schedueling to nice level: %d.",res);
 
     } 
+#endif
+    
   }
   s->button_down = 0;
   s->button_down_which = 0;
 
+  
   // init database schema:
   int rc;
   sqlite3_stmt *stmt;
