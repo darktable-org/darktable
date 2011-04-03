@@ -1,0 +1,24 @@
+<sect2 status="draft"><title>Spot removal</title>
+	<sect3><title>Overview</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth='70%'/>
+				<colspec colwidth='30%'/>
+				<tbody>
+					<row>						
+						<entry>Spot removal allows you to correct an zone in your image by using another zone as model.		
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/modules/images/spotremoval.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect3>
+
+	<sect3><title>Usage</title>
+		<para>click on the area to be healed then drag to a clean area. The circle with line inside is the clean one.</para>	
+		<para>use mouse scroll-wheel over the stroke to change size.</para>
+		<para>right-click on a stroke to delete.</para>		
+	</sect3>
+</sect2>

@@ -5,9 +5,9 @@
 				<colspec colwidth='30%'/>
 				<tbody>
 					<row>						
-						<entry>This module is an artistic feature that create the Orton effect also commonly known as softening the image.
-								Michael Orton did this on slide film using 2 exposure of the same scene, one good exposed and one overexposed, then 
-								he used a technique to blend this into a final image where the overexposed image was blurred.
+						<entry>This module is an artistic feature that creates the Orton effect also commonly known as softening the image.
+								Michael Orton achieved such result on slide film by using 2 exposures of the same scene: one well exposed and one overexposed; then 
+								he used a technique to blend those into a final image where the overexposed image was blurred.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" />
@@ -19,20 +19,20 @@
 	</sect3>
 
 	<sect3><title>Usage</title>
-		<para>This modeul is almost a copy of Orton's analogue process into the digital domain and you can control brightnesss and blur with the parameters provide, 
-			we did also add a control for saturation of the overexposured image for more play.
+		<para>This module is almost a copy of Orton's analogue process into the digital domain and you can control brightnesss and blur with the provided parameters; 
+			we also add a control for saturation of the overexposured image for more play.
 		</para>
 		<sect4><title>size</title>
-			<para>Set the size of blur of the overexposured image in the process, the bigger the softer.</para>
+			<para>Set the size of blur of the overexposed image in the process, the bigger the softer.</para>
 		</sect4>
 		<sect4><title>saturation</title>
-			<para>Set the saturation of the overexposured image.</para>
+			<para>Set the saturation of the overexposed image.</para>
 		</sect4>	
     <sect4><title>brightness</title>
 			<para>Expressed in [EV], the brightness slider selects the increase in brightness.</para>
 		</sect4>	
     	<sect4><title>mix</title>
-			<para>Controls the mix of the overexposured image and the overall effect.</para>
+			<para>Controls the mix of the overexposed image and the overall effect.</para>
 		</sect4>
 	</sect3>
 	
@@ -53,7 +53,7 @@
 								<graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry>
-								<para>In this image i use the default values, and added 0.33EV to brightness for a little more light int the soft
+								<para>In this image I used the default values, and added 0.33EV to brightness for a little more light in the soft
 									layer.
 								</para>
 							</entry>
