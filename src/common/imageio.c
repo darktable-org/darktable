@@ -876,7 +876,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     {
       processed_width  = scale*pipe.processed_width  + .5f;
       processed_height = scale*pipe.processed_height + .5f;
-      outbuf = (uint8_t *)malloc(sizeof(float)*processed_width*processed_height*4);
+      outbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
       // now downscale into the new buffer:
       dt_iop_roi_t roi_in, roi_out;
       roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
