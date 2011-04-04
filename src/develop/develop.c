@@ -809,7 +809,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     GList *modules = dev->iop;
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
     hist->module = NULL;
-    while(modules)
+    while(opname && modules)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
       if(!strcmp(module->op, opname))
