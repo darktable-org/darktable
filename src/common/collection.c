@@ -103,6 +103,9 @@ dt_collection_update (const dt_collection_t *collection)
       g_snprintf (wq,2048,"(film_id = %d)",collection->params.film_id);
       need_operator = 1;
     }
+    // DON'T SELECT IMAGES MAKED TO BE DELETED.
+    g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & DT_IMAGE_REMOVE) != DT_IMAGE_REMOVE", (need_operator)?"and":((need_operator=1)?"":"") );
+    
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
       g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":"") , collection->params.rating);

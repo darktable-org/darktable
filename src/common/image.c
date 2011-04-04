@@ -1416,4 +1416,5 @@ void dt_image_validate(dt_image_t *image, dt_image_buffer_t mip)
   dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
 }
 
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

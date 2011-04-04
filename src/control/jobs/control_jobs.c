@@ -236,6 +236,12 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "update images set flags = (flags | DT_IMAGE_REMOVE) where id in (select imgid from selected_images)", NULL, NULL, NULL);
+
+  dt_collection_update(darktable.collection);
+  dt_control_gui_queue_draw();
+
   while(t)
   {
     imgid = (long int)t->data;
@@ -249,6 +255,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   return 0;
 }
 
+
 int32_t dt_control_delete_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -261,6 +268,12 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   const dt_gui_job_t *j = dt_gui_background_jobs_new(DT_JOB_PROGRESS, message);
 
   sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "update images set flags = (flags | DT_IMAGE_REMOVE) where id in (select imgid from selected_images)", NULL, NULL, NULL);
+  
+  dt_collection_update(darktable.collection);
+  dt_control_gui_queue_draw();
+
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
   while(t)
   {
