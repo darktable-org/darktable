@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
+#include "common/darktable.h"
 #include "common/exif.h"
 
 
@@ -73,7 +74,7 @@ dt_imageio_dng_convert_rational(float f, int32_t *num, int32_t *den)
 }
 
 static inline void
-dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av, float f, float iso, uint32_t filter)
+dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av, float f, float iso, uint32_t filter, const float whitelevel)
 {
   const uint32_t channels = 1;
   uint8_t *b/*, *offs1, *offs2*/;
@@ -134,6 +135,8 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   // b = dt_imageio_dng_make_tag(34665, LONG, 1, 264, b, &cnt); // exif ifd
   b = dt_imageio_dng_make_tag(50706, BYTE, 4, (1<<24) | (2<<16), b, &cnt); // DNG Version/backward version
   b = dt_imageio_dng_make_tag(50707, BYTE, 4, (1<<24) | (1<<16), b, &cnt);
+  uint32_t whitei = *(uint32_t *)&whitelevel;
+  b = dt_imageio_dng_make_tag(50717, LONG, 1, whitei, b, &cnt); // WhiteLevel in float, actually.
   // b = dt_imageio_dng_make_tag(50708, ASCII, 9, 484, b, &cnt); // unique camera model
   // b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 328, b, &cnt); // ColorMatrix1 (XYZ->native cam)
   // b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 512, b, &cnt); // AsShotNeutral
@@ -210,13 +213,13 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
 }
 
 static inline void
-dt_imageio_write_dng(const char *filename, const float *const pixel, const int wd, const int ht, void *exif, const int exif_len, const uint32_t filter)
+dt_imageio_write_dng(const char *filename, const float *const pixel, const int wd, const int ht, void *exif, const int exif_len, const uint32_t filter, const float whitelevel)
 {
   FILE* f = fopen(filename, "wb");
   int k = 0;
   if(f)
   {
-    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f/100.0f, 1.0f/4.0f, 50.0f, 100.0f, filter);
+    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f/100.0f, 1.0f/4.0f, 50.0f, 100.0f, filter, whitelevel);
     k = fwrite(pixel, sizeof(float), wd*ht, f);
     if (k != wd*ht)
       fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);

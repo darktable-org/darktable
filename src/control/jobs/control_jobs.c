@@ -83,6 +83,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   float *weight = NULL;
   int wd = 0, ht = 0, first_imgid = -1;
   uint32_t filter = 0;
+  float whitelevel = 0.0f;
   total ++;
   while(t)
   {
@@ -131,6 +132,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float efl = img->exif_focal_length > 0.0f ? img->exif_focal_length : 8.0f;
     const float aperture = M_PI * powf(efl / (2.0f * eap), 2.0f);
     const float cal = 100.0f/(aperture*img->exif_exposure*img->exif_iso);
+    whitelevel = fmaxf(whitelevel, cal/65535.0);
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
 #endif
@@ -161,7 +163,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
-  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter);
+  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, whitelevel);
   dt_gui_background_jobs_set_progress(j, 1.0f);
 
   while(*c != '/' && c > pathname) c--;
