@@ -178,6 +178,12 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
   }
 #endif
+  else if( g_strcmp0(variable,"$(STARS)") == 0 && (got_value=TRUE) )
+  {
+    int stars = (params->img->flags & 0x7);
+    if(stars == 6) stars = -1;
+    sprintf(value,"%d",stars);
+  }
 
   g_free(pictures_folder);
 
