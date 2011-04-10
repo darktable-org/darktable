@@ -39,5 +39,7 @@ fi
 
 cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DINSTALL_IOP_EXPERIMENTAL=On -DINSTALL_IOP_LEGACY=Off .. && make -j $MAKE_TASKS 
 
-echo "Darktable finished building, to actually install darktable you need to type:"
-echo "# cd build; sudo make install"
+if [ $? = 0 ]; then
+	echo "Darktable finished building, to actually install darktable you need to type:"
+	echo "# cd build; sudo make install"
+fi
