@@ -122,6 +122,7 @@ gui_init (dt_imageio_module_storage_t *self)
                "$(EXIF_MINUTE) - exif minute\n"
                "$(EXIF_SECOND) - exif second\n"
                "$(STARS) - star rating\n"
+               "$(LABELS) - colorlabels\n"
                "$(PICTURES_FOLDER) - pictures folder\n"
                "$(HOME_FOLDER) - home folder\n"
                "$(DESKTOP_FOLDER) - desktop folder"

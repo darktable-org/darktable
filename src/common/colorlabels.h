@@ -13,6 +13,8 @@ void dt_colorlabels_toggle_label (const int imgid, const int color);
 void dt_colorlabels_set_label (const int imgid, const int color);
 /** remove a color label from imgid */
 void dt_colorlabels_remove_label (const int imgid, const int color);
+/** get the name of the color for a given number (could be replaced by an array) */
+const char* dt_colorlabels_to_string(int label);
 
 void dt_colorlabels_key_accel_callback(void *user_data);
 void dt_colorlabels_register_key_accels();
