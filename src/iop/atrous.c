@@ -466,14 +466,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       {
         origin[0] += max_filter_radius;
         orig0[0] += max_filter_radius;
-        region[0] -= max_filter_radius;
+        region[0] = region[0] > max_filter_radius ? region[0] - max_filter_radius : 0;
       }
       if(ty > 0)
       {
         origin[1] += max_filter_radius;
         orig0[1] += max_filter_radius;
-        region[1] -= max_filter_radius;
+        region[1] = region[1] > max_filter_radius ? region[1] - max_filter_radius : 0;
       }
+
+      if(region[0] == 0 || region[1] == 0) continue;
 
       for(int s=0; s<max_scale; s++)
       {
