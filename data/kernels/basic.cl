@@ -209,8 +209,7 @@ colorin (read_only image2d_t in, write_only image2d_t out, global float *mat, re
 
   // load to shared memory:
   local float matrix[9];
-  const int i = get_local_id(0);
-  if(i < 9) matrix[i] = mat[i];
+  if(get_local_id(0) == 0) for(int k=0;k<9;k++) matrix[k] = mat[k];
   barrier(CLK_LOCAL_MEM_FENCE);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
@@ -332,8 +331,7 @@ colorout (read_only image2d_t in, write_only image2d_t out, global float *mat, r
 
   // load to shared memory:
   local float matrix[9];
-  const int i = get_local_id(0);
-  if(i < 9) matrix[i] = mat[i];
+  if(get_local_id(0) == 0) for(int k=0;k<9;k++) matrix[k] = mat[k];
   barrier(CLK_LOCAL_MEM_FENCE);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
