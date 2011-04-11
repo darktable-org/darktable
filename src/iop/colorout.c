@@ -179,9 +179,8 @@ static float
 lerp_lut(const float *const lut, const float v)
 {
   // TODO: check if optimization is worthwhile!
-  const float ft = v*LUT_SAMPLES;
-  // NaN-safe clamping:
-  const int t = ft > 0 ? (ft < LUT_SAMPLES-2 ? ft : LUT_SAMPLES-2) : 0;
+  const float ft = CLAMPS(v*(LUT_SAMPLES-1), 0, LUT_SAMPLES-1);
+  const int t = ft < LUT_SAMPLES-2 ? ft : LUT_SAMPLES-2;
   const float f = ft - t;
   const float l1 = lut[t];
   const float l2 = lut[t+1];
