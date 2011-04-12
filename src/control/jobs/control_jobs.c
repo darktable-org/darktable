@@ -237,7 +237,9 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "update images set flags = (flags | DT_IMAGE_REMOVE) where id in (select imgid from selected_images)", NULL, NULL, NULL);
+  char query[1024];
+  sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
 
   dt_collection_update(darktable.collection);
   dt_control_gui_queue_draw();
