@@ -604,45 +604,6 @@ post_process_collect_info:
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
 
-  // 5) Fetching RGB color info
-//  dt_pthread_mutex_lock(&pipe->busy_mutex);
-//  if(pipe->shutdown)
-//  {
-//    dt_pthread_mutex_unlock(&pipe->busy_mutex);
-//    return 1;
-//  }
-//  if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
-//     (!strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
-//     module->request_color_pick) // and they need to want to pick ;)
-//  {
-//    for(int k=0; k<3; k++) module->picked_color_min[k] =  666.0f;
-//    for(int k=0; k<3; k++) module->picked_color_max[k] = -666.0f;
-//    int box[4];
-//    float rgb[3];
-//    uint8_t *out = (uint8_t*)*output;
-//    for(int k=0; k<3; k++) rgb[k] = 0.0f;
-//    for(int k=0; k<4; k+=2) box[k] = MIN(roi_out->width -1, MAX(0, module->color_picker_box[k]*roi_out->width));
-//    for(int k=1; k<4; k+=2) box[k] = MIN(roi_out->height-1, MAX(0, module->color_picker_box[k]*roi_out->height));
-//    const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-//    for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
-//    {
-//      for(int k=0; k<3; k++)
-//      {
-//        module->picked_color_min[k] = fminf(module->picked_color_min[k], out[4*(roi_out->width*j + i) + k]);
-//        module->picked_color_max[k] = fmaxf(module->picked_color_max[k], out[4*(roi_out->width*j + i) + k]);
-//        rgb[k] += w*out[4*(roi_out->width*j + i) + k];
-//      }
-//    }
-//    for(int k=0; k<3; k++) module->picked_color[k] = rgb[k];
-
-//    dt_pthread_mutex_unlock(&pipe->busy_mutex);
-////    int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-////    if(needlock) gdk_threads_enter();
-////    gtk_widget_queue_draw(module->widget);
-////    if(needlock) gdk_threads_leave();
-//  }
-//  else dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
   return 0;
 }
 
