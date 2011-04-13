@@ -19,7 +19,9 @@
 #include <string.h>
 #include <time.h>
 
+#include "common/colorlabels.h"
 #include "common/image.h"
+#include "common/metadata.h"
 #include "common/variables.h"
 #include "common/utility.h"
 
@@ -178,6 +180,37 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
   }
 #endif
+  else if( g_strcmp0(variable,"$(STARS)") == 0 && (got_value=TRUE) )
+  {
+    int stars = (params->img->flags & 0x7);
+    if(stars == 6) stars = -1;
+    sprintf(value,"%d",stars);
+  }
+  else if( g_strcmp0(variable,"$(LABELS)") == 0 && (got_value=TRUE) )
+  {
+    //TODO: currently we concatenate all the color labels with a ',' as a seeparator. Maybe it's better to only use the first/last label?
+    unsigned int count = 0;
+    GList *res = dt_metadata_get(params->img->id, "Xmp.darktable.colorlabels", &count);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      GList *labels = NULL;
+      do
+      {
+        labels = g_list_append(labels, (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)))));
+      }
+      while((res=g_list_next(res)) != NULL);
+      char* str = dt_util_glist_to_str(",", labels, count);
+      sprintf(value, "%s", str);
+      g_free(str);
+    }
+    else
+    {
+      sprintf(value, _("none"));
+    }
+    g_list_free(res);
+  }
+  
 
   g_free(pictures_folder);
 

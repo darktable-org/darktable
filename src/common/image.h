@@ -53,7 +53,9 @@ typedef enum
   // set during import if the image is raw data, i.e. it needs demosaicing.
   DT_IMAGE_RAW = 64,
   // set during import if images is a high-dynamic range image..
-  DT_IMAGE_HDR = 128
+  DT_IMAGE_HDR = 128,
+  // set when marked for deletion
+  DT_IMAGE_REMOVE = 256
 }
 dt_image_flags_t;
 
@@ -369,6 +371,7 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip);
 // locking-related functions:
 void dt_image_invalidate(dt_image_t *image, dt_image_buffer_t mip);
 void dt_image_validate(dt_image_t *image, dt_image_buffer_t mip);
+
 #ifdef _DEBUG
 // macros wrapping the stack trace information:
 #define dt_image_get(A, B, C)    dt_image_get_with_caller  (A, B, C,  __FILE__, __LINE__, __FUNCTION__)

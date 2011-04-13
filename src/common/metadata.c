@@ -122,7 +122,7 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
       }
       else     // single image under mouse cursor
       {
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select color from color_labels where imgid=?1 order by color", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
       }
       while(sqlite3_step(stmt) == SQLITE_ROW)

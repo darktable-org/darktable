@@ -305,30 +305,35 @@ void reload_defaults(dt_iop_module_t *module)
 
   // get white balance coefficients, as shot
   char filename[1024];
-  int ret;
-  dt_image_full_path(module->dev->image->id, filename, 1024);
-  libraw_data_t *raw = libraw_init(0);
-  ret = libraw_open_file(raw, filename);
-  if(!ret)
+  int ret=0;
+  /* check if file is raw / hdr */
+  if (! (module->dev->image->flags & DT_IMAGE_LDR))
   {
-    for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.cam_mul[k];
-    if(tmp.coeffs[0] <= 0.0)
+    dt_image_full_path(module->dev->image->id, filename, 1024);
+    libraw_data_t *raw = libraw_init(0);
+  
+    ret = libraw_open_file(raw, filename);
+    if(!ret)
     {
-      for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.pre_mul[k];
+      for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.cam_mul[k];
+      if(tmp.coeffs[0] <= 0.0)
+      {
+        for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.pre_mul[k];
+      }
+      if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
+      {
+        // could not get useful info!
+        tmp.coeffs[0] = tmp.coeffs[1] = tmp.coeffs[2] = 1.0f;
+      }
+      else
+      {
+        tmp.coeffs[0] /= tmp.coeffs[1];
+        tmp.coeffs[2] /= tmp.coeffs[1];
+        tmp.coeffs[1] = 1.0f;
+      }
     }
-    if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
-    {
-      // could not get useful info!
-      tmp.coeffs[0] = tmp.coeffs[1] = tmp.coeffs[2] = 1.0f;
-    }
-    else
-    {
-      tmp.coeffs[0] /= tmp.coeffs[1];
-      tmp.coeffs[2] /= tmp.coeffs[1];
-      tmp.coeffs[1] = 1.0f;
-    }
+    libraw_close(raw);
   }
-  libraw_close(raw);
 
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));

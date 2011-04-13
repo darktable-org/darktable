@@ -2,3 +2,4 @@ build/
 *~
 po/*.pot
 doc/usermanual/darktable-usermanual*.pdf
+doc/api/

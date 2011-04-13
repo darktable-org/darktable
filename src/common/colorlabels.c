@@ -170,3 +170,18 @@ void dt_colorlabels_unregister_key_accels()
   dt_gui_key_accel_unregister(dt_colorlabels_key_accel_callback);
 }
 
+//FIXME: XMP uses Red, Green, ... while we use red, green, ... What should this function return?
+const char* dt_colorlabels_to_string(int label)
+{
+  switch(label)
+  {
+    case 0: return "red";
+    case 1: return "yellow";
+    case 2: return "green";
+    case 3: return "blue";
+    case 4: return "purple";
+    default: return ""; // shouldn't happen ...
+  }
+}
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

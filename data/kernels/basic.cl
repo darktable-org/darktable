@@ -209,8 +209,7 @@ colorin (read_only image2d_t in, write_only image2d_t out, global float *mat, re
 
   // load to shared memory:
   local float matrix[9];
-  const int i = get_local_id(0);
-  if(i < 9) matrix[i] = mat[i];
+  if(get_local_id(0) == 0) for(int k=0;k<9;k++) matrix[k] = mat[k];
   barrier(CLK_LOCAL_MEM_FENCE);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
@@ -308,6 +307,7 @@ clipping (read_only image2d_t in, write_only image2d_t out)
 }
 #endif
 
+#if 0
 void
 Lab_to_XYZ(float *lab, float *xyz)
 {
@@ -322,6 +322,28 @@ Lab_to_XYZ(float *lab, float *xyz)
   xyz[0] *= 0.9642;
   xyz[2] *= 0.8249;
 }
+#else
+float
+lab_f_inv(float x)
+{
+  const float epsilon = 0.206896551f; 
+  const float kappa   = 24389.0f/27.0f;
+  if(x > epsilon) return x*x*x;
+  else return (116.0f*x - 16.0f)/kappa;
+}
+
+void
+Lab_to_XYZ(float *Lab, float *XYZ)
+{
+  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
+  const float fy = (Lab[0] + 16.0f)/116.0f;
+  const float fx = Lab[1]/500.0f + fy;
+  const float fz = fy - Lab[2]/200.0f;
+  XYZ[0] = d50[0]*lab_f_inv(fx);
+  XYZ[1] = d50[1]*lab_f_inv(fy);
+  XYZ[2] = d50[2]*lab_f_inv(fz);
+}
+#endif
 
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
@@ -332,8 +354,7 @@ colorout (read_only image2d_t in, write_only image2d_t out, global float *mat, r
 
   // load to shared memory:
   local float matrix[9];
-  const int i = get_local_id(0);
-  if(i < 9) matrix[i] = mat[i];
+  if(get_local_id(0) == 0) for(int k=0;k<9;k++) matrix[k] = mat[k];
   barrier(CLK_LOCAL_MEM_FENCE);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-02 12:10+0200\n"
-"PO-Revision-Date: 2011-04-02 12:16+0100\n"
+"POT-Creation-Date: 2011-04-10 20:46+0200\n"
+"PO-Revision-Date: 2011-04-10 20:48+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -426,7 +426,7 @@ msgid "switch to darkroom mode"
 msgstr "In den Dunkelkammer-Modus wechseln"
 
 #: ../data/darktable.glade.h:51 ../src/imageio/storage/flickr.c:500
-#: ../src/imageio/storage/gallery.c:153 ../src/imageio/storage/picasa.c:767
+#: ../src/imageio/storage/gallery.c:155 ../src/imageio/storage/picasa.c:767
 #: ../src/libs/collect.h:35 ../src/libs/metadata.c:264
 msgid "title"
 msgstr "Titel"
@@ -501,13 +501,13 @@ msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
 
 #: ../src/common/history.c:169 ../src/common/history.c:197
-#: ../src/common/styles.c:235 ../src/develop/develop.c:949
+#: ../src/common/styles.c:235 ../src/develop/develop.c:946
 #: ../src/gui/styles_dialog.c:323
 msgid "on"
 msgstr "ein"
 
 #: ../src/common/history.c:169 ../src/common/history.c:197
-#: ../src/common/styles.c:235 ../src/develop/develop.c:949
+#: ../src/common/styles.c:235 ../src/develop/develop.c:946
 #: ../src/gui/styles_dialog.c:323
 msgid "off"
 msgstr "aus"
@@ -707,118 +707,118 @@ msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
 msgid "loading image %s"
 msgstr "Bild %s laden"
 
-#: ../src/develop/develop.c:841
+#: ../src/develop/develop.c:839
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: Modul ‚%s‘ hat unpassende Version: %d != %d"
 
 #: ../src/develop/imageop.c:332 ../src/develop/imageop.c:351
-#: ../src/develop/imageop.c:758
+#: ../src/develop/imageop.c:756
 #, c-format
 msgid "%s is switched on"
 msgstr "%s ist eingeschaltet"
 
 #: ../src/develop/imageop.c:332 ../src/develop/imageop.c:351
-#: ../src/develop/imageop.c:758
+#: ../src/develop/imageop.c:756
 #, c-format
 msgid "%s is switched off"
 msgstr "%s ist ausgeschaltet"
 
 # siehe equalizer (deprecated)
-#: ../src/develop/imageop.c:749
+#: ../src/develop/imageop.c:747
 msgid " (deprecated)"
 msgstr " (überholt)"
 
-#: ../src/develop/imageop.c:777 ../src/libs/lib.c:525
+#: ../src/develop/imageop.c:775 ../src/libs/lib.c:525
 msgid "reset parameters"
 msgstr "Einstellungen zurücksetzen"
 
-#: ../src/develop/imageop.c:778 ../src/libs/lib.c:531
+#: ../src/develop/imageop.c:776 ../src/libs/lib.c:531
 msgid "presets"
 msgstr "Voreinstellungen"
 
 #. hack to indent the drop down box
-#: ../src/develop/imageop.c:802
+#: ../src/develop/imageop.c:800
 msgid "blend"
 msgstr "Überblenden"
 
-#: ../src/develop/imageop.c:803
+#: ../src/develop/imageop.c:801
 msgid "mode"
 msgstr "Modus"
 
-#: ../src/develop/imageop.c:806 ../src/iop/watermark.c:672
+#: ../src/develop/imageop.c:804 ../src/iop/watermark.c:672
 msgid "opacity"
 msgstr "Deckkraft"
 
-#: ../src/develop/imageop.c:808
+#: ../src/develop/imageop.c:806
 msgid "normal"
 msgstr "Normal"
 
-#: ../src/develop/imageop.c:809
+#: ../src/develop/imageop.c:807
 msgid "lighten"
 msgstr "Aufhellen"
 
-#: ../src/develop/imageop.c:810
+#: ../src/develop/imageop.c:808
 msgid "darken"
 msgstr "Abdunkeln"
 
-#: ../src/develop/imageop.c:811
+#: ../src/develop/imageop.c:809
 msgid "multiply"
 msgstr "Multiplikation"
 
-#: ../src/develop/imageop.c:812
+#: ../src/develop/imageop.c:810
 msgid "average"
 msgstr "Durchschnitt"
 
-#: ../src/develop/imageop.c:813
+#: ../src/develop/imageop.c:811
 msgid "addition"
 msgstr "Addition"
 
-#: ../src/develop/imageop.c:814
+#: ../src/develop/imageop.c:812
 msgid "subtract"
 msgstr "Abziehen"
 
-#: ../src/develop/imageop.c:815
+#: ../src/develop/imageop.c:813
 msgid "difference"
 msgstr "Unterschied"
 
-#: ../src/develop/imageop.c:816
+#: ../src/develop/imageop.c:814
 msgid "screen"
 msgstr "Bildschirm"
 
-#: ../src/develop/imageop.c:817
+#: ../src/develop/imageop.c:815
 msgid "overlay"
 msgstr "Überlagern"
 
-#: ../src/develop/imageop.c:818
+#: ../src/develop/imageop.c:816
 msgid "softlight"
 msgstr "Weiche Kanten"
 
-#: ../src/develop/imageop.c:819
+#: ../src/develop/imageop.c:817
 msgid "hardlight"
 msgstr "Harte Kanten"
 
-#: ../src/develop/imageop.c:820
+#: ../src/develop/imageop.c:818
 msgid "vividlight"
 msgstr ""
 
-#: ../src/develop/imageop.c:821
+#: ../src/develop/imageop.c:819
 msgid "linearlight"
 msgstr ""
 
-#: ../src/develop/imageop.c:822
+#: ../src/develop/imageop.c:820
 msgid "pinlight"
 msgstr ""
 
-#: ../src/develop/imageop.c:825
+#: ../src/develop/imageop.c:823
 msgid "enable blending"
 msgstr "Überblenden aktivieren"
 
-#: ../src/develop/imageop.c:826
+#: ../src/develop/imageop.c:824
 msgid "set the opacity of the blending"
 msgstr "Deckkraft des Überblendens anpassen"
 
-#: ../src/develop/imageop.c:827
+#: ../src/develop/imageop.c:825
 msgid "choose blending mode"
 msgstr "Modus des Überblendens wählen"
 
@@ -1510,8 +1510,8 @@ msgstr "8/16-Bit TIFF"
 msgid "file on disk"
 msgstr "Datei auf Festplatte"
 
-#: ../src/imageio/storage/disk.c:63 ../src/imageio/storage/disk.c:130
-#: ../src/imageio/storage/gallery.c:78 ../src/imageio/storage/gallery.c:147
+#: ../src/imageio/storage/disk.c:63 ../src/imageio/storage/disk.c:132
+#: ../src/imageio/storage/gallery.c:78 ../src/imageio/storage/gallery.c:149
 #: ../src/libs/styles.c:201
 msgid "select directory"
 msgstr "Verzeichnis wählen"
@@ -1537,6 +1537,8 @@ msgid ""
 "$(EXIF_HOUR) - exif hour\n"
 "$(EXIF_MINUTE) - exif minute\n"
 "$(EXIF_SECOND) - exif second\n"
+"$(STARS) - star rating\n"
+"$(LABELS) - colorlabels\n"
 "$(PICTURES_FOLDER) - pictures folder\n"
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
@@ -1559,17 +1561,19 @@ msgstr ""
 "$(EXIF_HOUR) - EXIF Stunde\n"
 "$(EXIF_MINUTE) - EXIF Minute\n"
 "$(EXIF_SECOND) - EXIF Sekunde\n"
+"$(STARS) - Bewertung\n"
+"$(LABELS) - Farbmarkierungen\n"
 "$(PICTURES_FOLDER) - Bilder-Verzeichnis\n"
 "$(HOME_FOLDER) - home-Verzeichnis\n"
 "$(DESKTOP_FOLDER) - Desktop-Verzeichnis"
 
-#: ../src/imageio/storage/disk.c:191 ../src/imageio/storage/gallery.c:227
+#: ../src/imageio/storage/disk.c:193 ../src/imageio/storage/gallery.c:229
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "Konnte Verzeichnis ‚%s‘ nicht erstellen!"
 
-#: ../src/imageio/storage/disk.c:227 ../src/imageio/storage/email.c:111
-#: ../src/imageio/storage/gallery.c:331
+#: ../src/imageio/storage/disk.c:229 ../src/imageio/storage/email.c:111
+#: ../src/imageio/storage/gallery.c:333
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d nach ‚%s%s‘ exportiert"
@@ -1695,6 +1699,8 @@ msgid ""
 "$(EXIF_HOUR) - exif hour\n"
 "$(EXIF_MINUTE) - exif minute\n"
 "$(EXIF_SECOND) - exif second\n"
+"$(STARS) - star rating\n"
+"$(LABELS) - colorlabels\n"
 "$(PICTURES_FOLDER) - pictures folder\n"
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
@@ -1717,11 +1723,13 @@ msgstr ""
 "$(EXIF_HOUR) - EXIF Stunde\n"
 "$(EXIF_MINUTE) - EXIF Minute\n"
 "$(EXIF_SECOND) - EXIF Sekunde\n"
+"$(STARS) - Bewertung\n"
+"$(LABELS) - Farbmarkierungen\n"
 "$(PICTURES_FOLDER) - Bilder-Verzeichnis\n"
 "$(HOME_FOLDER) - home-Verzeichnis\n"
 "$(DESKTOP_FOLDER) - Desktop-Verzeichnis"
 
-#: ../src/imageio/storage/gallery.c:159
+#: ../src/imageio/storage/gallery.c:161
 msgid "enter the title of the website"
 msgstr "Titel für die Webseite eingeben"
 

@@ -624,6 +624,15 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
     return 1;
   }
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+#ifdef HAVE_OPENCL
+  // copy back final opencl buffer to CPU and cleanup
+  if(cl_mem_out)
+    {
+      dt_opencl_copy_device_to_host(buf, cl_mem_out, width, height, pipe->devid, out_bpp);
+      clReleaseMemObject(cl_mem_out);
+      cl_mem_out = NULL;
+    }
+#endif
   pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(dev->image->id, &roi, pipe, 0);
   pipe->backbuf = buf;
   pipe->backbuf_width  = width;

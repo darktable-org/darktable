@@ -352,6 +352,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   float *weight = NULL;
   int wd = 0, ht = 0, first_imgid = -1;
   uint32_t filter = 0;
+  float whitelevel = 0.0f;
   total ++;
   while(t)
   {
@@ -400,6 +401,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float efl = img->exif_focal_length > 0.0f ? img->exif_focal_length : 8.0f;
     const float aperture = M_PI * powf(efl / (2.0f * eap), 2.0f);
     const float cal = 100.0f/(aperture*img->exif_exposure*img->exif_iso);
+    whitelevel = fmaxf(whitelevel, cal/65535.0);
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
 #endif
@@ -430,7 +432,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
-  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter);
+  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, whitelevel);
   dt_gui_background_jobs_set_progress(j, 1.0f);
 
   while(*c != '/' && c > pathname) c--;
@@ -505,6 +507,14 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+
+  char query[1024];
+  sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+
+  dt_collection_update(darktable.collection);
+  dt_control_gui_queue_draw();
+
   while(t)
   {
     imgid = (long int)t->data;
@@ -518,6 +528,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   return 0;
 }
 
+
 int32_t dt_control_delete_images_job_run(dt_job_t *job)
 {
   long int imgid = -1;
@@ -530,6 +541,12 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   const dt_gui_job_t *j = dt_gui_background_jobs_new(DT_JOB_PROGRESS, message);
 
   sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "update images set flags = (flags | DT_IMAGE_REMOVE) where id in (select imgid from selected_images)", NULL, NULL, NULL);
+  
+  dt_collection_update(darktable.collection);
+  dt_control_gui_queue_draw();
+
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
   while(t)
   {
