@@ -306,10 +306,10 @@ update_colorpicker_panel()
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), module->request_color_pick);
     darktable.gui->reset = 0;
 
-    int input_color = dt_conf_get_int("ui_last/colorpicker_rgb"); // Lab
+    int input_color = dt_conf_get_int("ui_last/colorpicker_model");
 
     // always adjust picked color:
-    int m = dt_conf_get_int("ui_last/colorpicker_mean");
+    int m = dt_conf_get_int("ui_last/colorpicker_mode");
     float fallback_col[] = {0,0,0};
     float *col = fallback_col;
     switch(m)
@@ -475,14 +475,14 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
 static void
 colorpicker_mean_changed (GtkComboBox *widget, gpointer p)
 {
-  dt_conf_set_int("ui_last/colorpicker_mean", gtk_combo_box_get_active(widget));
+  dt_conf_set_int("ui_last/colorpicker_mode", gtk_combo_box_get_active(widget));
   update_colorpicker_panel();
 }
 
 static void
 colorpicker_model_changed(GtkComboBox *widget, gpointer p)
 {
-  dt_conf_set_int("ui_last/colorpicker_rgb", gtk_combo_box_get_active(widget));
+  dt_conf_set_int("ui_last/colorpicker_model", gtk_combo_box_get_active(widget));
   update_colorpicker_panel();
 }
 
@@ -1276,7 +1276,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   // color picker
   widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_mean_combobox");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/colorpicker_mean"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/colorpicker_mode"));
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(colorpicker_mean_changed), NULL);
   widget = glade_xml_get_widget(darktable.gui->main_window, "colorpicker_model_combobox");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/colorpicker_model"));
