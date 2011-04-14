@@ -336,14 +336,14 @@ update_colorpicker_panel()
     w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_Lab_label");
     switch(input_color)
     {
-    case 0: // linear rgb
-      snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
+    case 0: // output color profile
+      snprintf(colstring, 512, "(%.03f, %.03f, %.03f)", col[0], col[1], col[2]);
       break;
     case 1: // Lab
-      snprintf(colstring, 512, "       %s: (%.03f, %.03f, %.03f)", _("Lab"), col[0], col[1], col[2]);
+      snprintf(colstring, 512, "(%.03f, %.03f, %.03f)", col[0], col[1], col[2]);
       break;
-    default: // output color profile
-      snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("output profile"), col[0], col[1], col[2]);
+    default: // linear rgb
+      snprintf(colstring, 512, "(%.03f, %.03f, %.03f)", col[0], col[1], col[2]);
       break;
     }
     gtk_label_set_label(GTK_LABEL(w), colstring);

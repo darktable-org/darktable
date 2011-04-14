@@ -86,8 +86,8 @@ max</property>
                             <child>
                               <widget class="GtkComboBox" id="colorpicker_model_combobox">
                                 <property name="visible">True</property>
-                                <property name="items" translatable="yes">rgb
-lab</property>
+                                <property name="items" translatable="yes">output color space
+Lab</property>
                               </widget>
                               <packing>
                                 <property name="position">2</property>
