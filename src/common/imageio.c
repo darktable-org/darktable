@@ -961,11 +961,26 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 //   combined reading
 // =================================================
 
+static inline int
+has_ldr_extension(const char *filename)
+{
+  // TODO: this is a bad, lazy hack to avoid me coding a true libmagic fix here!
+  int ret = 0;
+  const char *cc = filename + strlen(filename);
+  for(; *cc!='.'&&cc>filename; cc--);
+  gchar *ext = g_ascii_strdown(cc+1, -1);
+  if(!strcmp(ext, "jpg") || !strcmp(ext, "jpeg") ||
+     !strcmp(ext, "tif") || !strcmp(ext, "tiff"))
+     ret = 1;
+  g_free(ext);
+  return ret;
+}
+
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 {
-  // first try hdr and raw loading
-  dt_imageio_retval_t ret;
-  ret = dt_imageio_open_ldr(img, filename);
+  // first try ldr, because of a libraw crash for some jpg:
+  dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
+  if(has_ldr_extension(filename)) ret = dt_imageio_open_ldr(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
 #ifdef HAVE_RAWSPEED
     ret = dt_imageio_open_rawspeed(img, filename);
@@ -982,9 +997,9 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 
 dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filename)
 {
-  // first try hdr and raw loading
-  dt_imageio_retval_t ret;
-  ret = dt_imageio_open_ldr_preview(img, filename);
+  // first try ldr, because of a libraw crash for some jpg:
+  dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
+  if(has_ldr_extension(filename)) ret = dt_imageio_open_ldr_preview(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
  #ifdef HAVE_RAWSPEED
     ret = dt_imageio_open_rawspeed_preview(img, filename);
