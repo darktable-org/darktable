@@ -215,7 +215,7 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
   if( event->button==1 )
   {
     /* if x is in slider bar */
-    if (event->x < (widget->allocation.width - DTGTK_SLIDER_ADJUST_BUTTON_WIDTH - DTGTK_SLIDER_BORDER_WIDTH))
+    if (event->x < (widget->allocation.width - DTGTK_SLIDER_ADJUST_BUTTON_WIDTH - DTGTK_SLIDER_BORDER_WIDTH) && event->x >= 0)
     {
       if( slider->type == DARKTABLE_SLIDER_BAR && !slider->is_sensibility_key_pressed && slider->is_dragging)
       {
@@ -236,8 +236,8 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
         gtk_widget_draw(widget,NULL);
         slider->prev_x_root = event->x_root;
       }
-      slider->is_dragging=FALSE;
     }
+    slider->is_dragging=FALSE;
   }
   return TRUE;
 }
@@ -311,7 +311,7 @@ static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
   slider->is_sensibility_key_pressed = (event->state&GDK_CONTROL_MASK)?TRUE:FALSE;
   if( slider->is_dragging==TRUE )
   {
-    // First get some dimention info
+    // First get some dimension info
     GdkRectangle vr;
     _slider_get_value_area(widget,&vr);
 

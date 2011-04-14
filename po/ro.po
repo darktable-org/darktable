@@ -1,0 +1,4205 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: darktable\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-03-31 00:02+0300\n"
+"PO-Revision-Date: 2011-04-14 12:31+0200\n"
+"Last-Translator: Florin Balate <florin_b_n@yahoo.com>\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Poedit-Language: Romanian\n"
+"X-Poedit-Country: ROMANIA\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../build/src/preferences_gen.h:314
+msgid "gui options"
+msgstr "opţiuni gui"
+
+#: ../build/src/preferences_gen.h:316
+msgid "filename of your custom theme in share/darktable/"
+msgstr "nume fişier temă customizată în share/darktable/"
+
+#: ../build/src/preferences_gen.h:324
+#: ../build/src/preferences_gen.h:341
+#: ../build/src/preferences_gen.h:357
+#: ../build/src/preferences_gen.h:372
+#: ../build/src/preferences_gen.h:388
+#: ../build/src/preferences_gen.h:405
+#: ../build/src/preferences_gen.h:422
+#: ../build/src/preferences_gen.h:439
+#: ../build/src/preferences_gen.h:454
+#: ../build/src/preferences_gen.h:470
+#: ../build/src/preferences_gen.h:487
+#: ../build/src/preferences_gen.h:503
+#: ../build/src/preferences_gen.h:535
+#: ../build/src/preferences_gen.h:551
+#: ../build/src/preferences_gen.h:567
+#: ../build/src/preferences_gen.h:584
+#: ../build/src/preferences_gen.h:601
+#: ../build/src/preferences_gen.h:617
+#: ../build/src/preferences_gen.h:633
+#: ../build/src/preferences_gen.h:650
+#, c-format
+msgid "double click to reset to `%s'"
+msgstr "dublu clic pentru a reseta la `%s'"
+
+#: ../build/src/preferences_gen.h:327
+#: ../build/src/preferences_gen.h:587
+msgid " (needs a restart) "
+msgstr " (e nevoie de restart) "
+
+#: ../build/src/preferences_gen.h:332
+msgid "size of the side panels in pixels"
+msgstr "dimensiune panouri laterale in pixeli"
+
+#: ../build/src/preferences_gen.h:344
+msgid " (needs a restart)"
+msgstr " (e nevoie de restart)"
+
+#: ../build/src/preferences_gen.h:349
+msgid "don't use embedded preview jpeg, always use half-size raw"
+msgstr "nu folosi pentru previzualizarea încorporată în jpeg, folosește întotdeauna raw-ul înjumătățit"
+
+#: ../build/src/preferences_gen.h:364
+msgid "ask before removing images"
+msgstr "întreabă înainte de a elimina imagini"
+
+#: ../build/src/preferences_gen.h:375
+msgid "always ask the user before any image is removed from db."
+msgstr "întreabă întotdeauna utilizatorul înainte de a elimina orice imagine din db."
+
+#: ../build/src/preferences_gen.h:380
+msgid "ask before deleting images"
+msgstr "întreabă înainte de a şterge imagini"
+
+#: ../build/src/preferences_gen.h:391
+msgid "always ask the user before any image file is deleted."
+msgstr "întreabă întotdeauna utilizatorul înainte de a şterge orice fişier imagine."
+
+#: ../build/src/preferences_gen.h:396
+msgid "downsample the preview pixels"
+msgstr "trunchiere pixeli previzualizare"
+
+#: ../build/src/preferences_gen.h:408
+msgid "this value smaller than 1.0 downsamples the preview pixels in darkroom mode for faster feedback."
+msgstr "o valoare mai mică decât 1.0 înseamnă trunchierea pixelilor folosiți la previzualizare în modul cameră oscură pentru o viteză de răspuns mai bună."
+
+#: ../build/src/preferences_gen.h:413
+msgid "number of folder levels to show in lists"
+msgstr "numărul de nivele de folder ce va fi afișat in liste"
+
+#: ../build/src/preferences_gen.h:425
+msgid "the number of folder levels to show in film roll names, starting from the right"
+msgstr "numărul de nivele de folder ce va fi afișat în rola de film, începând de la dreapta"
+
+#: ../build/src/preferences_gen.h:430
+msgid "initial rating when importing filmrolls"
+msgstr "rating-ul inițial la importarea rolelor de film"
+
+#: ../build/src/preferences_gen.h:446
+msgid "enable filmstrip in darkroom mode"
+msgstr "permite afișarea fâșiei de film în modul cameră obscură"
+
+#: ../build/src/preferences_gen.h:461
+msgid "maximum resolution of lighttable thumbnails"
+msgstr "rezoluția maximă a thumbnail-urilor în modul masă luminoasă"
+
+#: ../build/src/preferences_gen.h:473
+msgid ""
+"keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
+"(needs a restart and will invalidate current thumbnail caches)."
+msgstr ""
+"păstrează această valoare mică pentru creare rapidă de thumbnail-uri (valid 160-1300)\n"
+"(are nevoie de restart și va invalida arhiva curentă de thumbnail-uri)."
+
+#: ../build/src/preferences_gen.h:478
+msgid "jpeg quality of on-disk thumbnails"
+msgstr "calitatea jpeg a thumbnail-urilor de pe disc"
+
+#: ../build/src/preferences_gen.h:490
+msgid "affects only the thumbnail cache used for quick startup."
+msgstr "afectează doar arhiva de thumbnail-uri folosită pentru o pornire rapidă."
+
+#: ../build/src/preferences_gen.h:495
+msgid "ask before deleting a tag"
+msgstr "întreaba înainte de a şterge un tag"
+
+#: ../build/src/preferences_gen.h:525
+msgid "core options"
+msgstr "opțiuni principale"
+
+#: ../build/src/preferences_gen.h:527
+msgid "database file"
+msgstr "fișier bază de date"
+
+#: ../build/src/preferences_gen.h:538
+msgid "filename relative to ~/.config/darktable or starting with a slash (needs a restart)."
+msgstr "nume fișier relativ la ~/.config/darktable sau care începe cu slash (cere restart)."
+
+#: ../build/src/preferences_gen.h:543
+msgid "image cache file"
+msgstr "fișier arhivă de imagini"
+
+#: ../build/src/preferences_gen.h:554
+msgid "filename relative to ~/.cache/darktable or starting with a slash (needs a restart)."
+msgstr "nume fișier relativ la ~/.config/darktable sau care începe cu slash (cere restart)."
+
+#: ../build/src/preferences_gen.h:559
+msgid "image cache file backup"
+msgstr "fișier backup la arhiva de imagini"
+
+#: ../build/src/preferences_gen.h:570
+msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
+msgstr "creează un backup la fișierul arhivă pentru a preveni pierderea thumbnail-urilor generate (cere restart)."
+
+#: ../build/src/preferences_gen.h:575
+msgid "memory in bytes to use for mipmap cache"
+msgstr "memoria, în bytes, folosită de arhiva mipmap"
+
+#: ../build/src/preferences_gen.h:592
+msgid "full resolution image buffers to keep in main memory cache"
+msgstr "numărul de buffere de imagine la rezoluție întreagă care sunt ținute în memorie"
+
+#: ../build/src/preferences_gen.h:604
+msgid "how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum.  set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode).  be warned: every thread will need about 1GB of memory (needs a restart)."
+msgstr "câte buffere (maxim) la rezoluție întreagă (floating point) ale imaginilor raw să fie ținute în memoria principală.  setează această variabilă la num_thread-uri + 1 dacă folosești export pe mai multe thread-uri (nu uita unul pentru modul cameră obscură). atenție: fiecare thread va avea nevoie de aprox. 1GB de momorie (cere restart)."
+
+#: ../build/src/preferences_gen.h:609
+msgid "write a redundant sidecar file for each image"
+msgstr "scrie un fișier ataș redundant pentru fiecare imagine"
+
+#: ../build/src/preferences_gen.h:620
+msgid "these files can later be re-imported into a different database, preserving your changes to the image."
+msgstr "aceste fișiere pot fi re-importate ulterior într-o altă bază de date, păstrând modificările aduse imaginii."
+
+#: ../build/src/preferences_gen.h:625
+msgid "do high quality resampling during export"
+msgstr "exportă folosind reeşantionare de calitate înaltă"
+
+#: ../build/src/preferences_gen.h:636
+msgid "the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower."
+msgstr "imaginea va fi procesată mai întâi la rezoluție întreagă, trunchierea facându-se la sfârșit. poate produce uneori rezultate de calitate mai bună, dar va dura întotdeauna mai mult."
+
+#: ../build/src/preferences_gen.h:641
+msgid "password storage backend to use"
+msgstr "suportul de stocare parole ce va fi folosit"
+
+#: ../build/src/preferences_gen.h:653
+msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
+msgstr "suportul de stocare parole: 0 - niciunul, 1 - gconf (nu folosi), 2 - kwallet, 3 - gnome keyring"
+
+#: ../data/darktable.glade.h:1
+msgid "( --- )"
+msgstr "( --- )"
+
+#: ../data/darktable.glade.h:2
+msgid "-"
+msgstr "-"
+
+#: ../data/darktable.glade.h:3
+msgid "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>camera obscură</b></big></span>"
+
+#: ../data/darktable.glade.h:4
+msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>masa luminoasă</b></big></span>"
+
+#: ../data/darktable.glade.h:5
+msgid "about darktable"
+msgstr "despre darktable"
+
+#: ../data/darktable.glade.h:6
+msgid ""
+"all\n"
+"unstarred\n"
+"1 star\n"
+"2 star\n"
+"3 star\n"
+"4 star\n"
+"5 star\n"
+"rejected"
+msgstr ""
+"toate\n"
+"nemarcate\n"
+"1 stea\n"
+"2 stele\n"
+"3 stele\n"
+"4 stele\n"
+"5 stele\n"
+"respinse"
+
+#. aperture
+#: ../data/darktable.glade.h:14
+#: ../src/gui/presets.c:307
+#: ../src/libs/camera.c:501
+msgid "aperture"
+msgstr "apertura"
+
+#: ../data/darktable.glade.h:15
+#: ../src/libs/collect.h:37
+#: ../src/libs/metadata.c:290
+msgid "creator"
+msgstr "autor"
+
+#: ../data/darktable.glade.h:16
+msgid "date/time"
+msgstr "dată/oră"
+
+#: ../data/darktable.glade.h:17
+msgid "distance"
+msgstr "distanță"
+
+#. exposure
+#: ../data/darktable.glade.h:18
+#: ../src/gui/presets.c:292
+#: ../src/iop/exposure.c:42
+#: ../src/iop/exposure.c:351
+#: ../src/iop/relight.c:354
+msgid "exposure"
+msgstr "expunere"
+
+#: ../data/darktable.glade.h:19
+msgid "f-length"
+msgstr "lungime-focală"
+
+#: ../data/darktable.glade.h:20
+msgid "filename"
+msgstr "nume fișier"
+
+#: ../data/darktable.glade.h:21
+msgid ""
+"filename\n"
+"time\n"
+"rating\n"
+"id\n"
+"color label"
+msgstr ""
+"nume fișier\n"
+"oră\n"
+"rating\n"
+"id\n"
+"etichetă culoare"
+
+#: ../data/darktable.glade.h:26
+#: ../src/libs/collect.h:29
+msgid "film roll"
+msgstr "rola de film"
+
+#: ../data/darktable.glade.h:27
+msgid "folder"
+msgstr "folder"
+
+#: ../data/darktable.glade.h:28
+msgid "height"
+msgstr "înălțime"
+
+#: ../data/darktable.glade.h:29
+msgid "histogram"
+msgstr "histogramă"
+
+#: ../data/darktable.glade.h:30
+#: ../src/libs/collect.h:33
+msgid "history"
+msgstr "istoric"
+
+#: ../data/darktable.glade.h:31
+#: ../src/iop/clipping.c:805
+msgid "image"
+msgstr "imagine"
+
+#: ../data/darktable.glade.h:32
+msgid "image information"
+msgstr "informații imagine"
+
+#: ../data/darktable.glade.h:33
+msgid "images sorted by"
+msgstr "sortează imagini după"
+
+#. Import Button
+#: ../data/darktable.glade.h:34
+#: ../src/gui/camera_import_dialog.c:258
+#: ../src/libs/styles.c:353
+msgid "import"
+msgstr "importă"
+
+#. iso
+#: ../data/darktable.glade.h:35
+#: ../src/gui/presets.c:279
+#: ../src/libs/camera.c:531
+msgid "iso"
+msgstr "iso"
+
+#: ../data/darktable.glade.h:36
+#: ../src/gui/presets.c:272
+msgid "lens"
+msgstr "obiectiv"
+
+#: ../data/darktable.glade.h:37
+msgid "list"
+msgstr "listă"
+
+#: ../data/darktable.glade.h:38
+#: ../src/gui/presets.c:265
+msgid "maker"
+msgstr "producător"
+
+#: ../data/darktable.glade.h:39
+msgid ""
+"mean\n"
+"min\n"
+"max"
+msgstr ""
+"medie\n"
+"min\n"
+"max"
+
+#: ../data/darktable.glade.h:42
+#: ../src/gui/presets.c:258
+msgid "model"
+msgstr "model"
+
+#: ../data/darktable.glade.h:43
+msgid "more plugins"
+msgstr "mai multe plugin-uri"
+
+#: ../data/darktable.glade.h:44
+msgid "navigation"
+msgstr "navigare"
+
+#: ../data/darktable.glade.h:45
+msgid "pick"
+msgstr "culege"
+
+#: ../data/darktable.glade.h:46
+#: ../src/imageio/storage/picasa.c:769
+#: ../src/libs/collect.h:39
+#: ../src/libs/metadata.c:316
+msgid "rights"
+msgstr "drepturi"
+
+#: ../data/darktable.glade.h:47
+msgid "select a folder to import as film roll"
+msgstr "selectează un folder pentru a importa o rolă de film"
+
+#: ../data/darktable.glade.h:48
+msgid "select one or more images to import"
+msgstr "selectează una sau mai multe imagini pentru import"
+
+#: ../data/darktable.glade.h:49
+msgid "snapshots"
+msgstr "capturi"
+
+#: ../data/darktable.glade.h:50
+msgid "switch to darkroom mode"
+msgstr "schimbă în modul cameră obscură"
+
+#: ../data/darktable.glade.h:51
+#: ../src/imageio/storage/flickr.c:500
+#: ../src/imageio/storage/gallery.c:153
+#: ../src/imageio/storage/picasa.c:767
+#: ../src/libs/collect.h:35
+#: ../src/libs/metadata.c:264
+msgid "title"
+msgstr "titlu"
+
+#: ../data/darktable.glade.h:52
+#: ../src/iop/relight.c:357
+msgid "width"
+msgstr "lățime"
+
+#: ../data/darktable.glade.h:53
+msgid ""
+"zoomable light table\n"
+"file manager"
+msgstr ""
+"masă luminoasă capabilă de zoom\n"
+"manager fișiere"
+
+#: ../src/common/collection.c:316
+#: ../src/iop/bilateral.cc:310
+#: ../src/iop/channelmixer.c:339
+#: ../src/iop/channelmixer.c:356
+#: ../src/iop/temperature.c:446
+#: ../src/libs/collect.c:134
+#: ../src/libs/collect.c:136
+msgid "red"
+msgstr "roșu"
+
+#: ../src/common/collection.c:317
+#: ../src/libs/collect.c:140
+#: ../src/libs/collect.c:142
+msgid "yellow"
+msgstr "galben"
+
+#: ../src/common/collection.c:318
+#: ../src/iop/bilateral.cc:311
+#: ../src/iop/channelmixer.c:340
+#: ../src/iop/channelmixer.c:359
+#: ../src/iop/temperature.c:447
+#: ../src/libs/collect.c:146
+#: ../src/libs/collect.c:148
+msgid "green"
+msgstr "verde"
+
+#: ../src/common/collection.c:319
+#: ../src/iop/bilateral.cc:312
+#: ../src/iop/channelmixer.c:341
+#: ../src/iop/channelmixer.c:362
+#: ../src/iop/temperature.c:448
+#: ../src/libs/collect.c:152
+#: ../src/libs/collect.c:154
+msgid "blue"
+msgstr "albastru"
+
+#: ../src/common/collection.c:320
+#: ../src/libs/collect.c:158
+#: ../src/libs/collect.c:160
+msgid "purple"
+msgstr "violet"
+
+#. history
+#: ../src/common/collection.c:326
+#: ../src/libs/collect.c:118
+#: ../src/libs/collect.c:120
+msgid "altered"
+msgstr "modificat"
+
+#: ../src/common/darktable.c:310
+#, c-format
+msgid "found strange path `%s'"
+msgstr "calea gasită e bizară  `%s'"
+
+#: ../src/common/darktable.c:338
+#, c-format
+msgid "error loading directory `%s'"
+msgstr "eroare la încărcarea directorului `%s'"
+
+#: ../src/common/darktable.c:359
+#: ../src/gui/gtk.c:811
+#, c-format
+msgid "file `%s' has unknown format!"
+msgstr "fișierul `%s' are un format necunoscut!"
+
+#: ../src/common/darktable.c:371
+#: ../src/gui/gtk.c:796
+#, c-format
+msgid "error loading file `%s'"
+msgstr "eroare la încărcarea fișierului '%s'"
+
+#: ../src/common/history.c:169
+#: ../src/common/history.c:197
+#: ../src/common/styles.c:235
+#: ../src/develop/develop.c:921
+#: ../src/gui/styles_dialog.c:323
+msgid "on"
+msgstr "activat"
+
+#: ../src/common/history.c:169
+#: ../src/common/history.c:197
+#: ../src/common/styles.c:235
+#: ../src/develop/develop.c:921
+#: ../src/gui/styles_dialog.c:323
+msgid "off"
+msgstr "dezactivat"
+
+#: ../src/common/image.c:148
+msgid "orphaned image"
+msgstr "imagine orfană"
+
+#. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
+#. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
+#: ../src/common/image.c:530
+#, c-format
+msgid "image `%s' is not available"
+msgstr "imaginea `%s' nu este disponibilă"
+
+#: ../src/common/styles.c:72
+#, c-format
+msgid "style with name '%s' already exists"
+msgstr "un stil cu numele '%s' există deja"
+
+#: ../src/common/styles.c:122
+#, c-format
+msgid "style named '%s' successfully created"
+msgstr "stilul '%s' a fost creat cu succes"
+
+#: ../src/common/styles.c:287
+#, c-format
+msgid "style file for %s exists"
+msgstr "fișierul pentru stilul %s există"
+
+#: ../src/common/styles.c:329
+#, c-format
+msgid "style %s was sucessfully saved"
+msgstr "stilul %s a fost salvat cu suces"
+
+#: ../src/common/styles.c:493
+#, c-format
+msgid "style %s was sucessfully imported"
+msgstr "stilul %s a fost importat cu suces"
+
+#: ../src/control/control.c:905
+#: ../src/control/control.c:908
+msgid "working.."
+msgstr "lucrează.."
+
+#: ../src/control/control.c:989
+#, c-format
+msgid "switch to %s mode"
+msgstr "schimbă în modul %s"
+
+#: ../src/control/control.c:997
+#, c-format
+msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>modul %s</b></big></span>"
+
+#: ../src/control/jobs/camera_jobs.c:37
+#, c-format
+msgid "importing image %s"
+msgstr "imaginea %s se importă"
+
+#: ../src/control/jobs/camera_jobs.c:67
+#, c-format
+msgid "capturing %d image"
+msgid_plural "capturing %d images"
+msgstr[0] "se capturează %d imagine"
+msgstr[1] "se capturează %d imagini"
+
+#: ../src/control/jobs/camera_jobs.c:91
+msgid "please set your camera to manual mode first!"
+msgstr "te rog setează-ți întâi camera în mod manual!"
+
+#: ../src/control/jobs/camera_jobs.c:275
+#, c-format
+msgid "%d/%d imported to %s"
+msgstr "%d/%d importat în %s"
+
+#: ../src/control/jobs/camera_jobs.c:335
+msgid "starting to import images from camera"
+msgstr "începe importul de imagini de pe cameră"
+
+#: ../src/control/jobs/camera_jobs.c:352
+#, c-format
+msgid "failed to create import path `%s', import aborted."
+msgstr "crearea căii de import `%s' a eșuat, import abandonat."
+
+#: ../src/control/jobs/camera_jobs.c:361
+#, c-format
+msgid "importing %d image from camera"
+msgid_plural "importing %d images from camera"
+msgstr[0] "se importă %d imagine de la cameră"
+msgstr[1] "se importă %d imagini de la cameră"
+
+#: ../src/control/jobs/camera_jobs.c:383
+msgid "failed to create filmroll for camera import, import aborted."
+msgstr "crearea rolei de film pentru a importa de la cameră a eșuat, import abandonat."
+
+#: ../src/control/jobs/control_jobs.c:80
+#, c-format
+msgid "merging %d image"
+msgid_plural "merging %d images"
+msgstr[0] "se îmbină %d imagine"
+msgstr[1] "se îmbină %d imagini"
+
+#: ../src/control/jobs/control_jobs.c:93
+msgid "exposure bracketing only works on raw images"
+msgstr "bracketing-ul pe expunere funcționează doar pe imagini raw"
+
+#: ../src/control/jobs/control_jobs.c:103
+#, c-format
+msgid "failed to get raw buffer from image `%s'"
+msgstr "nu s-a putut obține un buffer raw de la imaginea  `%s'"
+
+#: ../src/control/jobs/control_jobs.c:122
+msgid "images have to be of same size!"
+msgstr "imaginile trebuie să aibă aceeași dimensiune!"
+
+#: ../src/control/jobs/control_jobs.c:168
+#, c-format
+msgid "wrote merged hdr `%s'"
+msgstr "s-a scris hdr-ul îmbinat `%s'"
+
+#: ../src/control/jobs/control_jobs.c:192
+#, c-format
+msgid "duplicating %d image"
+msgid_plural "duplicating %d images"
+msgstr[0] "se duplică %d imagine"
+msgstr[1] "se duplică %d imagini"
+
+#: ../src/control/jobs/control_jobs.c:215
+#, c-format
+msgid "flipping %d image"
+msgid_plural "flipping %d images"
+msgstr[0] "se întoarce %d imagine"
+msgstr[1] "se întorc %d imagini"
+
+#: ../src/control/jobs/control_jobs.c:237
+#, c-format
+msgid "removing %d image"
+msgid_plural "removing %d images"
+msgstr[0] "se elimină %d imagine"
+msgstr[1] "se elimină %d imagini"
+
+#: ../src/control/jobs/control_jobs.c:260
+#, c-format
+msgid "deleting %d image"
+msgid_plural "deleting %d images"
+msgstr[0] "se șterge %d imagine"
+msgstr[1] "se șterg %d imagini"
+
+#: ../src/control/jobs/control_jobs.c:381
+msgid "do you really want to remove all selected images from the collection?"
+msgstr "chiar doreşti să elimini toate imaginile selectate din colecţie?"
+
+#: ../src/control/jobs/control_jobs.c:382
+msgid "remove images?"
+msgstr "elimină imagini?"
+
+#: ../src/control/jobs/control_jobs.c:402
+msgid "do you really want to physically delete all selected images from disk?"
+msgstr "chiar doreşti să ştergi fizic de pe disc toate imaginile selectate?"
+
+#: ../src/control/jobs/control_jobs.c:403
+msgid "delete images?"
+msgstr "şterge imagini?"
+
+#: ../src/control/jobs/control_jobs.c:441
+msgid "failed to get parameters from storage module, aborting export.."
+msgstr "citirea parametrilor de la modulul de stocarea eşuat, exportul se abandonează.."
+
+#: ../src/control/jobs/control_jobs.c:444
+#, c-format
+msgid "exporting %d image.."
+msgid_plural "exporting %d images.."
+msgstr[0] "se exportă %d imagine"
+msgstr[1] "se exportă %d imagini"
+
+#: ../src/control/jobs/control_jobs.c:446
+#, c-format
+msgid "exporting %d image to %s"
+msgid_plural "exporting %d images to %s"
+msgstr[0] "se exportă %d imagine în %s"
+msgstr[1] "se exportă %d imagini în %s"
+
+#: ../src/control/jobs/control_jobs.c:486
+#: ../src/control/jobs/control_jobs.c:487
+#: ../src/views/darkroom.c:349
+#, c-format
+msgid "image `%s' is currently unavailable"
+msgstr "imaginea `%s' este momentan indisponibilă"
+
+#: ../src/control/jobs/image_jobs.c:39
+#, c-format
+msgid "loading image %s"
+msgstr "se încarcă imaginea %s"
+
+#: ../src/develop/develop.c:820
+#, c-format
+msgid "%s: module `%s' version mismatch: %d != %d"
+msgstr "%s: modulul `%s' diferă ca versiune: %d != %d"
+
+#: ../src/develop/imageop.c:304
+#: ../src/develop/imageop.c:323
+#: ../src/develop/imageop.c:623
+#, c-format
+msgid "%s is switched on"
+msgstr "%s este activat"
+
+#: ../src/develop/imageop.c:304
+#: ../src/develop/imageop.c:323
+#: ../src/develop/imageop.c:623
+#, c-format
+msgid "%s is switched off"
+msgstr "%s este dezactivat"
+
+#: ../src/develop/imageop.c:614
+msgid " (deprecated)"
+msgstr " (scos din uz)"
+
+#: ../src/develop/imageop.c:642
+#: ../src/libs/lib.c:525
+msgid "reset parameters"
+msgstr "resetează parametrii"
+
+#: ../src/develop/imageop.c:643
+#: ../src/libs/lib.c:531
+msgid "presets"
+msgstr "presetări"
+
+#: ../src/dtgtk/resetlabel.c:61
+msgid "double-click to reset"
+msgstr "dublu-clic pentru reset"
+
+#: ../src/gui/background_jobs.c:34
+msgid "background jobs"
+msgstr "sarcini în fundal"
+
+#: ../src/gui/camera_import_dialog.c:227
+msgid "store value as default"
+msgstr "stochează ca valoare implicită"
+
+#: ../src/gui/camera_import_dialog.c:234
+msgid "reset value to default"
+msgstr "resetează la valoarea implicită"
+
+#: ../src/gui/camera_import_dialog.c:258
+msgid "import images from camera"
+msgstr "importă imagini de la cameră"
+
+#: ../src/gui/camera_import_dialog.c:258
+msgid "cancel"
+msgstr "anulează"
+
+#: ../src/gui/camera_import_dialog.c:266
+msgid "my jobcode"
+msgstr "codul operaţiei mele"
+
+#. Top info
+#: ../src/gui/camera_import_dialog.c:274
+msgid "please wait while prefetching thumbnails of images from camera..."
+msgstr "te rog aşteaptă până se preiau thumbnail-urile imaginilor de pe cameră..."
+
+#. jobcode
+#: ../src/gui/camera_import_dialog.c:280
+#: ../src/libs/capture.c:104
+msgid "jobcode"
+msgstr "cod operaţie"
+
+#: ../src/gui/camera_import_dialog.c:292
+msgid "thumbnail"
+msgstr "thumbnail"
+
+#: ../src/gui/camera_import_dialog.c:296
+msgid "storage file"
+msgstr "fişier stocare"
+
+#. general settings
+#: ../src/gui/camera_import_dialog.c:315
+msgid "general"
+msgstr "general"
+
+#. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
+#: ../src/gui/camera_import_dialog.c:318
+#: ../src/gui/gtk.c:703
+msgid "ignore jpeg files"
+msgstr "ignoră fişierele jpeg"
+
+#: ../src/gui/camera_import_dialog.c:319
+#: ../src/gui/gtk.c:704
+msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
+msgstr "nu încărca fişierele cu extensia .jpg sau .jpeg, poate fi de ajutor când există raw+jpeg în acelaşi director."
+
+#: ../src/gui/camera_import_dialog.c:324
+msgid "delete originals after import"
+msgstr "şterge originalele după import"
+
+#: ../src/gui/camera_import_dialog.c:328
+msgid "check this option if you want to delete images on camera after download to computer"
+msgstr "bifează această opţiune dacă vrei să ştergi imaginile de pe cameră după copierea pe computer"
+
+#: ../src/gui/camera_import_dialog.c:332
+msgid "override today's date"
+msgstr "suprascrie data de azi"
+
+#: ../src/gui/camera_import_dialog.c:334
+msgid ""
+"check this, if you want to override the timestamp used when expanding variables:\n"
+"$(YEAR), $(MONTH), $(DAY),\n"
+"$(HOUR), $(MINUTE), $(SECONDS)"
+msgstr ""
+"bifează această opţiune dacă vrei sa schimbi data folosită la expandarea variabilelor:\n"
+"$(YEAR), $(MONTH), $(DAY),\n"
+"$(HOUR), $(MINUTE), $(SECONDS)"
+
+#. Storage structure
+#: ../src/gui/camera_import_dialog.c:345
+msgid "storage structure"
+msgstr "structura de stocare"
+
+#: ../src/gui/camera_import_dialog.c:346
+msgid "the following three settings describe the directory structure and file renaming for import storage and images; if you dont know how to use this, keep the default settings."
+msgstr "următoarele trei setări descriu structura directorului şi numele de fişier pentru import şi stocare imagini; dacă nu ştii să le foloseşti păstrează valorile implicite."
+
+#: ../src/gui/camera_import_dialog.c:352
+msgid "storage directory"
+msgstr "director de stocare"
+
+#: ../src/gui/camera_import_dialog.c:355
+msgid "directory structure"
+msgstr "structura directorului"
+
+#: ../src/gui/camera_import_dialog.c:359
+msgid "filename structure"
+msgstr "structura numelui de fşier"
+
+#. Add example
+#: ../src/gui/camera_import_dialog.c:363
+msgid "above settings expands to:"
+msgstr "setările de mai sus se expandează la:"
+
+#. External backup
+#: ../src/gui/camera_import_dialog.c:374
+msgid "external backup"
+msgstr "backup extern"
+
+#: ../src/gui/camera_import_dialog.c:375
+msgid "external backup is an option to automatic do a backup of the imported image(s) to another physical location, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."
+msgstr "backup-ul extern e opţiunea prin care se face automat backup la imagini într-o altă locaţie fizică, odată activată verifică numele folder-ului specificat pe dispozitivele montate... fiecare folder găsit este utilizat ca director rădăcină în structura de stocare de mai sus şi când o imagine este descărcată de pe cameră se va replica pe destinaţiile backup găsite."
+
+#: ../src/gui/camera_import_dialog.c:381
+msgid "enable backup"
+msgstr "activează backup-ul"
+
+#: ../src/gui/camera_import_dialog.c:383
+msgid "check this option to enable automatic backup of imported images"
+msgstr "bifează această opţiune pentru a activa backup-ul automat la imaginile importate"
+
+#: ../src/gui/camera_import_dialog.c:385
+msgid "warn if no backup destinations are present"
+msgstr "atenţionează dacă destinaţiile de backup nu sunt prezente"
+
+#: ../src/gui/camera_import_dialog.c:387
+msgid "check this option to get an interactive warning if no backupdestinations are present"
+msgstr "bifează această opţiune pentru a primi mesaje de atenţionare când destinaţiile de backup nu sunt prezente"
+
+#: ../src/gui/camera_import_dialog.c:389
+msgid "backup foldername"
+msgstr "numele folder-ului de backup"
+
+#: ../src/gui/camera_import_dialog.c:391
+msgid ""
+"this is the name of folder that indicates a backup destination,\n"
+"if such a folder is found in any mounter media it is used as a backup destination."
+msgstr ""
+"acesta este numele folder-ului folosit ca destinaţie de backup,\n"
+"dacă acest folder este găsit (pe orice mediu montat) va fi folosit ca destinaţie de backup."
+
+#: ../src/gui/camera_import_dialog.c:407
+msgid "images"
+msgstr "imagini"
+
+#: ../src/gui/camera_import_dialog.c:408
+msgid "settings"
+msgstr "setări"
+
+#. Lets run dialog
+#: ../src/gui/camera_import_dialog.c:565
+msgid "select the images from the list below that you want to import into a new filmroll"
+msgstr "selectează din lista de mai jos imaginile pe care vrei să le imporţi într-o nouă rolă de film"
+
+#: ../src/gui/camera_import_dialog.c:606
+msgid "please set the basedirectory settings before importing"
+msgstr "te rog alege setările directorului de bază înainte de import"
+
+#: ../src/gui/camera_import_dialog.c:613
+msgid "please set the subdirectory settings before importing"
+msgstr "te rog alege setările subdirectorului înainte de import"
+
+#: ../src/gui/camera_import_dialog.c:620
+msgid "please set the filenamepattern settings before importing"
+msgstr "te rog alege setările pentru şablonul numelui de fişier înainte de import"
+
+#. Add the rescan button
+#: ../src/gui/devices.c:145
+msgid "scan for devices"
+msgstr "scanează după dispozitive"
+
+#: ../src/gui/devices.c:147
+msgid "scan for newly attached devices"
+msgstr "scanează după dispozitive ataşate de curând"
+
+#: ../src/gui/devices.c:172
+#, c-format
+msgid "device \"%s\" connected on port \"%s\"."
+msgstr "dispozitivul \"%s\" e conectat pe port-ul \"%s\"."
+
+#: ../src/gui/devices.c:180
+msgid "import from camera"
+msgstr "importă de la cameră"
+
+#: ../src/gui/devices.c:182
+msgid "tethered shoot"
+msgstr "declanşare comandată"
+
+#. No supported devices is detected lets notice user..
+#: ../src/gui/devices.c:202
+msgid "no supported devices found"
+msgstr "nu s-au detectat dispozitive suportate"
+
+#. switch(input_color)
+#. {
+#. case 0: // linear rgb
+#. snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
+#. break;
+#. case 1: // Lab
+#: ../src/gui/gtk.c:338
+msgid "Lab"
+msgstr "Lab"
+
+#: ../src/gui/gtk.c:406
+msgid "organize and develop images from digital cameras"
+msgstr "organizează şi developează imagini de la camere digitale"
+
+#: ../src/gui/gtk.c:411
+msgid "* developers *"
+msgstr "* programatori *"
+
+#: ../src/gui/gtk.c:416
+msgid "* ubuntu packaging, color management, video tutorials *"
+msgstr "* împachetare ubuntu, management de culoare, tutoriale video *"
+
+#: ../src/gui/gtk.c:419
+msgid "* networking, battle testing, translation expert *"
+msgstr "* reţelistică, testare, expert traducător *"
+
+#: ../src/gui/gtk.c:422
+msgid "* contributors *"
+msgstr "* contribuitori *"
+
+#: ../src/gui/gtk.c:462
+msgid "translator-credits"
+msgstr "credite traducători"
+
+#: ../src/gui/gtk.c:676
+msgid "import film"
+msgstr "importă film"
+
+#: ../src/gui/gtk.c:695
+msgid "import directories recursively"
+msgstr "importă recursiv directoarele"
+
+#: ../src/gui/gtk.c:696
+msgid "recursively import subdirectories. each directory goes into a new film roll."
+msgstr "importă recursiv subdirectoarele, fiecare director trece într-o nouă rolă de film."
+
+#: ../src/gui/gtk.c:747
+msgid "import image"
+msgstr "importă imagine"
+
+#: ../src/gui/gtk.c:772
+msgid "supported images"
+msgstr "imagini suportate"
+
+#: ../src/gui/gtk.c:777
+#: ../src/libs/copy_history.c:77
+#: ../src/libs/styles.c:241
+msgid "all files"
+msgstr "toate fişierele"
+
+#: ../src/gui/gtk.c:1125
+msgid "show global preferences"
+msgstr "afişează preferinţele globale"
+
+#: ../src/gui/gtk.c:1240
+msgid "take snapshot"
+msgstr "obține o captură"
+
+#: ../src/gui/gtk.c:1241
+msgid "take snapshot to compare with another image or the same image at another stage of development"
+msgstr "obţine o captură pentru a o compara cu o altă imagine sau cu aceeaşi imagine în alt stadiu de developare"
+
+#: ../src/gui/histogram.c:35
+#: ../src/gui/histogram.c:190
+msgid ""
+"drag to change exposure,\n"
+"doubleclick resets"
+msgstr ""
+"trage pentru a schimba expunerea,\n"
+"dublu-clic resetează"
+
+#: ../src/gui/histogram.c:185
+msgid ""
+"drag to change black point,\n"
+"doubleclick resets"
+msgstr ""
+"trage pentru a modifica punctul de negru,\n"
+"dublu-clic resetează"
+
+#: ../src/gui/iop_history.c:96
+#, c-format
+msgid "applied style `%s' on current image"
+msgstr "s-a aplicat stilul `%s' pe imaginea curentă"
+
+#: ../src/gui/iop_history.c:129
+msgid "no styles have been created yet"
+msgstr "încă nu au fost create stiluri"
+
+#: ../src/gui/iop_history.c:138
+msgid "compress history stack"
+msgstr "comprimă stiva de istoric"
+
+#: ../src/gui/iop_history.c:139
+msgid "create a minimal history stack which produces the same image"
+msgstr "creează stiva de istoric minimă care produce aceeaşi imagine"
+
+#: ../src/gui/iop_history.c:147
+msgid "create a style from the current history stack"
+msgstr "creează un stil din stiva de istoric curentă"
+
+#: ../src/gui/iop_history.c:153
+msgid "applies a style selected from popup menu"
+msgstr "aplică un stil selectat din meniul popup"
+
+#: ../src/gui/iop_history.c:178
+#: ../src/gui/iop_history.c:269
+msgid "0 - original"
+msgstr "0 - original"
+
+#. gtk_widget_set_size_request (bbox,-1,22);
+#. add buttong for active pipe
+#: ../src/gui/iop_modulegroups.c:216
+msgid "active"
+msgstr "activ"
+
+#: ../src/gui/iop_modulegroups.c:218
+msgid "the modules used in active pipe"
+msgstr "modulele folosite în stiva activă"
+
+#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_activepipe_widget,TRUE,TRUE,0);
+#. add buttong for active pipe
+#: ../src/gui/iop_modulegroups.c:222
+msgid "favorite"
+msgstr "favorit"
+
+#: ../src/gui/iop_modulegroups.c:224
+msgid "show modules explicit specified by user"
+msgstr "arată modulele specificate explicit de utilizator"
+
+#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_userdefined_widget,TRUE,TRUE,0);
+#. add button for basic plugins
+#. _iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
+#: ../src/gui/iop_modulegroups.c:229
+msgid "basic"
+msgstr "bază"
+
+#: ../src/gui/iop_modulegroups.c:231
+msgid "basic group"
+msgstr "grup bază"
+
+#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
+#. add button for color plugins
+#. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
+#: ../src/gui/iop_modulegroups.c:236
+msgid "color"
+msgstr "culoare"
+
+#: ../src/gui/iop_modulegroups.c:238
+msgid "color group"
+msgstr "grup culoare"
+
+#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_color_widget,TRUE,TRUE,0);
+#. add button for correction plugins
+#. _iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
+#: ../src/gui/iop_modulegroups.c:243
+msgid "correct"
+msgstr "corecţie"
+
+#: ../src/gui/iop_modulegroups.c:245
+msgid "correction group"
+msgstr "grup corecţie"
+
+#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_correct_widget,TRUE,TRUE,0);
+#. add buttons for artistic plugins
+#. _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
+#: ../src/gui/iop_modulegroups.c:250
+msgid "effect"
+msgstr "efecte"
+
+#: ../src/gui/iop_modulegroups.c:252
+msgid "effect group"
+msgstr "grup efecte"
+
+#: ../src/gui/preferences.c:29
+msgid "darktable preferences"
+msgstr "preferinţe darktable"
+
+#: ../src/gui/preferences.c:31
+msgid "close"
+msgstr "închide"
+
+#: ../src/gui/presets.c:107
+#: ../src/gui/presets.c:521
+#: ../src/gui/presets.c:534
+#: ../src/libs/lib.c:60
+msgid "(default)"
+msgstr "(implicit)"
+
+#: ../src/gui/presets.c:208
+#, c-format
+msgid "edit `%s' for module `%s'"
+msgstr "editează `%s' pentru modulul `%s'"
+
+#: ../src/gui/presets.c:233
+#: ../src/libs/lib.c:140
+msgid "name of the preset"
+msgstr "numele presetării"
+
+#: ../src/gui/presets.c:237
+#: ../src/libs/lib.c:144
+msgid "description or further information"
+msgstr "descriere sau mai multe informaţii"
+
+#: ../src/gui/presets.c:239
+msgid "auto apply this preset to matching images"
+msgstr "aplică automat această presetare la imaginile potrivite"
+
+#: ../src/gui/presets.c:241
+msgid "only show this preset for matching images"
+msgstr "arată această presetare doar pentru imaginile potrivite"
+
+#: ../src/gui/presets.c:242
+msgid "be very careful with this option. this might be the last time you see your preset."
+msgstr "fii foarte atent cu această opțiune. poate fi ultima dată când vezi presetarea."
+
+#: ../src/gui/presets.c:257
+#, c-format
+msgid "string to match model (use % as wildcard)"
+msgstr "caută după model (folosește caracterul special %)"
+
+#: ../src/gui/presets.c:264
+#, c-format
+msgid "string to match maker (use % as wildcard)"
+msgstr "caută după producător (folosește caracterul special %)"
+
+#: ../src/gui/presets.c:271
+#, c-format
+msgid "string to match lens (use % as wildcard)"
+msgstr "caută după obiectiv (folosește caracterul special %)"
+
+#: ../src/gui/presets.c:283
+msgid "minimum iso value"
+msgstr "valoarea iso minimă"
+
+#: ../src/gui/presets.c:287
+msgid "maximum iso value"
+msgstr "valoarea iso maximă"
+
+#: ../src/gui/presets.c:297
+msgid "minimum exposure time"
+msgstr "timp minim de expunere"
+
+#: ../src/gui/presets.c:298
+msgid "maximum exposure time"
+msgstr "timp maxim de expunere"
+
+#: ../src/gui/presets.c:312
+msgid "minimum aperture value"
+msgstr "apertură minimă"
+
+#: ../src/gui/presets.c:313
+msgid "maximum aperture value"
+msgstr "apertură maximă"
+
+#. focal length
+#: ../src/gui/presets.c:322
+#: ../src/libs/camera.c:511
+msgid "focal length"
+msgstr "lungime focală"
+
+#: ../src/gui/presets.c:329
+msgid "minimum focal length"
+msgstr "lungime focală minimă"
+
+#: ../src/gui/presets.c:330
+msgid "maximum focal length"
+msgstr "lungime focală maximă"
+
+#. then show edit dialog
+#: ../src/gui/presets.c:393
+#: ../src/gui/presets.c:398
+#: ../src/gui/presets.c:405
+#: ../src/libs/lib.c:174
+#: ../src/libs/lib.c:179
+#: ../src/libs/lib.c:185
+msgid "new preset"
+msgstr "presetare nouă"
+
+#: ../src/gui/presets.c:555
+#: ../src/libs/lib.c:305
+msgid "edit this preset.."
+msgstr "editează această presetare.."
+
+#: ../src/gui/presets.c:559
+#: ../src/libs/lib.c:309
+msgid "delete this preset"
+msgstr "șterge această presetare"
+
+#. only show if it is not the default already
+#: ../src/gui/presets.c:567
+msgid "use preset as default"
+msgstr "folosește această presetare implicit"
+
+#: ../src/gui/presets.c:574
+#: ../src/libs/lib.c:316
+msgid "store new preset.."
+msgstr "stochează presetare nouă.."
+
+#. only show this if presets already contains a default
+#: ../src/gui/presets.c:584
+msgid "remove default"
+msgstr "elimină presetarea implicită"
+
+#: ../src/gui/styles_dialog.c:183
+#, c-format
+msgid "edit style"
+msgstr "editează stil"
+
+#: ../src/gui/styles_dialog.c:187
+msgid "create new style"
+msgstr "creează stil nou"
+
+#: ../src/gui/styles_dialog.c:207
+msgid "enter a name for the new style"
+msgstr "introdu un nume pentru noul stil"
+
+#: ../src/gui/styles_dialog.c:210
+msgid "enter a description for the new style, this description is searchable"
+msgstr "introdu o descriere pentru noul stil, se poate căuta în descriere"
+
+#: ../src/gui/styles_dialog.c:229
+msgid "advanced edit of style"
+msgstr "editare advansată de stil"
+
+#: ../src/gui/styles_dialog.c:249
+msgid "include"
+msgstr "include"
+
+#: ../src/gui/styles_dialog.c:260
+msgid "item"
+msgstr "element"
+
+#: ../src/gui/styles_dialog.c:341
+msgid "can't create style out of unaltered image"
+msgstr "nu se poate crea un stil dintr-o imagine nemodificată"
+
+#: ../src/gui/tool_colorlabels.c:42
+msgid ""
+"toggle red label\n"
+"of selected images (f1)"
+msgstr ""
+"comută eticheta roșie\n"
+"pe imaginile selectate  (f1)"
+
+#: ../src/gui/tool_colorlabels.c:47
+msgid ""
+"toggle yellow label\n"
+"of selected images (f2)"
+msgstr ""
+"comută eticheta galbenă\n"
+"pe imaginile selectate (f2)"
+
+#: ../src/gui/tool_colorlabels.c:52
+msgid ""
+"toggle green label\n"
+"of selected images (f3)"
+msgstr ""
+"comută eticheta verde\n"
+"pe imaginile selectate  (f3)"
+
+#: ../src/gui/tool_colorlabels.c:57
+msgid ""
+"toggle blue label\n"
+"of selected images (f4)"
+msgstr ""
+"comută eticheta albastră\n"
+"pe imaginile selectate  (f4)"
+
+#: ../src/gui/tool_colorlabels.c:62
+msgid ""
+"toggle purple label\n"
+"of selected images (f5)"
+msgstr ""
+"comută eticheta violet\n"
+"pe imaginile selectate  (f5)"
+
+#: ../src/gui/tool_colorlabels.c:67
+msgid "clear all labels of selected images"
+msgstr "elimină toate etichetele de pe imaginile selectate"
+
+#: ../src/imageio/format/copy.c:142
+#: ../src/libs/copy_history.c:201
+msgid "copy"
+msgstr "copiază"
+
+#: ../src/imageio/format/copy.c:150
+msgid ""
+"do a 1:1 copy of the selected files.\n"
+"the global options below do not apply!"
+msgstr ""
+"fă o copie 1:1 a fișierelor selectate.\n"
+"opțiunile globale de mai jos nu se aplică!"
+
+#: ../src/imageio/format/exr.cc:163
+msgid "openexr"
+msgstr "openexr"
+
+#: ../src/imageio/format/jpeg.c:628
+msgid "8-bit jpg"
+msgstr "jpg pe 8-biți"
+
+#: ../src/imageio/format/jpeg.c:648
+#: ../src/libs/camera.c:551
+msgid "quality"
+msgstr "calitate"
+
+#: ../src/imageio/format/pfm.c:141
+msgid "float pfm"
+msgstr "float pfm"
+
+#: ../src/imageio/format/png.c:375
+msgid "8/16-bit png"
+msgstr "png pe 8/16-biți"
+
+#: ../src/imageio/format/png.c:393
+#: ../src/imageio/format/tiff.c:239
+msgid "8-bit"
+msgstr "8-biți"
+
+#: ../src/imageio/format/png.c:398
+#: ../src/imageio/format/tiff.c:244
+msgid "16-bit"
+msgstr "16-biți"
+
+#: ../src/imageio/format/ppm.c:93
+msgid "16-bit ppm"
+msgstr "ppm pe 16-biți"
+
+#: ../src/imageio/format/tiff.c:221
+msgid "8/16-bit tiff"
+msgstr "tiff pe 8/16-biți"
+
+#: ../src/imageio/storage/disk.c:55
+msgid "file on disk"
+msgstr "fișier pe disc"
+
+#: ../src/imageio/storage/disk.c:63
+#: ../src/imageio/storage/disk.c:130
+#: ../src/imageio/storage/gallery.c:78
+#: ../src/imageio/storage/gallery.c:147
+#: ../src/libs/styles.c:201
+msgid "select directory"
+msgstr "selectează director"
+
+#: ../src/imageio/storage/disk.c:106
+msgid ""
+"enter the path where to put exported images:\n"
+"$(ROLL_NAME) - roll of the input image\n"
+"$(FILE_DIRECTORY) - directory of the input image\n"
+"$(FILE_NAME) - basename of the input image\n"
+"$(FILE_EXTENSION) - extension of the input image\n"
+"$(SEQUENCE) - sequence number\n"
+"$(YEAR) - year\n"
+"$(MONTH) - month\n"
+"$(DAY) - day\n"
+"$(HOUR) - hour\n"
+"$(MINUTE) - minute\n"
+"$(SECOND) - second\n"
+"$(EXIF_YEAR) - exif year\n"
+"$(EXIF_MONTH) - exif month\n"
+"$(EXIF_DAY) - exif day\n"
+"$(EXIF_HOUR) - exif hour\n"
+"$(EXIF_MINUTE) - exif minute\n"
+"$(EXIF_SECOND) - exif second\n"
+"$(PICTURES_FOLDER) - pictures folder\n"
+"$(HOME_FOLDER) - home folder\n"
+"$(DESKTOP_FOLDER) - desktop folder"
+msgstr ""
+"introdu calea unde se vor exporta imaginile:\n"
+"$(ROLL_NAME) - rola imaginilor de exportat\n"
+"$(FILE_DIRECTORY) - directorul imaginilor de exportat\n"
+"$(FILE_NAME) - nume de bază al imaginilor de exportat\n"
+"$(FILE_EXTENSION) - extensia imaginilor de exportat\n"
+"$(SEQUENCE) - număr secvență\n"
+"$(YEAR) - an\n"
+"$(MONTH) - lună\n"
+"$(DAY) - zi\n"
+"$(HOUR) - oră\n"
+"$(MINUTE) - minut\n"
+"$(SECOND) - secundă\n"
+"$(EXIF_YEAR) - an din exif\n"
+"$(EXIF_MONTH) - lună din exif\n"
+"$(EXIF_DAY) - zi din exif\n"
+"$(EXIF_HOUR) - oră din exif\n"
+"$(EXIF_MINUTE) - minut din exif\n"
+"$(EXIF_SECOND) - secundă din exif\n"
+"$(PICTURES_FOLDER) - dosar pictures\n"
+"$(HOME_FOLDER) - dosar home\n"
+"$(DESKTOP_FOLDER) - dosar desktop"
+
+#: ../src/imageio/storage/disk.c:191
+#: ../src/imageio/storage/gallery.c:227
+#, c-format
+msgid "could not create directory `%s'!"
+msgstr "nu s-a putut creea directorul `%s'!"
+
+#: ../src/imageio/storage/disk.c:227
+#: ../src/imageio/storage/email.c:111
+#: ../src/imageio/storage/gallery.c:331
+#, c-format
+msgid "%d/%d exported to `%s%s'"
+msgstr "%d/%d exportat în `%s%s'"
+
+#: ../src/imageio/storage/email.c:54
+msgid "send as email"
+msgstr "trimite pe email"
+
+#: ../src/imageio/storage/flickr.c:113
+#, c-format
+msgid "flickr authentication: %s"
+msgstr "autentificare flickr: %s"
+
+#: ../src/imageio/storage/flickr.c:188
+msgid "step 1: a new window or tab of your browser should have been loaded. you have to login into your flickr account there and authorize darktable to upload photos before continuing."
+msgstr "pasul 1: ar trebui să se deschidă o nouă fereastră sau un nou tab în browser-ul tău. trebuie să faci login în contul tău flickr și să autorizezi darktable pentru upload înainte de a continua."
+
+#: ../src/imageio/storage/flickr.c:189
+msgid "step 2: click the ok button once you are done."
+msgstr "pasul 2: dă clic pe butonul ok odată ce ai terminat."
+
+#: ../src/imageio/storage/flickr.c:196
+msgid "flickr authentication"
+msgstr "autentificare flickr"
+
+#: ../src/imageio/storage/flickr.c:332
+msgid "flickr webalbum"
+msgstr "album flickr"
+
+#: ../src/imageio/storage/flickr.c:356
+#: ../src/imageio/storage/flickr.c:396
+#: ../src/imageio/storage/flickr.c:812
+#: ../src/imageio/storage/flickr.c:818
+msgid "not authenticated"
+msgstr "neautentificat"
+
+#: ../src/imageio/storage/flickr.c:392
+#: ../src/imageio/storage/flickr.c:808
+#: ../src/imageio/storage/picasa.c:643
+msgid "authenticated"
+msgstr "autentificat"
+
+#. Add standard action
+#: ../src/imageio/storage/flickr.c:411
+msgid "without album"
+msgstr "fără album"
+
+#. Add standard action
+#: ../src/imageio/storage/flickr.c:412
+#: ../src/imageio/storage/flickr.c:440
+#: ../src/imageio/storage/picasa.c:666
+#: ../src/imageio/storage/picasa.c:707
+msgid "create new album"
+msgstr "creează album nou"
+
+#: ../src/imageio/storage/flickr.c:496
+msgid "flickr user"
+msgstr "utilizator flickr"
+
+#. ui->label2 = GTK_LABEL(  gtk_label_new( _("F_password") ) );
+#: ../src/imageio/storage/flickr.c:498
+msgid "photosets"
+msgstr "seturi fotografii"
+
+#: ../src/imageio/storage/flickr.c:501
+#: ../src/imageio/storage/picasa.c:768
+msgid "summary"
+msgstr "sumar"
+
+#. gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
+#: ../src/imageio/storage/flickr.c:541
+msgid "my new photoset"
+msgstr "noul meu set de fotografii"
+
+#: ../src/imageio/storage/flickr.c:542
+#: ../src/imageio/storage/picasa.c:809
+msgid "exported from darktable"
+msgstr "exportat din darktable"
+
+#: ../src/imageio/storage/flickr.c:560
+#: ../src/imageio/storage/picasa.c:827
+msgid "refresh album list"
+msgstr "reîmprospătează lista de albume"
+
+#: ../src/imageio/storage/flickr.c:566
+msgid "public images"
+msgstr "imagini publice"
+
+#: ../src/imageio/storage/flickr.c:567
+#: ../src/imageio/storage/picasa.c:834
+msgid "export tags"
+msgstr "tag-uri export"
+
+#. this makes sense only if the export was successful
+#: ../src/imageio/storage/flickr.c:745
+#, c-format
+msgid "%d/%d exported to flickr webalbum"
+msgstr "%d/%d exportate în albumul flickr"
+
+#: ../src/imageio/storage/flickr.c:820
+msgid "Flickr account not authenticated"
+msgstr "Contul flickr nu este autentificat"
+
+#: ../src/imageio/storage/gallery.c:70
+msgid "website gallery"
+msgstr "galerie portal web"
+
+#: ../src/imageio/storage/gallery.c:123
+msgid ""
+"enter the path where to create the website gallery:\n"
+"$(ROLL_NAME) - roll of the input image\n"
+"$(FILE_DIRECTORY) - directory of the input image\n"
+"$(FILE_NAME) - basename of the input image\n"
+"$(FILE_EXTENSION) - extension of the input image\n"
+"$(SEQUENCE) - sequence number\n"
+"$(YEAR) - year\n"
+"$(MONTH) - month\n"
+"$(DAY) - day\n"
+"$(HOUR) - hour\n"
+"$(MINUTE) - minute\n"
+"$(SECOND) - second\n"
+"$(EXIF_YEAR) - exif year\n"
+"$(EXIF_MONTH) - exif month\n"
+"$(EXIF_DAY) - exif day\n"
+"$(EXIF_HOUR) - exif hour\n"
+"$(EXIF_MINUTE) - exif minute\n"
+"$(EXIF_SECOND) - exif second\n"
+"$(PICTURES_FOLDER) - pictures folder\n"
+"$(HOME_FOLDER) - home folder\n"
+"$(DESKTOP_FOLDER) - desktop folder"
+msgstr ""
+"introdu calea unde se va crea galeria portal web:\n"
+"$(ROLL_NAME) - rola imaginilor de exportat\n"
+"$(FILE_DIRECTORY) - directorul imaginilor de exportat\n"
+"$(FILE_NAME) - nume de bază al imaginilor de exportat\n"
+"$(FILE_EXTENSION) - extensia imaginilor de exportat\n"
+"$(SEQUENCE) - număr secvență\n"
+"$(YEAR) - an\n"
+"$(MONTH) - lună\n"
+"$(DAY) - zi\n"
+"$(HOUR) - oră\n"
+"$(MINUTE) - minut\n"
+"$(SECOND) - secundă\n"
+"$(EXIF_YEAR) - an din exif\n"
+"$(EXIF_MONTH) - lună din exif\n"
+"$(EXIF_DAY) - zi din exif\n"
+"$(EXIF_HOUR) - oră din exif\n"
+"$(EXIF_MINUTE) - minut din exif\n"
+"$(EXIF_SECOND) - secundă din exif\n"
+"$(PICTURES_FOLDER) - dosar pictures\n"
+"$(HOME_FOLDER) - dosar home\n"
+"$(DESKTOP_FOLDER) - dosar desktop"
+
+#: ../src/imageio/storage/gallery.c:159
+msgid "enter the title of the website"
+msgstr "introdu titlul portalului web"
+
+#: ../src/imageio/storage/picasa.c:604
+msgid "picasa webalbum"
+msgstr "album picasa"
+
+#. Failed to authenticated, let's notify somehow...
+#: ../src/imageio/storage/picasa.c:696
+msgid "authentication failed"
+msgstr "autentificare eşuată"
+
+#: ../src/imageio/storage/picasa.c:763
+msgid "user"
+msgstr "utilizator"
+
+#: ../src/imageio/storage/picasa.c:764
+msgid "password"
+msgstr "parolă"
+
+#: ../src/imageio/storage/picasa.c:765
+msgid "albums"
+msgstr "albume"
+
+#: ../src/imageio/storage/picasa.c:808
+msgid "my new album"
+msgstr "noul meu album"
+
+#: ../src/imageio/storage/picasa.c:833
+msgid "public album"
+msgstr "album public"
+
+#: ../src/imageio/storage/picasa.c:986
+#, c-format
+msgid "%d/%d exported to picasa webalbum"
+msgstr "%d/%d exportate în albumul picasa"
+
+#. make sure you put all your translatable strings into _() !
+#: ../src/iop/anlfyeni.c:80
+#: ../src/iop/localc.c:81
+msgid "local contrast 2"
+msgstr "contrast local 2"
+
+#: ../src/iop/anlfyeni.c:275
+#: ../src/iop/localc.c:283
+msgid "sensitivity of edge detection"
+msgstr "sensibilitatea la detectarea de margini"
+
+#: ../src/iop/anlfyeni.c:276
+#: ../src/iop/localc.c:284
+msgid "sensitivity"
+msgstr "sensibilitate"
+
+#: ../src/iop/anlfyeni.c:278
+#: ../src/iop/localc.c:286
+msgid "spatial extent of the effect around edges"
+msgstr "întinderea spațială a efectului în jurul marginilor"
+
+#: ../src/iop/anlfyeni.c:279
+#: ../src/iop/lens.c:1358
+#: ../src/iop/localc.c:287
+#: ../src/iop/vignette.c:847
+#: ../src/iop/watermark.c:674
+msgid "scale"
+msgstr "scală"
+
+#: ../src/iop/anlfyeni.c:281
+#: ../src/iop/localc.c:289
+msgid "strength of the local contrast"
+msgstr "puterea contrastului local"
+
+#: ../src/iop/anlfyeni.c:282
+#: ../src/iop/bloom.c:330
+#: ../src/iop/grain.c:512
+#: ../src/iop/localc.c:290
+#: ../src/iop/stuckpixels.c:234
+msgid "strength"
+msgstr "putere"
+
+#: ../src/iop/atrous.c:112
+msgid "equalizer"
+msgstr "egalizator"
+
+#: ../src/iop/atrous.c:665
+msgid "enhance coarse"
+msgstr "intensifică grosier"
+
+#: ../src/iop/atrous.c:679
+msgid "sharpen and denoise (strong)"
+msgstr "accentuare claritate și eliminare zgomot (puternică)"
+
+#: ../src/iop/atrous.c:693
+msgid "sharpen and denoise"
+msgstr "accentuare claritate și eliminare zgomot"
+
+#: ../src/iop/atrous.c:707
+#: ../src/iop/equalizer.c:260
+msgid "sharpen (strong)"
+msgstr "accentuare de claritate (puternică)"
+
+#: ../src/iop/atrous.c:721
+msgctxt "atrous"
+msgid "sharpen"
+msgstr "accentuare de claritate"
+
+#: ../src/iop/atrous.c:735
+#: ../src/iop/bilateral.cc:70
+#: ../src/iop/equalizer.c:286
+msgid "denoise"
+msgstr "eliminare zgomot"
+
+#: ../src/iop/atrous.c:751
+#: ../src/iop/equalizer.c:296
+msgid "denoise (strong)"
+msgstr "eliminare zgomot (puternică)"
+
+#: ../src/iop/atrous.c:766
+#: ../src/iop/bloom.c:67
+msgid "bloom"
+msgstr "efect de bloom"
+
+#: ../src/iop/atrous.c:780
+msgid "clarity (subtle)"
+msgstr "claritate (subtilă)"
+
+#: ../src/iop/atrous.c:794
+msgid "clarity"
+msgstr "claritate"
+
+#: ../src/iop/atrous.c:1042
+#: ../src/iop/atrous.c:1046
+msgid "coarse"
+msgstr "grosier"
+
+#: ../src/iop/atrous.c:1048
+#: ../src/iop/atrous.c:1052
+msgid "fine"
+msgstr "fin"
+
+#: ../src/iop/atrous.c:1059
+msgid "contrasty"
+msgstr "contrastant"
+
+#: ../src/iop/atrous.c:1060
+#: ../src/iop/atrous.c:1064
+msgid "smooth"
+msgstr "neted"
+
+#: ../src/iop/atrous.c:1065
+msgid "noisy"
+msgstr "zgomotos"
+
+#. case atrous_s:
+#: ../src/iop/atrous.c:1068
+msgid "bold"
+msgstr "reliefat"
+
+#: ../src/iop/atrous.c:1069
+msgid "dull"
+msgstr "șters"
+
+#: ../src/iop/atrous.c:1250
+#: ../src/iop/equalizer.c:343
+msgid "luma"
+msgstr "luma"
+
+#: ../src/iop/atrous.c:1251
+msgid "change lightness at each feature size"
+msgstr "modifică luminozitatea la fiecare redimensionare"
+
+#: ../src/iop/atrous.c:1252
+#: ../src/iop/equalizer.c:344
+msgid "chroma"
+msgstr "chroma"
+
+#: ../src/iop/atrous.c:1253
+msgid "change color saturation at each feature size"
+msgstr "modifică saturația de culoare la fiecare redimensionare"
+
+#: ../src/iop/atrous.c:1254
+msgid "sharpness"
+msgstr "acuitate"
+
+#: ../src/iop/atrous.c:1255
+msgid "sharpness of edges at each feature size"
+msgstr "acuitatea marginilor la fiecare redimensionare"
+
+#: ../src/iop/atrous.c:1291
+#: ../src/iop/soften.c:352
+msgid "mix"
+msgstr "amestecă"
+
+#: ../src/iop/atrous.c:1292
+msgid "make effect stronger or weaker"
+msgstr "accentuează sau diminuează efect"
+
+#: ../src/iop/basecurve.c:50
+#: ../src/iop/profile_gamma.c:181
+#: ../src/iop/tonecurve.c:109
+msgid "linear"
+msgstr "liniar"
+
+#: ../src/iop/basecurve.c:51
+msgid "dark contrast"
+msgstr "contrast închis"
+
+#: ../src/iop/basecurve.c:52
+msgid "canon eos like"
+msgstr "similar canon eos"
+
+#: ../src/iop/basecurve.c:53
+msgid "nikon like"
+msgstr "similar nikon"
+
+#: ../src/iop/basecurve.c:54
+msgid "sony alpha like"
+msgstr "similar sony alpha"
+
+#: ../src/iop/basecurve.c:55
+msgid "pentax like"
+msgstr "similar pentax"
+
+#: ../src/iop/basecurve.c:56
+msgid "olympus like"
+msgstr "similar olympus"
+
+#: ../src/iop/basecurve.c:57
+msgid "panasonic like"
+msgstr "similar panasonic"
+
+#: ../src/iop/basecurve.c:58
+msgid "leica like"
+msgstr "similar leica"
+
+#: ../src/iop/basecurve.c:59
+msgid "kodak easyshare like"
+msgstr "similar kodak easyshare"
+
+#: ../src/iop/basecurve.c:60
+msgid "konica minolta like"
+msgstr "similar konica minolta"
+
+#: ../src/iop/basecurve.c:61
+msgid "fotogenetic (point & shoot)"
+msgstr "fotogenetic (încadrează și declanșează )"
+
+#: ../src/iop/basecurve.c:62
+msgid "fotogenetic (EV3)"
+msgstr "fotogenetic (EV3)"
+
+#: ../src/iop/basecurve.c:133
+msgid "base curve"
+msgstr "curbă de bază"
+
+#: ../src/iop/basecurve.c:592
+msgid ""
+"abscissa: input, ordinate: output \n"
+"works on RGB channels"
+msgstr ""
+"abscisa la intrare, ordonata la ieşire\n"
+"funcţionează pe canalele RGB"
+
+#: ../src/iop/bilateral.cc:304
+msgid "spatial extent of the gaussian"
+msgstr "întinderea spațială a gaussian-ului"
+
+#: ../src/iop/bilateral.cc:305
+msgid "how much to blur red"
+msgstr "cât se estompează canalul roşu"
+
+#: ../src/iop/bilateral.cc:306
+msgid "how much to blur green"
+msgstr "cât se estompează canalul verde"
+
+#: ../src/iop/bilateral.cc:307
+msgid "how much to blur blue"
+msgstr "cât se estompează canalul albastru"
+
+#: ../src/iop/bilateral.cc:309
+#: ../src/iop/clahe.c:344
+#: ../src/iop/sharpen.c:358
+msgid "radius"
+msgstr "raza"
+
+#: ../src/iop/bloom.c:326
+#: ../src/iop/soften.c:345
+#: ../src/libs/camera.c:561
+msgid "size"
+msgstr "mărime"
+
+#: ../src/iop/bloom.c:328
+#: ../src/iop/sharpen.c:364
+msgid "threshold"
+msgstr "prag"
+
+#: ../src/iop/bloom.c:336
+msgid "the size of bloom"
+msgstr "dimensiunea efectului de bloom"
+
+#: ../src/iop/bloom.c:337
+msgid "the threshold of light"
+msgstr "prag de luminozitate"
+
+#: ../src/iop/bloom.c:338
+msgid "the strength of bloom"
+msgstr "puterea efectului de bloom"
+
+#. make sure you put all your translatable strings into _() !
+#: ../src/iop/cacorrect.c:57
+msgid "chromatic aberrations"
+msgstr "aberaţii cromatice"
+
+#: ../src/iop/cacorrect.c:1203
+msgid "automatic chromatic aberration correction"
+msgstr "corecţie automată a aberaţiilor cromatice"
+
+#: ../src/iop/cacorrect.c:1205
+msgid ""
+"automatic chromatic aberration correction\n"
+"only works for raw images."
+msgstr ""
+"corecţia automată a aberaţiilor cromatice\n"
+"funcţionează doar pe imagini raw."
+
+#: ../src/iop/channelmixer.c:110
+msgid "channel mixer"
+msgstr "mixor de canale"
+
+#: ../src/iop/channelmixer.c:334
+msgid "output channel"
+msgstr "canal de ieşire"
+
+#. adding the labels
+#: ../src/iop/channelmixer.c:336
+#: ../src/iop/colorzones.c:791
+#: ../src/iop/colorzones.c:811
+#: ../src/iop/graduatednd.c:526
+#: ../src/iop/splittoning.c:425
+#: ../src/iop/splittoning.c:484
+msgid "hue"
+msgstr "nuanță"
+
+#: ../src/iop/channelmixer.c:337
+#: ../src/iop/colorcorrection.c:193
+#: ../src/iop/colorzones.c:792
+#: ../src/iop/colorzones.c:810
+#: ../src/iop/graduatednd.c:527
+#: ../src/iop/soften.c:347
+#: ../src/iop/splittoning.c:426
+#: ../src/iop/splittoning.c:485
+#: ../src/iop/velvia.c:237
+#: ../src/iop/vignette.c:852
+msgid "saturation"
+msgstr "saturație"
+
+#: ../src/iop/channelmixer.c:338
+#: ../src/iop/colorzones.c:793
+#: ../src/iop/colorzones.c:809
+msgid "lightness"
+msgstr "luminozitate"
+
+#: ../src/iop/channelmixer.c:342
+msgid "gray"
+msgstr "gri"
+
+#: ../src/iop/channelmixer.c:347
+msgid "source channels"
+msgstr "canale sursă"
+
+#: ../src/iop/channelmixer.c:355
+msgid "amount of red channel in the output channel"
+msgstr "cantitatea de roșu în canalul de ieşire"
+
+#: ../src/iop/channelmixer.c:358
+msgid "amount of green channel in the output channel"
+msgstr "cantitatea de verde în canalul de ieşire"
+
+#: ../src/iop/channelmixer.c:361
+msgid "amount of blue channel in the output channel"
+msgstr "cantitatea de albastru în canalul de ieşire"
+
+#: ../src/iop/channelmixer.c:383
+msgid "swap R and B"
+msgstr "schimbă roşu cu albastru"
+
+#: ../src/iop/channelmixer.c:389
+msgid "swap G and B"
+msgstr "schimbă verde cu albastru"
+
+#: ../src/iop/channelmixer.c:395
+msgid "color contrast boost"
+msgstr "amplifică contrastul de culoare"
+
+#: ../src/iop/channelmixer.c:401
+msgid "color details boost"
+msgstr "amplifică detaliile de culoare"
+
+#: ../src/iop/channelmixer.c:407
+msgid "color artifacts boost"
+msgstr "amplifică artefactele de culoare"
+
+#: ../src/iop/channelmixer.c:413
+msgid "b/w"
+msgstr "alb-negru"
+
+#: ../src/iop/channelmixer.c:419
+msgid "b/w artifacts boost"
+msgstr "amplifică artefactele alb-negru"
+
+#: ../src/iop/channelmixer.c:425
+msgid "b/w smooth skin"
+msgstr "netezeşte pielea alb-negru"
+
+#: ../src/iop/channelmixer.c:431
+msgid "b/w blue artifacts reduce"
+msgstr "atenuează artefactele albastre alb-negru"
+
+#: ../src/iop/clahe.c:68
+msgid "local contrast"
+msgstr "contrast local"
+
+#: ../src/iop/clahe.c:346
+#: ../src/iop/sharpen.c:361
+msgid "amount"
+msgstr "cantitate"
+
+#: ../src/iop/clahe.c:355
+msgid "size of features to preserve"
+msgstr "mărimea caracteristicilor de păstrat"
+
+#: ../src/iop/clahe.c:356
+msgid "strength of the effect"
+msgstr "puterea efectului"
+
+#: ../src/iop/clipping.c:144
+msgid "crop and rotate"
+msgstr "taie şi roteşte"
+
+#: ../src/iop/clipping.c:538
+msgid "rotate by  90"
+msgstr "roteşte la 90"
+
+#: ../src/iop/clipping.c:540
+msgid "rotate by -90"
+msgstr "roteşte la -90"
+
+#: ../src/iop/clipping.c:542
+msgid "rotate by 180"
+msgstr "roteşte la 180"
+
+#. -------------------------------------------
+#: ../src/iop/clipping.c:766
+#: ../src/iop/clipping.c:852
+msgid "flip"
+msgstr "întoarce"
+
+#: ../src/iop/clipping.c:773
+msgid "flip image horizontally"
+msgstr "întoarce imaginea pe orizontală"
+
+#: ../src/iop/clipping.c:774
+msgid "flip image vertically"
+msgstr "întoarce imaginea pe verticală"
+
+#: ../src/iop/clipping.c:777
+msgid "angle"
+msgstr "unghi"
+
+#: ../src/iop/clipping.c:781
+msgid "right-click and drag a line on the image to drag a straight line"
+msgstr "dă clic dreapta și trage o linie pe imagine pentru a obține o linie dreaptă"
+
+#: ../src/iop/clipping.c:786
+msgid "keystone h"
+msgstr "cheie de boltă h"
+
+#: ../src/iop/clipping.c:787
+msgid "adjust perspective for horizontal keystone distortion"
+msgstr "adjustează perspectiva pentru distorsiunile orizontale ale cheii de boltă"
+
+#: ../src/iop/clipping.c:793
+msgid "keystone v"
+msgstr "cheie de boltă v"
+
+#: ../src/iop/clipping.c:794
+msgid "adjust perspective for vertical keystone distortion"
+msgstr "adjustează perspectiva pentru distorsiunile verticale ale cheii de boltă"
+
+#: ../src/iop/clipping.c:799
+msgid "aspect"
+msgstr "aspect"
+
+#: ../src/iop/clipping.c:804
+msgid "free"
+msgstr "liber"
+
+#: ../src/iop/clipping.c:806
+msgid "golden cut"
+msgstr "secţiunea de aur"
+
+#: ../src/iop/clipping.c:807
+msgid "1:2"
+msgstr "1:2"
+
+#: ../src/iop/clipping.c:808
+msgid "3:2"
+msgstr "3:2"
+
+#: ../src/iop/clipping.c:809
+msgid "4:3"
+msgstr "4:3"
+
+#: ../src/iop/clipping.c:810
+msgid "square"
+msgstr "pătrat"
+
+#: ../src/iop/clipping.c:811
+msgid "DIN"
+msgstr "DIN"
+
+#: ../src/iop/clipping.c:812
+msgid "16:9"
+msgstr "16:9"
+
+#: ../src/iop/clipping.c:819
+msgid ""
+"set the aspect ratio (w:h)\n"
+"press ctrl-x to swap sides"
+msgstr ""
+"setează raportul de aspect (lăţime:înălţime)\n"
+"apasă ctrl-x pentru a-l inversa"
+
+#: ../src/iop/clipping.c:825
+msgid "swap the aspect ratio (ctrl-x)"
+msgstr "inverseză raportul de aspect (ctrl-x)"
+
+#: ../src/iop/clipping.c:832
+msgid "guides"
+msgstr "ghidaj"
+
+#: ../src/iop/clipping.c:835
+msgid "none"
+msgstr "niciunul"
+
+#: ../src/iop/clipping.c:836
+msgid "grid"
+msgstr "grilă"
+
+#: ../src/iop/clipping.c:837
+msgid "rules of thirds"
+msgstr "regula treimilor"
+
+#: ../src/iop/clipping.c:838
+msgid "diagonal method"
+msgstr "metoda diagonală"
+
+#: ../src/iop/clipping.c:839
+msgid "harmonious triangles"
+msgstr "triunghiuri concordante"
+
+#: ../src/iop/clipping.c:840
+msgid "golden mean"
+msgstr "secţiunea de aur"
+
+#: ../src/iop/clipping.c:842
+msgid "with this option, you can display guide lines to help compose your photograph."
+msgstr "cu această opţiune poţi afişa linii de ghidaj pentru a te ajuta la compoziţie."
+
+#: ../src/iop/clipping.c:846
+msgid "type"
+msgstr "tip"
+
+#: ../src/iop/clipping.c:859
+msgid "flip guides horizontally"
+msgstr "întoarce ghidajul pe orizontală"
+
+#: ../src/iop/clipping.c:860
+msgid "flip guides vertically"
+msgstr "întoarce ghidajul pe verticală"
+
+#. -------------------------------------------
+#: ../src/iop/clipping.c:862
+msgid "golden sections"
+msgstr "secțiuni de aur"
+
+#: ../src/iop/clipping.c:864
+msgid "enable this option to show golden sections."
+msgstr "activează această opţiune pentru a afişa secţiunile de aur."
+
+#: ../src/iop/clipping.c:867
+msgid "spiral sections"
+msgstr "secțiuni elicoidale"
+
+#: ../src/iop/clipping.c:868
+msgid "enable this option to show golden spiral sections."
+msgstr "activează această opţiune pentru a afişa secţiunile elicoidale de aur."
+
+#: ../src/iop/clipping.c:871
+msgid "golden spiral"
+msgstr "spirala de aur"
+
+#: ../src/iop/clipping.c:872
+msgid "enable this option to show a golden spiral guide."
+msgstr "activează această opţiune pentru a afişa ghidajul spirală de aur."
+
+#: ../src/iop/clipping.c:875
+msgid "golden triangles"
+msgstr "triunghiuri de aur"
+
+#: ../src/iop/clipping.c:876
+msgid "enable this option to show golden triangles."
+msgstr "activează această opţiune pentru a afişa triunghiuri de aur."
+
+#: ../src/iop/colorcorrection.c:43
+msgid "color correction"
+msgstr "corecţie de culoare"
+
+#: ../src/iop/colorcorrection.c:171
+msgid "draw a rectangle to give a tint"
+msgstr "desenează un dreptunghi pentru a da o coloraţie"
+
+#: ../src/iop/colorcorrection.c:192
+msgid "set the global saturation"
+msgstr "setează saturaţia globală"
+
+#: ../src/iop/colorin.c:47
+msgid "input color profile"
+msgstr "profil de culoare de intrare"
+
+#: ../src/iop/colorin.c:348
+msgid "unsupported input profile has been replaced by linear rgb!"
+msgstr "profilul de intrare nesuportat a fost înlocuit de rgb liniar!"
+
+#: ../src/iop/colorin.c:550
+#: ../src/libs/export.c:523
+msgid "profile"
+msgstr "profil"
+
+#: ../src/iop/colorin.c:558
+msgid "standard color matrix"
+msgstr "matrice standard de culoare"
+
+#: ../src/iop/colorin.c:560
+msgid "enhanced color matrix"
+msgstr "matrice îmbunătățită de culoare"
+
+#: ../src/iop/colorin.c:562
+msgid "sRGB (e.g. jpg)"
+msgstr "sRGB (ex: jpg)"
+
+#: ../src/iop/colorin.c:564
+#: ../src/iop/colorout.c:700
+#: ../src/iop/colorout.c:701
+#: ../src/iop/colorout.c:702
+#: ../src/libs/export.c:476
+msgid "Adobe RGB"
+msgstr "Adobe RGB"
+
+#: ../src/iop/colorin.c:566
+#: ../src/iop/colorout.c:688
+#: ../src/iop/colorout.c:689
+#: ../src/iop/colorout.c:690
+#: ../src/libs/export.c:488
+msgid "linear RGB"
+msgstr "RGB liniar"
+
+#: ../src/iop/colorin.c:568
+msgid "linear infrared BGR"
+msgstr "BGR liniar infraroșu"
+
+#: ../src/iop/colorin.c:570
+msgid "linear XYZ"
+msgstr "XYZ liniar"
+
+#: ../src/iop/colorin.c:579
+#, c-format
+msgid "icc profiles in %s/color/in or %s/color/in"
+msgstr "profilele icc în %s/color/in sau %s/color/in"
+
+#: ../src/iop/colorout.c:39
+msgid "output color profile"
+msgstr "profilul de culoare la ieșire"
+
+#: ../src/iop/colorout.c:413
+msgid "unsupported output profile has been replaced by sRGB!"
+msgstr "profilul de ieșire nesuportat a fost înlocuit de sRGB!"
+
+#: ../src/iop/colorout.c:533
+#: ../src/iop/colorout.c:540
+msgid "SoftProof"
+msgstr "SoftProof"
+
+#: ../src/iop/colorout.c:652
+msgid "output intent"
+msgstr "în scop de ieșire"
+
+#: ../src/iop/colorout.c:653
+msgid "output profile"
+msgstr "profil de ieșire"
+
+#: ../src/iop/colorout.c:654
+msgid "softproof profile"
+msgstr "profil softproof"
+
+#: ../src/iop/colorout.c:656
+msgid "display intent"
+msgstr "în scop de afișare"
+
+#: ../src/iop/colorout.c:657
+msgid "display profile"
+msgstr "profil afișare"
+
+#: ../src/iop/colorout.c:664
+#: ../src/iop/colorout.c:669
+#: ../src/libs/export.c:459
+msgid "perceptual"
+msgstr "perceptual"
+
+#: ../src/iop/colorout.c:665
+#: ../src/iop/colorout.c:670
+#: ../src/libs/export.c:460
+msgid "relative colorimetric"
+msgstr "relativ colorimetric"
+
+#: ../src/iop/colorout.c:666
+#: ../src/iop/colorout.c:671
+#: ../src/libs/export.c:461
+msgctxt "rendering intent"
+msgid "saturation"
+msgstr "saturație"
+
+#: ../src/iop/colorout.c:667
+#: ../src/iop/colorout.c:672
+#: ../src/libs/export.c:462
+msgid "absolute colorimetric"
+msgstr "absolut colorimetric"
+
+#: ../src/iop/colorout.c:682
+#: ../src/iop/colorout.c:683
+#: ../src/iop/colorout.c:684
+#: ../src/libs/export.c:534
+msgid "system display profile"
+msgstr "profil afișare sistem"
+
+#: ../src/iop/colorout.c:694
+#: ../src/iop/colorout.c:695
+#: ../src/iop/colorout.c:696
+#: ../src/libs/export.c:469
+msgid "sRGB (web-safe)"
+msgstr "sRGB (pentru web)"
+
+#: ../src/iop/colorout.c:725
+msgid "rendering intent"
+msgstr "în scop de redare"
+
+#: ../src/iop/colorout.c:726
+#, c-format
+msgid "icc profiles in %s/color/out or %s/color/out"
+msgstr "profilele icc în %s/color/out sau %s/color/out"
+
+#: ../src/iop/colorout.c:728
+#, c-format
+msgid "display icc profiles in %s/color/out or %s/color/out"
+msgstr "profilele icc de afișare în %s/color/out sau %s/color/out"
+
+#: ../src/iop/colorout.c:730
+#, c-format
+msgid "softproof icc profiles in %s/color/out or %s/color/out"
+msgstr "profilele icc softproof în %s/color/out sau %s/color/out"
+
+#: ../src/iop/colortransfer.c:105
+msgid "color transfer"
+msgstr "transfer de culoare"
+
+#: ../src/iop/colortransfer.c:641
+msgid "number of clusters to find in image"
+msgstr "numărul de mulțimi de găsit în imagine"
+
+#: ../src/iop/colortransfer.c:645
+msgid "acquire"
+msgstr "achiziționează"
+
+#: ../src/iop/colortransfer.c:646
+msgid "analyze this image"
+msgstr "analizează această imagine"
+
+#: ../src/iop/colortransfer.c:650
+#: ../src/libs/metadata.c:340
+msgid "apply"
+msgstr "aplică"
+
+#: ../src/iop/colortransfer.c:651
+msgid "apply previously analyzed image look to this image"
+msgstr "aplică aspectul imaginii analizate anterior pe această imagine"
+
+#: ../src/iop/colorzones.c:94
+msgid "color zones"
+msgstr "zone de culoare"
+
+#: ../src/iop/colorzones.c:279
+msgid "red black white"
+msgstr "roșu negru alb"
+
+#: ../src/iop/colorzones.c:294
+msgid "black white and skin tones"
+msgstr "alb-negru și tonurile pielii"
+
+#: ../src/iop/colorzones.c:310
+msgid "polarizing filter"
+msgstr "filtru de polarizare"
+
+#: ../src/iop/colorzones.c:349
+msgid "natural skin tones"
+msgstr "tonuri naturale ale pielii"
+
+#: ../src/iop/colorzones.c:787
+msgid "select by"
+msgstr "selectează după"
+
+#: ../src/iop/colorzones.c:798
+msgid "pick gui color from image"
+msgstr "culege culoarea din imagine"
+
+#: ../src/iop/demosaic.c:81
+msgid "demosaic"
+msgstr "demozaicare"
+
+#: ../src/iop/demosaic.c:895
+msgid ""
+"threshold for edge-aware median.\n"
+"set to 0.0 to switch off.\n"
+"set to 1.0 to ignore edges."
+msgstr ""
+"pragul pentru mediana de margine.\n"
+"setează 0.0 pentru a dezactiva.\n"
+"setează 1.0 pentru a ignora marginile."
+
+#: ../src/iop/demosaic.c:896
+msgid "edge threshold"
+msgstr "pragul de margine"
+
+#: ../src/iop/demosaic.c:900
+msgid "color smoothing"
+msgstr "netezire de culoare"
+
+#: ../src/iop/demosaic.c:906
+msgid "how many color smoothing median steps after demosaicing"
+msgstr "numărul de pași intermediari de netezire a culorii după demozaicare"
+
+#: ../src/iop/demosaic.c:910
+msgid "match greens"
+msgstr "potrivește nuanțele de verde"
+
+#: ../src/iop/demosaic.c:914
+msgid ""
+"switch on green equilibration before demosaicing.\n"
+"necessary for some mid-range cameras such as the EOS 400D."
+msgstr ""
+"activează echilibrarea nuanțelor de verde inainte de demozaicare.\n"
+"necesar pentru camere din segmentul de mijloc precum EOS 400D."
+
+#: ../src/iop/equalizer.c:43
+msgid "legacy equalizer"
+msgstr "egalizator moștenit"
+
+#: ../src/iop/equalizer.c:270
+msgctxt "equalizer"
+msgid "sharpen"
+msgstr "accentuare de claritate"
+
+#: ../src/iop/equalizer.c:276
+msgid "null"
+msgstr "nul"
+
+#: ../src/iop/equalizer.c:304
+msgid ""
+"this module will be removed in the future\n"
+"and is only here so you can switch it off\n"
+"and move to the new equalizer."
+msgstr ""
+"acest modul va fi eliminat\n"
+"și se află aici doar ca să-l poți dezactiva\n"
+"și să treci pe noul egalizator."
+
+#: ../src/iop/exposure.c:346
+msgid "adjust the black level"
+msgstr "adjustează nivelul de negru"
+
+#: ../src/iop/exposure.c:347
+msgid "black"
+msgstr "negru"
+
+#: ../src/iop/exposure.c:350
+msgid "adjust the exposure correction"
+msgstr "adjustează corecția expunerii"
+
+#: ../src/iop/exposure.c:357
+msgid "auto"
+msgstr "automat"
+
+#: ../src/iop/exposure.c:360
+msgid "percentage of bright values clipped out"
+msgstr "procentul de valori luminoase care vor fi tăiate"
+
+#: ../src/iop/gamma.c:37
+msgctxt "modulename"
+msgid "gamma"
+msgstr "gama"
+
+#: ../src/iop/gamma.c:171
+msgctxt "gammaslider"
+msgid "linear"
+msgstr "liniar"
+
+#: ../src/iop/gamma.c:172
+msgctxt "gammaslider"
+msgid "gamma"
+msgstr "gama"
+
+#: ../src/iop/graduatednd.c:57
+msgid "neutral grey ND2 (soft)"
+msgstr "gri neutru ND2 (slab)"
+
+#: ../src/iop/graduatednd.c:61
+msgid "neutral grey ND4 (soft)"
+msgstr "gri neutru ND4 (slab)"
+
+#: ../src/iop/graduatednd.c:65
+msgid "neutral grey ND8 (soft)"
+msgstr "gri neutru ND8 (slab)"
+
+#: ../src/iop/graduatednd.c:69
+msgid "neutral grey ND2 (hard)"
+msgstr "gri neutru ND2 (tare)"
+
+#: ../src/iop/graduatednd.c:73
+msgid "neutral grey ND4 (hard)"
+msgstr "gri neutru ND4 (tare)"
+
+#: ../src/iop/graduatednd.c:77
+msgid "neutral grey ND8 (hard)"
+msgstr "gri neutru ND8 (tare)"
+
+#: ../src/iop/graduatednd.c:81
+msgid "orange ND2 (soft)"
+msgstr "portocaliu ND2 (slab)"
+
+#: ../src/iop/graduatednd.c:85
+msgid "yellow ND2 (soft)"
+msgstr "galben ND2 (slab)"
+
+#: ../src/iop/graduatednd.c:89
+msgid "purple ND2 (soft)"
+msgstr "violet ND2 (slab)"
+
+#: ../src/iop/graduatednd.c:93
+msgid "green ND2 (soft)"
+msgstr "verde ND2 (slab)"
+
+#: ../src/iop/graduatednd.c:97
+msgid "red ND2 (soft)"
+msgstr "roșu ND2 (slab)"
+
+#: ../src/iop/graduatednd.c:101
+msgid "blue ND2 (soft)"
+msgstr "albastru ND2 (slab)"
+
+#: ../src/iop/graduatednd.c:105
+msgid "brown ND4 (soft)"
+msgstr "maro ND4 (slab)"
+
+#: ../src/iop/graduatednd.c:135
+msgid "graduated density"
+msgstr "densitate graduală"
+
+#: ../src/iop/graduatednd.c:536
+msgid "density"
+msgstr "densitate"
+
+#: ../src/iop/graduatednd.c:538
+msgid "compression"
+msgstr "comprimare"
+
+#: ../src/iop/graduatednd.c:540
+msgid "rotation"
+msgstr "rotire"
+
+#: ../src/iop/graduatednd.c:542
+msgid "split"
+msgstr "împărțire"
+
+#: ../src/iop/graduatednd.c:579
+msgid "select the hue tone of filter"
+msgstr "selectează nuanța de culoare a filtrului"
+
+#: ../src/iop/graduatednd.c:593
+msgid "select the saturation of filter"
+msgstr "selectează saturația filtrului"
+
+#: ../src/iop/graduatednd.c:600
+msgid "the density in EV for the filter"
+msgstr "densitatea în EV a filtrului"
+
+#: ../src/iop/graduatednd.c:602
+#, no-c-format
+msgid ""
+"compression of graduation:\n"
+"0% = soft, 100% = hard"
+msgstr ""
+"comprimarea gradării:\n"
+"0% = slab, 100% = tare"
+
+#: ../src/iop/graduatednd.c:603
+msgid "rotation of filter -180 to 180 degrees"
+msgstr "rotaţia filtrului de la -180 la 180 grade"
+
+#: ../src/iop/graduatednd.c:604
+msgid "offset of filter in angle of rotation"
+msgstr "deplasarea filtrului în unghi de rotaţie"
+
+#: ../src/iop/grain.c:323
+msgid "grain"
+msgstr "granulație"
+
+#: ../src/iop/grain.c:508
+msgid "the grain size (~iso of the film)"
+msgstr "dimensiunea granulaţiei  (~iso film)"
+
+#: ../src/iop/grain.c:509
+msgid "the strength of applied grain"
+msgstr "puterea granulaţiei aplicate"
+
+#: ../src/iop/grain.c:510
+msgid "coarseness"
+msgstr "asprime"
+
+#: ../src/iop/highlights.c:79
+msgid "highlight reconstruction"
+msgstr "reconstrucţia elementelor luminoase"
+
+#: ../src/iop/highlights.c:376
+msgid "method"
+msgstr "metodă"
+
+#: ../src/iop/highlights.c:379
+msgid "clip highlights"
+msgstr "tăierea elementelor luminoase"
+
+#: ../src/iop/highlights.c:380
+msgid "reconstruct in LCh"
+msgstr "recontruieşte în LCh"
+
+#: ../src/iop/highlights.c:381
+msgid "highlight reconstruction method"
+msgstr "metoda de recontrucţie a elementelor luminoase"
+
+#: ../src/iop/highlights.c:391
+msgid "blend lightness (0 is same as clipping)"
+msgstr "mixează luminozitatea (0 are efect de tăiere)"
+
+#: ../src/iop/highlights.c:392
+msgid "blend colorness (0 is same as clipping)"
+msgstr "mixează culoarea (0 are efect de tăiere)"
+
+#: ../src/iop/highlights.c:393
+msgid "blend hue (0 is same as clipping)"
+msgstr "mixează nuanţa de culoare (0 are efect de tăiere)"
+
+#: ../src/iop/highlights.c:394
+msgid "blend L"
+msgstr "mixează L"
+
+#: ../src/iop/highlights.c:395
+msgid "blend C"
+msgstr "mixează C"
+
+#: ../src/iop/highlights.c:396
+msgid "blend h"
+msgstr "mixează h"
+
+#: ../src/iop/lens.c:45
+msgid "lens correction"
+msgstr "corecţie obiectiv"
+
+#: ../src/iop/lens.c:712
+#, c-format
+msgid ""
+"maker:\t\t%s\n"
+"model:\t\t%s%s\n"
+"mount:\t\t%s\n"
+"crop factor:\t%.1f"
+msgstr ""
+"producător:\t\t%s\n"
+"model:\t\t%s%s\n"
+"montură:\t\t%s\n"
+"factor de tăiere:\t%.1f"
+
+#: ../src/iop/lens.c:1006
+#, c-format
+msgid ""
+"maker:\t\t%s\n"
+"model:\t\t%s\n"
+"focal range:\t%s\n"
+"aperture:\t\t%s\n"
+"crop factor:\t%.1f\n"
+"type:\t\t%s\n"
+"mounts:\t\t%s"
+msgstr ""
+"producător:\t\t%s\n"
+"model:\t\t%s\n"
+"gama focală:\t%s\n"
+"apertură:\t\t%s\n"
+"factor de tăiere:\t%.1f\n"
+"tip:\t\t%s\n"
+"monturi:\t\t%s"
+
+#: ../src/iop/lens.c:1036
+msgid "mm"
+msgstr "mm"
+
+#: ../src/iop/lens.c:1036
+msgid "focal length (mm)"
+msgstr "lungime focală (mm)"
+
+#: ../src/iop/lens.c:1042
+#: ../src/iop/lens.c:1057
+#: ../src/iop/lens.c:1068
+msgid "reset from exif data"
+msgstr "resetează din datele exif"
+
+#: ../src/iop/lens.c:1051
+msgid "f/"
+msgstr "f/"
+
+#: ../src/iop/lens.c:1051
+msgid "f-number (aperture)"
+msgstr "f-stop (apertură)"
+
+#: ../src/iop/lens.c:1062
+msgid "d"
+msgstr "d"
+
+#: ../src/iop/lens.c:1062
+msgid "distance to subject"
+msgstr "distanţa de subiect "
+
+#: ../src/iop/lens.c:1295
+msgid "find camera"
+msgstr "găseşte camera"
+
+#: ../src/iop/lens.c:1310
+msgid "find lens"
+msgstr "găseşte obiectiv"
+
+#. target geometry
+#: ../src/iop/lens.c:1338
+msgid "geometry"
+msgstr "geometrie"
+
+#: ../src/iop/lens.c:1343
+msgid "target geometry"
+msgstr "geometria ţintă"
+
+#: ../src/iop/lens.c:1344
+msgid "rectilinear"
+msgstr "rectiliniu"
+
+#: ../src/iop/lens.c:1345
+msgid "fish-eye"
+msgstr "ochi de peşte"
+
+#: ../src/iop/lens.c:1346
+msgid "panoramic"
+msgstr "panoramic"
+
+#: ../src/iop/lens.c:1347
+msgid "equirectangular"
+msgstr "echirectangular"
+
+#: ../src/iop/lens.c:1364
+msgid "auto scale"
+msgstr "scală auto"
+
+#. reverse direction
+#: ../src/iop/lens.c:1371
+msgid "reverse"
+msgstr "inversează"
+
+#: ../src/iop/lens.c:1372
+msgid "apply distortions instead of correcting them"
+msgstr "aplică distorsiunile în loc de a le corecta"
+
+#: ../src/iop/lens.c:1381
+msgid "tca R"
+msgstr "tca R"
+
+#: ../src/iop/lens.c:1382
+msgid "tca B"
+msgstr "tca B"
+
+#: ../src/iop/lens.c:1387
+msgid ""
+"override transversal chromatic aberration correction for red channel\n"
+"leave at 1.0 for defaults"
+msgstr ""
+"extinde peste corecţia aberaţiilor cromatice transversale pentru canalul roşu\n"
+"lasă 1.0 pentru a folosi valoarile implicite"
+
+#: ../src/iop/lens.c:1388
+msgid ""
+"override transversal chromatic aberration correction for blue channel\n"
+"leave at 1.0 for defaults"
+msgstr ""
+"extinde peste corecţia aberaţiilor cromatice transversale pentru canalul albastru\n"
+"lasă 1.0 pentru a folosi valoarile implicite"
+
+#: ../src/iop/lowlight.c:79
+msgid "lowlight vision"
+msgstr "iluminare scăzută"
+
+#: ../src/iop/lowlight.c:247
+msgid "daylight"
+msgstr "lumina zilei"
+
+#: ../src/iop/lowlight.c:264
+msgid "indoor bright"
+msgstr "interior bine iluminat"
+
+#: ../src/iop/lowlight.c:281
+msgid "indoor dim"
+msgstr "interior slab iluminat"
+
+#: ../src/iop/lowlight.c:298
+msgid "indoor dark"
+msgstr "interior întunecat"
+
+#: ../src/iop/lowlight.c:315
+msgid "twilight"
+msgstr "crepuscul"
+
+#: ../src/iop/lowlight.c:332
+msgid "night street lit"
+msgstr "stradal nocturn iluminat"
+
+#: ../src/iop/lowlight.c:349
+msgid "night street"
+msgstr "stradal nocturn"
+
+#: ../src/iop/lowlight.c:366
+msgid "night street dark"
+msgstr "stradal nocturn întunecat"
+
+#: ../src/iop/lowlight.c:384
+msgid "night"
+msgstr "nocturn"
+
+#: ../src/iop/lowlight.c:532
+#: ../src/iop/lowlight.c:536
+msgid "dark"
+msgstr "întunecat"
+
+#: ../src/iop/lowlight.c:539
+#: ../src/iop/lowlight.c:543
+msgid "bright"
+msgstr "luminos"
+
+#: ../src/iop/lowlight.c:546
+#: ../src/iop/lowlight.c:548
+msgid "day vision"
+msgstr "iluminare diurnă"
+
+#: ../src/iop/lowlight.c:550
+#: ../src/iop/lowlight.c:552
+msgid "night vision"
+msgstr "iluminare nocturnă"
+
+#: ../src/iop/lowlight.c:718
+msgid "blue shift"
+msgstr "deplasare albastru"
+
+#: ../src/iop/lowlight.c:721
+msgid "blueness in shadows"
+msgstr "albăstrime în umbre"
+
+#: ../src/iop/monochrome.c:65
+msgid "monochrome"
+msgstr "monocrom"
+
+#: ../src/iop/monochrome.c:307
+msgid "drag and scroll mouse wheel to adjust the virtual color filter"
+msgstr "trage şi scrolează cu rotiţa mouse-ului pentru a ajusta filtrul virtual de culoare"
+
+#: ../src/iop/overexposed.c:58
+msgid "overexposed"
+msgstr "supraexpus"
+
+#: ../src/iop/overexposed.c:261
+msgid "lower threshold"
+msgstr "pragul de jos"
+
+#: ../src/iop/overexposed.c:265
+msgid "upper threshold"
+msgstr "pragul de sus"
+
+#: ../src/iop/overexposed.c:270
+msgid "threshold of what shall be considered underexposed"
+msgstr "pragul sub care se va considera subexpus"
+
+#: ../src/iop/overexposed.c:271
+msgid "threshold of what shall be considered overexposed"
+msgstr "pragul peste care se va considera supraexpus"
+
+#: ../src/iop/profile_gamma.c:37
+msgid "unbreak input profile"
+msgstr "reabilitează profilul de intrare"
+
+#: ../src/iop/profile_gamma.c:180
+msgid "linear part"
+msgstr "partea liniară"
+
+#: ../src/iop/profile_gamma.c:183
+msgid "gamma exponential factor"
+msgstr "factorul exponeţial gama"
+
+#: ../src/iop/profile_gamma.c:184
+msgid "gamma"
+msgstr "gama"
+
+#: ../src/iop/rawdenoise.c:55
+msgid "raw denoise"
+msgstr "eliminare zgomot din raw"
+
+#: ../src/iop/rawdenoise.c:330
+msgid "noise threshold"
+msgstr "pragul de zgomot"
+
+#: ../src/iop/relight.c:55
+msgid "fill-light 0.25EV with 4 zones"
+msgstr "luminează 0,25EV cu 4 zone"
+
+#: ../src/iop/relight.c:59
+msgid "fill-shadow -0.25EV with 4 zones"
+msgstr "umbreşte -0,25EV cu 4 zone"
+
+#: ../src/iop/relight.c:87
+msgid "fill light"
+msgstr "luminează"
+
+#: ../src/iop/relight.c:369
+msgid "select the center of fill-light"
+msgstr "selectează centru pentru luminare"
+
+#: ../src/iop/relight.c:385
+msgid "toggle tool for picking median lightness in image"
+msgstr "comută metoda de culegere a luminozităţii medii din imagine"
+
+#: ../src/iop/relight.c:386
+msgid "the fill-light in EV"
+msgstr "luminare în EV"
+
+#: ../src/iop/relight.c:388
+#, no-c-format
+msgid "width of fill-light area defined in zones"
+msgstr "lăţimea ariei de luminare definită în zone"
+
+#: ../src/iop/sharpen.c:67
+msgctxt "sharpen"
+msgid "sharpen"
+msgstr "accentuare de claritate"
+
+#: ../src/iop/sharpen.c:357
+msgid "spatial extent of the unblurring"
+msgstr "întinderea spațială a deestompării"
+
+#: ../src/iop/sharpen.c:360
+msgid "strength of the sharpen"
+msgstr "puterea accentuării de claritate"
+
+#: ../src/iop/sharpen.c:363
+msgid "threshold to activate sharpen"
+msgstr "pragul de activare a accentuării de claritate"
+
+#: ../src/iop/soften.c:71
+msgid "soften"
+msgstr "înmoaie"
+
+#: ../src/iop/soften.c:349
+#: ../src/iop/vignette.c:851
+msgid "brightness"
+msgstr "luminozitate"
+
+#: ../src/iop/soften.c:362
+msgid "the size of blur"
+msgstr "dimensiunea estompării"
+
+#: ../src/iop/soften.c:363
+msgid "the saturation of blur"
+msgstr "saturaţia estompării"
+
+#: ../src/iop/soften.c:364
+msgid "the brightness of blur"
+msgstr "luminozitatea estompării"
+
+#: ../src/iop/soften.c:365
+msgid "the mix of effect"
+msgstr "efectul combinat"
+
+#: ../src/iop/splittoning.c:78
+msgid "split toning"
+msgstr "nuanţare divizată"
+
+#: ../src/iop/splittoning.c:271
+msgid "select tone color"
+msgstr "selectează nuanţa de culoare"
+
+#. Shadows
+#: ../src/iop/splittoning.c:412
+msgid "shadows"
+msgstr "umbre"
+
+#: ../src/iop/splittoning.c:458
+msgid "select the hue tone for shadows"
+msgstr "selectează nuanţa de culoare pentru umbre"
+
+#: ../src/iop/splittoning.c:468
+msgid "select the saturation shadow tone"
+msgstr "selectează saturaţia nuanţelor din umbre"
+
+#. Highlights
+#: ../src/iop/splittoning.c:471
+msgid "highlights"
+msgstr "lumini"
+
+#: ../src/iop/splittoning.c:518
+msgid "select the hue tone for highlights"
+msgstr "selectează nuanţa de culoare pentru lumini"
+
+#: ../src/iop/splittoning.c:528
+msgid "select the saturation highlights tone"
+msgstr "selectează saturaţia nuanţelor din lumini"
+
+#: ../src/iop/splittoning.c:538
+msgid "balance"
+msgstr "balans"
+
+#: ../src/iop/splittoning.c:544
+msgid "compress"
+msgstr "comprimă"
+
+#: ../src/iop/splittoning.c:549
+msgid "the balance of center of splittoning"
+msgstr "balansul din centru de nuanţare divizată"
+
+#: ../src/iop/splittoning.c:550
+msgid ""
+"compress the effect on highlighs/shadows and\n"
+"preserve midtones"
+msgstr ""
+"comprimă efectul luminilor/umrelor şi\n"
+"păstrează tonurile de mijloc"
+
+#: ../src/iop/spots.c:64
+msgid "spot removal"
+msgstr "eliminare pete"
+
+#: ../src/iop/spots.c:175
+msgid ""
+"click on a spot and drag on canvas to heal.\n"
+"use the mouse wheel to adjust size.\n"
+"right click to remove a stroke."
+msgstr ""
+"dă clic pe o pată şi trage pentru a o estompa.\n"
+"foloseşte rotiţa mouse-ului pentru ajustarea dimensiunii\n"
+"clic dreapta pentru a elimina o operaţie."
+
+#: ../src/iop/spots.c:179
+msgid "number of strokes:"
+msgstr "numărul de operaţii:"
+
+#: ../src/iop/spots.c:336
+msgid "spot removal only supports up to 32 spots"
+msgstr "sunt suportate până la 32 de pete de eliminat "
+
+#: ../src/iop/stuckpixels.c:56
+msgid "stuck pixels"
+msgstr "pixeli morţi"
+
+#: ../src/iop/stuckpixels.c:139
+#, c-format
+msgid "fixed %d pixels"
+msgstr "s-au reparat %d pixeli"
+
+#: ../src/iop/stuckpixels.c:235
+msgid "strength of stuck pixel correction threshold"
+msgstr "puterea pragului de corecţie a pixelilor morţi"
+
+#: ../src/iop/stuckpixels.c:242
+msgid "mark fixed pixels"
+msgstr "marcheză pixelii reparaţi"
+
+#: ../src/iop/temperature.c:85
+msgctxt "modulename"
+msgid "white balance"
+msgstr "balans de alb"
+
+#: ../src/iop/temperature.c:441
+msgid "tint"
+msgstr "tentă"
+
+#: ../src/iop/temperature.c:442
+msgid "temperature in"
+msgstr "temperatura de intrare"
+
+#: ../src/iop/temperature.c:444
+msgid "temperature out"
+msgstr "temperatura de ieşire"
+
+#: ../src/iop/temperature.c:467
+msgid "camera white balance"
+msgstr "balans alb de pe cameră"
+
+#: ../src/iop/temperature.c:468
+msgid "spot white balance"
+msgstr "balans alb într-un punct"
+
+#: ../src/iop/temperature.c:469
+msgid "passthrough"
+msgstr "trece prin"
+
+#: ../src/iop/temperature.c:495
+msgid "fine tune white balance preset"
+msgstr "reglare fină a presetării balans de alb"
+
+#: ../src/iop/tonecurve.c:40
+msgid "tone curve"
+msgstr "curbă de tonuri"
+
+#: ../src/iop/tonecurve.c:119
+msgid "med contrast"
+msgstr "contrast mediu"
+
+#: ../src/iop/tonecurve.c:129
+msgid "high contrast"
+msgstr "contrast mare"
+
+#: ../src/iop/tonecurve.c:250
+msgid ""
+"abscissa: input, ordinate: output \n"
+"works on L channel"
+msgstr ""
+"abscisa: intrare, ordonata: ieşire \n"
+"funcţionează pe canalul L"
+
+#: ../src/iop/tonemap.cc:73
+msgid "tone mapping"
+msgstr "mapare tonuri"
+
+#: ../src/iop/tonemap.cc:261
+msgid "contrast compression"
+msgstr "comprimare contrast"
+
+#: ../src/iop/tonemap.cc:266
+msgid "spatial extent"
+msgstr "întinderea spațială"
+
+#: ../src/iop/velvia.c:68
+msgid "velvia"
+msgstr "velvia"
+
+#: ../src/iop/velvia.c:241
+msgid "vibrance"
+msgstr "vibranță"
+
+#: ../src/iop/velvia.c:245
+msgid "mid-tones bias"
+msgstr "bias pentru tonuri de mijloc"
+
+#: ../src/iop/velvia.c:250
+msgid "the amount of saturation to apply"
+msgstr "cantitatea de saturaţie de aplicat"
+
+#: ../src/iop/velvia.c:251
+msgid "the vibrance amount"
+msgstr "cantitatea de vibranță"
+
+#: ../src/iop/velvia.c:252
+msgid "how much to spare highlights and shadows"
+msgstr "cu cât se menajează luminile şi umbrele"
+
+#: ../src/iop/vignette.c:108
+msgid "vignetting"
+msgstr "vinietare"
+
+#: ../src/iop/vignette.c:835
+msgid "automatic ratio"
+msgstr "raport automat"
+
+#: ../src/iop/vignette.c:844
+msgid "automatic"
+msgstr "automat"
+
+#: ../src/iop/vignette.c:849
+msgid "fall-off strength"
+msgstr "puterea căderii"
+
+#: ../src/iop/vignette.c:853
+msgid "horizontal center"
+msgstr "centrare pe orizontală"
+
+#: ../src/iop/vignette.c:854
+msgid "vertical center"
+msgstr "centrare pe verticală"
+
+#: ../src/iop/vignette.c:855
+msgid "shape"
+msgstr "formă"
+
+#: ../src/iop/vignette.c:856
+msgid "width/height ratio"
+msgstr "raport lăţime/înălţime"
+
+#: ../src/iop/vignette.c:874
+msgid "the radii scale of vignette for start of fall-off"
+msgstr "scala razei de vinietare la începutul căderii"
+
+#: ../src/iop/vignette.c:875
+msgid "the radii scale of vignette for end of fall-off"
+msgstr "scala razei de vinietare la sfârșitul căderii"
+
+#: ../src/iop/vignette.c:876
+msgid "strength of effect on brightness"
+msgstr "puterea efectului pe luminozitate"
+
+#: ../src/iop/vignette.c:877
+msgid "strength of effect on saturation"
+msgstr "puterea efectului pe saturaţie"
+
+#: ../src/iop/vignette.c:878
+msgid "horizontal offset of center of the effect"
+msgstr "deplasare orizontală faţă de centru al efectului"
+
+#: ../src/iop/vignette.c:879
+msgid "vertical offset of center of the effect"
+msgstr "deplasare verticală faţă de centru al efectului"
+
+#: ../src/iop/vignette.c:880
+msgid ""
+"shape factor\n"
+"0 produces a rectangle\n"
+"1 produces a circle or elipse\n"
+"2 produces a diamond"
+msgstr ""
+"factorul de aspect\n"
+"0 produce un dreptunghi\n"
+"1 produce un cerc sau o elipsă\n"
+"2 produce un romb"
+
+#: ../src/iop/vignette.c:881
+msgid "enable to have the ratio automatically follow the image size"
+msgstr "activează pentru ca raportul să urmeze automat dimensiunea imaginii"
+
+#: ../src/iop/vignette.c:882
+msgid "width-to-height ratio"
+msgstr "raportul lăţime la înălţime"
+
+#: ../src/iop/watermark.c:89
+msgid "watermark"
+msgstr "siglă"
+
+#: ../src/iop/watermark.c:655
+msgid "marker"
+msgstr "marcaj"
+
+#: ../src/iop/watermark.c:656
+msgid "alignment"
+msgstr "aliniere"
+
+#: ../src/iop/watermark.c:672
+msgid "opacity"
+msgstr "opacitate"
+
+#: ../src/iop/watermark.c:696
+msgid "x offset"
+msgstr "deplasare x"
+
+#: ../src/iop/watermark.c:697
+msgid "y offset"
+msgstr "deplasare y"
+
+#. Let's add some tooltips and hook up some signals...
+#: ../src/iop/watermark.c:703
+msgid "the opacity of the watermark"
+msgstr "opacitatea siglei"
+
+#: ../src/iop/watermark.c:704
+msgid "the scale of the watermark"
+msgstr "scala siglei"
+
+#. Column 1 - "make" of the camera.
+#. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
+#. * Column 3 - WB name.
+#. * Column 4 - Fine tuning. MUST be in increasing order. 0 for no fine tuning.
+#. *	      It is enough to give only the extreme values, the other values
+#. *	      will be interpolated.
+#. * Column 5 - Channel multipliers.
+#. *
+#. * Minolta's ALPHA and MAXXUM models are treated as the DYNAX model.
+#. *
+#. * WB name is standardized to one of the following:
+#. "Sunlight" and other variation should be switched to this:
+#: ../src/iop/wb_presets.c:45
+msgid "Daylight"
+msgstr "Lumina zilei"
+
+#. Probably same as above:
+#: ../src/iop/wb_presets.c:47
+msgid "Direct sunlight"
+msgstr "Lumina directă a soarelui"
+
+#: ../src/iop/wb_presets.c:48
+msgid "Cloudy"
+msgstr "Înnorat"
+
+#. "Shadows" should be switched to this:
+#: ../src/iop/wb_presets.c:50
+msgid "Shade"
+msgstr "Umbră"
+
+#: ../src/iop/wb_presets.c:51
+msgid "Incandescent"
+msgstr "Incandescent"
+
+#: ../src/iop/wb_presets.c:52
+msgid "Incandescent warm"
+msgstr "Incandescent cald"
+
+#. Same as "Incandescent":
+#: ../src/iop/wb_presets.c:54
+msgid "Tungsten"
+msgstr "Tungsten"
+
+#: ../src/iop/wb_presets.c:55
+msgid "Fluorescent"
+msgstr "Fluorescent"
+
+#. In Canon cameras and some newer Nikon cameras:
+#: ../src/iop/wb_presets.c:57
+msgid "Fluorescent high"
+msgstr "Fluorescenţă mare "
+
+#: ../src/iop/wb_presets.c:58
+msgid "Cool white fluorescent"
+msgstr "Fluorescenţă rece albă"
+
+#: ../src/iop/wb_presets.c:59
+msgid "Warm white fluorescent"
+msgstr "Fluorescenţă caldă albă"
+
+#: ../src/iop/wb_presets.c:60
+msgid "Daylight fluorescent"
+msgstr "Fluorescenţă ca lumina zilei"
+
+#: ../src/iop/wb_presets.c:61
+msgid "Neutral fluorescent"
+msgstr "Fluorescenţă neutră"
+
+#: ../src/iop/wb_presets.c:62
+msgid "White fluorescent"
+msgstr "Fluorescenţă albă"
+
+#. In some newer Nikon cameras:
+#: ../src/iop/wb_presets.c:64
+msgid "Sodium-vapor fluorescent"
+msgstr "Fluorescenţă vapori de sodiu"
+
+#: ../src/iop/wb_presets.c:65
+msgid "Day white fluorescent"
+msgstr "Fluorescenţă albă de zi"
+
+#: ../src/iop/wb_presets.c:66
+msgid "High temp. mercury-vapor fluorescent"
+msgstr "Fluorescenţă vapori de mercur la temp. înaltă"
+
+#: ../src/iop/wb_presets.c:68
+msgid "Flash"
+msgstr "Blitz"
+
+#. For Olympus with no real "Flash" preset:
+#: ../src/iop/wb_presets.c:70
+msgid "Flash (auto mode)"
+msgstr "Blity (mod automat)"
+
+#: ../src/iop/wb_presets.c:71
+msgid "Evening sun"
+msgstr "Apus de soare"
+
+#: ../src/iop/wb_presets.c:72
+msgid "Underwater"
+msgstr "Subacvatic"
+
+#: ../src/iop/wb_presets.c:73
+msgid "Black & white"
+msgstr "Alb-negru"
+
+#: ../src/iop/wb_presets.c:76
+msgid "Manual WB"
+msgstr "Balans Alb manual"
+
+#: ../src/iop/wb_presets.c:77
+msgid "Camera WB"
+msgstr "Balans alb de pe cameră"
+
+#: ../src/iop/wb_presets.c:78
+msgid "Auto WB"
+msgstr "Balans alb automat"
+
+#: ../src/iop/zonesystem.c:85
+msgid "zone system"
+msgstr "sistem de zone"
+
+#: ../src/iop/zonesystem.c:370
+msgid ""
+"lightness zones\n"
+"use mouse scrollwheel to change the number of zones\n"
+"left-click on a border to create a marker\n"
+"right-click on a marker to delete it"
+msgstr ""
+"zonele de lumină\n"
+"foloseşte rotiţa mouse-ului pentru a schimba numărul de zone\n"
+"clic stânga pe o margine pentru a crea un marcaj\n"
+"clic dreapta pe un marcaj pentru a-l şterge"
+
+#: ../src/libs/camera.c:78
+msgid "camera settings"
+msgstr "setări cameră"
+
+#: ../src/libs/camera.c:123
+msgid "toggle view property in center view"
+msgstr "comută afişarea proprietăţii în centru"
+
+#: ../src/libs/camera.c:196
+msgid "connection with camera lost, exiting tethering mode"
+msgstr "s-a pierdut conexiunea cu camera, ieşire din modul declanşare comandată"
+
+#: ../src/libs/camera.c:339
+msgid "battery"
+msgstr "baterie"
+
+#: ../src/libs/camera.c:339
+msgid "n/a"
+msgstr "indisponibil"
+
+#. Camera control
+#: ../src/libs/camera.c:410
+msgid "camera control"
+msgstr "control cameră"
+
+#: ../src/libs/camera.c:414
+msgid "modes"
+msgstr "moduri"
+
+#: ../src/libs/camera.c:415
+msgid "timer (s)"
+msgstr "temporizator (e)"
+
+#: ../src/libs/camera.c:416
+msgid "count"
+msgstr "contor"
+
+#: ../src/libs/camera.c:417
+msgid "brackets"
+msgstr "bracket-uri"
+
+#: ../src/libs/camera.c:418
+msgid "bkt. steps"
+msgstr "pași bkt."
+
+#: ../src/libs/camera.c:454
+msgid "capture image(s)"
+msgstr "capturează imagine(i)"
+
+#: ../src/libs/camera.c:457
+msgid "toggle delayed capture mode"
+msgstr "comută mod captură întârziată"
+
+#: ../src/libs/camera.c:458
+msgid "toggle sequenced capture mode"
+msgstr "comută mod captură secvenţială"
+
+#: ../src/libs/camera.c:459
+msgid "toggle bracketed capture mode"
+msgstr "comută mod captură bracket"
+
+#: ../src/libs/camera.c:460
+msgid "the count of seconds before actually doing a capture"
+msgstr "numărul de secunde până la o captură efectivă"
+
+#: ../src/libs/camera.c:461
+msgid ""
+"the amount of images to capture in a sequence,\n"
+"you can use this in conjuction with delayed mode to create stop-motion sequences."
+msgstr ""
+"numărul de imagini de capturat într-o secvenţă,\n"
+"se poate utiliza în conjuncţie cu modul captură întârziată pentru a crea secvenţe stop-mişcare."
+
+#: ../src/libs/camera.c:462
+msgid "the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."
+msgstr "numărul de bracket-uri de fiecare parte a cadrului central, număr imagini = (bracket*2)+1."
+
+#: ../src/libs/camera.c:463
+msgid ""
+"the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\n"
+"with other words, 3 steps is 1EV exposure step between brackets."
+msgstr ""
+"numărul de paşi per bracket, paşii sunt configurabili pe cameră şi sunt, de obicei, 3 per stop\n"
+"cu alte cuvinte, 3 paşi înseamnă 1EV în expunere între bracket-uri."
+
+#: ../src/libs/camera.c:477
+msgid "properties"
+msgstr "proprietăți"
+
+#: ../src/libs/camera.c:481
+msgid "program"
+msgstr "program"
+
+#: ../src/libs/camera.c:491
+msgid "focus mode"
+msgstr "mod focalizare"
+
+#: ../src/libs/camera.c:521
+msgid "shutterspeed2"
+msgstr "viteză diafragmă2"
+
+#: ../src/libs/camera.c:541
+msgid "wb"
+msgstr "balans de alb"
+
+#. user specified properties
+#: ../src/libs/camera.c:610
+msgid "additional properties"
+msgstr "proprietăți adiționale"
+
+#: ../src/libs/camera.c:614
+msgid "label"
+msgstr "etichetă"
+
+#: ../src/libs/camera.c:620
+msgid "property"
+msgstr "proprietate"
+
+#: ../src/libs/camera.c:632
+msgid "add user property"
+msgstr "adaugă proprietate utilizator"
+
+#: ../src/libs/capture.c:52
+msgid "session"
+msgstr "sesiune"
+
+#: ../src/libs/capture.c:112
+msgid "create"
+msgstr "creează"
+
+#: ../src/libs/collect.c:66
+msgid "collect images"
+msgstr "colectează imagini"
+
+#: ../src/libs/collect.c:124
+#: ../src/libs/collect.c:126
+msgid "not altered"
+msgstr "nemodificate"
+
+#: ../src/libs/collect.c:248
+#: ../src/libs/collect.c:262
+#: ../src/libs/collect.c:528
+msgid "clear this rule"
+msgstr "renunță la această regulă"
+
+#: ../src/libs/collect.c:253
+msgid "clear this rule or add new rules"
+msgstr "renunță la această regulă sau adaugă reguli noi"
+
+#: ../src/libs/collect.c:534
+msgid "narrow down search"
+msgstr "restrânge căutarea"
+
+#: ../src/libs/collect.c:538
+msgid "add more images"
+msgstr "adaugă mai multe imagini"
+
+#: ../src/libs/collect.c:542
+msgid "exclude images"
+msgstr "exclude imagini"
+
+#: ../src/libs/collect.c:548
+msgid "change to: and"
+msgstr "schimbă în: și"
+
+#: ../src/libs/collect.c:552
+msgid "change to: or"
+msgstr "schimbă în: sau"
+
+#: ../src/libs/collect.c:556
+msgid "change to: except"
+msgstr "schimbă în: exceptând"
+
+#: ../src/libs/collect.c:603
+#, no-c-format
+msgid "type your query, use `%' as wildcard"
+msgstr "introdu o interogare, folosește `%' ca wildcard"
+
+#: ../src/libs/collect.h:30
+msgid "camera"
+msgstr "cameră"
+
+#: ../src/libs/collect.h:31
+msgid "tag"
+msgstr "tag"
+
+#: ../src/libs/collect.h:32
+msgid "date"
+msgstr "dată"
+
+#: ../src/libs/collect.h:34
+msgid "colorlabel"
+msgstr "etichetă culoare"
+
+#: ../src/libs/collect.h:36
+#: ../src/libs/metadata.c:277
+msgid "description"
+msgstr "descriere"
+
+#: ../src/libs/collect.h:38
+#: ../src/libs/metadata.c:303
+msgid "publisher"
+msgstr "editor"
+
+#: ../src/libs/copy_history.c:44
+msgid "history stack"
+msgstr "stiva de istoric"
+
+#: ../src/libs/copy_history.c:62
+msgid "open sidecar file"
+msgstr "deschide fișier ataș"
+
+#: ../src/libs/copy_history.c:72
+msgid "xmp sidecar files"
+msgstr "fișiere ataș xmp"
+
+#: ../src/libs/copy_history.c:91
+#, c-format
+msgid "error loading file '%s'"
+msgstr "eroare la încărcarea fișierului '%s'"
+
+#: ../src/libs/copy_history.c:203
+msgid ""
+"copy history stack of\n"
+"first selected image (ctrl-c)"
+msgstr ""
+"copiază stiva de istoric a\n"
+"primei imagini selectate (ctrl-c)"
+
+#: ../src/libs/copy_history.c:206
+msgid "discard"
+msgstr "înlătură"
+
+#: ../src/libs/copy_history.c:207
+msgid ""
+"discard history stack of\n"
+"all selected images"
+msgstr ""
+"înlătură stiva de istoric a\n"
+"tuturor imaginilor selectate"
+
+#: ../src/libs/copy_history.c:214
+msgid "append"
+msgstr "adaugă"
+
+#: ../src/libs/copy_history.c:215
+msgid "overwrite"
+msgstr "suprascrie"
+
+#: ../src/libs/copy_history.c:216
+msgid "how to handle existing history"
+msgstr "cum se utilizează istoricul existent"
+
+#: ../src/libs/copy_history.c:220
+msgid "paste"
+msgstr "lipește"
+
+#: ../src/libs/copy_history.c:222
+msgid ""
+"paste history stack to\n"
+"all selected images (ctrl-v)"
+msgstr ""
+"lipește stiva de istoric la\n"
+"toate imaginile selectate (ctrl-v)"
+
+#: ../src/libs/copy_history.c:230
+msgid "load sidecar file"
+msgstr "încarcă fișier ataș"
+
+#: ../src/libs/copy_history.c:231
+msgid ""
+"open an xmp sidecar file\n"
+"and apply it to selected images"
+msgstr ""
+"deschide un fișier ataș xmp\n"
+"și aplică-l pe imaginile selectate"
+
+#: ../src/libs/copy_history.c:234
+msgid "write sidecar files"
+msgstr "scrie fișierele ataș"
+
+#: ../src/libs/copy_history.c:235
+msgid "write history stack and tags to xmp sidecar files"
+msgstr "scrie stiva de istoric și tag-urile în fișiere ataș xmp"
+
+#: ../src/libs/export.c:66
+msgid "export selected"
+msgstr "exportă selecția"
+
+#: ../src/libs/export.c:392
+msgid "target storage"
+msgstr "tip stocare"
+
+#: ../src/libs/export.c:412
+msgid "file format"
+msgstr "format de fișier"
+
+#: ../src/libs/export.c:427
+msgid "global options"
+msgstr "opțiuni globale"
+
+#: ../src/libs/export.c:431
+msgid ""
+"maximum output width\n"
+"set to 0 for no scaling"
+msgstr ""
+"lățime maximă\n"
+"alege 0 pentru a nu scala"
+
+#: ../src/libs/export.c:433
+msgid ""
+"maximum output height\n"
+"set to 0 for no scaling"
+msgstr ""
+"înalțime maximă\n"
+"alege 0 pentru a nu scala"
+
+#.
+#. gtk_widget_add_events(GTK_WIDGET(d->width), GDK_FOCUS_CHANGE_MASK);
+#. g_signal_connect (G_OBJECT (d->width), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+#. g_signal_connect (G_OBJECT (d->width), "focus-out-event", G_CALLBACK(focus_out), NULL);
+#. gtk_widget_add_events(GTK_WIDGET(d->height), GDK_FOCUS_CHANGE_MASK);
+#. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
+#. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
+#.
+#: ../src/libs/export.c:445
+msgid "max size"
+msgstr "dimensiune max"
+
+#: ../src/libs/export.c:450
+msgid "x"
+msgstr "x"
+
+#: ../src/libs/export.c:454
+msgid "intent"
+msgstr "scop"
+
+#. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+#: ../src/libs/export.c:458
+#: ../src/libs/export.c:529
+msgid "image settings"
+msgstr "setări imagine"
+
+#: ../src/libs/export.c:556
+#, c-format
+msgid "output icc profiles in %s/color/out or %s/color/out"
+msgstr "salvează profilele icc în %s/color/out sau %s/color/out"
+
+#: ../src/libs/export.c:565
+msgid "threads"
+msgstr "thread-uri"
+
+#: ../src/libs/export.c:569
+msgid ""
+"export using this number of threads.\n"
+"beware! each thread will use ~1GB of ram."
+msgstr ""
+"exportă folosind acest număr de thread-uri.\n"
+"atenție! fiecare thread va folosi ~1GB de ram."
+
+#. Export Button
+#: ../src/libs/export.c:572
+#: ../src/libs/styles.c:348
+msgid "export"
+msgstr "exportă"
+
+#: ../src/libs/export.c:573
+msgid "export with current settings (ctrl-e)"
+msgstr "exportă folosind setările curente (ctrl-e)"
+
+#: ../src/libs/image.c:39
+msgid "selected image[s]"
+msgstr "imagine[i] selectate"
+
+#: ../src/libs/image.c:83
+msgid "remove"
+msgstr "elimină"
+
+#: ../src/libs/image.c:84
+msgid "remove from the collection"
+msgstr "elimină din colecție"
+
+#: ../src/libs/image.c:88
+#: ../src/libs/styles.c:342
+#: ../src/libs/tagging.c:431
+msgid "delete"
+msgstr "șterge"
+
+#: ../src/libs/image.c:89
+msgid "physically delete from disk"
+msgstr "șterge fizic de pe disc"
+
+#: ../src/libs/image.c:96
+msgid "create hdr"
+msgstr "creează hdr"
+
+#: ../src/libs/image.c:99
+msgid "create a high dynamic range image from selected shots"
+msgstr "creează imagini HDR din cadrele selectate"
+
+#: ../src/libs/image.c:101
+msgid "duplicate"
+msgstr "duplică"
+
+#: ../src/libs/image.c:102
+msgid "add a duplicate to the collection"
+msgstr "adaugă un duplicat la colecție"
+
+#: ../src/libs/image.c:111
+msgid "rotate selected images 90 degrees ccw"
+msgstr "rotește imaginile selectate cu 90 de grade în sens invers acelor de ceas"
+
+#: ../src/libs/image.c:116
+msgid "rotate selected images 90 degrees cw"
+msgstr "rotește imaginile selectate cu 90 de grade în sensul acelor de ceas"
+
+#: ../src/libs/image.c:121
+msgid "reset rotation"
+msgstr "resetează rotația"
+
+#: ../src/libs/image.c:122
+msgid "reset rotation to exif data"
+msgstr "resetează rotația in datele exif"
+
+#: ../src/libs/lib.c:119
+#, c-format
+msgid "edit `%s'"
+msgstr "editează `%s'"
+
+#: ../src/libs/lib.c:241
+msgid "deleting preset for obsolete module"
+msgstr "se șterge presetarea pentru modulul scos din uz"
+
+#: ../src/libs/metadata.c:47
+msgid "metadata editor"
+msgstr "editor metadata"
+
+#: ../src/libs/metadata.c:76
+msgid "<leave unchanged>"
+msgstr "<lasă neschimbat>"
+
+#: ../src/libs/metadata.c:334
+msgid "clear"
+msgstr "golește"
+
+#: ../src/libs/metadata.c:335
+msgid "remove metadata from selected images"
+msgstr "șterge metadata pentru imaginile selectate"
+
+#: ../src/libs/metadata.c:341
+msgid "write metadata for selected images"
+msgstr "scrie metadata pentru imaginile selectate"
+
+#. <title>\0<description>\0<rights>\0<creator>\0<publisher>
+#: ../src/libs/metadata.c:373
+msgid "CC-by"
+msgstr "CC-by"
+
+#: ../src/libs/metadata.c:373
+msgid "Creative Commons Attribution (CC-BY)"
+msgstr "Creative Commons Attribution (CC-BY)"
+
+#: ../src/libs/metadata.c:374
+msgid "CC-by-sa"
+msgstr "CC-by-sa"
+
+#: ../src/libs/metadata.c:374
+msgid "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
+msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
+
+#: ../src/libs/metadata.c:375
+msgid "CC-by-nd"
+msgstr "CC-by-nd"
+
+#: ../src/libs/metadata.c:375
+msgid "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
+msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
+
+#: ../src/libs/metadata.c:376
+msgid "CC-by-nc"
+msgstr "CC-by-nc"
+
+#: ../src/libs/metadata.c:376
+msgid "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
+msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
+
+#: ../src/libs/metadata.c:377
+msgid "CC-by-nc-sa"
+msgstr "CC-by-nc-sa"
+
+#: ../src/libs/metadata.c:377
+msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
+msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
+
+#: ../src/libs/metadata.c:378
+msgid "CC-by-nc-nd"
+msgstr "CC-by-nc-nd"
+
+#: ../src/libs/metadata.c:378
+msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
+msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
+
+#: ../src/libs/metadata.c:379
+msgid "all rights reserved"
+msgstr "toate drepturile rezervate"
+
+#: ../src/libs/metadata.c:379
+msgid "All rights reserved."
+msgstr "Toate drepturile rezervate."
+
+#: ../src/libs/recentcollect.c:49
+msgid "recently used collections"
+msgstr "colecții utilizate recent"
+
+#: ../src/libs/recentcollect.c:146
+#, c-format
+msgid " and "
+msgstr " și "
+
+#: ../src/libs/recentcollect.c:149
+#, c-format
+msgid " or "
+msgstr " sau "
+
+#. case DT_LIB_COLLECT_MODE_AND_NOT:
+#: ../src/libs/recentcollect.c:152
+#, c-format
+msgid " but not "
+msgstr " dar nu "
+
+#: ../src/libs/select.c:32
+msgid "select"
+msgstr "selectează"
+
+#: ../src/libs/select.c:119
+msgid "select all"
+msgstr "selectează tot"
+
+#: ../src/libs/select.c:120
+msgid "select all images in current collection (ctrl-a)"
+msgstr "selectează toate imaginile din colecția curentă (ctrl-a)"
+
+#: ../src/libs/select.c:125
+msgid "select none"
+msgstr "selecţie nulă"
+
+#: ../src/libs/select.c:126
+msgid "clear selection (ctrl-shift-a)"
+msgstr "anulează selecția (ctrl-shift-a)"
+
+#: ../src/libs/select.c:134
+msgid "invert selection"
+msgstr "inversează selecţia"
+
+#: ../src/libs/select.c:135
+msgid ""
+"select unselected images\n"
+"in current collection (ctrl-!)"
+msgstr ""
+"selectează imaginile neselectate\n"
+"din colecţia curentă (ctrl-!)"
+
+#: ../src/libs/select.c:140
+msgid "select film roll"
+msgstr "selectează rola de film"
+
+#: ../src/libs/select.c:141
+msgid ""
+"select all images which are in the same\n"
+"film roll as the selected images"
+msgstr ""
+"selectează toate imaginile care sunt în aceeaşi\n"
+"rolă de film ca şi imaginile selectate"
+
+#: ../src/libs/select.c:148
+msgid "select untouched"
+msgstr "selectează nemodificate"
+
+#: ../src/libs/select.c:149
+msgid ""
+"select untouched images in\n"
+"current collection"
+msgstr ""
+"selectează imaginile nemodificate din\n"
+"colecţia curentă"
+
+#: ../src/libs/styles.c:44
+msgid "styles"
+msgstr "stiluri"
+
+#: ../src/libs/styles.c:223
+msgid "select style"
+msgstr "selectează stil"
+
+#: ../src/libs/styles.c:236
+msgid "darktable style files"
+msgstr "fișiere stil darktable"
+
+#: ../src/libs/styles.c:310
+msgid ""
+"available styles,\n"
+"doubleclick to apply"
+msgstr ""
+"stiluri disponibile,\n"
+"dublu-clic pentru a aplica"
+
+#: ../src/libs/styles.c:316
+msgid "enter style name"
+msgstr "introdu nume stil"
+
+#: ../src/libs/styles.c:329
+msgid "create duplicate"
+msgstr "creează duplicat"
+
+#: ../src/libs/styles.c:333
+msgid "creates a duplicate of the image before applying style"
+msgstr "creează un duplicat al imaginii înainte de aplicarea stilului"
+
+#. TODO: Unfinished stuff
+#: ../src/libs/styles.c:337
+msgid "edit"
+msgstr "editează"
+
+#: ../src/libs/styles.c:344
+msgid "deletes the selected style in list above"
+msgstr "şterge stilul selectat în lista de deasupra"
+
+#: ../src/libs/styles.c:349
+msgid "export the selected style into a style file"
+msgstr "exportă într-un fişier stilul selectat"
+
+#: ../src/libs/styles.c:354
+msgid "import style from a style file"
+msgstr "importă un stil dintr-un fişier"
+
+#: ../src/libs/tagging.c:51
+msgid "tagging"
+msgstr "adăugare tag-uri"
+
+#: ../src/libs/tagging.c:275
+#, c-format
+msgid ""
+"do you really want to delete the tag `%s'?\n"
+"%d image is assigned this tag!"
+msgstr ""
+"chiar vrei să ștergi tag-ul `%s'?\n"
+"%d imagini au atașat acest tag!"
+
+#: ../src/libs/tagging.c:278
+msgid "delete tag?"
+msgstr "şterge tag?"
+
+#: ../src/libs/tagging.c:364
+msgid ""
+"attached tags,\n"
+"doubleclick to detach"
+msgstr ""
+"tag-uri atașate,\n"
+"dublu-clic pentru a detașa"
+
+#: ../src/libs/tagging.c:371
+msgid "attach"
+msgstr "ataşează"
+
+#: ../src/libs/tagging.c:372
+msgid "attach tag to all selected images"
+msgstr "ataşează tag-ul pe toate imaginile selectate"
+
+#: ../src/libs/tagging.c:377
+msgid "detach"
+msgstr "detaşează"
+
+#: ../src/libs/tagging.c:378
+msgid "detach tag from all selected images"
+msgstr "detaşează tag-ul de pe toate imaginile selectate"
+
+#: ../src/libs/tagging.c:392
+msgid "enter tag name"
+msgstr "introdu nume tag"
+
+#: ../src/libs/tagging.c:418
+msgid ""
+"related tags,\n"
+"doubleclick to attach"
+msgstr ""
+"tag-uri asemănătoare,\n"
+"dublu-clic pentru a atașa"
+
+#: ../src/libs/tagging.c:425
+msgid "new"
+msgstr "nou"
+
+#: ../src/libs/tagging.c:426
+msgid ""
+"create a new tag with the\n"
+"name you entered"
+msgstr ""
+"creează un nou tag cu\n"
+"numele introdus"
+
+#: ../src/libs/tagging.c:432
+msgid "delete selected tag"
+msgstr "şterge tag-ul selectat"
+
+#: ../src/views/capture.c:89
+msgid "capture"
+msgstr "captură"
+
+#: ../src/views/capture.c:241
+#, c-format
+msgid "failed to create session path %s."
+msgstr "a eşuat crearea căii de sesiune %s."
+
+#: ../src/views/capture.c:255
+#, c-format
+msgid "new session initiated '%s'"
+msgstr "o nouă sesiune iniţiată '%s'"
+
+#: ../src/views/darkroom.c:45
+msgid "darkroom"
+msgstr "cameră obscură"
+
+#. construct tooltip text into option
+#: ../src/views/darkroom.c:283
+#, c-format
+msgid "show %s"
+msgstr "arată %s"
+
+#. construct tooltip text into option
+#: ../src/views/darkroom.c:298
+#, c-format
+msgid "%s as favorite"
+msgstr "%s ca favorit"
+
+#. construct tooltip text into option
+#: ../src/views/darkroom.c:313
+#, c-format
+msgid "hide %s"
+msgstr "ascunde %s"
+
+#. fail :(
+#: ../src/views/darkroom.c:338
+msgid "no image selected!"
+msgstr "nu sunt imagini selectate!"
+
+#: ../src/views/filmstrip.c:68
+msgid "film strip"
+msgstr "fâşie de film"
+
+#: ../src/views/lighttable.c:75
+msgid "lighttable"
+msgstr "masă luminoasă"
+
+#: ../src/views/lighttable.c:172
+msgid "this collection is empty."
+msgstr "această colecţie este goală."
+
+#: ../src/views/lighttable.c:174
+msgid "if you didn't import any images yet"
+msgstr "dacă nu ai importat imagini încă"
+
+#: ../src/views/lighttable.c:176
+msgid "do that from the top left expander."
+msgstr "fă asta din extensorul din stânga sus."
+
+#: ../src/views/lighttable.c:183
+msgid "try to relax the filter settings in the top panel"
+msgstr "încearcă să relaxezi setările filtrului din panoul de sus"
+
+#: ../src/views/lighttable.c:190
+msgid "or in the collection plugin in the left panel."
+msgstr "sau în plugin-ul colecţie din panoul din stânga."
+

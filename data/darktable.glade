@@ -84,6 +84,16 @@ max</property>
                               </packing>
                             </child>
                             <child>
+                              <widget class="GtkComboBox" id="colorpicker_model_combobox">
+                                <property name="visible">True</property>
+                                <property name="items" translatable="yes">output color space
+Lab</property>
+                              </widget>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
                               <widget class="GtkLabel" id="colorpicker_Lab_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">1</property>
@@ -92,7 +102,7 @@ max</property>
                                 <property name="selectable">True</property>
                               </widget>
                               <packing>
-                                <property name="position">2</property>
+                                <property name="position">3</property>
                               </packing>
                             </child>
                           </widget>
