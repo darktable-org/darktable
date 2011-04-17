@@ -47,6 +47,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 
 #ifdef HAVE_OPENCL
 void
