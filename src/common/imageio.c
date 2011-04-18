@@ -613,12 +613,18 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
     just add magic bytes to match to this struct
     to extend mathc on ldr formats.
 */
-static uint8_t _imageio_ldr_magic[] =  {
+static const uint8_t _imageio_ldr_magic[] =  {
     /* jpeg magics */
-    0x00, 0x02, 0xff, 0xd8,		                            // SOI marker
+    0x00, 0x02, 0xff, 0xd8,                         // SOI marker
   
     /* png image */
-    0x01, 0x03, 0x50, 0x4E, 0x47                    // ASCII 'PNG'
+    0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
+
+    /* tiff image, intel */
+    0x4d, 0x4d, 0x00, 0x2a,
+
+    /* tiff image, motorola */
+    0x49, 0x49, 0x2a, 0x00
 };
 
 gboolean dt_imageio_is_ldr(const char *filename)
