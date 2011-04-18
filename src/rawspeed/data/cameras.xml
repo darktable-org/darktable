@@ -1586,6 +1586,17 @@
 		<Horizontal y="0" height="2"/>
 	</BlackAreas>  
   </Camera>  
+  <Camera make="SAMSUNG" model="NX11">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
+    </CFA>
+    <Crop x="10" y="8" width="-10" height="0"/>
+    <Sensor black="0" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="8"/>
+	</BlackAreas>  
+  </Camera>  
   <Camera make="SAMSUNG" model="NX100">
     <CFA width="2" height="2">
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
