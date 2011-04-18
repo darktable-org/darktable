@@ -324,9 +324,9 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   // capture gui color picked event.
   if(darktable.gui->reset) return FALSE;
-  if(self->picked_color_max_Lab[0] < self->picked_color_min_Lab[0]) return FALSE;
+  if(self->picked_color_max[0] < self->picked_color_min[0]) return FALSE;
   if(!self->request_color_pick) return FALSE;
-  const float *Lab = self->picked_color_Lab;
+  const float *Lab = self->picked_color;
 
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   p->center = Lab[0];

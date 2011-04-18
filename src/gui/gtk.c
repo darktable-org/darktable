@@ -316,21 +316,21 @@ update_colorpicker_panel()
     {
       case 0: // mean
         if(input_color == 0)
-          col = module->picked_color;
+          col = darktable.gui->picked_color_output_cs;
         else if(input_color == 1)
-          col = module->picked_color_Lab;
+          col = module->picked_color;
         break;
       case 1: //min
         if(input_color == 0)
-          col = module->picked_color_min;
+          col = darktable.gui->picked_color_output_cs_min;
         else if(input_color == 1)
-          col = module->picked_color_min_Lab;
+          col = module->picked_color_min;
         break;
       default:
         if(input_color == 0)
-          col = module->picked_color_max;
+          col = darktable.gui->picked_color_output_cs_max;
         else if(input_color == 1)
-          col = module->picked_color_max_Lab;
+          col = module->picked_color_max;
         break;
     }
     w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_Lab_label");

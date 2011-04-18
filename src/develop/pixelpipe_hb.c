@@ -424,8 +424,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
         module->request_color_pick) // and they need to want to pick ;)
     {
-      for(int k=0; k<3; k++) module->picked_color_min_Lab[k] =  666.0f;
-      for(int k=0; k<3; k++) module->picked_color_max_Lab[k] = -666.0f;
+      for(int k=0; k<3; k++) module->picked_color_min[k] =  666.0f;
+      for(int k=0; k<3; k++) module->picked_color_max[k] = -666.0f;
       int box[4];
       float Lab[3], *in = (float *)input;
       for(int k=0; k<3; k++) Lab[k] = 0.0f;
@@ -440,14 +440,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         Lab[0] += w*L;
         Lab[1] += w*a;
         Lab[2] += w*b;
-        module->picked_color_min_Lab[0] = fminf(module->picked_color_min_Lab[0], L);
-        module->picked_color_min_Lab[1] = fminf(module->picked_color_min_Lab[1], a);
-        module->picked_color_min_Lab[2] = fminf(module->picked_color_min_Lab[2], b);
-        module->picked_color_max_Lab[0] = fmaxf(module->picked_color_max_Lab[0], L);
-        module->picked_color_max_Lab[1] = fmaxf(module->picked_color_max_Lab[1], a);
-        module->picked_color_max_Lab[2] = fmaxf(module->picked_color_max_Lab[2], b);
+        module->picked_color_min[0] = fminf(module->picked_color_min[0], L);
+        module->picked_color_min[1] = fminf(module->picked_color_min[1], a);
+        module->picked_color_min[2] = fminf(module->picked_color_min[2], b);
+        module->picked_color_max[0] = fmaxf(module->picked_color_max[0], L);
+        module->picked_color_max[1] = fmaxf(module->picked_color_max[1], a);
+        module->picked_color_max[2] = fmaxf(module->picked_color_max[2], b);
       }
-      for(int k=0; k<3; k++) module->picked_color_Lab[k] = Lab[k];
+      for(int k=0; k<3; k++) module->picked_color[k] = Lab[k];
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
@@ -538,13 +538,13 @@ post_process_collect_info:
     }
     if(dev->gui_attached
        && pipe == dev->preview_pipe
-       && (strcmp(module->op, "colorout") == 0) // Only colorout provides meaningful RGB data
+       && (strcmp(module->op, "colorout") == 0) // only colorout provides meaningful RGB data
        && module->request_color_pick)
     {
       float *pixel = (float*)*output;
 
-      for(int k=0; k<3; k++) module->picked_color_min[k] =  666.0f;
-      for(int k=0; k<3; k++) module->picked_color_max[k] = -666.0f;
+      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs_min[k] =  666.0f;
+      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs_max[k] = -666.0f;
       int box[4];
       float rgb[3];
       for(int k=0; k<3; k++) rgb[k] = 0.0f;
@@ -555,12 +555,12 @@ post_process_collect_info:
       {
         for(int k=0; k<3; k++)
         {
-          module->picked_color_min[k] = fminf(module->picked_color_min[k], pixel[4*(roi_out->width*j + i) + k]);
-          module->picked_color_max[k] = fmaxf(module->picked_color_max[k], pixel[4*(roi_out->width*j + i) + k]);
+          darktable.gui->picked_color_output_cs_min[k] = fminf(darktable.gui->picked_color_output_cs_min[k], pixel[4*(roi_out->width*j + i) + k]);
+          darktable.gui->picked_color_output_cs_max[k] = fmaxf(darktable.gui->picked_color_output_cs_max[k], pixel[4*(roi_out->width*j + i) + k]);
           rgb[k] += w*pixel[4*(roi_out->width*j + i) + k];
         }
       }
-      for(int k=0; k<3; k++) module->picked_color[k] = rgb[k];
+      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs[k] = rgb[k];
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
