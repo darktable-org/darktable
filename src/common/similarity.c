@@ -24,6 +24,7 @@
 
 #define CLIP(x) (fmax(0,fmin(1.0,x)))
 
+#ifdef _DEBUG
 static void _similarity_dump_histogram(uint32_t imgid, const dt_similarity_histogram_t *histogram)
 {
   fprintf(stderr, "histogram for %d:",imgid);
@@ -31,6 +32,7 @@ static void _similarity_dump_histogram(uint32_t imgid, const dt_similarity_histo
     fprintf(stderr," [%f, %f, %f, %f]",histogram->rgbl[j][0],histogram->rgbl[j][1],histogram->rgbl[j][2],histogram->rgbl[j][3]);
   fprintf(stderr,"\n");
 }
+#endif
 
 /* matches the rgb histogram and returns a score for the match */
 static float _similarity_match_histogram_rgb(const dt_similarity_histogram_t *target, const dt_similarity_histogram_t *source)
@@ -198,7 +200,9 @@ void dt_similarity_histogram_store(uint32_t imgid, const dt_similarity_histogram
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
+#ifdef _DEBUG
   _similarity_dump_histogram(imgid,histogram);
+#endif
 }
 
 void dt_similarity_lightmap_store(uint32_t imgid, const dt_similarity_lightmap_t *lightmap)
