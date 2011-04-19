@@ -87,6 +87,12 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+int
+groups ()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 static float lambda(float x, float mu, float alpha)
 {
   return pow((1-abs(mu-x)/100.),alpha);

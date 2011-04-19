@@ -427,37 +427,28 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     {
       for(int k=0; k<3; k++) module->picked_color_min[k] =  666.0f;
       for(int k=0; k<3; k++) module->picked_color_max[k] = -666.0f;
-      for(int k=0; k<3; k++) module->picked_color_min_Lab[k] =  666.0f;
-      for(int k=0; k<3; k++) module->picked_color_max_Lab[k] = -666.0f;
       int box[4];
-      float rgb[3], Lab[3], *in = (float *)input;
-      for(int k=0; k<3; k++) Lab[k] = rgb[k] = 0.0f;
+      float Lab[3], *in = (float *)input;
+      for(int k=0; k<3; k++) Lab[k] = 0.0f;
       for(int k=0; k<4; k+=2) box[k] = MIN(roi_in.width -1, MAX(0, module->color_picker_box[k]*roi_in.width));
       for(int k=1; k<4; k+=2) box[k] = MIN(roi_in.height-1, MAX(0, module->color_picker_box[k]*roi_in.height));
       const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
       for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
-        {
-          for(int k=0; k<3; k++)
-          {
-            module->picked_color_min[k] = fminf(module->picked_color_min[k], in[4*(roi_in.width*j + i) + k]);
-            module->picked_color_max[k] = fmaxf(module->picked_color_max[k], in[4*(roi_in.width*j + i) + k]);
-            rgb[k] += w*in[4*(roi_in.width*j + i) + k];
-          }
-          const float L = in[4*(roi_in.width*j + i) + 0];
-          const float a = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 1]*L));
-          const float b = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 2]*L));
-          Lab[1] += w*a;
-          Lab[2] += w*b;
-          module->picked_color_min_Lab[0] = fminf(module->picked_color_min_Lab[0], L);
-          module->picked_color_min_Lab[1] = fminf(module->picked_color_min_Lab[1], a);
-          module->picked_color_min_Lab[2] = fminf(module->picked_color_min_Lab[2], b);
-          module->picked_color_max_Lab[0] = fmaxf(module->picked_color_max_Lab[0], L);
-          module->picked_color_max_Lab[1] = fmaxf(module->picked_color_max_Lab[1], a);
-          module->picked_color_max_Lab[2] = fmaxf(module->picked_color_max_Lab[2], b);
-        }
-      Lab[0] = rgb[0];
-      for(int k=0; k<3; k++) module->picked_color_Lab[k] = Lab[k];
-      for(int k=0; k<3; k++) module->picked_color[k] = rgb[k];
+      {
+        const float L = in[4*(roi_in.width*j + i) + 0];
+        const float a = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 1]*L));
+        const float b = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 2]*L));
+        Lab[0] += w*L;
+        Lab[1] += w*a;
+        Lab[2] += w*b;
+        module->picked_color_min[0] = fminf(module->picked_color_min[0], L);
+        module->picked_color_min[1] = fminf(module->picked_color_min[1], a);
+        module->picked_color_min[2] = fminf(module->picked_color_min[2], b);
+        module->picked_color_max[0] = fmaxf(module->picked_color_max[0], L);
+        module->picked_color_max[1] = fmaxf(module->picked_color_max[1], a);
+        module->picked_color_max[2] = fmaxf(module->picked_color_max[2], b);
+      }
+      for(int k=0; k<3; k++) module->picked_color[k] = Lab[k];
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
@@ -539,6 +530,49 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 #endif
 
 post_process_collect_info:
+
+    dt_pthread_mutex_lock(&pipe->busy_mutex);
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
+    if(dev->gui_attached
+       && pipe == dev->preview_pipe
+       && (strcmp(module->op, "colorout") == 0) // only colorout provides meaningful RGB data
+       && module->request_color_pick)
+    {
+      float *pixel = (float*)*output;
+
+      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs_min[k] =  666.0f;
+      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs_max[k] = -666.0f;
+      int box[4];
+      float rgb[3];
+      for(int k=0; k<3; k++) rgb[k] = 0.0f;
+      for(int k=0; k<4; k+=2) box[k] = MIN(roi_out->width -1, MAX(0, module->color_picker_box[k]*roi_out->width));
+      for(int k=1; k<4; k+=2) box[k] = MIN(roi_out->height-1, MAX(0, module->color_picker_box[k]*roi_out->height));
+      const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
+      for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+      {
+        for(int k=0; k<3; k++)
+        {
+          darktable.gui->picked_color_output_cs_min[k] = fminf(darktable.gui->picked_color_output_cs_min[k], pixel[4*(roi_out->width*j + i) + k]);
+          darktable.gui->picked_color_output_cs_max[k] = fmaxf(darktable.gui->picked_color_output_cs_max[k], pixel[4*(roi_out->width*j + i) + k]);
+          rgb[k] += w*pixel[4*(roi_out->width*j + i) + k];
+        }
+      }
+      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs[k] = rgb[k];
+
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
+      if(needlock) gdk_threads_enter();
+      gtk_widget_queue_draw(module->widget);
+      if(needlock) gdk_threads_leave();
+
+    }
+    else dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+
     // 4) final histogram:
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
@@ -552,16 +586,16 @@ post_process_collect_info:
       dev->histogram_max = 0;
       memset(dev->histogram, 0, sizeof(float)*4*64);
       for(int j=0; j<roi_out->height; j+=4) for(int i=0; i<roi_out->width; i+=4)
-        {
-          uint8_t rgb[3];
-          for(int k=0; k<3; k++)
-            rgb[k] = pixel[4*j*roi_out->width+4*i+2-k]>>2;
+      {
+        uint8_t rgb[3];
+        for(int k=0; k<3; k++)
+          rgb[k] = pixel[4*j*roi_out->width+4*i+2-k]>>2;
 
-          for(int k=0; k<3; k++)
-            dev->histogram[4*rgb[k]+k] ++;
-          uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-          dev->histogram[4*lum+3] ++;
-        }
+        for(int k=0; k<3; k++)
+          dev->histogram[4*rgb[k]+k] ++;
+        uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+        dev->histogram[4*lum+3] ++;
+      }
       
       for(int k=0; k<4*64; k++) dev->histogram[k] = logf(1.0 + dev->histogram[k]);
       // don't count <= 0 pixels
@@ -572,6 +606,7 @@ post_process_collect_info:
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
+
   return 0;
 }
 

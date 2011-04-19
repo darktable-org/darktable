@@ -74,6 +74,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 #ifdef HAVE_OPENCL
 void
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)

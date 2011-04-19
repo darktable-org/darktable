@@ -25,9 +25,9 @@
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
-#define DT_GUI_VIEW_SWITCH_TO_TETHERING 		1
-#define DT_GUI_VIEW_SWITCH_TO_LIBRARY      		2
-#define DT_GUI_VIEW_SWITCH_TO_DARKROOM			3
+#define DT_GUI_VIEW_SWITCH_TO_TETHERING	1
+#define DT_GUI_VIEW_SWITCH_TO_LIBRARY   2
+#define DT_GUI_VIEW_SWITCH_TO_DARKROOM  3
 
 typedef struct dt_gui_key_accel_t
 {
@@ -65,6 +65,10 @@ typedef struct dt_gui_gtk_t
   float bgcolor[3];
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
+
+  float picked_color_output_cs[3];
+  float picked_color_output_cs_min[3];
+  float picked_color_output_cs_max[3];
 }
 dt_gui_gtk_t;
 

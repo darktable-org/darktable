@@ -245,10 +245,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   {
     module->picked_color[k] =
       module->picked_color_min[k] =
-        module->picked_color_max[k] =
-          module->picked_color_Lab[k] =
-            module->picked_color_min_Lab[k] =
-              module->picked_color_max_Lab[k] = 0.0f;
+        module->picked_color_max[k] = 0.0f;
   }
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;

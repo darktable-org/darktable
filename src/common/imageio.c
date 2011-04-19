@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2010--2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -608,6 +609,47 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   return DT_IMAGEIO_OK;
 }
 
+/* magic data: offset,length, xx, yy, ... 
+    just add magic bytes to match to this struct
+    to extend mathc on ldr formats.
+*/
+static const uint8_t _imageio_ldr_magic[] =  {
+    /* jpeg magics */
+    0x00, 0x02, 0xff, 0xd8,                         // SOI marker
+  
+    /* png image */
+    0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
+
+    /* tiff image, intel */
+    0x4d, 0x4d, 0x00, 0x2a,
+
+    /* tiff image, motorola */
+    0x49, 0x49, 0x2a, 0x00
+};
+
+gboolean dt_imageio_is_ldr(const char *filename)
+{
+  int offset=0;
+  uint8_t block[16]={0};
+  FILE *fin = fopen(filename,"rb");
+  if (fin) {
+    /* read block from file */
+    int s = fread(block,16,1,fin);
+    fclose(fin);
+    
+    /* compare magic's */
+    while (s) {
+      if (memcmp((_imageio_ldr_magic+offset+2),block+(_imageio_ldr_magic+offset)[0],(_imageio_ldr_magic+offset)[1]) == 0)
+          return TRUE;
+      offset += 2 + (_imageio_ldr_magic+offset)[1];
+      
+      /* check if finished */
+      if(offset >= sizeof(_imageio_ldr_magic))
+        break;
+    }
+  }
+  return FALSE;
+}
 
 dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
 {
@@ -961,15 +1003,32 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 //   combined reading
 // =================================================
 
+static inline int
+has_ldr_extension(const char *filename)
+{
+  // TODO: this is a bad, lazy hack to avoid me coding a true libmagic fix here!
+  int ret = 0;
+  const char *cc = filename + strlen(filename);
+  for(; *cc!='.'&&cc>filename; cc--);
+  gchar *ext = g_ascii_strdown(cc+1, -1);
+  if(!strcmp(ext, "jpg") || !strcmp(ext, "jpeg") ||
+     !strcmp(ext, "tif") || !strcmp(ext, "tiff"))
+     ret = 1;
+  g_free(ext);
+  return ret;
+}
+
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 {
   /* first of all, check if file exists, dont bother to test loading if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
     return !DT_IMAGEIO_OK;
   
-  // first try hdr and raw loading
-  dt_imageio_retval_t ret;
-  ret = dt_imageio_open_ldr(img, filename);
+  dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
+  
+  /* check if file is ldr using magic's */
+  if (dt_imageio_is_ldr(filename))
+    ret = dt_imageio_open_ldr(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
 #ifdef HAVE_RAWSPEED
     ret = dt_imageio_open_rawspeed(img, filename);
@@ -978,6 +1037,8 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
     ret = dt_imageio_open_raw(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_hdr(img, filename);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // Failsafing, if ldr magic test fails..
+      ret = dt_imageio_open_ldr(img, filename);
   if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
   img->flags &= ~DT_IMAGE_THUMBNAIL;
   img->dirty = 1;
@@ -987,9 +1048,15 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
 
 dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filename)
 {
-  // first try hdr and raw loading
-  dt_imageio_retval_t ret;
-  ret = dt_imageio_open_ldr_preview(img, filename);
+  /* first of all, check if file exists, dont bother to test loading if not exists */
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+    return !DT_IMAGEIO_OK;
+
+  dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
+  
+  /* check if file is ldr using magic's */
+  if (dt_imageio_is_ldr(filename))
+    ret = dt_imageio_open_ldr_preview(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
  #ifdef HAVE_RAWSPEED
     ret = dt_imageio_open_rawspeed_preview(img, filename);
@@ -998,6 +1065,8 @@ dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filenam
     ret = dt_imageio_open_raw_preview(img, filename);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_hdr_preview(img, filename);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // Failsafing, if ldr magic test fails..
+    ret = dt_imageio_open_ldr_preview(img, filename);
   if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
   img->dirty = 1;
   return ret;
