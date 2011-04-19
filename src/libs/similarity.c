@@ -91,7 +91,7 @@ void gui_init (dt_lib_module_t *self)
   d->lightmap_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/lightmap_weight");
   
   /* for now, just take red and set all color maps weighting from that */
-  d->redmap_weight = d->greenmap_weight = d->bluemap_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/redmap_weight");
+  d->redmap_weight = d->greenmap_weight = d->bluemap_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/rmap_weight");
   self->widget = gtk_vbox_new(TRUE, 5);
 
   /* add the histogram slider */
