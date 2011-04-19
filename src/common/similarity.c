@@ -49,18 +49,57 @@ static float _similarity_match_histogram_rgb(const dt_similarity_histogram_t *ta
 }
 
 /* scoring match of lightmap */
-static float _similarity_match_lightmap(const dt_similarity_lightmap_t *target, const dt_similarity_lightmap_t *source, int channel)
+static float _similarity_match_lightmap(const dt_similarity_lightmap_t *target, const dt_similarity_lightmap_t *source)
 {
   float score=0;
+  int channel = 3;	
   
+  /* sum up the score */
   for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++) 
     score += 1.0-fabs((float)(target->pixels[4*j+channel] - source->pixels[4*j+channel])/0xff);
   
-  score /= (DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);
+  /* scale down score */
+  score /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
   
-  /* scale score for sensitivity */
-  score *=1.15;
+  return CLIP(score);
+}
+
+/* scoring match of colormap */
+static float _similarity_match_colormap(dt_similarity_t *data, const dt_similarity_lightmap_t *target, const dt_similarity_lightmap_t *source)
+{
+  float redscore = 0;
+  float greenscore = 0;
+  float bluescore = 0;
+  float score = 0;
+
+  /* sum up the score */
+  for (int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++) 
+  {
+    redscore    +=  1.0 - fabs((float)(target->pixels[4*j+0] - source->pixels[4*j+0]) / 0xff);
+    greenscore  +=  1.0 - fabs((float)(target->pixels[4*j+1] - source->pixels[4*j+1]) / 0xff);
+    bluescore   +=  1.0 - fabs((float)(target->pixels[4*j+2] - source->pixels[4*j+2]) / 0xff);
+  }
   
+  /* scale down score */
+  redscore    /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
+  greenscore  /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
+  bluescore   /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
+  
+  
+  /* now we have each score for r,g and b channel, lets weight them and calculate 
+      a main score for the match. */
+  float total_weight = data->redmap_weight+data->greenmap_weight+data->bluemap_weight;
+  fprintf(stderr,"Color score %f,%f,%f, weight %f\n",redscore,greenscore,bluescore,total_weight);
+  
+  if (total_weight) 
+  {
+    score = (
+            (redscore*data->redmap_weight) + 
+            (greenscore* data->greenmap_weight)+
+            (bluescore*data->bluemap_weight)
+        ) / total_weight;
+  }
+    
   return CLIP(score);
 }
 
@@ -117,7 +156,7 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
     /* set an extended collection query for viewing the result of match */
     dt_collection_set_extended_where(darktable.collection, ", similar_images where images.id = similar_images.id order by similar_images.score desc");
     dt_collection_set_query_flags( darktable.collection, 
-						dt_collection_get_query_flags(darktable.collection) | COLLECTION_QUERY_USE_ONLY_WHERE_EXT);
+            dt_collection_get_query_flags(darktable.collection) | COLLECTION_QUERY_USE_ONLY_WHERE_EXT);
     dt_collection_update(darktable.collection);
     
     /* add target image with 100.0 in score into result to ensure it always shown in top */
@@ -129,9 +168,9 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram,lightmap from images", -1, &stmt, NULL);
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      float score_histogram=0, score_lightmap=0;
+      float score_histogram=0, score_lightmap=0, score_colormap=0;
       
-      /* verify size of histogram abnd lightmap blob of test image */
+      /* verify size of histogram and lightmap blob of test image */
       if ( 
                   (sqlite3_column_bytes(stmt,1) == sizeof(dt_similarity_histogram_t)) && 
                   (sqlite3_column_bytes(stmt,2) == sizeof(dt_similarity_lightmap_t))
@@ -148,33 +187,48 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
          *  1.08 is a tuned constant that works well with threshold
          */
         memcpy(&test_lightmap, sqlite3_column_blob(stmt, 2), sizeof(dt_similarity_lightmap_t));
-        score_lightmap = _similarity_match_lightmap(&orginal_lightmap,&test_lightmap,3);
-       
-      }
-     
-
-      /* 
-       * calculate the similarity score
-       */
-      float total_weight = data->histogram_weight+data->lightmap_weight;
-      float weighted_score = ((score_histogram*data->histogram_weight) + (score_lightmap*data->lightmap_weight)) / total_weight;
-      float score = weighted_score;
-      //fprintf(stderr,"Image score %f\n",weighted_score);
-      
-      /* 
-       * If current images scored, lets add it to similar_images table 
-       */
-      if(score >= 0.96)
-      {
-        sprintf(query,"insert into similar_images(id,score) values(%d,%f)",sqlite3_column_int(stmt, 0),score);
-        DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+        score_lightmap = _similarity_match_lightmap(&orginal_lightmap,&test_lightmap);
         
-        /* new image added, lets redraw the view */
-        dt_control_queue_draw_all();
-      }
+        /*
+         * then calculate the colormap similarity score
+         */
+        score_colormap = _similarity_match_colormap(data,&orginal_lightmap,&test_lightmap);
+       
+        
+       
+        fprintf(stderr,"histo: %f, light: %f, color: %f\n",score_histogram,score_lightmap,score_colormap);
+
+        /* 
+         * calculate the similarity score
+         */
+        float total_colormap_weight = (data->redmap_weight + data->greenmap_weight + data->bluemap_weight)/3.0;
+        float total_weight = data->histogram_weight + data->lightmap_weight + total_colormap_weight;
+        float weighted_score = (
+                    (score_histogram*data->histogram_weight) + 
+                    (score_lightmap*data->lightmap_weight) + 
+                    (score_colormap*total_colormap_weight)
+                ) / total_weight;
+        
+        //fprintf(stderr,"Image score %f\n",weighted_score);
+        float score = weighted_score;
+        
+        /* 
+         * If current images scored, lets add it to similar_images table 
+         */
+        if(score >= 0.92)
+        {
+          sprintf(query,"insert into similar_images(id,score) values(%d,%f)",sqlite3_column_int(stmt, 0),score);
+          DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+                    
+          /* lets redraw the view */
+          dt_control_queue_draw_all();
+        }
+      } else
+        fprintf(stderr,"Image has inconsisten similarity matching data..\n");
     }
   }
   sqlite3_finalize (stmt);  
+
 }
 
 void dt_similarity_image_dirty(uint32_t imgid)
