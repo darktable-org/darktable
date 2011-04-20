@@ -34,34 +34,34 @@ static void _similarity_dump_histogram(uint32_t imgid, const dt_similarity_histo
 }
 #endif
 
-/* matches the rgb histogram and returns a score for the match */
-static float _similarity_match_histogram_rgb(const dt_similarity_histogram_t *target, const dt_similarity_histogram_t *source)
+/* matches the rgb histogram and returns a score for the match  */
+static float _similarity_match_histogram_rgb(dt_similarity_t *data, const dt_similarity_histogram_t *target, const dt_similarity_histogram_t *source)
 {
   float score=0;
   
   for(int k=0;k<DT_SIMILARITY_HISTOGRAM_BUCKETS;k++)
     for(int j=0;j<3;j++)
-      score += (1.0 - fabs(target->rgbl[k][j] - source->rgbl[k][j]))/3.0;
+      score += fabs(target->rgbl[k][j] - source->rgbl[k][j])/3.0;
     
   score/=DT_SIMILARITY_HISTOGRAM_BUCKETS;
   
-  return score;
+  return CLIP(score * data->histogram_weight);
 }
 
 /* scoring match of lightmap */
-static float _similarity_match_lightmap(const dt_similarity_lightmap_t *target, const dt_similarity_lightmap_t *source)
+static float _similarity_match_lightmap(dt_similarity_t *data, const dt_similarity_lightmap_t *target, const dt_similarity_lightmap_t *source)
 {
   float score=0;
   int channel = 3;	
   
   /* sum up the score */
   for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++) 
-    score += 1.0-fabs((float)(target->pixels[4*j+channel] - source->pixels[4*j+channel])/0xff);
+    score += fabs((float)(target->pixels[4*j+channel] - source->pixels[4*j+channel]) / 0xff);
   
   /* scale down score */
   score /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
   
-  return CLIP(score);
+   return CLIP(score * data->lightmap_weight);
 }
 
 /* scoring match of colormap */
@@ -75,9 +75,9 @@ static float _similarity_match_colormap(dt_similarity_t *data, const dt_similari
   /* sum up the score */
   for (int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++) 
   {
-    redscore    +=  1.0 - fabs((float)(target->pixels[4*j+0] - source->pixels[4*j+0]) / 0xff);
-    greenscore  +=  1.0 - fabs((float)(target->pixels[4*j+1] - source->pixels[4*j+1]) / 0xff);
-    bluescore   +=  1.0 - fabs((float)(target->pixels[4*j+2] - source->pixels[4*j+2]) / 0xff);
+    redscore    +=  fabs((float)(target->pixels[4*j+0] - source->pixels[4*j+0]) / 0xff);
+    greenscore  += fabs((float)(target->pixels[4*j+1] - source->pixels[4*j+1]) / 0xff);
+    bluescore   += fabs((float)(target->pixels[4*j+2] - source->pixels[4*j+2]) / 0xff);
   }
   
   /* scale down score */
@@ -85,21 +85,13 @@ static float _similarity_match_colormap(dt_similarity_t *data, const dt_similari
   greenscore  /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
   bluescore   /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
   
-  
+  fprintf(stderr,"weight: %f\n",data->redmap_weight+data->bluemap_weight+data->greenmap_weight);
+  score = ((redscore*data->redmap_weight) + (greenscore * data->greenmap_weight) + (bluescore*data->bluemap_weight)) / 3.0;
+
   /* now we have each score for r,g and b channel, lets weight them and calculate 
       a main score for the match. */
-  float total_weight = data->redmap_weight+data->greenmap_weight+data->bluemap_weight;
-  fprintf(stderr,"Color score %f,%f,%f, weight %f\n",redscore,greenscore,bluescore,total_weight);
+  fprintf(stderr,"Color score %f,%f,%f total weighted score = %f\n",redscore,greenscore,bluescore,score);  
   
-  if (total_weight) 
-  {
-    score = (
-            (redscore*data->redmap_weight) + 
-            (greenscore* data->greenmap_weight)+
-            (bluescore*data->bluemap_weight)
-        ) / total_weight;
-  }
-    
   return CLIP(score);
 }
 
@@ -180,19 +172,19 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
          * Get the histogram blob and calculate the similarity score
          */
         memcpy(&test_histogram, sqlite3_column_blob(stmt, 1), sizeof(dt_similarity_histogram_t));
-        score_histogram = _similarity_match_histogram_rgb(&orginal_histogram,&test_histogram);
+        score_histogram = _similarity_match_histogram_rgb(data, &orginal_histogram, &test_histogram);
          
         /*
          * Get the lightmap blob and calculate the similarity score
          *  1.08 is a tuned constant that works well with threshold
          */
         memcpy(&test_lightmap, sqlite3_column_blob(stmt, 2), sizeof(dt_similarity_lightmap_t));
-        score_lightmap = _similarity_match_lightmap(&orginal_lightmap,&test_lightmap);
+        score_lightmap = _similarity_match_lightmap(data, &orginal_lightmap, &test_lightmap);
         
         /*
          * then calculate the colormap similarity score
          */
-        score_colormap = _similarity_match_colormap(data,&orginal_lightmap,&test_lightmap);
+        score_colormap = _similarity_match_colormap(data, &orginal_lightmap, &test_lightmap);
        
         
        
@@ -201,16 +193,10 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
         /* 
          * calculate the similarity score
          */
-        float total_colormap_weight = (data->redmap_weight + data->greenmap_weight + data->bluemap_weight)/3.0;
-        float total_weight = data->histogram_weight + data->lightmap_weight + total_colormap_weight;
-        float weighted_score = (
-                    (score_histogram*data->histogram_weight) + 
-                    (score_lightmap*data->lightmap_weight) + 
-                    (score_colormap*total_colormap_weight)
-                ) / total_weight;
-        
-        //fprintf(stderr,"Image score %f\n",weighted_score);
-        float score = weighted_score;
+       float score = 1.0;
+       score -= score_histogram;
+       score -= score_lightmap;
+       score -= score_colormap;
         
         /* 
          * If current images scored, lets add it to similar_images table 

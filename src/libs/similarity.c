@@ -87,15 +87,15 @@ void gui_init (dt_lib_module_t *self)
   dt_similarity_t *d = g_malloc(sizeof(dt_similarity_t));
   memset(d,0,sizeof(dt_similarity_t));
   self->data = d;
-  d->histogram_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/histogram_weight");
-  d->lightmap_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/lightmap_weight");
+  d->histogram_weight = dt_conf_get_float("plugins/lighttable/similarity/histogram_weight");
+  d->lightmap_weight = dt_conf_get_float("plugins/lighttable/similarity/lightmap_weight");
   
   /* for now, just take red and set all color maps weighting from that */
-  d->redmap_weight = d->greenmap_weight = d->bluemap_weight = 100.0 * dt_conf_get_float("plugins/lighttable/similarity/rmap_weight");
+  d->redmap_weight = d->greenmap_weight = d->bluemap_weight = dt_conf_get_float("plugins/lighttable/similarity/rmap_weight");
   self->widget = gtk_vbox_new(TRUE, 5);
 
   /* add the histogram slider */
-  GtkDarktableSlider *slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->histogram_weight, 2));
+  GtkDarktableSlider *slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->histogram_weight*100, 2));
   dtgtk_slider_set_label(slider,_("histogram weight"));
   dtgtk_slider_set_unit(slider,"%");
   g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_histogram_weight_callback),d);
@@ -103,7 +103,7 @@ void gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
  
   /* add the lightmap slider */
-  slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->lightmap_weight, 2));
+  slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->lightmap_weight*100, 2));
   dtgtk_slider_set_label(slider,_("light map weight"));
   dtgtk_slider_set_unit(slider,"%");
   g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_lightmap_weight_callback),d);
@@ -111,7 +111,7 @@ void gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(slider), TRUE, TRUE, 0);
   
   /* add the rgbmap weighting slider */
-  slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->redmap_weight, 2));
+  slider = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 2, d->redmap_weight*100, 2));
   dtgtk_slider_set_label(slider,_("color map weight"));
   dtgtk_slider_set_unit(slider,"%");
   g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(_rgb_weight_callback),d);
