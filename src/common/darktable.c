@@ -78,14 +78,22 @@ console and post backtrace log to mailing list with information about your CPU."
   _dt_sigill_old_handler(param);
 }
 
-#define cpuid(fnc,ax,bx,cx,dx)\
-  __asm__ __volatile__(\
-      "pushl %%ebx\n" \
-      "cpuid\n" \
-      "movl %%ebx, %1\n" \
-      "pop %%ebx\n" \
-      : "=a"(ax), "=r"(bx), "=c"(cx), "=d"(dx) : "a"(fnc) );
-  
+#if defined(__i386__) && defined(__PIC__)
+#define cpuid(level, a, b, c, d) \
+  __asm__ ("xchgl %%ebx, %1\n" \
+        "cpuid\n" \
+        "xchgl  %%ebx, %1\n" \
+        : "=a" (a), "=r" (b), "=c" (c), "=d" (d)	\
+        : "0" (level) \
+      )
+#else
+#define cpuid(level, a, b, c, d) \
+  __asm__ ("cpuid"	\
+    : "=a" (a), "=b" (b), "=c" (c), "=d" (d) \
+    : "0" (level) \
+    )
+#endif
+
 static 
 void dt_check_cpu(int argc,char **argv) 
 {
