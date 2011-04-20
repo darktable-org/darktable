@@ -62,6 +62,68 @@ static int usage(const char *argv0)
   return 1;
 }
 
+typedef void (dt_signal_handler_t)(int) ;
+static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
+
+static
+void _dt_sigill_handler(int param) {
+  
+   GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
+"darktable has trapped an illegal instruction which probably mean that \
+an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
+console and post backtrace log to mailing list with information about your CPU."));
+    gtk_dialog_run(GTK_DIALOG(dlg));
+  
+  /* pass it further the old handler*/
+  _dt_sigill_old_handler(param);
+}
+
+#define cpuid(fnc,ax,bx,cx,dx)\
+  __asm__ __volatile__(\
+      "pushl %%ebx\n" \
+      "cpuid\n" \
+      "movl %%ebx, %1\n" \
+      "pop %%ebx\n" \
+      : "=a"(ax), "=r"(bx), "=c"(cx), "=d"(dx) : "a"(fnc) );
+  
+static 
+void dt_check_cpu(int argc,char **argv) 
+{
+  /* hook up SIGILL handler */
+  _dt_sigill_old_handler = signal(SIGILL,&_dt_sigill_handler);
+
+  /* call cpuid for  SSE level */
+  int ax,bx,cx,dx;
+  cpuid(0x1,ax,bx,cx,dx);
+  
+  ax = bx = 0;
+  char message[512]={0};
+  strcat(message,_("SIMD extenstions found: "));
+  if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3))
+    strcat(message,"SSE3 ");
+  if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2))
+    strcat(message,"SSE2 ");
+  else if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE))
+    strcat(message,"SSE ");
+ 
+  /* for now, bail out if SSE2 is not availble */
+  if(!(darktable.cpu_flags & DT_CPU_FLAG_SSE2))
+  {
+    gtk_init (&argc, &argv);
+    
+    GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
+"darktable is very cpu resource intensive and is using SSE2 SIMD instructions \
+for heavy calculations, this is for a better user experience but also defines a minimum\
+requirement of your processor.\n\nThe processor in YOUR system does NOT support this \
+and darktable will now close down.\n\n%s"),message);
+    
+    gtk_dialog_run(GTK_DIALOG(dlg));
+    
+    exit(0);
+  }
+  
+}
+
 int dt_init(int argc, char *argv[], const int init_gui)
 {
 #ifndef __SSE2__
@@ -73,11 +135,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
+  
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
 
   darktable.progname = argv[0];
-
+   
   // database
   gchar *dbfilenameFromCommand = NULL;
 
@@ -127,6 +190,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   g_type_init();
 
+  /* check cput caps */
+  dt_check_cpu(argc,argv);
+
+  
 #ifdef HAVE_GEGL
   (void)setenv("GEGL_PATH", DARKTABLE_DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
@@ -279,6 +346,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
   }
 
+
+  
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 

@@ -106,8 +106,14 @@ typedef enum dt_debug_thread_t
 }
 dt_debug_thread_t;
 
+#define DT_CPU_FLAG_SSE		1
+#define DT_CPU_FLAG_SSE2		2
+#define DT_CPU_FLAG_SSE3		4
+
 typedef struct darktable_t
 {
+  unsigned int cpu_flags;
+	
   int32_t thumbnail_size;
   int32_t unmuted;
   GList                          *iop;
