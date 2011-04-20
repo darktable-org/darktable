@@ -410,6 +410,7 @@ void dt_control_init(dt_control_t *s)
 
       // add column for blendops
       sqlite3_exec(darktable.db, "alter table history add column blendop_params blob", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "alter table style_items add column blendop_params blob", NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
@@ -429,7 +430,7 @@ create_tables:
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, primary key(id1, id2))", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer,blendop_params blob)", NULL, NULL, NULL);
 
     DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
 
