@@ -408,18 +408,6 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale (cr,s,s);
 
-  /* draw outline */
-  cairo_set_line_width(cr, 0.2);
-  cairo_rectangle (cr, 0.01,0.01,0.99,0.99);
-  cairo_stroke (cr);
-}
-
-void dtgtk_cairo_paint_colorpicker2(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
-{
-  gint s = (w<h?w:h);
-  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
-  cairo_scale (cr,s,s);
-
   /* draw pipette */
 
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
