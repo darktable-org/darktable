@@ -106,13 +106,23 @@ void dt_check_cpu(int argc,char **argv)
   
   ax = bx = 0;
   char message[512]={0};
-  strcat(message,_("SIMD extenstions found: "));
-  if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3))
+  int found=0;
+  strcat(message,_("SIMD extensions found: "));
+  if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3)){
+    found = 1;
     strcat(message,"SSE3 ");
-  if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2))
+  }
+  if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2)) {
+    found = 1;
     strcat(message,"SSE2 ");
-  else if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE))
+  }
+  else if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE)){
+    found = 1;
     strcat(message,"SSE ");
+  }
+  if (!found){
+        strcat(message,"none");
+  }
  
   /* for now, bail out if SSE2 is not availble */
   if(!(darktable.cpu_flags & DT_CPU_FLAG_SSE2))
@@ -120,10 +130,10 @@ void dt_check_cpu(int argc,char **argv)
     gtk_init (&argc, &argv);
     
     GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
-"darktable is very cpu resource intensive and is using SSE2 SIMD instructions \
-for heavy calculations, this is for a better user experience but also defines a minimum\
-requirement of your processor.\n\nThe processor in YOUR system does NOT support this \
-and darktable will now close down.\n\n%s"),message);
+"darktable is very cpu intensive and uses SSE2 SIMD instructions \
+for heavy calculations. This gives a better user experience but also defines a minimum \
+processor requirement.\n\nThe processor in YOUR system does NOT support SSE2. \
+darktable will now close down.\n\n%s"),message);
     
     gtk_dialog_run(GTK_DIALOG(dlg));
     
