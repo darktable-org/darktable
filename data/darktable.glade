@@ -62,15 +62,7 @@
                             <property name="no_show_all">True</property>
                             <property name="spacing">5</property>
                             <child>
-                              <widget class="GtkToggleButton" id="colorpicker_togglebutton">
-                                <property name="label" translatable="yes">pick</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                              </widget>
-                              <packing>
-                                <property name="position">0</property>
-                              </packing>
+                              <placeholder/>
                             </child>
                             <child>
                               <widget class="GtkComboBox" id="colorpicker_mean_combobox">
@@ -86,7 +78,7 @@ max</property>
                             <child>
                               <widget class="GtkComboBox" id="colorpicker_model_combobox">
                                 <property name="visible">True</property>
-                                <property name="items" translatable="yes">output color space
+                                <property name="items" translatable="yes">rgb
 Lab</property>
                               </widget>
                               <packing>
@@ -95,6 +87,7 @@ Lab</property>
                             </child>
                             <child>
                               <widget class="GtkLabel" id="colorpicker_Lab_label">
+                                <property name="width_request">500</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">1</property>
                                 <property name="xpad">2</property>
