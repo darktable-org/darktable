@@ -1278,6 +1278,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_create_color_label_buttons(GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox")));
 
   // color picker
+  for(int k = 0; k < 3; k++)
+    darktable.gui->picked_color_output_cs[k] =
+        darktable.gui->picked_color_output_cs_max[k] =
+        darktable.gui->picked_color_output_cs_min[k] = 0;
+
   widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_mean_combobox");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/colorpicker_mode"));
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(colorpicker_mean_changed), NULL);

@@ -87,7 +87,7 @@ Lab</property>
                             </child>
                             <child>
                               <widget class="GtkLabel" id="colorpicker_Lab_label">
-                                <property name="width_request">500</property>
+                                <property name="width_request">200</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">1</property>
                                 <property name="xpad">2</property>
