@@ -1290,7 +1290,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/colorpicker_model"));
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(colorpicker_model_changed), NULL);
   // Creating the picker button
-  darktable.gui->colorpicker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker2, CPF_STYLE_FLAT);
+  darktable.gui->colorpicker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_signal_connect(G_OBJECT(darktable.gui->colorpicker_button), "toggled", G_CALLBACK(colorpicker_toggled), NULL);
   widget = glade_xml_get_widget(darktable.gui->main_window, "bottom_darkroom_box");
   gtk_box_pack_start(GTK_BOX(widget), darktable.gui->colorpicker_button, TRUE, TRUE, 0);
