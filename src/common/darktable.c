@@ -66,13 +66,13 @@ typedef void (dt_signal_handler_t)(int) ;
 static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 
 static
-void _dt_sigill_handler(int param) {
-  
-   GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
-"darktable has trapped an illegal instruction which probably mean that \
+void _dt_sigill_handler(int param)
+{
+  GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
+"darktable has trapped an illegal instruction which probably means that \
 an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
-console and post backtrace log to mailing list with information about your CPU."));
-    gtk_dialog_run(GTK_DIALOG(dlg));
+the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."));
+  gtk_dialog_run(GTK_DIALOG(dlg));
   
   /* pass it further the old handler*/
   _dt_sigill_old_handler(param);
@@ -108,20 +108,24 @@ void dt_check_cpu(int argc,char **argv)
   char message[512]={0};
   int found=0;
   strcat(message,_("SIMD extensions found: "));
-  if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3)){
+  if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3))
+  {
     found = 1;
     strcat(message,"SSE3 ");
   }
-  if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2)) {
+  if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2))
+  {
     found = 1;
     strcat(message,"SSE2 ");
   }
-  else if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE)){
+  else if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE))
+  {
     found = 1;
     strcat(message,"SSE ");
   }
-  if (!found){
-        strcat(message,"none");
+  if (!found)
+  {
+    strcat(message,"none");
   }
  
   /* for now, bail out if SSE2 is not availble */
@@ -137,9 +141,8 @@ darktable will now close down.\n\n%s"),message);
     
     gtk_dialog_run(GTK_DIALOG(dlg));
     
-    exit(0);
+    exit(11);
   }
-  
 }
 
 int dt_init(int argc, char *argv[], const int init_gui)
