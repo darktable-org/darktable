@@ -127,9 +127,9 @@ dt_colorspaces_get_matrix_from_profile (cmsHPROFILE prof, float *matrix, float *
     memcpy(tmp, matrix, sizeof(float)*9);
     if(mat3inv (matrix, tmp)) return 3;
     // also need to reverse gamma, to apply reverse before matrix multiplication:
-    cmsToneCurve* rev_red   = cmsReverseToneCurveEx(0xffff, red_curve);
-    cmsToneCurve* rev_green = cmsReverseToneCurveEx(0xffff, green_curve);
-    cmsToneCurve* rev_blue  = cmsReverseToneCurveEx(0xffff, blue_curve);
+    cmsToneCurve* rev_red   = cmsReverseToneCurveEx(0x8000, red_curve);
+    cmsToneCurve* rev_green = cmsReverseToneCurveEx(0x8000, green_curve);
+    cmsToneCurve* rev_blue  = cmsReverseToneCurveEx(0x8000, blue_curve);
     if(!rev_red || !rev_green || !rev_blue)
     {
       cmsFreeToneCurve(rev_red);

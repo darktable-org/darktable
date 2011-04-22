@@ -339,6 +339,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
+  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   gchar *outprofile=NULL;
   int outintent = 0;
   dt_iop_colorout_gui_data_t *g=NULL;
@@ -393,8 +394,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if (d->softproofing)
     d->softproof =  _create_profile(g->softproofprofile);
 
-  /* get matrix from profile, if softproofing always go xform codepath */
-  if (d->softproofing || dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+  /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
+  if (d->softproofing || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) || 
+          dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     d->cmatrix[0] = -0.666f;
     piece->process_cl_ready = 0;
