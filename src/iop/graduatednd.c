@@ -223,17 +223,19 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   float zoom_x, zoom_y;
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
-  float bigger_side, smaller_side;
-  if(wd >= ht)
-  {
-    bigger_side = wd;
-    smaller_side = ht;
-  }
-  else
-  {
-    bigger_side = ht;
-    smaller_side = wd;
-  }
+
+// Commented out to allow this stub to be compilable with some versions of gcc ...
+//  float bigger_side, smaller_side;
+//  if(wd >= ht)
+//  {
+//    bigger_side = wd;
+//    smaller_side = ht;
+//  }
+//  else
+//  {
+//    bigger_side = ht;
+//    smaller_side = wd;
+//  }
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
   DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
