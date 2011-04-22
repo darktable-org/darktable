@@ -106,7 +106,6 @@ void dt_check_cpu(int argc,char **argv)
   
   ax = bx = 0;
   char message[512]={0};
-  int found=0;
   strcat(message,_("SIMD extensions found: "));
   if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3))
     strcat(message,"SSE3 ");
