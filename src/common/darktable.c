@@ -109,24 +109,13 @@ void dt_check_cpu(int argc,char **argv)
   int found=0;
   strcat(message,_("SIMD extensions found: "));
   if((cx & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE3))
-  {
-    found = 1;
     strcat(message,"SSE3 ");
-  }
   if( ((dx >> 26) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE2))
-  {
-    found = 1;
     strcat(message,"SSE2 ");
-  }
-  else if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE))
-  {
-    found = 1;
-    strcat(message,"SSE ");
-  }
-  if (!found)
-  {
+  if (((dx >> 25) & 1) && (darktable.cpu_flags |= DT_CPU_FLAG_SSE))
+   strcat(message,"SSE ");
+  if (!darktable.cpu_flags)
     strcat(message,"none");
-  }
  
   /* for now, bail out if SSE2 is not availble */
   if(!(darktable.cpu_flags & DT_CPU_FLAG_SSE2))
