@@ -435,8 +435,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
       {
         const float L = in[4*(roi_in.width*j + i) + 0];
-        const float a = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 1]*L));
-        const float b = fminf(128, fmaxf(-128.0, in[4*(roi_in.width*j + i) + 2]*L));
+        const float a = in[4*(roi_in.width*j + i) + 1];
+        const float b = in[4*(roi_in.width*j + i) + 2];
         Lab[0] += w*L;
         Lab[1] += w*a;
         Lab[2] += w*b;
