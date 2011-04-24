@@ -785,7 +785,9 @@ void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int 
   const int wd = darktable.control->width  - 2*tb;
   const int ht = darktable.control->height - 2*tb;
   dt_view_manager_configure (vm, wd, ht);
-  dt_view_film_strip_scroll_to(vm, dev->image->id);
+  
+  if(dev->image)
+    dt_view_film_strip_scroll_to(vm, dev->image->id);
 }
 
 void dt_view_film_strip_close(dt_view_manager_t *vm)
