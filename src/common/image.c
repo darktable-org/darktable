@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <glob.h>
-
+#include <glib/gstdio.h>
 
 static int64_t dt_image_debug_malloc_size = 0;
 
@@ -101,6 +101,50 @@ void dt_image_synch_xmp(const int selected)
       dt_image_write_sidecar_file(imgid);
     }
     sqlite3_finalize(stmt);
+  }
+}
+
+void dt_image_synch_all_xmp(const gchar *pathname)
+{
+  if(dt_conf_get_bool("write_sidecar_files"))
+  {
+    // Delete all existing .xmp files.
+    glob_t *globbuf = malloc(sizeof(glob_t));
+    
+    gchar *fname = g_strdup(pathname);
+    gchar pattern[1024];
+    g_snprintf(pattern, 1024, "%s", pathname);
+    char *c1 = pattern + strlen(pattern);
+    while(*c1 != '.' && c1 > pattern) c1--;
+    g_snprintf(c1, pattern + 1024 - c1, "_*");
+    char *c2 = fname + strlen(fname);
+    while(*c2 != '.' && c2 > fname) c2--;
+    g_snprintf(c1+2, pattern + 1024 - c1 - 2, "%s.xmp", c2);
+
+    if (!glob(pattern, 0, NULL, globbuf))
+    {
+      for (int i=0; i < globbuf->gl_pathc; i++)
+      {
+        (void)g_unlink(globbuf->gl_pathv[i]);
+      }
+      globfree(globbuf);
+    }
+     
+    sqlite3_stmt *stmt;
+    gchar *imgfname = g_path_get_basename(pathname);
+    gchar *imgpath = g_path_get_dirname(pathname);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images where film_id in (select id from film_rolls where folder = ?1) and filename = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgpath, strlen(imgpath), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      dt_image_write_sidecar_file(imgid);
+    }
+    sqlite3_finalize(stmt);
+    g_free(fname);
+    g_free(imgfname);
+    g_free(imgpath);
   }
 }
 
@@ -663,7 +707,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   // Add version wildcard
   gchar *fname = g_strdup(filename);
   gchar pattern[1024];
-  g_snprintf(pattern, 1024, "%s", pathname);
+  g_snprintf(pattern, 1024, "%s", filename);
   char *c1 = pattern + strlen(pattern);
   while(*c1 != '.' && c1 > pattern) c1--;
   snprintf(c1, pattern + 1024 - c1, "_*");

@@ -246,6 +246,17 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   dt_collection_update(darktable.collection);
   dt_control_gui_queue_draw();
 
+  // We need a list of files to regenerate .xmp files if there are duplicates
+  GList *list = NULL;
+  sqlite3_stmt *stmt = NULL;
+  
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
+
   while(t)
   {
     imgid = (long int)t->data;
@@ -254,6 +265,15 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     fraction=1.0/total;
     dt_gui_background_jobs_set_progress(j, fraction);
   }
+
+  char *imgname;
+  while(list)
+  {
+    imgname = (char *)list->data;
+    dt_image_synch_all_xmp(imgname);
+    list = g_list_delete_link(list, list);
+  } 
+  g_list_free(list);  
   dt_gui_background_jobs_destroy (j);
   dt_film_remove_empty();
   return 0;
@@ -279,6 +299,17 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
   dt_collection_update(darktable.collection);
   dt_control_gui_queue_draw();
+
+  // We need a list of files to regenerate .xmp files if there are duplicates
+  GList *list = NULL;
+  
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
   while(t)
@@ -313,6 +344,15 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     dt_gui_background_jobs_set_progress(j, fraction);
   }
   sqlite3_finalize(stmt);
+  
+  char *imgname;
+  while(list)
+  {
+    imgname = (char *)list->data;
+    dt_image_synch_all_xmp(imgname);
+    list = g_list_delete_link(list, list);
+  } 
+  g_list_free(list);
   dt_gui_background_jobs_destroy (j);
   dt_film_remove_empty();
   return 0;
