@@ -94,7 +94,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *outp = out + ch*k;
 // 		int x=k%roi_out->width;
 // 		int y=k/roi_out->width;
-    if(inp[0] >= upper && inp[1] >= upper && inp[2] >= upper)
+    if(inp[0] >= upper || inp[1] >= upper || inp[2] >= upper)
     {
 // 			mask[y*stride+x] = 255;
       outp[0] = 1;
