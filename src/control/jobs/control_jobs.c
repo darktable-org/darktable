@@ -490,6 +490,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       #pragma omp critical
 #endif
       {
+        if(!t) 
+          break; 
         imgid = (long int)t->data;
         t = g_list_delete_link(t, t);
         num = total - g_list_length(t);
