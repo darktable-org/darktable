@@ -21,16 +21,19 @@
 #include <stdlib.h>
 
 
-void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size)
+int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size)
 {
   cache->entries = entries;
   cache->data = (void **)malloc(sizeof(void *)*entries);
   cache->size = (size_t *)malloc(sizeof(size_t)*entries);
   cache->hash = (uint64_t *)malloc(sizeof(uint64_t)*entries);
   cache->used = (int32_t *)malloc(sizeof(int32_t)*entries);
+  memset(cache->data,0,sizeof(void *)*entries);
   for(int k=0; k<entries; k++)
   {
     cache->data[k] = (void *)dt_alloc_align(16, size);
+    if(!cache->data[k])
+      goto alloc_memory_fail;
     cache->size[k] = size;
 #ifdef _DEBUG
     memset(cache->data[k], 0x5d, size);
@@ -39,6 +42,22 @@ void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, i
     cache->used[k] = 0;
   }
   cache->queries = cache->misses = 0;
+  return 1;
+  
+alloc_memory_fail:
+  for(int k=0; k<entries; k++)
+  {
+    if(cache->data[k])
+      free(cache->data[k]);
+  }
+  
+  free(cache->data);
+  free(cache->size);
+  free(cache->hash);
+  free(cache->used);
+  
+  return 0;
+  
 }
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
