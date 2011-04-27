@@ -491,11 +491,15 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #endif
       {
         if(!t) 
-          break; 
-        imgid = (long int)t->data;
-        t = g_list_delete_link(t, t);
-        num = total - g_list_length(t);
+          imgid = 0; 
+        else
+        {
+          imgid = (long int)t->data;
+          t = g_list_delete_link(t, t);
+          num = total - g_list_length(t);
+        }
       }
+      
       // check if image still exists:
       char imgfilename[1024];
       dt_image_t *image = dt_image_cache_get(imgid, 'r');
