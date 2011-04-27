@@ -457,9 +457,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       // printf("tile extents: %zd %zd -- %zd %zd\n", origin[0], origin[1], region[0], region[1]);
 
       err = CL_SUCCESS;
-      if(need_tiles) err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, _dev_in, dev_in, origin, orig0, region, 0, NULL, NULL);
+      if(need_tiles) err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, _dev_in, dev_in, origin, orig0, region, 0, NULL, NULL);
       if(err != CL_SUCCESS) fprintf(stderr, "trouble copying image: %d\n", err);
-      clFinish(darktable.opencl->dev[devid].cmd_queue);
+      dt_opencl_finish(darktable.opencl->dev[devid].cmd_queue);
 
 
       if(tx > 0)
@@ -499,7 +499,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
         err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_decompose, sizes);
         if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue analysis kernel! %d\n", err);
         // else fprintf(stderr, "successfully enqueued analysis kernel!\n");
-        clFinish(darktable.opencl->dev[devid].cmd_queue);
+        dt_opencl_finish(darktable.opencl->dev[devid].cmd_queue);
       }
 
       // now synthesize again:
@@ -527,29 +527,29 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
         err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_synthesize, sizes);
         if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue synth kernel! %d\n", err);
-        clFinish(darktable.opencl->dev[devid].cmd_queue);
+        dt_opencl_finish(darktable.opencl->dev[devid].cmd_queue);
       }
       if(need_tiles)
       {
-        err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_out, orig0, origin, region, 0, NULL, NULL);
+        err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_out, orig0, origin, region, 0, NULL, NULL);
         if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
       }
       else
       {
-        err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, orig0, orig0, region, 0, NULL, NULL);
+        err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, orig0, orig0, region, 0, NULL, NULL);
         if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
       }
       // clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
-      clFinish(darktable.opencl->dev[devid].cmd_queue);
+      dt_opencl_finish(darktable.opencl->dev[devid].cmd_queue);
     }
 
   // free device mem
   if(need_tiles)
   {
-    clReleaseMemObject(dev_in);
-    clReleaseMemObject(dev_out);
+    dt_opencl_release_mem_object(dev_in);
+    dt_opencl_release_mem_object(dev_out);
   }
-  for(int k=0; k<max_scale; k++) clReleaseMemObject(dev_detail[k]);
+  for(int k=0; k<max_scale; k++) dt_opencl_release_mem_object(dev_detail[k]);
 }
 #endif
 

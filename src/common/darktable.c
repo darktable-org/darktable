@@ -56,7 +56,7 @@ static int usage(const char *argv0)
 {
   printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,perf,pwstorage,opencl,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
 #ifdef HAVE_OPENCL
-  printf(" [--disable-opencl]");
+  printf(" [--enable-opencl]");
 #endif
   printf("\n");
   return 1;

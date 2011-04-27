@@ -158,12 +158,14 @@ if(GNOMEKEYRING_FOUND)
 endif(GNOMEKEYRING_FOUND)
 
 find_package(OpenCL)
-if(OPENCL_FOUND)
+if(OPENCL_FOUND AND USE_OPENCL)
   include_directories(${OPENCL_INCLUDE_DIR})
-  list(APPEND LIBS ${OPENCL_LIBRARIES})
+#  list(APPEND LIBS ${OPENCL_LIBRARIES})
   list(APPEND SOURCES "common/opencl.c")
+  list(APPEND SOURCES "common/dynload.c")
+  list(APPEND SOURCES "common/dlopencl.c")
   add_definitions("-DHAVE_OPENCL")
-endif(OPENCL_FOUND)
+endif(OPENCL_FOUND AND USE_OPENCL)
 
 # build opengl slideshow viewer?
 find_package(SDL)

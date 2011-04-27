@@ -176,7 +176,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 2, sizeof(cl_mem), (void *)&dev_m);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_basecurve, sizes);
   if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue basecurve kernel! %d\n", err);
-  clReleaseMemObject(dev_m);
+  dt_opencl_release_mem_object(dev_m);
 }
 #endif
 

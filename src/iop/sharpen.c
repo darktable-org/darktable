@@ -94,7 +94,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     size_t origin[] = {0, 0, 0};
     size_t region[] = {roi_in->width, roi_in->height, 1};
-    err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
+    err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
     return;
   }
   float mat[2*(MAXR+1)];
@@ -115,7 +115,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 5, sizeof(float), (void *)&d->threshold);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_sharpen, sizes);
   if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue sharpen kernel! %d\n", err);
-  clReleaseMemObject(dev_m);
+  dt_opencl_release_mem_object(dev_m);
 }
 #endif
 

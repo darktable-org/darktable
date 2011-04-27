@@ -471,37 +471,43 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 #ifdef HAVE_OPENCL
-    if(module->process_cl && piece->process_cl_ready)
+    if (darktable.opencl->inited)
     {
-      // if input is not on the gpu, copy it there.
-      // else, if input is on the gpu only, invalidate cpu cache line.
-      // printf("for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
-      if(!cl_mem_input) cl_mem_input = dt_opencl_copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
-      else dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
-      *cl_mem_output = dt_opencl_alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
+      if(module->process_cl && piece->process_cl_ready  && 
+         dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height) && dt_opencl_image_fits_device(pipe->devid, roi_out->width, roi_out->height))
+      {
+        // if input is not on the gpu, copy it there.
+        // else, if input is on the gpu only, invalidate cpu cache line.
+        // printf("for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+        if(!cl_mem_input) cl_mem_input = dt_opencl_copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+        else dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
+        *cl_mem_output = dt_opencl_alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
 
-      // printf("for module `%s', have bufs %d and %d bpp\n", module->op, in_bpp, bpp);
-      module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
-      clReleaseMemObject(cl_mem_input);
-      // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
-      // so we're not just yet invalidating the (empty) output cache line.
+        // printf("for module `%s', have bufs %d and %d bpp\n", module->op, in_bpp, bpp);
+        module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+        dt_opencl_release_mem_object(cl_mem_input);
+        // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
+        // so we're not just yet invalidating the (empty) output cache line.
+      }
+      else
+      {
+        // cleanup unneeded opencl buffers, and copy back to CPU buffer
+        if(cl_mem_input)
+        {
+          dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+          dt_opencl_release_mem_object(cl_mem_input);
+        }
+        *cl_mem_output = NULL;
+
+        module->process(module, piece, input, *output, &roi_in, roi_out);
+
+      }
     }
     else
-    {
-      // cleanup unneeded opencl buffers, and copy back to CPU buffer
-      if(cl_mem_input)
-      {
-        dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
-        clReleaseMemObject(cl_mem_input);
-      }
-      *cl_mem_output = NULL;
-#else
-    {
 #endif
+    {
       module->process(module, piece, input, *output, &roi_in, roi_out);
-
-    }
-    
+    } 
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
 
@@ -667,7 +673,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   if(cl_mem_out)
     {
       dt_opencl_copy_device_to_host(buf, cl_mem_out, width, height, pipe->devid, out_bpp);
-      clReleaseMemObject(cl_mem_out);
+      dt_opencl_release_mem_object(cl_mem_out);
       cl_mem_out = NULL;
     }
 #endif

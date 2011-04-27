@@ -237,8 +237,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, kernel, sizes);
   if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue white balance kernel! %d\n", err);
-  clFinish(darktable.opencl->dev[devid].cmd_queue);
-  clReleaseMemObject(dev_coeffs);
+  dt_opencl_finish(darktable.opencl->dev[devid].cmd_queue);
+  dt_opencl_release_mem_object(dev_coeffs);
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
 }

@@ -670,7 +670,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
     dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_redblue, sizes);
 
-    if(dev_green_eq) clReleaseMemObject(dev_green_eq);
+    if(dev_green_eq) dt_opencl_release_mem_object(dev_green_eq);
   }
   else if(roi_out->scale > .5f)
   {
@@ -710,7 +710,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_green, 2, sizeof(uint32_t), (void*)&data->filters);
       dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_ppg_green, sizes);
     }
-    if(dev_green_eq) clReleaseMemObject(dev_green_eq);
+    if(dev_green_eq) dt_opencl_release_mem_object(dev_green_eq);
 
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_tmp);
@@ -762,7 +762,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_zoom_half_size, sizes);
   }
 
-  if(dev_tmp) clReleaseMemObject(dev_tmp);
+  if(dev_tmp) dt_opencl_release_mem_object(dev_tmp);
 }
 #endif
 
