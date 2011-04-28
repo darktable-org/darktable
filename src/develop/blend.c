@@ -426,7 +426,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 {
   float *in =(float *)i;
   float *out =(float *)o;
-  const int ch = piece->colors;
+  int ch = piece->colors;
   _blend_row_func *blend = NULL;
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
   
@@ -497,12 +497,18 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
     /* get channel max values depending on colorspace */
     const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
-
+    
+    /* correct bpp per pixel for raw 
+        \TODO actually invest why channels per pixel is 4 in raw..  
+    */
+    if(cst==iop_cs_RAW)
+      ch = 1;
+    
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(in,roi_out,out,blend,d)
+    #pragma omp parallel for default(none) shared(in,roi_out,out,blend,d,stderr,ch)
 #endif
     for (int y=0; y<roi_out->height; y++) {
-        int index=(y*roi_out->width*4);
+        int index = (ch*y*roi_out->width);
         blend(cst, opacity, in+index, out+index, roi_out->width*ch);
     }
   }
