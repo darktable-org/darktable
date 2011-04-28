@@ -64,8 +64,12 @@ if(LENSFUN_FOUND)
 	set(MODULES ${MODULES} lens)
 endif(LENSFUN_FOUND)
 
+# Add libs references
 foreach(module ${MODULES})
-	target_link_libraries(${module} ${LIBS})
+        target_link_libraries(${module} ${LIBS})
+endforeach(module)
+foreach(module ${EXPERIMENTAL_MODULES})
+        target_link_libraries(${module} ${LIBS})
 endforeach(module)
 
 foreach(module ${MODULES})
@@ -75,7 +79,7 @@ endforeach(module)
 if(INSTALL_IOP_EXPERIMENTAL)
   message("-- Installing experimental iop plugins")
   foreach(module ${EXPERIMENTAL_MODULES})
-    install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
+    	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins)
   endforeach(module)
 endif(INSTALL_IOP_EXPERIMENTAL)
 
