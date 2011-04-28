@@ -34,19 +34,21 @@
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
 
-void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
+int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
+  int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
+  return res;
 }
 
-void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
+int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE, 5);
+  int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE, 5);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
+  return res;
 }
 
-void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries)
+int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries)
 {
   pipe->devid = -1;
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
@@ -54,13 +56,15 @@ void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = 0;
   pipe->nodes = NULL;
   pipe->backbuf_size = size;
-  dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size);
+  if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size))
+    return 0;
   pipe->backbuf = NULL;
   pipe->processing = 0;
   pipe->shutdown = 0;
   pipe->input_timestamp = 0;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
+  return 1;
 }
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height, float iscale)

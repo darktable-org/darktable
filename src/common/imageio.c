@@ -853,7 +853,12 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  if(!dt_dev_pixelpipe_init_export(&pipe, wd, ht)) {
+    dt_control_log(_("Failed to allocate memory for export, please lower the threads used for export or buy more memory."));
+    dt_dev_cleanup(&dev);
+    return 0;
+  }
+
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
