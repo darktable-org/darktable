@@ -25,9 +25,6 @@ int dt_gmodule_supported(void)
 {
   int success = g_module_supported();
 
-  //if (success == TRUE) printf("gmodule is supported on your system\n");
-  //else		       printf("gmodule is not supported on your system\n");
-
   return success;
 }
 
@@ -50,21 +47,14 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
     module->library = g_module_name(gmodule);
   }
 
-  //if (module != NULL) printf("g_module_open: library %s was loaded\n", module->library);
-  //else                printf("g_module_open: libary %s could not be loaded\n", library);
-
-
   return module;
 }
 
 
-/* get pointer to function */
+/* get pointer to symbol */
 int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (** pointer)(void))
 {
   int success = g_module_symbol(module->gmodule, name, (gpointer)pointer);
-
-  //if (success == TRUE) printf("g_module_symbol: symbol %s found in %s\n", name, module->library);
-  //else                 printf("g_module_symbol: symbol %s not found in %s\n", name, module->library);
 
   return success;
 }

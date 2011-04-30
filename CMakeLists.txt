@@ -118,6 +118,14 @@ if(Gettext_FOUND)
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
 
+# quick check needed to generate file "create_preferences.sh" accordingly
+find_package(OpenCL)
+if(OPENCL_FOUND AND USE_OPENCL)
+	SET(HAVE_OPENCL 1)
+else()
+	SET(HAVE_OPENCL 0)
+endif(OPENCL_FOUND AND USE_OPENCL)
+
 #
 # Test SSE level
 #
@@ -167,6 +175,12 @@ add_subdirectory(data)
 add_subdirectory(doc)
 
 include(cmake/darktable-packaging.cmake)
+
+# create_preferences.sh depending on opencl
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/create_preferences.sh.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/create_preferences.sh"
+    IMMEDIATE @ONLY)
 
 # uninstall target
 configure_file(

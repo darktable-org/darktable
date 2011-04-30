@@ -33,6 +33,7 @@
 // #pragma GCC diagnostic
 #include "common/dtpthread.h"
 #include "common/dlopencl.h"
+#include "control/conf.h"
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -61,6 +62,7 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
+  int enabled;
   int num_devs;
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
@@ -104,6 +106,15 @@ int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, c
 /** launch kernel! */
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes);
 
+/** check if opencl is inited */
+int dt_opencl_is_inited(void);
+
+/** check if opencl is enabled */
+int dt_opencl_is_enabled(void);
+
+/** update enabled flag with value from preferences */
+void dt_opencl_update_enabled(void);
+
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
 void dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp);
 
@@ -117,17 +128,22 @@ void* dt_opencl_alloc_device(const int width, const int height, const int devid,
 
 void dt_opencl_release_mem_object(void *mem);
 
+/** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height);
 
 #else
 #include <stdlib.h>
+#include "control/conf.h"
 typedef struct dt_opencl_t
 {
   int inited;
+  int enabled;
 } dt_opencl_t;
 static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
   cl->inited = 0;
+  cl->enabled = 0;
+  dt_conf_set_bool("opencl", FALSE);
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}
 static inline int dt_opencl_lock_device(dt_opencl_t *cl, const int dev)
@@ -160,6 +176,16 @@ static inline int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, co
 {
   return -1;
 }
+static inline int dt_opencl_is_inited(void)
+{
+  return 0;
+}
+static inline int dt_opencl_is_enabled(void)
+{
+  return 0;
+}
+static inline void dt_opencl_update_enabled(void) {}
+
 #endif
 
 

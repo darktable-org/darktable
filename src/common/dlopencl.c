@@ -22,23 +22,23 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <assert.h>
+#include <string.h>
 
 
 #include "common/dynload.h"
 #include "common/dlopencl.h"
 #include "common/darktable.h"
 
-/* default noop function for all unassigned function pointers */
+/* only for debugging: default noop function for all unassigned function pointers */
 void dt_dlopencl_noop(void)
 {
-  /* we should never get here */
+  /* we should normally never get here */
   fprintf(stderr, "dt_dlopencl error: unsupported function call\n");
-
   assert(FALSE);
 }
 
 
-/* dynamically load OpenCL library and bind needed functions */
+/* dynamically load OpenCL library and bind needed symbols */
 int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 {
   dt_gmodule_t *module = NULL;
@@ -57,7 +57,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
   }
 
   /* try to load library */
-  library = (name != NULL) ? name : DT_OPENCL_LIBRARY;
+  library = (name == NULL || strlen(name) == 0) ? DT_OPENCL_LIBRARY : name;
   module = dt_gmodule_open(library);
 
   if (module == NULL)
@@ -67,14 +67,18 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
      return FALSE;
   } else
   {
+    /* now bind symbols */
     success = TRUE;
     d = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
     d->symbols = (dt_dlopencl_symbols_t *)malloc(sizeof(dt_dlopencl_symbols_t));
+    memset(d->symbols, 0, sizeof(dt_dlopencl_symbols_t));
     d->library = module->library;
     
-    /* assign noop function to each function pointer */
+    /* assign noop function as a default to each function pointer */
     void (** slist)(void) = (void (**)(void))d->symbols;
-    for (k=0; k < sizeof(dt_dlopencl_symbols_t)/sizeof(void (*)(void)); k++) slist[k] = dt_dlopencl_noop;
+    /* sanity check against padding */
+    if (sizeof(dt_dlopencl_symbols_t) % sizeof(void (*)(void)) == 0)
+      for (k=0; k < sizeof(dt_dlopencl_symbols_t)/sizeof(void (*)(void)); k++) slist[k] = dt_dlopencl_noop;
 
     /* only bind needed symbols */
     success = success && dt_gmodule_symbol(module, "clGetPlatformIDs", (void (**)(void))&d->symbols->dt_clGetPlatformIDs);
@@ -104,7 +108,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 
     if (!success) dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
     d->have_opencl = success;
-    *ocl = d;
+    *ocl = success ? d : NULL;
   }
 
   return success;

@@ -251,7 +251,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 #
 add_custom_command(
    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
 )
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPERTIES GENERATED 1)
 

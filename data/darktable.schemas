@@ -131,6 +131,32 @@
       </locale>
     </schema>
 
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/opencl</key>
+      <applyto>/apps/darktable/opencl</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>flase</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>activate OpenCL support (experimental)</short>
+        <long>if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. expect random crashes.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/opencl_library</key>
+      <applyto>/apps/darktable/opencl_runtime</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>system library with opencl runtime</short>
+        <long>opencl runtime library is normally detected automatically by darktable. if your opencl runtime is at an unusual place and cannot be detected, enter the full pathname here. leave empty for default behavior.</long>
+      </locale>
+    </schema>
+
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/ask_before_remove</key>
       <applyto>/apps/darktable/ask_before_remove</applyto>

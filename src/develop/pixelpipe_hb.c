@@ -471,9 +471,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 #ifdef HAVE_OPENCL
-    if (darktable.opencl->inited)
+    if (dt_opencl_is_inited())
     {
-      if(module->process_cl && piece->process_cl_ready  && 
+      if(dt_opencl_is_enabled() && module->process_cl && piece->process_cl_ready  && 
          dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height) && dt_opencl_image_fits_device(pipe->devid, roi_out->width, roi_out->height))
       {
         // if input is not on the gpu, copy it there.
@@ -641,6 +641,7 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
   pipe->processing = 1;
+  dt_opencl_update_enabled(); // update enabled flag from preferences
   pipe->devid = dt_opencl_lock_device(darktable.opencl, -1);
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
   // image max is normalized before

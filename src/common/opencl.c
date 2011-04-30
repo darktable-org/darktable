@@ -18,29 +18,44 @@
 
 #ifdef HAVE_OPENCL
 
-#include <strings.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "common/darktable.h"
 #include "common/opencl.h"
 #include "common/dlopencl.h"
+#include "control/conf.h"
 
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
-  int use_opencl = 0;
-  for(int k=0; k<argc; k++) if(!strcmp(argv[k], "--enable-opencl"))
+  cl->enabled = 0;
+  cl->dlocl = NULL;
+  int exclude_opencl = 0;
+
+  // preliminary disable opencl in prefs. We will re-set it to previous state later if possible
+  // Will remain disabled if initialization fails.
+  const int prefs = dt_conf_get_bool("opencl");
+  dt_conf_set_bool("opencl", FALSE);
+
+  for(int k=0; k<argc; k++) if(!strcmp(argv[k], "--disable-opencl"))
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] trying to find an opencl runtime on your system\n");
-      use_opencl = 1;
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] do not try to find and use an opencl runtime library due to explicit user request\n");
+      exclude_opencl = 1;
     }
 
-  if(!use_opencl) return;
+  if(exclude_opencl) return;
 
-  if(!dt_dlopencl_init(NULL, &cl->dlocl))
+
+  // look for explicit definition of opencl_runtime library in preferences
+  const char *library = dt_conf_get_string("opencl_runtime");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] trying to load opencl library: %s\n", library && strlen(library) != 0 ? library : "<system default>");
+
+  // dynamically load opencl runtime
+  if(!dt_dlopencl_init(library, &cl->dlocl))
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library not found. Continue with opencl disabled\n");
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
       return;
     }
     else
@@ -184,6 +199,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
     cl->num_devs = dev;
     cl->inited = 1;
+    cl->enabled = prefs;
+    // set preferences to saved state
+    dt_conf_set_bool("opencl", prefs);
   }
   else
   {
@@ -508,11 +526,44 @@ void* dt_opencl_alloc_device(const int width, const int height, const int devid,
 }
 
 
+/** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height)
 {
   if(!darktable.opencl->inited) return FALSE;
 
   return (darktable.opencl->dev[devid].max_image_width >= width && darktable.opencl->dev[devid].max_image_height >= height);
+}
+
+
+/** check if opencl is inited */
+int dt_opencl_is_inited(void)
+{
+  return darktable.opencl->inited;
+}
+
+
+/** check if opencl is enabled */
+int dt_opencl_is_enabled(void)
+{
+  if(!darktable.opencl->inited) return FALSE;
+  return darktable.opencl->enabled;
+}
+
+
+/** update enabled flag with value from preferences */
+void dt_opencl_update_enabled(void)
+{
+  if(!darktable.opencl->inited) return;
+  const int prefs = dt_conf_get_bool("opencl");
+
+  //printf("[opencl_update_enabled] preferences is set to %d\n", prefs);
+
+  if (darktable.opencl->enabled != prefs)
+  {
+    darktable.opencl->enabled = prefs;
+    dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");    
+  }
+  return;
 }
 
 #endif
