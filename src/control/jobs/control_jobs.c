@@ -467,7 +467,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   dt_gui_background_jobs_can_cancel (j,job);
 
   double fraction=0;
-#ifdef _OPENMP
+#if 0//def _OPENMP
   // limit this to num threads = num full buffers - 1 (keep one for darkroom mode)
   // use min of user request and mipmap cache entries
   const int full_entries = dt_conf_get_int ("mipmap_cache_full_images");
@@ -486,7 +486,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     int num = 0;
     while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
     {
-#ifdef _OPENMP
+#if 0//def _OPENMP
       #pragma omp critical
 #endif
       {
@@ -519,7 +519,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
           mstorage->store(sdata, imgid, mformat, fdata, num, total);
         }
       }
-#ifdef _OPENMP
+#if 0//def _OPENMP
       #pragma omp critical
 #endif
       {
@@ -527,7 +527,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
         dt_gui_background_jobs_set_progress( j, fraction );
       }
     }
-#ifdef _OPENMP
+#if 0//def _OPENMP
     #pragma omp barrier
     #pragma omp master
 #endif
@@ -538,7 +538,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     }
     // all threads free their fdata
     mformat->free_params (mformat, fdata);
-#ifdef _OPENMP
+#if 0//def _OPENMP
   }
 #endif
   return 0;
