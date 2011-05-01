@@ -164,19 +164,12 @@ function(_GTK2_FIND_INCLUDE_DIR _var _hdr)
                        "include suffixes = ${_suffixes}")
     endif()
 
-## Ubuntu Natty+ Fix
-    if(CMAKE_SYSTEM_PROCESSOR=="x86_64")
-       set(GTK2_BUILD_SYSTEM "x86_64")
-    else()
-       set(GTK2_BUILD_SYSTEM "i386")
-    endif()
-## end Ubuntu Natty+ Fix
-    if(GTK2_DEBUG)
-        message(STATUS "[FindGTK2.cmake:${CMAKE_CURRENT_LIST_LINE}]     "
-                       "System = ${GTK2_BUILD_SYSTEM}")
-    endif()
     find_path(${_var} ${_hdr}
         PATHS
+ # fix for Ubuntu >= 11.04 (Natty Narwhal)
+ /usr/lib/i386-linux-gnu/
+ /usr/lib/x86_64-linux-gnu/
+ # end fix for Ubuntu >= 11.04 (Natty Narwhal)
             /usr/local/lib64
             /usr/local/lib
             /usr/lib64
@@ -189,7 +182,6 @@ function(_GTK2_FIND_INCLUDE_DIR _var _hdr)
             /usr/openwin/lib
             /sw/include
             /sw/lib
-            /usr/lib/${GTK2_BUILD_SYSTEM}-linux-gnu
             $ENV{GTKMM_BASEPATH}/include
             $ENV{GTKMM_BASEPATH}/lib
             [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]/include
@@ -293,13 +285,6 @@ function(_GTK2_FIND_LIBRARY _var _lib _expand_vc _append_version)
                        "While searching for ${_var}, our proposed library list is ${_lib_list}")
     endif()
 
-## Ubuntu Natty+ Fix
-    if(CMAKE_SYSTEM_PROCESSOR=="x86_64")
-       set(GTK2_BUILD_SYSTEM "x86_64")
-    else()
-       set(GTK2_BUILD_SYSTEM "i386")
-    endif()
-## End Ubuntu Natty+ Fix
     find_library(${_var} 
         NAMES ${_lib_list}
         PATHS
@@ -309,7 +294,6 @@ function(_GTK2_FIND_LIBRARY _var _lib _expand_vc _append_version)
             /usr/openwin/lib64
       /opt/local/lib
             /sw/lib
-            /usr/lib/${GTK2_BUILD_SYSTEM}-linux-gnu/
             $ENV{GTKMM_BASEPATH}/lib
             [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]/lib
             [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]/lib
