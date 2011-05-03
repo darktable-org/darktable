@@ -611,6 +611,12 @@ film_strip_key_accel(void *data)
   dt_control_queue_draw_all();
 }
 
+static void
+export_key_accel_callback(void *d)
+{
+  dt_control_export();
+}
+
 void enter(dt_view_t *self)
 {
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
@@ -756,6 +762,9 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel, (void *)2);
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel, (void *)3);
 
+  // enable shortcut to export with current export settings:
+  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, export_key_accel_callback, NULL);
+
   // switch on groups as they where last time:
   dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
 
@@ -803,6 +812,7 @@ void leave(dt_view_t *self)
     dt_view_film_strip_close(darktable.view_manager);
   dt_gui_key_accel_unregister(film_strip_key_accel);
   dt_gui_key_accel_unregister(zoom_key_accel);
+  dt_gui_key_accel_unregister(export_key_accel_callback);
 
   GList *childs = gtk_container_get_children (
                     GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")));
