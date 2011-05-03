@@ -37,7 +37,7 @@ typedef struct dt_iop_demosaic_params_t
   uint32_t green_eq;
   float median_thrs;
   uint32_t color_smoothing;
-  uint32_t yet_unused_flags_to_choose_demosaicing_method;
+  uint32_t demosaicing_method;
   uint32_t yet_unused_data_specific_to_demosaicing_method;
 }
 dt_iop_demosaic_params_t;
@@ -70,7 +70,7 @@ typedef struct dt_iop_demosaic_data_t
   uint32_t filters;
   uint32_t green_eq;
   uint32_t color_smoothing;
-  uint32_t yet_unused_flags_to_choose_demosaicing_method;
+  uint32_t demosaicing_method;
   uint32_t yet_unused_data_specific_to_demosaicing_method;
   float median_thrs;
 }
@@ -108,7 +108,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->green_eq = o->green_eq;
     n->median_thrs = o->median_thrs;
     n->color_smoothing = 0;
-    n->yet_unused_flags_to_choose_demosaicing_method = 0;
+    n->demosaicing_method = 0;
     n->yet_unused_data_specific_to_demosaicing_method = 0;
     return 0;
   }
@@ -582,22 +582,18 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     {
       float *in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
       green_equilibration(in, pixels, roi_in->width, roi_in->height, data->filters);
-      if (data->yet_unused_flags_to_choose_demosaicing_method != DT_IOP_DEMOSAIC_AMAZE) {
+      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
-      }
-      else {
+      else
         amaze_demosaic_RT(self, piece, in, (float *)o, &roi, &roo, data->filters);
-      }
-      //amaze_demosaic_RT(self, piece, in, (float *)o, roi_in, roi_out);
       free(in);
     }
-    else {
-      if (data->yet_unused_flags_to_choose_demosaicing_method != DT_IOP_DEMOSAIC_AMAZE) {
+    else
+    {
+      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
-      }
-      else {
+      else
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
-      }
     }
   }
   else if(roi_out->scale > .5f)
@@ -614,21 +610,18 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     {
       float *in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
       green_equilibration(in, pixels, roi_in->width, roi_in->height, data->filters);
-      if (data->yet_unused_flags_to_choose_demosaicing_method != DT_IOP_DEMOSAIC_AMAZE) {
+      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
-      }
-      else {
+      else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
-      }
       free(in);
     }
-    else {
-      if (data->yet_unused_flags_to_choose_demosaicing_method != DT_IOP_DEMOSAIC_AMAZE) {
+    else
+    {
+      if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
-      }
-      else {
+      else
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
-      }
     }
     roi = *roi_out;
     roi.x = roi.y = 0;
@@ -864,7 +857,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   d->green_eq = p->green_eq;
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
-  d->yet_unused_flags_to_choose_demosaicing_method = p->yet_unused_flags_to_choose_demosaicing_method;
+  d->demosaicing_method = p->demosaicing_method;
 
 }
 
@@ -886,7 +879,7 @@ void gui_update   (struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale1, p->median_thrs);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->green_eq);
-  gtk_combo_box_set_active(g->demosaic_method, p->yet_unused_flags_to_choose_demosaicing_method);
+  gtk_combo_box_set_active(g->demosaic_method, p->demosaicing_method);
 }
 
 static void
@@ -929,11 +922,11 @@ demosaic_method_callback (GtkComboBox *combo, dt_iop_module_t *self)
   switch(active)
   {
     case DT_IOP_DEMOSAIC_AMAZE:
-      p->yet_unused_flags_to_choose_demosaicing_method = DT_IOP_DEMOSAIC_AMAZE;
+      p->demosaicing_method = DT_IOP_DEMOSAIC_AMAZE;
       break;
     default:
     case DT_IOP_DEMOSAIC_PPG:
-      p->yet_unused_flags_to_choose_demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+      p->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
       break;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -945,45 +938,39 @@ void gui_init     (struct dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  GtkBox *vbox = GTK_BOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  self->widget = gtk_table_new(4, 2, FALSE);
+  gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   ////////////////////////////
-  GtkWidget *label = dtgtk_reset_label_new(_("method"), self, &p->yet_unused_flags_to_choose_demosaicing_method, sizeof(uint32_t));
-  GtkWidget *hbox = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+  GtkWidget *label = dtgtk_reset_label_new(_("method"), self, &p->demosaicing_method, sizeof(uint32_t));
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
   g->demosaic_method = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->demosaic_method, _("ppg"));
   gtk_combo_box_append_text(g->demosaic_method, _("AMaZE"));
   g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->demosaic_method), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->demosaic_method), 1, 2, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
   ////////////////////////////
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.000, 0.001, p->median_thrs, 3));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("edge threshold"));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale1), 0, 2, 1, 2, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 
   GtkWidget *widget;
   widget = dtgtk_reset_label_new(_("color smoothing"), self, &p->color_smoothing, sizeof(uint32_t));
-  GtkWidget *hbox1 = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), widget, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
   g->color_smoothing = gtk_spin_button_new_with_range(0, 5, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->color_smoothing), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
   g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->color_smoothing), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), g->color_smoothing, 1, 2, 2, 3, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 
   widget = dtgtk_reset_label_new(_("match greens"), self, &p->green_eq, sizeof(uint32_t));
-  GtkWidget *hbox2 = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(widget), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), widget, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
   g->greeneq = GTK_TOGGLE_BUTTON(gtk_check_button_new());
   g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("switch on green equilibration before demosaicing.\nnecessary for some mid-range cameras such as the EOS 400D."), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(g->greeneq), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->greeneq), 1, 2, 3, 4, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (median_thrs_callback), self);
