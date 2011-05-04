@@ -485,6 +485,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
         // printf("for module `%s', have bufs %d and %d bpp\n", module->op, in_bpp, bpp);
         module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+
+        /* process blending for opencl */
+        dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+
         dt_opencl_release_mem_object(cl_mem_input);
         // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
         // so we're not just yet invalidating the (empty) output cache line.
@@ -500,16 +504,21 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         *cl_mem_output = NULL;
 
         module->process(module, piece, input, *output, &roi_in, roi_out);
-
+        /* process blending */
+        dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
       }
     }
     else
-#endif
     {
       module->process(module, piece, input, *output, &roi_in, roi_out);
+      /* process blending */
+      dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
     } 
+#else
+    module->process(module, piece, input, *output, &roi_in, roi_out);
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+#endif
 
     dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' [%s]", module->name(),
                   pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));

@@ -519,3 +519,79 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
   }
 }
+
+
+#ifdef HAVE_OPENCL
+void 
+dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
+{
+  dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
+
+  // fprintf(stderr, "dt_develop_blend_process_cl: mode %d\n", d->mode);
+
+  /* check if blend is disabled: just return output is already in dev_out */
+  if (!d || d->mode==0) return;
+
+  /* we only deal with Lab colorspace ATM */
+  const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
+  int kernel = darktable.blendop->kernel_blendop_Lab;
+
+  switch (cst)
+  {
+    case iop_cs_RAW:
+      kernel = darktable.blendop->kernel_blendop_RAW;
+      break;
+
+    case iop_cs_rgb:
+      kernel = darktable.blendop->kernel_blendop_rgb;
+      break;
+
+    case iop_cs_Lab:
+    default:
+      kernel = darktable.blendop->kernel_blendop_Lab;
+      break;
+  }
+
+  cl_int err = CL_SUCCESS;
+
+  const int devid = piece->pipe->devid;
+  const float opacity = fmin(fmax(0,(d->opacity/100.0)),1.0);
+
+  /* opencl does not allow reading from and writing to the same image buffer -> we need an intermediate one :-( */
+  cl_mem dev_m = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
+  if (dev_m == NULL) goto error;
+  size_t origin[] = {0, 0, 0};
+  size_t region[] = {roi_in->width, roi_in->height, 1};
+  err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_out, dev_m, origin, origin, region, 0, NULL, NULL);
+  if(err != CL_SUCCESS) goto error;
+
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 1, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 3, sizeof(int), (void *)&(d->mode));
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 4, sizeof(float), (void *)&opacity);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, kernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(dev_m);
+  return;
+
+error:
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  fprintf(stderr, "couldn't enqueue blendop kernel! %d\n", err);
+}
+#endif
+
+/** global init of blendops */
+void dt_develop_blend_init(dt_blendop_t *gd)
+{
+#ifdef HAVE_OPENCL
+  const int program = 3; // blendop.cl, from programs.conf
+  gd->kernel_blendop_Lab = dt_opencl_create_kernel(darktable.opencl, program, "blendop_Lab");
+  gd->kernel_blendop_RAW = dt_opencl_create_kernel(darktable.opencl, program, "blendop_RAW");
+  gd->kernel_blendop_rgb = dt_opencl_create_kernel(darktable.opencl, program, "blendop_rgb");
+#else
+  gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = -1;
+#endif
+}
+
