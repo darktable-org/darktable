@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "common/opencl.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
@@ -62,6 +63,13 @@ typedef struct dt_iop_highpass_data_t
 }
 dt_iop_highpass_data_t;
 
+typedef struct dt_iop_highpass_global_data_t
+{
+  int kernel_highpass;
+}
+dt_iop_highpass_global_data_t;
+
+
 const char *name()
 {
   return _("highpass");
@@ -77,6 +85,51 @@ groups ()
 {
   return IOP_GROUP_EFFECT;
 }
+
+#ifdef HAVE_OPENCL
+void
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
+  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->data;
+
+  cl_int err;
+  const int devid = piece->pipe->devid;
+
+  float rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
+  const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
+  
+  // printf("highpass opencl radius: %d, rad: %f\n", radius, rad);
+
+  float contrast_scale = ((d->contrast/100.0f)*7.5f);
+
+  if(fabs(rad) < 0.0001f)
+  {
+    size_t origin[] = {0, 0, 0};
+    size_t region[] = {roi_in->width, roi_in->height, 1};
+    err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
+    return;
+  }
+  float mat[2*(MAX_RADIUS+1)];
+  const int wd = 2*radius+1;
+  float *m = mat + radius;
+  const float sigma2 = (2.5f*2.5f)*(rad*roi_in->scale/piece->iscale)*(rad*roi_in->scale/piece->iscale);
+  float weight = 0.0f;
+  // init gaussian kernel
+  for(int l=-radius; l<=radius; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
+  for(int l=-radius; l<=radius; l++) m[l] /= weight;
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 3, sizeof(int), (void *)&radius);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 4, sizeof(float), (void *)&contrast_scale);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass, sizes);
+  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue highpass kernel! %d\n", err);
+  clReleaseMemObject(dev_m);
+}
+#endif
 
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -102,6 +155,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   int rad = MAX_RADIUS*(fmin(100.0,data->sharpness+1)/100.0);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
+
+  // printf("highpass non-opencl radius: %d, rad: %d\n", radius, rad);
 
   /* horizontal blur out into out */
   const int range = 2*radius+1;
@@ -287,6 +342,15 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_highpass_params_t));
 }
 
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 4; // highpass.cl, from programs.conf
+  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)malloc(sizeof(dt_iop_highpass_global_data_t));
+  module->data = gd;
+  gd->kernel_highpass = dt_opencl_create_kernel(darktable.opencl, program, "highpass");
+}
+
+
 void cleanup(dt_iop_module_t *module)
 {
   free(module->gui_data);
@@ -294,6 +358,15 @@ void cleanup(dt_iop_module_t *module)
   free(module->params);
   module->params = NULL;
 }
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass);
+  free(module->data);
+  module->data = NULL;
+}
+
 
 void gui_init(struct dt_iop_module_t *self)
 {

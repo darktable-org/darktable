@@ -252,8 +252,8 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
   float4 o;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y)).x;
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y)).x;
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
+  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
 
   const float4 min = (float4)(0.0f, 0.0f, 0.0f, 1.0f);
   const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);

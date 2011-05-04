@@ -498,6 +498,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     /* get channel max values depending on colorspace */
     const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
     
+
     /* correct bpp per pixel for raw 
         \TODO actually invest why channels per pixel is 4 in raw..  
     */
@@ -529,10 +530,9 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   // fprintf(stderr, "dt_develop_blend_process_cl: mode %d\n", d->mode);
 
-  /* check if blend is disabled: just return output is already in dev_out */
+  /* check if blend is disabled: just return, output is already in dev_out */
   if (!d || d->mode==0) return;
 
-  /* we only deal with Lab colorspace ATM */
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
   int kernel = darktable.blendop->kernel_blendop_Lab;
 
