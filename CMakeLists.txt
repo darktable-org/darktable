@@ -14,6 +14,14 @@ option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
 option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
 
+# Generate multi arch triplet
+EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(CMAKE_ARCH_TRIPLET)
+	message("-- mutliarch triplet detected: " ${CMAKE_ARCH_TRIPLET})
+	LIST(INSERT CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 0 /lib/${CMAKE_ARCH_TRIPLET}
+		/usr/lib/${CMAKE_ARCH_TRIPLET})
+endif()
+
 #
 # Set platform defaults...
 #
