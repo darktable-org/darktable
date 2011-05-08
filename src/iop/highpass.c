@@ -65,7 +65,10 @@ dt_iop_highpass_data_t;
 
 typedef struct dt_iop_highpass_global_data_t
 {
-  int kernel_highpass;
+  int kernel_highpass_invert;
+  int kernel_highpass_hblur;
+  int kernel_highpass_vblur;
+  int kernel_highpass_mix;
 }
 dt_iop_highpass_global_data_t;
 
@@ -93,41 +96,97 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->data;
 
-  cl_int err;
+  cl_int err = 0;
+  cl_mem dev_tmp = NULL;
+  cl_mem dev_m = NULL;
   const int devid = piece->pipe->devid;
 
-  float rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
+  int rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
   
-  // printf("highpass opencl radius: %d, rad: %f\n", radius, rad);
+  const float sigma = 2.33f * radius * 1.05f;  /* sigma/radius correlation to match opencl vs. non-opencl. identified by numerical experiments. ask me if you need details. ulrich */
+  const int wdh = ceilf(3.0f * sigma);
+  const int wd = 2 * wdh + 1;
+  float mat[wd];
+  float *m = mat + wdh;
+  float weight = 0.0f;
+
+  // init gaussian kernel
+  for(int l=-wdh; l<=wdh; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma*sigma));
+  for(int l=-wdh; l<=wdh; l++) m[l] /= weight;
+
+  // for(int l=-wdh; l<=wdh; l++) printf("%.6f ", (double)m[l]);
+  // printf("\n");
 
   float contrast_scale = ((d->contrast/100.0f)*7.5f);
 
-  if(fabs(rad) < 0.0001f)
-  {
-    size_t origin[] = {0, 0, 0};
-    size_t region[] = {roi_in->width, roi_in->height, 1};
-    err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
-    return;
-  }
-  float mat[2*(MAX_RADIUS+1)];
-  const int wd = 2*radius+1;
-  float *m = mat + radius;
-  const float sigma2 = (2.5f*2.5f)*(rad*roi_in->scale/piece->iscale)*(rad*roi_in->scale/piece->iscale);
-  float weight = 0.0f;
-  // init gaussian kernel
-  for(int l=-radius; l<=radius; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
-  for(int l=-radius; l<=radius; l++) m[l] /= weight;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 2, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 3, sizeof(int), (void *)&radius);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass, 4, sizeof(float), (void *)&contrast_scale);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue highpass kernel! %d\n", err);
+
+  dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
+  if (dev_m == NULL) goto error;
+
+  /* get intermediate buffer */
+  dev_tmp = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
+  if (dev_tmp == NULL) goto error;
+
+  /* invert image */
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_tmp);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_invert, sizes);
+  if(err != CL_SUCCESS)
+  {
+    fprintf(stderr, "couldn't enqueue highpass_invert kernel! %d\n", err);
+    goto error;
+  }
+
+  if(rad != 0)
+  {
+    /* horizontal blur */
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 0, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 3, sizeof(int), (void *)&wdh);
+    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_hblur, sizes);
+    if(err != CL_SUCCESS)
+    {
+      fprintf(stderr, "couldn't enqueue highpass_hblur kernel! %d\n", err);
+      goto error;
+    }
+
+    /* vertical blur */
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 3, sizeof(int), (void *)&wdh);
+    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_vblur, sizes);
+    if(err != CL_SUCCESS)
+    {
+      fprintf(stderr, "couldn't enqueue highpass_vblur kernel! %d\n", err);
+      goto error;
+    }
+  }
+
+  /* mixing tmp and in -> out */
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 1, sizeof(cl_mem), (void *)&dev_tmp);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 2, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 3, sizeof(float), (void *)&contrast_scale);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_mix, sizes);
+  if(err != CL_SUCCESS)
+  {
+    fprintf(stderr, "couldn't enqueue highpass_mix kernel! %d\n", err);
+    goto error;
+  }
+
+  clReleaseMemObject(dev_tmp);
   clReleaseMemObject(dev_m);
+  return;
+
+error:
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  fprintf(stderr, "couldn't run all/part of highpass kernels!\n");
+  return;
 }
 #endif
 
@@ -155,8 +214,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   int rad = MAX_RADIUS*(fmin(100.0,data->sharpness+1)/100.0);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
-
-  // printf("highpass non-opencl radius: %d, rad: %d\n", radius, rad);
 
   /* horizontal blur out into out */
   const int range = 2*radius+1;
@@ -347,7 +404,10 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 4; // highpass.cl, from programs.conf
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)malloc(sizeof(dt_iop_highpass_global_data_t));
   module->data = gd;
-  gd->kernel_highpass = dt_opencl_create_kernel(darktable.opencl, program, "highpass");
+  gd->kernel_highpass_invert = dt_opencl_create_kernel(darktable.opencl, program, "highpass_invert");
+  gd->kernel_highpass_hblur = dt_opencl_create_kernel(darktable.opencl, program, "highpass_hblur");
+  gd->kernel_highpass_vblur = dt_opencl_create_kernel(darktable.opencl, program, "highpass_vblur");
+  gd->kernel_highpass_mix = dt_opencl_create_kernel(darktable.opencl, program, "highpass_mix");
 }
 
 
@@ -362,7 +422,10 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass_invert);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass_hblur);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass_vblur);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass_mix);
   free(module->data);
   module->data = NULL;
 }
