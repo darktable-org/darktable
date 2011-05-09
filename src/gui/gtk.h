@@ -49,6 +49,18 @@ dt_gui_snapshot_t;
 
 typedef struct dt_gui_gtk_t
 {
+
+  struct
+  {
+
+    // Colorpicker widgets
+    GtkWidget *colorpicker_button;
+    GtkWidget *colorpicker_stat_combobox;
+    GtkWidget *colorpicker_model_combobox;
+    GtkWidget *colorpicker_output_label;
+
+  } widgets;
+
   GladeXML *main_window;
   GdkPixmap *pixmap;
   GList *redraw_widgets;
@@ -66,7 +78,6 @@ typedef struct dt_gui_gtk_t
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
-  GtkWidget *colorpicker_button;
   float picked_color_output_cs[3];
   float picked_color_output_cs_min[3];
   float picked_color_output_cs_max[3];
