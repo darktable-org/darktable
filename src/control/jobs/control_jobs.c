@@ -510,10 +510,10 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #ifdef _OPENMP
   // limit this to num threads = num full buffers - 1 (keep one for darkroom mode)
   // use min of user request and mipmap cache entries
-  const int full_entries = dt_conf_get_int ("mipmap_cache_full_images");
+  const int full_entries = dt_conf_get_int ("parallel_export");
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
-  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries-1, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
+  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
   #pragma omp parallel default(none) private(imgid, size) shared(j, fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads) if(num_threads > 1)
   {
 #endif
