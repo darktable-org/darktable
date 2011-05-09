@@ -31,8 +31,8 @@
 
 
 #define COLLECTION_FILTER_FILM_ID               1             // use film_id in filter
-#define COLLECTION_FILTER_ATLEAST_RATING         2             // show all stars including and above selected star filter
-#define COLLECTION_FILTER_EQUAL_RATING            4             // show only selected star filter
+#define COLLECTION_FILTER_ATLEAST_RATING        2             // show all stars including and above selected star filter
+#define COLLECTION_FILTER_EQUAL_RATING          4             // show only selected star filter
 #define COLLECTION_FILTER_ALTERED               8             // show only altered images
 #define COLLECTION_FILTER_UNALTERED            16             // show only unaltered images
 
