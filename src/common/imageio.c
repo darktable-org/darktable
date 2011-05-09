@@ -914,6 +914,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 
   // downsampling done last, if high quality processing was requested:
   uint8_t *outbuf = pipe.backbuf;
+  uint8_t *moutbuf = NULL; // keep track of alloc'ed memory
   if(high_quality_processing)
   {
     const float scalex = format_params->max_width  > 0 ? fminf(format_params->max_width /(float)pipe.processed_width,  1.0) : 1.0;
@@ -923,7 +924,8 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     {
       processed_width  = scale*pipe.processed_width  + .5f;
       processed_height = scale*pipe.processed_height + .5f;
-      outbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
+      moutbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
+      outbuf=moutbuf;
       // now downscale into the new buffer:
       dt_iop_roi_t roi_in, roi_out;
       roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
@@ -999,7 +1001,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  if(high_quality_processing && bpp != 8) free(outbuf);
+  if(moutbuf) free(moutbuf);
   return res;
 }
 
