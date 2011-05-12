@@ -136,8 +136,8 @@ darktable will now close down.\n\n%s"),message);
 int dt_init(int argc, char *argv[], const int init_gui)
 {
 #ifndef __SSE2__
-  fprintf("[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
-  fprintf("[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+  fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
+  fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
   return 1;
 #endif
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
@@ -153,8 +153,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // database
   gchar *dbfilenameFromCommand = NULL;
 
+  darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
-  omp_set_num_threads(omp_get_num_procs());
+  darktable.num_openmp_threads = omp_get_num_procs();
 #endif
   darktable.unmuted = 0;
   char *image_to_load = NULL;
@@ -190,12 +191,22 @@ int dt_init(int argc, char *argv[], const int init_gui)
         else return usage(argv[0]);
         k ++;
       }
+      else if(argv[k][1] == 't' && argc > k+1)
+      {
+        darktable.num_openmp_threads = CLAMP(atol(argv[k+1]), 1, 100);
+        printf("[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
+        k ++;
+      }
     }
     else
     {
       image_to_load = argv[k];
     }
   }
+
+#ifdef _OPENMP
+  omp_set_num_threads(darktable.num_openmp_threads);
+#endif
 
   g_type_init();
 

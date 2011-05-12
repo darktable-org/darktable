@@ -763,6 +763,9 @@ int32_t dt_control_get_threadid_res()
 
 void *dt_control_work_res(void *ptr)
 {
+#ifdef _OPENMP // need to do this in every thread
+  omp_set_num_threads(darktable.num_openmp_threads);
+#endif
   dt_control_t *s = (dt_control_t *)ptr;
   int32_t threadid = dt_control_get_threadid_res();
   while(dt_control_running())
@@ -784,6 +787,9 @@ void *dt_control_work_res(void *ptr)
 
 void *dt_control_work(void *ptr)
 {
+#ifdef _OPENMP // need to do this in every thread
+  omp_set_num_threads(darktable.num_openmp_threads);
+#endif
   dt_control_t *s = (dt_control_t *)ptr;
   // int32_t threadid = dt_control_get_threadid();
   while(dt_control_running())
