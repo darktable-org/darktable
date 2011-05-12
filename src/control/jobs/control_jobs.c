@@ -29,6 +29,7 @@
 #include "common/imageio_module.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/tags.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
 
@@ -524,6 +525,10 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
     fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
     int num = 0;
+    // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a sensible assumption?
+    guint tagid = 0;
+    dt_tag_new("darktable|changed",&tagid);
+
     while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
     {
 #ifdef _OPENMP
@@ -539,7 +544,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
           num = total - g_list_length(t);
         }
       }
-      
+      // remove 'changed' tag from image
+      dt_tag_detach(tagid, imgid);
       // check if image still exists:
       char imgfilename[1024];
       dt_image_t *image = dt_image_cache_get(imgid, 'r');

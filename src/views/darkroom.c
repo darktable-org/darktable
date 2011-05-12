@@ -27,6 +27,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
+#include "common/tags.h"
 #include "gui/gtk.h"
 #include "gui/metadata.h"
 #include "gui/iop_modulegroups.h"
@@ -388,6 +389,11 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   else
     dt_conf_set_string("plugins/darkroom/active", "");
   g_assert(dev->gui_attached);
+  // tag image as changed
+  // TODO: only tag the image when there was a real change.
+  guint tagid = 0;
+  dt_tag_new("darktable|changed",&tagid);
+  dt_tag_attach(tagid, dev->image->id);
   // commit image ops to db
   dt_dev_write_history(dev);
   // write .xmp file
@@ -841,6 +847,11 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  // tag image as changed
+  // TODO: only tag the image when there was a real change.
+  guint tagid = 0;
+  dt_tag_new("darktable|changed",&tagid);
+  dt_tag_attach(tagid, dev->image->id);
   // commit image ops to db
   dt_dev_write_history(dev);
   // write .xmp file
@@ -1155,3 +1166,4 @@ void configure(dt_view_t *self, int wd, int ht)
   dt_dev_configure(dev, wd, ht);
 }
 
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
