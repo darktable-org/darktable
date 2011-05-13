@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2011 Henrik Andersson.
+		copyright (c) 2011 Henrik Andersson, ulrich pegelow.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #include <inttypes.h>
 
 #define MAX_RADIUS  16
+#define BOX_ITERATIONS 8
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
@@ -80,7 +81,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
 }
 
 int
@@ -104,7 +105,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   int rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
   
-  const float sigma = 2.33f * radius * 1.05f;  /* sigma/radius correlation to match opencl vs. non-opencl. identified by numerical experiments. ask me if you need details. ulrich */
+  /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but unproven. ask me if you need details. ulrich */
+  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
   float mat[wd];
@@ -203,13 +205,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   #pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
-  {
-    int index = ch*k;
-    out[index] =    1.0-CLIP(in[index]);
-    out[index+1] =  1.0-CLIP(in[index+1]);
-    out[index+2] =  1.0-CLIP(in[index+2]);
-  }
-
+    out[ch*k] = 100.0f-LCLIP(in[ch*k]);	// only L in Lab space
 
 
   int rad = MAX_RADIUS*(fmin(100.0,data->sharpness+1)/100.0);
@@ -220,43 +216,35 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int hr = range/2;
 
   const int size = roi_out->width>roi_out->height?roi_out->width:roi_out->height;
-  float *scanline[3]= {0};
-  scanline[0]  = malloc((size*sizeof(float))*ch);
-  scanline[1]  = malloc((size*sizeof(float))*ch);
-  scanline[2]  = malloc((size*sizeof(float))*ch);
+  float *scanline = malloc((size*sizeof(float)));
 
-  for(int iteration=0; iteration<8; iteration++)
+  for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
   {
     int index=0;
     for(int y=0; y<roi_out->height; y++)
     {
-      for(int k=0; k<3; k++)
+      float L=0;
+      int hits = 0;
+      for(int x=-hr; x<roi_out->width; x++)
       {
-        float L=0;
-        int hits = 0;
-        for(int x=-hr; x<roi_out->width; x++)
+        int op = x - hr-1;
+        int np = x+hr;
+        if(op>=0)
         {
-          int op = x - hr-1;
-          int np = x+hr;
-          if(op>=0)
-          {
-            L-=out[(index+op)*ch+k];
-            hits--;
-          }
-          if(np < roi_out->width)
-          {
-            L+=out[(index+np)*ch+k];
-            hits++;
-          }
-          if(x>=0)
-            scanline[k][x] = L/hits;
+          L-=out[(index+op)*ch];
+          hits--;
         }
+        if(np < roi_out->width)
+        {
+          L+=out[(index+np)*ch];
+          hits++;
+        }
+        if(x>=0)
+          scanline[x] = L/hits;
       }
 
-      for (int k=0; k<3; k++)
-        for (int x=0; x<roi_out->width; x++)
-          out[(index+x)*ch+k] = scanline[k][x];
-
+      for (int x=0; x<roi_out->width; x++)
+        out[(index+x)*ch] = scanline[x];
       index+=roi_out->width;
     }
 
@@ -265,38 +253,34 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int npoffs = (hr)*roi_out->width;
     for(int x=0; x < roi_out->width; x++)
     {
-      for(int k=0; k<3; k++)
+      float L=0;
+      int hits=0;
+      int index = -hr*roi_out->width+x;
+      for(int y=-hr; y<roi_out->height; y++)
       {
-        float L=0;
-        int hits=0;
-        int index = -hr*roi_out->width+x;
-        for(int y=-hr; y<roi_out->height; y++)
+        int op=y-hr-1;
+        int np= y + hr;
+        if(op>=0)
         {
-          int op=y-hr-1;
-          int np= y + hr;
-
-          if(op>=0)
-          {
-            L-=out[(index+opoffs)*ch+k];
-            hits--;
-          }
-          if(np < roi_out->height)
-          {
-            L+=out[(index+npoffs)*ch+k];
-            hits++;
-          }
-          if(y>=0)
-            scanline[k][y] = L/hits;
-          index += roi_out->width;
+          L-=out[(index+opoffs)*ch];
+          hits--;
         }
+        if(np < roi_out->height)
+        {
+          L+=out[(index+npoffs)*ch];
+          hits++;
+        }
+        if(y>=0)
+          scanline[y] = L/hits;
+        index += roi_out->width;
       }
 
-      for(int k=0; k<3; k++)
-        for (int y=0; y<roi_out->height; y++)
-          out[(y*roi_out->width+x)*ch+k] = scanline[k][y];
-
+      for (int y=0; y<roi_out->height; y++)
+        out[(y*roi_out->width+x)*ch] = scanline[y];
     }
   }
+
+  free(scanline);
 
   const float contrast_scale=((data->contrast/100.0)*7.5);
 #ifdef _OPENMP
@@ -306,15 +290,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     int index = ch*k;
     // Mix out and in
-    out[index+0] = out[index+0]*0.5 + in[index+0]*0.5;
-    out[index+1] = out[index+1]*0.5 + in[index+1]*0.5;
-    out[index+2] = out[index+2]*0.5 + in[index+2]*0.5;
-    // calculate the average
-    const float average=(out[index+0]+out[index+1]+out[index+2])/3.0;
-    out[index+0] = out[index+1] = out[index+2] = CLIP(0.5+((average-0.5)*contrast_scale));
-
+    out[index] = out[index]*0.5 + in[index]*0.5;
+    out[index] = LCLIP(50.0f+((out[index]-50.0f)*contrast_scale));
+    out[index+1] = out[index+2] = 0.0f;		// desaturate a and b in Lab space
   }
-
 }
 
 static void
@@ -388,7 +367,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_highpass_params_t));
   module->default_params = malloc(sizeof(dt_iop_highpass_params_t));
   module->default_enabled = 0;
-  module->priority = 994;
+  module->priority = 880;
   module->params_size = sizeof(dt_iop_highpass_params_t);
   module->gui_data = NULL;
   dt_iop_highpass_params_t tmp = (dt_iop_highpass_params_t)
