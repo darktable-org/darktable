@@ -44,6 +44,7 @@ struct dt_develop_blend_params_t;
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
 #define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
 #define	IOP_FLAGS_DEPRECATED	4
+#define IOP_FLAGS_BLEND_ONLY_LIGHTNESS	8			// Does only blend with L-channel in Lab space. Keeps a, b of original image.
 
 typedef struct dt_iop_params_t
 {

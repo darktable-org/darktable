@@ -35,12 +35,14 @@
 #define DEVELOP_BLEND_LINEARLIGHT			0x0E
 #define DEVELOP_BLEND_PINLIGHT				0x0F
 
+#define BLEND_ONLY_LIGHTNESS				8
+
 
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
 
 __kernel void
-blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity)
+blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity, const int blendflag)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -50,19 +52,35 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
 
-  const float4 min = (float4)(0.0f, -128.0f, -128.0f, 1.0f);
-  const float4 max = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  /* save before scaling for later use */
+  float ay = a.y;
+  float az = a.z;
+
+  /* scale L down to [0; 1] and a,b to [-1; 1] */
+  const float4 scale = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  a /= scale;
+  b /= scale;
+
+  /* default output for a and b, i.e. mix according to opacity; might be overwritten by some of the
+     modes later or in the end if blendflags has set BLEND_ONLY_LIGHTNESS */
+  float oy = a.y * (1.0f - opacity) + (b.y * opacity);
+  float oz = a.z * (1.0f - opacity) + (b.z * opacity);
+
+
+  const float4 min = (float4)(0.0f, -1.0f, -1.0f, 0.0f);
+  const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);
   const float4 lmin = (float4)(0.0f, 0.0f, 0.0f, 1.0f);
-  const float4 lmax = (float4)(100.0f, 256.0f, 256.0f, 1.0f);      /* max + fabs(min) */
-  const float4 halfmax = (float4)(50.0f, 128.0f, 128.0f, 1.0f);    /* lmax / 2.0f */
-  const float4 doublemax = (float4)(200.0f, 512.0f, 512.0f, 1.0f); /* lmax * 2.0f */
+  const float4 lmax = (float4)(1.0f, 2.0f, 2.0f, 1.0f);       /* max + fabs(min) */
+  const float4 halfmax = (float4)(0.5f, 1.0f, 1.0f, 0.5f);    /* lmax / 2.0f */
+  const float4 doublemax = (float4)(2.0f, 4.0f, 4.0f, 2.0f);  /* lmax * 2.0f */
 
   float4 la = a + fabs(min);
   float4 lb = b + fabs(min);
 
 
-  /* select the blend operator */
-  switch (mode & 0x7F)      		/* tbc: why do we need to mask with 0x7F ? */
+
+  /* select the blend operator, for L channel only*/
+  switch (mode & 0x7F)      		              /* tbc: why do we need to mask with 0x7F ? */
   {
     case DEVELOP_BLEND_LIGHTEN:
       o.x =  (a.x * (1.0f - opacity)) + ((a.x > b.x ? a.x : b.x) * opacity);
@@ -98,44 +116,44 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
     case DEVELOP_BLEND_SCREEN:
       o = clamp(la * (1.0f - opacity) + (lmax - (lmax - la) * (lmax - lb)) * opacity, lmin, lmax) - fabs(min);
-      o.y = b.y;
-      o.z = b.z;
+      o.y = oy;
+      o.z = oz;
       break;
 
     case DEVELOP_BLEND_OVERLAY:
       o = clamp(la * (1.0f - opacity) + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : doublemax * la * lb) * opacity, lmin, lmax) - fabs(min);
-      o.y = b.y;
-      o.z = b.z;
+      o.y = oy;
+      o.z = oz;
       break;
 
     case DEVELOP_BLEND_SOFTLIGHT:
       o = clamp(la * (1.0f - opacity) + (la > halfmax ? lmax - (lmax - la)  * (lmax - (lb - halfmax)) : la * (lb + halfmax)) * opacity, lmin, lmax) - fabs(min);
-      o.y = b.y;
-      o.z = b.z;
+      o.y = oy;
+      o.z = oz;
       break;
 
     case DEVELOP_BLEND_HARDLIGHT:
       o = clamp(la * (1.0 - opacity) + (la > halfmax ? lmax - (lmax - la ) * (lmax - doublemax * (lb - halfmax)) : la * (lb + halfmax)) * opacity, lmin, lmax) - fabs(min);
-      o.y = b.y;
-      o.z = b.z;
+      o.y = oy;
+      o.z = oz;
       break;
 
     case DEVELOP_BLEND_VIVIDLIGHT:
       o = clamp(la * (1.0 - opacity) + (la > halfmax ? lmax - (lmax - la) / (doublemax * (lb - halfmax)) : la / (lmax - doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
-      o.y = b.y;
-      o.z = b.z;
+      o.y = oy;
+      o.z = oz;
       break;
 
     case DEVELOP_BLEND_LINEARLIGHT:
       o = clamp(la * (1.0 - opacity) + (la > halfmax ? la + doublemax * (lb - halfmax) : la + doublemax * lb - lmax) * opacity, lmin, lmax) - fabs(min);
-      o.y = b.y;
-      o.z = b.z;
+      o.y = oy;
+      o.z = oz;
       break;
 
     case DEVELOP_BLEND_PINLIGHT:
       o = clamp(la * (1.0 - opacity) + (la > halfmax ? fmax(la, doublemax * (lb - halfmax)) : fmin(la, doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
-      o.y = b.y;
-      o.z = b.z;
+      o.y = oy;
+      o.z = oz;
       break;
 
 
@@ -146,13 +164,23 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       break;
   }
 
+  /* scale L back to [0; 100] and a,b to [-128; 128] */
+  o *= scale;
+
+  /* if module wants to blend only lightness, set a and b to saved values of input image (before scaling) */
+  if (blendflag & BLEND_ONLY_LIGHTNESS)
+  {
+    o.y = ay;
+    o.z = az;
+  }
+
   write_imagef(out, (int2)(x, y), o);
 }
 
 
 
 __kernel void
-blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity)
+blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity, const int blendflag)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -245,7 +273,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 
 __kernel void
-blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity)
+blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity, const int blendflag)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
