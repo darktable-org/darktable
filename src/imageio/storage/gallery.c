@@ -340,25 +340,31 @@ copy_res(const char *src, const char *dst)
   char share[1024];
   dt_get_datadir(share, 1024);
   gchar *sourcefile = g_build_filename(share, src, NULL);
+  char* content = NULL;
   FILE *fin = fopen(sourcefile, "rb");
   FILE *fout = fopen(dst, "wb");
+
   if(fin && fout)
   {
     fseek(fin,0,SEEK_END);
     int end = ftell(fin);
     rewind(fin);
-    char *content = (char*)g_malloc(sizeof(char)*end);
+    content = (char*)g_malloc(sizeof(char)*end);
     if(content == NULL)
       goto END;
     if(fread(content,sizeof(char),end,fin) != end)
       goto END;
     if(fwrite(content,sizeof(char),end,fout) != end)
       goto END;
-    g_free(content);
-    fclose(fout);
-    fclose(fin);
   }
+
 END:
+  if(fout != NULL)
+    fclose(fout);
+  if(fin != NULL)
+    fclose(fin);
+
+  g_free(content);
   g_free(sourcefile);
 }
 
