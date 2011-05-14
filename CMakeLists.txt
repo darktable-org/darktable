@@ -126,13 +126,12 @@ if(Gettext_FOUND)
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
 
-# quick check needed to generate file "create_preferences.sh" accordingly
-find_package(OpenCL)
-if(OPENCL_FOUND AND USE_OPENCL)
+# needed to generate file "create_preferences.sh" accordingly
+if(USE_OPENCL)
 	SET(HAVE_OPENCL 1)
 else()
 	SET(HAVE_OPENCL 0)
-endif(OPENCL_FOUND AND USE_OPENCL)
+endif(USE_OPENCL)
 
 #
 # Test SSE level

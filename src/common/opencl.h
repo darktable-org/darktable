@@ -29,7 +29,7 @@
 
 // #pragma GCC diagnostic push
 // #pragma GCC diagnostic ignored "-Wcomment"
-#include <CL/cl.h>
+#include "common/CL/cl.h"
 // #pragma GCC diagnostic
 #include "common/dtpthread.h"
 #include "common/dlopencl.h"

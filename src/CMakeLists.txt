@@ -31,6 +31,9 @@ FILE(GLOB SOURCE_FILES
   "common/variables.c" 
   "common/pwstorage/pwstorage.c" 
   "common/pwstorage/backend_gconf.c"
+  "common/opencl.c"
+  "common/dynload.c"
+  "common/dlopencl.c"
   "control/control.c"  
   "control/jobs/control_jobs.c"  
   "control/jobs/develop_jobs.c"  
@@ -56,7 +59,7 @@ FILE(GLOB SOURCE_FILES
   "libs/lib.c"
   "views/view.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "common/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -157,15 +160,15 @@ if(GNOMEKEYRING_FOUND)
   add_definitions("-DHAVE_GKEYRING")
 endif(GNOMEKEYRING_FOUND)
 
-find_package(OpenCL)
-if(OPENCL_FOUND AND USE_OPENCL)
-  include_directories(${OPENCL_INCLUDE_DIR})
+#find_package(OpenCL)
+#if(OPENCL_FOUND AND USE_OPENCL)
+#  include_directories(${OPENCL_INCLUDE_DIR})
 #  list(APPEND LIBS ${OPENCL_LIBRARIES})
-  list(APPEND SOURCES "common/opencl.c")
-  list(APPEND SOURCES "common/dynload.c")
-  list(APPEND SOURCES "common/dlopencl.c")
-  add_definitions("-DHAVE_OPENCL")
-endif(OPENCL_FOUND AND USE_OPENCL)
+#  list(APPEND SOURCES "common/opencl.c")
+#  list(APPEND SOURCES "common/dynload.c")
+#  list(APPEND SOURCES "common/dlopencl.c")
+#  add_definitions("-DHAVE_OPENCL")
+#endif(OPENCL_FOUND AND USE_OPENCL)
 
 # build opengl slideshow viewer?
 find_package(SDL)
@@ -201,6 +204,10 @@ endif(GCONF2_FOUND)
 if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
 endif(OPENEXR_FOUND)
+
+if(USE_OPENCL)
+  add_definitions("-DHAVE_OPENCL")
+endif(USE_OPENCL)
 
 
 if(GPHOTO2_FOUND)
