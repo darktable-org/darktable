@@ -128,6 +128,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->data;
 
   cl_int err;
+  const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*9, devid, d->cmatrix);
@@ -140,6 +141,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 3, sizeof(cl_mem), (void *)&dev_r);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 4, sizeof(cl_mem), (void *)&dev_g);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 5, sizeof(cl_mem), (void *)&dev_b);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 6, sizeof(cl_int), (void *)&map_blues);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_colorin, sizes);
   if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue colorin kernel! %d\n", err);
   clReleaseMemObject(dev_m);
@@ -157,6 +159,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
+  const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
 
   if(mat[0] != -666.0f)
   {
@@ -172,18 +175,25 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // memcpy(cam, buf_in, sizeof(float)*3);
       // TODO: avoid calling this for linear profiles? doesn't seem to impact performance much.
       for(int i=0; i<3; i++) cam[i] = lerp_lut(d->lut[i], buf_in[i]);
-      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-      const float YY = cam[0]+cam[1]+cam[2];
-      const float zz = cam[2]/YY;
-      // lower amount and higher bound_z make the effect smaller.
-      // the effect is weakened the darker input values are, saturating at bound_Y
-      const float bound_z = 0.5f, bound_Y = 0.5f;
-      const float amount = 0.11f;
-      if (zz > bound_z)
+
+      if(map_blues)
       {
-        const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-        cam[1] += t*amount;
-        cam[2] -= t*amount;
+        // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
+        // deeply saturated blues turn into purple fringes, so dampen them before conversion.
+        // this is off for non-raw images, which don't seem to have this problem.
+        // might be caused by too loose clipping bounds during highlight clipping?
+        const float YY = cam[0]+cam[1]+cam[2];
+        const float zz = cam[2]/YY;
+        // lower amount and higher bound_z make the effect smaller.
+        // the effect is weakened the darker input values are, saturating at bound_Y
+        const float bound_z = 0.5f, bound_Y = 0.8f;
+        const float amount = 0.11f;
+        if (zz > bound_z)
+        {
+          const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
+          cam[1] += t*amount;
+          cam[2] -= t*amount;
+        }
       }
       // now convert camera to XYZ using the color matrix
       for(int j=0; j<3; j++)
