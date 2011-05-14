@@ -100,7 +100,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float mat[2*(MAXR+1)];
   const int wd = 2*rad+1;
   float *m = mat + rad;
-  const float sigma2 = (2.5*2.5)*(d->radius*roi_in->scale/piece->iscale)*(d->radius*roi_in->scale/piece->iscale);
+  const float sigma2 = (1.0f/(2.5*2.5))*(d->radius*roi_in->scale/piece->iscale)*(d->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
   // init gaussian kernel
   for(int l=-rad; l<=rad; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
@@ -134,7 +134,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   const int wd = 2*rad+1;
   float mat[wd];
-  const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
+  const float sigma2 = (1.0f/(2.5*2.5))*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
 
   // init gaussian kernel
