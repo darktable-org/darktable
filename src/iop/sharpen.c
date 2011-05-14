@@ -34,7 +34,7 @@
 
 DT_MODULE(1)
 
-#define MAXR 8
+#define MAXR 12
 
 typedef struct dt_iop_sharpen_params_t
 {
@@ -270,7 +270,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
 #else
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
-  d->radius = p->radius;
+  // actually need to increase the mask to fit 2.5 sigma inside
+  d->radius = 2.5f*p->radius;
   d->amount = p->amount;
   d->threshold = p->threshold;
 #endif
