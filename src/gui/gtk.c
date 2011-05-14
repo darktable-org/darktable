@@ -1090,6 +1090,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   else
   {
     fprintf(stderr, "[gtk_init] could not find darktable.gtkrc in . or %s!\n", datadir);
+    g_free(themefile);
     return 1;
   }
   g_free(themefile);
