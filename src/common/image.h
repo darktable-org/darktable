@@ -347,6 +347,8 @@ dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img);
 void dt_image_write_sidecar_file(int imgid);
 /** this writes xmp files for this image or all selected if selected == -1. Convenience wrapper around dt_image_write_sidecar_file(). */
 void dt_image_synch_xmp(const int selected);
+/** synchonizes .xmp sidecars file when duplicates to the actual number of duplicates present in database */
+void dt_image_synch_all_xmp(const gchar *pathname);
 
 // memory management interface
 typedef struct dt_mipmap_cache_t

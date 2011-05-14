@@ -35,7 +35,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_export_t
 {
-  GtkSpinButton *width, *height, *threads;
+  GtkSpinButton *width, *height;
   GtkComboBox *storage, *format;
   int format_lut[128];
   GtkContainer *storage_box, *format_box;
@@ -85,13 +85,6 @@ key_accel_callback(void *d)
 }
 
 static void
-threads_changed (GtkSpinButton *spin, gpointer user_data)
-{
-  int value = gtk_spin_button_get_value(spin);
-  dt_conf_set_int ("mipmap_cache_full_images", value+1);
-}
-
-static void
 width_changed (GtkSpinButton *spin, gpointer user_data)
 {
   int value = gtk_spin_button_get_value(spin);
@@ -113,7 +106,6 @@ gui_reset (dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   gtk_spin_button_set_value(d->width,   dt_conf_get_int("plugins/lighttable/export/width"));
   gtk_spin_button_set_value(d->height,  dt_conf_get_int("plugins/lighttable/export/height"));
-  gtk_spin_button_set_value(d->threads, MAX(MIN(dt_conf_get_int("mipmap_cache_full_images") - 1, 24), 1));
 
   // Set storage
   int k = dt_conf_get_int ("plugins/lighttable/export/storage");
@@ -562,20 +554,10 @@ gui_init (dt_lib_module_t *self)
                     G_CALLBACK (profile_changed),
                     (gpointer)d);
 
-  label = gtk_label_new(_("threads"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->threads = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 24, 1));
-  g_object_set(G_OBJECT(d->threads), "tooltip-text", _("export using this number of threads.\nbeware! each thread will use ~1GB of ram."), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->threads), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 11, 12, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  g_signal_connect (G_OBJECT (d->threads), "value-changed",
-                    G_CALLBACK (threads_changed),
-                    (gpointer)0);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (export_button_clicked),
                     (gpointer)self);

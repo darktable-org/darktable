@@ -34,7 +34,7 @@
 
 DT_MODULE(1)
 
-#define MAXR 8
+#define MAXR 12
 
 typedef struct dt_iop_sharpen_params_t
 {
@@ -100,7 +100,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float mat[2*(MAXR+1)];
   const int wd = 2*rad+1;
   float *m = mat + rad;
-  const float sigma2 = (2.5*2.5)*(d->radius*roi_in->scale/piece->iscale)*(d->radius*roi_in->scale/piece->iscale);
+  const float sigma2 = (1.0f/(2.5*2.5))*(d->radius*roi_in->scale/piece->iscale)*(d->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
   // init gaussian kernel
   for(int l=-rad; l<=rad; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
@@ -134,7 +134,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   const int wd = 2*rad+1;
   float mat[wd];
-  const float sigma2 = (2.5*2.5)*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
+  const float sigma2 = (1.0f/(2.5*2.5))*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
 
   // init gaussian kernel
@@ -270,7 +270,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
 #else
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
-  d->radius = p->radius;
+  // actually need to increase the mask to fit 2.5 sigma inside
+  d->radius = 2.5f*p->radius;
   d->amount = p->amount;
   d->threshold = p->threshold;
 #endif

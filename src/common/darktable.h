@@ -112,7 +112,8 @@ dt_debug_thread_t;
 
 typedef struct darktable_t
 {
-  unsigned int cpu_flags;
+  uint32_t cpu_flags;
+  int32_t num_openmp_threads;
 	
   int32_t thumbnail_size;
   int32_t unmuted;

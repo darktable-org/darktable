@@ -29,6 +29,7 @@
 #include "common/imageio_module.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/tags.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
 
@@ -246,6 +247,17 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   dt_collection_update(darktable.collection);
   dt_control_gui_queue_draw();
 
+  // We need a list of files to regenerate .xmp files if there are duplicates
+  GList *list = NULL;
+  sqlite3_stmt *stmt = NULL;
+  
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
+
   while(t)
   {
     imgid = (long int)t->data;
@@ -254,6 +266,15 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     fraction=1.0/total;
     dt_gui_background_jobs_set_progress(j, fraction);
   }
+
+  char *imgname;
+  while(list)
+  {
+    imgname = (char *)list->data;
+    dt_image_synch_all_xmp(imgname);
+    list = g_list_delete_link(list, list);
+  } 
+  g_list_free(list);  
   dt_gui_background_jobs_destroy (j);
   dt_film_remove_empty();
   return 0;
@@ -279,6 +300,17 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
   dt_collection_update(darktable.collection);
   dt_control_gui_queue_draw();
+
+  // We need a list of files to regenerate .xmp files if there are duplicates
+  GList *list = NULL;
+  
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
   while(t)
@@ -313,6 +345,15 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     dt_gui_background_jobs_set_progress(j, fraction);
   }
   sqlite3_finalize(stmt);
+  
+  char *imgname;
+  while(list)
+  {
+    imgname = (char *)list->data;
+    dt_image_synch_all_xmp(imgname);
+    list = g_list_delete_link(list, list);
+  } 
+  g_list_free(list);
   dt_gui_background_jobs_destroy (j);
   dt_film_remove_empty();
   return 0;
@@ -470,11 +511,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #ifdef _OPENMP
   // limit this to num threads = num full buffers - 1 (keep one for darkroom mode)
   // use min of user request and mipmap cache entries
-  const int full_entries = dt_conf_get_int ("mipmap_cache_full_images");
+  const int full_entries = dt_conf_get_int ("parallel_export");
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
-  #pragma omp parallel default(none) private(imgid, size) shared(j, fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads)
+  #pragma omp parallel default(none) private(imgid, size) shared(j, fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads) if(num_threads > 1)
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
@@ -484,6 +525,10 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
     fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
     int num = 0;
+    // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a sensible assumption?
+    guint tagid = 0;
+    dt_tag_new("darktable|changed",&tagid);
+
     while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
     {
 #ifdef _OPENMP
@@ -499,7 +544,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
           num = total - g_list_length(t);
         }
       }
-      
+      // remove 'changed' tag from image
+      dt_tag_detach(tagid, imgid);
       // check if image still exists:
       char imgfilename[1024];
       dt_image_t *image = dt_image_cache_get(imgid, 'r');
