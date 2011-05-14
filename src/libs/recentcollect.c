@@ -236,8 +236,8 @@ collection_updated(void *d)
       {
         snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
         dt_conf_set_string(confname, line1);
-        g_free(line1);
       }
+      g_free(line1);
     }
     dt_conf_set_string("plugins/lighttable/recentcollect/line0", buf);
   }
