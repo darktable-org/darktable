@@ -95,12 +95,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 	//neighborhood of a pixel
 	//static const int nbr[5] = {-v2,-2,2,v2,0};
-	static int nbr[5];
-	nbr[0] = -v2;
-	nbr[1] = -2;
-	nbr[2] = 2;
-	nbr[3] = v2;
-	nbr[4] = 0;
 
 	//tolerance to avoid dividing by zero
 	static const float eps=1e-5, epssq=1e-10;			//tolerance to avoid dividing by zero
@@ -179,9 +173,9 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 	// difference between left/right interpolations of G
 	float (*dginth);
 	// diagonal (plus) color difference R-B or G1-G2
-	float (*Dgrbp1);
+	//float (*Dgrbp1);
 	// diagonal (minus) color difference R-B or G1-G2
-	float (*Dgrbm1);
+	//float (*Dgrbm1);
 	// square of diagonal color difference
 	float (*Dgrbpsq1);
 	// square of diagonal color difference
@@ -226,8 +220,8 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 	Dgrbv2		= (float (*))			(buffer +  23*sizeof(float)*TS*TS);	
 	dgintv		= (float (*))			(buffer +  24*sizeof(float)*TS*TS);
 	dginth		= (float (*))			(buffer +  25*sizeof(float)*TS*TS);
-	Dgrbp1		= (float (*))			(buffer +  26*sizeof(float)*TS*TS);
-	Dgrbm1		= (float (*))			(buffer +  27*sizeof(float)*TS*TS);
+	//Dgrbp1		= (float (*))			(buffer +  26*sizeof(float)*TS*TS);
+	//Dgrbm1		= (float (*))			(buffer +  27*sizeof(float)*TS*TS);
 	Dgrbpsq1	= (float (*))			(buffer +  28*sizeof(float)*TS*TS);
 	Dgrbmsq1	= (float (*))			(buffer +  29*sizeof(float)*TS*TS);
 	cfa			= (float (*))			(buffer +  30*sizeof(float)*TS*TS);
