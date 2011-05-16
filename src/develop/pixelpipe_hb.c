@@ -515,7 +515,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
 
-        /* next process blending */
+        /* next process blending; modules should emit meaningful messages in case of error */
         if (success_opencl)
           success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
@@ -542,8 +542,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* first check where we found input buffer before we started */
           if (valid_input_on_gpu)
           {
+            cl_int err;
+
             /* copy back to CPU buffer, then clean unneeded buffers */
-            dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+            err = dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+            if (err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (a)] failed to copy back to cpu buffer: %d\n", err);
             dt_opencl_release_mem_object(cl_mem_input);
           }
           /* we might need to free unused output buffer */
@@ -566,7 +569,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         /* cleanup unneeded opencl buffers, and copy back to CPU buffer */
         if(cl_mem_input)
         {
-          dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+          cl_int err;
+
+          err = dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+          if (err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (b)] failed to copy back to cpu buffer: %d\n", err);
           dt_opencl_release_mem_object(cl_mem_input);
         }
         *cl_mem_output = NULL;
