@@ -116,7 +116,7 @@ int dt_opencl_is_enabled(void);
 void dt_opencl_update_enabled(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
-void dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp);
+int dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp);
 
 void* dt_opencl_copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp);
 

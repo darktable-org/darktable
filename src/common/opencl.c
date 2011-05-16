@@ -422,13 +422,13 @@ int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel
   return (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel], 2, NULL, sizes, local, 0, NULL, NULL);
 }
 
-void dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp)
+int dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp)
 {
-  if(!darktable.opencl->inited) return;
+  if(!darktable.opencl->inited) return -1;
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
   // blocking.
-  (darktable.opencl->dlocl->symbols->dt_clEnqueueReadImage)(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, NULL);
+  return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadImage)(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, NULL);
 }
 
 int dt_opencl_enqueue_copy_image(cl_command_queue q, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region, int events, cl_event *wait, cl_event *event)
