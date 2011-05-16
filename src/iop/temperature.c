@@ -211,7 +211,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
@@ -222,8 +222,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int ui = ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && filters);
   float coeffs[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
   if(ui) for(int k=0; k<3; k++) coeffs[k] /= 65535.0f;
-  cl_mem dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*3, devid, coeffs);
-  cl_int err;
+  cl_mem dev_coeffs = NULL;
+  cl_int err = -999;
+
+
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*3, devid, coeffs);
+  if (dev_coeffs == NULL) goto error;
+
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   const int kernel = ui ? gd->kernel_whitebalance_1ui : gd->kernel_whitebalance_4f;
   dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -236,11 +241,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 5, sizeof(uint32_t), (void *)&roi_out->y);
   }
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, kernel, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue white balance kernel! %d\n", err);
+  if(err != CL_SUCCESS) goto error;
   dt_opencl_finish(darktable.opencl->dev[devid].cmd_queue);
   dt_opencl_release_mem_object(dev_coeffs);
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+  return TRUE;
+
+error:
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_white_balance] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 

@@ -473,29 +473,97 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 #ifdef HAVE_OPENCL
     if (dt_opencl_is_inited())
     {
+      int success_opencl = TRUE;
+      int valid_input_on_gpu = FALSE;
+      
+      /* try to run opencl module after checking some pre-requisites */
       if(dt_opencl_is_enabled() && module->process_cl && piece->process_cl_ready  && 
-         dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height) && dt_opencl_image_fits_device(pipe->devid, roi_out->width, roi_out->height))
+         dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height) && 
+         dt_opencl_image_fits_device(pipe->devid, roi_out->width, roi_out->height))
       {
         // if input is not on the gpu, copy it there.
         // else, if input is on the gpu only, invalidate cpu cache line.
         // printf("for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
-        if(!cl_mem_input) cl_mem_input = dt_opencl_copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
-        else dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
-        *cl_mem_output = dt_opencl_alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
+        if(cl_mem_input != NULL)
+        {
+          /* remember that we found a valid input buffer on gpu */
+          valid_input_on_gpu = TRUE;
+        }
+        else
+        {
+          cl_mem_input = dt_opencl_copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+          if (cl_mem_input == NULL)
+          {
+            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n", module->op);
+            success_opencl = FALSE;
+          }
+        }
 
-        // printf("for module `%s', have bufs %d and %d bpp\n", module->op, in_bpp, bpp);
-        module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+        /* try to allocate GPU memory for output */
+        if (success_opencl)
+        {
+          *cl_mem_output = dt_opencl_alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
+          if (*cl_mem_output == NULL)
+          {
+            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't allocate output buffer for module %s\n", module->op);
+            success_opencl = FALSE;
+          }
+        }
 
-        /* process blending for opencl */
-        dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+        /* now process opencl module */
+        if (success_opencl)
+          success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
-        dt_opencl_release_mem_object(cl_mem_input);
-        // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
-        // so we're not just yet invalidating the (empty) output cache line.
+
+        /* next process blending */
+        if (success_opencl)
+          success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+
+        // if (rand() % 20 == 0) success_opencl = FALSE; // Test: simulate failures
+
+        /* Finally check, if we were successful */
+        if (success_opencl)
+        {
+          /* Nice, everything went fine */
+          
+          /* input was anyhow only on GPU? Let's invalidate CPU input buffer then */
+          if (valid_input_on_gpu) dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
+
+          /* we can now release cl_mem_input */
+          dt_opencl_release_mem_object(cl_mem_input);
+          // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
+          // so we're not just yet invalidating the (empty) output cache line.
+        }
+        else
+        {
+          /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
+          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module %s. fall back to cpu module\n", module->op);
+          
+          /* first check where we found input buffer before we started */
+          if (valid_input_on_gpu)
+          {
+            /* copy back to CPU buffer, then clean unneeded buffers */
+            dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+            dt_opencl_release_mem_object(cl_mem_input);
+          }
+          /* we might need to free unused output buffer */
+          if (*cl_mem_output != NULL)
+          {
+            dt_opencl_release_mem_object(*cl_mem_output);
+            *cl_mem_output = NULL;
+          }
+
+          /* process module on cpu */
+          module->process(module, piece, input, *output, &roi_in, roi_out);
+          /* process blending on cpu */
+          dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+        }
       }
       else
       {
-        // cleanup unneeded opencl buffers, and copy back to CPU buffer
+        /* we are not allowed to use opencl for this module */
+  
+        /* cleanup unneeded opencl buffers, and copy back to CPU buffer */
         if(cl_mem_input)
         {
           dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
@@ -503,6 +571,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         }
         *cl_mem_output = NULL;
 
+        /* process module on cpu */
         module->process(module, piece, input, *output, &roi_in, roi_out);
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
@@ -510,6 +579,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     }
     else
     {
+      /* opencl is not inited, everything runs on cpu */
+
+      /* process module on cpu */
       module->process(module, piece, input, *output, &roi_in, roi_out);
       /* process blending */
       dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);

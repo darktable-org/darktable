@@ -91,13 +91,13 @@ groups ()
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->data;
 
-  cl_int err = 0;
+  cl_int err = -999;
   cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
   const int devid = piece->pipe->devid;
@@ -135,11 +135,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_tmp);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_invert, sizes);
-  if(err != CL_SUCCESS)
-  {
-    fprintf(stderr, "couldn't enqueue highpass_invert kernel! %d\n", err);
-    goto error;
-  }
+  if(err != CL_SUCCESS) goto error;
 
   if(rad != 0)
   {
@@ -149,11 +145,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 3, sizeof(int), (void *)&wdh);
     err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_hblur, sizes);
-    if(err != CL_SUCCESS)
-    {
-      fprintf(stderr, "couldn't enqueue highpass_hblur kernel! %d\n", err);
-      goto error;
-    }
+    if(err != CL_SUCCESS) goto error;
 
     /* vertical blur */
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
@@ -161,11 +153,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 3, sizeof(int), (void *)&wdh);
     err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_vblur, sizes);
-    if(err != CL_SUCCESS)
-    {
-      fprintf(stderr, "couldn't enqueue highpass_vblur kernel! %d\n", err);
-      goto error;
-    }
+    if(err != CL_SUCCESS) goto error;
   }
 
   /* mixing tmp and in -> out */
@@ -174,21 +162,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 2, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 3, sizeof(float), (void *)&contrast_scale);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_mix, sizes);
-  if(err != CL_SUCCESS)
-  {
-    fprintf(stderr, "couldn't enqueue highpass_mix kernel! %d\n", err);
-    goto error;
-  }
+  if(err != CL_SUCCESS) goto error;
 
   clReleaseMemObject(dev_tmp);
   clReleaseMemObject(dev_m);
-  return;
+  return TRUE;
 
 error:
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
-  fprintf(stderr, "couldn't run all/part of highpass kernels!\n");
-  return;
+  dt_print(DT_DEBUG_OPENCL, "[opencl_highpass] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 

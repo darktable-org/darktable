@@ -436,7 +436,7 @@ int dt_opencl_enqueue_copy_image(cl_command_queue q, cl_mem src, cl_mem dst, siz
   if(!darktable.opencl->inited) return -1;
   cl_int err;
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(q, src, dst, orig_src, orig_dst, region, events, wait, event);
-  if(err != CL_SUCCESS) fprintf(stderr, "[opencl copy_image] could not copy image: %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image: %d\n", err);
   return err;
 }
 
@@ -448,7 +448,7 @@ void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, vo
                                CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
                                size,
                                host, &err);
-  if(err != CL_SUCCESS) fprintf(stderr, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %d\n", devid, err);
   return dev;
 }
 
@@ -481,7 +481,7 @@ void* dt_opencl_copy_host_to_device(void *host, const int width, const int heigh
                                 &fmt,
                                 width, height, 0,
                                 host, &err);
-  if(err != CL_SUCCESS) fprintf(stderr, "[opencl copy_host_to_device] could not alloc/copy img buffer onto device %d: %d\n", devid, err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_host_to_device] could not alloc/copy img buffer onto device %d: %d\n", devid, err);
   return dev;
 }
 
@@ -521,7 +521,7 @@ void* dt_opencl_alloc_device(const int width, const int height, const int devid,
                                 &fmt,
                                 width, height, 0,
                                 NULL, &err);
-  if(err != CL_SUCCESS) fprintf(stderr, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;
 }
 

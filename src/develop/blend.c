@@ -836,15 +836,17 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
 
 #ifdef HAVE_OPENCL
-void 
+int 
 dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
+  cl_int err = -999;
+  cl_mem dev_m = NULL;
 
   // fprintf(stderr, "dt_develop_blend_process_cl: mode %d\n", d->mode);
 
   /* check if blend is disabled: just return, output is already in dev_out */
-  if (!d || d->mode==0) return;
+  if (!d || d->mode==0) return TRUE;
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
   int kernel = darktable.blendop->kernel_blendop_Lab;
@@ -865,14 +867,12 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
       break;
   }
 
-  cl_int err = CL_SUCCESS;
-
   const int devid = piece->pipe->devid;
   const float opacity = fmin(fmax(0,(d->opacity/100.0)),1.0);
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
 
   /* opencl does not allow reading from and writing to the same image buffer -> we need an intermediate one :-( */
-  cl_mem dev_m = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
+  dev_m = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
   if (dev_m == NULL) goto error;
   size_t origin[] = {0, 0, 0};
   size_t region[] = {roi_in->width, roi_in->height, 1};
@@ -889,11 +889,12 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
-  return;
+  return TRUE;
 
 error:
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  fprintf(stderr, "couldn't enqueue blendop kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 
