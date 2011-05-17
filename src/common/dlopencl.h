@@ -25,7 +25,7 @@
 #include "config.h"
 #endif
 
-#include "common/CL/cl.h"
+#include <CL/cl.h>
 #include "common/dynload.h"
 
 #ifdef WIN32

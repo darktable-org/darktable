@@ -59,7 +59,7 @@ FILE(GLOB SOURCE_FILES
   "libs/lib.c"
   "views/view.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "common/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -206,6 +206,7 @@ if(OPENEXR_FOUND)
 endif(OPENEXR_FOUND)
 
 if(USE_OPENCL)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
   add_definitions("-DHAVE_OPENCL")
 endif(USE_OPENCL)
 

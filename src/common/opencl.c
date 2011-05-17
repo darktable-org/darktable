@@ -197,6 +197,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   if(dev > 0)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", prefs ? "ON" : "OFF");
     cl->num_devs = dev;
     cl->inited = 1;
     cl->enabled = prefs;
