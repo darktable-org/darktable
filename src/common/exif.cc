@@ -44,14 +44,15 @@ extern "C"
 #include <cassert>
 #include <glib.h>
 
-#define DT_XMP_KEYS_NUM 7 // the number of XmpBag XmpSeq keys that dt uses
+#define DT_XMP_KEYS_NUM 12 // the number of XmpBag XmpSeq keys that dt uses
 
 //this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
 {
   "Xmp.dc.subject", "Xmp.darktable.colorlabels",
   "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
-  "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params"
+  "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params",
+  "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights"
 };
 
 // inspired by ufraw_exiv2.cc:
@@ -81,7 +82,7 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   for(int i=0; i<DT_XMP_KEYS_NUM; i++)
   {
     Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
-    xmp.erase(pos);
+    if(pos != xmp.end()) xmp.erase(pos);
   }
 }
 
