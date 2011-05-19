@@ -78,7 +78,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   // get the number of GPU devices available to the platform
   // the other common option is CL_DEVICE_TYPE_GPU/CPU (but the latter doesn't work with the nvidia drivers)
   cl_uint num_devices = 0;
-  err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
+  err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);

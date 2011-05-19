@@ -245,19 +245,19 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       break;
 
     case DEVELOP_BLEND_HARDLIGHT:
-      o = clamp(la * (1.0 - opacity) + (la > halfmax ? lmax - (lmax - la ) * (lmax - doublemax * (lb - halfmax)) : la * (lb + halfmax)) * opacity, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity) + (la > halfmax ? lmax - (lmax - la ) * (lmax - doublemax * (lb - halfmax)) : la * (lb + halfmax)) * opacity, lmin, lmax) - fabs(min);
       break;
 
     case DEVELOP_BLEND_VIVIDLIGHT:
-      o = clamp(la * (1.0 - opacity) + (la > halfmax ? lmax - (lmax - la) / (doublemax * (lb - halfmax)) : la / (lmax - doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity) + (la > halfmax ? lmax - (lmax - la) / (doublemax * (lb - halfmax)) : la / (lmax - doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
       break;
 
     case DEVELOP_BLEND_LINEARLIGHT:
-      o = clamp(la * (1.0 - opacity) + (la > halfmax ? la + doublemax * (lb - halfmax) : la + doublemax * lb - lmax) * opacity, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity) + (la > halfmax ? la + doublemax * (lb - halfmax) : la + doublemax * lb - lmax) * opacity, lmin, lmax) - fabs(min);
       break;
 
     case DEVELOP_BLEND_PINLIGHT:
-      o = clamp(la * (1.0 - opacity) + (la > halfmax ? fmax(la, doublemax * (lb - halfmax)) : fmin(la, doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity) + (la > halfmax ? fmax(la, doublemax * (lb - halfmax)) : fmin(la, doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
       break;
 
 
@@ -338,19 +338,19 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       break;
 
     case DEVELOP_BLEND_HARDLIGHT:
-      o = clamp(la * (1.0 - opacity) + (la > halfmax ? lmax - (lmax - la ) * (lmax - doublemax * (lb - halfmax)) : la * (lb + halfmax)) * opacity, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity) + (la > halfmax ? lmax - (lmax - la ) * (lmax - doublemax * (lb - halfmax)) : la * (lb + halfmax)) * opacity, lmin, lmax) - fabs(min);
       break;
 
     case DEVELOP_BLEND_VIVIDLIGHT:
-      o = clamp(la * (1.0 - opacity) + (la > halfmax ? lmax - (lmax - la) / (doublemax * (lb - halfmax)) : la / (lmax - doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity) + (la > halfmax ? lmax - (lmax - la) / (doublemax * (lb - halfmax)) : la / (lmax - doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
       break;
 
     case DEVELOP_BLEND_LINEARLIGHT:
-      o = clamp(la * (1.0 - opacity) + (la > halfmax ? la + doublemax * (lb - halfmax) : la + doublemax * lb - lmax) * opacity, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity) + (la > halfmax ? la + doublemax * (lb - halfmax) : la + doublemax * lb - lmax) * opacity, lmin, lmax) - fabs(min);
       break;
 
     case DEVELOP_BLEND_PINLIGHT:
-      o = clamp(la * (1.0 - opacity) + (la > halfmax ? fmax(la, doublemax * (lb - halfmax)) : fmin(la, doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity) + (la > halfmax ? fmax(la, doublemax * (lb - halfmax)) : fmin(la, doublemax * lb)) * opacity, lmin, lmax) - fabs(min);
       break;
 
 
