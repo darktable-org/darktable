@@ -476,14 +476,16 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       int success_opencl = TRUE;
       int valid_input_on_gpu = FALSE;
       
+
       /* try to run opencl module after checking some pre-requisites */
       if(dt_opencl_is_enabled() && module->process_cl && piece->process_cl_ready  && 
          dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height) && 
          dt_opencl_image_fits_device(pipe->devid, roi_out->width, roi_out->height))
       {
+        // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+
         // if input is not on the gpu, copy it there.
         // else, if input is on the gpu only, invalidate cpu cache line.
-        // printf("for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
         if(cl_mem_input != NULL)
         {
           /* remember that we found a valid input buffer on gpu */
@@ -510,12 +512,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           }
         }
 
-        /* now process opencl module */
+        // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+
+        /* now process opencl module; modules should emit meaningful messages in case of error */
         if (success_opencl)
           success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
 
-        /* next process blending; modules should emit meaningful messages in case of error */
+        /* next process blending */
         if (success_opencl)
           success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
@@ -566,8 +570,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       {
         /* we are not allowed to use opencl for this module */
   
+        // fprintf(stderr, "[opencl_pixelpipe 3] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+
         /* cleanup unneeded opencl buffers, and copy back to CPU buffer */
-        if(cl_mem_input)
+        if(cl_mem_input != NULL)
         {
           cl_int err;
 
