@@ -659,6 +659,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
 post_process_collect_info:
 
+#if 0
 #ifdef HAVE_OPENCL
     // after outermost recursion of dt_dev_pixelpipe_process_rec: we need to copy back final 
     // opencl buffer (if any) to CPU and cleanup.
@@ -669,6 +670,7 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
+    // fprintf(stderr, "module: %s, cl_mem: %lx, pos: %d, gll: %d\n", module->name(), (unsigned long)*cl_mem_output, pos, g_list_length(dev->iop));
     if (*cl_mem_output != NULL && pos == g_list_length(dev->iop))
     {
       cl_int err;
@@ -687,6 +689,7 @@ post_process_collect_info:
       *cl_mem_output = NULL;
     }
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
+#endif
 #endif
 
     dt_pthread_mutex_lock(&pipe->busy_mutex);
@@ -796,6 +799,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   {
     x, y, width, height, scale
   };
+  int err;
   // printf("pixelpipe homebrew process start\n");
   if(darktable.unmuted & DT_DEBUG_DEV)
     dt_dev_pixelpipe_cache_print(&pipe->cache);
@@ -813,18 +817,32 @@ restart:
   void *buf = NULL;
   void *cl_mem_out = NULL;
   int out_bpp;
-  if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos))
+  err = dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos);
+
+#ifdef HAVE_OPENCL
+  // copy back final opencl buffer to CPU and cleanup
+  dt_pthread_mutex_lock(&pipe->busy_mutex);
+  if(cl_mem_out)
+  {
+    dt_opencl_copy_device_to_host(buf, cl_mem_out, width, height, pipe->devid, out_bpp);
+    dt_opencl_release_mem_object(cl_mem_out);
+    cl_mem_out = NULL;
+  }
+  dt_pthread_mutex_unlock(&pipe->busy_mutex);
+#endif  
+
+  if (err)
   {
     if (pipe->opencl_error)
     {
       if (cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
       dt_opencl_disable();
       dt_control_log("Warning: OpenCL was found to be unreliable on this system and is therefore disabled!");
-      dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+      dt_pthread_mutex_lock(&pipe->busy_mutex);
       pipe->opencl_error = 0;
       dt_dev_pixelpipe_flush_caches(pipe);
       dt_dev_pixelpipe_change(pipe, dev);
-      dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
       goto restart;
     }
     pipe->processing = 0;
