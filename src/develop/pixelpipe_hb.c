@@ -61,6 +61,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t
   pipe->backbuf = NULL;
   pipe->processing = 0;
   pipe->shutdown = 0;
+  pipe->opencl_error = 0;
   pipe->input_timestamp = 0;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
@@ -476,6 +477,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       int success_opencl = TRUE;
       int valid_input_on_gpu = FALSE;
       
+      /* general remark: in case of opencl errors within modules of out-of-memory on GPU, we always transparently
+         fall back to the respective cpu module and continue in pixelpipe. If we encounter fatal errors, we set 
+         pipe->opencl_error, return with value 1, and leave appropriate action to the calling function */
 
       /* try to run opencl module after checking some pre-requisites */
       if(dt_opencl_is_enabled() && module->process_cl && piece->process_cl_ready  && 
@@ -484,8 +488,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       {
         // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
 
-        // if input is not on the gpu, copy it there.
-        // else, if input is on the gpu only, invalidate cpu cache line.
+        // if input is on the gpu only, remember this fact to later take appropriate action,
+        // else, if input is not on the gpu, copy it there.
         if(cl_mem_input != NULL)
         {
           /* remember that we found a valid input buffer on gpu */
@@ -523,7 +527,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         if (success_opencl)
           success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
-        // if (rand() % 20 == 0) success_opencl = FALSE; // Test: simulate failures
+        // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
 
         /* Finally check, if we were successful */
         if (success_opencl)
@@ -542,22 +546,31 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         {
           /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
           dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module %s. fall back to cpu module\n", module->op);
+
+          /* we might need to free unused output buffer */
+          if (*cl_mem_output != NULL)
+          {
+            dt_opencl_release_mem_object(*cl_mem_output);
+            *cl_mem_output = NULL;
+          }
           
           /* first check where we found input buffer before we started */
           if (valid_input_on_gpu)
           {
             cl_int err;
 
-            /* copy back to CPU buffer, then clean unneeded buffers */
+            /* copy back to CPU buffer, then clean unneeded buffer */
             err = dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
-            if (err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (a)] failed to copy back to cpu buffer: %d\n", err);
+            if (err != CL_SUCCESS)
+            {
+              /* fatal opencl error */
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (a)] fatal opencl error while copying back to cpu buffer: %d\n", err);
+              dt_opencl_release_mem_object(cl_mem_input);
+              pipe->opencl_error = 1;
+              dt_pthread_mutex_unlock(&pipe->busy_mutex);
+              return 1;
+            }
             dt_opencl_release_mem_object(cl_mem_input);
-          }
-          /* we might need to free unused output buffer */
-          if (*cl_mem_output != NULL)
-          {
-            dt_opencl_release_mem_object(*cl_mem_output);
-            *cl_mem_output = NULL;
           }
 
           /* process module on cpu */
@@ -572,16 +585,26 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
   
         // fprintf(stderr, "[opencl_pixelpipe 3] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
 
-        /* cleanup unneeded opencl buffers, and copy back to CPU buffer */
+        *cl_mem_output = NULL;
+
+        /* cleanup unneeded opencl buffer, and copy back to CPU buffer */
         if(cl_mem_input != NULL)
         {
           cl_int err;
 
           err = dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
-          if (err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (b)] failed to copy back to cpu buffer: %d\n", err);
+          // if (rand() % 5 == 0) err = !CL_SUCCESS; // Test code: simulate spurious failures
+          if (err != CL_SUCCESS)
+          {
+            /* fatal opencl error */
+            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (b)] fatal opencl error while copying back to cpu buffer: %d\n", err);
+            dt_opencl_release_mem_object(cl_mem_input);
+            pipe->opencl_error = 1;
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
           dt_opencl_release_mem_object(cl_mem_input);
         }
-        *cl_mem_output = NULL;
 
         /* process module on cpu */
         module->process(module, piece, input, *output, &roi_in, roi_out);
@@ -599,6 +622,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
     } 
 #else
+    /* process module on cpu */
     module->process(module, piece, input, *output, &roi_in, roi_out);
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
@@ -634,6 +658,36 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 #endif
 
 post_process_collect_info:
+
+#ifdef HAVE_OPENCL
+    // after outermost recursion of dt_dev_pixelpipe_process_rec: we need to copy back final 
+    // opencl buffer (if any) to CPU and cleanup.
+    // TODO: we detect outermost recursion by parameter pos; there may be better ways.
+    dt_pthread_mutex_lock(&pipe->busy_mutex);
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
+    if (*cl_mem_output != NULL && pos == g_list_length(dev->iop))
+    {
+      cl_int err;
+
+      err = dt_opencl_copy_device_to_host(*output, *cl_mem_output, roi_out->width, roi_out->height, pipe->devid, *out_bpp);
+      if (err != CL_SUCCESS)
+      {
+        /* this indicates a serious opencl problem */
+        dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (c)] fatal opencl error while copying back to cpu buffer: %d\n", err);
+        dt_opencl_release_mem_object(*cl_mem_output);
+        pipe->opencl_error = 1;
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+        return 1;
+      }
+      dt_opencl_release_mem_object(*cl_mem_output);
+      *cl_mem_output = NULL;
+    }
+    dt_pthread_mutex_unlock(&pipe->busy_mutex);
+#endif
 
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
@@ -731,14 +785,13 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
   return ret;
 }
 
+
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
   pipe->processing = 1;
   dt_opencl_update_enabled(); // update enabled flag from preferences
   pipe->devid = dt_opencl_lock_device(darktable.opencl, -1);
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
-  // image max is normalized before
-  for(int k=0; k<3; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
   dt_iop_roi_t roi = (dt_iop_roi_t)
   {
     x, y, width, height, scale
@@ -751,26 +804,35 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   int pos = g_list_length(dev->iop);
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);
+
+  // in case of fatal opencl errors (not recoverable ones) we disable opencl and
+  // start all over again
+restart:
+  // image max is normalized before
+  for(int k=0; k<3; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
   void *buf = NULL;
   void *cl_mem_out = NULL;
   int out_bpp;
   if(dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos))
   {
+    if (pipe->opencl_error)
+    {
+      if (cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
+      dt_opencl_disable();
+      dt_control_log("Warning: OpenCL was found to be unreliable on this system and is therefore disabled!");
+      dt_pthread_mutex_lock(&pipe->backbuf_mutex);
+      pipe->opencl_error = 0;
+      dt_dev_pixelpipe_flush_caches(pipe);
+      dt_dev_pixelpipe_change(pipe, dev);
+      dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+      goto restart;
+    }
     pipe->processing = 0;
     dt_opencl_unlock_device(darktable.opencl, pipe->devid);
     pipe->devid = -1;
     return 1;
   }
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-#ifdef HAVE_OPENCL
-  // copy back final opencl buffer to CPU and cleanup
-  if(cl_mem_out)
-    {
-      dt_opencl_copy_device_to_host(buf, cl_mem_out, width, height, pipe->devid, out_bpp);
-      dt_opencl_release_mem_object(cl_mem_out);
-      cl_mem_out = NULL;
-    }
-#endif
   pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(dev->image->id, &roi, pipe, 0);
   pipe->backbuf = buf;
   pipe->backbuf_width  = width;

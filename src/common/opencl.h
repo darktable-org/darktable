@@ -112,6 +112,9 @@ int dt_opencl_is_inited(void);
 /** check if opencl is enabled */
 int dt_opencl_is_enabled(void);
 
+/** disable opencl */
+void dt_opencl_disable(void);
+
 /** update enabled flag with value from preferences */
 void dt_opencl_update_enabled(void);
 
@@ -184,8 +187,9 @@ static inline int dt_opencl_is_enabled(void)
 {
   return 0;
 }
+static inline void dt_opencl_disable(void) {}
 static inline void dt_opencl_update_enabled(void) {}
-
+static inline void dt_opencl_release_mem_object(void) {}
 #endif
 
 

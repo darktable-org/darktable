@@ -551,6 +551,15 @@ int dt_opencl_is_enabled(void)
 }
 
 
+/** disable opencl */
+void dt_opencl_disable(void)
+{
+  if(!darktable.opencl->inited) return;
+  darktable.opencl->enabled = FALSE;
+  dt_conf_set_bool("opencl", FALSE);
+}
+
+
 /** update enabled flag with value from preferences */
 void dt_opencl_update_enabled(void)
 {
