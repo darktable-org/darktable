@@ -35,7 +35,7 @@ highpass_invert(read_only image2d_t in, write_only image2d_t out)
 
 
 kernel void 
-highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m, const int rad)
+highpass_hblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -63,7 +63,7 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m
 
 
 kernel void 
-highpass_vblur(read_only image2d_t in, write_only image2d_t out, global float *m, const int rad)
+highpass_vblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
