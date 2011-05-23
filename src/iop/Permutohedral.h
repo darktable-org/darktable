@@ -286,7 +286,6 @@ public:
     short *canonicalTmp = new short[(d+1)*(d+1)];
 
     replay = new ReplayEntry[nData*(d+1)];
-    nReplay = 0;
 
     // compute the coordinates of the canonical simplex, in which
     // the difference between a contained point and the zero
@@ -333,7 +332,7 @@ public:
 
 
   /* Performs splatting with given position and value vectors */
-  void splat(float *position, float *value)
+  void splat(float *position, float *value, int replay_index)
   {
     float elevated[d+1];
     short greedy[d+1];
@@ -432,30 +431,22 @@ public:
         val[i] += barycentric[remainder]*value[i];
 
       // Record this interaction to use later when slicing
-      replay[nReplay].offset = val - hashTable.getValues();
-      replay[nReplay].weight = barycentric[remainder];
-      nReplay++;
-
+      replay[replay_index*(d+1)+remainder].offset = val - hashTable.getValues();
+      replay[replay_index*(d+1)+remainder].weight = barycentric[remainder];
     }
-  }
-
-  // Prepare for slicing
-  void beginSlice()
-  {
-    nReplay = 0;
   }
 
   /* Performs slicing out of position vectors. Note that the barycentric weights and the simplex
    * containing each position vector were calculated and stored in the splatting step.
    * We may reuse this to accelerate the algorithm. (See pg. 6 in paper.)
    */
-  void slice(float *col)
+  void slice(float *col, int replay_index)
   {
     float *base = hashTable.getValues();
     for (int j = 0; j < vd; j++) col[j] = 0;
     for (int i = 0; i <= d; i++)
     {
-      ReplayEntry r = replay[nReplay++];
+      ReplayEntry r = replay[replay_index*(d+1)+i];
       for (int j = 0; j < vd; j++)
       {
         col[j] += r.weight*base[r.offset + j];
@@ -542,7 +533,6 @@ private:
     int offset;
     float weight;
   } *replay;
-  int nReplay;
 
 public:
   HashTablePermutohedral hashTable;

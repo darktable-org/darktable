@@ -96,6 +96,7 @@ extern "C"
     const float sigma_r=0.4;
     float *in  = (float *)ivoid;
     float *out = (float *)ovoid;
+    int index;
 
     width=roi_in->width;
     height=roi_in->height;
@@ -110,14 +111,16 @@ extern "C"
 
     // Build I=log(L)
     // and splat into the lattice
-    for(int j=0; j<height; j++) for(int i=0; i<width; i++)
+    index=0;
+    for(int j=0; j<height; j++)
+      for(int i=0; i<width; i++, index++)
       {
         float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
         if(L<=0.0) L=1e-6;
         L = logf(L);
         float pos[3] = {i/sigma_s, j/sigma_s, L/sigma_r};
         float val[2] = {L,  1.0};
-        lattice.splat(pos, val);
+        lattice.splat(pos, val, index);
         in += ch;
       }
 
@@ -144,13 +147,12 @@ extern "C"
     //  after compression we substract 2.0 to have an average intensiy at middle tone.
     //
 
-    lattice.beginSlice();
     const float contr = 1./data->contrast;
     in  = (float *)ivoid;
     for( int i=0 ; i<size ; i++ )
     {
       float val[2];
-      lattice.slice(val);
+      lattice.slice(val, i);
       float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
       if(L<=0.0) L=1e-6;
       L = logf(L);
