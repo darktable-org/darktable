@@ -282,16 +282,11 @@ public:
   {
 
     // Allocate storage for various arrays
-    elevated = new float[d+1];
-    scaleFactor = new float[d];
+    float *scaleFactorTmp = new float[d];
+    short *canonicalTmp = new short[(d+1)*(d+1)];
 
-    greedy = new short[d+1];
-    rank = new char[d+1];
-    barycentric = new float[d+2];
     replay = new ReplayEntry[nData*(d+1)];
     nReplay = 0;
-    canonical = new short[(d+1)*(d+1)];
-    key = new short[d+1];
 
     // compute the coordinates of the canonical simplex, in which
     // the difference between a contained point and the zero
@@ -299,16 +294,17 @@ public:
     for (int i = 0; i <= d; i++)
     {
       for (int j = 0; j <= d-i; j++)
-        canonical[i*(d+1)+j] = i;
+        canonicalTmp[i*(d+1)+j] = i;
       for (int j = d-i+1; j <= d; j++)
-        canonical[i*(d+1)+j] = i - (d+1);
+        canonicalTmp[i*(d+1)+j] = i - (d+1);
     }
+    canonical = canonicalTmp;
 
     // Compute parts of the rotation matrix E. (See pg.4-5 of paper.)
     for (int i = 0; i < d; i++)
     {
       // the diagonal entries for normalization
-      scaleFactor[i] = 1.0f/(sqrtf((float)(i+1)*(i+2)));
+      scaleFactorTmp[i] = 1.0f/(sqrtf((float)(i+1)*(i+2)));
 
       /* We presume that the user would like to do a Gaussian blur of standard deviation
        * 1 in each dimension (or a total variance of d, summed over dimensions.)
@@ -322,27 +318,28 @@ public:
        *
        * So we need to scale the space by (d+1)sqrt(2/3).
        */
-      scaleFactor[i] *= (d+1)*sqrtf(2.0/3);
+      scaleFactorTmp[i] *= (d+1)*sqrtf(2.0/3);
     }
+    scaleFactor = scaleFactorTmp;
   }
 
 
   ~PermutohedralLattice()
   {
     delete[] scaleFactor;
-    delete[] elevated;
-    delete[] greedy;
-    delete[] rank;
-    delete[] barycentric;
     delete[] replay;
     delete[] canonical;
-    delete[] key;
   }
 
 
   /* Performs splatting with given position and value vectors */
   void splat(float *position, float *value)
   {
+    float elevated[d+1];
+    short greedy[d+1];
+    char rank[d+1];
+    float barycentric[d+2];
+    short key[d];
 
     // first rotate position into the (d+1)-dimensional hyperplane
     elevated[d] = -d*position[d-1]*scaleFactor[d-1];
@@ -374,7 +371,7 @@ public:
 
     // rank differential to find the permutation between this simplex and the canonical one.
     // (See pg. 3-4 in paper.)
-    memset(myrank, 0, sizeof(char)*(d+1));
+    memset(rank, 0, sizeof rank);
     for (int i = 0; i < d; i++)
       for (int j = i+1; j <= d; j++)
         if (elevated[i] - mygreedy[i] < elevated[j] - mygreedy[j]) myrank[i]++;
@@ -412,7 +409,7 @@ public:
     }
 
     // Compute barycentric coordinates (See pg.10 of paper.)
-    memset(barycentric, 0, sizeof(float)*(d+2));
+    memset(barycentric, 0, sizeof barycentric);
     for (int i = 0; i <= d; i++)
     {
       barycentric[d-myrank[i]] += (elevated[i] - mygreedy[i]) * scale;
@@ -536,9 +533,8 @@ public:
 private:
 
   int d, vd, nData;
-  float *elevated, *scaleFactor, *barycentric;
-  short *canonical;
-  short *key;
+  const float *scaleFactor;
+  const short *canonical;
 
   // slicing is done by replaying splatting (ie storing the sparse matrix)
   struct ReplayEntry
@@ -546,11 +542,9 @@ private:
     int offset;
     float weight;
   } *replay;
-  int nReplay, nReplaySub;
+  int nReplay;
 
 public:
-  char  *rank;
-  short *greedy;
   HashTablePermutohedral hashTable;
 };
 
