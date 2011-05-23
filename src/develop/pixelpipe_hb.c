@@ -659,39 +659,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
 post_process_collect_info:
 
-#if 0
-#ifdef HAVE_OPENCL
-    // after outermost recursion of dt_dev_pixelpipe_process_rec: we need to copy back final 
-    // opencl buffer (if any) to CPU and cleanup.
-    // TODO: we detect outermost recursion by parameter pos; there may be better ways.
-    dt_pthread_mutex_lock(&pipe->busy_mutex);
-    if(pipe->shutdown)
-    {
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      return 1;
-    }
-    // fprintf(stderr, "module: %s, cl_mem: %lx, pos: %d, gll: %d\n", module->name(), (unsigned long)*cl_mem_output, pos, g_list_length(dev->iop));
-    if (*cl_mem_output != NULL && pos == g_list_length(dev->iop))
-    {
-      cl_int err;
-
-      err = dt_opencl_copy_device_to_host(*output, *cl_mem_output, roi_out->width, roi_out->height, pipe->devid, *out_bpp);
-      if (err != CL_SUCCESS)
-      {
-        /* this indicates a serious opencl problem */
-        dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (c)] fatal opencl error while copying back to cpu buffer: %d\n", err);
-        dt_opencl_release_mem_object(*cl_mem_output);
-        pipe->opencl_error = 1;
-        dt_pthread_mutex_unlock(&pipe->busy_mutex);
-        return 1;
-      }
-      dt_opencl_release_mem_object(*cl_mem_output);
-      *cl_mem_output = NULL;
-    }
-    dt_pthread_mutex_unlock(&pipe->busy_mutex);
-#endif
-#endif
-
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
     {
@@ -789,6 +756,48 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
 }
 
 
+static int
+dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, void **cl_mem_output, int *out_bpp,
+                             const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
+{
+#ifdef HAVE_OPENCL
+  int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_bpp, roi_out, modules, pieces, pos);
+
+  // copy back final opencl buffer (if any) to CPU
+  dt_pthread_mutex_lock(&pipe->busy_mutex);
+  if (ret)
+  {
+    if (*cl_mem_output != 0) dt_opencl_release_mem_object(*cl_mem_output);
+    *cl_mem_output = NULL;
+  }
+  else
+  {
+    if (*cl_mem_output != NULL)
+    {
+      cl_int err;
+
+      err = dt_opencl_copy_device_to_host(*output, *cl_mem_output, roi_out->width, roi_out->height, pipe->devid, *out_bpp);
+      dt_opencl_release_mem_object(*cl_mem_output);
+      *cl_mem_output = NULL;
+
+      if (err != CL_SUCCESS)
+      {
+        /* this indicates a serious opencl problem */
+        dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (c)] fatal opencl error while copying back to cpu buffer: %d\n", err);
+        pipe->opencl_error = 1;
+        ret = 1;
+      }
+    }
+  }
+  dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+  return ret;
+#else
+  return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_bpp, roi_out, modules, pieces, pos);
+#endif
+}
+
+
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
   pipe->processing = 1;
@@ -799,7 +808,6 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   {
     x, y, width, height, scale
   };
-  int err;
   // printf("pixelpipe homebrew process start\n");
   if(darktable.unmuted & DT_DEBUG_DEV)
     dt_dev_pixelpipe_cache_print(&pipe->cache);
@@ -817,21 +825,7 @@ restart:
   void *buf = NULL;
   void *cl_mem_out = NULL;
   int out_bpp;
-  err = dt_dev_pixelpipe_process_rec(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos);
-
-#ifdef HAVE_OPENCL
-  // copy back final opencl buffer to CPU and cleanup
-  dt_pthread_mutex_lock(&pipe->busy_mutex);
-  if(cl_mem_out)
-  {
-    dt_opencl_copy_device_to_host(buf, cl_mem_out, width, height, pipe->devid, out_bpp);
-    dt_opencl_release_mem_object(cl_mem_out);
-    cl_mem_out = NULL;
-  }
-  dt_pthread_mutex_unlock(&pipe->busy_mutex);
-#endif  
-
-  if (err)
+  if (dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos))
   {
     if (pipe->opencl_error)
     {
