@@ -215,64 +215,6 @@ template <int D, int VD>
 class PermutohedralLattice
 {
 public:
-
-#if 0
-  /* Filters given image against a reference image.
-   *   im : image to be filtered.
-   *  ref : reference image whose edges are to be respected.
-   */
-  static Image filter(Image im, Image ref)
-  {
-
-
-    // Create lattice
-    PermutohedralLattice lattice(ref.channels, im.channels+1, im.width*im.height*im.frames);
-
-    // Splat into the lattice
-    //printf("Splatting...\n");
-
-    float *imPtr = im(0, 0, 0);
-    float *refPtr = ref(0, 0, 0);
-    for (int t = 0; t < im.frames; t++)
-    {
-      for (int y = 0; y < im.height; y++)
-      {
-        for (int x = 0; x < im.width; x++)
-        {
-          lattice.splat(refPtr, imPtr);
-          refPtr += ref.channels;
-          imPtr += im.channels;
-        }
-      }
-    }
-
-    // Blur the lattice
-    //printf("Blurring...\n");
-    lattice.blur();
-
-    // Slice from the lattice
-    //printf("Slicing...\n");
-
-    Image out(im.width, im.height, im.frames, im.channels);
-
-    lattice.beginSlice();
-    float *outPtr = out(0, 0, 0);
-    for (int t = 0; t < im.frames; t++)
-    {
-      for (int y = 0; y < im.height; y++)
-      {
-        for (int x = 0; x < im.width; x++)
-        {
-          lattice.slice(outPtr);
-          outPtr += out.channels;
-        }
-      }
-    }
-
-    return out;
-  }
-#endif
-
   /* Constructor
    *     d_ : dimensionality of key vectors
    *    vd_ : dimensionality of value vectors
