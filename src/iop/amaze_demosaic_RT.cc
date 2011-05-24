@@ -196,42 +196,43 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 
 	// assign working space
-	buffer = (char *) malloc((34*sizeof(float)+sizeof(int))*TS*TS);
+	buffer = (char *) malloc((32 * sizeof(float) + sizeof(int)) * TS * TS);
+	char *cur = buffer;
 	//merror(buffer,"amaze_interpolate()");
 	//memset(buffer,0,(34*sizeof(float)+sizeof(int))*TS*TS);
 	// rgb array
-	rgb			= (float (*)[3])		buffer; //pointers to array
-	delh		= (float (*))			(buffer +  3*sizeof(float)*TS*TS);
-	delv		= (float (*))			(buffer +  4*sizeof(float)*TS*TS);
-	delhsq		= (float (*))			(buffer +  5*sizeof(float)*TS*TS);
-	delvsq		= (float (*))			(buffer +  6*sizeof(float)*TS*TS);
-	dirwts		= (float (*)[2])		(buffer +  7*sizeof(float)*TS*TS);
-	vcd			= (float (*))			(buffer +  9*sizeof(float)*TS*TS);
-	hcd			= (float (*))			(buffer +  10*sizeof(float)*TS*TS);
-	vcdalt		= (float (*))			(buffer +  11*sizeof(float)*TS*TS);
-	hcdalt		= (float (*))			(buffer +  12*sizeof(float)*TS*TS);
-	vcdsq		= (float (*))			(buffer +  13*sizeof(float)*TS*TS);
-	hcdsq		= (float (*))			(buffer +  14*sizeof(float)*TS*TS);
-	cddiffsq	= (float (*))			(buffer +  15*sizeof(float)*TS*TS);
-	hvwt		= (float (*))			(buffer +  16*sizeof(float)*TS*TS);
-	Dgrb		= (float (*)[2])		(buffer +  17*sizeof(float)*TS*TS);
-	delp		= (float (*))			(buffer +  19*sizeof(float)*TS*TS);
-	delm		= (float (*))			(buffer +  20*sizeof(float)*TS*TS);
-	rbint		= (float (*))			(buffer +  21*sizeof(float)*TS*TS);
-	Dgrbh2		= (float (*))			(buffer +  22*sizeof(float)*TS*TS);
-	Dgrbv2		= (float (*))			(buffer +  23*sizeof(float)*TS*TS);	
-	dgintv		= (float (*))			(buffer +  24*sizeof(float)*TS*TS);
-	dginth		= (float (*))			(buffer +  25*sizeof(float)*TS*TS);
-	//Dgrbp1		= (float (*))			(buffer +  26*sizeof(float)*TS*TS);
-	//Dgrbm1		= (float (*))			(buffer +  27*sizeof(float)*TS*TS);
-	Dgrbpsq1	= (float (*))			(buffer +  28*sizeof(float)*TS*TS);
-	Dgrbmsq1	= (float (*))			(buffer +  29*sizeof(float)*TS*TS);
-	cfa			= (float (*))			(buffer +  30*sizeof(float)*TS*TS);
-	pmwt		= (float (*))			(buffer +  31*sizeof(float)*TS*TS);
-	rbp			= (float (*))			(buffer +  32*sizeof(float)*TS*TS);
-	rbm			= (float (*))			(buffer +  33*sizeof(float)*TS*TS);
+	rgb			= (float (*)[3])		cur; cur += 3 * sizeof(float) * TS * TS; //pointers to array
+	delh		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	delv		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	delhsq		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	delvsq		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	dirwts		= (float (*)[2])		cur; cur += 2 * sizeof(float) * TS * TS;
+	vcd			= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	hcd			= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	vcdalt		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	hcdalt		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	vcdsq		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	hcdsq		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	cddiffsq	= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	hvwt		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	Dgrb		= (float (*)[2])		cur; cur += 2 * sizeof(float) * TS * TS;
+	delp		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	delm		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	rbint		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	Dgrbh2		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	Dgrbv2		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	dgintv		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	dginth		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	//Dgrbp1	= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	//Dgrbm1	= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	Dgrbpsq1	= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	Dgrbmsq1	= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	cfa			= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	pmwt		= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	rbp			= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
+	rbm			= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
 
-	nyquist		= (int (*))				(buffer +  34*sizeof(int)*TS*TS);
+	nyquist		= (int (*))				cur; cur += 1 * sizeof(int) * TS * TS;
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
