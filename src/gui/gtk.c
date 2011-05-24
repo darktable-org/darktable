@@ -799,7 +799,7 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
   {
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
 
-    char *filename;
+    char *filename = NULL;
     dt_film_t film;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
     GSList *it = list;
@@ -826,7 +826,7 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
       if(!buf)
       {
         dt_image_cache_release(img, 'r');
-        dt_control_log(_("file `%s' has unknown format!"), filename);
+        dt_control_log(_("file `%s' has unknown format!"), img->filename);
       }
       else
       {

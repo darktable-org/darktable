@@ -101,6 +101,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     // printf("cleanup module `%s'\n", piece->module->name());
     piece->module->cleanup_pipe(piece->module, pipe, piece);
+    free(piece->blendop_data);
     free(piece);
     nodes = g_list_next(nodes);
   }
@@ -287,7 +288,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     goto post_process_collect_info;
   }
   else dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
 
   // 2) if history changed or exit event, abort processing?
   // preview pipe: abort on all but zoom events (same buffer anyways)
