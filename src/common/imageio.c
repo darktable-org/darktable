@@ -621,10 +621,10 @@ static const uint8_t _imageio_ldr_magic[] =  {
     0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
 
     /* tiff image, intel */
-    0x4d, 0x4d, 0x00, 0x2a,
+    // 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,          // unfortunately fails because raw is similar
 
     /* tiff image, motorola */
-    0x49, 0x49, 0x2a, 0x00
+    // 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
 };
 
 gboolean dt_imageio_is_ldr(const char *filename)
@@ -632,14 +632,16 @@ gboolean dt_imageio_is_ldr(const char *filename)
   int offset=0;
   uint8_t block[16]={0};
   FILE *fin = fopen(filename,"rb");
-  if (fin) {
+  if (fin)
+  {
     /* read block from file */
     int s = fread(block,16,1,fin);
     fclose(fin);
     
     /* compare magic's */
-    while (s) {
-      if (memcmp((_imageio_ldr_magic+offset+2),block+(_imageio_ldr_magic+offset)[0],(_imageio_ldr_magic+offset)[1]) == 0)
+    while (s)
+    {
+      if (memcmp(_imageio_ldr_magic+offset+2, block + _imageio_ldr_magic[offset], _imageio_ldr_magic[offset+1]) == 0)
           return TRUE;
       offset += 2 + (_imageio_ldr_magic+offset)[1];
       
