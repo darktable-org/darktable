@@ -458,22 +458,25 @@ public:
   void blur()
   {
     // Prepare arrays
-    short *neighbor1 = new short[d+1];
-    short *neighbor2 = new short[d+1];
     float *newValue = new float[vd*hashTable.size()];
     float *oldValue = hashTable.getValues();
     float *hashTableBase = oldValue;
 
-    float *zero = new float[vd];
+    float zero[vd];
     for (int k = 0; k < vd; k++) zero[k] = 0;
 
     // For each of d+1 axes,
     for (int j = 0; j <= d; j++)
     {
+#ifdef _OPENMP
+#pragma omp parallel for shared(j, oldValue, newValue, hashTableBase, zero)
+#endif
       // For each vertex in the lattice,
       for (int i = 0; i < hashTable.size(); i++)   // blur point i in dimension j
       {
         short *key    = hashTable.getKeys() + i*(d); // keys to current vertex
+	short neighbor1[d+1];
+	short neighbor2[d+1];
         for (int k = 0; k < d; k++)
         {
           neighbor1[k] = key[k] + 1;
@@ -515,10 +518,6 @@ public:
     {
       delete[] newValue;
     }
-
-    delete[] zero;
-    delete[] neighbor1;
-    delete[] neighbor2;
   }
 
 private:
