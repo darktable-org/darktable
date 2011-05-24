@@ -220,8 +220,8 @@ public:
    *    vd_ : dimensionality of value vectors
    * nData_ : number of points in the input
    */
-  PermutohedralLattice(int nData_) :
-    nData(nData_)
+  PermutohedralLattice(int nData_, int nThreads_=1) :
+    nData(nData_), nThreads(nThreads_)
   {
 
     // Allocate storage for various arrays
@@ -263,6 +263,8 @@ public:
       scaleFactorTmp[i] *= (D+1)*sqrtf(2.0/3);
     }
     scaleFactor = scaleFactorTmp;
+
+    hashTables = new HashTablePermutohedral<D,VD>[nThreads];
   }
 
 
@@ -271,11 +273,12 @@ public:
     delete[] scaleFactor;
     delete[] replay;
     delete[] canonical;
+    delete[] hashTables;
   }
 
 
   /* Performs splatting with given position and value vectors */
-  void splat(float *position, float *value, int replay_index)
+  void splat(float *position, float *value, int replay_index, int thread_index=0)
   {
     float elevated[D+1];
     short greedy[D+1];
@@ -367,16 +370,50 @@ public:
         key[i] = mygreedy[i] + canonical[remainder*(D+1) + myrank[i]];
 
       // Retrieve pointer to the value at this vertex.
-      float * val = hashTable.lookup(key, true);
+      float * val = hashTables[thread_index].lookup(key, true);
 
       // Accumulate values with barycentric weight.
       for (int i = 0; i < VD; i++)
         val[i] += barycentric[remainder]*value[i];
 
       // Record this interaction to use later when slicing
-      replay[replay_index*(D+1)+remainder].offset = val - hashTable.getValues();
+      replay[replay_index*(D+1)+remainder].table = thread_index;
+      replay[replay_index*(D+1)+remainder].offset = val - hashTables[thread_index].getValues();
       replay[replay_index*(D+1)+remainder].weight = barycentric[remainder];
     }
+  }
+
+  /* Merge the multiple threads' hash tables into the totals. */
+  void merge_splat_threads(void)
+  {
+    if (nThreads <= 1)
+      return;
+
+    /* Merge the multiple hash tables into one, creating an offset remap table. */
+    int *offset_remap[nThreads];
+    for (int i = 1; i < nThreads; i++)
+    {
+      short *oldKeys = hashTables[i].getKeys();
+      const float *oldVals = hashTables[i].getValues();
+      const int filled = hashTables[i].size();
+      offset_remap[i] = new int[filled];
+      for (int j = 0; j < filled; j++)
+      {
+	float *val = hashTables[0].lookup(oldKeys+j*D, true);
+	const float *oldVal = oldVals + j*VD;
+	for (int k = 0; k < VD; k++)
+	  val[k] += oldVal[k];
+	offset_remap[i][j] = val - hashTables[0].getValues();
+      }
+    }
+
+    /* Rewrite the offsets in the replay structure from the above generated table. */
+    for (int i = 0; i < nData*(D+1); i++)
+      if (replay[i].table > 0)
+	replay[i].offset = offset_remap[replay[i].table][replay[i].offset/VD];
+
+    for (int i = 1; i < nThreads; i++)
+      delete[] offset_remap[i];
   }
 
   /* Performs slicing out of position vectors. Note that the barycentric weights and the simplex
@@ -385,7 +422,7 @@ public:
    */
   void slice(float *col, int replay_index)
   {
-    float *base = hashTable.getValues();
+    float *base = hashTables[0].getValues();
     for (int j = 0; j < VD; j++) col[j] = 0;
     for (int i = 0; i <= D; i++)
     {
@@ -401,8 +438,8 @@ public:
   void blur()
   {
     // Prepare arrays
-    float *newValue = new float[VD*hashTable.size()];
-    float *oldValue = hashTable.getValues();
+    float *newValue = new float[VD*hashTables[0].size()];
+    float *oldValue = hashTables[0].getValues();
     float *hashTableBase = oldValue;
 
     float zero[VD];
@@ -415,9 +452,9 @@ public:
 #pragma omp parallel for shared(j, oldValue, newValue, hashTableBase, zero)
 #endif
       // For each vertex in the lattice,
-      for (int i = 0; i < hashTable.size(); i++)   // blur point i in dimension j
+      for (int i = 0; i < hashTables[0].size(); i++)   // blur point i in dimension j
       {
-        short *key    = hashTable.getKeys() + i*(D); // keys to current vertex
+        short *key    = hashTables[0].getKeys() + i*(D); // keys to current vertex
 	short neighbor1[D+1];
 	short neighbor2[D+1];
         for (int k = 0; k < D; k++)
@@ -433,11 +470,11 @@ public:
 
         float *vm1, *vp1;
 
-        vm1 = hashTable.lookup(neighbor1, false); // look up first neighbor
+        vm1 = hashTables[0].lookup(neighbor1, false); // look up first neighbor
         if (vm1) vm1 = vm1 - hashTableBase + oldValue;
         else vm1 = zero;
 
-        vp1 = hashTable.lookup(neighbor2, false); // look up second neighbor
+        vp1 = hashTables[0].lookup(neighbor2, false); // look up second neighbor
         if (vp1) vp1 = vp1 - hashTableBase + oldValue;
         else vp1 = zero;
 
@@ -454,7 +491,7 @@ public:
     // depending where we ended up, we may have to copy data
     if (oldValue != hashTableBase)
     {
-      memcpy(hashTableBase, oldValue, hashTable.size()*VD*sizeof(float));
+      memcpy(hashTableBase, oldValue, hashTables[0].size()*VD*sizeof(float));
       delete[] oldValue;
     }
     else
@@ -466,18 +503,19 @@ public:
 private:
 
   int nData;
+  int nThreads;
   const float *scaleFactor;
   const short *canonical;
 
   // slicing is done by replaying splatting (ie storing the sparse matrix)
   struct ReplayEntry
   {
+    int table;
     int offset;
     float weight;
   } *replay;
 
-public:
-  HashTablePermutohedral<D,VD> hashTable;
+  HashTablePermutohedral<D,VD> *hashTables;
 };
 
 #endif

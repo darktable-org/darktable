@@ -45,6 +45,12 @@ extern "C"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#ifdef _OPENMP
+#include <omp.h>
+#else
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
+#endif
 }
 
 #include "iop/Permutohedral.h"
@@ -107,13 +113,17 @@ extern "C"
     sigma_s=(data->Fsize/100.0)*fminf(iw,ih);
     if(sigma_s<3.0) sigma_s=3.0;
 
-    PermutohedralLattice<3,2> lattice(size);
+    PermutohedralLattice<3,2> lattice(size, omp_get_max_threads());
 
     // Build I=log(L)
     // and splat into the lattice
+#ifdef _OPENMP
+#pragma omp parallel for shared(lattice)
+#endif
     for(int j=0; j<height; j++)
     {
       int index = j*width;
+      const int thread = omp_get_thread_num();
       const float *in = (const float*)ivoid + j*width*ch;
       for(int i=0; i<width; i++, index++, in+=ch)
       {
@@ -122,9 +132,11 @@ extern "C"
         L = logf(L);
         float pos[3] = {i/sigma_s, j/sigma_s, L/sigma_r};
         float val[2] = {L,  1.0};
-        lattice.splat(pos, val, index);
+        lattice.splat(pos, val, index, thread);
       }
     }
+
+    lattice.merge_splat_threads();
 
     // blur the lattice
     lattice.blur();
