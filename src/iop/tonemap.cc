@@ -45,9 +45,12 @@ extern "C"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+}
 
 #include "iop/Permutohedral.h"
 
+extern "C"
+{
   DT_MODULE(1)
 
   typedef struct dt_iop_tonemapping_params_t
@@ -104,7 +107,7 @@ extern "C"
     sigma_s=(data->Fsize/100.0)*fminf(iw,ih);
     if(sigma_s<3.0) sigma_s=3.0;
 
-    PermutohedralLattice lattice(3, 2, size);
+    PermutohedralLattice<3,2> lattice(size);
 
     // Build I=log(L)
     // and splat into the lattice

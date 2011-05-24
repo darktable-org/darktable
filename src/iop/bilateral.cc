@@ -33,7 +33,10 @@ extern "C"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
+}
 #include "iop/Permutohedral.h"
+extern "C"
+{
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -171,7 +174,7 @@ extern "C"
     else
     {
       for(int k=0; k<5; k++) sigma[k] = 1.0f/sigma[k];
-      PermutohedralLattice lattice(5, 4, roi_in->width*roi_in->height);
+      PermutohedralLattice<5,4> lattice(roi_in->width*roi_in->height);
 
       // splat into the lattice
       int index=0;
