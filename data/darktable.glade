@@ -3,37 +3,31 @@
   <!-- interface-requires gtk+ 2.16 -->
   <!-- interface-naming-policy toplevel-contextual -->
   <widget class="GtkWindow" id="main_window">
-    <property name="can_focus">False</property>
     <property name="default_width">900</property>
     <property name="default_height">500</property>
     <child>
       <widget class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
         <child>
           <widget class="GtkDrawingArea" id="topborder">
             <property name="height_request">10</property>
             <property name="visible">True</property>
             <property name="app_paintable">True</property>
-            <property name="can_focus">False</property>
             <property name="events">GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK | GDK_SCROLL_MASK</property>
           </widget>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
         <child>
           <widget class="GtkTable" id="table1">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="n_rows">2</property>
             <property name="n_columns">5</property>
             <child>
               <widget class="GtkVBox" id="center_vbox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <child>
                   <widget class="GtkDrawingArea" id="center">
                     <property name="height_request">500</property>
@@ -43,73 +37,41 @@
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK</property>
                   </widget>
                   <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
                   <widget class="GtkHBox" id="bottom">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <child>
                       <widget class="GtkHBox" id="bottom_left_toolbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
                       </widget>
                       <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkVBox" id="vbox2">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <child>
-                          <widget class="GtkHBox" id="bottom_darkroom_box">
-                            <property name="can_focus">False</property>
-                            <property name="no_show_all">True</property>
-                            <property name="spacing">5</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
+                          <placeholder/>
                         </child>
                         <child>
                           <widget class="GtkHBox" id="bottom_lighttable_box">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
                             <property name="spacing">5</property>
                             <child>
                               <widget class="GtkComboBox" id="lighttable_layout_combobox">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="active">0</property>
                                 <property name="items" translatable="yes">zoomable light table
 file manager</property>
                               </widget>
                               <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
@@ -118,8 +80,6 @@ file manager</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">●</property>
-                                <property name="primary_icon_activatable">False</property>
-                                <property name="secondary_icon_activatable">False</property>
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">7 1 26 1 3 0</property>
@@ -127,43 +87,34 @@ file manager</property>
                                 <property name="numeric">True</property>
                               </widget>
                               <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
                                 <property name="position">1</property>
                               </packing>
                             </child>
                           </widget>
                           <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
                             <property name="position">2</property>
                           </packing>
                         </child>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkHBox" id="bottom_right_toolbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
                       </widget>
                       <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
                         <property name="position">2</property>
                       </packing>
                     </child>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -180,7 +131,6 @@ file manager</property>
                 <property name="width_request">10</property>
                 <property name="visible">True</property>
                 <property name="app_paintable">True</property>
-                <property name="can_focus">False</property>
                 <property name="events">GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK | GDK_SCROLL_MASK</property>
               </widget>
               <packing>
@@ -194,7 +144,6 @@ file manager</property>
                 <property name="width_request">10</property>
                 <property name="visible">True</property>
                 <property name="app_paintable">True</property>
-                <property name="can_focus">False</property>
                 <property name="events">GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK | GDK_SCROLL_MASK</property>
               </widget>
               <packing>
@@ -208,18 +157,15 @@ file manager</property>
             <child>
               <widget class="GtkAlignment" id="left">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="left_padding">5</property>
                 <child>
                   <widget class="GtkVBox" id="left_vbox">
                     <property name="width_request">0</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <property name="spacing">10</property>
                     <child>
                       <widget class="GtkEventBox" id="navigation_eventbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <child>
                           <widget class="GtkExpander" id="navigation_expander">
                             <property name="can_focus">True</property>
@@ -228,14 +174,12 @@ file manager</property>
                             <child>
                               <widget class="GtkDrawingArea" id="navigation">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="events">GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK</property>
                               </widget>
                             </child>
                             <child>
                               <widget class="GtkLabel" id="label6">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">navigation</property>
                               </widget>
                               <packing>
@@ -261,19 +205,16 @@ file manager</property>
                         <child>
                           <widget class="GtkViewport" id="viewport2">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
                             <property name="resize_mode">queue</property>
                             <property name="shadow_type">none</property>
                             <child>
                               <widget class="GtkVBox" id="left_scrolled">
                                 <property name="width_request">0</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="spacing">10</property>
                                 <child>
                                   <widget class="GtkEventBox" id="import_eventbox">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
                                     <child>
                                       <widget class="GtkExpander" id="import_expander">
                                         <property name="visible">True</property>
@@ -283,14 +224,12 @@ file manager</property>
                                         <child>
                                           <widget class="GtkAlignment" id="import_alignment">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
                                             <property name="bottom_padding">10</property>
                                             <property name="left_padding">5</property>
                                             <property name="right_padding">10</property>
                                             <child>
                                               <widget class="GtkVBox" id="import_expander_body">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="spacing">5</property>
                                                 <child>
                                                   <widget class="GtkButton" id="button_import_single">
@@ -299,12 +238,9 @@ file manager</property>
                                                     <property name="can_focus">True</property>
                                                     <property name="receives_default">True</property>
                                                     <property name="tooltip" translatable="yes">select one or more images to import</property>
-                                                    <property name="use_action_appearance">False</property>
                                                     <property name="xalign">0.05000000074505806</property>
                                                   </widget>
                                                   <packing>
-                                                    <property name="expand">True</property>
-                                                    <property name="fill">True</property>
                                                     <property name="position">0</property>
                                                   </packing>
                                                 </child>
@@ -315,7 +251,6 @@ file manager</property>
                                                     <property name="can_focus">True</property>
                                                     <property name="receives_default">True</property>
                                                     <property name="tooltip" translatable="yes">select a folder to import as film roll</property>
-                                                    <property name="use_action_appearance">False</property>
                                                     <property name="xalign">0.05000000074505806</property>
                                                   </widget>
                                                   <packing>
@@ -327,7 +262,6 @@ file manager</property>
                                                 <child>
                                                   <widget class="GtkVBox" id="devices_expander_body">
                                                     <property name="visible">True</property>
-                                                    <property name="can_focus">False</property>
                                                     <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                                                     <property name="spacing">5</property>
                                                     <child>
@@ -341,8 +275,6 @@ file manager</property>
                                                     </child>
                                                   </widget>
                                                   <packing>
-                                                    <property name="expand">True</property>
-                                                    <property name="fill">True</property>
                                                     <property name="position">2</property>
                                                   </packing>
                                                 </child>
@@ -353,7 +285,6 @@ file manager</property>
                                         <child>
                                           <widget class="GtkLabel" id="label1">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">import</property>
                                           </widget>
                                           <packing>
@@ -372,7 +303,6 @@ file manager</property>
                                 <child>
                                   <widget class="GtkVBox" id="plugins_vbox_left">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
                                     <property name="spacing">10</property>
                                     <child>
                                       <placeholder/>
@@ -380,13 +310,11 @@ file manager</property>
                                   </widget>
                                   <packing>
                                     <property name="expand">False</property>
-                                    <property name="fill">True</property>
                                     <property name="position">1</property>
                                   </packing>
                                 </child>
                                 <child>
                                   <widget class="GtkEventBox" id="snapshots_eventbox">
-                                    <property name="can_focus">False</property>
                                     <property name="no_show_all">True</property>
                                     <child>
                                       <widget class="GtkExpander" id="snapshots_expander">
@@ -396,14 +324,12 @@ file manager</property>
                                         <child>
                                           <widget class="GtkAlignment" id="snapshot_alignment">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
                                             <property name="bottom_padding">10</property>
                                             <property name="left_padding">5</property>
                                             <property name="right_padding">10</property>
                                             <child>
                                               <widget class="GtkVBox" id="snapshots_body">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <child>
                                                   <placeholder/>
                                                 </child>
@@ -414,7 +340,6 @@ file manager</property>
                                         <child>
                                           <widget class="GtkLabel" id="label9">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">snapshots</property>
                                           </widget>
                                           <packing>
@@ -433,7 +358,6 @@ file manager</property>
                                 <child>
                                   <widget class="GtkEventBox" id="metadata_eventbox">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
                                     <child>
                                       <widget class="GtkExpander" id="metadata_expander">
                                         <property name="visible">True</property>
@@ -442,7 +366,6 @@ file manager</property>
                                         <child>
                                           <widget class="GtkTable" id="metadata_expander_body">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
                                             <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                                             <property name="border_width">5</property>
                                             <property name="n_rows">16</property>
@@ -450,7 +373,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label20">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">filename</property>
@@ -462,7 +384,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label21">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">model</property>
@@ -476,7 +397,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label22">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">maker</property>
@@ -490,7 +410,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label23">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">aperture</property>
@@ -504,7 +423,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label24">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">exposure</property>
@@ -518,7 +436,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_filename">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -530,7 +447,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_model">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -544,7 +460,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_maker">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -558,7 +473,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_aperture">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -572,7 +486,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_exposure">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -586,7 +499,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label26">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">date/time</property>
@@ -600,7 +512,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_datetime">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -614,7 +525,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label25">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">iso</property>
@@ -628,7 +538,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_iso">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -642,7 +551,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_focal_length">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -656,7 +564,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label27">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">f-length</property>
@@ -670,7 +577,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label8">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">lens</property>
@@ -684,7 +590,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_lens">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -698,7 +603,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label10">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">width</property>
@@ -712,7 +616,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label11">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">height</property>
@@ -726,7 +629,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_width">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -740,7 +642,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_height">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -754,7 +655,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label14">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">film roll</property>
@@ -768,7 +668,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_filmroll">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                                 <property name="ellipsize">middle</property>
@@ -783,7 +682,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label15">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">title</property>
@@ -797,7 +695,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_title">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                                 <property name="ellipsize">middle</property>
@@ -812,7 +709,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label16">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">creator</property>
@@ -826,7 +722,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_creator">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                                 <property name="ellipsize">middle</property>
@@ -841,7 +736,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label28">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">rights</property>
@@ -855,7 +749,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_rights">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                                 <property name="ellipsize">middle</property>
@@ -870,7 +763,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="metadata_label_focus_distance">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="label" translatable="yes">-</property>
                                               </widget>
@@ -884,7 +776,6 @@ file manager</property>
                                             <child>
                                               <widget class="GtkLabel" id="label2">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="xalign">0</property>
                                                 <property name="xpad">5</property>
                                                 <property name="label" translatable="yes">distance</property>
@@ -900,7 +791,6 @@ file manager</property>
                                         <child>
                                           <widget class="GtkLabel" id="label19">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">image information</property>
                                           </widget>
                                           <packing>
@@ -918,7 +808,6 @@ file manager</property>
                                 </child>
                                 <child>
                                   <widget class="GtkEventBox" id="history_eventbox">
-                                    <property name="can_focus">False</property>
                                     <property name="no_show_all">True</property>
                                     <child>
                                       <widget class="GtkExpander" id="history_expander">
@@ -929,14 +818,12 @@ file manager</property>
                                         <child>
                                           <widget class="GtkAlignment" id="history_alignment">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
                                             <property name="bottom_padding">10</property>
                                             <property name="left_padding">5</property>
                                             <property name="right_padding">10</property>
                                             <child>
                                               <widget class="GtkVBox" id="history_expander_body">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
                                                 <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
                                                 <child>
                                                   <placeholder/>
@@ -948,7 +835,6 @@ file manager</property>
                                         <child>
                                           <widget class="GtkLabel" id="label13">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
                                             <property name="label" translatable="yes">history</property>
                                           </widget>
                                           <packing>
@@ -968,11 +854,9 @@ file manager</property>
                                   <widget class="GtkDrawingArea" id="endmarker_left">
                                     <property name="height_request">50</property>
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
                                   </widget>
                                   <packing>
                                     <property name="expand">False</property>
-                                    <property name="fill">True</property>
                                     <property name="position">5</property>
                                   </packing>
                                 </child>
@@ -982,17 +866,13 @@ file manager</property>
                         </child>
                       </widget>
                       <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkEventBox" id="jobs_list_eventbox">
-                        <property name="can_focus">False</property>
                         <child>
                           <widget class="GtkVBox" id="jobs_content_box">
-                            <property name="can_focus">False</property>
                             <property name="no_show_all">True</property>
                             <property name="border_width">5</property>
                             <child>
@@ -1022,18 +902,15 @@ file manager</property>
             <child>
               <widget class="GtkAlignment" id="right">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="right_padding">5</property>
                 <child>
                   <widget class="GtkVBox" id="right_vbox">
                     <property name="width_request">0</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <property name="spacing">10</property>
                     <child>
                       <widget class="GtkEventBox" id="histogram_eventbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <child>
                           <widget class="GtkExpander" id="histogram_expander">
                             <property name="can_focus">True</property>
@@ -1042,14 +919,12 @@ file manager</property>
                             <child>
                               <widget class="GtkDrawingArea" id="histogram">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="events">GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK</property>
                               </widget>
                             </child>
                             <child>
                               <widget class="GtkLabel" id="label3">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">histogram</property>
                               </widget>
                               <packing>
@@ -1068,7 +943,6 @@ file manager</property>
                     <child>
                       <widget class="GtkEventBox" id="modulegroups_eventbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -1087,14 +961,12 @@ file manager</property>
                         <child>
                           <widget class="GtkViewport" id="viewport1">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
                             <property name="resize_mode">queue</property>
                             <property name="shadow_type">none</property>
                             <child>
                               <widget class="GtkVBox" id="plugins_vbox">
                                 <property name="width_request">0</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="spacing">10</property>
                                 <child>
                                   <placeholder/>
@@ -1105,14 +977,11 @@ file manager</property>
                         </child>
                       </widget>
                       <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
                         <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkEventBox" id="module_list_eventbox">
-                        <property name="can_focus">False</property>
                         <property name="no_show_all">True</property>
                         <child>
                           <widget class="GtkExpander" id="module_list_expander">
@@ -1122,7 +991,6 @@ file manager</property>
                             <child>
                               <widget class="GtkTable" id="module_list">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="n_rows">2</property>
                                 <property name="n_columns">6</property>
                                 <property name="homogeneous">True</property>
@@ -1167,7 +1035,6 @@ file manager</property>
                             <child>
                               <widget class="GtkLabel" id="label7">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">more plugins</property>
                               </widget>
                               <packing>
@@ -1198,15 +1065,12 @@ file manager</property>
             <child>
               <widget class="GtkHBox" id="top">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <child>
                   <widget class="GtkEventBox" id="darktable_label_eventbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <child>
                       <widget class="GtkLabel" id="darktable_label">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                         <property name="has_tooltip">True</property>
                         <property name="tooltip" translatable="yes">about darktable</property>
@@ -1219,25 +1083,21 @@ file manager</property>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
                   <widget class="GtkAlignment" id="header_alignment">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <property name="yalign">1</property>
                     <property name="xscale">0</property>
                     <property name="yscale">0</property>
                     <child>
                       <widget class="GtkHBox" id="top_controls">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <child>
                           <widget class="GtkHBox" id="top_left_toolbox">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
                             <child>
                               <placeholder/>
                             </child>
@@ -1251,11 +1111,9 @@ file manager</property>
                         <child>
                           <widget class="GtkHBox" id="topfilterhbox">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
                             <child>
                               <widget class="GtkLabel" id="label17">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">list</property>
                               </widget>
                               <packing>
@@ -1268,7 +1126,6 @@ file manager</property>
                             <child>
                               <widget class="GtkComboBox" id="image_filter">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="items" translatable="yes">all
 unstarred
 1 star
@@ -1287,7 +1144,6 @@ rejected</property>
                             <child>
                               <widget class="GtkLabel" id="label18">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">images sorted by</property>
                               </widget>
                               <packing>
@@ -1300,7 +1156,6 @@ rejected</property>
                             <child>
                               <widget class="GtkComboBox" id="image_sort">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
                                 <property name="items" translatable="yes">filename
 time
 rating
@@ -1326,7 +1181,6 @@ color label</property>
                         <child>
                           <widget class="GtkHBox" id="top_right_toolbox">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
                             <child>
                               <placeholder/>
                             </child>
@@ -1341,19 +1195,15 @@ color label</property>
                     </child>
                   </widget>
                   <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
                   <widget class="GtkEventBox" id="view_label_eventbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <child>
                       <widget class="GtkLabel" id="view_label">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
                         <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                         <property name="has_tooltip">True</property>
                         <property name="tooltip" translatable="yes">switch to darkroom mode</property>
@@ -1366,7 +1216,6 @@ color label</property>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
@@ -1380,8 +1229,6 @@ color label</property>
             </child>
           </widget>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -1390,12 +1237,10 @@ color label</property>
             <property name="height_request">10</property>
             <property name="visible">True</property>
             <property name="app_paintable">True</property>
-            <property name="can_focus">False</property>
             <property name="events">GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK | GDK_SCROLL_MASK</property>
           </widget>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
         </child>

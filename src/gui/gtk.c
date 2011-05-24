@@ -55,6 +55,7 @@
 #include "tool_colorlabels.h"
 
 void init_widgets();
+void init_colorpicker(GtkWidget *container);
 
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
@@ -1112,9 +1113,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
-  // Initializing widgets
-  init_widgets();
-
   // set constant width from gconf key
   int panel_width = dt_conf_get_int("panel_width");
   if(panel_width < 20 || panel_width > 500)
@@ -1347,6 +1345,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* apply contrast to theme */
   dt_gui_contrast_init ();
 
+  // Initializing widgets
+  init_widgets();
+
   return 0;
 }
 
@@ -1375,7 +1376,18 @@ void init_widgets()
 
   // Initializing the color picker panel
   container = glade_xml_get_widget(darktable.gui->main_window,
-                                   "bottom_darkroom_box");
+                                   "vbox2");
+  widget = gtk_hbox_new(FALSE, 5);
+  darktable.gui->widgets.bottom_darkroom_box = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  init_colorpicker(widget);
+
+}
+
+void init_colorpicker(GtkWidget *container)
+{
+  GtkWidget* widget;
+
   // Creating the picker button
   widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
                                   CPF_STYLE_FLAT);
@@ -1387,10 +1399,10 @@ void init_widgets()
   gtk_widget_show(widget);
 
   // Creating the colorpicker stat selection box
-  widget = gtk_combo_box_text_new();
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("mean"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("min"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("max"));
+  widget = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("mean"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("min"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("max"));
   darktable.gui->widgets.colorpicker_stat_combobox = widget;
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
@@ -1402,9 +1414,9 @@ void init_widgets()
   gtk_widget_show(widget);
 
   // Creating the colorpicker model selection box
-  widget = gtk_combo_box_text_new();
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("rgb"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("Lab"));
+  widget = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rgb"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Lab"));
   darktable.gui->widgets.colorpicker_model_combobox = widget;
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
@@ -1417,9 +1429,8 @@ void init_widgets()
 
   // Creating the colorpicker output label
   widget = gtk_label_new(_("(---)"));
+  gtk_widget_show(widget);
 
   darktable.gui->widgets.colorpicker_output_label = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
 }

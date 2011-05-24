@@ -54,6 +54,7 @@ typedef struct dt_gui_gtk_t
   {
 
     // Colorpicker widgets
+    GtkWidget *bottom_darkroom_box;
     GtkWidget *colorpicker_button;
     GtkWidget *colorpicker_stat_combobox;
     GtkWidget *colorpicker_model_combobox;
