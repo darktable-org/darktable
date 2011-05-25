@@ -52,7 +52,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
 
-  /* save before scaling for later use */
+  /* save before scaling (for later use) */
   float ay = a.y;
   float az = a.z;
 
@@ -61,8 +61,8 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
   a /= scale;
   b /= scale;
 
-  /* default output for a and b, i.e. mix according to opacity; might be overwritten by some of the
-     modes later or in the end if blendflags has set BLEND_ONLY_LIGHTNESS */
+  /* default handling of a and b: mix according to opacity;
+     might be overwritten by some of the modes later */
   float oy = a.y * (1.0f - opacity) + (b.y * opacity);
   float oz = a.z * (1.0f - opacity) + (b.z * opacity);
 
@@ -79,8 +79,8 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 
 
-  /* select the blend operator, for L channel only*/
-  switch (mode & 0x7F)      		              /* tbc: why do we need to mask with 0x7F ? */
+  /* select the blend operator */
+  switch (mode)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o.x =  (a.x * (1.0f - opacity)) + ((a.x > b.x ? a.x : b.x) * opacity);
@@ -167,7 +167,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
   /* scale L back to [0; 100] and a,b to [-128; 128] */
   o *= scale;
 
-  /* if module wants to blend only lightness, set a and b to saved values of input image (before scaling) */
+  /* if module wants to blend only lightness, set a and b to saved values of input image (saved before scaling) */
   if (blendflag & BLEND_ONLY_LIGHTNESS)
   {
     o.y = ay;
@@ -202,7 +202,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 
   /* select the blend operator */
-  switch (mode & 0x7F)      		/* tbc: why do we need to mask with 0x7F ? */
+  switch (mode)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o =  (a * (1.0f - opacity)) + fmax(a, b) * opacity;
@@ -295,7 +295,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 
   /* select the blend operator */
-  switch (mode & 0x7F)      		/* tbc: why do we need to mask with 0x7F ? */
+  switch (mode)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o =  (a * (1.0f - opacity)) + fmax(a, b) * opacity;

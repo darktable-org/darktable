@@ -20,7 +20,7 @@ const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
 
-/* This is highpass for Lab space. We only do invert/blur/mix on L and leave a and b untouched */
+/* This is highpass for Lab space. We only do invert/blur/mix on L and desaturate a and b */
 
 kernel void 
 highpass_invert(read_only image2d_t in, write_only image2d_t out)
