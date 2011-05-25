@@ -33,7 +33,10 @@ extern "C"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
+}
 #include "iop/Permutohedral.h"
+extern "C"
+{
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -171,14 +174,16 @@ extern "C"
     else
     {
       for(int k=0; k<5; k++) sigma[k] = 1.0f/sigma[k];
-      PermutohedralLattice lattice(5, 4, roi_in->width*roi_in->height);
+      PermutohedralLattice<5,4> lattice(roi_in->width*roi_in->height);
 
       // splat into the lattice
-      for(int j=0; j<roi_in->height; j++) for(int i=0; i<roi_in->width; i++)
+      int index=0;
+      for(int j=0; j<roi_in->height; j++)
+	for(int i=0; i<roi_in->width; i++, index++)
         {
           float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
           float val[4] = {in[0], in[1], in[2], 1.0};
-          lattice.splat(pos, val);
+          lattice.splat(pos, val, index);
           in += ch;
         }
 
@@ -186,11 +191,12 @@ extern "C"
       lattice.blur();
 
       // slice from the lattice
-      lattice.beginSlice();
-      for(int j=0; j<roi_in->height; j++) for(int i=0; i<roi_in->width; i++)
+      index=0;
+      for(int j=0; j<roi_in->height; j++)
+	for(int i=0; i<roi_in->width; i++, index++)
         {
           float val[4];
-          lattice.slice(val);
+          lattice.slice(val, index);
           for(int k=0; k<3; k++) out[k] = val[k]/val[3];
           out += ch;
         }

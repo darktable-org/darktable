@@ -149,7 +149,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     const float Lm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[0], select)) - .5f;
     const float hm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[2], select)) - .5f;
     blend *= blend; // saturation isn't as prone to artifacts:
-    const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
+    // const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
+    const float Cm = 2.0 * lookup(d->lut[1], select);
     const float L = in[0] * powf(2.0f, 4.0f*Lm);
     out[0] = L;
     out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;

@@ -282,10 +282,8 @@ exposure_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
-  printf("disabling autoexp\n");
   autoexp_disable(self);
   const float exposure = dtgtk_slider_get_value(slider);
-  printf("disabling autoexp, setting to %f\n", exposure);
   dt_iop_exposure_set_white(self, exposure2white(exposure));
 }
 
