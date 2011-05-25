@@ -65,6 +65,11 @@ typedef struct dt_gui_gtk_t
     GtkWidget *lighttable_layout_combobox;
     GtkWidget *lighttable_zoom_spinbutton;
 
+    // Bottom containers
+    GtkWidget *bottom;
+    GtkWidget *bottom_left_toolbox;
+    GtkWidget *bottom_right_toolbox;
+
   } widgets;
 
   GladeXML *main_window;

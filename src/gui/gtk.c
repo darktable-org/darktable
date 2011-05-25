@@ -55,6 +55,7 @@
 #include "tool_colorlabels.h"
 
 void init_widgets();
+void init_center_bottom(GtkWidget *container);
 void init_colorpicker(GtkWidget *container);
 void init_lighttable_box(GtkWidget* container);
 
@@ -81,7 +82,7 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
       break;
     default:
       bit = dt_conf_get_int("ui_last/panel_bottom");
-      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      widget = darktable.gui->widgets.bottom;
       break;
   }
 
@@ -254,7 +255,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     default: // bottom
-      panel = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      panel = darktable.gui->widgets.bottom;
       if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width/2-height, 0.0);
@@ -1114,6 +1115,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     }
   }
 
+  // Initializing widgets
+  init_widgets();
+
   // set constant width from gconf key
   int panel_width = dt_conf_get_int("panel_width");
   if(panel_width < 20 || panel_width > 500)
@@ -1335,8 +1339,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* apply contrast to theme */
   dt_gui_contrast_init ();
 
-  // Initializing widgets
-  init_widgets();
+  // TODO: Scrap this temporary fix to properly hide colorpicker on startup
+  gtk_widget_hide(darktable.gui->widgets.bottom_darkroom_box);
 
   return 0;
 }
@@ -1364,9 +1368,17 @@ void init_widgets()
   GtkWidget* container;
   GtkWidget* widget;
 
-  // Initializing the color picker panel
+  // Initializing the bottom center
   container = glade_xml_get_widget(darktable.gui->main_window,
-                                   "vbox2");
+                                   "center_vbox");
+
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  darktable.gui->widgets.bottom = widget;
+
+  init_center_bottom(widget);
+  /*
+
   widget = gtk_hbox_new(FALSE, 5);
   darktable.gui->widgets.bottom_darkroom_box = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
@@ -1377,7 +1389,43 @@ void init_widgets()
   darktable.gui->widgets.bottom_lighttable_box = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   init_lighttable_box(widget);
+  gtk_widget_show(widget);*/
+
+}
+
+void init_center_bottom(GtkWidget *container)
+{
+  GtkWidget* widget;
+  GtkWidget* subcontainer;
+
+  // Adding the left toolbox
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_widget_show(widget);
+  darktable.gui->widgets.bottom_left_toolbox = widget;
+
+  // Adding the center box
+  subcontainer = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), subcontainer, TRUE, TRUE, 0);
+
+  // Initializing the color picker panel
+  widget = gtk_hbox_new(FALSE, 5);
+  darktable.gui->widgets.bottom_darkroom_box = widget;
+  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
+  init_colorpicker(widget);
+
+  // Initializing the lightable layout box
+  widget = gtk_hbox_new(FALSE, 5);
+  darktable.gui->widgets.bottom_lighttable_box = widget;
+  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
+  init_lighttable_box(widget);
+  gtk_widget_show(widget);
+
+  // Adding the right toolbox
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+  darktable.gui->widgets.bottom_right_toolbox = widget;
 
 }
 

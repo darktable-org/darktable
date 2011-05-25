@@ -1173,7 +1173,7 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   else gtk_widget_hide(widget);
 
   bit = dt_conf_get_int("ui_last/panel_bottom");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+  widget = darktable.gui->widgets.bottom;
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
@@ -1220,7 +1220,7 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   dt_conf_set_int("ui_last/panel_right", bit);
 
   bit = dt_conf_get_int("ui_last/panel_bottom");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+  widget = darktable.gui->widgets.bottom;
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_bottom", bit);
@@ -1311,7 +1311,7 @@ int dt_control_key_pressed_override(uint16_t which)
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);
 
-      /*widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      /*widget = darktable.gui->widgets.bottom;
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);
 

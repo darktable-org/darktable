@@ -821,7 +821,7 @@ void leave(dt_view_t *self)
   dt_gui_key_accel_unregister(export_key_accel_callback);
 
   GList *childs = gtk_container_get_children (
-                    GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")));
+                    GTK_CONTAINER (darktable.gui->widgets.bottom_left_toolbox));
   while(childs)
   {
     gtk_widget_destroy ( GTK_WIDGET (childs->data));
