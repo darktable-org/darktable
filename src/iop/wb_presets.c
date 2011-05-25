@@ -973,6 +973,27 @@ const wb_data wb_preset[] =
   { "Canon", "EOS Kiss Digital X4", WhiteFluorescent, 0, { 1.9072, 1, 2.1973, 0 } },
   { "Canon", "EOS Kiss Digital X4", Flash, 0,	{ 2.3701, 1, 1.4141, 0 } },
 
+  { "Canon", "EOS 600D", Daylight, 0,          { 2.1602, 1, 1.5752, 0 } },
+  { "Canon", "EOS 600D", Shade, 0,             { 2.5098, 1, 1.3418, 0 } },
+  { "Canon", "EOS 600D", Cloudy, 0,            { 2.3330, 1, 1.4502, 0 } },
+  { "Canon", "EOS 600D", Tungsten, 0,          { 1.5371, 1, 2.3594, 0 } },
+  { "Canon", "EOS 600D", WhiteFluorescent, 0,  { 1.8789, 1, 2.2402, 0 } },
+  { "Canon", "EOS 600D", Flash, 0,             { 2.4268, 1, 1.4297, 0 } },
+
+  { "Canon", "EOS REBEL T3i", Daylight, 0,     { 2.1602, 1, 1.5752, 0 } },
+  { "Canon", "EOS REBEL T3i", Shade, 0,                { 2.5098, 1, 1.3418, 0 } },
+  { "Canon", "EOS REBEL T3i", Cloudy, 0,       { 2.3330, 1, 1.4502, 0 } },
+  { "Canon", "EOS REBEL T3i", Tungsten, 0,     { 1.5371, 1, 2.3594, 0 } },
+  { "Canon", "EOS REBEL T3i", WhiteFluorescent, 0, { 1.8789, 1, 2.2402, 0 } },
+  { "Canon", "EOS REBEL T3i", Flash, 0,                { 2.4268, 1, 1.4297, 0 } },
+
+  { "Canon", "EOS Kiss Digital X5", Daylight, 0, { 2.1602, 1, 1.5752, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Shade, 0,  { 2.5098, 1, 1.3418, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Cloudy, 0, { 2.3330, 1, 1.4502, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Tungsten, 0, { 1.5371, 1, 2.3594, 0 } },
+  { "Canon", "EOS Kiss Digital X5", WhiteFluorescent, 0, { 1.8789, 1, 2.2402, 0 } },
+  { "Canon", "EOS Kiss Digital X5", Flash, 0,  { 2.4268, 1, 1.4297, 0 } },
+
   { "Canon", "EOS 1000D", Daylight, 0,		{ 2.183594, 1, 1.526367, 0 } },
   { "Canon", "EOS 1000D", Shade, 0,		{ 2.553711, 1, 1.262695, 0 } },
   { "Canon", "EOS 1000D", Cloudy, 0,		{ 2.365234, 1, 1.375977, 0 } },
