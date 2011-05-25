@@ -70,7 +70,7 @@ public:
   }
 
   // Returns a pointer to the keys array.
-  short *getKeys()
+  const short *getKeys()
   {
     return keys;
   }
@@ -87,7 +87,7 @@ public:
    *  create: a flag specifying whether an entry should be created,
    *          should an entry with the given key not found.
    */
-  int lookupOffset(short *key, size_t h, bool create = true)
+  int lookupOffset(const short *key, size_t h, bool create = true)
   {
 
     // Double hash table size if necessary
@@ -131,7 +131,7 @@ public:
    *        k : pointer to the key vector to be looked up.
    *   create : true if a non-existing key should be created.
    */
-  float *lookup(short *k, bool create = true)
+  float *lookup(const short *k, bool create = true)
   {
     size_t h = hash(k) % capacity;
     int offset = lookupOffset(k, h, create);
@@ -393,7 +393,7 @@ public:
     int *offset_remap[nThreads];
     for (int i = 1; i < nThreads; i++)
     {
-      short *oldKeys = hashTables[i].getKeys();
+      const short *oldKeys = hashTables[i].getKeys();
       const float *oldVals = hashTables[i].getValues();
       const int filled = hashTables[i].size();
       offset_remap[i] = new int[filled];
@@ -454,7 +454,7 @@ public:
       // For each vertex in the lattice,
       for (int i = 0; i < hashTables[0].size(); i++)   // blur point i in dimension j
       {
-        short *key    = hashTables[0].getKeys() + i*(D); // keys to current vertex
+        const short *key    = hashTables[0].getKeys() + i*(D); // keys to current vertex
 	short neighbor1[D+1];
 	short neighbor2[D+1];
         for (int k = 0; k < D; k++)
