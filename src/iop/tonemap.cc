@@ -291,7 +291,7 @@ extern "C"
     g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,1.0, 0.2, p->Fsize, 1));
     dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
     dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
-    dtgtk_slider_set_unit(g->Fsize,"%");
+    dtgtk_slider_set_unit(g->Fsize,(gchar *)"%");
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
     g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);
   }
