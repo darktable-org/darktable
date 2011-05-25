@@ -909,7 +909,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   const int bpp = format->bpp(format_params);
 
   // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
-  if(bpp == 8 && !high_quality_processing)
+  if(bpp == 8 && (!high_quality_processing || (high_quality_processing && scale == 1.0f)))
     dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   else
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
@@ -940,18 +940,13 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
       roi_out.height = processed_height;
       dt_iop_clip_and_zoom((float *)outbuf, (float *)pipe.backbuf, &roi_out, &roi_in, processed_width, pipe.processed_width);
     }
-    else if(bpp == 8)
-    {
-      moutbuf = (uint8_t *)dt_alloc_align(64, sizeof(uint32_t)*processed_width*processed_height);
-      outbuf = moutbuf;
-    }
   }
 
   // downconversion to low-precision formats:
   if(bpp == 8)
   {
     // ldr output: char
-    if(high_quality_processing)
+    if(high_quality_processing && scale < 1.0f)
     {
       const float *const inbuf = (float *)pipe.backbuf;
 #ifdef _OPENMP
