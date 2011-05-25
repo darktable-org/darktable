@@ -607,7 +607,7 @@ go_down_key_accel_callback(void *data)
 static void
 zoom_key_accel_callback(void *data)
 {
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   switch((long int)data)
   {
@@ -928,7 +928,7 @@ int key_released(dt_view_t *self, uint16_t which)
 int key_pressed(dt_view_t *self, uint16_t which)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   switch (which)
@@ -1008,7 +1008,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 void scrolled(dt_view_t *view, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)view->data;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1 && state == 0)
   {

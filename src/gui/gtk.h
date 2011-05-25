@@ -60,6 +60,11 @@ typedef struct dt_gui_gtk_t
     GtkWidget *colorpicker_model_combobox;
     GtkWidget *colorpicker_output_label;
 
+    // Layout widgets
+    GtkWidget *bottom_lighttable_box;
+    GtkWidget *lighttable_layout_combobox;
+    GtkWidget *lighttable_zoom_spinbutton;
+
   } widgets;
 
   GladeXML *main_window;

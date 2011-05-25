@@ -61,39 +61,7 @@
                           <placeholder/>
                         </child>
                         <child>
-                          <widget class="GtkHBox" id="bottom_lighttable_box">
-                            <property name="visible">True</property>
-                            <property name="spacing">5</property>
-                            <child>
-                              <widget class="GtkComboBox" id="lighttable_layout_combobox">
-                                <property name="visible">True</property>
-                                <property name="active">0</property>
-                                <property name="items" translatable="yes">zoomable light table
-file manager</property>
-                              </widget>
-                              <packing>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkSpinButton" id="lighttable_zoom_spinbutton">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
-                                <property name="primary_icon_sensitive">True</property>
-                                <property name="secondary_icon_sensitive">True</property>
-                                <property name="adjustment">7 1 26 1 3 0</property>
-                                <property name="snap_to_ticks">True</property>
-                                <property name="numeric">True</property>
-                              </widget>
-                              <packing>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="position">2</property>
-                          </packing>
+                          <placeholder/>
                         </child>
                       </widget>
                       <packing>

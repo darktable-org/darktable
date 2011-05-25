@@ -1143,10 +1143,10 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   int8_t bit;
   GtkWidget *widget;
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_layout_combobox");
+  widget = darktable.gui->widgets.lighttable_layout_combobox;
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("plugins/lighttable/layout"));
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/lighttable/images_in_row"));
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");

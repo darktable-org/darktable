@@ -351,7 +351,7 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
   widget = darktable.gui->widgets.bottom_darkroom_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  widget = darktable.gui->widgets.bottom_lighttable_box;
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
   gtk_widget_set_visible(widget, FALSE);
@@ -451,7 +451,7 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.bottom_darkroom_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  widget = darktable.gui->widgets.bottom_lighttable_box;
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
   gtk_widget_set_visible(widget, TRUE);
@@ -549,7 +549,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 int key_pressed(dt_view_t *self, uint16_t which)
 {
   /*dt_library_t *lib = (dt_library_t *)self->data;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   switch (which)
@@ -613,7 +613,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 void scrolled(dt_view_t *view, double x, double y, int up)
 {
   /*dt_library_t *lib = (dt_library_t *)view->data;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1)
   {

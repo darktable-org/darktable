@@ -56,6 +56,7 @@
 
 void init_widgets();
 void init_colorpicker(GtkWidget *container);
+void init_lighttable_box(GtkWidget* container);
 
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
@@ -1288,17 +1289,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
         darktable.gui->picked_color_output_cs_min[k] = 0;
 
 
-  // lighttable layout
-  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_layout_combobox");
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (lighttable_layout_changed),
-                    (gpointer)0);
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
-  g_signal_connect (G_OBJECT (widget), "value-changed",
-                    G_CALLBACK (lighttable_zoom_changed),
-                    (gpointer)0);
-
   // nice endmarker drawing.
   widget = glade_xml_get_widget (darktable.gui->main_window, "endmarker_left");
   g_signal_connect (G_OBJECT (widget), "expose-event",
@@ -1382,6 +1372,13 @@ void init_widgets()
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   init_colorpicker(widget);
 
+  // Initializing the lightable layout box
+  widget = gtk_hbox_new(FALSE, 5);
+  darktable.gui->widgets.bottom_lighttable_box = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  init_lighttable_box(widget);
+  gtk_widget_show(widget);
+
 }
 
 void init_colorpicker(GtkWidget *container)
@@ -1433,4 +1430,38 @@ void init_colorpicker(GtkWidget *container)
 
   darktable.gui->widgets.colorpicker_output_label = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+}
+
+void init_lighttable_box(GtkWidget* container)
+{
+  GtkWidget* widget;
+
+  // Creating the layout combobox
+  widget = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("zoomable light table"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("file manager"));
+  darktable.gui->widgets.lighttable_layout_combobox = widget;
+
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (lighttable_layout_changed),
+                    (gpointer)0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the zoom spinbutton
+  widget = gtk_spin_button_new(GTK_ADJUSTMENT(gtk_adjustment_new(7,
+                                                                 1,
+                                                                 26,
+                                                                 1,
+                                                                 3,
+                                                                 0)),
+                               0, 0);
+  darktable.gui->widgets.lighttable_zoom_spinbutton = widget;
+
+  g_signal_connect (G_OBJECT (widget), "value-changed",
+                    G_CALLBACK (lighttable_zoom_changed),
+                    (gpointer)0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
 }
