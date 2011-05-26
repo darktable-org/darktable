@@ -70,6 +70,9 @@ typedef struct dt_gui_gtk_t
     GtkWidget *bottom_left_toolbox;
     GtkWidget *bottom_right_toolbox;
 
+    // Drawing areas
+    GtkWidget *center;
+
   } widgets;
 
   GladeXML *main_window;

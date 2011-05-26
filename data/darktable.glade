@@ -26,32 +26,6 @@
             <property name="n_rows">2</property>
             <property name="n_columns">5</property>
             <child>
-              <widget class="GtkVBox" id="center_vbox">
-                <property name="visible">True</property>
-                <child>
-                  <widget class="GtkDrawingArea" id="center">
-                    <property name="height_request">500</property>
-                    <property name="visible">True</property>
-                    <property name="app_paintable">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK</property>
-                  </widget>
-                  <packing>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-              </widget>
-              <packing>
-                <property name="left_attach">2</property>
-                <property name="right_attach">3</property>
-                <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
-              </packing>
-            </child>
-            <child>
               <widget class="GtkDrawingArea" id="leftborder">
                 <property name="width_request">10</property>
                 <property name="visible">True</property>
@@ -1151,6 +1125,9 @@ color label</property>
                 <property name="x_options">GTK_EXPAND | GTK_SHRINK | GTK_FILL</property>
                 <property name="y_options">GTK_SHRINK</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </widget>
           <packing>

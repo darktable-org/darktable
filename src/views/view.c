@@ -207,7 +207,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     vm->film_strip.height = height * vm->film_strip_size;
     vm->film_strip.width  = width;
     cairo_rectangle(cr, -10, v->height, width+20, tb);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkWidget *widget = darktable.gui->widgets.center;
     GtkStyle *style = gtk_widget_get_style(widget);
     cairo_set_source_rgb (cr,
                           style->bg[GTK_STATE_NORMAL].red/65535.0,
@@ -667,7 +667,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       {
         if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
         {
-          GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+          GtkWidget *widget = darktable.gui->widgets.center;
           char* tooltip = dt_history_get_items_as_string(img->id);
           if(tooltip != NULL)
           {

@@ -825,7 +825,7 @@ void *dt_control_expose(void *voidptr)
   int width, height, pointerx, pointery;
   if(!darktable.gui->pixmap) return NULL;
   gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *widget = darktable.gui->widgets.center;
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
 
   //create a gtk-independant surface to draw on
@@ -999,7 +999,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
   darktable.gui->center_tooltip = 0;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *widget = darktable.gui->widgets.center;
   g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
 
   char buf[512];
@@ -1104,7 +1104,7 @@ void dt_control_gui_queue_draw()
   // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
   {
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkWidget *widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
     // darktable.control->last_expose_time = time;
   }
@@ -1118,7 +1118,7 @@ void dt_control_queue_draw_all()
   {
     int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
     if(needlock) gdk_threads_enter();
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkWidget *widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
     // darktable.control->last_expose_time = time;
     if(needlock) gdk_threads_leave();
@@ -1325,7 +1325,7 @@ int dt_control_key_pressed_override(uint16_t which)
       break;
   }
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
   gtk_widget_queue_draw(widget);
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   gtk_widget_queue_draw(widget);
@@ -1351,7 +1351,7 @@ int dt_control_key_pressed(uint16_t which)
   }
   if( needRedraw )
   {
-    widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
     widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
     gtk_widget_queue_draw(widget);
@@ -1372,7 +1372,7 @@ int dt_control_key_released(uint16_t which)
       break;
   }
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
   gtk_widget_queue_draw(widget);
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
   gtk_widget_queue_draw(widget);

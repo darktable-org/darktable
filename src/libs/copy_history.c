@@ -97,7 +97,7 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
     g_free (dtfilename);
   }
   gtk_widget_destroy (filechooser);
-  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  win = darktable.gui->widgets.center;
   gtk_widget_queue_draw(win);
 }
 

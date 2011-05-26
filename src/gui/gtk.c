@@ -55,6 +55,7 @@
 #include "tool_colorlabels.h"
 
 void init_widgets();
+void init_center(GtkWidget *container);
 void init_center_bottom(GtkWidget *container);
 void init_colorpicker(GtkWidget *container);
 void init_lighttable_box(GtkWidget* container);
@@ -150,7 +151,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   float width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  GtkWidget *cwidget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *cwidget = darktable.gui->widgets.center;
   GtkStyle *style = gtk_widget_get_style(cwidget);
   cairo_set_source_rgb (cr,
                         .5f*style->bg[GTK_STATE_NORMAL].red/65535.0,
@@ -537,7 +538,7 @@ update_query()
   dt_collection_update_query (darktable.collection);
 
   /* updates visual */
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *win = darktable.gui->widgets.center;
   gtk_widget_queue_draw (win);
 
   /* update film strip, jump to currently opened image, if any: */
@@ -759,7 +760,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
   gtk_widget_destroy(ignore_jpeg);
   gtk_widget_destroy(extra);
   gtk_widget_destroy (filechooser);
-  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  win = darktable.gui->widgets.center;
   gtk_widget_queue_draw(win);
 }
 
@@ -843,7 +844,7 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
     }
   }
   gtk_widget_destroy (filechooser);
-  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  win = darktable.gui->widgets.center;
   gtk_widget_queue_draw(win);
 }
 
@@ -884,7 +885,7 @@ void quit()
   darktable.control->running = 0;
   dt_pthread_mutex_unlock(&darktable.control->run_mutex);
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
   gtk_widget_queue_draw(widget);
 }
 
@@ -1193,7 +1194,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
   gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME" "PACKAGE_VERSION"</b></big></span>");
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
 
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed), NULL);
@@ -1311,7 +1312,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     (gpointer)0);
 
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   // GTK_WIDGET_SET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
@@ -1355,7 +1356,7 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 
 void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 {
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *widget = darktable.gui->widgets.center;
   darktable.gui->pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
   /* start the event loop */
   gtk_main ();
@@ -1368,28 +1369,46 @@ void init_widgets()
   GtkWidget* container;
   GtkWidget* widget;
 
-  // Initializing the bottom center
+  // Initializing the center
   container = glade_xml_get_widget(darktable.gui->main_window,
-                                   "center_vbox");
+                                   "table1");
 
+  widget = gtk_vbox_new(FALSE, 0);
+  gtk_table_attach(GTK_TABLE(container), widget, 2, 3, 1, 2,
+                   GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+  init_center(widget);
+  gtk_widget_show(widget);
+
+}
+
+void init_center(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Adding the center drawing area
+  widget = gtk_drawing_area_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  darktable.gui->widgets.center = widget;
+
+  // Configuring the drawing area
+  gtk_widget_set_size_request(widget, -1, 500);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_POINTER_MOTION_MASK
+                        | GDK_POINTER_MOTION_HINT_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_set_visible(widget, TRUE);
+
+  // Initializing the bottom center
   widget = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
   darktable.gui->widgets.bottom = widget;
 
   init_center_bottom(widget);
-  /*
-
-  widget = gtk_hbox_new(FALSE, 5);
-  darktable.gui->widgets.bottom_darkroom_box = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  init_colorpicker(widget);
-
-  // Initializing the lightable layout box
-  widget = gtk_hbox_new(FALSE, 5);
-  darktable.gui->widgets.bottom_lighttable_box = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  init_lighttable_box(widget);
-  gtk_widget_show(widget);*/
 
 }
 
