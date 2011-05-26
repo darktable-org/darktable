@@ -73,6 +73,12 @@ typedef struct dt_gui_gtk_t
     // Drawing areas
     GtkWidget *center;
 
+    // Borders
+    GtkWidget *left_border;
+    GtkWidget *right_border;
+    GtkWidget *bottom_border;
+    GtkWidget *top_border;
+
   } widgets;
 
   GladeXML *main_window;

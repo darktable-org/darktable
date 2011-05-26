@@ -374,9 +374,9 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
   view->hscroll_size = hsize;
   view->hscroll_viewport_size = hwinsize;
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  widget = darktable.gui->widgets.left_border;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  widget = darktable.gui->widgets.right_border;
   gtk_widget_queue_draw(widget);
   widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
   gtk_widget_queue_draw(widget);

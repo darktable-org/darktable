@@ -871,9 +871,9 @@ void quit()
   gtk_window_iconify(win);
 
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  widget = darktable.gui->widgets.left_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)0);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  widget = darktable.gui->widgets.right_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)2);
@@ -1217,11 +1217,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // TODO: left, right, top, bottom:
   //leave-notify-event
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  widget = darktable.gui->widgets.left_border;
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)0);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)0);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)0);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  widget = darktable.gui->widgets.right_border;
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)1);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)1);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)1);
@@ -1369,10 +1369,46 @@ void init_widgets()
   GtkWidget* container;
   GtkWidget* widget;
 
-  // Initializing the center
   container = glade_xml_get_widget(darktable.gui->main_window,
                                    "table1");
 
+  // Adding the left border
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.left_border = widget;
+
+  gtk_widget_set_size_request(widget, 10, -1);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_SCROLL_MASK);
+  gtk_table_attach(GTK_TABLE(container), widget, 0, 1, 0, 2,
+                   GTK_FILL, GTK_FILL, 0, 0);
+  gtk_widget_show(widget);
+
+  // Adding the right border
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.right_border = widget;
+
+  gtk_widget_set_size_request(widget, 10, -1);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_SCROLL_MASK);
+  gtk_table_attach(GTK_TABLE(container), widget, 4, 5, 0, 2,
+                   GTK_FILL, GTK_FILL, 0, 0);
+  gtk_widget_show(widget);
+
+  // Initializing the center
   widget = gtk_vbox_new(FALSE, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 2, 3, 1, 2,
                    GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
