@@ -79,6 +79,10 @@ typedef struct dt_gui_gtk_t
     GtkWidget *bottom_border;
     GtkWidget *top_border;
 
+    // Module list widgets
+    GtkWidget *module_list_eventbox;
+    GtkWidget *module_list;
+
   } widgets;
 
   GladeXML *main_window;

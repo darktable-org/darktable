@@ -55,6 +55,7 @@
 #include "tool_colorlabels.h"
 
 static void init_widgets();
+static void init_module_list(GtkWidget *container);
 static void init_center(GtkWidget *container);
 static void init_center_bottom(GtkWidget *container);
 static void init_colorpicker(GtkWidget *container);
@@ -1415,6 +1416,35 @@ void init_widgets()
   init_center(widget);
   gtk_widget_show(widget);
 
+  // Initializing the module list
+  container = glade_xml_get_widget(darktable.gui->main_window,
+                                   "right_vbox");
+  init_module_list(container);
+
+}
+
+static void init_module_list(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  darktable.gui->widgets.module_list_eventbox = widget;
+
+  // Adding the expander
+  container = widget;
+  widget = gtk_expander_new(_("more plugins"));
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Adding the grid
+  container = widget;
+  widget = gtk_table_new(2, 6, TRUE);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  darktable.gui->widgets.module_list = widget;
+  gtk_widget_show(widget);
 }
 
 void init_center(GtkWidget *container)

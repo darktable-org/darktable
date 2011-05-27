@@ -162,7 +162,7 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
 int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 {
   // destroy old module list
-  GtkContainer *table = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
+  GtkContainer *table = GTK_CONTAINER(darktable.gui->widgets.module_list);
   gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
 
   int error = 0;
