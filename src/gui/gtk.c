@@ -54,11 +54,11 @@
 #include "views/view.h"
 #include "tool_colorlabels.h"
 
-void init_widgets();
-void init_center(GtkWidget *container);
-void init_center_bottom(GtkWidget *container);
-void init_colorpicker(GtkWidget *container);
-void init_lighttable_box(GtkWidget* container);
+static void init_widgets();
+static void init_center(GtkWidget *container);
+static void init_center_bottom(GtkWidget *container);
+static void init_colorpicker(GtkWidget *container);
+static void init_lighttable_box(GtkWidget* container);
 
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
