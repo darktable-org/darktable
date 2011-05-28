@@ -6,8 +6,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-03-19 19:49+0900\n"
-"PO-Revision-Date: 2011-03-22 23:59+0900\n"
-"Last-Translator: deacon macmillan <deaconmacmillan@gmail.com>\n"
+"PO-Revision-Date: 2011-05-22 21:17+0900\n"
+"Last-Translator: Deacon MacMillan <deaconmacmillan@gmail.com>\n"
 "Language-Team: deacon macmillan <deaconmacmillan@gmail.com>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -702,9 +702,8 @@ msgid "%s is switched off"
 msgstr "%s は切"
 
 #: ../src/develop/imageop.c:595
-#, fuzzy
 msgid " (deprecated)"
-msgstr "ノイズ削減 「旧」"
+msgstr "旧"
 
 #: ../src/develop/imageop.c:623
 #: ../src/libs/lib.c:525
@@ -1537,9 +1536,8 @@ msgstr ""
 "$(デスクトップフォルダ) - デスクトップフォルダ"
 
 #: ../src/imageio/storage/gallery.c:159
-#, fuzzy
 msgid "enter the title of the website"
-msgstr "新しいスタイル名"
+msgstr "ウエブサイト名"
 
 #: ../src/imageio/storage/picasa.c:604
 msgid "picasa webalbum"
@@ -1584,19 +1582,17 @@ msgstr "ローカルコントラスト2.0"
 #: ../src/iop/anlfyeni.c:275
 #: ../src/iop/localc.c:283
 msgid "sensitivity of edge detection"
-msgstr ""
+msgstr "端認識感度"
 
 #: ../src/iop/anlfyeni.c:276
 #: ../src/iop/localc.c:284
-#, fuzzy
 msgid "sensitivity"
-msgstr "密度"
+msgstr "感度"
 
 #: ../src/iop/anlfyeni.c:278
 #: ../src/iop/localc.c:286
-#, fuzzy
 msgid "spatial extent of the effect around edges"
-msgstr "ガウシアンの空間の程度"
+msgstr "効果の端空間"
 
 #: ../src/iop/anlfyeni.c:279
 #: ../src/iop/lens.c:1341
@@ -1608,9 +1604,8 @@ msgstr "尺度"
 
 #: ../src/iop/anlfyeni.c:281
 #: ../src/iop/localc.c:289
-#, fuzzy
 msgid "strength of the local contrast"
-msgstr "効果量"
+msgstr "ローカルコントラスト量"
 
 #: ../src/iop/anlfyeni.c:282
 #: ../src/iop/bloom.c:330
@@ -1960,9 +1955,8 @@ msgid "b/w blue artifacts reduce"
 msgstr "モノクロ青アーチファクト削減"
 
 #: ../src/iop/clahe.c:68
-#, fuzzy
 msgid "local contrast"
-msgstr "ローカルコントラスト2.0"
+msgstr "ローカルコントラスト"
 
 #: ../src/iop/clahe.c:346
 #: ../src/iop/sharpen.c:361
@@ -2405,9 +2399,8 @@ msgstr ""
 "eos kiss X等に必要"
 
 #: ../src/iop/equalizer.c:43
-#, fuzzy
 msgid "legacy equalizer"
-msgstr "イコライザー"
+msgstr "旧イコライザー"
 
 #: ../src/iop/equalizer.c:276
 msgid "null"
@@ -2432,9 +2425,8 @@ msgid "black"
 msgstr "黒"
 
 #: ../src/iop/exposure.c:347
-#, fuzzy
 msgid "adjust the exposure correction"
-msgstr "露光修整「ev」"
+msgstr "露光修整"
 
 #: ../src/iop/exposure.c:354
 msgid "auto"
@@ -2760,7 +2752,6 @@ msgid "lowlight vision"
 msgstr "宵闇効果"
 
 #: ../src/iop/lowlight.c:247
-#, fuzzy
 msgid "daylight"
 msgstr "日光"
 
@@ -2777,9 +2768,8 @@ msgid "indoor dark"
 msgstr "暗い屋内"
 
 #: ../src/iop/lowlight.c:315
-#, fuzzy
 msgid "twilight"
-msgstr "補助光効果"
+msgstr "宵闇"
 
 #: ../src/iop/lowlight.c:332
 msgid "night street lit"
@@ -2794,21 +2784,18 @@ msgid "night street dark"
 msgstr "暗い夜の道"
 
 #: ../src/iop/lowlight.c:384
-#, fuzzy
 msgid "night"
-msgstr "右"
+msgstr "夜"
 
 #: ../src/iop/lowlight.c:532
 #: ../src/iop/lowlight.c:536
-#, fuzzy
 msgid "dark"
-msgstr "暗室"
+msgstr "暗黒"
 
 #: ../src/iop/lowlight.c:539
 #: ../src/iop/lowlight.c:543
-#, fuzzy
 msgid "bright"
-msgstr "右"
+msgstr "明るい"
 
 #: ../src/iop/lowlight.c:546
 #: ../src/iop/lowlight.c:548
@@ -2821,9 +2808,8 @@ msgid "night vision"
 msgstr "暗視"
 
 #: ../src/iop/lowlight.c:718
-#, fuzzy
 msgid "blue shift"
-msgstr "ハーフ青2「ソフト」"
+msgstr "ブルーシフト"
 
 #: ../src/iop/lowlight.c:721
 msgid "blueness in shadows"
@@ -2862,17 +2848,14 @@ msgid "unbreak input profile"
 msgstr "インプットプロファイルの問題解消"
 
 #: ../src/iop/profile_gamma.c:180
-#, fuzzy
 msgid "linear part"
-msgstr "リニアーrgb"
+msgstr "リニアーパート"
 
 #: ../src/iop/profile_gamma.c:183
-#, fuzzy
 msgid "gamma exponential factor"
 msgstr "ガンマの指数因子"
 
 #: ../src/iop/profile_gamma.c:184
-#, fuzzy
 msgid "gamma"
 msgstr "ガンマ"
 
@@ -4106,32 +4089,46 @@ msgstr "又は左パネルにあるのコレクションプラグイン"
 
 #~ msgid "alpha"
 #~ msgstr "アルファ"
+
 #~ msgid "local contrast (deprecated)"
 #~ msgstr "ローカルコントラスト「旧」"
+
 #~ msgid "legacy equalizer (deprecated)"
 #~ msgstr "イコライザー「旧」"
+
 #~ msgid "center"
 #~ msgstr "中央"
+
 #~ msgid "swap g and b"
 #~ msgstr "gとb 交換"
+
 #~ msgid "din"
 #~ msgstr "din"
+
 #~ msgid "adobe rgb"
 #~ msgstr "adobe rgb"
+
 #~ msgid "linear xyz"
 #~ msgstr "リニアーxyz"
+
 #~ msgid "tca b"
 #~ msgstr "tca b"
+
 #~ msgid "uniformity"
 #~ msgstr "均一性"
+
 #~ msgid "b/s ratio"
 #~ msgstr "b/s 比例"
+
 #~ msgid "fall-off"
 #~ msgstr "減退"
+
 #~ msgid "invert"
 #~ msgstr "反転"
+
 #~ msgid "uniformity of vignette"
 #~ msgstr "けられの均一性"
+
 #~ msgid ""
 #~ "brightness/saturation ratio\n"
 #~ "of the result,\n"
@@ -4143,84 +4140,118 @@ msgstr "又は左パネルにあるのコレクションプラグイン"
 #~ "結果\n"
 #~ "-1=輝度のみ0= 1対1\n"
 #~ "+1=彩度のみ"
+
 #~ msgid "inverts effect of saturation..."
 #~ msgstr "彩度効果反転"
+
 #~ msgid "inverts effect of fall-off, default is dark fall-off..."
 #~ msgstr "けられ効果反転"
+
 #~ msgid "equalizer II"
 #~ msgstr "等化器II"
+
 #~ msgid "and new rule"
 #~ msgstr "ルール追加"
+
 #~ msgid "or new rule"
 #~ msgstr "ルール"
+
 #~ msgid "and not new rule"
 #~ msgstr "ルールを解消"
+
 #~ msgid "change to and not"
 #~ msgstr "じゃなくてに変化"
+
 #~ msgid "author information"
 #~ msgstr "カメラマン情報"
+
 #~ msgid "cam"
 #~ msgstr "カメラ"
+
 #~ msgid ""
 #~ "search for camera using a pattern\n"
 #~ "format: [maker, ][model]"
 #~ msgstr ""
 #~ "パターンでカメラを捜す\n"
 #~ "フォーマット:[メーカー][型]"
+
 #~ msgid ""
 #~ "search for lens using a pattern\n"
 #~ "format: [maker, ][model]"
 #~ msgstr ""
 #~ "パターンでレンズを捜す\n"
 #~ "フォーマット:[メーカー][型]"
+
 #~ msgid "devices"
 #~ msgstr "デバイス"
+
 #~ msgid "import film roll"
 #~ msgstr "フイルム取り込み"
+
 #~ msgid "library"
 #~ msgstr "ライブラリ"
+
 #~ msgid "open"
 #~ msgstr "開く"
+
 #~ msgid "open selected film roll in light table"
 #~ msgstr "フイルムをライトテーブルで見る"
+
 #~ msgid "remove selected film roll from collection"
 #~ msgstr "フイルムをコレクションから除く"
+
 #~ msgid "search film rolls by folder"
 #~ msgstr "フイルムをフォルダで検索"
+
 #~ msgid ""
 #~ "do you really want to remove this film roll and all its images from the "
 #~ "collection?"
 #~ msgstr "本当にフイルムをコレクションから削除"
+
 #~ msgid "remove film roll?"
 #~ msgstr "フイルムを消去する？"
+
 #~ msgid "all film rolls"
 #~ msgstr "全てのフイルム"
+
 #~ msgid "perspective"
 #~ msgstr "透視"
+
 #~ msgid "up"
 #~ msgstr "上"
+
 #~ msgid "luma (L)"
 #~ msgstr "輝度「L」"
+
 #~ msgid "colorness (C)"
 #~ msgstr "彩度「C」"
+
 #~ msgid "hue (h)"
 #~ msgstr "色相「h」"
+
 #~ msgid "mode"
 #~ msgstr "モード"
+
 #~ msgid "O"
 #~ msgstr "O"
+
 #~ msgid "filter size"
 #~ msgstr "フィルターサイズ"
+
 #~ msgid "relight"
 #~ msgstr "リライト"
+
 #~ msgid "matches selected images"
 #~ msgstr "選択画像と一致してる"
+
 #~ msgid "doubleclick to select"
 #~ msgstr "選択したい画像をダブルクリックする"
+
 #~ msgid "select color by"
 #~ msgstr "色の選択方法"
+
 #~ msgid "denoise (slow)"
 #~ msgstr "ノイズコントロル「時間かかります」"
+
 #~ msgid " (strong)"
 #~ msgstr "「強」"
-
