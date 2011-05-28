@@ -455,10 +455,10 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
     gtk_widget_show_all(module->widget);
     // register to receive draw events
     darktable.lib->gui_module = module;
-    GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+    GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
     gtk_container_set_focus_child(box, GTK_WIDGET(module->expander));
     // redraw gui (in case post expose is set)
-    gtk_widget_queue_resize(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+    gtk_widget_queue_resize(darktable.gui->widgets.plugins_vbox);
     dt_control_gui_queue_draw();
   }
   else

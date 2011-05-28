@@ -663,7 +663,7 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
 
   // get top level vbox containing all expanders, plugins_vbox:
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   GtkTable *module_list = GTK_TABLE(darktable.gui->widgets.module_list);
   gtk_table_set_row_spacings(module_list,2);
   gtk_table_set_col_spacings(module_list,2);
@@ -865,7 +865,7 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   while(dev->history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);

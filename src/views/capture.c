@@ -339,7 +339,7 @@ void enter(dt_view_t *self)
   lib->mode = dt_conf_get_int("plugins/capture/mode");
 
   // add expanders
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
 
   // adjust gui:
   GtkWidget *widget;
@@ -467,7 +467,7 @@ void leave(dt_view_t *self)
       module->gui_cleanup(module);
     it = g_list_next(it);
   }
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 
 }

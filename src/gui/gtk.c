@@ -55,6 +55,7 @@
 #include "tool_colorlabels.h"
 
 static void init_widgets();
+static void init_plugins(GtkWidget *container);
 static void init_module_list(GtkWidget *container);
 static void init_center(GtkWidget *container);
 static void init_center_bottom(GtkWidget *container);
@@ -1137,14 +1138,14 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
   gtk_widget_set_size_request (widget, panel_width-5, -1);
   // leave some space for scrollbars to appear:
-  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox");
+  widget = darktable.gui->widgets.plugins_vbox;
   gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
   gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   // and make the scrollbars disappear when not needed:
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow");
+  widget = darktable.gui->widgets.right_scrolled_window;
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   // create preferences button:
@@ -1319,8 +1320,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
 
   // TODO: make this work as: libgnomeui testgnome.c
-  GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
-  GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow"));
+  GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
+  GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(darktable.gui->
+                                                widgets.right_scrolled_window);
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
 
   dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
@@ -1416,11 +1418,66 @@ void init_widgets()
   init_center(widget);
   gtk_widget_show(widget);
 
-  // Initializing the module list
+  // Initializing the right side
   container = glade_xml_get_widget(darktable.gui->main_window,
                                    "right_vbox");
+  init_plugins(container);
   init_module_list(container);
 
+}
+
+static void init_plugins(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Creating the outer scrolled window
+  widget = gtk_scrolled_window_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                                     0,
+                                                                     100,
+                                                                     1,
+                                                                     10,
+                                                                     10)),
+                                   GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                                     0,
+                                                                     100,
+                                                                     1,
+                                                                     10,
+                                                                     10)));
+  darktable.gui->widgets.right_scrolled_window = widget;
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+                                 GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the viewport
+  container = widget;
+
+  widget = gtk_viewport_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                              0,
+                                                              100,
+                                                              1,
+                                                              10,
+                                                              10)),
+                            GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                              0,
+                                                              100,
+                                                              1,
+                                                              10,
+                                                              10)));
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
+  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Creating the innermost vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.plugins_vbox = widget;
+  gtk_widget_set_size_request(widget, 0, -1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
 }
 
 static void init_module_list(GtkWidget *container)

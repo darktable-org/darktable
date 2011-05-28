@@ -694,7 +694,7 @@ star_key_accel_callback(void *data)
 void enter(dt_view_t *self)
 {
   // add expanders
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   GtkBox *box_left = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left"));
   GList *modules = g_list_last(darktable.lib->plugins);
 
@@ -790,7 +790,7 @@ void leave(dt_view_t *self)
       module->gui_cleanup(module);
     it = g_list_next(it);
   }
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
   box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left"));
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);

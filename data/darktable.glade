@@ -825,31 +825,7 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkScrolledWindow" id="right_scrolledwindow">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="hscrollbar_policy">never</property>
-                        <child>
-                          <widget class="GtkViewport" id="viewport1">
-                            <property name="visible">True</property>
-                            <property name="resize_mode">queue</property>
-                            <property name="shadow_type">none</property>
-                            <child>
-                              <widget class="GtkVBox" id="plugins_vbox">
-                                <property name="width_request">0</property>
-                                <property name="visible">True</property>
-                                <property name="spacing">10</property>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                              </widget>
-                            </child>
-                          </widget>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="position">2</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
