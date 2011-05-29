@@ -578,7 +578,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
     {
       gchar *c = text;
       while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text))
+      if(c < text + strlen(text) - 1)
       {
         *c = '\0';
         c++;

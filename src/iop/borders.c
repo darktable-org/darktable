@@ -52,6 +52,7 @@ typedef struct dt_iop_borders_gui_data_t
 {
   GtkDarktableSlider *size;
   GtkComboBoxEntry *aspect;
+  GtkDarktableButton *colorpick;
   float aspect_ratios[8];
 }
 dt_iop_borders_gui_data_t;
@@ -170,6 +171,45 @@ void init_presets (dt_iop_module_t *self)
 }
 
 static void
+request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
+  if(darktable.gui->reset) return;
+  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  dt_iop_request_focus(self);
+}
+
+static gboolean
+expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return FALSE;
+  if(self->picked_color_max[0] < 0) return FALSE;
+  if(!self->request_color_pick) return FALSE;
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+
+  if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f && 
+     fabsf(p->color[1] - self->picked_color[1]) < 0.0001f && 
+     fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
+  {
+    // interrupt infinite loops
+    return FALSE;
+  }
+
+  p->color[0] = self->picked_color[0];
+  p->color[1] = self->picked_color[1];
+  p->color[2] = self->picked_color[2];
+  GdkColor c;
+  c.red   = p->color[0]*65535.0;
+  c.green = p->color[1]*65535.0;
+  c.blue  = p->color[2]*65535.0;
+  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick), GTK_STATE_NORMAL, &c);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  return FALSE;
+}
+
+static void
 aspect_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
@@ -183,7 +223,7 @@ aspect_changed (GtkComboBox *combo, dt_iop_module_t *self)
     {
       gchar *c = text;
       while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text))
+      if(c < text + strlen(text) - 1)
       {
         *c = '\0';
         c++;
@@ -211,15 +251,70 @@ size_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-// TODO: color callback
+static void
+colorpick_button_callback(GtkButton *button, GtkColorSelectionDialog *csd)
+{
+  gtk_dialog_response(GTK_DIALOG(csd), (GTK_WIDGET(button)==csd->ok_button)?GTK_RESPONSE_ACCEPT:0);
+}
+
+static void
+colorpick_callback (GtkDarktableButton *button, dt_iop_module_t *self)
+{
+  if(self->dt->gui->reset) return;
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+
+  GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select frame color")));
+  g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
+                    G_CALLBACK (colorpick_button_callback), csd);
+  g_signal_connect (G_OBJECT (csd->cancel_button), "clicked",
+                    G_CALLBACK (colorpick_button_callback), csd);
+
+  GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
+  GdkColor c;
+  c.red   = 65535 * p->color[0];
+  c.green = 65535 * p->color[1];
+  c.blue  = 65535 * p->color[2];
+  gtk_color_selection_set_current_color(cs, &c);
+  if(gtk_dialog_run(GTK_DIALOG(csd)) == GTK_RESPONSE_ACCEPT)
+  {
+    gtk_color_selection_get_current_color(cs, &c);
+    p->color[0] = c.red  /65535.0;
+    p->color[1] = c.green/65535.0;
+    p->color[2] = c.blue /65535.0;
+    gtk_widget_modify_fg(GTK_WIDGET(g->colorpick), GTK_STATE_NORMAL, &c);
+  }
+  gtk_widget_destroy(GTK_WIDGET(csd));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
   dtgtk_slider_set_value(g->size, p->size);
-  // TODO: find aspect ratio from float:
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect), 0);
+  int k = 0;
+  for(;k<8;k++)
+  {
+    if(fabsf(p->aspect - g->aspect_ratios[k]) < 0.0001f)
+    {
+      gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect), k);
+      break;
+    }
+  }
+  if(k == 8)
+  {
+    char text[128];
+    snprintf(text, 128, "%.3f:1", p->aspect);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect), -1);
+    gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(g->aspect))), text);
+  }
+
+  GdkColor c;
+  c.red   = p->color[0]*65535.0;
+  c.green = p->color[1]*65535.0;
+  c.blue  = p->color[2]*65535.0;
+  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick), GTK_STATE_NORMAL, &c);
 }
 
 void init(dt_iop_module_t *module)
@@ -231,12 +326,6 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_borders_params_t);
   module->gui_data = NULL;
   module->priority = 911;
-  dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
-  {
-    {0.0f, 0.0f, 0.0f}, 3.0f/2.0f, 0.1f
-  };
-  memcpy(module->params, &tmp, sizeof(dt_iop_borders_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_borders_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -255,7 +344,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
-  self->widget = gtk_table_new(3, 2, FALSE);
+  self->widget = gtk_table_new(3, 3, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
@@ -264,10 +353,9 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->size, "%");
   g_signal_connect (G_OBJECT (g->size), "value-changed", G_CALLBACK (size_callback), self);
   g_object_set(G_OBJECT(g->size), "tooltip-text", _("size of the border in percent of the full image"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->size), 0, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->size), 0, 3, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  GtkWidget *label = gtk_label_new(_("aspect"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  GtkWidget *label = dtgtk_reset_label_new (_("aspect"), self, &p->aspect, sizeof(float));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(label), 0, 1, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->aspect = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
@@ -281,53 +369,59 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("16:9"));
   // dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
 
-  // TODO: get preset from float (..and maybe even just code it once in gui_update)
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect), 0);
   g_signal_connect (G_OBJECT (g->aspect), "changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), (char *)NULL);
 
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
-  gtk_box_pack_start(hbox, GTK_WIDGET(g->aspect), TRUE, TRUE, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, CPF_STYLE_FLAT);
   // TODO: what about this?
   //g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
   g_object_set(G_OBJECT(button), "tooltip-text", _("swap the aspect ratio (ctrl-x)"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, FALSE, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), button, 2, 3, 1, 2, GTK_EXPAND, 0, 0, 0);
 
-  g->aspect_ratios[0] = self->dev->image->width/(float)self->dev->image->height;
-  if(g->aspect_ratios[0] < 1.0)
-    g->aspect_ratios[0] = 1.0 / g->aspect_ratios[0];
-  g->aspect_ratios[1] = 1.6280;
-  g->aspect_ratios[2] = 2.0/1.0;
-  g->aspect_ratios[3] = 3.0/2.0;
-  g->aspect_ratios[4] = 4.0/3.0;
-  g->aspect_ratios[5] = 1.0;
-  g->aspect_ratios[6] = sqrtf(2.0);
-  g->aspect_ratios[7] = 16.0f/9.0f;
+  g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE));
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
+  label = dtgtk_reset_label_new (_("frame color"), self, &p->color, 3*sizeof(float));
+  g_signal_connect (G_OBJECT (g->colorpick), "clicked", G_CALLBACK (colorpick_callback), self);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->colorpick), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+  gtk_widget_set_size_request(tb, 24, 24);
+  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
+  gtk_table_attach(GTK_TABLE(self->widget), tb, 2, 3, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-#if 0 // gui_update
-  if(self->dev->image->height > self->dev->image->width)
-    g->current_aspect = 1.0/g->aspect_ratios[act];
-  else
-    g->current_aspect = g->aspect_ratios[act];
-#endif
-}
-
-void reload_defaults(dt_iop_module_t *module)
-{
-  // TODO: only affect default_params
-#if 0
   g->aspect_ratios[0] = self->dev->image->width/(float)self->dev->image->height;
   if(g->aspect_ratios[0] < 1.0f)
-    g->aspect_ratios[0] = 1.0f / g->aspect_ratios[1];
-  
-  // TODO: no current aspc
-  if(g->current_aspect > 1.0f && self->dev->image->height > self->dev->image->width)
-    g->current_aspect = 1.0f/g->aspect_ratios[act];
-  else
-    g->current_aspect = g->aspect_ratios[act];
-#endif
+    g->aspect_ratios[0] = 1.0f / g->aspect_ratios[0];
+  g->aspect_ratios[1] = 1.6280f;
+  g->aspect_ratios[2] = 2.0f/1.0f;
+  g->aspect_ratios[3] = 3.0f/2.0f;
+  g->aspect_ratios[4] = 4.0f/3.0f;
+  g->aspect_ratios[5] = 1.0f;
+  g->aspect_ratios[6] = sqrtf(2.0f);
+  g->aspect_ratios[7] = 16.0f/9.0f;
+
+  g_signal_connect (G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+}
+
+void reload_defaults(dt_iop_module_t *self)
+{
+  dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
+  {
+    {0.0f, 0.0f, 0.0f}, 3.0f/2.0f, 0.1f
+  };
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  if(self->dev->gui_attached && g)
+  {
+    g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+    if(g->aspect_ratios[1] < 1.0f)
+      g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
+  }
+  if(self->dev->image->height > self->dev->image->width)
+    tmp.aspect = 1.0f/tmp.aspect;
+  memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
+  memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
