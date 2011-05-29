@@ -543,6 +543,20 @@ void init_presets (dt_iop_module_t *self)
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
+void reload_defaults(dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  if(self->dev->gui_attached && g)
+  {
+    g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+    if(g->aspect_ratios[1] < 1.0f)
+      g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
+    
+    if(g->current_aspect > 1.0f && self->dev->image->height > self->dev->image->width)
+      g->current_aspect = 1.0f/g->current_aspect;
+  }
+}
+
 static void
 aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
