@@ -92,7 +92,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int um = MIN(rad, MIN(x, xc)), uM = MIN(rad, MIN(roi_in->width -1-xc, roi_in->width -1-x));
     const int vm = MIN(rad, MIN(y, yc)), vM = MIN(rad, MIN(roi_in->height-1-yc, roi_in->height-1-y));
     float filter[2*rad + 1];
-    for(int k=-rad; k<=rad; k++) filter[rad + k] = expf(-k*k*2.f/(rad*rad));
+    // for(int k=-rad; k<=rad; k++) filter[rad + k] = expf(-k*k*2.f/(rad*rad));
+    for(int k=-rad; k<=rad; k++)
+    {
+      const float kk = 1.0f - fabsf(k/(float)rad);
+      filter[rad + k] = kk*kk*(3.0f - 2.0f*kk);
+    }
     for(int u=-um; u<=uM; u++) for(int v=-vm; v<=vM; v++)
       {
         const float f = filter[rad+u]*filter[rad+v];

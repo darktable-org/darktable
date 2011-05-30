@@ -543,6 +543,26 @@ void init_presets (dt_iop_module_t *self)
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
+void reload_defaults(dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  if(self->dev->gui_attached && g)
+  {
+    g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+    if(g->aspect_ratios[1] < 1.0f)
+      g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
+    
+    if(g->current_aspect > 1.0f && self->dev->image->height > self->dev->image->width)
+      g->current_aspect = 1.0f/g->current_aspect;
+  }
+  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t)
+  {
+    0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f
+  };
+  memcpy(self->params, &tmp, sizeof(dt_iop_clipping_params_t));
+  memcpy(self->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
+}
+
 static void
 aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
@@ -558,7 +578,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
     {
       gchar *c = text;
       while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text))
+      if(c < text + strlen(text) - 1)
       {
         *c = '\0';
         c++;
@@ -636,12 +656,6 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
   module->priority = 875;
-  dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t)
-  {
-    0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f
-  };
-  memcpy(module->params, &tmp, sizeof(dt_iop_clipping_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_clipping_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)

@@ -621,10 +621,10 @@ static const uint8_t _imageio_ldr_magic[] =  {
     0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
 
     /* tiff image, intel */
-    0x4d, 0x4d, 0x00, 0x2a,
+    // 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,          // unfortunately fails because raw is similar
 
     /* tiff image, motorola */
-    0x49, 0x49, 0x2a, 0x00
+    // 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
 };
 
 gboolean dt_imageio_is_ldr(const char *filename)
@@ -632,14 +632,16 @@ gboolean dt_imageio_is_ldr(const char *filename)
   int offset=0;
   uint8_t block[16]={0};
   FILE *fin = fopen(filename,"rb");
-  if (fin) {
+  if (fin)
+  {
     /* read block from file */
     int s = fread(block,16,1,fin);
     fclose(fin);
     
     /* compare magic's */
-    while (s) {
-      if (memcmp((_imageio_ldr_magic+offset+2),block+(_imageio_ldr_magic+offset)[0],(_imageio_ldr_magic+offset)[1]) == 0)
+    while (s)
+    {
+      if (memcmp(_imageio_ldr_magic+offset+2, block + _imageio_ldr_magic[offset], _imageio_ldr_magic[offset+1]) == 0)
           return TRUE;
       offset += 2 + (_imageio_ldr_magic+offset)[1];
       
@@ -853,8 +855,9 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  if(!dt_dev_pixelpipe_init_export(&pipe, wd, ht)) {
-    dt_control_log(_("Failed to allocate memory for export, please lower the threads used for export or buy more memory."));
+  if(!dt_dev_pixelpipe_init_export(&pipe, wd, ht))
+  {
+    dt_control_log(_("failed to allocate memory for export, please lower the threads used for export or buy more memory."));
     dt_dev_cleanup(&dev);
     return 0;
   }
@@ -906,7 +909,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   const int bpp = format->bpp(format_params);
 
   // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
-  if(bpp == 8 && !high_quality_processing)
+  if(bpp == 8 && (!high_quality_processing || (high_quality_processing && scale == 1.0f)))
     dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   else
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
@@ -914,6 +917,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 
   // downsampling done last, if high quality processing was requested:
   uint8_t *outbuf = pipe.backbuf;
+  uint8_t *moutbuf = NULL; // keep track of alloc'ed memory
   if(high_quality_processing)
   {
     const float scalex = format_params->max_width  > 0 ? fminf(format_params->max_width /(float)pipe.processed_width,  1.0) : 1.0;
@@ -923,7 +927,8 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     {
       processed_width  = scale*pipe.processed_width  + .5f;
       processed_height = scale*pipe.processed_height + .5f;
-      outbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
+      moutbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
+      outbuf = moutbuf;
       // now downscale into the new buffer:
       dt_iop_roi_t roi_in, roi_out;
       roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
@@ -941,28 +946,28 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   if(bpp == 8)
   {
     // ldr output: char
-    uint8_t *buf8 = pipe.backbuf;
-    if(high_quality_processing)
+    if(high_quality_processing && scale < 1.0f)
     {
+      const float *const inbuf = (float *)pipe.backbuf;
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(outbuf, buf8, processed_width, processed_height) schedule(static)
+  #pragma omp parallel for default(none) shared(outbuf, processed_width, processed_height) schedule(static)
 #endif
       for(int k=0; k<processed_width*processed_height; k++)
       {
         // convert in place
-        const uint8_t r = CLAMP(((float *)outbuf)[4*k+0]*0xff, 0, 0xff);
-        const uint8_t g = CLAMP(((float *)outbuf)[4*k+1]*0xff, 0, 0xff);
-        const uint8_t b = CLAMP(((float *)outbuf)[4*k+2]*0xff, 0, 0xff);
-        buf8[4*k+0] = r;
-        buf8[4*k+1] = g;
-        buf8[4*k+2] = b;
+        const uint8_t r = CLAMP(inbuf[4*k+0]*0xff, 0, 0xff);
+        const uint8_t g = CLAMP(inbuf[4*k+1]*0xff, 0, 0xff);
+        const uint8_t b = CLAMP(inbuf[4*k+2]*0xff, 0, 0xff);
+        outbuf[4*k+0] = r;
+        outbuf[4*k+1] = g;
+        outbuf[4*k+2] = b;
       }
-      outbuf = buf8;
     }
     else
     {
+      uint8_t *const buf8 = pipe.backbuf;
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(buf8, processed_width, processed_height) schedule(static)
+  #pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
 #endif
       // just flip byte order
       for(int k=0; k<processed_width*processed_height; k++)
@@ -979,11 +984,11 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     float    *buff  = (float *)   outbuf;
     uint16_t *buf16 = (uint16_t *)outbuf;
     for(int y=0; y<processed_height; y++) for(int x=0; x<processed_width ; x++)
-      {
-        // convert in place
-        const int k = x + processed_width*y;
-        for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
-      }
+    {
+      // convert in place
+      const int k = x + processed_width*y;
+      for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
+    }
   }
   // else output float, no further harm done to the pixels :)
 
@@ -999,7 +1004,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  if(high_quality_processing && bpp != 8) free(outbuf);
+  free(moutbuf);
   return res;
 }
 

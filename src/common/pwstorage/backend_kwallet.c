@@ -101,13 +101,13 @@ static gchar* char2qstring(const gchar* in, gsize* size)
     out[i] = g_htons(out[i]);
   }
 
-  glong bytes = sizeof(gunichar2)*written;
-  glong BE_bytes = GINT_TO_BE(bytes);
-  *size = sizeof(glong)+bytes;
+  guint bytes = sizeof(gunichar2)*written;
+  guint BE_bytes = GUINT_TO_BE(bytes);
+  *size = sizeof(guint)+bytes;
   gchar* result = g_malloc(*size);
 
-  memcpy(result, &BE_bytes, sizeof(glong));
-  memcpy(result+sizeof(glong), out, bytes);
+  memcpy(result, &BE_bytes, sizeof(guint));
+  memcpy(result+sizeof(guint), out, bytes);
 
   return result;
 }
@@ -340,11 +340,11 @@ gboolean dt_pwstorage_kwallet_set(const gchar* slot, GHashTable* table)
 static gchar* array2string(gchar* pos, guint* length)
 {
   memcpy(length, pos, sizeof(gint));
-  *length = GINT_FROM_BE(*length);
+  *length = GUINT_FROM_BE(*length);
   pos += sizeof(gint);
   guint j;
 
-  for(j=0; j<*length/sizeof(gunichar2); j++)
+  for(j=0; j<((*length)/sizeof(gunichar2)); j++)
   {
     ((gunichar2*)pos)[j] = g_ntohs(((gunichar2*)pos)[j]);
   }

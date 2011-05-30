@@ -215,10 +215,12 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
   gcw->dialog=dlg;
 
   gcw->entry=gtk_entry_new();
-  if( dt_conf_get_string (confstring) )
+  char* value = NULL;
+  if((value = dt_conf_get_string (confstring)))
   {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ),dt_conf_get_string (confstring));
-    gcw->value=g_strdup(dt_conf_get_string (confstring));
+    gcw->value=g_strdup(value);
+    g_free(value);
   }
 
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);

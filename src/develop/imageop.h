@@ -44,6 +44,7 @@ struct dt_develop_blend_params_t;
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
 #define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
 #define	IOP_FLAGS_DEPRECATED	4
+#define IOP_FLAGS_BLEND_ONLY_LIGHTNESS	8			// Does only blend with L-channel in Lab space. Keeps a, b of original image.
 
 typedef struct dt_iop_params_t
 {
@@ -104,7 +105,7 @@ typedef struct dt_iop_module_so_t
   int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
 
   void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
-  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  int  (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 }
 dt_iop_module_so_t;
 
@@ -208,7 +209,7 @@ typedef struct dt_iop_module_t
     * formats may be filled by this callback, if the pipeline can handle it. */
   void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** the opencl equivalent of process(). */
-  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  int (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 }
 dt_iop_module_t;
 

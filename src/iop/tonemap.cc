@@ -45,9 +45,18 @@ extern "C"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#ifdef _OPENMP
+#include <omp.h>
+#else
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
+#endif
+}
 
 #include "iop/Permutohedral.h"
 
+extern "C"
+{
   DT_MODULE(1)
 
   typedef struct dt_iop_tonemapping_params_t
@@ -94,8 +103,6 @@ extern "C"
     int width,height,size;
     float sigma_s;
     const float sigma_r=0.4;
-    float *in  = (float *)ivoid;
-    float *out = (float *)ovoid;
 
     width=roi_in->width;
     height=roi_in->height;
@@ -106,20 +113,30 @@ extern "C"
     sigma_s=(data->Fsize/100.0)*fminf(iw,ih);
     if(sigma_s<3.0) sigma_s=3.0;
 
-    PermutohedralLattice lattice(3, 2, size);
+    PermutohedralLattice<3,2> lattice(size, omp_get_max_threads());
 
     // Build I=log(L)
     // and splat into the lattice
-    for(int j=0; j<height; j++) for(int i=0; i<width; i++)
+#ifdef _OPENMP
+#pragma omp parallel for shared(lattice)
+#endif
+    for(int j=0; j<height; j++)
+    {
+      int index = j*width;
+      const int thread = omp_get_thread_num();
+      const float *in = (const float*)ivoid + j*width*ch;
+      for(int i=0; i<width; i++, index++, in+=ch)
       {
         float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
         if(L<=0.0) L=1e-6;
         L = logf(L);
         float pos[3] = {i/sigma_s, j/sigma_s, L/sigma_r};
         float val[2] = {L,  1.0};
-        lattice.splat(pos, val);
-        in += ch;
+        lattice.splat(pos, val, index, thread);
       }
+    }
+
+    lattice.merge_splat_threads();
 
     // blur the lattice
     lattice.blur();
@@ -144,26 +161,30 @@ extern "C"
     //  after compression we substract 2.0 to have an average intensiy at middle tone.
     //
 
-    lattice.beginSlice();
     const float contr = 1./data->contrast;
-    in  = (float *)ivoid;
-    for( int i=0 ; i<size ; i++ )
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+    for(int j=0; j<height; j++)
     {
-      float val[2];
-      lattice.slice(val);
-      float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
-      if(L<=0.0) L=1e-6;
-      L = logf(L);
-      const float B = val[0]/val[1];
-      const float detail = L - B;
-      const float Ln = expf(B*(contr - 1.0f) + detail - 2.0f);
+      int index = j*width;
+      const float *in = (const float*)ivoid + j*width*ch;
+      float *out = (float*)ovoid + j*width*ch;
+      for(int i=0; i<width; i++, index++, in+=ch, out+=ch)
+      {
+	float val[2];
+	lattice.slice(val, index);
+	float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
+	if(L<=0.0) L=1e-6;
+	L = logf(L);
+	const float B = val[0]/val[1];
+	const float detail = L - B;
+	const float Ln = expf(B*(contr - 1.0f) + detail - 2.0f);
 
-      out[0]=in[0]*Ln;
-      out[1]=in[1]*Ln;
-      out[2]=in[2]*Ln;
-
-      out += ch;
-      in += ch;
+	out[0]=in[0]*Ln;
+	out[1]=in[1]*Ln;
+	out[2]=in[2]*Ln;
+      }
     }
   }
 
@@ -270,7 +291,7 @@ extern "C"
     g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,1.0, 0.2, p->Fsize, 1));
     dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
     dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
-    dtgtk_slider_set_unit(g->Fsize,"%");
+    dtgtk_slider_set_unit(g->Fsize,(gchar *)"%");
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
     g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);
   }

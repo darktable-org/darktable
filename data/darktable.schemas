@@ -93,15 +93,15 @@
     </schema>
 
     <schema><!--tab:core-->
-      <key>/schemas/apps/darktable/mipmap_cache_full_images</key>
-      <applyto>/apps/darktable/mipmap_cache_full_images</applyto>
+      <key>/schemas/apps/darktable/parallel_export</key>
+      <applyto>/apps/darktable/parallel_export</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>2</default>
+      <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>full resolution image buffers to keep in main memory cache</short>
-        <long>how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum.  set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode).  be warned: every thread will need about 1GB of memory (needs a restart).</long>
+        <short>export multiple images in parallel</short>
+        <long>set this variable to num_threads if you want multithreaded export to process multiple images at a time. be warned: every thread will need about 1GB of memory. setting this to 1 switches on per-image parallelization.</long>
       </locale>
     </schema>
 
@@ -128,6 +128,32 @@
       <locale name="C">
         <short>write a redundant sidecar file for each image</short>
         <long>these files can later be re-imported into a different database, preserving your changes to the image.</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/opencl</key>
+      <applyto>/apps/darktable/opencl</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>flase</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>activate OpenCL support (experimental)</short>
+        <long>if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. expect random crashes.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/opencl_library</key>
+      <applyto>/apps/darktable/opencl_runtime</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>system library with opencl runtime</short>
+        <long>opencl runtime library is normally detected automatically by darktable. if your opencl runtime is at an unusual place and cannot be detected, enter the full pathname here. leave empty for default behavior.</long>
       </locale>
     </schema>
 

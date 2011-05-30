@@ -148,13 +148,13 @@ lch_to_rgb(float lch[3], float rgb[3])
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->data;
 
-  cl_int err;
+  cl_int err = -999;
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
@@ -166,7 +166,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 5, sizeof(float), (void *)&d->blendC);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 6, sizeof(float), (void *)&d->blendh);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highlights, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue highlights kernel! %d\n", err);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 

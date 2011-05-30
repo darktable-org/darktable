@@ -33,6 +33,7 @@
 #include "common/points.h"
 #include "common/opencl.h"
 #include "develop/imageop.h"
+#include "develop/blend.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
@@ -136,8 +137,8 @@ darktable will now close down.\n\n%s"),message);
 int dt_init(int argc, char *argv[], const int init_gui)
 {
 #ifndef __SSE2__
-  fprintf("[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
-  fprintf("[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+  fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
+  fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
   return 1;
 #endif
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
@@ -153,8 +154,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // database
   gchar *dbfilenameFromCommand = NULL;
 
+  darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
-  omp_set_num_threads(omp_get_num_procs());
+  darktable.num_openmp_threads = omp_get_num_procs();
 #endif
   darktable.unmuted = 0;
   char *image_to_load = NULL;
@@ -190,12 +192,22 @@ int dt_init(int argc, char *argv[], const int init_gui)
         else return usage(argv[0]);
         k ++;
       }
+      else if(argv[k][1] == 't' && argc > k+1)
+      {
+        darktable.num_openmp_threads = CLAMP(atol(argv[k+1]), 1, 100);
+        printf("[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
+        k ++;
+      }
     }
     else
     {
       image_to_load = argv[k];
     }
   }
+
+#ifdef _OPENMP
+  omp_set_num_threads(darktable.num_openmp_threads);
+#endif
 
   g_type_init();
 
@@ -333,6 +345,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, argc, argv);
+
+  darktable.blendop = (dt_blendop_t *)malloc(sizeof(dt_blendop_t));
+  dt_develop_blend_init(darktable.blendop);
 
   darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());

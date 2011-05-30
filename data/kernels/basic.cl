@@ -27,7 +27,7 @@ FC(const int row, const int col, const unsigned int filters)
 
 /* kernel for the sharpen plugin */
 kernel void
-sharpen (read_only image2d_t in, write_only image2d_t out, global float *m, const int rad,
+sharpen (read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
     const float sharpen, const float thrs)
 {
   const int x = get_global_id(0);
@@ -48,7 +48,7 @@ sharpen (read_only image2d_t in, write_only image2d_t out, global float *m, cons
 }
 
 kernel void
-whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, global float *coeffs,
+whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, constant float *coeffs,
     const unsigned int filters, const int rx, const int ry)
 {
   const int x = get_global_id(0);
@@ -58,7 +58,7 @@ whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, global float 
 }
 
 kernel void
-whitebalance_4f(read_only image2d_t in, write_only image2d_t out, global float *coeffs)
+whitebalance_4f(read_only image2d_t in, write_only image2d_t out, constant float *coeffs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -202,15 +202,11 @@ XYZ_to_Lab(float *xyz, float *lab)
 
 /* kernel for the plugin colorin */
 kernel void
-colorin (read_only image2d_t in, write_only image2d_t out, global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb)
+colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
+         read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb, const int map_blues)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-
-  // load to shared memory:
-  local float matrix[9];
-  if(get_local_id(0) == 0) for(int k=0;k<9;k++) matrix[k] = mat[k];
-  barrier(CLK_LOCAL_MEM_FENCE);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
@@ -219,24 +215,27 @@ colorin (read_only image2d_t in, write_only image2d_t out, global float *mat, re
   cam[1] = lookup(lutg, pixel.y);
   cam[2] = lookup(lutb, pixel.z);
 
-  // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-  const float YY = cam[0]+cam[1]+cam[2];
-  const float zz = cam[2]/YY;
-  // lower amount and higher bound_z make the effect smaller.
-  // the effect is weakened the darker input values are, saturating at bound_Y
-  const float bound_z = 0.5f, bound_Y = 0.5f;
-  const float amount = 0.11f;
-  if (zz > bound_z)
+  if(map_blues)
   {
-    const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
-    cam[1] += t*amount;
-    cam[2] -= t*amount;
+    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+    const float YY = cam[0]+cam[1]+cam[2];
+    const float zz = cam[2]/YY;
+    // lower amount and higher bound_z make the effect smaller.
+    // the effect is weakened the darker input values are, saturating at bound_Y
+    const float bound_z = 0.5f, bound_Y = 0.5f;
+    const float amount = 0.11f;
+    if (zz > bound_z)
+    {
+      const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
+      cam[1] += t*amount;
+      cam[2] -= t*amount;
+    }
   }
   // now convert camera to XYZ using the color matrix
   for(int j=0;j<3;j++)
   {
     XYZ[j] = 0.0f;
-    for(int i=0;i<3;i++) XYZ[j] += matrix[3*j+i] * cam[i];
+    for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
   }
   XYZ_to_Lab(XYZ, (float *)&pixel);
   write_imagef (out, (int2)(x, y), pixel);
@@ -347,15 +346,11 @@ Lab_to_XYZ(float *Lab, float *XYZ)
 
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
-colorout (read_only image2d_t in, write_only image2d_t out, global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb)
+colorout (read_only image2d_t in, write_only image2d_t out, constant float *mat, 
+          read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-
-  // load to shared memory:
-  local float matrix[9];
-  if(get_local_id(0) == 0) for(int k=0;k<9;k++) matrix[k] = mat[k];
-  barrier(CLK_LOCAL_MEM_FENCE);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float XYZ[3], rgb[3];
@@ -363,7 +358,7 @@ colorout (read_only image2d_t in, write_only image2d_t out, global float *mat, r
   for(int i=0;i<3;i++)
   {
     rgb[i] = 0.0f;
-    for(int j=0;j<3;j++) rgb[i] += matrix[3*i+j]*XYZ[j];
+    for(int j=0;j<3;j++) rgb[i] += mat[3*i+j]*XYZ[j];
   }
   pixel.x = lookup(lutr, rgb[0]);
   pixel.y = lookup(lutg, rgb[1]);

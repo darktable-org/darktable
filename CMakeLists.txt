@@ -5,6 +5,7 @@ cmake_policy(VERSION 2.6)
 option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_OPENMP "Use openmp threading support." ON)
+option(USE_OPENCL "Use OpenCL support." ON)
 option(USE_DARKTABLE_PROFILING OFF)
 option(DONT_USE_RAWSPEED "Dont compile rawspeed backend." OFF)
 option(DONT_INSTALL_GCONF_SCHEMAS "Dont install gconf schemas, usefull for package creation." OFF)
@@ -13,6 +14,14 @@ option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and 
 option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
 option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
+
+# Generate multi arch triplet
+EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(CMAKE_ARCH_TRIPLET)
+	message("-- mutliarch triplet detected: " ${CMAKE_ARCH_TRIPLET})
+	LIST(INSERT CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 0 /lib/${CMAKE_ARCH_TRIPLET}
+		/usr/lib/${CMAKE_ARCH_TRIPLET})
+endif()
 
 #
 # Set platform defaults...
@@ -117,6 +126,13 @@ if(Gettext_FOUND)
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
 
+# needed to generate file "create_preferences.sh" accordingly
+if(USE_OPENCL)
+	SET(HAVE_OPENCL 1)
+else()
+	SET(HAVE_OPENCL 0)
+endif(USE_OPENCL)
+
 #
 # Test SSE level
 #
@@ -166,6 +182,12 @@ add_subdirectory(data)
 add_subdirectory(doc)
 
 include(cmake/darktable-packaging.cmake)
+
+# create_preferences.sh depending on opencl
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/create_preferences.sh.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/create_preferences.sh"
+    IMMEDIATE @ONLY)
 
 # uninstall target
 configure_file(

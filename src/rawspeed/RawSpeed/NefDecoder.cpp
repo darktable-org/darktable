@@ -28,7 +28,7 @@ namespace RawSpeed {
 
 NefDecoder::NefDecoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 2;
+  decoderVersion = 3;
 }
 
 NefDecoder::~NefDecoder(void) {
@@ -143,9 +143,23 @@ bool NefDecoder::D100IsCompressed(uint32 offset) {
   return false;
 }
 
+TiffIFD* NefDecoder::FindBestImage(vector<TiffIFD*>* data) {
+  int largest_width = 0;
+  TiffIFD* best_ifd = NULL;
+  for (int i = 0; i < (int)data->size(); i++) {
+    TiffIFD* raw = (*data)[i];
+    int width = raw->getEntry(IMAGEWIDTH)->getInt();
+    if (width > largest_width)
+      best_ifd = raw;
+  }
+  if (NULL == best_ifd)
+    ThrowRDE("NEF Decoder: Unable to locate image");
+  return best_ifd;
+}
+
 void NefDecoder::DecodeUncompressed() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
-  TiffIFD* raw = data[0];
+  TiffIFD* raw = FindBestImage(&data);
   uint32 nslices = raw->getEntry(STRIPOFFSETS)->count;
   const uint32 *offsets = raw->getEntry(STRIPOFFSETS)->getIntArray();
   const uint32 *counts = raw->getEntry(STRIPBYTECOUNTS)->getIntArray();
@@ -187,10 +201,12 @@ void NefDecoder::DecodeUncompressed() {
     iPoint2D size(width, slice.h);
     iPoint2D pos(0, offY);
     try {
-      if (hints.find(string("coolpixmangled")) == hints.end())
-        readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, true);
-      else 
+      if (hints.find(string("coolpixmangled")) != hints.end())
         readCoolpixMangledRaw(in, size, pos, width*bitPerPixel / 8);
+      else if (hints.find(string("coolpixsplit")) != hints.end())
+        readCoolpixSplitRaw(in, size, pos, width*bitPerPixel / 8);
+      else
+        readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, true);
     } catch (RawDecoderException e) {
       if (i>0)
         errors.push_back(_strdup(e.what()));
@@ -230,6 +246,44 @@ void NefDecoder::readCoolpixMangledRaw(ByteStream &input, iPoint2D& size, iPoint
   BitPumpMSB32 *in = new BitPumpMSB32(&input);
   for (; y < h; y++) {
     ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
+    for (uint32 x = 0 ; x < w; x++) {
+      dest[x] =  in->getBits(12);
+    }
+  }
+}
+
+
+void NefDecoder::readCoolpixSplitRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch) {
+  uchar8* data = mRaw->getData();
+  uint32 outPitch = mRaw->pitch;
+  uint32 w = size.x;
+  uint32 h = size.y;
+  uint32 cpp = mRaw->getCpp();
+  if (input.getRemainSize() < (inputPitch*h)) {
+    if ((int)input.getRemainSize() > inputPitch)
+      h = input.getRemainSize() / inputPitch - 1;
+    else
+      ThrowIOE("readUncompressedRaw: Not enough data to decode a single line. Image file truncated.");
+  }
+
+  if (offset.y > mRaw->dim.y)
+    ThrowRDE("readCoolpixSplitRaw: Invalid y offset");
+  if (offset.x + size.x > mRaw->dim.x)
+    ThrowRDE("readCoolpixSplitRaw: Invalid x offset");
+
+  uint32 y = offset.y;
+  h = MIN(h + (uint32)offset.y, (uint32)mRaw->dim.y);
+  w *= cpp;
+  h /= 2;
+  BitPumpMSB *in = new BitPumpMSB(&input);
+  for (; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*2*outPitch];
+    for (uint32 x = 0 ; x < w; x++) {
+      dest[x] =  in->getBits(12);
+    }
+  }
+  for (y = offset.y; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+(y*2+1)*outPitch];
     for (uint32 x = 0 ; x < w; x++) {
       dest[x] =  in->getBits(12);
     }
