@@ -299,7 +299,7 @@ if(NOT DONT_USE_RAWSPEED)
   add_subdirectory(rawspeed)
 endif(NOT DONT_USE_RAWSPEED)
 
-install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL}/darktable)
+install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 
 # Compile libraw modules
