@@ -87,6 +87,13 @@ typedef struct dt_gui_gtk_t
     GtkWidget *right_scrolled_window;
     GtkWidget *plugins_vbox;
 
+    // Module groups box
+    GtkWidget *modulegroups_eventbox;
+
+    // Histogram widgets
+    GtkWidget *histogram_expander;
+    GtkWidget *histogram;
+
   } widgets;
 
   GladeXML *main_window;

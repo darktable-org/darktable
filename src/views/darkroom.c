@@ -641,11 +641,12 @@ void enter(dt_view_t *self)
 
   // adjust gui:
   GtkWidget *widget;
-  gtk_widget_set_visible (glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), TRUE);
+  gtk_widget_set_visible (darktable.gui->
+                          widgets.modulegroups_eventbox, TRUE);
 
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_eventbox");
   gtk_widget_set_visible(widget, TRUE);
@@ -831,7 +832,7 @@ void leave(dt_view_t *self)
   GtkWidget *widget;
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_eventbox");
   gtk_widget_set_visible(widget, FALSE);

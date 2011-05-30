@@ -343,7 +343,7 @@ void enter(dt_view_t *self)
 
   // adjust gui:
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
   gtk_widget_set_visible(widget, FALSE);
@@ -358,7 +358,8 @@ void enter(dt_view_t *self)
   widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, FALSE);
 
-  gtk_widget_set_visible(glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), FALSE);
+  gtk_widget_set_visible(darktable.gui->
+                         widgets.modulegroups_eventbox, FALSE);
 
   GList *modules = g_list_last(darktable.lib->plugins);
   while(modules!=darktable.lib->plugins)
@@ -443,7 +444,7 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
   widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_eventbox");
   gtk_widget_set_visible(widget, FALSE);

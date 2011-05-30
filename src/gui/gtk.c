@@ -55,6 +55,8 @@
 #include "tool_colorlabels.h"
 
 static void init_widgets();
+static void init_histogram(GtkWidget *container);
+static void init_module_groups(GtkWidget *container);
 static void init_plugins(GtkWidget *container);
 static void init_module_list(GtkWidget *container);
 static void init_center(GtkWidget *container);
@@ -1242,7 +1244,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_navigation_init(&gui->navigation, widget);
   gtk_widget_set_size_request(widget, -1, panel_width*.5);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
+  widget = darktable.gui->widgets.histogram;
   gtk_widget_set_size_request(widget, -1, panel_width*.5);
   dt_gui_histogram_init(&gui->histogram, widget);
 
@@ -1421,12 +1423,60 @@ void init_widgets()
   // Initializing the right side
   container = glade_xml_get_widget(darktable.gui->main_window,
                                    "right_vbox");
+  init_histogram(container);
+  init_module_groups(container);
   init_plugins(container);
   init_module_list(container);
 
 }
 
-static void init_plugins(GtkWidget *container)
+void init_histogram(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Creating the outer event box
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("histogram"));
+  darktable.gui->widgets.histogram_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_widget_set_can_focus(widget, TRUE);
+
+  // Creating the histogram surface
+  container = widget;
+
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.histogram = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_POINTER_MOTION_MASK
+                        | GDK_POINTER_MOTION_HINT_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK);
+  gtk_widget_show(widget);
+}
+
+void init_module_groups(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  darktable.gui->widgets.modulegroups_eventbox = widget;
+
+  gtk_widget_show(widget);
+}
+
+void init_plugins(GtkWidget *container)
 {
   GtkWidget* widget;
 
@@ -1480,7 +1530,7 @@ static void init_plugins(GtkWidget *container)
   gtk_widget_show(widget);
 }
 
-static void init_module_list(GtkWidget *container)
+void init_module_list(GtkWidget *container)
 {
   GtkWidget* widget;
 

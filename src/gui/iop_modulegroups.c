@@ -262,7 +262,8 @@ void dt_gui_iop_modulegroups_init ()
   gtk_table_attach(GTK_TABLE(table),_iop_modulegroups_correct_widget,2,3,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
   gtk_table_attach(GTK_TABLE(table),_iop_modulegroups_effect_widget,3,4,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
 
-  gtk_container_add (GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox")),table);
+  gtk_container_add (GTK_CONTAINER (darktable.gui->
+                                    widgets.modulegroups_eventbox),table);
   gtk_widget_show_all(table);
 
 }

@@ -702,7 +702,8 @@ void enter(dt_view_t *self)
   GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
   gtk_widget_set_visible(widget, TRUE);
 
-  gtk_widget_set_visible(glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), FALSE);
+  gtk_widget_set_visible(darktable.gui->
+                         widgets.modulegroups_eventbox, FALSE);
 
   while(modules)
   {
