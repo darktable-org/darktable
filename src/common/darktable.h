@@ -135,6 +135,7 @@ typedef struct darktable_t
   struct dt_points_t             *points;
   struct dt_imageio_t            *imageio;
   struct dt_opencl_t             *opencl;
+  struct dt_blendop_t            *blendop;
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   char *progname;

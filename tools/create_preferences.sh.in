@@ -126,6 +126,12 @@ do
   qdef=\"$def\"
   short=$(printf "%s" "$line" | cut -d# -f4)
   long=$(printf "%s" "$line" | cut -d# -f5)
+  # if we compile w/o opencl, we don't want this option in preferences
+  if [ "@HAVE_OPENCL@" = "0" ]; then
+    if [ "$key" = "opencl" ]; then
+      continue
+    fi
+  fi
   key_begin "$short" "$long" $num
   if [ "$type" = "string" ]; then
     def=$qdef

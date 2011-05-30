@@ -121,20 +121,25 @@ lerp_lut(const float *const lut, const float v)
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->data;
+  cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL;
 
-  cl_int err;
+  cl_int err = -999;
   const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*9, devid, d->cmatrix);
-  cl_mem dev_r = dt_opencl_copy_host_to_device(d->lut[0], 256, 256, devid, sizeof(float));
-  cl_mem dev_g = dt_opencl_copy_host_to_device(d->lut[1], 256, 256, devid, sizeof(float));
-  cl_mem dev_b = dt_opencl_copy_host_to_device(d->lut[2], 256, 256, devid, sizeof(float));
+  dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*9, devid, d->cmatrix);
+  if (dev_m == NULL) goto error;
+  dev_r = dt_opencl_copy_host_to_device(d->lut[0], 256, 256, devid, sizeof(float));
+  if (dev_r == NULL) goto error;
+  dev_g = dt_opencl_copy_host_to_device(d->lut[1], 256, 256, devid, sizeof(float));
+  if (dev_g == NULL) goto error;
+  dev_b = dt_opencl_copy_host_to_device(d->lut[2], 256, 256, devid, sizeof(float));
+  if (dev_b == NULL) goto error;
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 2, sizeof(cl_mem), (void *)&dev_m);
@@ -143,11 +148,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 5, sizeof(cl_mem), (void *)&dev_b);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 6, sizeof(cl_int), (void *)&map_blues);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_colorin, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue colorin kernel! %d\n", err);
-  clReleaseMemObject(dev_m);
-  clReleaseMemObject(dev_r);
-  clReleaseMemObject(dev_g);
-  clReleaseMemObject(dev_b);
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_r);
+  dt_opencl_release_mem_object(dev_g);
+  dt_opencl_release_mem_object(dev_b);
+  return TRUE;
+
+error:
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_r != NULL) dt_opencl_release_mem_object(dev_r);
+  if (dev_g != NULL) dt_opencl_release_mem_object(dev_g);
+  if (dev_b != NULL) dt_opencl_release_mem_object(dev_b);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorin] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 

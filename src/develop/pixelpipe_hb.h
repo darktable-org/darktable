@@ -109,6 +109,8 @@ typedef struct dt_dev_pixelpipe_t
   int processing;
   // shutting down?
   int shutdown;
+  // opencl error detected?
+  int opencl_error;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;

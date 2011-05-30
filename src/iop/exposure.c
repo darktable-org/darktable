@@ -55,13 +55,13 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
 
-  cl_int err;
+  cl_int err = -999;
   const float black = d->black;
   const float white = exposure2white(d->exposure);
   const float scale = 1.0/(white - black);
@@ -72,8 +72,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 2, sizeof(float), (void *)&black);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 3, sizeof(float), (void *)&scale);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_exposure, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue exposure kernel! %d\n", err);
+  if(err != CL_SUCCESS) goto error;
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_exposure] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 
