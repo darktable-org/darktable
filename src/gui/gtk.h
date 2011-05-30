@@ -94,6 +94,10 @@ typedef struct dt_gui_gtk_t
     GtkWidget *histogram_expander;
     GtkWidget *histogram;
 
+    // Right side widgets
+    GtkWidget *right;
+    GtkWidget *right_vbox;
+
   } widgets;
 
   GladeXML *main_window;

@@ -55,6 +55,7 @@
 #include "tool_colorlabels.h"
 
 static void init_widgets();
+static void init_right(GtkWidget *container);
 static void init_histogram(GtkWidget *container);
 static void init_module_groups(GtkWidget *container);
 static void init_plugins(GtkWidget *container);
@@ -79,7 +80,7 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
       break;
     case 1:
       bit = dt_conf_get_int("ui_last/panel_right");
-      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+      widget = darktable.gui->widgets.right;
       break;
     case 2:
       bit = dt_conf_get_int("ui_last/panel_top");
@@ -230,7 +231,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 1: // right
-      panel = glade_xml_get_widget (darktable.gui->main_window, "right");
+      panel = darktable.gui->widgets.right;
       if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, 0.0, height/2-width);
@@ -1131,11 +1132,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     panel_width = 300;
     dt_conf_set_int("panel_width", panel_width);
   }
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  widget = darktable.gui->widgets.right;
   gtk_widget_set_size_request (widget, panel_width, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left");
   gtk_widget_set_size_request (widget, panel_width, -1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right_vbox");
+  widget = darktable.gui->widgets.right;
   gtk_widget_set_size_request (widget, panel_width-5, -1);
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
   gtk_widget_set_size_request (widget, panel_width-5, -1);
@@ -1421,8 +1422,35 @@ void init_widgets()
   gtk_widget_show(widget);
 
   // Initializing the right side
-  container = glade_xml_get_widget(darktable.gui->main_window,
-                                   "right_vbox");
+  init_right(container);
+}
+
+void init_right(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Attaching the outer GtkAlignment
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 0, 5);
+  darktable.gui->widgets.right = widget;
+  gtk_table_attach(GTK_TABLE(container), widget, 3, 4, 1, 2,
+                   GTK_SHRINK,
+                   GTK_SHRINK | GTK_EXPAND | GTK_FILL,
+                   0, 0);
+  gtk_widget_show(widget);
+
+  // Adding the inner vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.right_vbox = widget;
+  gtk_widget_set_size_request(widget, 0, -1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Initializing each section of the right side
+  container = widget;
+
   init_histogram(container);
   init_module_groups(container);
   init_plugins(container);
