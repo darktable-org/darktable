@@ -33,6 +33,7 @@
 #include "common/points.h"
 #include "common/opencl.h"
 #include "develop/imageop.h"
+#include "develop/blend.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
@@ -344,6 +345,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, argc, argv);
+
+  darktable.blendop = (dt_blendop_t *)malloc(sizeof(dt_blendop_t));
+  dt_develop_blend_init(darktable.blendop);
 
   darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());

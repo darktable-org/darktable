@@ -81,32 +81,36 @@ flags ()
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)self->data;
+  cl_mem dev_m = NULL;
+  cl_int err = -999;
 
-  cl_int err;
   const int devid = piece->pipe->devid;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
+
   if(rad == 0)
   {
     size_t origin[] = {0, 0, 0};
     size_t region[] = {roi_in->width, roi_in->height, 1};
-    err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
-    return;
+    err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
+    if (err != CL_SUCCESS) goto error;
+    return TRUE;
   }
+  // init gaussian kernel
   float mat[2*(MAXR+1)];
   const int wd = 2*rad+1;
   float *m = mat + rad;
   const float sigma2 = (1.0f/(2.5*2.5))*(d->radius*roi_in->scale/piece->iscale)*(d->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
-  // init gaussian kernel
   for(int l=-rad; l<=rad; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
   for(int l=-rad; l<=rad; l++) m[l] /= weight;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
+  dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
+  if (dev_m == NULL) goto error;
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 2, sizeof(cl_mem), (void *)&dev_m);
@@ -114,8 +118,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 4, sizeof(float), (void *)&d->amount);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 5, sizeof(float), (void *)&d->threshold);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_sharpen, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue sharpen kernel! %d\n", err);
-  clReleaseMemObject(dev_m);
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(dev_m);
+  return TRUE;
+
+error:
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_sharpen] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 

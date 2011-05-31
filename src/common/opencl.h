@@ -32,6 +32,8 @@
 #include <CL/cl.h>
 // #pragma GCC diagnostic
 #include "common/dtpthread.h"
+#include "common/dlopencl.h"
+#include "control/conf.h"
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -43,6 +45,8 @@ typedef struct dt_opencl_device_t
   cl_device_id devid;
   cl_context context;
   cl_command_queue cmd_queue;
+  size_t max_image_width;
+  size_t max_image_height;
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel  kernel [DT_OPENCL_MAX_KERNELS];
   int program_used[DT_OPENCL_MAX_PROGRAMS];
@@ -58,8 +62,10 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
+  int enabled;
   int num_devs;
   dt_opencl_device_t *dev;
+  dt_dlopencl_t *dlocl;
 }
 dt_opencl_t;
 
@@ -68,6 +74,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[]);
 
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
+
+/** cleans up command queue. */
+void dt_opencl_finish(cl_command_queue q);
 
 /** locks a device for your thread's exclusive use. blocks if it's busy. pass -1 to let dt chose a device.
  *  always use the devid returned, in case you didn't get your request! */
@@ -97,24 +106,47 @@ int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, c
 /** launch kernel! */
 int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes);
 
+/** check if opencl is inited */
+int dt_opencl_is_inited(void);
+
+/** check if opencl is enabled */
+int dt_opencl_is_enabled(void);
+
+/** disable opencl */
+void dt_opencl_disable(void);
+
+/** update enabled flag with value from preferences */
+void dt_opencl_update_enabled(void);
+
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
-void dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp);
+int dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp);
 
 void* dt_opencl_copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp);
 
 void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, void *host);
 
+int dt_opencl_enqueue_copy_image(cl_command_queue q, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region, int events, cl_event *wait, cl_event *event);
+
 void* dt_opencl_alloc_device(const int width, const int height, const int devid, const int bpp);
+
+void dt_opencl_release_mem_object(void *mem);
+
+/** check if image size fit into limits given by OpenCL runtime */
+int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height);
 
 #else
 #include <stdlib.h>
+#include "control/conf.h"
 typedef struct dt_opencl_t
 {
   int inited;
+  int enabled;
 } dt_opencl_t;
 static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
   cl->inited = 0;
+  cl->enabled = 0;
+  dt_conf_set_bool("opencl", FALSE);
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}
 static inline int dt_opencl_lock_device(dt_opencl_t *cl, const int dev)
@@ -147,6 +179,17 @@ static inline int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, co
 {
   return -1;
 }
+static inline int dt_opencl_is_inited(void)
+{
+  return 0;
+}
+static inline int dt_opencl_is_enabled(void)
+{
+  return 0;
+}
+static inline void dt_opencl_disable(void) {}
+static inline void dt_opencl_update_enabled(void) {}
+static inline void dt_opencl_release_mem_object(void *mem) {}
 #endif
 
 

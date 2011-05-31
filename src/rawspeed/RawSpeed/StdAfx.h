@@ -20,7 +20,10 @@
     http://www.klauspost.com
 */
 
-
+#if defined(__APPLE__)
+#define __unix__
+#define posix_memalign(memptr,align,size) ((*memptr=malloc(((size/16)+1)*16))==NULL)
+#endif
 
 #if defined(__MINGW32__)
 #define UNICODE

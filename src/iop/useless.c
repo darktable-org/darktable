@@ -79,6 +79,13 @@ const char *name()
   return _("silly example");
 }
 
+// some additional flags (self explanatory i think):
+int
+flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 // where does it appear in the gui?
 int
 groups ()
@@ -152,7 +159,7 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // we are pretty late in the pipe:
-  module->priority = 900;
+  module->priority = 901;
   module->params_size = sizeof(dt_iop_useless_params_t);
   module->gui_data = NULL;
   // init defaults:

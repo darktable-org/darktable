@@ -31,6 +31,9 @@ FILE(GLOB SOURCE_FILES
   "common/variables.c" 
   "common/pwstorage/pwstorage.c" 
   "common/pwstorage/backend_gconf.c"
+  "common/opencl.c"
+  "common/dynload.c"
+  "common/dlopencl.c"
   "control/control.c"  
   "control/jobs/control_jobs.c"  
   "control/jobs/develop_jobs.c"  
@@ -56,7 +59,7 @@ FILE(GLOB SOURCE_FILES
   "libs/lib.c"
   "views/view.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -157,13 +160,15 @@ if(GNOMEKEYRING_FOUND)
   add_definitions("-DHAVE_GKEYRING")
 endif(GNOMEKEYRING_FOUND)
 
-find_package(OpenCL)
-if(OPENCL_FOUND)
-  include_directories(${OPENCL_INCLUDE_DIR})
-  list(APPEND LIBS ${OPENCL_LIBRARIES})
-  list(APPEND SOURCES "common/opencl.c")
-  add_definitions("-DHAVE_OPENCL")
-endif(OPENCL_FOUND)
+#find_package(OpenCL)
+#if(OPENCL_FOUND AND USE_OPENCL)
+#  include_directories(${OPENCL_INCLUDE_DIR})
+#  list(APPEND LIBS ${OPENCL_LIBRARIES})
+#  list(APPEND SOURCES "common/opencl.c")
+#  list(APPEND SOURCES "common/dynload.c")
+#  list(APPEND SOURCES "common/dlopencl.c")
+#  add_definitions("-DHAVE_OPENCL")
+#endif(OPENCL_FOUND AND USE_OPENCL)
 
 # build opengl slideshow viewer?
 find_package(SDL)
@@ -199,6 +204,11 @@ endif(GCONF2_FOUND)
 if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
 endif(OPENEXR_FOUND)
+
+if(USE_OPENCL)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
+  add_definitions("-DHAVE_OPENCL")
+endif(USE_OPENCL)
 
 
 if(GPHOTO2_FOUND)
@@ -249,7 +259,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 #
 add_custom_command(
    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
 )
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPERTIES GENERATED 1)
 
@@ -299,7 +309,7 @@ if(NOT DONT_USE_RAWSPEED)
   add_subdirectory(rawspeed)
 endif(NOT DONT_USE_RAWSPEED)
 
-install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL}/darktable)
+install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 
 # Compile libraw modules
