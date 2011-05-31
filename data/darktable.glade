@@ -741,22 +741,7 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkEventBox" id="jobs_list_eventbox">
-                        <child>
-                          <widget class="GtkVBox" id="jobs_content_box">
-                            <property name="no_show_all">True</property>
-                            <property name="border_width">5</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </widget>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">2</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                   </widget>
                 </child>

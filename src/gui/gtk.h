@@ -98,6 +98,9 @@ typedef struct dt_gui_gtk_t
     GtkWidget *right;
     GtkWidget *right_vbox;
 
+    // Jobs list
+    GtkWidget *jobs_content_box;
+
   } widgets;
 
   GladeXML *main_window;

@@ -55,11 +55,15 @@
 #include "tool_colorlabels.h"
 
 static void init_widgets();
+
+static void init_jobs_list(GtkWidget *container);
+
 static void init_right(GtkWidget *container);
 static void init_histogram(GtkWidget *container);
 static void init_module_groups(GtkWidget *container);
 static void init_plugins(GtkWidget *container);
 static void init_module_list(GtkWidget *container);
+
 static void init_center(GtkWidget *container);
 static void init_center_bottom(GtkWidget *container);
 static void init_colorpicker(GtkWidget *container);
@@ -1423,6 +1427,28 @@ void init_widgets()
 
   // Initializing the right side
   init_right(container);
+
+  // Initializing the left side
+  container = glade_xml_get_widget(darktable.gui->main_window,
+                                   "left_vbox");
+  init_jobs_list(container);
+}
+
+static void init_jobs_list(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the outer event box
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+
+  // Adding the content vbox
+  container = widget;
+  widget = gtk_vbox_new(FALSE, 0);
+  darktable.gui->widgets.jobs_content_box = widget;
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_container_set_border_width(GTK_CONTAINER(widget), 5);
+  gtk_container_add(GTK_CONTAINER(container), widget);
 }
 
 void init_right(GtkWidget *container)
