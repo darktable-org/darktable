@@ -189,7 +189,7 @@ static inline int dt_opencl_is_enabled(void)
 }
 static inline void dt_opencl_disable(void) {}
 static inline void dt_opencl_update_enabled(void) {}
-static inline void dt_opencl_release_mem_object(void) {}
+static inline void dt_opencl_release_mem_object(void *mem) {}
 #endif
 
 
