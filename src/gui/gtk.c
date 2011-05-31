@@ -56,6 +56,8 @@
 
 static void init_widgets();
 
+static void init_import(GtkWidget *container);
+static void init_left_scroll_window(GtkWidget *container);
 static void init_jobs_list(GtkWidget *container);
 
 static void init_right(GtkWidget *container);
@@ -1147,10 +1149,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // leave some space for scrollbars to appear:
   widget = darktable.gui->widgets.plugins_vbox;
   gtk_widget_set_size_request (widget, panel_width-5-13, -1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
+  widget = darktable.gui->widgets.left_scrolled;
   gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   // and make the scrollbars disappear when not needed:
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
+  widget = darktable.gui->widgets.left_scrolled_window;
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   widget = darktable.gui->widgets.right_scrolled_window;
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -1172,16 +1174,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_background_jobs_init();
 
   /* connect the signals in the interface */
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "button_import");
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (import_button_clicked),
-                    NULL);
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "button_import_single");
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (import_image_button_clicked),
-                    NULL);
 
   /* Have the delete event (window close) end the program */
   dt_get_datadir(datadir, 1024);
@@ -1432,6 +1424,135 @@ void init_widgets()
   container = glade_xml_get_widget(darktable.gui->main_window,
                                    "left_vbox");
   init_jobs_list(container);
+  init_left_scroll_window(container);
+}
+
+void init_import(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  darktable.gui->widgets.import_eventbox = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("import"));
+  darktable.gui->widgets.import_expander = widget;
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_expander_set_expanded(GTK_EXPANDER(widget), TRUE);
+  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Adding the alignment
+  container = widget;
+
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Adding the inner vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 5);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  container = widget;
+
+  // Adding the single import button
+  widget = gtk_button_new_with_label(_("image"));
+  gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
+  gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_set_receives_default(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (import_image_button_clicked),
+                    NULL);
+
+  // Adding the import button
+  widget = gtk_button_new_with_label(_("folder"));
+  gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
+  gtk_widget_set_tooltip_text(widget,
+                              _("select a folder to import as film roll"));
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_set_receives_default(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (import_button_clicked),
+                    NULL);
+
+  // Adding the devices expander
+  widget = gtk_vbox_new(FALSE, 5);
+  darktable.gui->widgets.devices_expander_body = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK);
+  gtk_widget_show(widget);
+}
+
+void init_left_scroll_window(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the outer scrolled window
+  widget = gtk_scrolled_window_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                                     0,
+                                                                     100,
+                                                                     1,
+                                                                     10,
+                                                                     10)),
+                                   GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                                     0,
+                                                                     100,
+                                                                     1,
+                                                                     10,
+                                                                     10)));
+  gtk_widget_set_can_focus(widget, TRUE);
+  darktable.gui->widgets.left_scrolled_window = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the viewport
+  container = widget;
+
+  widget = gtk_viewport_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                              0,
+                                                              100,
+                                                              1,
+                                                              10,
+                                                              10)),
+                            GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                              0,
+                                                              100,
+                                                              1,
+                                                              10,
+                                                              10)));
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
+  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Adding the main vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.left_scrolled = widget;
+  gtk_widget_set_size_request(widget, 0, -1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Initializing the sub-sections
+  init_import(widget);
 }
 
 void init_jobs_list(GtkWidget *container)

@@ -101,6 +101,15 @@ typedef struct dt_gui_gtk_t
     // Jobs list
     GtkWidget *jobs_content_box;
 
+    // Left side widgets
+    GtkWidget *left_scrolled_window;
+    GtkWidget *left_scrolled;
+
+    // Import widgets
+    GtkWidget *import_eventbox;
+    GtkWidget *import_expander;
+    GtkWidget *devices_expander_body;
+
   } widgets;
 
   GladeXML *main_window;
