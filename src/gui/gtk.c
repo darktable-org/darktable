@@ -1147,7 +1147,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
   gtk_widget_set_size_request (widget, panel_width-5, -1);
   // leave some space for scrollbars to appear:
-  widget = darktable.gui->widgets.plugins_vbox;
+  widget = darktable.gui->widgets.right_scrolled_window;
   gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   widget = darktable.gui->widgets.left_scrolled;
   gtk_widget_set_size_request (widget, panel_width-5-13, -1);
@@ -1669,8 +1669,6 @@ void init_plugins(GtkWidget *container)
                                                                      10,
                                                                      10)));
   darktable.gui->widgets.right_scrolled_window = widget;
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
-                                 GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_widget_show(widget);
