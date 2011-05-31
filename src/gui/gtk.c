@@ -1434,7 +1434,7 @@ void init_widgets()
   init_jobs_list(container);
 }
 
-static void init_jobs_list(GtkWidget *container)
+void init_jobs_list(GtkWidget *container)
 {
   GtkWidget *widget;
 
