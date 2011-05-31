@@ -99,9 +99,11 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);
 
-static float gh(const float *const f)
+static float gh(const float const f)
 {
-  return 1.0f/(1.0f + f[0]*f[0] + f[1]*f[1] + f[2]*f[2]);
+  return 0.0001f + dt_fast_expf(-f*100.0f);
+  // return 1.0f/(1.0f + f);
+  // return 1.0f/(1.0f + f*f/0.0001f);
 }
 
 /** process, all real work is done here. */
@@ -114,12 +116,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int K = 7; // nbhood
   const int P = 3; // pixel filter size
 
-  // TODO: adjust to Lab
+  // TODO: adjust to Lab, make L more important
   const float norm[4] = { 1.0f/256.0f, 1.0f/256.0f, 1.0f/256.0f, 1.0f };
 
-  float *S = dt_alloc_align(64, sizeof(float)*4*roi_out->width*roi_out->height);
+  float *S = dt_alloc_align(64, sizeof(float)*roi_out->width*roi_out->height);
   // we want to sum up weights in col[3], so need to init to 0:
-  memset(o, 0x0, sizeof(float)*4);
+  memset(o, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
 
   // for each shift vector
   for(int kj=-K;kj<=K;kj++)
@@ -134,19 +136,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         const float *in  = ((float *)i) + 4* roi_in->width * j;
         const float *ins = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
-        float *out = ((float *)S) + 4*roi_out->width*j;
-        if(j+kj < 0 || j+kj >= roi_out->height) memset(out, 0x0, sizeof(float)*4*roi_out->width);
+        float *out = ((float *)S) + roi_out->width*j;
+        if(j+kj < 0 || j+kj >= roi_out->height) memset(out, 0x0, sizeof(float)*roi_out->width);
         else for(int i=0; i<roi_out->width; i++)
         {
-          if(i+ki < 0 || i+ki >= roi_out->width) for(int k=0;k<3;k++) out[k] = 0.0f;
+          if(i+ki < 0 || i+ki >= roi_out->width) out[0] = 0.0f;
           else
           {
-            for(int k=0;k<3;k++) out[k] = (in[k] - ins[k]) * norm[k];
-            for(int k=0;k<3;k++) out[k] *= out[k];
+            out[0]  = (in[0] - ins[0])*(in[0] - ins[0]) * norm[0] * norm[0];
+            out[0] += (in[1] - ins[1])*(in[1] - ins[1]) * norm[1] * norm[1];
+            out[0] += (in[2] - ins[2])*(in[2] - ins[2]) * norm[2] * norm[2];
           }
           in  += 4;
           ins += 4;
-          out += 4;
+          out ++;
         }
       }
       // now sum up:
@@ -159,11 +162,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         int stride = 1;
         while(stride < roi_out->width)
         {
-          float *out = ((float *)S) + 4*roi_out->width*j;
+          float *out = ((float *)S) + roi_out->width*j;
           for(int i=0;i<roi_out->width-stride;i++)
           {
-            for(int k=0;k<3;k++) out[k] += out[k+4*stride];
-            out += 4;
+            out[0] += out[stride];
+            out ++;
           }
           stride <<= 1;
         }
@@ -177,11 +180,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         int stride = 1;
         while(stride < roi_out->height)
         {
-          float *out = S + 4*i;
+          float *out = S + i;
           for(int j=0;j<roi_out->height-stride;j++)
           {
-            for(int k=0;k<3;k++) out[k] += out[k + 4*roi_out->width*stride];
-            out += 4*roi_out->width;
+            out[0] += out[roi_out->width*stride];
+            out[0] += roi_out->width;
           }
           stride <<= 1;
         }
@@ -195,21 +198,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         if(j+kj < 0 || j+kj >= roi_out->height) continue;
         const float *in  = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
         float *out = ((float *)o) + 4*roi_out->width*j;
-        const float *s = S + 4*roi_out->width*j;
-        const int offy = 4*MIN(j, MIN(roi_out->height - j - 1, P)) * roi_out->width;
+        // FIXME: seems to be inverted/shifted for some reason. are we accessing this right: ?
+        const float *s = S + roi_out->width*j;
+        const int offy = MIN(j, MIN(roi_out->height - j - 1, P)) * roi_out->width;
         for(int i=0; i<roi_out->width; i++)
         {
           if(i+ki >= 0 && i+ki < roi_out->width)
           {
-            const int offx = 4*MIN(i, MIN(roi_out->width - i - 1, P));
-            const float *m1 = s + offx - offy, *m2 = s - offx + offy, *p1 = s + offx + offy, *p2 = s - offx - offy;
-            float dst[3];
-            for(int k=0;k<3;k++) dst[k] = p1[k] + p2[k] - m1[k] - m2[k];
-            const float w = gh(dst);
+            const int offx = MIN(i, MIN(roi_out->width - i - 1, P));
+            const float m1 = s[offx - offy], m2 = s[- offx + offy], p1 = s[offx + offy], p2 = s[- offx - offy];
+            const float w = gh(p1 + p2 - m1 - m2);
             for(int k=0;k<3;k++) out[k] += in[k] * w;
             out[3] += w;
           }
-          s   += 4;
+          s   ++;
           in  += 4;
           out += 4;
         }
@@ -231,40 +233,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   // free the summed area table:
   free(S);
-
-#if 0
-  // the total scale is composed of scale before input to the pipeline (iscale),
-  // and the scale of the roi.
-  const float scale = piece->iscale/roi_in->scale;
-  // how many colors in our buffer?
-  // iterate over all output pixels (same coordinates as input)
-#ifdef _OPENMP
-  // optional: parallelize it!
-  #pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out,d)
-#endif
-  for(int j=0; j<roi_out->height; j++)
-  {
-    float *in  = ((float *)i) + ch*roi_in->width *j;
-    float *out = ((float *)o) + ch*roi_out->width*j;
-    for(int i=0; i<roi_out->width; i++)
-    {
-      // calculate world space coordinates:
-      int wi = (roi_in->x + i) * scale, wj = (roi_in->y + j) * scale;
-      if((wi/d->checker_scale+wj/d->checker_scale)&1) for(int c=0; c<3; c++) out[c] = 0;
-      else                                            for(int c=0; c<3; c++) out[c] = in[c];
-      in += ch;
-      out += ch;
-    }
-  }
-#endif
 }
 
 /** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
-  // change default_enabled depending on type of image, or set new default_params even.
-
-  // if this callback exists, it has to write default_params and default_enabled.
+  // our module is disabled by default
+  module->default_enabled = 0;
+  // init defaults:
+  dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
+  {
+    50
+  };
+  memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
 }
 
 /** init, cleanup, commit to pipeline */
@@ -274,21 +256,10 @@ void init(dt_iop_module_t *module)
   module->data = NULL; //malloc(sizeof(dt_iop_nlmeans_global_data_t));
   module->params = malloc(sizeof(dt_iop_nlmeans_params_t));
   module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
-  // our module is disabled by default
-  // by default:
-  module->default_enabled = 0;
   // TODO: do this in Lab
   module->priority = 900;
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
-  // init defaults:
-  dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
-  {
-    50
-  };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
