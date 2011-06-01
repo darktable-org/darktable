@@ -31,34 +31,19 @@ DT_MODULE(1)
 typedef struct dt_iop_nlmeans_params_t
 {
   // these are stored in db.
-  // make sure everything is in here does not
-  // depend on temporary memory (pointers etc)
-  // stored in self->params and self->default_params
-  // also, since this is stored in db, you should keep changes to this struct
-  // to a minimum. if you have to change this struct, it will break
-  // users data bases, and you should increment the version
-  // of DT_MODULE(VERSION) above!
-  int checker_scale;
+  float luma;
+  float chroma;
 }
 dt_iop_nlmeans_params_t;
 
 typedef struct dt_iop_nlmeans_gui_data_t
 {
-  // whatever you need to make your gui happy.
-  // stored in self->gui_data
-  GtkDarktableSlider *scale; // this is needed by gui_update
+  GtkDarktableSlider *luma;
+  GtkDarktableSlider *chroma;
 }
 dt_iop_nlmeans_gui_data_t;
 
-typedef struct dt_iop_nlmeans_data_t
-{
-  // this is stored in the pixelpipeline after a commit (not the db),
-  // you can do some precomputation and get this data in process().
-  // stored in piece->data
-  int checker_scale; // in our case, no precomputation or
-  // anything is possible, so this is just a copy.
-}
-dt_iop_nlmeans_data_t;
+typedef dt_iop_nlmeans_params_t dt_iop_nlmeans_data_t;
 
 typedef struct dt_iop_nlmeans_global_data_t
 {
@@ -70,30 +55,16 @@ typedef struct dt_iop_nlmeans_global_data_t
 }
 dt_iop_nlmeans_global_data_t;
 
-// this returns a translatable name
 const char *name()
 {
-  // make sure you put all your translatable strings into _() !
-  return _("silly example");
+  return _("denoising (extra slow)");
 }
 
-// where does it appear in the gui?
 int
 groups ()
 {
   return IOP_GROUP_CORRECT;
 }
-
-// implement this, if you have esoteric output bytes per pixel. default is 4*float
-/*
-int
-output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);
-  else return 4*sizeof(float);
-}
-*/
-
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
@@ -101,10 +72,15 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 
 static float gh(const float const f)
 {
-  return 0.0001f + dt_fast_expf(-f*100.0f);
-  // return 1.0f/(1.0f + f);
-  // return 1.0f/(1.0f + f*f/0.0001f);
+  // return 0.0001f + dt_fast_expf(-fabsf(f)*800.0f);
+  // return 1.0f/(1.0f + f*f);
+  // make spread bigger: less smoothing
+  const float spread = 100.f;
+  return 1.0f/(1.0f + fabsf(f)*spread);
 }
+
+// TODO: this should be _a lot_ faster (perfectly suited, ppl report real-time performance numbers..)
+// void process_cl 
 
 /** process, all real work is done here. */
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -117,7 +93,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int P = 3; // pixel filter size
 
   // TODO: adjust to Lab, make L more important
-  const float norm[4] = { 1.0f/256.0f, 1.0f/256.0f, 1.0f/256.0f, 1.0f };
+  // TODO: are these user parameters, or should we just use blending after the fact?
+  const float norm[4] = { 1.0f/50.0f, 1.0f/256.0f, 1.0f/256.0f, 1.0f };
 
   float *S = dt_alloc_align(64, sizeof(float)*roi_out->width*roi_out->height);
   // we want to sum up weights in col[3], so need to init to 0:
@@ -128,6 +105,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     for(int ki=-K;ki<=K;ki++)
     {
+#if 0
+      // TODO: don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only)
+#else
       // construct summed area table of weights:
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(i,S,roi_in,roi_out,kj,ki)
@@ -184,7 +164,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           for(int j=0;j<roi_out->height-stride;j++)
           {
             out[0] += out[roi_out->width*stride];
-            out[0] += roi_out->width;
+            out += roi_out->width;
           }
           stride <<= 1;
         }
@@ -198,7 +178,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         if(j+kj < 0 || j+kj >= roi_out->height) continue;
         const float *in  = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
         float *out = ((float *)o) + 4*roi_out->width*j;
-        // FIXME: seems to be inverted/shifted for some reason. are we accessing this right: ?
         const float *s = S + roi_out->width*j;
         const int offy = MIN(j, MIN(roi_out->height - j - 1, P)) * roi_out->width;
         for(int i=0; i<roi_out->width; i++)
@@ -217,6 +196,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         }
       }
     }
+#endif
   }
   // normalize:
 #ifdef _OPENMP
@@ -243,7 +223,7 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
   {
-    50
+    0.5f, 0.5f
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
@@ -256,8 +236,8 @@ void init(dt_iop_module_t *module)
   module->data = NULL; //malloc(sizeof(dt_iop_nlmeans_global_data_t));
   module->params = malloc(sizeof(dt_iop_nlmeans_params_t));
   module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
-  // TODO: do this in Lab
-  module->priority = 900;
+  // about the first thing to do in Lab space:
+  module->priority = 310;
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
 }
@@ -277,7 +257,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)params;
   dt_iop_nlmeans_data_t *d = (dt_iop_nlmeans_data_t *)piece->data;
-  d->checker_scale = p->checker_scale;
+  d->luma   = p->luma;
+  d->chroma = p->chroma;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -291,16 +272,25 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
   free(piece->data);
 }
 
-/** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */
 static void
-slider_callback(GtkRange *range, dt_iop_module_t *self)
+luma_callback(GtkRange *range, dt_iop_module_t *self)
 {
   // this is important to avoid cycles!
   if(darktable.gui->reset) return;
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->checker_scale = dtgtk_slider_get_value(g->scale);
-  // let core know of the changes
+  p->luma = dtgtk_slider_get_value(g->luma);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+chroma_callback(GtkRange *range, dt_iop_module_t *self)
+{
+  // this is important to avoid cycles!
+  if(darktable.gui->reset) return;
+  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
+  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
+  p->chroma = dtgtk_slider_get_value(g->chroma);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -310,7 +300,8 @@ void gui_update    (dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale, p->checker_scale);
+  dtgtk_slider_set_value(g->luma,   p->luma);
+  dtgtk_slider_set_value(g->chroma, p->chroma);
 }
 
 void gui_init     (dt_iop_module_t *self)
@@ -318,10 +309,22 @@ void gui_init     (dt_iop_module_t *self)
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE, 1, 100, 1, 50, 0));
-  self->widget = GTK_WIDGET(g->scale);
-  g_signal_connect (G_OBJECT (g->scale), "value-changed",
-                    G_CALLBACK (slider_callback), self);
+  self->widget = gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  // TODO: adjust defaults:
+  g->luma   = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 1.0f, 0.01, 0.5f, 3));
+  g->chroma = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 1.0f, 0.01, 0.5f, 3));
+  dtgtk_slider_set_default_value(g->luma,   0.5f);
+  dtgtk_slider_set_default_value(g->chroma, 0.5f);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->luma), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma), TRUE, TRUE, 0);
+  dtgtk_slider_set_label(g->luma, _("luma"));
+  dtgtk_slider_set_unit (g->luma, "%");
+  dtgtk_slider_set_label(g->chroma, _("chroma"));
+  dtgtk_slider_set_unit (g->chroma, "%");
+  g_object_set (GTK_OBJECT(g->luma),   "tooltip-text", _("how much to smooth brightness"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->chroma), "tooltip-text", _("how much to smooth colors"), (char *)NULL);
+  g_signal_connect (G_OBJECT (g->luma),   "value-changed", G_CALLBACK (luma_callback),   self);
+  g_signal_connect (G_OBJECT (g->chroma), "value-changed", G_CALLBACK (chroma_callback), self);
 }
 
 void gui_cleanup  (dt_iop_module_t *self)
