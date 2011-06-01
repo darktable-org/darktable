@@ -39,67 +39,67 @@ void dt_gui_metadata_update()
       dt_image_cache_release(img, 'r');
       goto fill_minuses;
     }
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_filmroll");
+    widget = darktable.gui->widgets.metadata_label_filmroll;
     dt_image_film_roll(img, lbl, ll);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
     g_object_set(G_OBJECT(widget), "tooltip-text", lbl, (char *)NULL);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_filename");
+    widget = darktable.gui->widgets.metadata_label_filename;
     snprintf(lbl, ll, "%s", img->filename);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
     g_object_set(G_OBJECT(widget), "tooltip-text", img->filename, (char *)NULL);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_model");
+    widget = darktable.gui->widgets.metadata_label_model;
     snprintf(lbl, ll, "%s", img->exif_model);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
     g_object_set(G_OBJECT(widget), "tooltip-text", img->exif_model, (char *)NULL);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_lens");
+    widget = darktable.gui->widgets.metadata_label_lens;
     snprintf(lbl, ll, "%s", img->exif_lens);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
     g_object_set(G_OBJECT(widget), "tooltip-text", img->exif_lens, (char *)NULL);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_maker");
+    widget = darktable.gui->widgets.metadata_label_maker;
     snprintf(lbl, ll, "%s", img->exif_maker);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
     g_object_set(G_OBJECT(widget), "tooltip-text", img->exif_maker, (char *)NULL);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_aperture");
+    widget = darktable.gui->widgets.metadata_label_aperture;
     snprintf(lbl, ll, "F/%.1f", img->exif_aperture);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_exposure");
+    widget = darktable.gui->widgets.metadata_label_exposure;
     if(img->exif_exposure <= 0.5) snprintf(lbl, ll, "1/%.0f", 1.0/img->exif_exposure);
     else                          snprintf(lbl, ll, "%.1f''", img->exif_exposure);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_focal_length");
+    widget = darktable.gui->widgets.metadata_label_focal_length;
     snprintf(lbl, ll, "%.0f", img->exif_focal_length);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_focus_distance");
+    widget = darktable.gui->widgets.metadata_label_focus_distance;
     snprintf(lbl, ll, "%.0f", img->exif_focus_distance);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_iso");
+    widget = darktable.gui->widgets.metadata_label_iso;
     snprintf(lbl, ll, "%.0f", img->exif_iso);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_datetime");
+    widget = darktable.gui->widgets.metadata_label_datetime;
     snprintf(lbl, ll, "%s", img->exif_datetime_taken);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
     g_object_set(G_OBJECT(widget), "tooltip-text", img->exif_datetime_taken, (char *)NULL);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_width");
+    widget = darktable.gui->widgets.metadata_label_width;
     snprintf(lbl, ll, "%d", img->width);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_height");
+    widget = darktable.gui->widgets.metadata_label_height;
     snprintf(lbl, ll, "%d", img->height);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
     gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
 
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_title");
+    widget = darktable.gui->widgets.metadata_label_title;
     GList *res = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
     if(res != NULL)
     {
@@ -111,7 +111,7 @@ void dt_gui_metadata_update()
     }
     else
       gtk_label_set_text(GTK_LABEL(widget), "-");
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_creator");
+    widget = darktable.gui->widgets.metadata_label_creator;
     res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL);
     if(res != NULL)
     {
@@ -123,7 +123,7 @@ void dt_gui_metadata_update()
     }
     else
       gtk_label_set_text(GTK_LABEL(widget), "-");
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_rights");
+    widget = darktable.gui->widgets.metadata_label_rights;
     res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL);
     if(res != NULL)
     {
@@ -140,27 +140,27 @@ void dt_gui_metadata_update()
   }
   return;
 fill_minuses:
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_filename");
+  widget = darktable.gui->widgets.metadata_label_filename;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_model");
+  widget = darktable.gui->widgets.metadata_label_model;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_maker");
+  widget = darktable.gui->widgets.metadata_label_maker;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_aperture");
+  widget = darktable.gui->widgets.metadata_label_aperture;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_exposure");
+  widget = darktable.gui->widgets.metadata_label_exposure;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_focal_length");
+  widget = darktable.gui->widgets.metadata_label_focal_length;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_iso");
+  widget = darktable.gui->widgets.metadata_label_iso;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_datetime");
+  widget = darktable.gui->widgets.metadata_label_datetime;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_lens");
+  widget = darktable.gui->widgets.metadata_label_lens;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_width");
+  widget = darktable.gui->widgets.metadata_label_width;
   gtk_label_set_text(GTK_LABEL(widget), "-");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_label_height");
+  widget = darktable.gui->widgets.metadata_label_height;
   gtk_label_set_text(GTK_LABEL(widget), "-");
   return;
 }

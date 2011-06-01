@@ -118,6 +118,27 @@ typedef struct dt_gui_gtk_t
     GtkWidget *snapshots_expander;
     GtkWidget *snapshots_body;
 
+    // Metadata
+    GtkWidget *metadata_expander;
+
+    GtkWidget
+        *metadata_label_filename,
+        *metadata_label_model,
+        *metadata_label_maker,
+        *metadata_label_aperture,
+        *metadata_label_exposure,
+        *metadata_label_focal_length,
+        *metadata_label_focus_distance,
+        *metadata_label_iso,
+        *metadata_label_datetime,
+        *metadata_label_lens,
+        *metadata_label_width,
+        *metadata_label_height,
+        *metadata_label_filmroll,
+        *metadata_label_title,
+        *metadata_label_creator,
+        *metadata_label_rights;
+
   } widgets;
 
   GladeXML *main_window;
