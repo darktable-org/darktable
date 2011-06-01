@@ -353,7 +353,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
   gchar *outprofile=NULL;
   int outintent = 0;
   dt_iop_colorout_gui_data_t *g=NULL;

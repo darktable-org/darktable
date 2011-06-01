@@ -1485,6 +1485,19 @@
     </schema>
 
     <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/plugins/lighttable/export/force_lcms2</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/force_lcms2</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>always use lcms2 during export</short>
+        <long>this is about 28x as slow as the default.</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:core-->
       <key>/schemas/apps/darktable/plugins/lighttable/export/high_quality_processing</key>
       <applyto>/apps/darktable/plugins/lighttable/export/high_quality_processing</applyto>
       <owner>darktable</owner>
