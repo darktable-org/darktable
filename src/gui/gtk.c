@@ -1518,6 +1518,8 @@ void init_left_scroll_window(GtkWidget *container)
                                                                      10,
                                                                      10)));
   gtk_widget_set_can_focus(widget, TRUE);
+  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget),
+                                    GTK_CORNER_TOP_RIGHT);
   darktable.gui->widgets.left_scrolled_window = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_widget_show(widget);
