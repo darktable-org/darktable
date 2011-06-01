@@ -67,55 +67,7 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkScrolledWindow" id="left_scrolledwindow">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="hscrollbar_policy">never</property>
-                        <property name="window_placement">top-right</property>
-                        <property name="window_placement_set">True</property>
-                        <child>
-                          <widget class="GtkViewport" id="viewport2">
-                            <property name="visible">True</property>
-                            <property name="resize_mode">queue</property>
-                            <property name="shadow_type">none</property>
-                            <child>
-                              <widget class="GtkVBox" id="left_scrolled">
-                                <property name="width_request">0</property>
-                                <property name="visible">True</property>
-                                <property name="spacing">10</property>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <widget class="GtkDrawingArea" id="endmarker_left">
-                                    <property name="height_request">50</property>
-                                    <property name="visible">True</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="position">5</property>
-                                  </packing>
-                                </child>
-                              </widget>
-                            </child>
-                          </widget>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>

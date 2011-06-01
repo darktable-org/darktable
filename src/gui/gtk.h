@@ -144,6 +144,9 @@ typedef struct dt_gui_gtk_t
     GtkWidget *history_expander;
     GtkWidget *history_expander_body;
 
+    // Left end marker
+    GtkWidget *endmarker_left;
+
   } widgets;
 
   GladeXML *main_window;
