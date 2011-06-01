@@ -96,48 +96,7 @@
                                   <placeholder/>
                                 </child>
                                 <child>
-                                  <widget class="GtkEventBox" id="history_eventbox">
-                                    <property name="no_show_all">True</property>
-                                    <child>
-                                      <widget class="GtkExpander" id="history_expander">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="expanded">True</property>
-                                        <property name="spacing">10</property>
-                                        <child>
-                                          <widget class="GtkAlignment" id="history_alignment">
-                                            <property name="visible">True</property>
-                                            <property name="bottom_padding">10</property>
-                                            <property name="left_padding">5</property>
-                                            <property name="right_padding">10</property>
-                                            <child>
-                                              <widget class="GtkVBox" id="history_expander_body">
-                                                <property name="visible">True</property>
-                                                <property name="events">GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK</property>
-                                                <child>
-                                                  <placeholder/>
-                                                </child>
-                                              </widget>
-                                            </child>
-                                          </widget>
-                                        </child>
-                                        <child>
-                                          <widget class="GtkLabel" id="label13">
-                                            <property name="visible">True</property>
-                                            <property name="label" translatable="yes">history</property>
-                                          </widget>
-                                          <packing>
-                                            <property name="type">label_item</property>
-                                          </packing>
-                                        </child>
-                                      </widget>
-                                    </child>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">4</property>
-                                  </packing>
+                                  <placeholder/>
                                 </child>
                                 <child>
                                   <widget class="GtkDrawingArea" id="endmarker_left">

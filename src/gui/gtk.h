@@ -139,6 +139,11 @@ typedef struct dt_gui_gtk_t
         *metadata_label_creator,
         *metadata_label_rights;
 
+    // History box
+    GtkWidget *history_eventbox;
+    GtkWidget *history_expander;
+    GtkWidget *history_expander_body;
+
   } widgets;
 
   GladeXML *main_window;

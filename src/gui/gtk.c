@@ -56,6 +56,7 @@
 
 static void init_widgets();
 
+static void init_history_box(GtkWidget *container);
 static void init_info_box(GtkWidget *container);
 static void init_snapshots(GtkWidget *container);
 static void init_import(GtkWidget *container);
@@ -1429,6 +1430,45 @@ void init_widgets()
   init_left_scroll_window(container);
 }
 
+void init_history_box(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  darktable.gui->widgets.history_eventbox = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_set_no_show_all(widget, TRUE);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("history"));
+  darktable.gui->widgets.history_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
+  gtk_widget_show(widget);
+
+  // Adding the alignment
+  container = widget;
+
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
+  gtk_widget_show(widget);
+
+  // Adding the history body
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 0);
+  darktable.gui->widgets.history_expander_body = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
+  gtk_widget_show(widget);
+
+}
+
 void init_info_box(GtkWidget *container)
 {
   int i;
@@ -1708,6 +1748,9 @@ void init_left_scroll_window(GtkWidget *container)
 
   // Initializing the image information box
   init_info_box(container);
+
+  // Initializing the history box
+  init_history_box(container);
 }
 
 void init_jobs_list(GtkWidget *container)

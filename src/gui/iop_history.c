@@ -60,7 +60,7 @@ history_button_clicked (GtkWidget *widget, gpointer user_data)
   if(reset) return;
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return;
 
-  GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hbody = darktable.gui->widgets.history_expander_body;
   GtkWidget *hbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
   reset = 1;
 
@@ -132,7 +132,7 @@ apply_style_button_press (GtkWidget *widget, GdkEventButton *event, gpointer use
 void
 dt_gui_iop_history_init ()
 {
-  GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hbody = darktable.gui->widgets.history_expander_body;
   GtkWidget *hhbox = gtk_hbox_new (FALSE,2);
   GtkWidget *hvbox = gtk_vbox_new (FALSE,0);
   GtkWidget *hbutton = gtk_button_new_with_label (_("compress history stack"));
@@ -167,7 +167,7 @@ dt_gui_iop_history_init ()
 void
 dt_gui_iop_history_reset ()
 {
-  GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hbody = darktable.gui->widgets.history_expander_body;
   GtkWidget *hvbox =  g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
 
   /* clear from history items */
@@ -181,7 +181,7 @@ dt_gui_iop_history_reset ()
 GtkWidget *
 dt_gui_iop_history_add_item (long int num, const gchar *label)
 {
-  GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hbody = darktable.gui->widgets.history_expander_body;
   GtkWidget *hvbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
 
   GList *items = gtk_container_get_children (GTK_CONTAINER (hvbox));
@@ -221,7 +221,7 @@ dt_gui_iop_history_add_item (long int num, const gchar *label)
 long int
 dt_gui_iop_history_get_top()
 {
-  GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hbody = darktable.gui->widgets.history_expander_body;
   GtkWidget *hvbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
 
   GtkWidget *th = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hvbox)), 0);
@@ -231,7 +231,7 @@ dt_gui_iop_history_get_top()
 void
 dt_gui_iop_history_pop_top()
 {
-  GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hbody = darktable.gui->widgets.history_expander_body;
   GtkWidget *hvbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
 
   /* remove top */
@@ -244,7 +244,7 @@ dt_gui_iop_history_pop_top()
 void
 dt_gui_iop_history_update_labels ()
 {
-  GtkWidget *hbody =  glade_xml_get_widget (darktable.gui->main_window, "history_expander_body");
+  GtkWidget *hbody = darktable.gui->widgets.history_expander_body;
   GtkWidget *hvbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (hbody)), 0);
   GList *items = gtk_container_get_children (GTK_CONTAINER (hvbox));
 
