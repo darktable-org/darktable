@@ -1551,8 +1551,16 @@ void init_left_scroll_window(GtkWidget *container)
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_widget_show(widget);
 
-  // Initializing the sub-sections
-  init_import(widget);
+  container = widget;
+
+  // Initializing the import controls
+  init_import(container);
+
+  // Initializing the left-side plugins box
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.plugins_vbox_left = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_show(widget);
 }
 
 void init_jobs_list(GtkWidget *container)

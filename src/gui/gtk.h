@@ -110,6 +110,9 @@ typedef struct dt_gui_gtk_t
     GtkWidget *import_expander;
     GtkWidget *devices_expander_body;
 
+    // Left side plugins
+    GtkWidget *plugins_vbox_left;
+
   } widgets;
 
   GladeXML *main_window;

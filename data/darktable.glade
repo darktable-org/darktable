@@ -87,17 +87,7 @@
                                   <placeholder/>
                                 </child>
                                 <child>
-                                  <widget class="GtkVBox" id="plugins_vbox_left">
-                                    <property name="visible">True</property>
-                                    <property name="spacing">10</property>
-                                    <child>
-                                      <placeholder/>
-                                    </child>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="position">1</property>
-                                  </packing>
+                                  <placeholder/>
                                 </child>
                                 <child>
                                   <widget class="GtkEventBox" id="snapshots_eventbox">

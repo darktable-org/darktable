@@ -695,7 +695,7 @@ void enter(dt_view_t *self)
 {
   // add expanders
   GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-  GtkBox *box_left = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left"));
+  GtkBox *box_left = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
   GList *modules = g_list_last(darktable.lib->plugins);
 
   // Adjust gui
@@ -793,7 +793,7 @@ void leave(dt_view_t *self)
   }
   GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
-  box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left"));
+  box = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 }
 
