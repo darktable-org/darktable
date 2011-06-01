@@ -941,6 +941,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
       dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     else
       dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    outbuf = pipe.backbuf;
   }
 
   // downconversion to low-precision formats:
