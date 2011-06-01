@@ -56,6 +56,7 @@
 
 static void init_widgets();
 
+static void init_snapshots(GtkWidget *container);
 static void init_import(GtkWidget *container);
 static void init_left_scroll_window(GtkWidget *container);
 static void init_jobs_list(GtkWidget *container);
@@ -608,7 +609,7 @@ snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)
 
   if (!darktable.develop->image) return;
   char wdname[64], oldfilename[30];
-  GtkWidget *sbody =  glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+  GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
   GtkWidget *sbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbody)), 0);
 
   GtkWidget *wid = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbox)), 0);
@@ -671,7 +672,7 @@ snapshot_toggled (GtkToggleButton *widget, long int which)
   }
   else if(gtk_toggle_button_get_active(widget))
   {
-    GtkWidget *sbody =  glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+    GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
     GtkWidget *sbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbody)), 0);
 
     for(int k=0; k<4; k++)
@@ -1264,7 +1265,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     (gpointer)0);
 
   // snapshot management
-  GtkWidget *sbody = glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+  GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
   GtkWidget *svbox = gtk_vbox_new (FALSE,0);
   GtkWidget *sbutton = gtk_button_new_with_label (_("take snapshot"));
   g_object_set (sbutton, "tooltip-text", _("take snapshot to compare with another image or the same image at another stage of development"), (char *)NULL);
@@ -1427,6 +1428,46 @@ void init_widgets()
   init_left_scroll_window(container);
 }
 
+void init_snapshots(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  darktable.gui->widgets.snapshots_eventbox = widget;
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("snapshots"));
+  darktable.gui->widgets.snapshots_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_show(widget);
+
+  // Adding the alignment
+  container = widget;
+
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
+  gtk_widget_show(widget);
+
+  // Adding the snapshots body
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 0);
+  darktable.gui->widgets.snapshots_body = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  gtk_widget_hide(darktable.gui->widgets.snapshots_eventbox);
+}
+
 void init_import(GtkWidget *container)
 {
   GtkWidget *widget;
@@ -1563,6 +1604,9 @@ void init_left_scroll_window(GtkWidget *container)
   darktable.gui->widgets.plugins_vbox_left = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
   gtk_widget_show(widget);
+
+  // Initializing the snapshots box
+  init_snapshots(container);
 }
 
 void init_jobs_list(GtkWidget *container)

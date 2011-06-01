@@ -113,6 +113,11 @@ typedef struct dt_gui_gtk_t
     // Left side plugins
     GtkWidget *plugins_vbox_left;
 
+    // Snapshots window
+    GtkWidget *snapshots_eventbox;
+    GtkWidget *snapshots_expander;
+    GtkWidget *snapshots_body;
+
   } widgets;
 
   GladeXML *main_window;
