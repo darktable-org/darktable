@@ -772,8 +772,9 @@ dt_colorspaces_get_makermodel_split(char *makermodel, const int size, char **mod
   (*modelo)++;
 }
 
-void rgb2hsl(float r,float g,float b,float *h,float *s,float *l)
+void rgb2hsl(const float rgb[3],float *h,float *s,float *l)
 {
+  const float r=rgb[0], g=rgb[1], b=rgb[2];
   float pmax=fmax(r,fmax(g,b));
   float pmin=fmin(r,fmin(g,b));
   float delta=(pmax-pmin);
@@ -807,18 +808,18 @@ static inline float hue2rgb(float m1,float m2,float hue)
   else return m1;
 }
 
-void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
+void hsl2rgb(float rgb[3],float h,float s,float l)
 {
   float m1,m2;
   if( s==0) {
-    *r=*g=*b=l;
+    rgb[0]=rgb[1]=rgb[2]=l;
     return;
   }
   m2=l<0.5?l*(1.0+s):l+s-l*s;
   m1=(2.0*l-m2);
-  *r = hue2rgb(m1,m2,h + (1.0/3.0));
-  *g = hue2rgb(m1,m2,h);
-  *b = hue2rgb(m1,m2,h - (1.0/3.0));
+  rgb[0] = hue2rgb(m1,m2,h + (1.0/3.0));
+  rgb[1] = hue2rgb(m1,m2,h);
+  rgb[2] = hue2rgb(m1,m2,h - (1.0/3.0));
 
 }
 

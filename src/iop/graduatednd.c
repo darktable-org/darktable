@@ -286,7 +286,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float filter_radie=sqrt((hh*hh)+(hw*hw))/hh;
 
   float color[3];
-  hsl2rgb(&color[0],&color[1],&color[2],data->hue,data->saturation,0.5);
+  hsl2rgb(color,data->hue,data->saturation,0.5);
 
 
 #ifdef _OPENMP
@@ -455,7 +455,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   //fprintf(stderr," hue: %f, saturation: %f\n",hue,dtgtk_gradient_slider_get_value(g->gslider2));
   double saturation=1.0;
   float color[3];
-  hsl2rgb(&color[0],&color[1],&color[2],hue,saturation,0.5);
+  hsl2rgb(color,hue,saturation,0.5);
 
   GdkColor c;
   c.red=color[0]*65535.0;
