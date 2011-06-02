@@ -42,12 +42,13 @@
 					<colspec colwidth='3cm'/>
 					<tbody>
 						<row>
-							<entry><emphasis>1 - 4</emphasis></entry>
-							<entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated
+							<entry><emphasis>0 - 5</emphasis></entry>
+							<entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated.
+								Pressing <emphasis>del</emphasis> rejects the image.
 							</entry>
 						</row>
 						<row>
-							<entry><emphasis>F1 - F3</emphasis></entry><entry>set a color label for the image</entry>
+							<entry><emphasis>F1 - F5</emphasis></entry><entry>set a color label for the image</entry>
 						</row>
 						<row>
 							<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry>
@@ -75,6 +76,7 @@
 			</para>
 			<para>While in filemanager, by pressing <emphasis>w/s</emphasis> you can scroll (not select) up and down through your collection. 
 				In zoomable lighttable <emphasis>a/d/w/s</emphasis> allow you to move left/right/up/down through your collection.
+				Pressing <emphasis>ctrl-g</emphasis> goes top, <emphasis>ctrl-shift-g</emphasis> bottom.
 			</para>
 		</sect2>
 		<sect2 status="draft"><title>Filtering and sort order</title>

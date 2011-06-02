@@ -12,8 +12,11 @@
 			Most of the actions on the pixelpipe are done in CIELab.</para>
 
 	<sect1 status="final"><title>Preferences</title>
-		<para> A recently introduced button located at the upper panel allows you to define various parameters.
+		<para> A button located at the upper panel (displaying a wheel) allows you to define various parameters.
 		</para>
+		<para> The options are quite self-explaining. In case you need more information, just let your mouse hover text and/or entry box to display more information.
+		</para>
+
 	</sect1>
 
 	<sect1 status="final"><title>User interface</title>
@@ -56,6 +59,10 @@
 				<para>The lighttable view is where you manage your images and filmrolls; it's in that view that you rate, add tags, add colorlabels, export images among other
 					actions.
 				</para>
+
+				<para>You can perform, on image under the mouse pointer, some actions using key accelerators; see "Lighttable" chapter.
+				</para>
+
 			</sect3>
 			<sect3 status="final"><title>Darkroom</title>
 				<para>In the darkroom view you develop a specific image using the available modules.
@@ -65,38 +72,19 @@
 				<para>This view is where you do camera tethering.
 				</para>
 			</sect3>
+
+			<sect3 status="final"><title>Filmstrip</title>
+				<para>The filmstrip shows the same images as lighttable with respect to filter and sort orders; it is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
+			  	You can navigate along the filmstrip by wheel scrolling.
+				The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image, 
+				switch to another image to develop by double clicking the thumb in the filmstrip. You can also rate the images as you do in lighttable, copy/paste historystack, etc.
+				</para>
+				<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+				
+			</sect3>
 		</sect2>		
 		
-		<sect2 status="final"><title>Filmstrip</title>
-			<para>The filmstrip shows the same images as lighttable with respect to filter and sort orders and are turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
-			  You can navigate along the filmstrip by wheel scrolling.
-				The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image, 
-				switch to another image to develop by double clicking the thumb in the filmstrip.
-			</para>
-			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
-			<para>The filmstrip also provides some actions to be performed on image under the mouse pointer and here follows a table of available key accelerators
-				for specific actions.
-				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-						<colspec colwidth='3cm'/>
-						<tbody>
-							<row>
-								<entry><emphasis>1 - 4</emphasis></entry>
-								<entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key the image will be unrated
-								</entry>
-							</row>
-							<row>
-								<entry><emphasis>F1 - F3</emphasis></entry><entry>set a color label for the image</entry>
-							</row>
-							<row>
-								<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry>
-							</row>
-							<row>
-								<entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack onto the image</entry>
-							</row>
-						</tbody>
-					</tgroup></informaltable>
-			</para>
-		</sect2>
+
 	</sect1>
 	
 	<sect1 status="final"><title>Darktable basic workflow</title>
