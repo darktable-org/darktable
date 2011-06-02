@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "common/colorspaces.h"
 #include "common/debug.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
@@ -157,30 +158,6 @@ typedef struct dt_iop_vector_2d_t
   double x;
   double y;
 } dt_iop_vector_2d_t;
-
-static inline void hue2rgb(float m1,float m2,float hue,float *channel)
-{
-  if(hue<0.0) hue+=1.0;
-  else if(hue>1.0) hue-=1.0;
-
-  if( (6.0*hue) < 1.0) *channel=(m1+(m2-m1)*hue*6.0);
-  else if((2.0*hue) < 1.0) *channel=m2;
-  else if((3.0*hue) < 2.0) *channel=(m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
-  else *channel=m1;
-}
-
-static inline void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
-{
-  float m1,m2;
-  *r=*g=*b=l;
-  if( s==0) return;
-  m2=l<0.5?l*(1.0+s):l+s-l*s;
-  m1=(2.0*l-m2);
-  hue2rgb(m1,m2,h +(1.0/3.0), r);
-  hue2rgb(m1,m2,h, g);
-  hue2rgb(m1,m2,h - (1.0/3.0), b);
-
-}
 
 // static int
 // get_grab(float pointerx, float pointery, float zoom_scale){
