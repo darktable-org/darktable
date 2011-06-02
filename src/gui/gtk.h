@@ -104,6 +104,8 @@ typedef struct dt_gui_gtk_t
     // Left side widgets
     GtkWidget *left_scrolled_window;
     GtkWidget *left_scrolled;
+    GtkWidget *left;
+    GtkWidget *left_vbox;
 
     // Import widgets
     GtkWidget *import_eventbox;
@@ -146,6 +148,10 @@ typedef struct dt_gui_gtk_t
 
     // Left end marker
     GtkWidget *endmarker_left;
+
+    // Navigation panel
+    GtkWidget *navigation_expander;
+    GtkWidget *navigation;
 
   } widgets;
 

@@ -442,7 +442,7 @@ void leave(dt_view_t *self)
   GtkWidget *widget;
   widget = darktable.gui->widgets.import_eventbox;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);

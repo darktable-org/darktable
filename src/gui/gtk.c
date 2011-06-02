@@ -56,6 +56,9 @@
 
 static void init_widgets();
 
+static void init_navigation(GtkWidget *container);
+static void init_left(GtkWidget *container);
+
 static void init_history_box(GtkWidget *container);
 static void init_info_box(GtkWidget *container);
 static void init_snapshots(GtkWidget *container);
@@ -85,7 +88,7 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
   {
     case 0:
       bit = dt_conf_get_int("ui_last/panel_left");
-      widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+      widget = darktable.gui->widgets.left;
       break;
     case 1:
       bit = dt_conf_get_int("ui_last/panel_right");
@@ -225,7 +228,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   switch(which)
   {
     case 0: // left
-      panel = glade_xml_get_widget (darktable.gui->main_window, "left");
+      panel = darktable.gui->widgets.left;
       if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width, height/2-width);
@@ -385,7 +388,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
                     event->area.width, event->area.height);
 
   // update other widgets
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+  GtkWidget *widget = darktable.gui->widgets.navigation;
   gtk_widget_queue_draw(widget);
 
   GList *wdl = darktable.gui->redraw_widgets;
@@ -1143,11 +1146,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
   widget = darktable.gui->widgets.right;
   gtk_widget_set_size_request (widget, panel_width, -1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  widget = darktable.gui->widgets.left;
   gtk_widget_set_size_request (widget, panel_width, -1);
   widget = darktable.gui->widgets.right;
   gtk_widget_set_size_request (widget, panel_width-5, -1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
+  widget = darktable.gui->widgets.left_vbox;
   gtk_widget_set_size_request (widget, panel_width-5, -1);
   // leave some space for scrollbars to appear:
   widget = darktable.gui->widgets.right_scrolled_window;
@@ -1240,7 +1243,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
 
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+  widget = darktable.gui->widgets.navigation;
   dt_gui_navigation_init(&gui->navigation, widget);
   gtk_widget_set_size_request(widget, -1, panel_width*.5);
 
@@ -1424,8 +1427,67 @@ void init_widgets()
   init_right(container);
 
   // Initializing the left side
-  container = glade_xml_get_widget(darktable.gui->main_window,
-                                   "left_vbox");
+  init_left(container);
+}
+
+void init_navigation(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the eventbox
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("navigation"));
+  darktable.gui->widgets.navigation_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_set_no_show_all(widget, TRUE);
+
+  // Adding the drawing surface
+  container = widget;
+
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.navigation = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_POINTER_MOTION_MASK
+                        | GDK_POINTER_MOTION_HINT_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_STRUCTURE_MASK);
+  gtk_widget_show(widget);
+}
+
+void init_left(GtkWidget *container)
+{
+
+  GtkWidget *widget;
+
+  // Adding the alignment
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  darktable.gui->widgets.left = widget;
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 5, 0);
+  gtk_table_attach(GTK_TABLE(container), widget, 1, 2, 1, 2,
+                   GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
+  gtk_widget_show(widget);
+
+  // Adding the vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.left_vbox = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_size_request(widget, 0, -1);
+
+  // Initializing the sub-sections
+  container = widget;
+
+  init_navigation(container);
   init_jobs_list(container);
   init_left_scroll_window(container);
 }

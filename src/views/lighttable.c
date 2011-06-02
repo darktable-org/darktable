@@ -911,7 +911,7 @@ int key_released(dt_view_t *self, uint16_t which)
     case KEYCODE_z:
     {
       lib->full_preview_id = -1;
-      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+      GtkWidget *widget = darktable.gui->widgets.left;
       if(lib->full_preview & 1) gtk_widget_show(widget);
       widget = darktable.gui->widgets.right;
       if(lib->full_preview & 2)gtk_widget_show(widget);
@@ -944,7 +944,7 @@ int key_pressed(dt_view_t *self, uint16_t which)
         lib->full_preview = 0;
         lib->full_preview_id = mouse_over_id;
         // let's hide some gui components
-        GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+        GtkWidget *widget = darktable.gui->widgets.left;
         lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 0;
         gtk_widget_hide(widget);
         widget = darktable.gui->widgets.right;

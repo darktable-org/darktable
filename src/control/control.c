@@ -1158,7 +1158,7 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
 
   bit = dt_conf_get_int("ui_last/panel_left");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  widget = darktable.gui->widgets.left;
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
@@ -1178,7 +1178,7 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   else gtk_widget_hide(widget);
 
   bit = dt_conf_get_int("ui_last/expander_navigation");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   bit = dt_conf_get_int("ui_last/expander_import");
@@ -1208,7 +1208,7 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   GtkWidget *widget;
 
   bit = dt_conf_get_int("ui_last/panel_left");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  widget = darktable.gui->widgets.left;
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_left", bit);
@@ -1232,7 +1232,7 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   dt_conf_set_int("ui_last/panel_top", bit);
 
   bit = dt_conf_get_int("ui_last/expander_navigation");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_navigation", bit);
@@ -1302,7 +1302,7 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
-      widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+      widget = darktable.gui->widgets.left;
       visible = GTK_WIDGET_VISIBLE(widget);
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);
@@ -1327,7 +1327,7 @@ int dt_control_key_pressed_override(uint16_t which)
 
   widget = darktable.gui->widgets.center;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+  widget = darktable.gui->widgets.navigation;
   gtk_widget_queue_draw(widget);
   return 1;
 }
@@ -1353,7 +1353,7 @@ int dt_control_key_pressed(uint16_t which)
   {
     widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+    widget = darktable.gui->widgets.navigation;
     gtk_widget_queue_draw(widget);
   }
   return 1;
@@ -1374,7 +1374,7 @@ int dt_control_key_released(uint16_t which)
 
   widget = darktable.gui->widgets.center;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+  widget = darktable.gui->widgets.navigation;
   gtk_widget_queue_draw(widget);
   return 1;
 }

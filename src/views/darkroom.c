@@ -644,7 +644,7 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible (darktable.gui->
                           widgets.modulegroups_eventbox, TRUE);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, TRUE);
   widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, TRUE);
@@ -830,7 +830,7 @@ void leave(dt_view_t *self)
   }
 
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
