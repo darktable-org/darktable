@@ -98,58 +98,6 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-static inline float
-f (const float t, const float c, const float x)
-{
-  return (t/(1.0f + powf(c, -x*6.0f)) + (1.0f-t)*(x*.5f+.5f));
-}
-
-static inline void hue2rgb(float m1,float m2,float hue,float *channel)
-{
-  if(hue<0.0) hue+=1.0;
-  else if(hue>1.0) hue-=1.0;
-
-  if( (6.0*hue) < 1.0) *channel=(m1+(m2-m1)*hue*6.0);
-  else if((2.0*hue) < 1.0) *channel=m2;
-  else if((3.0*hue) < 2.0) *channel=(m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
-  else *channel=m1;
-}
-
-void rgb2hsl(float r,float g,float b,float *h,float *s,float *l)
-{
-  float pmax=fmax(r,fmax(g,b));
-  float pmin=fmin(r,fmin(g,b));
-  float delta=(pmax-pmin);
-
-  *h=*s=*l=0;
-  *l=(pmin+pmax)/2.0;
-
-  if(pmax!=pmin)
-  {
-    *s=*l<0.5?delta/(pmax+pmin):delta/(2.0-pmax-pmin);
-
-    if(pmax==r) *h=(g-b)/delta;
-    if(pmax==g) *h=2.0+(b-r)/delta;
-    if(pmax==b) *h=4.0+(r-g)/delta;
-    *h/=6.0;
-    if(*h<0.0) *h+=1.0;
-    else if(*h>1.0) *h-=1.0;
-  }
-}
-
-static inline void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
-{
-  float m1,m2;
-  *r=*g=*b=l;
-  if( s==0) return;
-  m2=l<0.5?l*(1.0+s):l+s-l*s;
-  m1=(2.0*l-m2);
-  hue2rgb(m1,m2,h +(1.0/3.0), r);
-  hue2rgb(m1,m2,h, g);
-  hue2rgb(m1,m2,h - (1.0/3.0), b);
-
-}
-
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
