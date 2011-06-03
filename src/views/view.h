@@ -77,8 +77,10 @@ dt_view_image_over_t;
 /** expose an image, set image over flags. */
 void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
 
+/** Set the selection bit to a given value for the specified image */
+void dt_view_set_selection(int imgid, int value);
 /** toggle selection of given image. */
-void dt_view_toggle_selection(int iid);
+void dt_view_toggle_selection(int imgid);
 
 #define DT_VIEW_MAX_MODULES 10
 /**

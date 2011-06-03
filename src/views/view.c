@@ -737,17 +737,56 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 }
 
 
-
-void dt_view_toggle_selection(int iid)
+/**
+ * \brief Set the selection bit to a given value for the specified image
+ * \param[in] imgid The image id
+ * \param[in] value The boolean value for the bit
+ */
+void dt_view_set_selection(int imgid, int value)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    sqlite3_finalize(stmt);
+    if(!value)
+    {
+      // Value is set and should be unset; get rid of it
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+  }
+  else
+  {
+    sqlite3_finalize(stmt);
+    if(value)
+    {
+      // Select bit is unset and should be set; add it
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+  }
+}
+
+/**
+ * \brief Toggle the selection bit in the database for the specified image
+ * \param[in] imgid The image id
+ */
+void dt_view_toggle_selection(int imgid)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
@@ -755,7 +794,7 @@ void dt_view_toggle_selection(int iid)
   {
     sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }

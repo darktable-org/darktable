@@ -57,7 +57,7 @@ typedef struct dt_library_t
 {
   // tmp mouse vars:
   float select_offset_x, select_offset_y;
-  int32_t last_selected_id;
+  int32_t last_selected_idx, selection_origin_idx;
   int button;
   uint32_t modifiers;
   uint32_t center, pan;
@@ -80,7 +80,8 @@ void init(dt_view_t *self)
   self->data = malloc(sizeof(dt_library_t));
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->select_offset_x = lib->select_offset_y = 0.5f;
-  lib->last_selected_id = -1;
+  lib->last_selected_idx = -1;
+  lib->selection_origin_idx = -1;
   lib->first_visible_zoomable = lib->first_visible_filemanager = 0;
   lib->button = 0;
   lib->modifiers = 0;
@@ -97,6 +98,34 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
+/**
+ * \brief A helper function to convert grid coordinates to an absolute index
+ *
+ * \param[in] row The row
+ * \param[in] col The column
+ * \param[in] stride The stride (number of columns per row)
+ * \param[in] offset The zero-based index of the top-left image (aka the count of images above the viewport, minus 1)
+ * \return The absolute, zero-based index of the specified grid location
+ */
+static int
+grid_to_index (int row, int col, int stride, int offset)
+{
+  return row * stride + col + offset;
+}
+
+/**
+ * \brief Checks if a number is between two other numbers (inclusive)
+ *
+ * \param[in] left One inclusive limit of the range
+ * \param[in] value The value to test for inclusivity
+ * \param[in] right The other inclusive limit of the range
+ * \return 1 if value lies on or between left and right, 0 otherwise
+ */
+static int
+inc_between (int left, int value, int right)
+{
+  return (left <= value && value <= right) || (right <= value && value <= left);
+}
 
 static void
 expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
@@ -106,6 +135,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(darktable.gui->center_tooltip == 1)
     darktable.gui->center_tooltip = 2;
 
+  // grid stride
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
   lib->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
@@ -115,20 +145,11 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   else cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
 
-  // zoom to one case:
-  static int oldzoom = -1;
-  static int firstsel = -1;
-
   if(lib->first_visible_zoomable >= 0)
   {
     lib->offset = lib->first_visible_zoomable;
   }
   lib->first_visible_zoomable = -1;
-
-  if(iir == 1 && oldzoom != 1 && firstsel >= 0)
-    lib->offset = firstsel;
-  oldzoom = iir;
-  firstsel = -1;
 
   if(lib->track >  2) lib->offset += iir;
   if(lib->track < -2) lib->offset -= iir;
@@ -145,6 +166,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   const int seli = pointerx / (float)wd;
   const int selj = pointery / (float)ht;
+  const int selidx = grid_to_index(selj, seli, iir, offset);
 
   const int img_pointerx = iir == 1 ? pointerx : fmodf(pointerx, wd);
   const int img_pointery = iir == 1 ? pointery : fmodf(pointery, ht);
@@ -152,7 +174,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   const int max_rows = 1 + (int)((height)/ht + .5);
   const int max_cols = iir;
   sqlite3_stmt *stmt = NULL;
-  int id, last_seli = 1<<30, last_selj = 1<<30;
+  int id, curidx;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   /* get the count of current collection */
@@ -206,6 +228,28 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   int32_t imgids_num = 0;
   int32_t imgids[count];
 
+  if(clicked1)
+  {
+    // If clicked and no modifiers, reset the shift-select state
+    if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0)
+    {
+      lib->last_selected_idx = -1;
+      lib->selection_origin_idx = -1;
+    }
+
+    // If clicked with control modifier, set new selection origin
+    if((lib->modifiers & GDK_CONTROL_MASK))
+    {
+      lib->selection_origin_idx = -1;
+    }
+
+    // if there is no selection origin, set the currently selected cell as the selection origin
+    if(lib->selection_origin_idx == -1)
+    {
+      lib->selection_origin_idx = selidx;
+    }
+  }
+
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_rows*iir);
@@ -215,6 +259,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   {
     for(int col = 0; col < max_cols; col++)
     {
+      curidx = grid_to_index(row, col, iir, offset);
+
       if(sqlite3_step(stmt) == SQLITE_ROW)
       {
         id = sqlite3_column_int(stmt, 0);
@@ -227,7 +273,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         // set mouse over id
         if(seli == col && selj == row)
         {
-          firstsel = lib->offset + selj*iir + seli;
           mouse_over_id = id;
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
@@ -236,24 +281,32 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         {
           if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
           {
-            // clear selected if no modifier
+            // clear selection if no modifier is being held
             DT_DEBUG_SQLITE3_BIND_INT(stmt_del_sel, 1, id);
             sqlite3_step(stmt_del_sel);
             sqlite3_reset(stmt_del_sel);
             sqlite3_clear_bindings(stmt_del_sel);
           }
-          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_id)
+          // Step 1: If this is the clicked cell, toggle it
+          if(curidx == selidx)
           {
-            last_seli = col;
-            last_selj = row;
-          }
-          if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
-                                      col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
-              (seli == col && selj == row))
-          {
-            // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
             dt_view_toggle_selection(id);
-            lib->last_selected_id = id;
+          }
+          // Step 2: If shift is being held, and we're somewhere between the old selection index and the new one, we may be toggled
+          // Step 2: However, if control is being held, we skip this logic (so ctrl+shift+click is identical to ctrl+click)
+          if((lib->modifiers & GDK_CONTROL_MASK) == 0 && (lib->modifiers & GDK_SHIFT_MASK) &&
+             lib->selection_origin_idx > -1 && inc_between(lib->last_selected_idx, curidx, selidx))
+          {
+            if(inc_between(lib->selection_origin_idx, curidx, selidx))
+            {
+              // We're in the selected zone; set selection bit to true
+              dt_view_set_selection(id, 1);
+            }
+            else
+            {
+              // Outside of the selected zone; set selection bit to false
+              dt_view_set_selection(id, 0);
+            }
           }
         }
         cairo_save(cr);
@@ -267,6 +320,9 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     }
     cairo_translate(cr, -max_cols*wd, ht);
   }
+  // End of loop; do post-loop update
+  if (clicked1) lib->last_selected_idx = selidx;
+
 failure:
   sqlite3_finalize(stmt_del_sel);
 #if 1
@@ -509,7 +565,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
           //    (image->id == lib->last_selected_id || image->id == mouse_over_id)) { last_seli = col; last_selj = row; }
           // if(last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= MIN(last_seli,seli) && row >= MIN(last_selj,selj) &&
           //         col <= MAX(last_seli,seli) && row <= MAX(last_selj,selj)) && (col != last_seli || row != last_selj)) ||
-          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_id)
+          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_idx)
           {
             last_seli = col;
             last_selj = row;
@@ -520,7 +576,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
           {
             // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
             dt_view_toggle_selection(id);
-            lib->last_selected_id = id;
+            lib->last_selected_idx = id;
           }
         }
         cairo_save(cr);
