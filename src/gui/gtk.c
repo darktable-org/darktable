@@ -1345,7 +1345,15 @@ void init_widgets()
   GtkWidget* widget;
 
   container = glade_xml_get_widget(darktable.gui->main_window,
-                                   "vbox1");
+                                   "main_window");
+
+  // Adding the outermost vbox
+  widget = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  container = widget;
+
   // Initializing the top border
   widget = gtk_drawing_area_new();
   darktable.gui->widgets.top_border = widget;

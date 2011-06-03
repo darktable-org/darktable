@@ -6,18 +6,7 @@
     <property name="default_width">900</property>
     <property name="default_height">500</property>
     <child>
-      <widget class="GtkVBox" id="vbox1">
-        <property name="visible">True</property>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </widget>
+      <placeholder/>
     </child>
   </widget>
 </glade-interface>
