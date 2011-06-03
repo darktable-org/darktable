@@ -9,68 +9,13 @@
       <widget class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
         <child>
-          <widget class="GtkDrawingArea" id="topborder">
-            <property name="height_request">10</property>
-            <property name="visible">True</property>
-            <property name="app_paintable">True</property>
-            <property name="events">GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK | GDK_SCROLL_MASK</property>
-          </widget>
-          <packing>
-            <property name="expand">False</property>
-            <property name="position">0</property>
-          </packing>
+          <placeholder/>
         </child>
         <child>
-          <widget class="GtkTable" id="table1">
-            <property name="visible">True</property>
-            <property name="n_rows">2</property>
-            <property name="n_columns">5</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </widget>
-          <packing>
-            <property name="position">1</property>
-          </packing>
+          <placeholder/>
         </child>
         <child>
-          <widget class="GtkDrawingArea" id="bottomborder">
-            <property name="height_request">10</property>
-            <property name="visible">True</property>
-            <property name="app_paintable">True</property>
-            <property name="events">GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK | GDK_SCROLL_MASK</property>
-          </widget>
-          <packing>
-            <property name="expand">False</property>
-            <property name="position">2</property>
-          </packing>
+          <placeholder/>
         </child>
       </widget>
     </child>

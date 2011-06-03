@@ -56,6 +56,8 @@
 
 static void init_widgets();
 
+static void init_main_table(GtkWidget *container);
+
 static void init_view_label(GtkWidget *container);
 static void init_filter_box(GtkWidget *container);
 static void init_top_controls(GtkWidget *container);
@@ -897,9 +899,9 @@ void quit()
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)0);
   widget = darktable.gui->widgets.right_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  widget = darktable.gui->widgets.top_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)2);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  widget = darktable.gui->widgets.bottom_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)3);
 
   dt_pthread_mutex_lock(&darktable.control->cond_mutex);
@@ -1224,11 +1226,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)1);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)1);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  widget = darktable.gui->widgets.top_border;
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)2);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)2);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)2);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  widget = darktable.gui->widgets.bottom_border;
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)3);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)3);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
@@ -1343,7 +1345,53 @@ void init_widgets()
   GtkWidget* widget;
 
   container = glade_xml_get_widget(darktable.gui->main_window,
-                                   "table1");
+                                   "vbox1");
+  // Initializing the top border
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.top_border = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_set_size_request(widget, -1, 10);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_SCROLL_MASK);
+  gtk_widget_show(widget);
+
+  // Initializing the main table
+  init_main_table(container);
+
+  // Initializing the bottom border
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.bottom_border = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_set_size_request(widget, -1, 10);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_SCROLL_MASK);
+  gtk_widget_show(widget);
+}
+
+void init_main_table(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Creating the table
+  widget = gtk_table_new(2, 5, FALSE);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  container = widget;
 
   // Adding the left border
   widget = gtk_drawing_area_new();
