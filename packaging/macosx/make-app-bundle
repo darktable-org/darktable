@@ -28,7 +28,7 @@ BIN=${MACOS}/bin
 ETC=${MACOS}/etc
 LIB=${MACOS}/lib
 SHARE=${MACOS}/share
-RELEASE=release
+RELEASE=build/release
 DMG=${RELEASE}/DarkTable.dmg
 EXECUTABLE=bin/darktable
 BUILD_FOLDER=./packaging/macosx
@@ -84,7 +84,7 @@ cp -R ${RELEASE}/* ${MACOS}
 #Copy application-specific stuff like icons and startup script
 echo "Creating required application bundle files..."
 cp ${BUILD_FOLDER}/Info.plist ${CONTENTS}
-cp ${BUILD_FOLDER}/Icons.icns ${RESOURCES}
+cp cmake/macosx/darktable.icns ${RESOURCES}
 cp ${BUILD_FOLDER}/start ${MACOS}
 
 #Copy and relink the explicitly defined libraries
