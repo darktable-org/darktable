@@ -917,7 +917,7 @@ int key_released(dt_view_t *self, uint16_t which)
       if(lib->full_preview & 2)gtk_widget_show(widget);
       widget = darktable.gui->widgets.bottom;
       if(lib->full_preview & 4)gtk_widget_show(widget);
-      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+      widget = darktable.gui->widgets.top;
       if(lib->full_preview & 8)gtk_widget_show(widget);
       lib->full_preview = 0;
     }
@@ -953,7 +953,7 @@ int key_pressed(dt_view_t *self, uint16_t which)
         widget = darktable.gui->widgets.bottom;
         lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 2;
         gtk_widget_hide(widget);
-        widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+        widget = darktable.gui->widgets.top;
         lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 3;
         gtk_widget_hide(widget);
         //dt_dev_invalidate(darktable.develop);

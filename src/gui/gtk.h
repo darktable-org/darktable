@@ -153,6 +153,16 @@ typedef struct dt_gui_gtk_t
     GtkWidget *navigation_expander;
     GtkWidget *navigation;
 
+    // Top panel
+    GtkWidget *top;
+
+    // Image filters
+    GtkWidget *image_filter;
+    GtkWidget *image_sort;
+
+    // Top-right label
+    GtkWidget *view_label;
+
   } widgets;
 
   GladeXML *main_window;

@@ -56,9 +56,14 @@
 
 static void init_widgets();
 
+static void init_view_label(GtkWidget *container);
+static void init_filter_box(GtkWidget *container);
+static void init_top_controls(GtkWidget *container);
+static void init_dt_label(GtkWidget *container);
+static void init_top(GtkWidget *container);
+
 static void init_navigation(GtkWidget *container);
 static void init_left(GtkWidget *container);
-
 static void init_history_box(GtkWidget *container);
 static void init_info_box(GtkWidget *container);
 static void init_snapshots(GtkWidget *container);
@@ -96,7 +101,7 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
       break;
     case 2:
       bit = dt_conf_get_int("ui_last/panel_top");
-      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+      widget = darktable.gui->widgets.top;
       break;
     default:
       bit = dt_conf_get_int("ui_last/panel_bottom");
@@ -258,7 +263,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 2: // top
-      panel = glade_xml_get_widget (darktable.gui->main_window, "top");
+      panel = darktable.gui->widgets.top;
       if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width/2-height, height);
@@ -1163,16 +1168,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = darktable.gui->widgets.right_scrolled_window;
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  // create preferences button:
-  widget = glade_xml_get_widget (darktable.gui->main_window, "topfilterhbox");
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
-  gtk_box_pack_end(GTK_BOX(widget), button, FALSE, FALSE, 20);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("show global preferences"), (char *)NULL);
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (preferences_button_clicked),
-                    NULL);
-
-
   // Update the devices module with available devices
 #ifdef HAVE_GPHOTO2
   dt_gui_devices_init();
@@ -1197,9 +1192,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                     G_CALLBACK (key_released), NULL);
 
   gtk_widget_show_all(widget);
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
-  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME" "PACKAGE_VERSION"</b></big></span>");
 
   widget = darktable.gui->widgets.center;
 
@@ -1259,16 +1251,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* initializes the module groups buttonbar control */
   dt_gui_iop_modulegroups_init ();
 
-  // image filtering/sorting
-  widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (image_filter_changed),
-                    (gpointer)0);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (image_sort_changed),
-                    (gpointer)0);
-
   // snapshot management
   GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
   GtkWidget *svbox = gtk_vbox_new (FALSE,0);
@@ -1290,10 +1272,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                       (gpointer)(k-1));
   }
 
-  /* add content to toolbar */
-  /* top left: color labels */
-  dt_create_color_label_buttons(GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox")));
-
   // color picker
   for(int k = 0; k < 3; k++)
     darktable.gui->picked_color_output_cs[k] =
@@ -1305,19 +1283,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = darktable.gui->widgets.endmarker_left;
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
-
-  // switch modes in gui by double-clicking label
-  widget = glade_xml_get_widget (darktable.gui->main_window, "view_label_eventbox");
-  g_signal_connect (G_OBJECT (widget), "button-press-event",
-                    G_CALLBACK (view_label_clicked),
-                    (gpointer)0);
-
-  // show about dialog when darktable label is clicked
-  widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label_eventbox");
-  g_signal_connect (G_OBJECT (widget), "button-press-event",
-                    G_CALLBACK (darktable_label_clicked),
-                    (gpointer)0);
-
 
   widget = darktable.gui->widgets.center;
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
@@ -1416,6 +1381,9 @@ void init_widgets()
                    GTK_FILL, GTK_FILL, 0, 0);
   gtk_widget_show(widget);
 
+  // Initializing the top
+  init_top(container);
+
   // Initializing the center
   widget = gtk_vbox_new(FALSE, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 2, 3, 1, 2,
@@ -1428,6 +1396,176 @@ void init_widgets()
 
   // Initializing the left side
   init_left(container);
+}
+
+void init_view_label(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the eventbox
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "button-press-event",
+                    G_CALLBACK (view_label_clicked),
+                    (gpointer)0);
+
+  // Adding the label
+  container = widget;
+
+  widget = gtk_label_new(_("<span color=\"#7f7f7f\"><big><b>"
+                           "light table mode</b></big></span>"));
+  darktable.gui->widgets.view_label = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_label_set_use_markup(GTK_LABEL(widget), TRUE);
+  gtk_misc_set_padding(GTK_MISC(widget), 20, 10);
+  gtk_widget_show(widget);
+
+}
+
+void init_filter_box(GtkWidget *container)
+{
+
+  GtkWidget *widget;
+
+  // Adding the list label
+  widget = gtk_label_new(_("list"));
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 7);
+  gtk_widget_show(widget);
+
+  // Adding the list combobox
+  widget = gtk_combo_box_new_text();
+  darktable.gui->widgets.image_filter = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("all"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("unstarred"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("1 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("2 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("3 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("4 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("5 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rejected"));
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (image_filter_changed),
+                    (gpointer)0);
+
+  // Adding the sort label
+  widget = gtk_label_new(_("images sorted by"));
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 7);
+  gtk_widget_show(widget);
+
+  // Adding the sort combobox
+  widget = gtk_combo_box_new_text();
+  darktable.gui->widgets.image_sort = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("filename"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("time"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rating"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("id"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("color label"));
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (image_sort_changed),
+                    (gpointer)0);
+
+
+  // create preferences button:
+  widget = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
+  gtk_box_pack_end(GTK_BOX(container), widget, FALSE, FALSE, 20);
+  g_object_set(G_OBJECT(widget), "tooltip-text", _("show global preferences"),
+               (char *)NULL);
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (preferences_button_clicked),
+                    NULL);
+}
+
+void init_top_controls(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the alignment
+  widget = gtk_alignment_new(.5, 1, 0, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the hbox
+  container = widget;
+
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  container = widget;
+
+  // Adding color labels
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+  dt_create_color_label_buttons(GTK_BOX(widget));
+
+  // Adding the filter controls
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+  init_filter_box(widget);
+
+  // Adding the right toolbox
+  // Currently empty, replaces "top_right_toolbox" in the gladefile
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+}
+
+void init_dt_label(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the eventbox
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  g_signal_connect(G_OBJECT (widget), "button-press-event",
+                   G_CALLBACK (darktable_label_clicked), (gpointer)0);
+
+  // Adding the label
+  container = widget;
+  widget = gtk_label_new("");
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_tooltip_text(widget, _("about darktable"));
+  gtk_widget_set_has_tooltip(widget, TRUE);
+  gtk_label_set_use_markup(GTK_LABEL(widget), TRUE);
+  gtk_label_set_width_chars(GTK_LABEL(widget), -1);
+  gtk_misc_set_padding(GTK_MISC(widget), 20, 10);
+  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"
+                      PACKAGE_NAME" "PACKAGE_VERSION"</b></big></span>");
+
+  gtk_widget_show(widget);
+}
+
+void init_top(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the outer hbox
+  widget = gtk_hbox_new(FALSE, 0);
+  darktable.gui->widgets.top = widget;
+  gtk_table_attach(GTK_TABLE(container), widget, 1, 4, 0, 1,
+                   GTK_EXPAND | GTK_FILL | GTK_SHRINK, GTK_SHRINK, 0, 0);
+  gtk_widget_show(widget);
+
+  // Adding the dt label
+  init_dt_label(widget);
+
+  // Adding the top controls
+  init_top_controls(widget);
+
+  // Adding the view label
+  init_view_label(widget);
 }
 
 void init_navigation(GtkWidget *container)

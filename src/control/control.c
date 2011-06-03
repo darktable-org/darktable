@@ -1009,7 +1009,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   if(error) return;
 
   dt_control_restore_gui_settings(mode);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
+  widget = darktable.gui->widgets.view_label;
   if(oldmode != DT_MODE_NONE) g_object_set(G_OBJECT(widget), "tooltip-text", buf, (char *)NULL);
   snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"), dt_view_manager_name(darktable.view_manager));
   gtk_label_set_label(GTK_LABEL(widget), buf);
@@ -1149,11 +1149,11 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/lighttable/images_in_row"));
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
+  widget = darktable.gui->widgets.image_filter;
   dt_lib_filter_t filter = dt_conf_get_int("ui_last/combo_filter");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)filter);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
+  widget = darktable.gui->widgets.image_sort;
   dt_lib_sort_t sort = dt_conf_get_int("ui_last/combo_sort");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
 
@@ -1168,7 +1168,7 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   else gtk_widget_hide(widget);
 
   bit = dt_conf_get_int("ui_last/panel_top");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+  widget = darktable.gui->widgets.top;
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
@@ -1226,7 +1226,7 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   dt_conf_set_int("ui_last/panel_bottom", bit);
 
   bit = dt_conf_get_int("ui_last/panel_top");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+  widget = darktable.gui->widgets.top;
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_top", bit);
@@ -1315,7 +1315,7 @@ int dt_control_key_pressed_override(uint16_t which)
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);
 
-      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+      widget = darktable.gui->widgets.top;
       if(visible) gtk_widget_hide(widget);
       else gtk_widget_show(widget);*/
       dt_dev_invalidate(darktable.develop);
