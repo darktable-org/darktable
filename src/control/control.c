@@ -153,7 +153,7 @@ int dt_control_load_config(dt_control_t *c)
   int height = dt_conf_get_int("ui_last/window_h");
   gint x = dt_conf_get_int("ui_last/window_x");
   gint y = dt_conf_get_int("ui_last/window_y");
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *widget = darktable.gui->widgets.main_window;
   gtk_window_move(GTK_WINDOW(widget),x,y);
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
@@ -168,7 +168,7 @@ int dt_control_write_config(dt_control_t *c)
   dt_ctl_gui_mode_t gui = dt_conf_get_int("ui_last/view");
   dt_control_save_gui_settings(gui);
 
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *widget = darktable.gui->widgets.main_window;
   gint x, y;
   gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
   dt_conf_set_int ("ui_last/window_x",  x);
@@ -470,7 +470,7 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *widget = darktable.gui->widgets.main_window;
   GdkCursor* cursor = gdk_cursor_new(curs);
   gdk_window_set_cursor(widget->window, cursor);
   gdk_cursor_destroy(cursor);
@@ -1285,7 +1285,7 @@ int dt_control_key_pressed_override(uint16_t which)
       break;
 
     case KEYCODE_F11:
-      widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+      widget = darktable.gui->widgets.main_window;
       fullscreen = dt_conf_get_bool("ui_last/fullscreen");
       if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
       else           gtk_window_fullscreen  (GTK_WINDOW(widget));
@@ -1295,7 +1295,7 @@ int dt_control_key_pressed_override(uint16_t which)
       break;
     case KEYCODE_Escape:
     case KEYCODE_Caps:
-      widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+      widget = darktable.gui->widgets.main_window;
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
       dt_conf_set_bool("ui_last/fullscreen", fullscreen);

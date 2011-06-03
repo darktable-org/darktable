@@ -24,7 +24,6 @@
 #include "libs/lib.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -58,7 +57,7 @@ write_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 static void
 load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open sidecar file"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,

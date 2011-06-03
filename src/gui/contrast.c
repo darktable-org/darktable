@@ -110,7 +110,7 @@ style \"clearlooks-vbrightbg\" = \"clearlooks-default\" \
 
   gtk_rc_parse_string (rc);
 
-  //  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  //  GtkWidget *window = darktable.gui->widgets.main_window;
   gtk_rc_reset_styles (gtk_settings_get_default());
 }
 
@@ -118,7 +118,7 @@ void
 dt_gui_contrast_init ()
 {
   /* create a copy of orginal style of window */
-  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *window = darktable.gui->widgets.main_window;
 
   /* realize window to enshure style is applied before copy */
   gtk_widget_realize(window);

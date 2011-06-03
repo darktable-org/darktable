@@ -352,7 +352,7 @@ entry_focus_in_callback (GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule
 static void
 focus_in_callback (GtkWidget *w, GdkEventFocus *event, dt_lib_module_t *self)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkEntry *entry = GTK_ENTRY(self->text);
   GtkTreeView *view;
   int count = 1 + count_film_rolls(gtk_entry_get_text(entry));

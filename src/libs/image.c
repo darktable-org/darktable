@@ -24,7 +24,6 @@
 #include "control/jobs.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 
 DT_MODULE(1)
 

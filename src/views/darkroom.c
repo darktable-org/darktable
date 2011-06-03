@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)

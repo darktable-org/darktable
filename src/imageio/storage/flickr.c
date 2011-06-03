@@ -188,7 +188,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     text1 = g_strdup(_("step 1: a new window or tab of your browser should have been loaded. you have to login into your flickr account there and authorize darktable to upload photos before continuing."));
     text2 = g_strdup(_("step 2: click the ok button once you are done."));
 
-    GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    GtkWidget *window = darktable.gui->widgets.main_window;
     GtkWidget *flickr_auth_dialog = gtk_message_dialog_new (GTK_WINDOW (window),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_INFO,

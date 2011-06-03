@@ -17,7 +17,6 @@
 */
 
 #include <string.h>
-#include <glade/glade.h>
 #include "common/darktable.h"
 #include "control/control.h"
 #include "gui/gtk.h"

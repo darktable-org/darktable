@@ -21,7 +21,6 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/debug.h"
-#include <glade/glade.h>
 #include <stdlib.h>
 
 typedef struct dt_lib_module_info_t
@@ -115,7 +114,7 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   GtkWidget *dialog;
   /* Create the widgets */
   char title[1024];
-  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *window = darktable.gui->widgets.main_window;
   snprintf(title, 1024, _("edit `%s'"), name);
   dialog = gtk_dialog_new_with_buttons (title,
                                         GTK_WINDOW(window),

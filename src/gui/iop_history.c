@@ -16,8 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glade/glade.h>
-
 #include "gui/gtk.h"
 #include "gui/styles.h"
 #include "common/darktable.h"

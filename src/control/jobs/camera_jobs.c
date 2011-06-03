@@ -20,7 +20,6 @@
 
 #include <stdio.h>
 #include <glib.h>
-#include <glade/glade.h>
 
 #include "common/camera_control.h"
 #include "common/darktable.h"

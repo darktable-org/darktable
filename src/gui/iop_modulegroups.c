@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glade/glade.h>
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "common/darktable.h"

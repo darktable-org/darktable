@@ -19,7 +19,6 @@
 #define DT_GUI_GTK_H
 
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include "gui/navigation.h"
 #include "gui/histogram.h"
 
@@ -52,6 +51,8 @@ typedef struct dt_gui_gtk_t
 
   struct
   {
+
+    GtkWidget *main_window;
 
     // Colorpicker widgets
     GtkWidget *bottom_darkroom_box;
@@ -165,7 +166,6 @@ typedef struct dt_gui_gtk_t
 
   } widgets;
 
-  GladeXML *main_window;
   GdkPixmap *pixmap;
   GList *redraw_widgets;
   GList *key_accels;

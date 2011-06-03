@@ -23,7 +23,6 @@
 #include <string.h>
 #include <math.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 #include <pthread.h>
 
@@ -329,12 +328,11 @@ update_colorpicker_panel()
     char colstring[512];
     char paddedstring[512];
     GtkWidget *w;
-    // w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
-    // snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
-    // gtk_label_set_label(GTK_LABEL(w), colstring);
+
     w = darktable.gui->widgets.colorpicker_button;
     darktable.gui->reset = 1;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), module->request_color_pick);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w),
+                                 module->request_color_pick);
     darktable.gui->reset = 0;
 
     int input_color = dt_conf_get_int("ui_last/colorpicker_model");
@@ -498,7 +496,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   gtk_dialog_run(GTK_DIALOG (dialog));
   gtk_widget_destroy(dialog);
@@ -720,7 +718,7 @@ preferences_button_clicked (GtkWidget *widget, gpointer user_data)
 void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import film"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -791,7 +789,7 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
 void
 import_image_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -891,7 +889,7 @@ borders_scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 void quit()
 {
   // thread safe quit, 1st pass:
-  GtkWindow *win = GTK_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "main_window"));
+  GtkWindow *win = GTK_WINDOW(darktable.gui->widgets.main_window);
   gtk_window_iconify(win);
 
   GtkWidget *widget;
@@ -1125,21 +1123,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
   g_free(themefile);
 
-
-  /* load the interface */
-  snprintf(path, 1023, "%s/darktable.glade", datadir);
-  if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
-  else
-  {
-    snprintf(path, 1023, "%s/darktable.glade", DARKTABLE_DATADIR);
-    if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
-    else
-    {
-      fprintf(stderr, "[gtk_init] could not find darktable.glade in . or %s!\n", DARKTABLE_DATADIR);
-      return 1;
-    }
-  }
-
   // Initializing widgets
   init_widgets();
 
@@ -1176,24 +1159,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 #endif
   dt_gui_background_jobs_init();
 
-  /* connect the signals in the interface */
-
   /* Have the delete event (window close) end the program */
   dt_get_datadir(datadir, 1024);
   snprintf(path, 1024, "%s/icons", datadir);
   gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), path);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
-  gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
-
-  g_signal_connect (G_OBJECT (widget), "delete_event",
-                    G_CALLBACK (quit), NULL);
-  g_signal_connect (G_OBJECT (widget), "key-press-event",
-                    G_CALLBACK (key_pressed_override), NULL);
-  g_signal_connect (G_OBJECT (widget), "key-release-event",
-                    G_CALLBACK (key_released), NULL);
-
-  gtk_widget_show_all(widget);
 
   widget = darktable.gui->widgets.center;
 
@@ -1344,8 +1313,22 @@ void init_widgets()
   GtkWidget* container;
   GtkWidget* widget;
 
-  container = glade_xml_get_widget(darktable.gui->main_window,
-                                   "main_window");
+  // Creating the main window
+  widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  darktable.gui->widgets.main_window = widget;
+  gtk_window_set_default_size(GTK_WINDOW(widget), 900, 500);
+
+  gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
+  gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
+
+  g_signal_connect (G_OBJECT (widget), "delete_event",
+                    G_CALLBACK (quit), NULL);
+  g_signal_connect (G_OBJECT (widget), "key-press-event",
+                    G_CALLBACK (key_pressed_override), NULL);
+  g_signal_connect (G_OBJECT (widget), "key-release-event",
+                    G_CALLBACK (key_released), NULL);
+
+  container = widget;
 
   // Adding the outermost vbox
   widget = gtk_vbox_new(FALSE, 0);
@@ -1388,6 +1371,9 @@ void init_widgets()
                         | GDK_STRUCTURE_MASK
                         | GDK_SCROLL_MASK);
   gtk_widget_show(widget);
+
+  // Showing everything
+  gtk_widget_show_all(darktable.gui->widgets.main_window);
 }
 
 void init_main_table(GtkWidget *container)

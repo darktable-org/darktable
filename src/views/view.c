@@ -31,7 +31,6 @@
 #include <glib.h>
 #include <string.h>
 #include <strings.h>
-#include <glade/glade.h>
 #include <math.h>
 
 static void

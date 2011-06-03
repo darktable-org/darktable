@@ -17,7 +17,6 @@
 */
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <glade/glade.h>
 
 #include "common/collection.h"
 #include "common/image.h"
@@ -433,7 +432,7 @@ void dt_control_remove_images()
   if(dt_conf_get_bool("ask_before_remove"))
   {
     GtkWidget *dialog;
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    GtkWidget *win = darktable.gui->widgets.main_window;
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
@@ -454,7 +453,7 @@ void dt_control_delete_images()
   if(dt_conf_get_bool("ask_before_delete"))
   {
     GtkWidget *dialog;
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    GtkWidget *win = darktable.gui->widgets.main_window;
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
