@@ -1459,6 +1459,7 @@ void init_view_label(GtkWidget *container)
   widget = gtk_label_new(_("<span color=\"#7f7f7f\"><big><b>"
                            "light table mode</b></big></span>"));
   darktable.gui->widgets.view_label = widget;
+  gtk_widget_set_name(widget, "view_label");
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_label_set_use_markup(GTK_LABEL(widget), TRUE);
   gtk_misc_set_padding(GTK_MISC(widget), 20, 10);
@@ -1577,6 +1578,7 @@ void init_dt_label(GtkWidget *container)
   // Adding the label
   container = widget;
   widget = gtk_label_new("");
+  gtk_widget_set_name(widget, "darktable_label");
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_widget_set_tooltip_text(widget, _("about darktable"));
   gtk_widget_set_has_tooltip(widget, TRUE);
@@ -1651,6 +1653,7 @@ void init_left(GtkWidget *container)
   // Adding the alignment
   widget = gtk_alignment_new(.5, .5, 1, 1);
   darktable.gui->widgets.left = widget;
+  gtk_widget_set_name(widget, "left");
   gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 5, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 1, 2, 1, 2,
                    GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
@@ -1761,6 +1764,7 @@ void init_info_box(GtkWidget *container)
 
   // Adding the event box
   widget = gtk_event_box_new();
+  gtk_widget_set_name(widget, "metadata_eventbox");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
   gtk_widget_show(widget);
 
@@ -1815,6 +1819,7 @@ void init_snapshots(GtkWidget *container)
   // Adding the event box
   widget = gtk_event_box_new();
   darktable.gui->widgets.snapshots_eventbox = widget;
+  gtk_widget_set_name(widget, "snapshots_eventbox");
   gtk_widget_set_no_show_all(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
   gtk_widget_show(widget);
@@ -1855,6 +1860,7 @@ void init_import(GtkWidget *container)
   // Adding the event box
   widget = gtk_event_box_new();
   darktable.gui->widgets.import_eventbox = widget;
+  gtk_widget_set_name(widget, "import_eventbox");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
   gtk_widget_show(widget);
 
@@ -1982,6 +1988,7 @@ void init_left_scroll_window(GtkWidget *container)
   // Initializing the left-side plugins box
   widget = gtk_vbox_new(FALSE, 10);
   darktable.gui->widgets.plugins_vbox_left = widget;
+  gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
   gtk_widget_show(widget);
 
@@ -2008,6 +2015,7 @@ void init_jobs_list(GtkWidget *container)
 
   // Adding the outer event box
   widget = gtk_event_box_new();
+  gtk_widget_set_name(widget, "background_job_eventbox");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
 
   // Adding the content vbox
@@ -2025,6 +2033,7 @@ void init_right(GtkWidget *container)
 
   // Attaching the outer GtkAlignment
   widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_widget_set_name(widget, "right");
   gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 0, 5);
   darktable.gui->widgets.right = widget;
   gtk_table_attach(GTK_TABLE(container), widget, 3, 4, 1, 2,
@@ -2145,6 +2154,7 @@ void init_plugins(GtkWidget *container)
 
   widget = gtk_vbox_new(FALSE, 10);
   darktable.gui->widgets.plugins_vbox = widget;
+  gtk_widget_set_name(widget, "plugins_vbox");
   gtk_widget_set_size_request(widget, 0, -1);
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_widget_show(widget);
@@ -2156,6 +2166,7 @@ void init_module_list(GtkWidget *container)
 
   // Adding the event box
   widget = gtk_event_box_new();
+  gtk_widget_set_name(widget, "module_list_eventbox");
   gtk_widget_set_no_show_all(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
   darktable.gui->widgets.module_list_eventbox = widget;
