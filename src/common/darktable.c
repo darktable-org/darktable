@@ -46,7 +46,13 @@
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
+
+#ifdef __APPLE__
+#include <sys/malloc.h>
+#else
 #include <malloc.h>
+#endif
+
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
