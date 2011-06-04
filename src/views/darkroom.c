@@ -884,7 +884,7 @@ void leave(dt_view_t *self)
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
 
     module->gui_cleanup(module);
-    module->cleanup(module);
+    dt_iop_cleanup_module(module) ;
     free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }

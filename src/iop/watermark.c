@@ -461,6 +461,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
     }
+    g_dir_close(dir) ;
   }
 
   /* read watermarks from user config dir*/
@@ -472,7 +473,8 @@ static void refresh_watermarks( dt_iop_module_t *self )
       snprintf(filename, 2048, "%s/%s", configdir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
-    }
+    } 
+    g_dir_close(dir) ;
   }
 
   _combo_box_set_active_text( g->combobox1, p->filename );
