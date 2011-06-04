@@ -87,7 +87,7 @@ endif()
 #
 # Find all other required libraries for building
 #
-find_package(GTK2 2.6 REQUIRED gtk glade)
+find_package(GTK2 2.6 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
 add_definitions(${GTK2_DEFINITIONS})
