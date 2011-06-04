@@ -221,6 +221,12 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
       (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
     }
+
+  if(cl->dlocl) {
+    free(cl->dlocl->symbols);
+    free(cl->dlocl);
+  }
+
   dt_pthread_mutex_destroy(&cl->lock);
 }
 

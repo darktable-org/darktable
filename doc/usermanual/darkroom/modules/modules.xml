@@ -1,9 +1,11 @@
 <sect1 status="final"><title>Modules</title>
 	<para>Each correction, enhancement or effect is implemented as modules, and this section includes documentation
 			of each module and its specific parameters.
-			A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;"/>  where the <inlinegraphic fileref="&icon_module_enable;"/> icon  is used to turn then module
+			A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>  
+			where the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> icon  is used to turn then module
 			on or off, then there are a title of the module press this to expand the module to see the parameters user interface.
-			<inlinegraphic fileref="&icon_module_presets;"/> icon is the preset icon to access the available presets stored for the module or to create new ones. The <inlinegraphic fileref="&icon_module_reset;"/>  icon is 				used to reset the module parameters to their default values.
+			<inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> icon is the preset icon to access the available presets stored for the module or to create new ones. 
+			The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/>  icon is used to reset the module parameters to their default values.
 	</para>
 	<sect2 status="draft"><title>Interacting with modules</title>
 	   <para>For each slider, you can interact in three different ways, depending on the level of control you need.
@@ -35,12 +37,12 @@
 			</orderedlist>
 	</sect2>
 	<sect2 status="draft"><title>Blending operators</title>
-		<para>Blending operators is a blend functionality that works on the incoming image information and 
-				the output of the current module. Not all modules does support blending because it would not work
+		<para>Blending operators are a blend functionality that works on the incoming image information and 
+				the output of the current module. Not all modules support blending because it would not work
 				and break the use of the module.
 		</para>
-		<para>Modules that do support blending, inherits additional controls to the bottom of module userinterface for controlling
-				parameters of the blending, a checkbox will be available to turn blend on/off.
+		<para>Modules that do support blending, inherit additional controls at the bottom of module userinterface to control
+				parameters of the blending.
 		</para>
 		
 		<!--
@@ -99,7 +101,7 @@
 		
 		<sect3><title>Examples</title>
 			<sect4 status="draft"><title>Texturing an image</title>
-				<para>The watermark module does support svg files with embedded images and with that we can easily texturing an 
+				<para>The watermark module supports svg files with embedded images and thanks to it we can easily texture an 
 						image using the watermark module in conjunction with a blending operator.
 				</para>
 			</sect4>
@@ -110,9 +112,9 @@
 						<colspec colwidth='30%'/>
 						<tbody>
 							<row>						
-								<entry>When introducing the blending operators into darktable, a new module was added named highpass which produces
-										a highpass filter of the image to be explicit used with blending, it is used to produce a gritty detailed image and
-										is a commonly used workflow with other imaging softwares.				
+								<entry>When blending operators were introduced into darktable, a new module named highpass was added. It produces
+										a highpass filter of the image to be implicitly used with blending. It allows to produce a gritty detailed image and
+										is a widely used workflow with other imaging softwares.				
 								</entry>
 								<entry>
 									<graphic fileref="darkroom/modules/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
@@ -132,8 +134,8 @@
 										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
 									</entry>						
 									<entry>
-										<para>This is the original image, pretty heavy processed, first black and white, then some blue splittoning but as you see
-											it does lack the pop in deatils, a bit out of focus...
+										<para>This is the original image, pretty heavy processed: first black and white, then some blue splittoning but as you see
+											it lacks pop in details and is a bit out of focus...
 										</para>
 									</entry>
 								</row>
@@ -142,8 +144,8 @@
 										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
 									</entry>						
 									<entry>
-										<para>Here we have applied the highpass filter with the values as shown in the images above of the module userinterface, 
-											you can now see that the details are very boosted and we got a really gritty detailed image.. 
+										<para>Here we applied the highpass filter with the values shown in the images above of the module userinterface; 
+											you can now see that the details are very boosted and we got a really gritty detailed image.
 										</para>
 									</entry>
 								</row>
@@ -158,7 +160,8 @@
 	<sect2 status="final"><title>Presets</title>
 		<para>
 			Presets are stored configurations for the module parameters both internal and user-defined is available
-				through clicking the <inlinegraphic fileref="&icon_module_presets;"/> icon and a list of available presets are shown for your choice, the activated preset is in bold text.
+				through clicking the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon and a list of available presets are shown for your choice, 
+				the activated preset is in bold text.
 		</para>
 		<para>
 			The preset system does also support automatic preset selection based on image data such as focal length, iso,  
@@ -166,7 +169,7 @@
 		</para>
 		<sect3><title>Creating a new preset</title>
 			<para>
-				Configure the specific module of choice as you like then you click the <inlinegraphic fileref="&icon_module_presets;"/> icon and select
+				Configure the specific module of choice as you like then you click the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon and select
 				store new preset menu choice.
 				Following dialog will be shown to configure the preset:
 			</para>
@@ -207,7 +210,7 @@
 	&darkroom_module_bloom;	
 	&darkroom_module_spotremoval;	
 	&darkroom_module_colortransfer;
-	&darkroom_module_equalizer;
+	<!--&darkroom_module_equalizer;-->
 	&darkroom_module_equalizer2;
 	&darkroom_module_colorzones;
 	&darkroom_module_lowlight;
@@ -220,14 +223,15 @@
 	&darkroom_module_grain;
 	&darkroom_module_localcontrast2;	
 	&darkroom_module_clipping;
+	&darkroom_module_highpass;
 	&darkroom_module_outputcolorprofile;
 	&darkroom_module_channelmixer;
 	<!--&darkroom_module_localcontrast;-->
 	&darkroom_module_velvia;
-	&darkroom_module_soften;  	
-	&darkroom_module_highpass;  	
+	&darkroom_module_soften;  	  	
 	&darkroom_module_vignetting;
 	&darkroom_module_splittoning;
 	&darkroom_module_watermark;
 	&darkroom_module_overexposed;
+	&darkroom_module_framing;
 </sect1>

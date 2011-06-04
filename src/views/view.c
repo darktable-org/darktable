@@ -166,6 +166,15 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   int error = 0;
   dt_view_t *v = vm->view + vm->current_view;
+
+  /* Special case when entering nothing (just before leaving dt) */
+  if ( k==DT_MODE_NONE )
+    {
+      if(vm->current_view >= 0 && v->leave) v->leave(v);
+      vm->current_view = -1 ;
+      return 0 ;
+    }
+
   int newv = vm->current_view;
   if(k < vm->num_views) newv = k;
   dt_view_t *nv = vm->view + newv;

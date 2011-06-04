@@ -478,14 +478,24 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
-  free(module->factory_params);
+  free(module->factory_params); module->factory_params = NULL ;  
   module->cleanup(module);
-  free(module->default_params);
+  free(module->default_params); module->default_params = NULL ; 
+  if (module->blend_params != NULL) 
+    {
+      free(module->blend_params) ; 
+      module->blend_params = NULL ; 
+    }
+   if (module->default_blendop_params != NULL) 
+    {
+      free(module->default_blendop_params) ; 
+      module->default_blendop_params = NULL ; 
+    }
   dt_pthread_mutex_destroy(&module->params_mutex);
 }
 
 void dt_iop_unload_modules_so()
-{
+{  
   while(darktable.iop)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;
@@ -810,7 +820,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     bd->enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend")));
     GtkWidget *label = gtk_label_new(_("mode"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
-    bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, 100.0, 2));
+    bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, 100.0, 0));
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));

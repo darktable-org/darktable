@@ -223,9 +223,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int r=0; r<roi_out->width; r++)
     {
       float H, S, L;
-      rgb2hsl(in[0],in[1],in[2],&H,&S,&L);
-      //hsl2rgb(&out[0],&out[1],&out[2],H,S,( L / dest[r] ) * (L-lsmin) + lsmin );
-      hsl2rgb(&out[0],&out[1],&out[2],H,S,dest[r] );
+      rgb2hsl(in,&H,&S,&L);
+      //hsl2rgb(out,H,S,( L / dest[r] ) * (L-lsmin) + lsmin );
+      hsl2rgb(out,H,S,dest[r] );
       out += ch;
       in += ch;
       ld++;

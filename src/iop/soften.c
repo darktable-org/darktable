@@ -100,10 +100,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     int index = ch*k;
     float h,s,l;
-    rgb2hsl(in[index],in[index+1],in[index+2],&h,&s,&l);
+    rgb2hsl(&in[index],&h,&s,&l);
     s*=saturation;
     l*=brightness;
-    hsl2rgb(&out[index],&out[index+1],&out[index+2],h,CLIP(s),CLIP(l));
+    hsl2rgb(&out[index],h,CLIP(s),CLIP(l));
   }
 
   const float w = piece->iwidth*piece->iscale;
