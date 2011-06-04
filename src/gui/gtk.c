@@ -1671,8 +1671,9 @@ void init_left(GtkWidget *container)
   container = widget;
 
   init_navigation(container);
-  init_jobs_list(container);
   init_left_scroll_window(container);
+  init_jobs_list(container);
+
 }
 
 void init_history_box(GtkWidget *container)
