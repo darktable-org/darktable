@@ -31,7 +31,6 @@
 #include <glib.h>
 #include <string.h>
 #include <strings.h>
-#include <glade/glade.h>
 #include <math.h>
 
 static void
@@ -162,11 +161,20 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
 int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 {
   // destroy old module list
-  GtkContainer *table = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
+  GtkContainer *table = GTK_CONTAINER(darktable.gui->widgets.module_list);
   gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
 
   int error = 0;
   dt_view_t *v = vm->view + vm->current_view;
+
+  /* Special case when entering nothing (just before leaving dt) */
+  if ( k==DT_MODE_NONE )
+    {
+      if(vm->current_view >= 0 && v->leave) v->leave(v);
+      vm->current_view = -1 ;
+      return 0 ;
+    }
+
   int newv = vm->current_view;
   if(k < vm->num_views) newv = k;
   dt_view_t *nv = vm->view + newv;
@@ -207,7 +215,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     vm->film_strip.height = height * vm->film_strip_size;
     vm->film_strip.width  = width;
     cairo_rectangle(cr, -10, v->height, width+20, tb);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkWidget *widget = darktable.gui->widgets.center;
     GtkStyle *style = gtk_widget_get_style(widget);
     cairo_set_source_rgb (cr,
                           style->bg[GTK_STATE_NORMAL].red/65535.0,
@@ -374,13 +382,13 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
   view->hscroll_size = hsize;
   view->hscroll_viewport_size = hwinsize;
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  widget = darktable.gui->widgets.left_border;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  widget = darktable.gui->widgets.right_border;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  widget = darktable.gui->widgets.bottom_border;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  widget = darktable.gui->widgets.top_border;
   gtk_widget_queue_draw(widget);
 }
 
@@ -667,7 +675,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       {
         if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
         {
-          GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+          GtkWidget *widget = darktable.gui->widgets.center;
           char* tooltip = dt_history_get_items_as_string(img->id);
           if(tooltip != NULL)
           {

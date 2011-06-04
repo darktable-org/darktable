@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glade/glade.h>
 #include "common/darktable.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
@@ -24,7 +23,7 @@
 
 void dt_gui_preferences_show()
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *dialog = gtk_dialog_new_with_buttons(
                         _("darktable preferences"), GTK_WINDOW (win),
                         GTK_DIALOG_MODAL,

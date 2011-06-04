@@ -28,7 +28,6 @@
 #include "gui/presets.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)

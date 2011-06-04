@@ -146,11 +146,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if( hmix != 0.0 || smix != 0.0 || lmix != 0.0 )
       {
         // mix into HSL output channels
-        rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+        rgb2hsl(in,&h,&s,&l);
         h = (hmix != 0.0 )  ? hmix : h;
         s = (smix != 0.0 )  ? smix : s;
         l = (lmix != 0.0 )  ? lmix : l;
-        hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
+        hsl2rgb(out,h,s,l);
       }
       else   // no HSL copt in[] to out[]
         for(int i=0; i<3; i++) out[i]=in[i];
@@ -176,11 +176,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       if( data->output_channel <= CHANNEL_LIGHTNESS ) {
         // mix into HSL output channels
-        rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+        rgb2hsl(in,&h,&s,&l);
         h = ( data->output_channel == CHANNEL_HUE )              ? mix : h;
         s = ( data->output_channel == CHANNEL_SATURATION )   ? mix : s;
         l = ( data->output_channel == CHANNEL_LIGHTNESS )     ?  mix : l;
-        hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
+        hsl2rgb(out,h,s,l);
       } else  if( data->output_channel > CHANNEL_LIGHTNESS && data->output_channel  < CHANNEL_GRAY) {
         // mix into rgb output channels
         out[0] = ( data->output_channel == CHANNEL_RED )      ? mix : in[0];

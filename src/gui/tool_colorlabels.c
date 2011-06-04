@@ -17,7 +17,6 @@
 */
 
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 
 #include "common/darktable.h"
 #include "common/colorlabels.h"

@@ -204,7 +204,7 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   GtkWidget *dialog;
   /* Create the widgets */
   char title[1024];
-  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *window = darktable.gui->widgets.main_window;
   snprintf(title, 1024, _("edit `%s' for module `%s'"), name, module->name());
   dialog = gtk_dialog_new_with_buttons (title,
                                         GTK_WINDOW(window),

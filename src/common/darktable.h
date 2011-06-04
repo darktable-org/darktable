@@ -35,6 +35,9 @@
 #include <math.h>
 #ifdef _OPENMP
 #include <omp.h>
+#else
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
 #endif
 
 #define DT_MODULE_VERSION 3   // version of dt's module interface

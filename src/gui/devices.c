@@ -52,7 +52,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
     case CAMERA_CONTROL_BUSY:
     {
       //dt_control_log(_("camera control is busy."));
-      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander_body");
+      GtkWidget *widget = darktable.gui->widgets.devices_expander_body;
       GList *child = gtk_container_get_children(GTK_CONTAINER(widget));
       if(child)
         do
@@ -67,7 +67,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
     case CAMERA_CONTROL_AVAILABLE:
     {
       //dt_control_log(_("camera control is available."));
-      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander_body");
+      GtkWidget *widget = darktable.gui->widgets.devices_expander_body;
       GList *child = gtk_container_get_children(GTK_CONTAINER(widget));
       if(child)
         do
@@ -129,7 +129,7 @@ void dt_gui_devices_init()
 
 void dt_gui_devices_update()
 {
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "devices_expander_body");
+  GtkWidget *widget = darktable.gui->widgets.devices_expander_body;
   GList *citem;
 
   // Lets clear all items in container...

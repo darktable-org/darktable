@@ -49,6 +49,7 @@ public:
   HashTablePermutohedral()
   {
     capacity = 1 << 15;
+    capacity_bits = 0x7fff;
     filled = 0;
     entries = new Entry[capacity];
     keys = new short[KD*capacity/2];
@@ -133,7 +134,7 @@ public:
    */
   float *lookup(const short *k, bool create = true)
   {
-    size_t h = hash(k) % capacity;
+    size_t h = hash(k) & capacity_bits;
     int offset = lookupOffset(k, h, create);
     if (offset < 0) return NULL;
     else return values + offset;
@@ -159,6 +160,7 @@ private:
 
     size_t oldCapacity = capacity;
     capacity *= 2;
+    capacity_bits = (capacity_bits << 1) | 1;
 
     // Migrate the value vectors.
     float *newValues = new float[VD*capacity/2];
@@ -179,7 +181,7 @@ private:
     for (size_t i = 0; i < oldCapacity; i++)
     {
       if (entries[i].keyIdx == -1) continue;
-      size_t h = hash(keys + entries[i].keyIdx) % capacity;
+      size_t h = hash(keys + entries[i].keyIdx) & capacity_bits;
       while (newEntries[h].keyIdx != -1)
       {
         h++;
@@ -203,6 +205,7 @@ private:
   float *values;
   Entry *entries;
   size_t capacity, filled;
+  unsigned long capacity_bits;
 };
 
 /******************************************************************
@@ -226,7 +229,7 @@ public:
 
     // Allocate storage for various arrays
     float *scaleFactorTmp = new float[D];
-    short *canonicalTmp = new short[(D+1)*(D+1)];
+    int *canonicalTmp = new int[(D+1)*(D+1)];
 
     replay = new ReplayEntry[nData*(D+1)];
 
@@ -281,8 +284,8 @@ public:
   void splat(float *position, float *value, int replay_index, int thread_index=0)
   {
     float elevated[D+1];
-    short greedy[D+1];
-    char rank[D+1];
+    int greedy[D+1];
+    int rank[D+1];
     float barycentric[D+2];
     short key[D];
 
@@ -296,8 +299,6 @@ public:
 
     // prepare to find the closest lattice points
     float scale = 1.0f/(D+1);
-    char * myrank = rank;
-    short * mygreedy = greedy;
 
     // greedily search for the closest zero-colored lattice point
     int sum = 0;
@@ -307,10 +308,10 @@ public:
       float up = ceilf(v)*(D+1);
       float down = floorf(v)*(D+1);
 
-      if (up - elevated[i] < elevated[i] - down) mygreedy[i] = (short)up;
-      else mygreedy[i] = (short)down;
+      if (up - elevated[i] < elevated[i] - down) greedy[i] = up;
+      else greedy[i] = down;
 
-      sum += mygreedy[i];
+      sum += greedy[i];
     }
     sum /= D+1;
 
@@ -319,8 +320,8 @@ public:
     memset(rank, 0, sizeof rank);
     for (int i = 0; i < D; i++)
       for (int j = i+1; j <= D; j++)
-        if (elevated[i] - mygreedy[i] < elevated[j] - mygreedy[j]) myrank[i]++;
-        else myrank[j]++;
+        if (elevated[i] - greedy[i] < elevated[j] - greedy[j]) rank[i]++;
+        else rank[j]++;
 
     if (sum > 0)
     {
@@ -328,13 +329,13 @@ public:
       // need to bring down the ones with the smallest differential
       for (int i = 0; i <= D; i++)
       {
-        if (myrank[i] >= D + 1 - sum)
+        if (rank[i] >= D + 1 - sum)
         {
-          mygreedy[i] -= D+1;
-          myrank[i] += sum - (D+1);
+          greedy[i] -= D+1;
+          rank[i] += sum - (D+1);
         }
         else
-          myrank[i] += sum;
+          rank[i] += sum;
       }
     }
     else if (sum < 0)
@@ -343,13 +344,13 @@ public:
       // need to bring up the ones with largest differential
       for (int i = 0; i <= D; i++)
       {
-        if (myrank[i] < -sum)
+        if (rank[i] < -sum)
         {
-          mygreedy[i] += D+1;
-          myrank[i] += (D+1) + sum;
+          greedy[i] += D+1;
+          rank[i] += (D+1) + sum;
         }
         else
-          myrank[i] += sum;
+          rank[i] += sum;
       }
     }
 
@@ -357,8 +358,8 @@ public:
     memset(barycentric, 0, sizeof barycentric);
     for (int i = 0; i <= D; i++)
     {
-      barycentric[D-myrank[i]] += (elevated[i] - mygreedy[i]) * scale;
-      barycentric[D+1-myrank[i]] -= (elevated[i] - mygreedy[i]) * scale;
+      barycentric[D-rank[i]] += (elevated[i] - greedy[i]) * scale;
+      barycentric[D+1-rank[i]] -= (elevated[i] - greedy[i]) * scale;
     }
     barycentric[0] += 1.0f + barycentric[D+1];
 
@@ -367,7 +368,7 @@ public:
     {
       // Compute the location of the lattice point explicitly (all but the last coordinate - it's redundant because they sum to zero)
       for (int i = 0; i < D; i++)
-        key[i] = mygreedy[i] + canonical[remainder*(D+1) + myrank[i]];
+        key[i] = greedy[i] + canonical[remainder*(D+1) + rank[i]];
 
       // Retrieve pointer to the value at this vertex.
       float * val = hashTables[thread_index].lookup(key, true);
@@ -505,7 +506,7 @@ private:
   int nData;
   int nThreads;
   const float *scaleFactor;
-  const short *canonical;
+  const int *canonical;
 
   // slicing is done by replaying splatting (ie storing the sparse matrix)
   struct ReplayEntry

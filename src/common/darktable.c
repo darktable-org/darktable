@@ -46,6 +46,7 @@
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
+#include <malloc.h>
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
@@ -140,6 +141,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
   fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
   return 1;
+#endif
+#ifdef M_MMAP_THRESHOLD
+  mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */   
 #endif
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");

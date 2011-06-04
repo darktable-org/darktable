@@ -21,7 +21,6 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/debug.h"
-#include <glade/glade.h>
 #include <stdlib.h>
 
 typedef struct dt_lib_module_info_t
@@ -115,7 +114,7 @@ edit_preset (const char *name_in, dt_lib_module_info_t *minfo)
   GtkWidget *dialog;
   /* Create the widgets */
   char title[1024];
-  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *window = darktable.gui->widgets.main_window;
   snprintf(title, 1024, _("edit `%s'"), name);
   dialog = gtk_dialog_new_with_buttons (title,
                                         GTK_WINDOW(window),
@@ -455,10 +454,10 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
     gtk_widget_show_all(module->widget);
     // register to receive draw events
     darktable.lib->gui_module = module;
-    GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+    GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
     gtk_container_set_focus_child(box, GTK_WIDGET(module->expander));
     // redraw gui (in case post expose is set)
-    gtk_widget_queue_resize(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+    gtk_widget_queue_resize(darktable.gui->widgets.plugins_vbox);
     dt_control_gui_queue_draw();
   }
   else

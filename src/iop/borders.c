@@ -247,7 +247,7 @@ size_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  p->size = dtgtk_slider_get_value(slider);
+  p->size = dtgtk_slider_get_value(slider)/100.0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -292,7 +292,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  dtgtk_slider_set_value(g->size, p->size);
+  dtgtk_slider_set_value(g->size, p->size*100.0);
   int k = 0;
   for(;k<8;k++)
   {
@@ -348,7 +348,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
   gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
-  g->size = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 0.5f, 0.1, p->size, 2));
+  g->size = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 50.0, 1.0, p->size*100.0, 2));
   dtgtk_slider_set_label(g->size, _("border size"));
   dtgtk_slider_set_unit(g->size, "%");
   g_signal_connect (G_OBJECT (g->size), "value-changed", G_CALLBACK (size_callback), self);

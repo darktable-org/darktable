@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -641,30 +640,31 @@ void enter(dt_view_t *self)
 
   // adjust gui:
   GtkWidget *widget;
-  gtk_widget_set_visible (glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), TRUE);
+  gtk_widget_set_visible (darktable.gui->
+                          widgets.modulegroups_eventbox, TRUE);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_eventbox");
+  widget = darktable.gui->widgets.snapshots_eventbox;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "history_eventbox");
+  widget = darktable.gui->widgets.history_eventbox;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
+  widget = darktable.gui->widgets.bottom_darkroom_box;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  widget = darktable.gui->widgets.bottom_lighttable_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
+  widget = darktable.gui->widgets.plugins_vbox_left;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
+  widget = darktable.gui->widgets.import_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, TRUE);
 
   // get top level vbox containing all expanders, plugins_vbox:
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
-  GtkTable *module_list = GTK_TABLE(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
+  GtkTable *module_list = GTK_TABLE(darktable.gui->widgets.module_list);
   gtk_table_set_row_spacings(module_list,2);
   gtk_table_set_col_spacings(module_list,2);
   GList *modules = g_list_last(dev->iop);
@@ -821,7 +821,7 @@ void leave(dt_view_t *self)
   dt_gui_key_accel_unregister(export_key_accel_callback);
 
   GList *childs = gtk_container_get_children (
-                    GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")));
+                    GTK_CONTAINER (darktable.gui->widgets.bottom_left_toolbox));
   while(childs)
   {
     gtk_widget_destroy ( GTK_WIDGET (childs->data));
@@ -829,21 +829,21 @@ void leave(dt_view_t *self)
   }
 
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_eventbox");
+  widget = darktable.gui->widgets.snapshots_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "history_eventbox");
+  widget = darktable.gui->widgets.history_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
+  widget = darktable.gui->widgets.bottom_darkroom_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  widget = darktable.gui->widgets.bottom_lighttable_box;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
+  widget = darktable.gui->widgets.plugins_vbox_left;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, FALSE);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -865,7 +865,7 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   while(dev->history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
@@ -884,7 +884,7 @@ void leave(dt_view_t *self)
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
 
     module->gui_cleanup(module);
-    module->cleanup(module);
+    dt_iop_cleanup_module(module) ;
     free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }

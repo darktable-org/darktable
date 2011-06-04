@@ -24,7 +24,6 @@
 #include "libs/lib.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -197,7 +196,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
   char *name = get_style_name(d);
   if(name)
   {
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    GtkWidget *win = darktable.gui->widgets.main_window;
     GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                              GTK_WINDOW (win),
                              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -219,7 +218,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
 
 static void import_clicked (GtkWidget *w,gpointer user_data)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select style"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,

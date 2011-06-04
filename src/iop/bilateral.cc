@@ -174,25 +174,39 @@ extern "C"
     else
     {
       for(int k=0; k<5; k++) sigma[k] = 1.0f/sigma[k];
-      PermutohedralLattice<5,4> lattice(roi_in->width*roi_in->height);
+      PermutohedralLattice<5,4> lattice(roi_in->width*roi_in->height, omp_get_max_threads());
 
       // splat into the lattice
-      int index=0;
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
       for(int j=0; j<roi_in->height; j++)
+      {
+	const float *in = (const float*)ivoid + j*roi_in->width*ch;
+	const int thread = omp_get_thread_num();
+	int index = j * roi_in->width;
 	for(int i=0; i<roi_in->width; i++, index++)
         {
           float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
           float val[4] = {in[0], in[1], in[2], 1.0};
-          lattice.splat(pos, val, index);
+          lattice.splat(pos, val, index, thread);
           in += ch;
         }
+      }
+
+      lattice.merge_splat_threads();
 
       // blur the lattice
       lattice.blur();
 
       // slice from the lattice
-      index=0;
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
       for(int j=0; j<roi_in->height; j++)
+      {
+	float *out = (float*)ovoid + j*roi_in->width*ch;
+	int index = j * roi_in->width;
 	for(int i=0; i<roi_in->width; i++, index++)
         {
           float val[4];
@@ -200,6 +214,7 @@ extern "C"
           for(int k=0; k<3; k++) out[k] = val[k]/val[3];
           out += ch;
         }
+      }
     }
   }
 

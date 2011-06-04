@@ -17,7 +17,6 @@
 */
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <glade/glade.h>
 
 #include "common/collection.h"
 #include "common/image.h"
@@ -133,7 +132,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float efl = img->exif_focal_length > 0.0f ? img->exif_focal_length : 8.0f;
     const float aperture = M_PI * powf(efl / (2.0f * eap), 2.0f);
     const float cal = 100.0f/(aperture*img->exif_exposure*img->exif_iso);
-    whitelevel = fmaxf(whitelevel, cal/65535.0);
+    whitelevel = fmaxf(whitelevel, cal);
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
 #endif
@@ -151,10 +150,11 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     dt_image_release(img, DT_IMAGE_FULL, 'r');
     dt_image_cache_release(img, 'r');
   }
+  // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight)
+  #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight, whitelevel)
 #endif
-  for(int k=0; k<wd*ht; k++) pixels[k] = fmaxf(0.0f, fminf(10000000.0f, pixels[k]/(65535.0f*weight[k])));
+  for(int k=0; k<wd*ht; k++) pixels[k] = fmaxf(0.0f, fminf(2.0f, pixels[k]/((.5f*whitelevel*65535.0f)*weight[k])));
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
@@ -433,7 +433,7 @@ void dt_control_remove_images()
   if(dt_conf_get_bool("ask_before_remove"))
   {
     GtkWidget *dialog;
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    GtkWidget *win = darktable.gui->widgets.main_window;
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
@@ -454,7 +454,7 @@ void dt_control_delete_images()
   if(dt_conf_get_bool("ask_before_delete"))
   {
     GtkWidget *dialog;
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    GtkWidget *win = darktable.gui->widgets.main_window;
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,

@@ -23,7 +23,6 @@
 #include <string.h>
 #include <math.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 #include <pthread.h>
 
@@ -54,6 +53,36 @@
 #include "views/view.h"
 #include "tool_colorlabels.h"
 
+static void init_widgets();
+
+static void init_main_table(GtkWidget *container);
+
+static void init_view_label(GtkWidget *container);
+static void init_filter_box(GtkWidget *container);
+static void init_top_controls(GtkWidget *container);
+static void init_dt_label(GtkWidget *container);
+static void init_top(GtkWidget *container);
+
+static void init_navigation(GtkWidget *container);
+static void init_left(GtkWidget *container);
+static void init_history_box(GtkWidget *container);
+static void init_info_box(GtkWidget *container);
+static void init_snapshots(GtkWidget *container);
+static void init_import(GtkWidget *container);
+static void init_left_scroll_window(GtkWidget *container);
+static void init_jobs_list(GtkWidget *container);
+
+static void init_right(GtkWidget *container);
+static void init_histogram(GtkWidget *container);
+static void init_module_groups(GtkWidget *container);
+static void init_plugins(GtkWidget *container);
+static void init_module_list(GtkWidget *container);
+
+static void init_center(GtkWidget *container);
+static void init_center_bottom(GtkWidget *container);
+static void init_colorpicker(GtkWidget *container);
+static void init_lighttable_box(GtkWidget* container);
+
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
@@ -65,19 +94,19 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
   {
     case 0:
       bit = dt_conf_get_int("ui_last/panel_left");
-      widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+      widget = darktable.gui->widgets.left;
       break;
     case 1:
       bit = dt_conf_get_int("ui_last/panel_right");
-      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+      widget = darktable.gui->widgets.right;
       break;
     case 2:
       bit = dt_conf_get_int("ui_last/panel_top");
-      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+      widget = darktable.gui->widgets.top;
       break;
     default:
       bit = dt_conf_get_int("ui_last/panel_bottom");
-      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      widget = darktable.gui->widgets.bottom;
       break;
   }
 
@@ -145,7 +174,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   float width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  GtkWidget *cwidget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *cwidget = darktable.gui->widgets.center;
   GtkStyle *style = gtk_widget_get_style(cwidget);
   cairo_set_source_rgb (cr,
                         .5f*style->bg[GTK_STATE_NORMAL].red/65535.0,
@@ -205,7 +234,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   switch(which)
   {
     case 0: // left
-      panel = glade_xml_get_widget (darktable.gui->main_window, "left");
+      panel = darktable.gui->widgets.left;
       if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width, height/2-width);
@@ -220,7 +249,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 1: // right
-      panel = glade_xml_get_widget (darktable.gui->main_window, "right");
+      panel = darktable.gui->widgets.right;
       if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, 0.0, height/2-width);
@@ -235,7 +264,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 2: // top
-      panel = glade_xml_get_widget (darktable.gui->main_window, "top");
+      panel = darktable.gui->widgets.top;
       if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width/2-height, height);
@@ -250,7 +279,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     default: // bottom
-      panel = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+      panel = darktable.gui->widgets.bottom;
       if(GTK_WIDGET_VISIBLE(panel))
       {
         cairo_move_to (cr, width/2-height, 0.0);
@@ -299,12 +328,11 @@ update_colorpicker_panel()
     char colstring[512];
     char paddedstring[512];
     GtkWidget *w;
-    // w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_module_label");
-    // snprintf(colstring, 512, C_("color picker module", "`%s'"), module->name());
-    // gtk_label_set_label(GTK_LABEL(w), colstring);
-    w = darktable.gui->colorpicker_button;
+
+    w = darktable.gui->widgets.colorpicker_button;
     darktable.gui->reset = 1;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), module->request_color_pick);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w),
+                                 module->request_color_pick);
     darktable.gui->reset = 0;
 
     int input_color = dt_conf_get_int("ui_last/colorpicker_model");
@@ -334,7 +362,7 @@ update_colorpicker_panel()
           col = module->picked_color_max;
         break;
     }
-    w = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_Lab_label");
+    w = darktable.gui->widgets.colorpicker_output_label;
     switch(input_color)
     {
     case 0: // rgb
@@ -365,7 +393,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
                     event->area.width, event->area.height);
 
   // update other widgets
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+  GtkWidget *widget = darktable.gui->widgets.navigation;
   gtk_widget_queue_draw(widget);
 
   GList *wdl = darktable.gui->redraw_widgets;
@@ -386,7 +414,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   }
   else
   {
-    widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
+    widget = darktable.gui->widgets.metadata_expander;
     if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) dt_gui_metadata_update();
   }
 
@@ -468,7 +496,7 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   gtk_dialog_run(GTK_DIALOG (dialog));
   gtk_widget_destroy(dialog);
@@ -532,7 +560,7 @@ update_query()
   dt_collection_update_query (darktable.collection);
 
   /* updates visual */
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *win = darktable.gui->widgets.center;
   gtk_widget_queue_draw (win);
 
   /* update film strip, jump to currently opened image, if any: */
@@ -591,7 +619,7 @@ snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)
 
   if (!darktable.develop->image) return;
   char wdname[64], oldfilename[30];
-  GtkWidget *sbody =  glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+  GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
   GtkWidget *sbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbody)), 0);
 
   GtkWidget *wid = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbox)), 0);
@@ -654,7 +682,7 @@ snapshot_toggled (GtkToggleButton *widget, long int which)
   }
   else if(gtk_toggle_button_get_active(widget))
   {
-    GtkWidget *sbody =  glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+    GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
     GtkWidget *sbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbody)), 0);
 
     for(int k=0; k<4; k++)
@@ -690,7 +718,7 @@ preferences_button_clicked (GtkWidget *widget, gpointer user_data)
 void
 import_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import film"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -754,14 +782,14 @@ import_button_clicked (GtkWidget *widget, gpointer user_data)
   gtk_widget_destroy(ignore_jpeg);
   gtk_widget_destroy(extra);
   gtk_widget_destroy (filechooser);
-  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  win = darktable.gui->widgets.center;
   gtk_widget_queue_draw(win);
 }
 
 void
 import_image_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -838,7 +866,7 @@ import_image_button_clicked (GtkWidget *widget, gpointer user_data)
     }
   }
   gtk_widget_destroy (filechooser);
-  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  win = darktable.gui->widgets.center;
   gtk_widget_queue_draw(win);
 }
 
@@ -861,17 +889,17 @@ borders_scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 void quit()
 {
   // thread safe quit, 1st pass:
-  GtkWindow *win = GTK_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "main_window"));
+  GtkWindow *win = GTK_WINDOW(darktable.gui->widgets.main_window);
   gtk_window_iconify(win);
 
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  widget = darktable.gui->widgets.left_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)0);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  widget = darktable.gui->widgets.right_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  widget = darktable.gui->widgets.top_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)2);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  widget = darktable.gui->widgets.bottom_border;
   g_signal_handlers_block_by_func (widget, expose_borders, (gpointer)3);
 
   dt_pthread_mutex_lock(&darktable.control->cond_mutex);
@@ -879,7 +907,7 @@ void quit()
   darktable.control->running = 0;
   dt_pthread_mutex_unlock(&darktable.control->run_mutex);
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
   gtk_widget_queue_draw(widget);
 }
 
@@ -1095,20 +1123,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
   g_free(themefile);
 
-
-  /* load the interface */
-  snprintf(path, 1023, "%s/darktable.glade", datadir);
-  if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
-  else
-  {
-    snprintf(path, 1023, "%s/darktable.glade", DARKTABLE_DATADIR);
-    if(g_file_test(path, G_FILE_TEST_EXISTS)) darktable.gui->main_window = glade_xml_new (path, NULL, NULL);
-    else
-    {
-      fprintf(stderr, "[gtk_init] could not find darktable.glade in . or %s!\n", DARKTABLE_DATADIR);
-      return 1;
-    }
-  }
+  // Initializing widgets
+  init_widgets();
 
   // set constant width from gconf key
   int panel_width = dt_conf_get_int("panel_width");
@@ -1118,34 +1134,24 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     panel_width = 300;
     dt_conf_set_int("panel_width", panel_width);
   }
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  widget = darktable.gui->widgets.right;
   gtk_widget_set_size_request (widget, panel_width, -1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  widget = darktable.gui->widgets.left;
   gtk_widget_set_size_request (widget, panel_width, -1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right_vbox");
+  widget = darktable.gui->widgets.right;
   gtk_widget_set_size_request (widget, panel_width-5, -1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left_vbox");
+  widget = darktable.gui->widgets.left_vbox;
   gtk_widget_set_size_request (widget, panel_width-5, -1);
   // leave some space for scrollbars to appear:
-  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox");
+  widget = darktable.gui->widgets.right_scrolled_window;
   gtk_widget_set_size_request (widget, panel_width-5-13, -1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolled");
+  widget = darktable.gui->widgets.left_scrolled;
   gtk_widget_set_size_request (widget, panel_width-5-13, -1);
   // and make the scrollbars disappear when not needed:
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left_scrolledwindow");
+  widget = darktable.gui->widgets.left_scrolled_window;
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow");
+  widget = darktable.gui->widgets.right_scrolled_window;
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-
-  // create preferences button:
-  widget = glade_xml_get_widget (darktable.gui->main_window, "topfilterhbox");
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
-  gtk_box_pack_end(GTK_BOX(widget), button, FALSE, FALSE, 20);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("show global preferences"), (char *)NULL);
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (preferences_button_clicked),
-                    NULL);
-
 
   // Update the devices module with available devices
 #ifdef HAVE_GPHOTO2
@@ -1153,39 +1159,12 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 #endif
   dt_gui_background_jobs_init();
 
-  /* connect the signals in the interface */
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "button_import");
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (import_button_clicked),
-                    NULL);
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "button_import_single");
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (import_image_button_clicked),
-                    NULL);
-
   /* Have the delete event (window close) end the program */
   dt_get_datadir(datadir, 1024);
   snprintf(path, 1024, "%s/icons", datadir);
   gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), path);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-  gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
-  gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
 
-  g_signal_connect (G_OBJECT (widget), "delete_event",
-                    G_CALLBACK (quit), NULL);
-  g_signal_connect (G_OBJECT (widget), "key-press-event",
-                    G_CALLBACK (key_pressed_override), NULL);
-  g_signal_connect (G_OBJECT (widget), "key-release-event",
-                    G_CALLBACK (key_released), NULL);
-
-  gtk_widget_show_all(widget);
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label");
-  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"PACKAGE_NAME" "PACKAGE_VERSION"</b></big></span>");
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
 
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed), NULL);
@@ -1208,30 +1187,30 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // TODO: left, right, top, bottom:
   //leave-notify-event
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  widget = darktable.gui->widgets.left_border;
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)0);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)0);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)0);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  widget = darktable.gui->widgets.right_border;
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)1);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)1);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)1);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  widget = darktable.gui->widgets.top_border;
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)2);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)2);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)2);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  widget = darktable.gui->widgets.bottom_border;
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)3);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)3);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
 
 
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+  widget = darktable.gui->widgets.navigation;
   dt_gui_navigation_init(&gui->navigation, widget);
   gtk_widget_set_size_request(widget, -1, panel_width*.5);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram");
+  widget = darktable.gui->widgets.histogram;
   gtk_widget_set_size_request(widget, -1, panel_width*.5);
   dt_gui_histogram_init(&gui->histogram, widget);
 
@@ -1243,18 +1222,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* initializes the module groups buttonbar control */
   dt_gui_iop_modulegroups_init ();
 
-  // image filtering/sorting
-  widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (image_filter_changed),
-                    (gpointer)0);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (image_sort_changed),
-                    (gpointer)0);
-
   // snapshot management
-  GtkWidget *sbody = glade_xml_get_widget (darktable.gui->main_window, "snapshots_body");
+  GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
   GtkWidget *svbox = gtk_vbox_new (FALSE,0);
   GtkWidget *sbutton = gtk_button_new_with_label (_("take snapshot"));
   g_object_set (sbutton, "tooltip-text", _("take snapshot to compare with another image or the same image at another stage of development"), (char *)NULL);
@@ -1274,67 +1243,27 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                       (gpointer)(k-1));
   }
 
-  /* add content to toolbar */
-  /* top left: color labels */
-  dt_create_color_label_buttons(GTK_BOX (glade_xml_get_widget (darktable.gui->main_window, "top_left_toolbox")));
-
   // color picker
   for(int k = 0; k < 3; k++)
     darktable.gui->picked_color_output_cs[k] =
         darktable.gui->picked_color_output_cs_max[k] =
         darktable.gui->picked_color_output_cs_min[k] = 0;
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "colorpicker_mean_combobox");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/colorpicker_mode"));
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(colorpicker_mean_changed), NULL);
-  widget = glade_xml_get_widget(darktable.gui->main_window, "colorpicker_model_combobox");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("ui_last/colorpicker_model"));
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(colorpicker_model_changed), NULL);
-  // Creating the picker button
-  darktable.gui->colorpicker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_signal_connect(G_OBJECT(darktable.gui->colorpicker_button), "toggled", G_CALLBACK(colorpicker_toggled), NULL);
-  widget = glade_xml_get_widget(darktable.gui->main_window, "bottom_darkroom_box");
-  gtk_box_pack_start(GTK_BOX(widget), darktable.gui->colorpicker_button, TRUE, TRUE, 0);
-  gtk_box_reorder_child(GTK_BOX(widget), darktable.gui->colorpicker_button, 0);
-  gtk_widget_show(darktable.gui->colorpicker_button);
-
-  // lighttable layout
-  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_layout_combobox");
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (lighttable_layout_changed),
-                    (gpointer)0);
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
-  g_signal_connect (G_OBJECT (widget), "value-changed",
-                    G_CALLBACK (lighttable_zoom_changed),
-                    (gpointer)0);
 
   // nice endmarker drawing.
-  widget = glade_xml_get_widget (darktable.gui->main_window, "endmarker_left");
+  widget = darktable.gui->widgets.endmarker_left;
   g_signal_connect (G_OBJECT (widget), "expose-event",
                     G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
 
-  // switch modes in gui by double-clicking label
-  widget = glade_xml_get_widget (darktable.gui->main_window, "view_label_eventbox");
-  g_signal_connect (G_OBJECT (widget), "button-press-event",
-                    G_CALLBACK (view_label_clicked),
-                    (gpointer)0);
-
-  // show about dialog when darktable label is clicked
-  widget = glade_xml_get_widget (darktable.gui->main_window, "darktable_label_eventbox");
-  g_signal_connect (G_OBJECT (widget), "button-press-event",
-                    G_CALLBACK (darktable_label_clicked),
-                    (gpointer)0);
-
-
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   // GTK_WIDGET_SET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
 
   // TODO: make this work as: libgnomeui testgnome.c
-  GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
-  GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(glade_xml_get_widget (darktable.gui->main_window, "right_scrolledwindow"));
+  GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
+  GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(darktable.gui->
+                                                widgets.right_scrolled_window);
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
 
   dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
@@ -1355,6 +1284,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* apply contrast to theme */
   dt_gui_contrast_init ();
 
+  // TODO: Scrap this temporary fix to properly hide colorpicker on startup
+  gtk_widget_hide(darktable.gui->widgets.bottom_darkroom_box);
+
   return 0;
 }
 
@@ -1368,10 +1300,1040 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 
 void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 {
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *widget = darktable.gui->widgets.center;
   darktable.gui->pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
   /* start the event loop */
   gtk_main ();
   gdk_threads_leave();
 }
 
+void init_widgets()
+{
+
+  GtkWidget* container;
+  GtkWidget* widget;
+
+  // Creating the main window
+  widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  darktable.gui->widgets.main_window = widget;
+  gtk_window_set_default_size(GTK_WINDOW(widget), 900, 500);
+
+  gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
+  gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
+
+  g_signal_connect (G_OBJECT (widget), "delete_event",
+                    G_CALLBACK (quit), NULL);
+  g_signal_connect (G_OBJECT (widget), "key-press-event",
+                    G_CALLBACK (key_pressed_override), NULL);
+  g_signal_connect (G_OBJECT (widget), "key-release-event",
+                    G_CALLBACK (key_released), NULL);
+
+  container = widget;
+
+  // Adding the outermost vbox
+  widget = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  container = widget;
+
+  // Initializing the top border
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.top_border = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_set_size_request(widget, -1, 10);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_SCROLL_MASK);
+  gtk_widget_show(widget);
+
+  // Initializing the main table
+  init_main_table(container);
+
+  // Initializing the bottom border
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.bottom_border = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_set_size_request(widget, -1, 10);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_SCROLL_MASK);
+  gtk_widget_show(widget);
+
+  // Showing everything
+  gtk_widget_show_all(darktable.gui->widgets.main_window);
+}
+
+void init_main_table(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Creating the table
+  widget = gtk_table_new(2, 5, FALSE);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  container = widget;
+
+  // Adding the left border
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.left_border = widget;
+
+  gtk_widget_set_size_request(widget, 10, -1);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_SCROLL_MASK);
+  gtk_table_attach(GTK_TABLE(container), widget, 0, 1, 0, 2,
+                   GTK_FILL, GTK_FILL, 0, 0);
+  gtk_widget_show(widget);
+
+  // Adding the right border
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.right_border = widget;
+
+  gtk_widget_set_size_request(widget, 10, -1);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK
+                        | GDK_SCROLL_MASK);
+  gtk_table_attach(GTK_TABLE(container), widget, 4, 5, 0, 2,
+                   GTK_FILL, GTK_FILL, 0, 0);
+  gtk_widget_show(widget);
+
+  // Initializing the top
+  init_top(container);
+
+  // Initializing the center
+  widget = gtk_vbox_new(FALSE, 0);
+  gtk_table_attach(GTK_TABLE(container), widget, 2, 3, 1, 2,
+                   GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+  init_center(widget);
+  gtk_widget_show(widget);
+
+  // Initializing the right side
+  init_right(container);
+
+  // Initializing the left side
+  init_left(container);
+}
+
+void init_view_label(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the eventbox
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "button-press-event",
+                    G_CALLBACK (view_label_clicked),
+                    (gpointer)0);
+
+  // Adding the label
+  container = widget;
+
+  widget = gtk_label_new(_("<span color=\"#7f7f7f\"><big><b>"
+                           "light table mode</b></big></span>"));
+  darktable.gui->widgets.view_label = widget;
+  gtk_widget_set_name(widget, "view_label");
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_label_set_use_markup(GTK_LABEL(widget), TRUE);
+  gtk_misc_set_padding(GTK_MISC(widget), 20, 10);
+  gtk_widget_show(widget);
+
+}
+
+void init_filter_box(GtkWidget *container)
+{
+
+  GtkWidget *widget;
+
+  // Adding the list label
+  widget = gtk_label_new(_("list"));
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 7);
+  gtk_widget_show(widget);
+
+  // Adding the list combobox
+  widget = gtk_combo_box_new_text();
+  darktable.gui->widgets.image_filter = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("all"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("unstarred"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("1 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("2 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("3 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("4 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("5 star"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rejected"));
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (image_filter_changed),
+                    (gpointer)0);
+
+  // Adding the sort label
+  widget = gtk_label_new(_("images sorted by"));
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 7);
+  gtk_widget_show(widget);
+
+  // Adding the sort combobox
+  widget = gtk_combo_box_new_text();
+  darktable.gui->widgets.image_sort = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("filename"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("time"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rating"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("id"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("color label"));
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (image_sort_changed),
+                    (gpointer)0);
+
+
+  // create preferences button:
+  widget = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
+  gtk_box_pack_end(GTK_BOX(container), widget, FALSE, FALSE, 20);
+  g_object_set(G_OBJECT(widget), "tooltip-text", _("show global preferences"),
+               (char *)NULL);
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (preferences_button_clicked),
+                    NULL);
+}
+
+void init_top_controls(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the alignment
+  widget = gtk_alignment_new(.5, 1, 0, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the hbox
+  container = widget;
+
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  container = widget;
+
+  // Adding color labels
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+  dt_create_color_label_buttons(GTK_BOX(widget));
+
+  // Adding the filter controls
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+  init_filter_box(widget);
+
+  // Adding the right toolbox
+  // Currently empty, replaces "top_right_toolbox" in the gladefile
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+}
+
+void init_dt_label(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the eventbox
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  g_signal_connect(G_OBJECT (widget), "button-press-event",
+                   G_CALLBACK (darktable_label_clicked), (gpointer)0);
+
+  // Adding the label
+  container = widget;
+  widget = gtk_label_new("");
+  gtk_widget_set_name(widget, "darktable_label");
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_tooltip_text(widget, _("about darktable"));
+  gtk_widget_set_has_tooltip(widget, TRUE);
+  gtk_label_set_use_markup(GTK_LABEL(widget), TRUE);
+  gtk_label_set_width_chars(GTK_LABEL(widget), -1);
+  gtk_misc_set_padding(GTK_MISC(widget), 20, 10);
+  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"
+                      PACKAGE_NAME" "PACKAGE_VERSION"</b></big></span>");
+
+  gtk_widget_show(widget);
+}
+
+void init_top(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the outer hbox
+  widget = gtk_hbox_new(FALSE, 0);
+  darktable.gui->widgets.top = widget;
+  gtk_table_attach(GTK_TABLE(container), widget, 1, 4, 0, 1,
+                   GTK_EXPAND | GTK_FILL | GTK_SHRINK, GTK_SHRINK, 0, 0);
+  gtk_widget_show(widget);
+
+  // Adding the dt label
+  init_dt_label(widget);
+
+  // Adding the top controls
+  init_top_controls(widget);
+
+  // Adding the view label
+  init_view_label(widget);
+}
+
+void init_navigation(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the eventbox
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("navigation"));
+  darktable.gui->widgets.navigation_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_set_no_show_all(widget, TRUE);
+
+  // Adding the drawing surface
+  container = widget;
+
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.navigation = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_POINTER_MOTION_MASK
+                        | GDK_POINTER_MOTION_HINT_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_STRUCTURE_MASK);
+  gtk_widget_show(widget);
+}
+
+void init_left(GtkWidget *container)
+{
+
+  GtkWidget *widget;
+
+  // Adding the alignment
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  darktable.gui->widgets.left = widget;
+  gtk_widget_set_name(widget, "left");
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 5, 0);
+  gtk_table_attach(GTK_TABLE(container), widget, 1, 2, 1, 2,
+                   GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
+  gtk_widget_show(widget);
+
+  // Adding the vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.left_vbox = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_size_request(widget, 0, -1);
+
+  // Initializing the sub-sections
+  container = widget;
+
+  init_navigation(container);
+  init_left_scroll_window(container);
+  init_jobs_list(container);
+
+}
+
+void init_history_box(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  darktable.gui->widgets.history_eventbox = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_set_no_show_all(widget, TRUE);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("history"));
+  darktable.gui->widgets.history_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
+  gtk_widget_show(widget);
+
+  // Adding the alignment
+  container = widget;
+
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
+  gtk_widget_show(widget);
+
+  // Adding the history body
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 0);
+  darktable.gui->widgets.history_expander_body = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
+  gtk_widget_show(widget);
+
+}
+
+void init_info_box(GtkWidget *container)
+{
+  int i;
+  GtkWidget *widget;
+
+  GtkWidget** widgets[] =
+  {
+    &darktable.gui->widgets.metadata_label_filename,
+    &darktable.gui->widgets.metadata_label_model,
+    &darktable.gui->widgets.metadata_label_maker,
+    &darktable.gui->widgets.metadata_label_aperture,
+    &darktable.gui->widgets.metadata_label_exposure,
+    &darktable.gui->widgets.metadata_label_focal_length,
+    &darktable.gui->widgets.metadata_label_focus_distance,
+    &darktable.gui->widgets.metadata_label_iso,
+    &darktable.gui->widgets.metadata_label_datetime,
+    &darktable.gui->widgets.metadata_label_lens,
+    &darktable.gui->widgets.metadata_label_width,
+    &darktable.gui->widgets.metadata_label_height,
+    &darktable.gui->widgets.metadata_label_filmroll,
+    &darktable.gui->widgets.metadata_label_title,
+    &darktable.gui->widgets.metadata_label_creator,
+    &darktable.gui->widgets.metadata_label_rights
+  };
+
+  gchar* labels[] =
+  {
+    _("filename"),
+    _("model"),
+    _("maker"),
+    _("aperture"),
+    _("exposure"),
+    _("f-length"),
+    _("distance"),
+    _("iso"),
+    _("date/time"),
+    _("lens"),
+    _("width"),
+    _("height"),
+    _("film roll"),
+    _("title"),
+    _("creator"),
+    _("rights")
+  };
+
+  (void)widgets;
+  (void)labels;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  gtk_widget_set_name(widget, "metadata_eventbox");
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("image information"));
+  darktable.gui->widgets.metadata_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_show(widget);
+
+  // Adding the table
+  container = widget;
+
+  widget = gtk_table_new(16, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
+  gtk_container_set_border_width(GTK_CONTAINER(widget), 5);
+  gtk_widget_show(widget);
+
+  // Attaching the information labels
+  container = widget;
+
+  for(i = 0; i < 16; i++)
+  {
+    // Attaching the field title
+    widget = gtk_label_new(labels[i]);
+    gtk_table_attach(GTK_TABLE(container), widget, 0, 1, i, i + 1,
+                     GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+    gtk_misc_set_alignment(GTK_MISC(widget), 0, 0.5);
+    gtk_misc_set_padding(GTK_MISC(widget), 5, 0);
+    gtk_widget_show(widget);
+
+    // Attaching the label to hold the information
+    widget = gtk_label_new(_("-"));
+    *(widgets[i]) = widget;
+    gtk_table_attach(GTK_TABLE(container), widget, 1, 2, i, i + 1,
+                     GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+    gtk_misc_set_alignment(GTK_MISC(widget), 0, 0.5);
+    gtk_widget_show(widget);
+  }
+
+
+}
+
+void init_snapshots(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  darktable.gui->widgets.snapshots_eventbox = widget;
+  gtk_widget_set_name(widget, "snapshots_eventbox");
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("snapshots"));
+  darktable.gui->widgets.snapshots_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_show(widget);
+
+  // Adding the alignment
+  container = widget;
+
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
+  gtk_widget_show(widget);
+
+  // Adding the snapshots body
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 0);
+  darktable.gui->widgets.snapshots_body = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  gtk_widget_hide(darktable.gui->widgets.snapshots_eventbox);
+}
+
+void init_import(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  darktable.gui->widgets.import_eventbox = widget;
+  gtk_widget_set_name(widget, "import_eventbox");
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("import"));
+  darktable.gui->widgets.import_expander = widget;
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_expander_set_expanded(GTK_EXPANDER(widget), TRUE);
+  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Adding the alignment
+  container = widget;
+
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Adding the inner vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 5);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  container = widget;
+
+  // Adding the single import button
+  widget = gtk_button_new_with_label(_("image"));
+  gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
+  gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_set_receives_default(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (import_image_button_clicked),
+                    NULL);
+
+  // Adding the import button
+  widget = gtk_button_new_with_label(_("folder"));
+  gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
+  gtk_widget_set_tooltip_text(widget,
+                              _("select a folder to import as film roll"));
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_set_receives_default(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (import_button_clicked),
+                    NULL);
+
+  // Adding the devices expander
+  widget = gtk_vbox_new(FALSE, 5);
+  darktable.gui->widgets.devices_expander_body = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK);
+  gtk_widget_show(widget);
+}
+
+void init_left_scroll_window(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the outer scrolled window
+  widget = gtk_scrolled_window_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                                     0,
+                                                                     100,
+                                                                     1,
+                                                                     10,
+                                                                     10)),
+                                   GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                                     0,
+                                                                     100,
+                                                                     1,
+                                                                     10,
+                                                                     10)));
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget),
+                                    GTK_CORNER_TOP_RIGHT);
+  darktable.gui->widgets.left_scrolled_window = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Adding the viewport
+  container = widget;
+
+  widget = gtk_viewport_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                              0,
+                                                              100,
+                                                              1,
+                                                              10,
+                                                              10)),
+                            GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                              0,
+                                                              100,
+                                                              1,
+                                                              10,
+                                                              10)));
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
+  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Adding the main vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.left_scrolled = widget;
+  gtk_widget_set_size_request(widget, 0, -1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  container = widget;
+
+  // Initializing the import controls
+  init_import(container);
+
+  // Initializing the left-side plugins box
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.plugins_vbox_left = widget;
+  gtk_widget_set_name(widget, "plugins_vbox_left");
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Initializing the snapshots box
+  init_snapshots(container);
+
+  // Initializing the image information box
+  init_info_box(container);
+
+  // Initializing the history box
+  init_history_box(container);
+
+  // Adding the left end marker
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.endmarker_left = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  gtk_widget_set_size_request(widget, -1, 50);
+  gtk_widget_show(widget);
+}
+
+void init_jobs_list(GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  // Adding the outer event box
+  widget = gtk_event_box_new();
+  gtk_widget_set_name(widget, "background_job_eventbox");
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+
+  // Adding the content vbox
+  container = widget;
+  widget = gtk_vbox_new(FALSE, 0);
+  darktable.gui->widgets.jobs_content_box = widget;
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_container_set_border_width(GTK_CONTAINER(widget), 5);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+}
+
+void init_right(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Attaching the outer GtkAlignment
+  widget = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_widget_set_name(widget, "right");
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 0, 5);
+  darktable.gui->widgets.right = widget;
+  gtk_table_attach(GTK_TABLE(container), widget, 3, 4, 1, 2,
+                   GTK_SHRINK,
+                   GTK_SHRINK | GTK_EXPAND | GTK_FILL,
+                   0, 0);
+  gtk_widget_show(widget);
+
+  // Adding the inner vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.right_vbox = widget;
+  gtk_widget_set_size_request(widget, 0, -1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Initializing each section of the right side
+  container = widget;
+
+  init_histogram(container);
+  init_module_groups(container);
+  init_plugins(container);
+  init_module_list(container);
+
+}
+
+void init_histogram(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Creating the outer event box
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the expander
+  container = widget;
+
+  widget = gtk_expander_new(_("histogram"));
+  darktable.gui->widgets.histogram_expander = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_widget_set_can_focus(widget, TRUE);
+
+  // Creating the histogram surface
+  container = widget;
+
+  widget = gtk_drawing_area_new();
+  darktable.gui->widgets.histogram = widget;
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_events(widget,
+                        GDK_EXPOSURE_MASK
+                        | GDK_POINTER_MOTION_MASK
+                        | GDK_POINTER_MOTION_HINT_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_LEAVE_NOTIFY_MASK
+                        | GDK_STRUCTURE_MASK);
+  gtk_widget_show(widget);
+}
+
+void init_module_groups(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  widget = gtk_event_box_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  darktable.gui->widgets.modulegroups_eventbox = widget;
+
+  gtk_widget_show(widget);
+}
+
+void init_plugins(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Creating the outer scrolled window
+  widget = gtk_scrolled_window_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                                     0,
+                                                                     100,
+                                                                     1,
+                                                                     10,
+                                                                     10)),
+                                   GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                                     0,
+                                                                     100,
+                                                                     1,
+                                                                     10,
+                                                                     10)));
+  darktable.gui->widgets.right_scrolled_window = widget;
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the viewport
+  container = widget;
+
+  widget = gtk_viewport_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                              0,
+                                                              100,
+                                                              1,
+                                                              10,
+                                                              10)),
+                            GTK_ADJUSTMENT(gtk_adjustment_new(0,
+                                                              0,
+                                                              100,
+                                                              1,
+                                                              10,
+                                                              10)));
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
+  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Creating the innermost vbox
+  container = widget;
+
+  widget = gtk_vbox_new(FALSE, 10);
+  darktable.gui->widgets.plugins_vbox = widget;
+  gtk_widget_set_name(widget, "plugins_vbox");
+  gtk_widget_set_size_request(widget, 0, -1);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+}
+
+void init_module_list(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Adding the event box
+  widget = gtk_event_box_new();
+  gtk_widget_set_name(widget, "module_list_eventbox");
+  gtk_widget_set_no_show_all(widget, TRUE);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
+  darktable.gui->widgets.module_list_eventbox = widget;
+
+  // Adding the expander
+  container = widget;
+  widget = gtk_expander_new(_("more plugins"));
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_show(widget);
+
+  // Adding the grid
+  container = widget;
+  widget = gtk_table_new(2, 6, TRUE);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  darktable.gui->widgets.module_list = widget;
+  gtk_widget_show(widget);
+}
+
+void init_center(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Adding the center drawing area
+  widget = gtk_drawing_area_new();
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  darktable.gui->widgets.center = widget;
+
+  // Configuring the drawing area
+  gtk_widget_set_size_request(widget, -1, 500);
+  gtk_widget_set_app_paintable(widget, TRUE);
+  gtk_widget_set_events(widget,
+                        GDK_POINTER_MOTION_MASK
+                        | GDK_POINTER_MOTION_HINT_MASK
+                        | GDK_BUTTON_PRESS_MASK
+                        | GDK_BUTTON_RELEASE_MASK
+                        | GDK_ENTER_NOTIFY_MASK
+                        | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_widget_set_visible(widget, TRUE);
+
+  // Initializing the bottom center
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  darktable.gui->widgets.bottom = widget;
+
+  init_center_bottom(widget);
+
+}
+
+void init_center_bottom(GtkWidget *container)
+{
+  GtkWidget* widget;
+  GtkWidget* subcontainer;
+
+  // Adding the left toolbox
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+  darktable.gui->widgets.bottom_left_toolbox = widget;
+
+  // Adding the center box
+  subcontainer = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), subcontainer, TRUE, TRUE, 0);
+
+  // Initializing the color picker panel
+  widget = gtk_hbox_new(FALSE, 5);
+  darktable.gui->widgets.bottom_darkroom_box = widget;
+  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
+  init_colorpicker(widget);
+
+  // Initializing the lightable layout box
+  widget = gtk_hbox_new(FALSE, 5);
+  darktable.gui->widgets.bottom_lighttable_box = widget;
+  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
+  init_lighttable_box(widget);
+  gtk_widget_show(widget);
+
+  // Adding the right toolbox
+  widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+  darktable.gui->widgets.bottom_right_toolbox = widget;
+
+}
+
+void init_colorpicker(GtkWidget *container)
+{
+  GtkWidget* widget;
+
+  // Creating the picker button
+  widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
+                                  CPF_STYLE_FLAT);
+  darktable.gui->widgets.colorpicker_button = widget;
+  g_signal_connect(G_OBJECT(widget), "toggled",
+                   G_CALLBACK(colorpicker_toggled), NULL);
+
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the colorpicker stat selection box
+  widget = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("mean"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("min"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("max"));
+  darktable.gui->widgets.colorpicker_stat_combobox = widget;
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
+                           dt_conf_get_int("ui_last/colorpicker_mode"));
+  g_signal_connect(G_OBJECT(widget), "changed",
+                   G_CALLBACK(colorpicker_mean_changed), NULL);
+
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the colorpicker model selection box
+  widget = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rgb"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Lab"));
+  darktable.gui->widgets.colorpicker_model_combobox = widget;
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
+                           dt_conf_get_int("ui_last/colorpicker_model"));
+  g_signal_connect(G_OBJECT(widget), "changed",
+                   G_CALLBACK(colorpicker_model_changed), NULL);
+
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the colorpicker output label
+  widget = gtk_label_new(_("(---)"));
+  gtk_widget_show(widget);
+
+  darktable.gui->widgets.colorpicker_output_label = widget;
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+}
+
+void init_lighttable_box(GtkWidget* container)
+{
+  GtkWidget* widget;
+
+  // Creating the layout combobox
+  widget = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("zoomable light table"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("file manager"));
+  darktable.gui->widgets.lighttable_layout_combobox = widget;
+
+  g_signal_connect (G_OBJECT (widget), "changed",
+                    G_CALLBACK (lighttable_layout_changed),
+                    (gpointer)0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+  // Creating the zoom spinbutton
+  widget = gtk_spin_button_new(GTK_ADJUSTMENT(gtk_adjustment_new(7,
+                                                                 1,
+                                                                 26,
+                                                                 1,
+                                                                 3,
+                                                                 0)),
+                               0, 0);
+  darktable.gui->widgets.lighttable_zoom_spinbutton = widget;
+
+  g_signal_connect (G_OBJECT (widget), "value-changed",
+                    G_CALLBACK (lighttable_zoom_changed),
+                    (gpointer)0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_widget_show(widget);
+
+}

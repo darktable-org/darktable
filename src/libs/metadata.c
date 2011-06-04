@@ -230,7 +230,7 @@ static void apply_button_clicked(GtkButton *button, gpointer user_data)
 static void enter_pressed(GtkEntry *entry, gpointer user_data)
 {
   write_metadata(user_data);
-  gtk_window_set_focus(GTK_WINDOW(glade_xml_get_widget(darktable.gui->main_window, "main_window")), NULL);
+  gtk_window_set_focus(GTK_WINDOW(darktable.gui->widgets.main_window), NULL);
 }
 
 void gui_reset(dt_lib_module_t *self)
