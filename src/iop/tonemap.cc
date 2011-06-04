@@ -45,12 +45,6 @@ extern "C"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#ifdef _OPENMP
-#include <omp.h>
-#else
-#define omp_get_max_threads() 1
-#define omp_get_thread_num() 0
-#endif
 }
 
 #include "iop/Permutohedral.h"
