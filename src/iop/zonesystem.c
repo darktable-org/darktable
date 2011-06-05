@@ -249,6 +249,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       outp[1] *= outp[0] / inp[0];
       outp[2] *= outp[0] / inp[0];
     }
+    else
+    {
+      outp[1] *= outp[0] / 0.01f;
+      outp[2] *= outp[0] / 0.01f;
+    }
   }
 
   /* thread-safe redraw */

@@ -255,6 +255,11 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
     pixel.y *= L/pixel.x;
     pixel.z *= L/pixel.x;
   }
+  else
+  {
+    pixel.y *= L/0.01f;
+    pixel.z *= L/0.01f;
+  }
   pixel.x = L;
   write_imagef (out, (int2)(x, y), pixel);
 }
