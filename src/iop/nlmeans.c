@@ -89,14 +89,26 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // get our data struct:
   // dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
 
-  const int K = 7; // nbhood
-  const int P = 3; // pixel filter size
+  // adjust to zoom size:
+  const int P = ceilf(3 * roi_in->scale / piece->iscale); // pixel filter size
+  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
+  if(P <= 1)
+  {
+    // nothing to do from this distance:
+    memcpy (o, i, sizeof(float)*4*roi_out->width*roi_out->height);
+    return;
+  }
 
-  // TODO: adjust to Lab, make L more important
+  // adjust to Lab, make L more important
   // TODO: are these user parameters, or should we just use blending after the fact?
-  const float norm[4] = { 1.0f/50.0f, 1.0f/256.0f, 1.0f/256.0f, 1.0f };
+  const float norm2[4] = { 1.0f/(50.0f*50.0f), 1.0f/(256.0f*256.0f), 1.0f/(256.0f*256.0f), 1.0f };
 
+#define SLIDING_WINDOW // brings down time from 15 secs to 3 secs on a core2 duo
+#ifdef SLIDING_WINDOW
+  float *Sa = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
+#else
   float *S = dt_alloc_align(64, sizeof(float)*roi_out->width*roi_out->height);
+#endif
   // we want to sum up weights in col[3], so need to init to 0:
   memset(o, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
 
@@ -105,8 +117,115 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     for(int ki=-K;ki<=K;ki++)
     {
+#ifdef SLIDING_WINDOW
+      int inited_slide = 0;
+      // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
+      // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more memory
+#ifdef _OPENMP
+#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, i, o, Sa)
+#endif
+      for(int j=0; j<roi_out->height; j++)
+      {
+        if(j+kj < 0 || j+kj >= roi_out->height) continue;
+        float *S = Sa + dt_get_thread_num() * roi_out->width;
+        const float *ins = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
+        float *out = ((float *)o) + 4*roi_out->width*j;
+
+        const int Pm = MIN(MIN(P, j+kj), j);
+        const int PM = MIN(MIN(P, roi_out->height-1-j-kj), roi_out->height-1-j);
+        // first line of every thread
+        // TODO: also every once in a while to assert numerical precision!
+        if(!inited_slide)
+        {
+          // sum up a line 
+          memset(S, 0x0, sizeof(float)*roi_out->width);
+          for(int jj=-Pm;jj<PM;jj++)
+          {
+            float *s = S;
+            const float *inp  = ((float *)i) + 4* roi_in->width *(j+jj);
+            const float *inps = ((float *)i) + 4*(roi_in->width *(j+jj+kj) + ki);
+            for(int i=0; i<roi_out->width; i++)
+            // for(int i=MAX(0, -ki); i<MIN(roi_out->width, roi_out->width-ki); i++)
+            {
+              if(i+ki >= 0 && i+ki < roi_out->width)
+              {
+                for(int k=0;k<3;k++)
+                  s[0] += (inp[4*i + k] - inps[4*i + k])*(inp[4*i + k] - inps[4*i + k]) * norm2[k];
+              }
+              s++;
+            }
+          }
+          // FIXME: enabling this brings processing time down from 3secs to 1.2 secs on a core2 duo:
+          // FIXME: (but gives some wrong vertical stripes in the weighting function)
+          // only reuse this if we had a full stripe
+          // if(Pm == P && PM == P) inited_slide = 1;
+        }
+
+        // sliding window for this line:
+        float *s = S;
+        float slide = 0.0f;
+        // sum up the first -P..P
+        for(int i=0;i<2*P+1;i++) slide += s[i];
+        for(int i=0; i<roi_out->width; i++)
+        {
+          if(i-P > 0 && i+P<roi_out->width)
+            slide += s[P] - s[-P-1];
+          if(i+ki >= 0 && i+ki < roi_out->width)
+          {
+            const float w = gh(slide);
+            for(int k=0;k<3;k++) out[k] += ins[k] * w;
+            out[3] += w;
+          }
+          s   ++;
+          ins += 4;
+          out += 4;
+        }
+        if(inited_slide && j+P+1+MAX(0,kj) < roi_out->height)
+        {
+          // sliding window in j direction:
+          float *s = S;
+          const float *inp  = ((float *)i) + 4* roi_in->width *(j+P+1);
+          const float *inps = ((float *)i) + 4*(roi_in->width *(j+P+1+kj) + ki);
+          const float *inm  = ((float *)i) + 4* roi_in->width *(j-P);
+          const float *inms = ((float *)i) + 4*(roi_in->width *(j-P+kj) + ki);
+          for(int i=0; i<roi_out->width; i++)
+          {
+            if(i+ki >= 0 && i+ki < roi_out->width) for(int k=0;k<3;k++)
+              s[0] += ((inp[4*i + k] - inps[4*i + k])*(inp[4*i + k] - inps[4*i + k])
+                    -  (inm[4*i + k] - inms[4*i + k])*(inm[4*i + k] - inms[4*i + k])) * norm2[k];
+            s++;
+          }
 #if 0
-      // TODO: don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only)
+          // seems to be a bit slower for whatever reason:
+          if(j+P+1 < roi_out->height && j+kj+P+1 >= 0 && j+kj+P+1 < roi_out->height)
+          {
+            float *s = S;
+            const float *inp  = ((float *)i) + 4* roi_in->width *(j+P+1);
+            const float *inps = ((float *)i) + 4*(roi_in->width *(j+P+1+kj) + ki);
+            // for(int i=MAX(0, -ki); i<MIN(roi_out->width, roi_out->width-ki); i++)
+            for(int i=0; i<roi_out->width; i++)
+            {
+              if(i+ki >= 0 && i+ki < roi_out->width) for(int k=0;k<3;k++)
+                s[0] += (inp[4*i + k] - inps[4*i + k])*(inp[4*i + k] - inps[4*i + k]) * norm2[k];
+              s++;
+            }
+          }
+          if(j-P >= 0 && j+kj-P >= 0 && j+kj-P < roi_out->height)
+          {
+            float *s = S;
+            const float *inm  = ((float *)i) + 4* roi_in->width *(j-P);
+            const float *inms = ((float *)i) + 4*(roi_in->width *(j-P+kj) + ki);
+            // for(int i=MAX(0, -ki); i<MIN(roi_out->width, roi_out->width-ki); i++)
+            for(int i=0; i<roi_out->width; i++)
+            {
+              if(i+ki >= 0 && i+ki < roi_out->width) for(int k=0;k<3;k++)
+                s[0] -= (inm[4*i + k] - inms[4*i + k])*(inm[4*i + k] - inms[4*i + k]) * norm2[k];
+              s++;
+            }
+          }
+#endif
+        }
+      }
 #else
       // construct summed area table of weights:
 #ifdef _OPENMP
@@ -123,9 +242,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           if(i+ki < 0 || i+ki >= roi_out->width) out[0] = 0.0f;
           else
           {
-            out[0]  = (in[0] - ins[0])*(in[0] - ins[0]) * norm[0] * norm[0];
-            out[0] += (in[1] - ins[1])*(in[1] - ins[1]) * norm[1] * norm[1];
-            out[0] += (in[2] - ins[2])*(in[2] - ins[2]) * norm[2] * norm[2];
+            out[0]  = (in[0] - ins[0])*(in[0] - ins[0]) * norm2[0];
+            out[0] += (in[1] - ins[1])*(in[1] - ins[1]) * norm2[1];
+            out[0] += (in[2] - ins[2])*(in[2] - ins[2]) * norm2[2];
           }
           in  += 4;
           ins += 4;
@@ -195,8 +314,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           out += 4;
         }
       }
-    }
 #endif
+    }
   }
   // normalize:
 #ifdef _OPENMP
@@ -208,14 +327,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=0; i<roi_out->width; i++)
     {
       for(int k=0;k<3;k++) out[k] *= 1.0f/out[3];
+      // FIXME: use this visualization to detect the striping bug in the fast inited_slide code above:
+      // for(int k=0;k<3;k++) out[k] = out[3];
       out += 4;
     }
   }
+#ifdef SLIDING_WINDOW
+  // free shared tmp memory:
+  free(Sa);
+#else
   // free the summed area table:
   free(S);
+#endif
 }
 
-/** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip mode. */
+/** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
   // our module is disabled by default
@@ -333,12 +459,5 @@ void gui_cleanup  (dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
-
-/** additional, optional callbacks to capture darkroom center events. */
-// void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
-// int mouse_moved(dt_iop_module_t *self, double x, double y, int which);
-// int button_pressed(dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
-// int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-// int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
