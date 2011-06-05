@@ -73,6 +73,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 3, sizeof(float), (void *)&scale);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) goto error;
+  for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
   return TRUE;
 
 error:
@@ -99,6 +100,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int i=0; i<3; i++)
         out[i] = fmaxf(0.0f, (in[i]-black)*scale);
   }
+  for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
 
 
