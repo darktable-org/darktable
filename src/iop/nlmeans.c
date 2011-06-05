@@ -87,7 +87,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  // dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
+  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
 
   // adjust to zoom size:
   const int P = ceilf(3 * roi_in->scale / piece->iscale); // pixel filter size
@@ -100,8 +100,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 
   // adjust to Lab, make L more important
-  // TODO: are these user parameters, or should we just use blending after the fact?
-  const float norm2[4] = { 1.0f/(50.0f*50.0f), 1.0f/(256.0f*256.0f), 1.0f/(256.0f*256.0f), 1.0f };
+  float max_L = 100.0f, max_C = 256.0f;
+  float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
+  const float norm2[4] = { nL*nL, nC*nC, nC*nC, 1.0f };
 
 #define SLIDING_WINDOW // brings down time from 15 secs to 3 secs on a core2 duo
 #ifdef SLIDING_WINDOW
@@ -158,7 +159,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           // FIXME: enabling this brings processing time down from 3secs to 1.2 secs on a core2 duo:
           // FIXME: (but gives some wrong vertical stripes in the weighting function)
           // only reuse this if we had a full stripe
-          // if(Pm == P && PM == P) inited_slide = 1;
+          if(Pm == P && PM == P) inited_slide = 1;
         }
 
         // sliding window for this line:
@@ -383,8 +384,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)params;
   dt_iop_nlmeans_data_t *d = (dt_iop_nlmeans_data_t *)piece->data;
-  d->luma   = p->luma;
-  d->chroma = p->chroma;
+  d->luma   = MAX(0.0001f, p->luma);
+  d->chroma = MAX(0.0001f, p->chroma);
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -405,7 +406,7 @@ luma_callback(GtkRange *range, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->luma = dtgtk_slider_get_value(g->luma);
+  p->luma = dtgtk_slider_get_value(g->luma)*(1.0f/100.0f);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -416,7 +417,7 @@ chroma_callback(GtkRange *range, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->chroma = dtgtk_slider_get_value(g->chroma);
+  p->chroma = dtgtk_slider_get_value(g->chroma)*(1.0f/100.0f);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -426,8 +427,8 @@ void gui_update    (dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  dtgtk_slider_set_value(g->luma,   p->luma);
-  dtgtk_slider_set_value(g->chroma, p->chroma);
+  dtgtk_slider_set_value(g->luma,   p->luma   * 100.f);
+  dtgtk_slider_set_value(g->chroma, p->chroma * 100.f);
 }
 
 void gui_init     (dt_iop_module_t *self)
@@ -437,10 +438,10 @@ void gui_init     (dt_iop_module_t *self)
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   self->widget = gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
   // TODO: adjust defaults:
-  g->luma   = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 1.0f, 0.01, 0.5f, 3));
-  g->chroma = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 1.0f, 0.01, 0.5f, 3));
-  dtgtk_slider_set_default_value(g->luma,   0.5f);
-  dtgtk_slider_set_default_value(g->chroma, 0.5f);
+  g->luma   = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 100.0f, 1., 50.f, 0));
+  g->chroma = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 100.0f, 1., 50.f, 0));
+  dtgtk_slider_set_default_value(g->luma,   50.f);
+  dtgtk_slider_set_default_value(g->chroma, 50.f);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->luma), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma), TRUE, TRUE, 0);
   dtgtk_slider_set_label(g->luma, _("luma"));
