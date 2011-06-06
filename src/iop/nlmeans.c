@@ -140,13 +140,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         {
           // sum up a line 
           memset(S, 0x0, sizeof(float)*roi_out->width);
-          for(int jj=-Pm;jj<PM;jj++)
+          for(int jj=-Pm;jj<=PM;jj++)
           {
             float *s = S;
             const float *inp  = ((float *)i) + 4* roi_in->width *(j+jj);
             const float *inps = ((float *)i) + 4*(roi_in->width *(j+jj+kj) + ki);
             for(int i=0; i<roi_out->width; i++)
-            // for(int i=MAX(0, -ki); i<MIN(roi_out->width, roi_out->width-ki); i++)
             {
               if(i+ki >= 0 && i+ki < roi_out->width)
               {
@@ -156,8 +155,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
               s++;
             }
           }
-          // FIXME: enabling this brings processing time down from 3secs to 1.2 secs on a core2 duo:
-          // FIXME: (but gives some wrong vertical stripes in the weighting function)
           // only reuse this if we had a full stripe
           if(Pm == P && PM == P) inited_slide = 1;
         }
@@ -196,36 +193,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
                     -  (inm[4*i + k] - inms[4*i + k])*(inm[4*i + k] - inms[4*i + k])) * norm2[k];
             s++;
           }
-#if 0
-          // seems to be a bit slower for whatever reason:
-          if(j+P+1 < roi_out->height && j+kj+P+1 >= 0 && j+kj+P+1 < roi_out->height)
-          {
-            float *s = S;
-            const float *inp  = ((float *)i) + 4* roi_in->width *(j+P+1);
-            const float *inps = ((float *)i) + 4*(roi_in->width *(j+P+1+kj) + ki);
-            // for(int i=MAX(0, -ki); i<MIN(roi_out->width, roi_out->width-ki); i++)
-            for(int i=0; i<roi_out->width; i++)
-            {
-              if(i+ki >= 0 && i+ki < roi_out->width) for(int k=0;k<3;k++)
-                s[0] += (inp[4*i + k] - inps[4*i + k])*(inp[4*i + k] - inps[4*i + k]) * norm2[k];
-              s++;
-            }
-          }
-          if(j-P >= 0 && j+kj-P >= 0 && j+kj-P < roi_out->height)
-          {
-            float *s = S;
-            const float *inm  = ((float *)i) + 4* roi_in->width *(j-P);
-            const float *inms = ((float *)i) + 4*(roi_in->width *(j-P+kj) + ki);
-            // for(int i=MAX(0, -ki); i<MIN(roi_out->width, roi_out->width-ki); i++)
-            for(int i=0; i<roi_out->width; i++)
-            {
-              if(i+ki >= 0 && i+ki < roi_out->width) for(int k=0;k<3;k++)
-                s[0] -= (inm[4*i + k] - inms[4*i + k])*(inm[4*i + k] - inms[4*i + k]) * norm2[k];
-              s++;
-            }
-          }
-#endif
         }
+        else inited_slide = 0;
       }
 #else
       // construct summed area table of weights:
@@ -328,8 +297,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=0; i<roi_out->width; i++)
     {
       for(int k=0;k<3;k++) out[k] *= 1.0f/out[3];
-      // FIXME: use this visualization to detect the striping bug in the fast inited_slide code above:
-      // for(int k=0;k<3;k++) out[k] = out[3];
       out += 4;
     }
   }
