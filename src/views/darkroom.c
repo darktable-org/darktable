@@ -377,10 +377,18 @@ select_this_image(const int imgid)
   }
 }
 
+/**
+ * \brief Switch to the specified image
+ *
+ * Switches to the specified image, saving the state of the current image if needed.
+ *
+ * \param dev The developer
+ * \param image The image to switch to
+ */
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
-  // stare last active group
+  // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
   // store last active plugin:
   if(darktable.develop->gui_module)
@@ -388,19 +396,31 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   else
     dt_conf_set_string("plugins/darkroom/active", "");
   g_assert(dev->gui_attached);
-  // tag image as changed
-  // TODO: only tag the image when there was a real change.
-  guint tagid = 0;
-  dt_tag_new("darktable|changed",&tagid);
-  dt_tag_attach(tagid, dev->image->id);
-  // commit image ops to db
-  dt_dev_write_history(dev);
-  // write .xmp file
-  dt_image_write_sidecar_file(dev->image->id);
 
-  // commit updated mipmaps to db
-  // TODO: bg process?
-  dt_dev_process_to_mip(dev);
+  // only save image/settings if image was modified
+  if (dev->image && dev->image->dirty)
+  {
+    // tag image as changed
+    // TODO: only tag the image when there was a real change.
+    guint tagid = 0;
+    dt_tag_new("darktable|changed", &tagid);
+    dt_tag_attach(tagid, dev->image->id);
+    // commit image ops to db
+    dt_dev_write_history(dev);
+    // write .xmp file
+    dt_image_write_sidecar_file(dev->image->id);
+
+    // commit updated mipmaps to db
+    // TODO: bg process?
+    dt_dev_process_to_mip(dev);
+  }
+  else if (dev->image && dev->image->dirty == 0)
+  {
+    // TODO: Remove this printf once we're confident that we don't skip saving on images that
+    // TODO: _have_ been modified.
+    fprintf(stderr, "Skipping save for unmodified image %s\n", dev->image->filename);
+  }
+
   // release full buffer
   if(dev->image && dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
@@ -517,6 +537,12 @@ film_strip_activated(const int imgid, void *data)
   dt_view_film_strip_prefetch();
 }
 
+/**
+ * \brief Jump forward (diff) images in the collection
+ *
+ * \param[in] dev A pointer to the dt_develop_t to use for state
+ * \param[in] diff The number of images to jump forward.  Use negative values to jump backward.
+ */
 static void
 dt_dev_jump_image(dt_develop_t *dev, int diff)
 {
@@ -1149,10 +1175,10 @@ int key_pressed(dt_view_t *self, uint16_t which)
   if(handled) return handled;
   switch(which)
   {
-    case 65:
+    case KEYCODE_Space:
       dt_dev_jump_image(dev, 1);
       return 1;
-    case 22:
+    case KEYCODE_BackSpace:
       dt_dev_jump_image(dev, -1);
       return 1;
   }
