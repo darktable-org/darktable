@@ -367,6 +367,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
     module->get_params   = NULL;
     module->init_presets = NULL;
   }
+  if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
 
   return 0;
 error:

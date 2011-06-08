@@ -85,6 +85,8 @@ typedef struct dt_iop_module_so_t
   void (*gui_init)        (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+  /** Optional callback for keyboard accelerators */
+  void (*init_key_accels)();
 
   int  (*mouse_leave)     (struct dt_iop_module_t *self);
   int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
