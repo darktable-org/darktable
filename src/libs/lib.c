@@ -424,6 +424,9 @@ dt_lib_load_modules ()
 //     memcpy(module->factory_params, module->default_params, module->params_size);
 //     module->factory_enabled = module->default_enabled;
     init_presets(module);
+    // Calling the keyboard shortcut initialization callback if present
+    if(module->init_key_accels)
+      (module->init_key_accels)();
 //     dt_iop_load_default_params(module);
 
   }

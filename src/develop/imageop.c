@@ -433,6 +433,9 @@ void dt_iop_load_modules_so()
     g_free(libname);
     res = g_list_append(res, module);
     init_presets(module);
+    // Calling the accelerator initialization callback, if present
+    if(module->init_key_accels)
+      (module->init_key_accels)();
   }
   g_dir_close(dir);
   darktable.iop = res;
