@@ -60,6 +60,8 @@ dt_gui_presets_edit_dialog_t;
 
 void dt_gui_presets_init()
 {
+  // this is also called for non-gui applications linking to libdarktable!
+  // so beware, don't use any darktable.gui stuff here .. (or change this behaviour it in darktable.c)
   // create table or fail if it is already there.
   sqlite3_exec(darktable.db, "create table presets "
                "(name varchar, description varchar, operation varchar, op_params blob, enabled integer, "

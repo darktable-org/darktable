@@ -258,6 +258,7 @@ typedef struct dt_control_t
 dt_control_t;
 
 void dt_control_init(dt_control_t *s);
+void dt_control_create_database_schema();
 // join all worker threads.
 void dt_control_shutdown(dt_control_t *s);
 void dt_control_cleanup(dt_control_t *s);

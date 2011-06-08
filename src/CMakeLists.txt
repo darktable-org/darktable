@@ -160,15 +160,8 @@ if(GNOMEKEYRING_FOUND)
   add_definitions("-DHAVE_GKEYRING")
 endif(GNOMEKEYRING_FOUND)
 
-#find_package(OpenCL)
-#if(OPENCL_FOUND AND USE_OPENCL)
-#  include_directories(${OPENCL_INCLUDE_DIR})
-#  list(APPEND LIBS ${OPENCL_LIBRARIES})
-#  list(APPEND SOURCES "common/opencl.c")
-#  list(APPEND SOURCES "common/dynload.c")
-#  list(APPEND SOURCES "common/dlopencl.c")
-#  add_definitions("-DHAVE_OPENCL")
-#endif(OPENCL_FOUND AND USE_OPENCL)
+# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
+add_subdirectory(cltest)
 
 # build opengl slideshow viewer?
 find_package(SDL)
