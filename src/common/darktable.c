@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -345,6 +346,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
   else
   {
+    // this is in memory, so schema can't exist yet.
+    if(!strcmp(dbfilename, ":memory:"))
+    {
+      dt_control_create_database_schema();
+      dt_gui_presets_init(); // also init preset db schema.
+    }
     darktable.control->running = 0;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
   }
