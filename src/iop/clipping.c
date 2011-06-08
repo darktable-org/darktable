@@ -93,6 +93,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkLabel *label7;
   GtkDarktableToggleButton *flipHorGoldenGuide, *flipVerGoldenGuide;
   GtkCheckButton *goldenSectionBox, *goldenSpiralSectionBox, *goldenSpiralBox, *goldenTriangleBox;
+  GClosure *accelerator_callback;
 
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
@@ -687,8 +688,13 @@ toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
 }
 
 static void
-key_accel_callback(void *d)
+key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                    guint keyval, GdkModifierType modifier, gpointer d)
 {
+  (void)accel_group;
+  (void)acceleratable;
+  (void)keyval;
+  (void)modifier;
   dt_iop_module_t *self = (dt_iop_module_t *)d;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   g->current_aspect = 1.0/g->current_aspect;
@@ -699,7 +705,7 @@ key_accel_callback(void *d)
 static void
 aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 {
-  key_accel_callback(self);
+  key_accel_callback(NULL, NULL, 0, 0, self);
 }
 
 // Golden number (1+sqrt(5))/2
@@ -824,7 +830,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
+  g->accelerator_callback = g_cclosure_new(G_CALLBACK(key_accel_callback),
+                                           (gpointer)self,
+                                           NULL);
+  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                  "<Darktable>/imageops/clipping/swap_aspect",
+                                 g->accelerator_callback);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act >= 9) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
@@ -935,7 +946,9 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_gui_key_accel_unregister(key_accel_callback);
+  gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
+                             ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
+                             accelerator_callback);
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -1499,6 +1512,12 @@ int key_pressed (struct dt_iop_module_t *self, uint16_t which)
       break;
   }
   return FALSE;
+}
+
+void init_key_accels()
+{
+  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/swap_aspect",
+                          GDK_x, GDK_CONTROL_MASK);
 }
 
 #undef PHI
