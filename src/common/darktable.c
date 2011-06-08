@@ -397,6 +397,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_imageio_init(darktable.imageio);
   }
 
+  // TEMPORARY: Export a dump of the keyboard shortcuts for debug purposes
+  gtk_accel_map_save("testkeys");
+  printf("Exporting shortcuts\n");
+
   int id = 0;
   if(init_gui && image_to_load)
   {

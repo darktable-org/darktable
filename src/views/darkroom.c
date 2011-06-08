@@ -650,6 +650,10 @@ export_key_accel_callback(void *d)
 
 void enter(dt_view_t *self)
 {
+  // Attaching accelerator group
+  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                             darktable.gui->accels_darkroom);
+
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
@@ -831,6 +835,10 @@ dt_dev_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  // Detaching the accelerator group
+  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                                darktable.gui->accels_darkroom);
+
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
 

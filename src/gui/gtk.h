@@ -166,6 +166,12 @@ dt_gui_widgets_t;
 
 typedef struct dt_gui_gtk_t
 {
+  // Keyboard accelerator groups
+  GtkAccelGroup *accels_global;
+  GtkAccelGroup *accels_lighttable;
+  GtkAccelGroup *accels_darkroom;
+  GtkAccelGroup *accels_capture;
+
   dt_gui_widgets_t widgets;
 
   GdkPixmap *pixmap;

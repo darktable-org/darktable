@@ -749,6 +749,10 @@ star_key_accel_callback(void *data)
 
 void enter(dt_view_t *self)
 {
+  // Attach accelerator group
+  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                             darktable.gui->accels_lighttable);
+
   // add expanders
   GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   GtkBox *box_left = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
@@ -832,6 +836,10 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  // Removing keyboard accelerators
+  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                                darktable.gui->accels_lighttable);
+
   dt_gui_key_accel_unregister(star_key_accel_callback);
   dt_colorlabels_unregister_key_accels();
   dt_library_t *lib = (dt_library_t *)self->data;

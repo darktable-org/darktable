@@ -1123,8 +1123,18 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   }
   g_free(themefile);
 
+  // Initializing the shortcut groups
+  darktable.gui->accels_global = gtk_accel_group_new();
+  darktable.gui->accels_darkroom = gtk_accel_group_new();
+  darktable.gui->accels_lighttable = gtk_accel_group_new();
+  darktable.gui->accels_capture = gtk_accel_group_new();
+
   // Initializing widgets
   init_widgets();
+
+  // Adding the global shortcut group to the main window
+  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                             darktable.gui->accels_global);
 
   // set constant width from gconf key
   int panel_width = dt_conf_get_int("panel_width");
