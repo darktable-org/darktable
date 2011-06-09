@@ -967,4 +967,10 @@ dt_dev_is_current_image (dt_develop_t *dev, int imgid)
   return (dev->image && dev->image->id==imgid)?1:0;
 }
 
+void
+dt_dev_invalidate_from_gui (dt_develop_t *dev)
+{
+  dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

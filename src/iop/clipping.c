@@ -150,6 +150,11 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+operation_tags ()
+{
+  return IOP_TAG_DISTORT;
+}
 
 static void
 backtransform(float *x, float *o, const float *m, const float t_h, const float t_v)

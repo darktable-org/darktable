@@ -173,6 +173,18 @@ int _default_flags()
   return 0;
 }
 
+/* default operation tags for modules which does not implement the flags() function */
+int _default_operation_tags()
+{
+  return 0;
+}
+
+/* default operation tags filter for modules which does not implement the flags() function */
+int _default_operation_tags_filter()
+{
+  return 0;
+}
+
 /* default bytes per pixel: 4*sizeof(float). */
 int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece)
 {
@@ -196,6 +208,8 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "groups",                 (gpointer)&(module->groups)))                 module->groups = _default_groups;
   if(!g_module_symbol(module->module, "flags",                  (gpointer)&(module->flags)))                  module->flags = _default_flags;
+  if(!g_module_symbol(module->module, "operation_tags",         (gpointer)&(module->operation_tags)))         module->operation_tags = _default_operation_tags;
+  if(!g_module_symbol(module->module, "operation_tags_filter",  (gpointer)&(module->operation_tags_filter)))  module->operation_tags_filter = _default_operation_tags_filter;
   if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = _default_output_bpp;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
@@ -264,6 +278,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->name        = so->name;
   module->groups      = so->groups;
   module->flags       = so->flags;
+  module->operation_tags  = so->operation_tags;
+  module->operation_tags_filter  = so->operation_tags_filter;
   module->output_bpp  = so->output_bpp;
   module->gui_update  = so->gui_update;
   module->gui_init    = so->gui_init;
@@ -709,6 +725,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    if (darktable.develop->gui_module->operation_tags_filter())
+      dt_dev_invalidate_from_gui(darktable.develop);
   }
   darktable.develop->gui_module = module;
   if(module)
@@ -717,6 +735,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    if (module->operation_tags_filter())
+      dt_dev_invalidate_from_gui(darktable.develop);
   }
   dt_control_change_cursor(GDK_LEFT_PTR);
 }

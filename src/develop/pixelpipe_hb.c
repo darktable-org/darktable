@@ -258,7 +258,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     module = (dt_iop_module_t *)modules->data;
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
-    if(!piece->enabled)
+    if(!piece->enabled || (dev->gui_module && dev->gui_module->operation_tags_filter() &  module->operation_tags()))
       return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_bpp, &roi_in, g_list_previous(modules), g_list_previous(pieces), pos-1);
   }
 
@@ -878,7 +878,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
-    if(piece->enabled)
+    if(piece->enabled && !(dev->gui_module && dev->gui_module->operation_tags_filter() &  module->operation_tags()))
     {
       piece->buf_in = roi_in;
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
