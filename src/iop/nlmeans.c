@@ -21,6 +21,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
+#include "common/opencl.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -47,11 +48,7 @@ typedef dt_iop_nlmeans_params_t dt_iop_nlmeans_data_t;
 
 typedef struct dt_iop_nlmeans_global_data_t
 {
-  // this is optionally stored in self->global_data
-  // and can be used to alloc globally needed stuff
-  // which is needed in gui mode and during processing.
-
-  // we don't need it for this example (as for most dt plugins)
+  int kernel_nlmeans;
 }
 dt_iop_nlmeans_global_data_t;
 
@@ -70,7 +67,7 @@ groups ()
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);
 
-static float gh(const float const f)
+static float gh(const float f)
 {
   // return 0.0001f + dt_fast_expf(-fabsf(f)*800.0f);
   // return 1.0f/(1.0f + f*f);
@@ -79,8 +76,44 @@ static float gh(const float const f)
   return 1.0f/(1.0f + fabsf(f)*spread);
 }
 
-// TODO: this should be _a lot_ faster (perfectly suited, ppl report real-time performance numbers..)
-// void process_cl 
+// temporarily disabled, because it is really quite unbearably slow the way it is implemented now..
+#if 0//def HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
+  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->data;
+  const int devid = piece->pipe->devid;
+  cl_int err = -999;
+  const int P = ceilf(3 * roi_in->scale / piece->iscale); // pixel filter size
+  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
+
+  if(P <= 1)
+  {
+    size_t origin[] = {0, 0, 0};
+    size_t region[] = {roi_in->width, roi_in->height, 1};
+    err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
+    if (err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+  float max_L = 100.0f, max_C = 256.0f;
+  float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 2, sizeof(int32_t), (void *)&P);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 3, sizeof(int32_t), (void *)&K);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 4, sizeof(float), (void *)&nL);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 5, sizeof(float), (void *)&nC);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_nlmeans, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
 
 /** process, all real work is done here. */
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -345,6 +378,24 @@ void cleanup(dt_iop_module_t *module)
   free(module->data); // just to be sure
   module->data = NULL;
 }
+
+#if 0
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 5; // nlmeans.cl, from programs.conf
+  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)malloc(sizeof(dt_iop_nlmeans_global_data_t));
+  module->data = gd;
+  gd->kernel_nlmeans = dt_opencl_create_kernel(darktable.opencl, program, "nlmeans");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_nlmeans);
+  free(module->data);
+  module->data = NULL;
+}
+#endif
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
