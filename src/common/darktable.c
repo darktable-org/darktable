@@ -378,8 +378,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
 
-  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
-  dt_view_manager_init(darktable.view_manager);
+  // The GUI must be initialized before the views, because the init()
+  // functions of the views depend on darktable.gui->accels_* to register
+  // their keyboard accelerators
 
   if(init_gui)
   {
@@ -387,8 +388,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
   }
 
+  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
+  dt_view_manager_init(darktable.view_manager);
 
-  
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
