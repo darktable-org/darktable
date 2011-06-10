@@ -39,6 +39,19 @@
 
 DT_MODULE(1)
 
+static void film_strip_key_accel(GtkAccelGroup *accel_group,
+                                 GObject *acceleratable,
+                                 guint keyval, GdkModifierType modifier,
+                                 gpointer data);
+
+static void zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data);
+
+static void export_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable, guint keyval,
+                                      GdkModifierType modifier);
+
 const char
 *name(dt_view_t *self)
 {
@@ -51,6 +64,45 @@ init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);
+
+  // Film strip shortcuts
+  gtk_accel_map_add_entry("<Darktable>/darkroom/filmstrip/show_hide",
+                          GDK_f, GDK_CONTROL_MASK);
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/darkroom/filmstrip/show_hide",
+      g_cclosure_new(G_CALLBACK(film_strip_key_accel),
+                     (gpointer)self, NULL));
+
+  // Zoom shortcuts
+  gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/close",
+                          GDK_1, GDK_MOD1_MASK);
+  gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/fill",
+                          GDK_2, GDK_MOD1_MASK);
+  gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/fit",
+                          GDK_3, GDK_MOD1_MASK);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/darkroom/zoom/close",
+      g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)1, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/darkroom/zoom/fill",
+      g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)2, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/darkroom/zoom/fit",
+      g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)3, NULL));
+
+  // enable shortcut to export with current export settings:
+  gtk_accel_map_add_entry("<Darktable>/darkroom/export",
+                          GDK_e, GDK_CONTROL_MASK);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/darkroom/export",
+      g_cclosure_new(G_CALLBACK(export_key_accel_callback), NULL, NULL));
 
 }
 
@@ -600,7 +652,9 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
 }
 
 static void
-zoom_key_accel(void *data)
+zoom_key_accel(GtkAccelGroup *accel_group,
+               GObject *acceleratable, guint keyval,
+               GdkModifierType modifier, gpointer data)
 {
   dt_develop_t *dev = darktable.develop;
   int zoom, closeup;
@@ -636,14 +690,19 @@ zoom_key_accel(void *data)
 }
 
 static void
-film_strip_key_accel(void *data)
+film_strip_key_accel(GtkAccelGroup *accel_group,
+                     GObject *acceleratable, guint keyval,
+                     GdkModifierType modifier, gpointer data)
 {
-  dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
+  dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated,
+                            (void*)data);
   dt_control_queue_draw_all();
 }
 
 static void
-export_key_accel_callback(void *d)
+export_key_accel_callback(GtkAccelGroup *accel_group,
+                          GObject *acceleratable, guint keyval,
+                          GdkModifierType modifier)
 {
   dt_control_export();
 }
@@ -793,13 +852,6 @@ void enter(dt_view_t *self)
     dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
     dt_view_film_strip_prefetch();
   }
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel, (void *)1);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel, (void *)2);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel, (void *)3);
-
-  // enable shortcut to export with current export settings:
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, export_key_accel_callback, NULL);
 
   // switch on groups as they where last time:
   dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
@@ -850,9 +902,6 @@ void leave(dt_view_t *self)
 
   if(dt_conf_get_bool("plugins/filmstrip/on"))
     dt_view_film_strip_close(darktable.view_manager);
-  dt_gui_key_accel_unregister(film_strip_key_accel);
-  dt_gui_key_accel_unregister(zoom_key_accel);
-  dt_gui_key_accel_unregister(export_key_accel_callback);
 
   GList *childs = gtk_container_get_children (
                     GTK_CONTAINER (darktable.gui->widgets.bottom_left_toolbox));
