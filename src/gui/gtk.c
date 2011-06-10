@@ -911,7 +911,11 @@ void quit()
   gtk_widget_queue_draw(widget);
 }
 
-static void _gui_switch_view_key_accel_callback(void *p)
+static void _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable,
+                                                guint keyval,
+                                                GdkModifierType modifier,
+                                                gpointer p)
 {
   int view=(long int)p;
   dt_ctl_gui_mode_t mode=DT_MODE_NONE;
@@ -944,7 +948,9 @@ static void _gui_switch_view_key_accel_callback(void *p)
   dt_ctl_switch_mode_to (mode);
 }
 
-static void quit_callback(void *p)
+static void quit_callback(GtkAccelGroup *accel_group,
+                          GObject *acceleratable, guint keyval,
+                          GdkModifierType modifier)
 {
   quit();
 }
@@ -1282,12 +1288,30 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   darktable.gui->key_accels = NULL;
 
   // register keys for view switching
-  dt_gui_key_accel_register(0, GDK_t, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_TETHERING);
-  dt_gui_key_accel_register(0, GDK_l, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_LIBRARY);
-  dt_gui_key_accel_register(0, GDK_d, _gui_switch_view_key_accel_callback, (void *)DT_GUI_VIEW_SWITCH_TO_DARKROOM);
+  gtk_accel_map_add_entry("<Darktable>/views/capture", GDK_t, 0);
+  gtk_accel_map_add_entry("<Darktable>/views/lighttable", GDK_l, 0);
+  gtk_accel_map_add_entry("<Darktable>/views/darkroom", GDK_d, 0);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global, "<Darktable>/views/capture",
+      g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+                     (gpointer)DT_GUI_VIEW_SWITCH_TO_TETHERING, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global, "<Darktable>/views/lighttable",
+      g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+                     (gpointer)DT_GUI_VIEW_SWITCH_TO_LIBRARY, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global, "<Darktable>/views/darkroom",
+      g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+                     (gpointer)DT_GUI_VIEW_SWITCH_TO_DARKROOM, NULL));
 
   // register ctrl-q to quit:
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_q, quit_callback, (void *)0);
+  gtk_accel_map_add_entry("<Darktable>/quit", GDK_q, GDK_CONTROL_MASK);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global, "<Darktable>/quit",
+      g_cclosure_new(G_CALLBACK(quit_callback), NULL, NULL));
+
   darktable.gui->reset = 0;
   for(int i=0; i<3; i++) darktable.gui->bgcolor[i] = 0.1333;
 

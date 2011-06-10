@@ -367,7 +367,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("16:9"));
-  // dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_x, key_accel_callback, (void *)self);
 
   g_signal_connect (G_OBJECT (g->aspect), "changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), (char *)NULL);
