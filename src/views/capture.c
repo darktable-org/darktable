@@ -108,7 +108,10 @@ void capture_view_switch_key_accel(void *p)
     dt_ctl_switch_mode_to( DT_CAPTURE );
 }
 
-void film_strip_key_accel(void *data)
+void film_strip_key_accel(GtkAccelGroup *accel_group,
+                          GObject *acceleratable,
+                          guint keyval, GdkModifierType modifier,
+                          gpointer data)
 {
   dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
   dt_control_queue_draw_all();
@@ -130,6 +133,14 @@ void init(dt_view_t *self)
   lib->subdirectory = dt_conf_get_string("plugins/capture/storage/subpath");
   lib->filenamepattern = dt_conf_get_string("plugins/capture/storage/namepattern");
 
+  // Setup key accelerators in capture view...
+  gtk_accel_map_add_entry("<Darktable>/capture/film_strip_toggle",
+                          GDK_f, GDK_CONTROL_MASK);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_capture,
+      "<Darktable>/capture/film_strip_toggle",
+      g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL));
 }
 
 void cleanup(dt_view_t *self)
@@ -413,9 +424,6 @@ void enter(dt_view_t *self)
     dt_view_film_strip_prefetch();
   }
 
-  // Setup key accelerators in capture view...
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
-
   // initialize a default session...
   dt_capture_view_set_jobcode(self, dt_conf_get_string("plugins/capture/jobcode"));
 
@@ -435,8 +443,6 @@ void leave(dt_view_t *self)
 
   if( dt_film_is_empty(cv->film->id) != 0)
     dt_film_remove(cv->film->id );
-
-  dt_gui_key_accel_unregister(film_strip_key_accel);
 
   // Restore user interface
   GtkWidget *widget;
