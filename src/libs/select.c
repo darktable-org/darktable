@@ -91,9 +91,11 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_draw_all();
 }
 
-static void key_accel_callback(void *d)
+static void key_accel_callback(GtkAccelGroup *accel_group,
+                               GObject *acceleratable, guint keyval,
+                               GdkModifierType modifier, gpointer data)
 {
-  button_clicked(NULL, d);
+  button_clicked(NULL, data);
 }
 
 void
@@ -119,13 +121,11 @@ gui_init (dt_lib_module_t *self)
   button = gtk_button_new_with_label(_("select all"));
   g_object_set(G_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_a, key_accel_callback, (void *)0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)0);
 
   button = gtk_button_new_with_label(_("select none"));
   g_object_set(G_OBJECT(button), "tooltip-text", _("clear selection (ctrl-shift-a)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK|GDK_SHIFT_MASK, GDK_A, key_accel_callback, (void *)1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)1);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
@@ -134,7 +134,6 @@ gui_init (dt_lib_module_t *self)
   button = gtk_button_new_with_label(_("invert selection"));
   g_object_set(G_OBJECT(button), "tooltip-text", _("select unselected images\nin current collection (ctrl-!)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK|GDK_SHIFT_MASK, GDK_exclam, key_accel_callback, (void *)2);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)2);
 
   button = gtk_button_new_with_label(_("select film roll"));
@@ -158,6 +157,30 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_gui_key_accel_unregister(key_accel_callback);
 }
 
+void init_key_accels()
+{
+  gtk_accel_map_add_entry("<Darktable>/modules/select/all",
+                          GDK_a, GDK_CONTROL_MASK);
+  gtk_accel_map_add_entry("<Darktable>/modules/select/none",
+                          GDK_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  gtk_accel_map_add_entry("<Darktable>/modules/select/invert",
+                          GDK_exclam, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_lighttable,
+      "<Darktable>/modules/select/all",
+      g_cclosure_new(G_CALLBACK(key_accel_callback),
+                     (gpointer)0, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_lighttable,
+      "<Darktable>/modules/select/none",
+      g_cclosure_new(G_CALLBACK(key_accel_callback),
+                     (gpointer)1, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_lighttable,
+      "<Darktable>/modules/select/invert",
+      g_cclosure_new(G_CALLBACK(key_accel_callback),
+                     (gpointer)2, NULL));
+}
