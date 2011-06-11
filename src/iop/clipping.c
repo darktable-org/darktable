@@ -42,6 +42,7 @@
 #include "gui/presets.h"
 
 DT_MODULE(3)
+
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
 {
@@ -55,6 +56,7 @@ typedef struct dt_iop_clipping_params_t
   float angle, cx, cy, cw, ch, k_h, k_v;
 }
 dt_iop_clipping_params_t;
+
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
@@ -93,7 +95,9 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkLabel *label7;
   GtkDarktableToggleButton *flipHorGoldenGuide, *flipVerGoldenGuide;
   GtkCheckButton *goldenSectionBox, *goldenSpiralSectionBox, *goldenSpiralBox, *goldenTriangleBox;
-  GClosure *accelerator_callback;
+  GClosure *swap_callback;
+  GClosure *commit_callback;
+  GClosure *undo_callback;
 
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
@@ -119,6 +123,9 @@ typedef struct dt_iop_clipping_data_t
   uint32_t flip;            // flipped output buffer so more area would fit.
 }
 dt_iop_clipping_data_t;
+
+static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g,
+                        dt_iop_clipping_params_t *p);
 
 static void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
@@ -688,7 +695,7 @@ toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
 }
 
 static void
-key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                     guint keyval, GdkModifierType modifier, gpointer d)
 {
   (void)accel_group;
@@ -702,10 +709,41 @@ key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_control_queue_draw_all();
 }
 
+static void key_commit_callback(GtkAccelGroup *accel_group,
+                                GObject *acceleratable,
+                                guint keyval, GdkModifierType modifier,
+                                gpointer data)
+{
+  dt_iop_module_t* self = (dt_iop_module_t*)data;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
+  commit_box(self, g, p);
+}
+
+static void key_undo_callback(GtkAccelGroup *accel_group,
+                              GObject *acceleratable,
+                              guint keyval, GdkModifierType modifier,
+                              gpointer data)
+{
+  dt_iop_module_t* self = (dt_iop_module_t*)data;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
+
+  // reverse cropping to where it was before.
+  p->cx = p->cy = 0.0f;
+  p->cw = p->ch = 1.0f;
+  g->clip_x = g->old_clip_x;
+  g->clip_y = g->old_clip_y;
+  g->clip_w = g->old_clip_w;
+  g->clip_h = g->old_clip_h;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_draw_all();
+}
+
 static void
 aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 {
-  key_accel_callback(NULL, NULL, 0, 0, self);
+  key_swap_callback(NULL, NULL, 0, 0, self);
 }
 
 // Golden number (1+sqrt(5))/2
@@ -830,12 +868,22 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
-  g->accelerator_callback = g_cclosure_new(G_CALLBACK(key_accel_callback),
+  g->swap_callback = g_cclosure_new(G_CALLBACK(key_swap_callback),
                                            (gpointer)self,
                                            NULL);
+  g->commit_callback = g_cclosure_new(G_CALLBACK(key_commit_callback),
+                                      (gpointer)self, NULL);
+  g->undo_callback = g_cclosure_new(G_CALLBACK(key_undo_callback),
+                                    (gpointer)self, NULL);
   gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
                                   "<Darktable>/imageops/clipping/swap_aspect",
-                                 g->accelerator_callback);
+                                 g->swap_callback);
+  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                  "<Darktable>/imageops/clipping/commit",
+                                  g->commit_callback);
+  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                  "<Darktable>/imageops/clipping/undo",
+                                  g->undo_callback);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act >= 9) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
@@ -948,7 +996,13 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
                              ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
-                             accelerator_callback);
+                             swap_callback);
+  gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
+                             ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
+                             commit_callback);
+  gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
+                             ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
+                             undo_callback);
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -1488,36 +1542,14 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
   else return 0;
 }
 
-int key_pressed (struct dt_iop_module_t *self, uint16_t which)
-{
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
-  switch (which)
-  {
-    case KEYCODE_Return:
-      commit_box(self, g, p);
-      return TRUE;
-    case KEYCODE_BackSpace:
-      // reverse cropping to where it was before.
-      p->cx = p->cy = 0.0f;
-      p->cw = p->ch = 1.0f;
-      g->clip_x = g->old_clip_x;
-      g->clip_y = g->old_clip_y;
-      g->clip_w = g->old_clip_w;
-      g->clip_h = g->old_clip_h;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-      dt_control_queue_draw_all();
-      return TRUE;
-    default:
-      break;
-  }
-  return FALSE;
-}
-
 void init_key_accels()
 {
   gtk_accel_map_add_entry("<Darktable>/imageops/clipping/swap_aspect",
                           GDK_x, GDK_CONTROL_MASK);
+  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/commit",
+                          GDK_Return, 0);
+  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/undo",
+                          GDK_z, GDK_CONTROL_MASK);
 }
 
 #undef PHI
