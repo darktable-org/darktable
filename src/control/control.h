@@ -59,6 +59,8 @@
 #define KEYCODE_Caps        -1
 #define KEYCODE_F7        107
 #define KEYCODE_F8        108
+#define KEYCODE_F9        109
+#define KEYCODE_F10        110
 #define KEYCODE_F11        111
 #define KEYCODE_Up         134
 #define KEYCODE_Down       133
@@ -83,6 +85,8 @@
 #define KEYCODE_Caps        57
 #define KEYCODE_F7        98
 #define KEYCODE_F8        99
+#define KEYCODE_F9        100
+#define KEYCODE_F10       101
 #define KEYCODE_F11        103
 #define KEYCODE_Up         126
 #define KEYCODE_Down       125
@@ -109,6 +113,8 @@
 #define KEYCODE_Caps        66
 #define KEYCODE_F7        73
 #define KEYCODE_F8        74
+#define KEYCODE_F9        75
+#define KEYCODE_F10        76
 #define KEYCODE_F11         95
 #define KEYCODE_Up         111
 #define KEYCODE_Down       116
