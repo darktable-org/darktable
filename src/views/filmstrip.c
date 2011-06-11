@@ -66,6 +66,16 @@ static void paste_history_key_accel_callback(GtkAccelGroup *accel_group,
                                              guint keyval,
                                              GdkModifierType modifier,
                                              gpointer data);
+static void scroll_forward_key_accel_callback(GtkAccelGroup *accel_group,
+                                              GObject *acceleratable,
+                                              guint keyval,
+                                              GdkModifierType modifier,
+                                              gpointer data);
+static void scroll_back_key_accel_callback(GtkAccelGroup *accel_group,
+                                           GObject *acceleratable,
+                                           guint keyval,
+                                           GdkModifierType modifier,
+                                           gpointer data);
 
 /**
  * this organises the whole library:
@@ -195,6 +205,22 @@ void init(dt_view_t *self)
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                      (gpointer)4, NULL));
 
+  gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll_forward",
+                          GDK_comma, 0);
+  gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll_back",
+                          GDK_period, 0);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/filmstrip/scroll_forward",
+      g_cclosure_new(G_CALLBACK(scroll_forward_key_accel_callback),
+                     (gpointer)self, NULL));
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/filmstrip/scroll_back",
+      g_cclosure_new(G_CALLBACK(scroll_back_key_accel_callback),
+                     (gpointer)self, NULL));
 
 }
 
@@ -358,6 +384,30 @@ discard_history_key_accel_callback(GtkAccelGroup *accel_group,
   dt_control_queue_draw_all();
 }
 
+static void scroll_forward_key_accel_callback(GtkAccelGroup *accel_group,
+                                              GObject *acceleratable,
+                                              guint keyval,
+                                              GdkModifierType modifier,
+                                              gpointer data)
+{
+  dt_view_t* self = (dt_view_t*)data;
+  dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
+  strip->offset ++;
+  darktable.view_manager->film_strip_scroll_to = -1;
+}
+
+static void scroll_back_key_accel_callback(GtkAccelGroup *accel_group,
+                                           GObject *acceleratable,
+                                           guint keyval,
+                                           GdkModifierType modifier,
+                                           gpointer data)
+{
+  dt_view_t* self = (dt_view_t*)data;
+  dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
+  strip->offset --;
+  darktable.view_manager->film_strip_scroll_to = -1;
+}
+
 static void
 star_key_accel_callback(GtkAccelGroup *accel_group,
                         GObject *acceleratable, guint keyval,
@@ -476,26 +526,6 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 
 int key_pressed(dt_view_t *self, uint16_t which)
 {
-  dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
-  switch (which)
-  {
-    case KEYCODE_Left:
-    case KEYCODE_a:
-    case KEYCODE_Up:
-    case KEYCODE_comma:
-      strip->offset --;
-      darktable.view_manager->film_strip_scroll_to = -1;
-      break;
-    case KEYCODE_Right:
-    case KEYCODE_e:
-    case KEYCODE_Down:
-    case KEYCODE_o:
-      strip->offset ++;
-      darktable.view_manager->film_strip_scroll_to = -1;
-      break;
-    default:
-      return 0;
-  }
   return 1;
 }
 
