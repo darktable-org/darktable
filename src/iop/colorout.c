@@ -593,12 +593,6 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
   }
 }
 
-int  key_pressed(struct dt_iop_module_t *self, uint16_t which)
-{
-
-  return FALSE;
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
