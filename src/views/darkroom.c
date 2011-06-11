@@ -52,6 +52,15 @@ static void export_key_accel_callback(GtkAccelGroup *accel_group,
                                       GObject *acceleratable, guint keyval,
                                       GdkModifierType modifier);
 
+static void skip_f_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable,
+                                      guint keyval, GdkModifierType modifier,
+                                      gpointer data);
+static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable,
+                                      guint keyval, GdkModifierType modifier,
+                                      gpointer data);
+
 const char
 *name(dt_view_t *self)
 {
@@ -104,6 +113,23 @@ init(dt_view_t *self)
       "<Darktable>/darkroom/export",
       g_cclosure_new(G_CALLBACK(export_key_accel_callback), NULL, NULL));
 
+
+  // Shortcut to skip images
+  gtk_accel_map_add_entry("<Darktable>/darkroom/image_forward",
+                          GDK_space, 0);
+  gtk_accel_map_add_entry("<Darktable>/darkroom/image_back",
+                          GDK_BackSpace, 0);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/darkroom/image_forward",
+      g_cclosure_new(G_CALLBACK(skip_f_key_accel_callback),
+                     (gpointer)self->data, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/darkroom/image_back",
+      g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback),
+                     (gpointer)self->data, NULL));
 }
 
 
@@ -707,6 +733,22 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   dt_control_export();
 }
 
+static void skip_f_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable, guint keyval,
+                                      GdkModifierType modifier, gpointer data)
+{
+  dt_dev_jump_image((dt_develop_t*)data, 1);
+}
+
+static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable,
+                                      guint keyval, GdkModifierType modifier,
+                                      gpointer data)
+{
+  dt_dev_jump_image((dt_develop_t*)data, -1);
+}
+
+
 void enter(dt_view_t *self)
 {
   // Attaching accelerator group
@@ -1230,15 +1272,6 @@ int key_pressed(dt_view_t *self, uint16_t which)
   int handled = 0;
   if(dev->gui_module && dev->gui_module->key_pressed) handled = dev->gui_module->key_pressed(dev->gui_module, which);
   if(handled) return handled;
-  switch(which)
-  {
-    case KEYCODE_Space:
-      dt_dev_jump_image(dev, 1);
-      return 1;
-    case KEYCODE_BackSpace:
-      dt_dev_jump_image(dev, -1);
-      return 1;
-  }
   return 0;
 }
 
