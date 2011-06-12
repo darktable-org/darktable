@@ -413,6 +413,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
    */
   uint32_t transformFlags = 0;
 
+  /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
   /* softproof flag and black point compensation */
   transformFlags |= (d->softproofing ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
       
