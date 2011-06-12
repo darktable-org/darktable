@@ -92,20 +92,20 @@ void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
 
-  cairo_set_line_width(cr,0.1);
+  cairo_set_line_width(cr,0.15);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
   if( (flags&CPF_DIRECTION_UP) ) // Rotate -90 degrees
     cairo_transform(cr,&rotation_matrix);
 
-  cairo_move_to(cr,0.15,0.50);
-  cairo_line_to(cr,0.15,0);
-  cairo_line_to(cr,0.85,0.50);
+  cairo_move_to(cr,0.05,0.50);
+  cairo_line_to(cr,0.05,0);
+  cairo_line_to(cr,0.95,0.50);
   cairo_line_to(cr,0.2,0.50);
   cairo_stroke(cr);
-  cairo_set_line_width(cr,0.05);
-  cairo_move_to(cr,0.15,0.62);
-  cairo_line_to(cr,0.15,1.0);
-  cairo_line_to(cr,0.85,0.62);
+  cairo_set_line_width(cr,0.04);
+  cairo_move_to(cr,0.05,0.62);
+  cairo_line_to(cr,0.05,1.0);
+  cairo_line_to(cr,0.95,0.62);
   cairo_stroke(cr);
   cairo_identity_matrix(cr);
 }
