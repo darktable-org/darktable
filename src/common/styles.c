@@ -179,7 +179,9 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 
     /* add tag */
     guint tagid=0;
-    if (dt_tag_new(name,&tagid))
+    gchar ntag[512]={0};
+    g_snprintf(ntag,512,"darktable|style|%s",name);
+    if (dt_tag_new(ntag,&tagid))
       dt_tag_attach(tagid,imgid);
 
     /* if current image in develop reload history */

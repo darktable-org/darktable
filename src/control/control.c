@@ -1285,6 +1285,12 @@ int dt_control_key_pressed_override(guint key, guint state)
     case GDK_F8:
       dt_gui_contrast_increase ();
       break;
+    case KEYCODE_F9:
+      dt_gui_brightness_decrease();
+      break;
+    case KEYCODE_F10:
+      dt_gui_brightness_increase();
+      break;
 
     case GDK_F11:
       widget = darktable.gui->widgets.main_window;

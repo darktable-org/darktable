@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 Henrik Andersson.
+    copyright (c) 2009--2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,9 @@ void dt_gui_contrast_init ();
 void dt_gui_contrast_increase();
 /** decreases the contrast */
 void dt_gui_contrast_decrease();
-
+/** increase brightness */
+void dt_gui_brightness_increase();
+/** decrease brightness */
+void dt_gui_brightness_decrease();
 #endif
 

@@ -440,6 +440,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if (d->softproofing)
     d->softproof =  _create_profile(g->softproofprofile);
 
+  /*
+   * Setup transform flags
+   */
+  uint32_t transformFlags = 0;
+
+  /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
+  /* softproof flag and black point compensation */
+  transformFlags |= (d->softproofing ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
+      
+
+
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
   if (d->softproofing || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) || 
           dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
@@ -450,8 +461,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->xform[t] = cmsCreateProofingTransform(
                       d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT,
                       d->softproof, outintent,
-                      INTENT_ABSOLUTE_COLORIMETRIC,
-                      d->softproofing?cmsFLAGS_SOFTPROOFING:0);
+                      INTENT_RELATIVE_COLORIMETRIC,
+                      transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
@@ -466,10 +477,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->cmatrix[0] = -0.666f;
       piece->process_cl_ready = 0;
       for (int t=0; t<num_threads; t++)
+	
         d->xform[t] = cmsCreateProofingTransform(
                         d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT,
                         d->softproof, outintent,
-                        INTENT_ABSOLUTE_COLORIMETRIC, d->softproofing?cmsFLAGS_SOFTPROOFING:0);
+                        INTENT_RELATIVE_COLORIMETRIC,
+			transformFlags);
     }
   }
 
