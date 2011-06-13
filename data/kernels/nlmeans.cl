@@ -33,10 +33,38 @@ nlmeans (read_only image2d_t in, write_only image2d_t out, const int P, const in
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   const float4 norm2 = (float4)(nL*nL, nC*nC, nC*nC, 1.0f);
-  const float4 acc   = (float4)(0.0f);
 
+#if 0
+  // TODO: shared mem += and update write image!
+
+  // coalesced mem accesses:
+  const float4 p1  = read_imagef(in, sampleri, (int2)(x, y));
+
+  // for each shift vector
+  for(int kj=-K;kj<=K;kj++)
+  {
+    for(int ki=-K;ki<=K;ki++)
+    {
+      const float4 p2  = read_imagef(in, sampleri, (int2)(x+ki, y+kj));
+      const float4 tmp = (p1 - p2)*norm2;
+      const float dist = tmp.x + tmp.y + tmp.z;
+      for(int pj=-P;pj<=P;pj++)
+      {
+        for(int pi=-P;pi<=P;pi++)
+        {
+          float4 p2 = read_imagef(in, sampleri, (int2)(x+pi+ki, y+pj+kj));
+          // TODO: update shm
+        }
+      }
+    }
+  }
+  // TODO: write back normalized shm
+#endif
+
+
+#if 1
+  const float4 acc   = (float4)(0.0f);
   // brute force (superslow baseline)!
-  // TODO: port over the sliding window stuff from the cpu version, make good use of shared memory and h/v threads.
   // for each shift vector
   for(int kj=-K;kj<=K;kj++)
   {
@@ -65,5 +93,6 @@ nlmeans (read_only image2d_t in, write_only image2d_t out, const int P, const in
   acc.y *= 1.0f/acc.w;
   acc.z *= 1.0f/acc.w;
   write_imagef (out, (int2)(x, y), acc);
+#endif
 }
 
