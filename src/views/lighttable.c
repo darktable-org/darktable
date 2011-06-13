@@ -1068,12 +1068,12 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   return 1;
 }
 
-int key_released(dt_view_t *self, uint16_t which)
+int key_released(dt_view_t *self, guint key, guint state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  switch (which)
+  switch (key)
   {
-    case KEYCODE_z:
+    case GDK_z:
     {
       lib->full_preview_id = -1;
       GtkWidget *widget = darktable.gui->widgets.left;
@@ -1091,15 +1091,15 @@ int key_released(dt_view_t *self, uint16_t which)
   return 1;
 }
 
-int key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  switch (which)
+  switch (key)
   {
-    case KEYCODE_z:
+    case GDK_z:
     {
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -1127,25 +1127,25 @@ int key_pressed(dt_view_t *self, uint16_t which)
 
     }
     break;
-    case KEYCODE_Left:
-    case KEYCODE_a:
+    case GDK_Left:
+    case GDK_a:
       if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
       else lib->track = -1;
       break;
-    case KEYCODE_Right:
-    case KEYCODE_e:
+    case GDK_Right:
+    case GDK_e:
       if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
       else lib->track = 1;
       break;
-    case KEYCODE_Up:
-    case KEYCODE_comma:
+    case GDK_Up:
+    case GDK_comma:
       lib->track = -DT_LIBRARY_MAX_ZOOM;
       break;
-    case KEYCODE_Down:
-    case KEYCODE_o:
+    case GDK_Down:
+    case GDK_o:
       lib->track = DT_LIBRARY_MAX_ZOOM;
       break;
-    case KEYCODE_apostrophe:
+    case GDK_apostrophe:
       lib->center = 1;
       break;
     default:

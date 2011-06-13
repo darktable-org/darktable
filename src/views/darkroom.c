@@ -1266,13 +1266,9 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 }
 
 
-int key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, guint key, guint state)
 {
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-  int handled = 0;
-  if(dev->gui_module && dev->gui_module->key_pressed) handled = dev->gui_module->key_pressed(dev->gui_module, which);
-  if(handled) return handled;
-  return 0;
+  return 1;
 }
 
 

@@ -46,7 +46,7 @@
 #include <math.h>
 #include <string.h>
 #include <glib/gstdio.h>
-
+#include <gdk/gdkkeysyms.h>
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
@@ -1270,23 +1270,23 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   dt_conf_set_int("ui_last/expander_metadata", bit);
 }
 
-int dt_control_key_pressed_override(uint16_t which)
+int dt_control_key_pressed_override(guint key, guint state)
 {
   int fullscreen, visible;
   GtkWidget *widget;
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;
 
-  switch (which)
+  switch (key)
   {
-    case KEYCODE_F7:
+    case GDK_F7:
       dt_gui_contrast_decrease ();
       break;
-    case KEYCODE_F8:
+    case GDK_F8:
       dt_gui_contrast_increase ();
       break;
 
-    case KEYCODE_F11:
+    case GDK_F11:
       widget = darktable.gui->widgets.main_window;
       fullscreen = dt_conf_get_bool("ui_last/fullscreen");
       if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
@@ -1295,15 +1295,15 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_conf_set_bool("ui_last/fullscreen", fullscreen);
       dt_dev_invalidate(darktable.develop);
       break;
-    case KEYCODE_Escape:
-    case KEYCODE_Caps:
+    case GDK_Escape:
+    case GDK_Caps_Lock:
       widget = darktable.gui->widgets.main_window;
       gtk_window_unfullscreen(GTK_WINDOW(widget));
       fullscreen = 0;
       dt_conf_set_bool("ui_last/fullscreen", fullscreen);
       dt_dev_invalidate(darktable.develop);
       break;
-    case KEYCODE_Tab:
+    case GDK_Tab:
       widget = darktable.gui->widgets.left;
       visible = GTK_WIDGET_VISIBLE(widget);
       if(visible) gtk_widget_hide(widget);
@@ -1334,21 +1334,22 @@ int dt_control_key_pressed_override(uint16_t which)
   return 1;
 }
 
-int dt_control_key_pressed(uint16_t which)
+int dt_control_key_pressed(guint key, guint state)
 {
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
   GtkWidget *widget;
   int needRedraw=0;
-  switch (which)
+  switch (key)
   {
-    case KEYCODE_period:
+    case GDK_period:
       dt_ctl_switch_mode();
       needRedraw=1;
       break;
     default:
       // propagate to view modules.
-      needRedraw = dt_view_manager_key_pressed(darktable.view_manager, which);
+      needRedraw = dt_view_manager_key_pressed(darktable.view_manager, key,
+                                               state);
       break;
   }
   if( needRedraw )
@@ -1361,16 +1362,16 @@ int dt_control_key_pressed(uint16_t which)
   return 1;
 }
 
-int dt_control_key_released(uint16_t which)
+int dt_control_key_released(guint key, guint state)
 {
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
   GtkWidget *widget;
-  switch (which)
+  switch (key)
   {
     default:
       // propagate to view modules.
-      dt_view_manager_key_released(darktable.view_manager, which);
+      dt_view_manager_key_released(darktable.view_manager, key, state);
       break;
   }
 

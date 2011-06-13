@@ -553,51 +553,8 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 }
 
 
-int key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, guint key, guint state)
 {
-  /*dt_library_t *lib = (dt_library_t *)self->data;
-  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
-  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  switch (which)
-  {
-  	case KEYCODE_Left: case KEYCODE_a:
-  		if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
-  		else lib->track = -1;
-  		break;
-  	case KEYCODE_Right: case KEYCODE_e:
-  		if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
-  		else lib->track = 1;
-  		break;
-  	case KEYCODE_Up: case KEYCODE_comma:
-  		lib->track = -DT_LIBRARY_MAX_ZOOM;
-  		break;
-  	case KEYCODE_Down: case KEYCODE_o:
-  		lib->track = DT_LIBRARY_MAX_ZOOM;
-  		break;
-  	case KEYCODE_1:
-  		zoom = 1;
-  		break;
-  	case KEYCODE_2:
-  		if(zoom <= 1) zoom = 1;
-  		else zoom --;
-  		if(layout == 0) lib->center = 1;
-  		break;
-  	case KEYCODE_3:
-  		if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-  		else zoom ++;
-  		if(layout == 0) lib->center = 1;
-  		break;
-  	case KEYCODE_4:
-  		zoom = DT_LIBRARY_MAX_ZOOM;
-  		break;
-  	case KEYCODE_apostrophe:
-  		lib->center = 1;
-  		break;
-  	default:
-  		return 0;
-  }
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);*/
   return 1;
 }
 

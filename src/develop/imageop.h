@@ -92,7 +92,6 @@ typedef struct dt_iop_module_so_t
   int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
   int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
   int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
-  int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
   int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 

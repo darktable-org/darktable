@@ -474,22 +474,23 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 }
 
 
-int key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
-  switch (which)
+  printf("Oh hi!");
+  switch (key)
   {
-    case KEYCODE_Left:
-    case KEYCODE_a:
-    case KEYCODE_Up:
-    case KEYCODE_comma:
+    case GDK_Left:
+    case GDK_a:
+    case GDK_Up:
+    case GDK_comma:
       strip->offset --;
       darktable.view_manager->film_strip_scroll_to = -1;
       break;
-    case KEYCODE_Right:
-    case KEYCODE_e:
-    case KEYCODE_Down:
-    case KEYCODE_o:
+    case GDK_Right:
+    case GDK_e:
+    case GDK_Down:
+    case GDK_o:
       strip->offset ++;
       darktable.view_manager->film_strip_scroll_to = -1;
       break;

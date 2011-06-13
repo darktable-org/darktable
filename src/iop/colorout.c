@@ -789,11 +789,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-int  key_pressed(struct dt_iop_module_t *self, uint16_t which)
-{
-  return FALSE;
-}
-
 void init_key_accels()
 {
   gtk_accel_map_add_entry("<Darktable>/imageops/colorout/toggle_softproofing",

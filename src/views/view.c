@@ -328,19 +328,19 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   return 0;
 }
 
-int dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
+int dt_view_manager_key_pressed (dt_view_manager_t *vm, guint key, guint state)
 {
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_pressed) return v->key_pressed(v, which);
+  if(v->key_pressed) return v->key_pressed(v, key, state);
   return 0;
 }
 
-int dt_view_manager_key_released (dt_view_manager_t *vm, uint16_t which)
+int dt_view_manager_key_released (dt_view_manager_t *vm, guint key, guint state)
 {
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_released) return v->key_released(v, which);
+  if(v->key_released) return v->key_released(v, key, state);
   return 0;
 }
 
