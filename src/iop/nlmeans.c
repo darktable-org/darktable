@@ -359,14 +359,13 @@ void reload_defaults(dt_iop_module_t *module)
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  // we don't need global data:
-  module->data = NULL; //malloc(sizeof(dt_iop_nlmeans_global_data_t));
   module->params = malloc(sizeof(dt_iop_nlmeans_params_t));
   module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
   // about the first thing to do in Lab space:
   module->priority = 310;
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
+  module->data = NULL;
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -375,11 +374,9 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL; // just to be sure
   free(module->params);
   module->params = NULL;
-  free(module->data); // just to be sure
-  module->data = NULL;
 }
 
-#if 0
+#if 1
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 5; // nlmeans.cl, from programs.conf
