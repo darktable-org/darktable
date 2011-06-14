@@ -46,6 +46,13 @@ typedef struct dt_gui_snapshot_t
 }
 dt_gui_snapshot_t;
 
+// All the accelerator keys for the key_pressed style shortcuts
+typedef struct dt_gui_accels_t
+{
+  GtkAccelKey
+      filmstrip_forward, filmstrip_back;
+} dt_gui_accels_t;
+
 // flat view of all our widgets. could probably be modularized
 // to be a bit nicer (put metadata/histogram/.. in their gui/* files):
 typedef struct dt_gui_widgets_t
@@ -171,6 +178,9 @@ typedef struct dt_gui_gtk_t
   GtkAccelGroup *accels_lighttable;
   GtkAccelGroup *accels_darkroom;
   GtkAccelGroup *accels_capture;
+
+  // Cached accelerator keys for key_pressed shortcuts
+  dt_gui_accels_t accels;
 
   dt_gui_widgets_t widgets;
 

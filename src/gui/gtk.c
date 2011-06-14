@@ -83,6 +83,23 @@ static void init_center_bottom(GtkWidget *container);
 static void init_colorpicker(GtkWidget *container);
 static void init_lighttable_box(GtkWidget* container);
 
+
+static void key_accel_changed(GtkAccelMap *object,
+                              gchar *accel_path,
+                              guint accel_key,
+                              GdkModifierType accel_mods,
+                              gpointer user_data)
+{
+  // Updating all the stored accelerator keys/mods for key_pressed shortcuts
+
+  // Filmstrip
+  gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll_forward",
+                             &darktable.gui->accels.filmstrip_forward);
+  gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll_back",
+                             &darktable.gui->accels.filmstrip_back);
+
+}
+
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
@@ -1135,6 +1152,12 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   darktable.gui->accels_darkroom = gtk_accel_group_new();
   darktable.gui->accels_lighttable = gtk_accel_group_new();
   darktable.gui->accels_capture = gtk_accel_group_new();
+
+  // Connecting the callback to update keyboard accels for key_pressed
+  g_signal_connect(G_OBJECT(gtk_accel_map_get()),
+                   "changed",
+                   G_CALLBACK(key_accel_changed),
+                   NULL);
 
   // Initializing widgets
   init_widgets();

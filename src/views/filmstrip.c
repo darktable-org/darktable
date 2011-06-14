@@ -66,6 +66,11 @@ static void paste_history_key_accel_callback(GtkAccelGroup *accel_group,
                                              guint keyval,
                                              GdkModifierType modifier,
                                              gpointer data);
+static void dummy_key_accel_callback(GtkAccelGroup *accel_group,
+                                     GObject *acceleratable,
+                                     guint keyval,
+                                     GdkModifierType modifier,
+                                     gpointer data);
 
 /**
  * this organises the whole library:
@@ -195,6 +200,21 @@ void init(dt_view_t *self)
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                      (gpointer)4, NULL));
 
+  gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll_forward",
+                          GDK_Right, 0);
+  gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll_back",
+                          GDK_Left, 0);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/filmstrip/scroll_forward",
+      g_cclosure_new(G_CALLBACK(dummy_key_accel_callback),
+                     NULL, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/filmstrip/scroll_back",
+      g_cclosure_new(G_CALLBACK(dummy_key_accel_callback),
+                     NULL, NULL));
 
 }
 
@@ -397,6 +417,16 @@ star_key_accel_callback(GtkAccelGroup *accel_group,
   }
 }
 
+static void dummy_key_accel_callback(GtkAccelGroup *accel_group,
+                                     GObject *acceleratable,
+                                     guint keyval,
+                                     GdkModifierType modifier,
+                                     gpointer data)
+{
+  // A dummy callback to connect the key_pressed shortcut accelerators to
+  // This way the GTK function calls will prevent duplicate mappings
+}
+
 void mouse_enter(dt_view_t *self)
 {
 }
@@ -477,26 +507,28 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
-  switch (key)
+  dt_gui_accels_t *accels = &darktable.gui->accels;
+
+  if(!darktable.control->key_accelerators_on)
+    return 0;
+
+  if(key == accels->filmstrip_back.accel_key
+     && state == accels->filmstrip_back.accel_mods)
   {
-    case GDK_Left:
-    case GDK_a:
-    case GDK_Up:
-    case GDK_comma:
-      strip->offset --;
-      darktable.view_manager->film_strip_scroll_to = -1;
-      break;
-    case GDK_Right:
-    case GDK_e:
-    case GDK_Down:
-    case GDK_o:
-      strip->offset ++;
-      darktable.view_manager->film_strip_scroll_to = -1;
-      break;
-    default:
-      return 0;
+    strip->offset--;
+    darktable.view_manager->film_strip_scroll_to = -1;
+    return 1;
   }
-  return 1;
+
+  if(key == accels->filmstrip_forward.accel_key
+     && state == accels->filmstrip_forward.accel_mods)
+  {
+    strip->offset++;
+    darktable.view_manager->film_strip_scroll_to = -1;
+    return 1;
+  }
+
+  return 0;
 }
 
 void scrolled(dt_view_t *view, double x, double y, int up, int state)
