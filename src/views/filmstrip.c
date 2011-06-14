@@ -477,7 +477,6 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
-  printf("Oh hi!");
   switch (key)
   {
     case GDK_Left:

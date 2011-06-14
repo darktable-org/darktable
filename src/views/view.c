@@ -330,18 +330,28 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
 
 int dt_view_manager_key_pressed (dt_view_manager_t *vm, guint key, guint state)
 {
+  int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_pressed) return v->key_pressed(v, key, state);
-  return 0;
+  if(vm->film_strip_on)
+    film_strip_result = (vm->film_strip.key_pressed)(&vm->film_strip,
+                                                     key, state);
+  if(v->key_pressed)
+    return v->key_pressed(v, key, state) || film_strip_result;
+  return film_strip_result;
 }
 
 int dt_view_manager_key_released (dt_view_manager_t *vm, guint key, guint state)
 {
+  int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_released) return v->key_released(v, key, state);
-  return 0;
+  if(vm->film_strip_on)
+    film_strip_result = (vm->film_strip.key_pressed)(&vm->film_strip,
+                                                     key, state);
+  if(v->key_released)
+    return v->key_released(v, key, state) || film_strip_result;
+  return film_strip_result;
 }
 
 void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
