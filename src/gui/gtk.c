@@ -98,6 +98,20 @@ static void key_accel_changed(GtkAccelMap *object,
   gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll_back",
                              &darktable.gui->accels.filmstrip_back);
 
+  // Lighttable
+  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/up",
+                             &darktable.gui->accels.lighttable_up);
+  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/down",
+                             &darktable.gui->accels.lighttable_down);
+  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/left",
+                             &darktable.gui->accels.lighttable_left);
+  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/right",
+                             &darktable.gui->accels.lighttable_right);
+  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/center",
+                             &darktable.gui->accels.lighttable_center);
+  gtk_accel_map_lookup_entry("<Darktable>/lighttable/preview",
+                             &darktable.gui->accels.lighttable_preview);
+
 }
 
 static gboolean
@@ -1027,31 +1041,9 @@ void dt_gui_key_accel_unregister(void (*callback)(void *))
 static gboolean
 key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
-  GList *i = darktable.gui->key_accels;
   // fprintf(stderr,"Key Press state: %d hwkey: %d\n",event->state, event->hardware_keycode);
 
-  /* check if we should handle key press */
-  if (dt_control_is_key_accelerators_on (darktable.control) !=1)
-    return FALSE;
 
-  // we're only interested in ctrl, shift, mod1 (alt)
-  int estate = event->state & 0xf;
-
-  while(i)
-  {
-    dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
-    // if a->state == 0, i.e. no modifiers are selected, no modifiers are allowed, in fact.
-    if(
-      (
-        (!a->state && (!estate || (!(estate&GDK_MOD1_MASK) && !(estate&GDK_CONTROL_MASK)) ) ) ||
-        (a->state && (a->state == (a->state & estate)))
-      ) && a->keyval == event->keyval)
-    {
-      a->callback(a->data);
-      return TRUE;
-    }
-    i = g_list_next(i);
-  }
   return dt_control_key_pressed_override(event->keyval,
                                          event->state & KEY_STATE_MASK);
 }

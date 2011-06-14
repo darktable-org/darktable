@@ -180,18 +180,18 @@ void init(dt_view_t *self)
                                       G_CALLBACK(zoom_key_accel_callback),
                                       (gpointer)4, NULL));
 
-  gtk_accel_map_add_entry("<Darktable>/lighttable/go_up",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/go/up",
                           GDK_g, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/lighttable/go_down",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/go/down",
                           GDK_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   gtk_accel_group_connect_by_path(darktable.gui->accels_lighttable,
-                                  "<Darktable>/lighttable/go_up",
+                                  "<Darktable>/lighttable/go/up",
                                   g_cclosure_new(
                                       G_CALLBACK(go_up_key_accel_callback),
                                       (gpointer)self, NULL));
   gtk_accel_group_connect_by_path(darktable.gui->accels_lighttable,
-                                  "<Darktable>/lighttable/go_down",
+                                  "<Darktable>/lighttable/go/down",
                                   g_cclosure_new(
                                       G_CALLBACK(go_down_key_accel_callback),
                                       (gpointer)self, NULL));
@@ -227,6 +227,21 @@ void init(dt_view_t *self)
       "<Darktable>/lighttable/color/purple",
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                      (gpointer)4, NULL));
+
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/up",
+                          GDK_Up, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/down",
+                          GDK_Down, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/left",
+                          GDK_Left, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/right",
+                          GDK_Right, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/center",
+                          GDK_apostrophe, 0);
+
+  gtk_accel_map_add_entry("<Darktable>/lighttable/preview",
+                          GDK_z, 0);
+
 
 }
 
@@ -888,7 +903,6 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   }
 }
 
-
 void enter(dt_view_t *self)
 {
   // Attach accelerator group
@@ -1070,89 +1084,100 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 
 int key_released(dt_view_t *self, guint key, guint state)
 {
+  dt_gui_accels_t *accels = &darktable.gui->accels;
   dt_library_t *lib = (dt_library_t *)self->data;
-  switch (key)
+  if(key == accels->lighttable_preview.accel_key
+     && state == accels->lighttable_preview.accel_mods)
   {
-    case GDK_z:
-    {
-      lib->full_preview_id = -1;
-      GtkWidget *widget = darktable.gui->widgets.left;
-      if(lib->full_preview & 1) gtk_widget_show(widget);
-      widget = darktable.gui->widgets.right;
-      if(lib->full_preview & 2)gtk_widget_show(widget);
-      widget = darktable.gui->widgets.bottom;
-      if(lib->full_preview & 4)gtk_widget_show(widget);
-      widget = darktable.gui->widgets.top;
-      if(lib->full_preview & 8)gtk_widget_show(widget);
-      lib->full_preview = 0;
-    }
-    break;
+    lib->full_preview_id = -1;
+    GtkWidget *widget = darktable.gui->widgets.left;
+    if(lib->full_preview & 1) gtk_widget_show(widget);
+    widget = darktable.gui->widgets.right;
+    if(lib->full_preview & 2)gtk_widget_show(widget);
+    widget = darktable.gui->widgets.bottom;
+    if(lib->full_preview & 4)gtk_widget_show(widget);
+    widget = darktable.gui->widgets.top;
+    if(lib->full_preview & 8)gtk_widget_show(widget);
+    lib->full_preview = 0;
   }
+
   return 1;
 }
 
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
+  dt_gui_accels_t *accels = &darktable.gui->accels;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  switch (key)
-  {
-    case GDK_z:
-    {
-      int32_t mouse_over_id;
-      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-      if(!lib->full_preview && mouse_over_id != -1 )
-      {
-        // encode panel visibility into full_preview
-        lib->full_preview = 0;
-        lib->full_preview_id = mouse_over_id;
-        // let's hide some gui components
-        GtkWidget *widget = darktable.gui->widgets.left;
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 0;
-        gtk_widget_hide(widget);
-        widget = darktable.gui->widgets.right;
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 1;
-        gtk_widget_hide(widget);
-        widget = darktable.gui->widgets.bottom;
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 2;
-        gtk_widget_hide(widget);
-        widget = darktable.gui->widgets.top;
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 3;
-        gtk_widget_hide(widget);
-        //dt_dev_invalidate(darktable.develop);
-      }
-      return 0;
 
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+
+  if(key == accels->lighttable_preview.accel_key
+     && state == accels->lighttable_preview.accel_mods)
+  {
+    int32_t mouse_over_id;
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id)
+    if(!lib->full_preview && mouse_over_id != -1 )
+    {
+      // encode panel visibility into full_preview
+      lib->full_preview = 0;
+      lib->full_preview_id = mouse_over_id;
+      // let's hide some gui components
+      GtkWidget *widget = darktable.gui->widgets.left;
+      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 0;
+      gtk_widget_hide(widget);
+      widget = darktable.gui->widgets.right;
+      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 1;
+      gtk_widget_hide(widget);
+      widget = darktable.gui->widgets.bottom;
+      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 2;
+      gtk_widget_hide(widget);
+      widget = darktable.gui->widgets.top;
+      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 3;
+      gtk_widget_hide(widget);
+      //dt_dev_invalidate(darktable.develop);
     }
-    break;
-    case GDK_Left:
-    case GDK_a:
-      if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
-      else lib->track = -1;
-      break;
-    case GDK_Right:
-    case GDK_e:
-      if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
-      else lib->track = 1;
-      break;
-    case GDK_Up:
-    case GDK_comma:
-      lib->track = -DT_LIBRARY_MAX_ZOOM;
-      break;
-    case GDK_Down:
-    case GDK_o:
-      lib->track = DT_LIBRARY_MAX_ZOOM;
-      break;
-    case GDK_apostrophe:
-      lib->center = 1;
-      break;
-    default:
-      return 0;
+    return 0;
   }
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
-  return 1;
+
+  if(key == accels->lighttable_left.accel_key
+     && state == accels->lighttable_left.accel_mods)
+  {
+    if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else lib->track = -1;
+    return 1;
+  }
+
+  if(key == accels->lighttable_right.accel_key
+     && state == accels->lighttable_right.accel_mods)
+  {
+    if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
+    else lib->track = 1;
+    return 1;
+  }
+
+  if(key == accels->lighttable_up.accel_key
+     && state == accels->lighttable_up.accel_mods)
+  {
+    lib->track = -DT_LIBRARY_MAX_ZOOM;
+    return 1;
+  }
+
+  if(key == accels->lighttable_down.accel_key
+     && state == accels->lighttable_down.accel_mods)
+  {
+    lib->track = DT_LIBRARY_MAX_ZOOM;
+    return 1;
+  }
+
+  if(key == accels->lighttable_center.accel_key
+     && state == accels->lighttable_center.accel_mods)
+  {
+    lib->center = 1;
+    return 1;
+  }
+
+  return 0;
 }
 
 void border_scrolled(dt_view_t *view, double x, double y, int which, int up)

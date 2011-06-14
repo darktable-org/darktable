@@ -66,12 +66,6 @@ static void paste_history_key_accel_callback(GtkAccelGroup *accel_group,
                                              guint keyval,
                                              GdkModifierType modifier,
                                              gpointer data);
-static void dummy_key_accel_callback(GtkAccelGroup *accel_group,
-                                     GObject *acceleratable,
-                                     guint keyval,
-                                     GdkModifierType modifier,
-                                     gpointer data);
-
 /**
  * this organises the whole library:
  * previously imported film rolls..
@@ -204,18 +198,6 @@ void init(dt_view_t *self)
                           GDK_Right, 0);
   gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll_back",
                           GDK_Left, 0);
-
-  gtk_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
-      "<Darktable>/filmstrip/scroll_forward",
-      g_cclosure_new(G_CALLBACK(dummy_key_accel_callback),
-                     NULL, NULL));
-  gtk_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
-      "<Darktable>/filmstrip/scroll_back",
-      g_cclosure_new(G_CALLBACK(dummy_key_accel_callback),
-                     NULL, NULL));
-
 }
 
 void cleanup(dt_view_t *self)
@@ -415,16 +397,6 @@ star_key_accel_callback(GtkAccelGroup *accel_group,
     default:
       break;
   }
-}
-
-static void dummy_key_accel_callback(GtkAccelGroup *accel_group,
-                                     GObject *acceleratable,
-                                     guint keyval,
-                                     GdkModifierType modifier,
-                                     gpointer data)
-{
-  // A dummy callback to connect the key_pressed shortcut accelerators to
-  // This way the GTK function calls will prevent duplicate mappings
 }
 
 void mouse_enter(dt_view_t *self)
