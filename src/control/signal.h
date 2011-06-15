@@ -43,6 +43,7 @@ struct dt_control_signal_t *dt_control_signal_init();
 /* raises a signal */
 void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal);
 /* connects a callback to a signal */
-void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig,const dt_signal_t signal, GCallback *cb, gpointer user_data); 
-
+void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig,const dt_signal_t signal, GCallback cb, gpointer user_data); 
+/* disconnects a callback from a sink */
+void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb,gpointer user_data);
 #endif

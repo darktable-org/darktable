@@ -64,7 +64,16 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
   g_signal_emit_by_name(G_OBJECT(ctlsig->sink), _signal_name[signal]);
 }
 
-void dt_control_signal_connect(const dt_control_signal_t *ctlsig,dt_signal_t signal, GCallback *cb, gpointer user_data)
+void dt_control_signal_connect(const dt_control_signal_t *ctlsig,dt_signal_t signal, GCallback cb, gpointer user_data)
 {
   g_signal_connect(G_OBJECT(ctlsig->sink), _signal_name[signal], G_CALLBACK(cb),user_data);
+}
+
+void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb,gpointer user_data)
+{
+  g_signal_handlers_disconnect_matched(G_OBJECT(ctlsig->sink), 
+				       G_SIGNAL_MATCH_FUNC|G_SIGNAL_MATCH_DATA, 
+				       0, 0, 
+				       NULL , 
+				       cb, user_data);
 }
