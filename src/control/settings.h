@@ -35,10 +35,11 @@
   dt_pthread_mutex_lock(&(darktable.control->global_mutex)); \
   if(darktable.control->global_settings.attrib != x) { \
     darktable.control->global_settings.attrib = x;     \
+    dt_pthread_mutex_unlock(&(darktable.control->global_mutex)); \
     if(!strcmp(#attrib,"lib_image_mouse_over_id"))			\
       dt_control_signal_raise(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE); \
-  } \
-  dt_pthread_mutex_unlock(&(darktable.control->global_mutex)); }
+  } else \
+    dt_pthread_mutex_unlock(&(darktable.control->global_mutex)); }
 
 #define DT_CTL_GET_GLOBAL_STR(x, attrib, n) \
 {\
