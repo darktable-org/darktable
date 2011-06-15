@@ -6,80 +6,81 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-02 22:59+0400\n"
-"PO-Revision-Date: 2011-04-02 23:35+0400\n"
+"POT-Creation-Date: 2011-06-15 16:49+0400\n"
+"PO-Revision-Date: 2011-06-15 17:22+0400\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: UTF-8\n"
-"Language: ru\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2); 10<=4 && (n%100<10 || n%"
-"100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2); 10<=4 && (n%100<10 || n"
+"%100>=20) ? 1 : 2);\n"
 "X-Poedit-Language: Russian\n"
 "X-Poedit-Country: RUSSIAN FEDERATION\n"
 
-#: ../build/src/preferences_gen.h:314
+#: ../build/src/preferences_gen.h:342
 msgid "gui options"
 msgstr "Интерфейс"
 
-#: ../build/src/preferences_gen.h:316
+#: ../build/src/preferences_gen.h:344
 msgid "filename of your custom theme in share/darktable/"
 msgstr "Имя файла вашей собственной темы в share/darktable/"
 
-#: ../build/src/preferences_gen.h:324 ../build/src/preferences_gen.h:341
-#: ../build/src/preferences_gen.h:357 ../build/src/preferences_gen.h:372
-#: ../build/src/preferences_gen.h:388 ../build/src/preferences_gen.h:405
-#: ../build/src/preferences_gen.h:422 ../build/src/preferences_gen.h:439
-#: ../build/src/preferences_gen.h:454 ../build/src/preferences_gen.h:470
-#: ../build/src/preferences_gen.h:487 ../build/src/preferences_gen.h:503
-#: ../build/src/preferences_gen.h:535 ../build/src/preferences_gen.h:551
-#: ../build/src/preferences_gen.h:567 ../build/src/preferences_gen.h:584
-#: ../build/src/preferences_gen.h:601 ../build/src/preferences_gen.h:617
-#: ../build/src/preferences_gen.h:633 ../build/src/preferences_gen.h:650
+#: ../build/src/preferences_gen.h:352 ../build/src/preferences_gen.h:369
+#: ../build/src/preferences_gen.h:385 ../build/src/preferences_gen.h:400
+#: ../build/src/preferences_gen.h:416 ../build/src/preferences_gen.h:433
+#: ../build/src/preferences_gen.h:450 ../build/src/preferences_gen.h:467
+#: ../build/src/preferences_gen.h:482 ../build/src/preferences_gen.h:498
+#: ../build/src/preferences_gen.h:515 ../build/src/preferences_gen.h:531
+#: ../build/src/preferences_gen.h:563 ../build/src/preferences_gen.h:579
+#: ../build/src/preferences_gen.h:595 ../build/src/preferences_gen.h:612
+#: ../build/src/preferences_gen.h:629 ../build/src/preferences_gen.h:645
+#: ../build/src/preferences_gen.h:661 ../build/src/preferences_gen.h:677
+#: ../build/src/preferences_gen.h:693 ../build/src/preferences_gen.h:710
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "Двойной щелчок сбрасывает изменения до «%s»"
 
-#: ../build/src/preferences_gen.h:327 ../build/src/preferences_gen.h:587
+#: ../build/src/preferences_gen.h:355 ../build/src/preferences_gen.h:615
 msgid " (needs a restart) "
 msgstr " (требует перезапуска) "
 
-#: ../build/src/preferences_gen.h:332
+#: ../build/src/preferences_gen.h:360
 msgid "size of the side panels in pixels"
 msgstr "Ширина боковой панели в пикселах"
 
-#: ../build/src/preferences_gen.h:344
+#: ../build/src/preferences_gen.h:372
 msgid " (needs a restart)"
 msgstr " (требует перезапуска)"
 
-#: ../build/src/preferences_gen.h:349
+#: ../build/src/preferences_gen.h:377
 msgid "don't use embedded preview jpeg, always use half-size raw"
 msgstr "Использовать Raw в 1/2 оригинала вместо встроенной миниатюры"
 
-#: ../build/src/preferences_gen.h:364
+#: ../build/src/preferences_gen.h:392
 msgid "ask before removing images"
 msgstr "Запрашивать подтверждение на удаление фотографий"
 
-#: ../build/src/preferences_gen.h:375
+#: ../build/src/preferences_gen.h:403
 msgid "always ask the user before any image is removed from db."
 msgstr ""
 "Всегда спрашивать пользователя перед удалением любой фотографии из коллекции"
 
-#: ../build/src/preferences_gen.h:380
+#: ../build/src/preferences_gen.h:408
 msgid "ask before deleting images"
 msgstr "Спрашивать подтверждение перед удалением фотографий"
 
-#: ../build/src/preferences_gen.h:391
+#: ../build/src/preferences_gen.h:419
 msgid "always ask the user before any image file is deleted."
 msgstr "Всегда спрашивать пользователя перед удалением любой фотографии"
 
-#: ../build/src/preferences_gen.h:396
+#: ../build/src/preferences_gen.h:424
 msgid "downsample the preview pixels"
 msgstr "Уменьшать разрешение миниатюр"
 
-#: ../build/src/preferences_gen.h:408
+#: ../build/src/preferences_gen.h:436
 msgid ""
 "this value smaller than 1.0 downsamples the preview pixels in darkroom mode "
 "for faster feedback."
@@ -87,11 +88,11 @@ msgstr ""
 "Если значение меньше 1.0, разрешение миниатюр уменьшается для более быстрой "
 "загрузки фотографий."
 
-#: ../build/src/preferences_gen.h:413
+#: ../build/src/preferences_gen.h:441
 msgid "number of folder levels to show in lists"
 msgstr "Количество показываемых уровней папок в списках"
 
-#: ../build/src/preferences_gen.h:425
+#: ../build/src/preferences_gen.h:453
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
@@ -99,19 +100,19 @@ msgstr ""
 "Количество уровней дерева каталогов, показываемых в списке съёмок, считая "
 "справа"
 
-#: ../build/src/preferences_gen.h:430
+#: ../build/src/preferences_gen.h:458
 msgid "initial rating when importing filmrolls"
 msgstr "Оценка по умолчанию, даваемая при импорте"
 
-#: ../build/src/preferences_gen.h:446
+#: ../build/src/preferences_gen.h:474
 msgid "enable filmstrip in darkroom mode"
 msgstr "Включить фотоленту в режиме проявки"
 
-#: ../build/src/preferences_gen.h:461
+#: ../build/src/preferences_gen.h:489
 msgid "maximum resolution of lighttable thumbnails"
 msgstr "Максимальное разрешение миниатюр на световом столе"
 
-#: ../build/src/preferences_gen.h:473
+#: ../build/src/preferences_gen.h:501
 msgid ""
 "keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
 "(needs a restart and will invalidate current thumbnail caches)."
@@ -120,27 +121,27 @@ msgstr ""
 "тем быстрее создаются миниатюры. Изменения вступят в силу\n"
 "после перезапуска, текущий кэш миниатюр будет перестроен."
 
-#: ../build/src/preferences_gen.h:478
+#: ../build/src/preferences_gen.h:506
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "Качество сохраняемых в базе миниатюр JPEG"
 
-#: ../build/src/preferences_gen.h:490
+#: ../build/src/preferences_gen.h:518
 msgid "affects only the thumbnail cache used for quick startup."
 msgstr "Влияет только на кэш миниатюр, используемых для быстрого запуска"
 
-#: ../build/src/preferences_gen.h:495
+#: ../build/src/preferences_gen.h:523
 msgid "ask before deleting a tag"
 msgstr "Спрашивать подтверждение перед удалением метки"
 
-#: ../build/src/preferences_gen.h:525
+#: ../build/src/preferences_gen.h:553
 msgid "core options"
 msgstr "Основные"
 
-#: ../build/src/preferences_gen.h:527
+#: ../build/src/preferences_gen.h:555
 msgid "database file"
 msgstr "Файл базы данных"
 
-#: ../build/src/preferences_gen.h:538
+#: ../build/src/preferences_gen.h:566
 #, fuzzy
 msgid ""
 "filename relative to ~/.config/darktable or starting with a slash (needs a "
@@ -149,11 +150,11 @@ msgstr ""
 "Имя файла относительно домашнего каталога, либо начиная с черты (вступает в "
 "силу после перезапуска)"
 
-#: ../build/src/preferences_gen.h:543
+#: ../build/src/preferences_gen.h:571
 msgid "image cache file"
 msgstr "Файл кэша фотографий"
 
-#: ../build/src/preferences_gen.h:554
+#: ../build/src/preferences_gen.h:582
 #, fuzzy
 msgid ""
 "filename relative to ~/.cache/darktable or starting with a slash (needs a "
@@ -162,11 +163,11 @@ msgstr ""
 "Имя файла относительно домашнего каталога, либо начиная с черты (вступает в "
 "силу после перезапуска)"
 
-#: ../build/src/preferences_gen.h:559
+#: ../build/src/preferences_gen.h:587
 msgid "image cache file backup"
 msgstr "Делать архивную копию файла кэша"
 
-#: ../build/src/preferences_gen.h:570
+#: ../build/src/preferences_gen.h:598
 msgid ""
 "creates backup of cachefile to prevent loss of thumbnails generated at "
 "crashes etc (needs a restart)."
@@ -174,31 +175,26 @@ msgstr ""
 "Создавать резервный файл с кэшем во избежание потери миниатюр на случай "
 "падения программы (вступает в силу после перезапуска)"
 
-#: ../build/src/preferences_gen.h:575
+#: ../build/src/preferences_gen.h:603
 msgid "memory in bytes to use for mipmap cache"
 msgstr "Количество байт памяти под кэш мипмапов"
 
-#: ../build/src/preferences_gen.h:592
-msgid "full resolution image buffers to keep in main memory cache"
-msgstr "Буферы полноразмерных фотографий в основном кэше памяти"
-
-#: ../build/src/preferences_gen.h:604
-#, fuzzy
-msgid ""
-"how many full-resolution floating point buffers of loaded raw images to keep "
-"in main memory at maximum.  set this variable to num_threads + 1 if you want "
-"multithreaded export (keep one for darkroom mode).  be warned: every thread "
-"will need about 1GB of memory (needs a restart)."
+#: ../build/src/preferences_gen.h:620
+msgid "export multiple images in parallel"
 msgstr ""
-"Максимальное количество полноразмерных буферов с плавающей точкой для "
-"загруженных фотографий, которые нужно хранить в памяти. Значение читается "
-"только при запуске программы."
 
-#: ../build/src/preferences_gen.h:609
+#: ../build/src/preferences_gen.h:632
+msgid ""
+"set this variable to num_threads if you want multithreaded export to process "
+"multiple images at a time. be warned: every thread will need about 1GB of "
+"memory. setting this to 1 switches on per-image parallelization."
+msgstr ""
+
+#: ../build/src/preferences_gen.h:637
 msgid "write a redundant sidecar file for each image"
 msgstr "Записывать файлы XMP для каждой фотографии"
 
-#: ../build/src/preferences_gen.h:620
+#: ../build/src/preferences_gen.h:648
 msgid ""
 "these files can later be re-imported into a different database, preserving "
 "your changes to the image."
@@ -206,22 +202,40 @@ msgstr ""
 "Эти файлы с описанием внесённых изменений может будет позднее импортировать "
 "в другую базу данных."
 
-#: ../build/src/preferences_gen.h:625
+#: ../build/src/preferences_gen.h:653
+msgid "activate OpenCL support (experimental)"
+msgstr ""
+
+#: ../build/src/preferences_gen.h:664
+msgid ""
+"if found, use OpenCL runtime on your system for improved processing speed. "
+"this code is still experimental and not complete. expect random crashes."
+msgstr ""
+
+#: ../build/src/preferences_gen.h:669
+msgid "always use lcms2 during export"
+msgstr ""
+
+#: ../build/src/preferences_gen.h:680
+msgid "this is about 28x as slow as the default."
+msgstr ""
+
+#: ../build/src/preferences_gen.h:685
 msgid "do high quality resampling during export"
 msgstr ""
 
-#: ../build/src/preferences_gen.h:636
+#: ../build/src/preferences_gen.h:696
 msgid ""
 "the image will first be processed in full resolution, and downscaled at the "
 "very end. this can result in better quality sometimes, but will always be "
 "slower."
 msgstr ""
 
-#: ../build/src/preferences_gen.h:641
+#: ../build/src/preferences_gen.h:701
 msgid "password storage backend to use"
 msgstr "Механизм хранения паролей"
 
-#: ../build/src/preferences_gen.h:653
+#: ../build/src/preferences_gen.h:713
 msgid ""
 "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - "
 "kwallet, 3 - gnome keyring"
@@ -229,340 +243,158 @@ msgstr ""
 "Механизм хранения паролей: 0 - не используется, 1 - gconf (не "
 "рекомендуется), 2 - kwallet, 3 - gnome keyring"
 
-#: ../data/darktable.glade.h:1
-msgid "( --- )"
-msgstr "( --- )"
-
-#: ../data/darktable.glade.h:2
-msgid "-"
-msgstr "-"
-
-#: ../data/darktable.glade.h:3
-msgid "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
-msgstr "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
-
-#: ../data/darktable.glade.h:4
-msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
-msgstr "<span color=\"#7f7f7f\"><big><b>Световой стол</b></big></span>"
-
-#: ../data/darktable.glade.h:5
-msgid "about darktable"
-msgstr "О darktable"
-
-#: ../data/darktable.glade.h:6
-msgid ""
-"all\n"
-"unstarred\n"
-"1 star\n"
-"2 star\n"
-"3 star\n"
-"4 star\n"
-"5 star\n"
-"rejected"
-msgstr ""
-"Все\n"
-"Без оценки\n"
-"1 звезда\n"
-"2 звезды\n"
-"3 звезды\n"
-"4 звезды\n"
-"5 звёзд\n"
-"Удалённые"
-
-#. aperture
-#: ../data/darktable.glade.h:14 ../src/gui/presets.c:307
-#: ../src/libs/camera.c:501
-msgid "aperture"
-msgstr "Диафрагма"
-
-#: ../data/darktable.glade.h:15 ../src/libs/collect.h:37
-#: ../src/libs/metadata.c:290
-msgid "creator"
-msgstr "Создатель"
-
-#: ../data/darktable.glade.h:16
-msgid "date/time"
-msgstr "Дата и время"
-
-#: ../data/darktable.glade.h:17
-msgid "distance"
-msgstr "Расстояние"
-
-#. exposure
-#: ../data/darktable.glade.h:18 ../src/gui/presets.c:292
-#: ../src/iop/exposure.c:42 ../src/iop/exposure.c:351 ../src/iop/relight.c:354
-msgid "exposure"
-msgstr "Экспозиция"
-
-#: ../data/darktable.glade.h:19
-msgid "f-length"
-msgstr "Фокусное расстояние"
-
-#: ../data/darktable.glade.h:20
-msgid "filename"
-msgstr "Имя файла"
-
-#: ../data/darktable.glade.h:21
-msgid ""
-"filename\n"
-"time\n"
-"rating\n"
-"id\n"
-"color label"
-msgstr ""
-"Имя файла\n"
-"Дата и время\n"
-"Оценка\n"
-"ID\n"
-"Цветовая метка"
-
-#: ../data/darktable.glade.h:26 ../src/libs/collect.h:29
-msgid "film roll"
-msgstr "Съёмка"
-
-#: ../data/darktable.glade.h:27
-msgid "folder"
-msgstr "Из папки"
-
-#: ../data/darktable.glade.h:28
-msgid "height"
-msgstr "Высота"
-
-#: ../data/darktable.glade.h:29
-msgid "histogram"
-msgstr "Гистограмма"
-
-#: ../data/darktable.glade.h:30 ../src/libs/collect.h:33
-msgid "history"
-msgstr "История изменений"
-
-#: ../data/darktable.glade.h:31 ../src/iop/clipping.c:805
-msgid "image"
-msgstr "Фотография"
-
-#: ../data/darktable.glade.h:32
-msgid "image information"
-msgstr "Метаданные"
-
-#: ../data/darktable.glade.h:33
-msgid "images sorted by"
-msgstr "Критерий сортировки:"
-
-#. Import Button
-#: ../data/darktable.glade.h:34 ../src/gui/camera_import_dialog.c:258
-#: ../src/libs/styles.c:353
-msgid "import"
-msgstr "Импортировать"
-
-#. iso
-#: ../data/darktable.glade.h:35 ../src/gui/presets.c:279
-#: ../src/libs/camera.c:531
-msgid "iso"
-msgstr "ISO"
-
-#: ../data/darktable.glade.h:36 ../src/gui/presets.c:272
-msgid "lens"
-msgstr "Объектив"
-
-#: ../data/darktable.glade.h:37
-msgid "list"
-msgstr "Перечислять:"
-
-#: ../data/darktable.glade.h:38 ../src/gui/presets.c:265
-msgid "maker"
-msgstr "Производитель"
-
-#: ../data/darktable.glade.h:39
-msgid ""
-"mean\n"
-"min\n"
-"max"
-msgstr ""
-"среднее\n"
-"минимальное\n"
-"максимальное"
-
-#: ../data/darktable.glade.h:42 ../src/gui/presets.c:258
-msgid "model"
-msgstr "Модель"
-
-#: ../data/darktable.glade.h:43
-msgid "more plugins"
-msgstr "Управление модулями"
-
-#: ../data/darktable.glade.h:44
-msgid "navigation"
-msgstr "Навигация"
-
-#: ../data/darktable.glade.h:45
-msgid "pick"
-msgstr "Снять"
-
-#: ../data/darktable.glade.h:46 ../src/imageio/storage/picasa.c:769
-#: ../src/libs/collect.h:39 ../src/libs/metadata.c:316
-msgid "rights"
-msgstr "Права"
-
-#: ../data/darktable.glade.h:47
-msgid "select a folder to import as film roll"
-msgstr "Выберите папку для импорта как съёмки"
-
-#: ../data/darktable.glade.h:48
-msgid "select one or more images to import"
-msgstr "Выберите отдельные фотографии для импорта"
-
-#: ../data/darktable.glade.h:49
-msgid "snapshots"
-msgstr "Мгновенные снимки"
-
-#: ../data/darktable.glade.h:50
-msgid "switch to darkroom mode"
-msgstr "Переключиться в режим проявки"
-
-#: ../data/darktable.glade.h:51 ../src/imageio/storage/flickr.c:500
-#: ../src/imageio/storage/gallery.c:153 ../src/imageio/storage/picasa.c:767
-#: ../src/libs/collect.h:35 ../src/libs/metadata.c:264
-msgid "title"
-msgstr "Название"
-
-#: ../data/darktable.glade.h:52 ../src/iop/relight.c:357
-msgid "width"
-msgstr "Ширина"
-
-#: ../data/darktable.glade.h:53
-msgid ""
-"zoomable light table\n"
-"file manager"
-msgstr ""
-"Масштабируемый световой стол\n"
-"Обычный световой стол"
-
-#: ../src/common/collection.c:316 ../src/iop/bilateral.cc:310
+#: ../src/common/collection.c:319 ../src/iop/bilateral.cc:331
 #: ../src/iop/channelmixer.c:339 ../src/iop/channelmixer.c:356
-#: ../src/iop/temperature.c:446 ../src/libs/collect.c:134
-#: ../src/libs/collect.c:136
+#: ../src/iop/temperature.c:462 ../src/libs/collect.c:230
+#: ../src/libs/collect.c:232
 msgid "red"
 msgstr "Красный"
 
-#: ../src/common/collection.c:317 ../src/libs/collect.c:140
-#: ../src/libs/collect.c:142
+#: ../src/common/collection.c:320 ../src/libs/collect.c:236
+#: ../src/libs/collect.c:238
 msgid "yellow"
 msgstr "Жёлтая"
 
-#: ../src/common/collection.c:318 ../src/iop/bilateral.cc:311
+#: ../src/common/collection.c:321 ../src/iop/bilateral.cc:332
 #: ../src/iop/channelmixer.c:340 ../src/iop/channelmixer.c:359
-#: ../src/iop/temperature.c:447 ../src/libs/collect.c:146
-#: ../src/libs/collect.c:148
+#: ../src/iop/temperature.c:463 ../src/libs/collect.c:242
+#: ../src/libs/collect.c:244
 msgid "green"
 msgstr "Зелёный"
 
-#: ../src/common/collection.c:319 ../src/iop/bilateral.cc:312
+#: ../src/common/collection.c:322 ../src/iop/bilateral.cc:333
 #: ../src/iop/channelmixer.c:341 ../src/iop/channelmixer.c:362
-#: ../src/iop/temperature.c:448 ../src/libs/collect.c:152
-#: ../src/libs/collect.c:154
+#: ../src/iop/temperature.c:464 ../src/libs/collect.c:248
+#: ../src/libs/collect.c:250
 msgid "blue"
 msgstr "Синий"
 
-#: ../src/common/collection.c:320 ../src/libs/collect.c:158
-#: ../src/libs/collect.c:160
+#: ../src/common/collection.c:323 ../src/libs/collect.c:254
+#: ../src/libs/collect.c:256
 msgid "purple"
 msgstr "Пурпурная"
 
 #. history
-#: ../src/common/collection.c:326 ../src/libs/collect.c:118
-#: ../src/libs/collect.c:120
+#: ../src/common/collection.c:329 ../src/libs/collect.c:214
+#: ../src/libs/collect.c:216
 msgid "altered"
 msgstr "Изменённые"
 
-#: ../src/common/darktable.c:310
+#: ../src/common/darktable.c:81
+msgid ""
+"darktable has trapped an illegal instruction which probably means that an "
+"invalid processor optimized codepath is used for your cpu, please try "
+"reproduce the crash running 'gdb darktable' from the console and post the "
+"backtrace log to mailing list with information about your CPU and where you "
+"got the package from."
+msgstr ""
+
+#: ../src/common/darktable.c:118
+msgid "SIMD extensions found: "
+msgstr ""
+
+#: ../src/common/darktable.c:134
+#, c-format
+msgid ""
+"darktable is very cpu intensive and uses SSE2 SIMD instructions for heavy "
+"calculations. This gives a better user experience but also defines a minimum "
+"processor requirement.\n"
+"\n"
+"The processor in YOUR system does NOT support SSE2. darktable will now close "
+"down.\n"
+"\n"
+"%s"
+msgstr ""
+
+#: ../src/common/darktable.c:417
 #, c-format
 msgid "found strange path `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:338
+#: ../src/common/darktable.c:445
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "Ошибка при загрузке каталога «%s»"
 
-#: ../src/common/darktable.c:359 ../src/gui/gtk.c:814
+#: ../src/common/darktable.c:466 ../src/gui/gtk.c:857
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "У файла \"%s\" неизвестный формат!"
 
-#: ../src/common/darktable.c:371 ../src/gui/gtk.c:799
+#: ../src/common/darktable.c:478 ../src/gui/gtk.c:842
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Ошибка при загрузке файла «%s»"
 
 #: ../src/common/history.c:169 ../src/common/history.c:197
-#: ../src/common/styles.c:235 ../src/develop/develop.c:949
+#: ../src/common/styles.c:238 ../src/develop/develop.c:959
 #: ../src/gui/styles_dialog.c:323
 msgid "on"
 msgstr "вкл"
 
 #: ../src/common/history.c:169 ../src/common/history.c:197
-#: ../src/common/styles.c:235 ../src/develop/develop.c:949
+#: ../src/common/styles.c:238 ../src/develop/develop.c:959
 #: ../src/gui/styles_dialog.c:323
 msgid "off"
 msgstr "выкл"
 
-#: ../src/common/image.c:148
+#: ../src/common/image.c:193
 #, fuzzy
 msgid "orphaned image"
 msgstr "Одиночная фотография"
 
 #. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
 #. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
-#: ../src/common/image.c:530
+#: ../src/common/image.c:575
 #, c-format
 msgid "image `%s' is not available"
 msgstr "Фотография \"%s\" недоступна"
 
-#: ../src/common/styles.c:72
+#: ../src/common/styles.c:73
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "Стиль с названием «%s» уже существует"
 
-#: ../src/common/styles.c:122
+#: ../src/common/styles.c:123
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "Стиль с названием «%s» успешно создан"
 
-#: ../src/common/styles.c:287
+#: ../src/common/styles.c:290
 #, c-format
 msgid "style file for %s exists"
 msgstr "Файл стиля для «%s» уже существует"
 
-#: ../src/common/styles.c:329
+#: ../src/common/styles.c:333
 #, c-format
 msgid "style %s was sucessfully saved"
 msgstr "Стиль «%s» успешно создан"
 
-#: ../src/common/styles.c:493
+#: ../src/common/styles.c:507
 #, c-format
 msgid "style %s was sucessfully imported"
 msgstr "Стиль «%s» успешно импортирован"
 
-#: ../src/control/control.c:908 ../src/control/control.c:911
+#: ../src/control/control.c:924 ../src/control/control.c:927
 msgid "working.."
 msgstr "минуточку..."
 
-#: ../src/control/control.c:992
+#: ../src/control/control.c:1008
 #, c-format
 msgid "switch to %s mode"
 msgstr "Переключиться в режим «%s»"
 
-#: ../src/control/control.c:1000
+#: ../src/control/control.c:1016
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>Режим «%s»</b></big></span>"
 
-#: ../src/control/jobs/camera_jobs.c:37
+#: ../src/control/jobs/camera_jobs.c:36
 #, c-format
 msgid "importing image %s"
 msgstr "Импортируется фотография %s"
 
-#: ../src/control/jobs/camera_jobs.c:67
+#: ../src/control/jobs/camera_jobs.c:66
 #, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
@@ -570,25 +402,25 @@ msgstr[0] "Делается %d снимок"
 msgstr[1] "Делается %d снимка"
 msgstr[2] "Делается %d снимков"
 
-#: ../src/control/jobs/camera_jobs.c:91
+#: ../src/control/jobs/camera_jobs.c:90
 msgid "please set your camera to manual mode first!"
 msgstr "Сначала переключите камеру в ручной режим!"
 
-#: ../src/control/jobs/camera_jobs.c:275
+#: ../src/control/jobs/camera_jobs.c:274
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d импортировано в %s"
 
-#: ../src/control/jobs/camera_jobs.c:335
+#: ../src/control/jobs/camera_jobs.c:334
 msgid "starting to import images from camera"
 msgstr "Начинается импорт снимков с камеры"
 
-#: ../src/control/jobs/camera_jobs.c:352
+#: ../src/control/jobs/camera_jobs.c:351
 #, c-format
 msgid "failed to create import path `%s', import aborted."
 msgstr "Не удалось создать каталог %s, импорт снимков отменён."
 
-#: ../src/control/jobs/camera_jobs.c:361
+#: ../src/control/jobs/camera_jobs.c:360
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
@@ -596,7 +428,7 @@ msgstr[0] "Импортируется %d снимок с камеры"
 msgstr[1] "Импортируется %d снимка с камеры"
 msgstr[2] "Импортируется %d снимков с камеры"
 
-#: ../src/control/jobs/camera_jobs.c:383
+#: ../src/control/jobs/camera_jobs.c:382
 msgid "failed to create filmroll for camera import, import aborted."
 msgstr "Не удалось создать съёмку для импорта с камеры, импорт прерван."
 
@@ -608,25 +440,25 @@ msgstr[0] "Объединяется %d фотография"
 msgstr[1] "Объединяются %d фотографии"
 msgstr[2] "Объединяются %d фотографий"
 
-#: ../src/control/jobs/control_jobs.c:93
+#: ../src/control/jobs/control_jobs.c:94
 msgid "exposure bracketing only works on raw images"
 msgstr "Сведение экспозиций работает только для исходных снимков в RAW"
 
-#: ../src/control/jobs/control_jobs.c:103
+#: ../src/control/jobs/control_jobs.c:104
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "Не удалось получить буфер RAW из фотографии \"%s\""
 
-#: ../src/control/jobs/control_jobs.c:122
+#: ../src/control/jobs/control_jobs.c:123
 msgid "images have to be of same size!"
 msgstr "У фотографий должен быть одинаковый размер!"
 
-#: ../src/control/jobs/control_jobs.c:168
+#: ../src/control/jobs/control_jobs.c:171
 #, c-format
 msgid "wrote merged hdr `%s'"
 msgstr "Записан созданный файл HDR `%s'"
 
-#: ../src/control/jobs/control_jobs.c:192
+#: ../src/control/jobs/control_jobs.c:195
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
@@ -634,7 +466,7 @@ msgstr[0] "Дублируется %d фотография"
 msgstr[1] "Дублируются %d фотографии"
 msgstr[2] "Дублируются %d фотографий"
 
-#: ../src/control/jobs/control_jobs.c:215
+#: ../src/control/jobs/control_jobs.c:218
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
@@ -642,7 +474,7 @@ msgstr[0] "Поворачивается %d фотография"
 msgstr[1] "Поворачиваются %d фотографии"
 msgstr[2] "Поворачиваются %d фотографий"
 
-#: ../src/control/jobs/control_jobs.c:237
+#: ../src/control/jobs/control_jobs.c:240
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
@@ -650,7 +482,7 @@ msgstr[0] "Удаляется %d фотография"
 msgstr[1] "Удаляются %d фотографии"
 msgstr[2] "Удаляется %d фотографий"
 
-#: ../src/control/jobs/control_jobs.c:260
+#: ../src/control/jobs/control_jobs.c:292
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
@@ -658,28 +490,28 @@ msgstr[0] "Удаляется %d фотография"
 msgstr[1] "Удаляются %d фотографии"
 msgstr[2] "Удаляются %d фотографий"
 
-#: ../src/control/jobs/control_jobs.c:381
+#: ../src/control/jobs/control_jobs.c:441
 msgid "do you really want to remove all selected images from the collection?"
 msgstr "Вы действительно хотите убрать все выбранные фотографии из коллекции?"
 
-#: ../src/control/jobs/control_jobs.c:382
+#: ../src/control/jobs/control_jobs.c:442
 msgid "remove images?"
 msgstr "Убрать фотографии?"
 
-#: ../src/control/jobs/control_jobs.c:402
+#: ../src/control/jobs/control_jobs.c:462
 msgid "do you really want to physically delete all selected images from disk?"
 msgstr ""
 "Вы действительно хотите физически удалить все выбранные фотографии с диска?"
 
-#: ../src/control/jobs/control_jobs.c:403
+#: ../src/control/jobs/control_jobs.c:463
 msgid "delete images?"
 msgstr "Удалить фотографии?"
 
-#: ../src/control/jobs/control_jobs.c:441
+#: ../src/control/jobs/control_jobs.c:501
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr "Не удалось получить параметры от модуля хранения, экспорт прерван."
 
-#: ../src/control/jobs/control_jobs.c:444
+#: ../src/control/jobs/control_jobs.c:504
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
@@ -687,7 +519,7 @@ msgstr[0] "Экспортируется %d фотография..."
 msgstr[1] "Экспортируется %d фотографии..."
 msgstr[2] "Экспортируется %d фотографий..."
 
-#: ../src/control/jobs/control_jobs.c:446
+#: ../src/control/jobs/control_jobs.c:506
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
@@ -695,8 +527,8 @@ msgstr[0] "Экспортируется %d фото в %s"
 msgstr[1] "Экспортируются %d фото в %s"
 msgstr[2] "Экспортируется %d фото в %s"
 
-#: ../src/control/jobs/control_jobs.c:486
-#: ../src/control/jobs/control_jobs.c:487 ../src/views/darkroom.c:349
+#: ../src/control/jobs/control_jobs.c:557
+#: ../src/control/jobs/control_jobs.c:558 ../src/views/darkroom.c:349
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Фотография \"%s\" сейчас недоступна"
@@ -706,118 +538,118 @@ msgstr "Фотография \"%s\" сейчас недоступна"
 msgid "loading image %s"
 msgstr "Загружается фото %s"
 
-#: ../src/develop/develop.c:841
+#: ../src/develop/develop.c:852
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: несоответствие версии модуля `%s': %d != %d"
 
-#: ../src/develop/imageop.c:332 ../src/develop/imageop.c:351
-#: ../src/develop/imageop.c:758
+#: ../src/develop/imageop.c:340 ../src/develop/imageop.c:359
+#: ../src/develop/imageop.c:776
 #, c-format
 msgid "%s is switched on"
 msgstr "%s включен"
 
-#: ../src/develop/imageop.c:332 ../src/develop/imageop.c:351
-#: ../src/develop/imageop.c:758
+#: ../src/develop/imageop.c:340 ../src/develop/imageop.c:359
+#: ../src/develop/imageop.c:776
 #, c-format
 msgid "%s is switched off"
 msgstr "%s выключен"
 
-#: ../src/develop/imageop.c:749
+#: ../src/develop/imageop.c:767
 #, fuzzy
 msgid " (deprecated)"
 msgstr "Подавление шума (устаревший модуль)"
 
-#: ../src/develop/imageop.c:777 ../src/libs/lib.c:525
+#: ../src/develop/imageop.c:795 ../src/libs/lib.c:524
 msgid "reset parameters"
 msgstr "Сбросить параметры"
 
-#: ../src/develop/imageop.c:778 ../src/libs/lib.c:531
+#: ../src/develop/imageop.c:796 ../src/libs/lib.c:530
 msgid "presets"
 msgstr "Профили"
 
 #. hack to indent the drop down box
-#: ../src/develop/imageop.c:802
+#: ../src/develop/imageop.c:820
 msgid "blend"
 msgstr "Смешивание"
 
-#: ../src/develop/imageop.c:803
+#: ../src/develop/imageop.c:821
 msgid "mode"
 msgstr "Режим"
 
-#: ../src/develop/imageop.c:806 ../src/iop/watermark.c:672
+#: ../src/develop/imageop.c:824 ../src/iop/watermark.c:674
 msgid "opacity"
 msgstr "Непрозрачность"
 
-#: ../src/develop/imageop.c:808
+#: ../src/develop/imageop.c:826
 msgid "normal"
 msgstr "Обычный"
 
-#: ../src/develop/imageop.c:809
+#: ../src/develop/imageop.c:827
 msgid "lighten"
 msgstr "Только светлое"
 
-#: ../src/develop/imageop.c:810
+#: ../src/develop/imageop.c:828
 msgid "darken"
 msgstr "Только тёмное"
 
-#: ../src/develop/imageop.c:811
+#: ../src/develop/imageop.c:829
 msgid "multiply"
 msgstr "Умножение"
 
-#: ../src/develop/imageop.c:812
+#: ../src/develop/imageop.c:830
 msgid "average"
 msgstr "Среднее арифметическое"
 
-#: ../src/develop/imageop.c:813
+#: ../src/develop/imageop.c:831
 msgid "addition"
 msgstr "Сложение"
 
-#: ../src/develop/imageop.c:814
+#: ../src/develop/imageop.c:832
 msgid "subtract"
 msgstr "Вычитание"
 
-#: ../src/develop/imageop.c:815
+#: ../src/develop/imageop.c:833
 msgid "difference"
 msgstr "Разница"
 
-#: ../src/develop/imageop.c:816
+#: ../src/develop/imageop.c:834
 msgid "screen"
 msgstr "Экран"
 
-#: ../src/develop/imageop.c:817
+#: ../src/develop/imageop.c:835
 msgid "overlay"
 msgstr "Перекрытие"
 
-#: ../src/develop/imageop.c:818
+#: ../src/develop/imageop.c:836
 msgid "softlight"
 msgstr "Рассеянный свет"
 
-#: ../src/develop/imageop.c:819
+#: ../src/develop/imageop.c:837
 msgid "hardlight"
 msgstr "Направленный свет"
 
-#: ../src/develop/imageop.c:820
+#: ../src/develop/imageop.c:838
 msgid "vividlight"
 msgstr "Яркий свет"
 
-#: ../src/develop/imageop.c:821
+#: ../src/develop/imageop.c:839
 msgid "linearlight"
 msgstr "Линейный свет"
 
-#: ../src/develop/imageop.c:822
+#: ../src/develop/imageop.c:840
 msgid "pinlight"
 msgstr "Точечный свет"
 
-#: ../src/develop/imageop.c:825
+#: ../src/develop/imageop.c:843
 msgid "enable blending"
 msgstr "Включить смешивание"
 
-#: ../src/develop/imageop.c:826
+#: ../src/develop/imageop.c:844
 msgid "set the opacity of the blending"
 msgstr "Изменить непрозрачность при смешивании"
 
-#: ../src/develop/imageop.c:827
+#: ../src/develop/imageop.c:845
 msgid "choose blending mode"
 msgstr "Выберите режим смешивания"
 
@@ -825,61 +657,67 @@ msgstr "Выберите режим смешивания"
 msgid "double-click to reset"
 msgstr "Двойной щелчок сбрасывает изменения"
 
-#: ../src/gui/background_jobs.c:34
+#: ../src/gui/background_jobs.c:33
 msgid "background jobs"
 msgstr "Фоновые задачи"
 
-#: ../src/gui/camera_import_dialog.c:227
+#: ../src/gui/camera_import_dialog.c:229
 msgid "store value as default"
 msgstr "Использовать это значение по умолчанию"
 
-#: ../src/gui/camera_import_dialog.c:234
+#: ../src/gui/camera_import_dialog.c:236
 msgid "reset value to default"
 msgstr "Сбросить значение до исходного"
 
-#: ../src/gui/camera_import_dialog.c:258
+#: ../src/gui/camera_import_dialog.c:260
 msgid "import images from camera"
 msgstr "Импорт снимков с камеры"
 
-#: ../src/gui/camera_import_dialog.c:258
+#: ../src/gui/camera_import_dialog.c:260
 msgid "cancel"
 msgstr "Отменить"
 
-#: ../src/gui/camera_import_dialog.c:266
+#. Import Button
+#: ../src/gui/camera_import_dialog.c:260 ../src/gui/gtk.c:1871
+#: ../src/libs/styles.c:352
+msgid "import"
+msgstr "Импортировать"
+
+#: ../src/gui/camera_import_dialog.c:268
 #, fuzzy
 msgid "my jobcode"
 msgstr "Код задачи"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:274
+#: ../src/gui/camera_import_dialog.c:276
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr "Дождитесь получения миниатюр снимков с камеры..."
 
 #. jobcode
-#: ../src/gui/camera_import_dialog.c:280 ../src/libs/capture.c:104
+#: ../src/gui/camera_import_dialog.c:282 ../src/libs/capture.c:104
 msgid "jobcode"
 msgstr "Название съёмки"
 
-#: ../src/gui/camera_import_dialog.c:292
+#: ../src/gui/camera_import_dialog.c:294
 msgid "thumbnail"
 msgstr "Миниатюра"
 
-#: ../src/gui/camera_import_dialog.c:296
+#: ../src/gui/camera_import_dialog.c:298
 #, fuzzy
 msgid "storage file"
 msgstr "Файл базы данных"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:315
+#: ../src/gui/camera_import_dialog.c:317
 msgid "general"
 msgstr "Общие"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:318 ../src/gui/gtk.c:706
+#: ../src/gui/camera_import_dialog.c:320 ../src/gui/gtk.c:749
 msgid "ignore jpeg files"
 msgstr "Игнорировать файлы JPEG"
 
-#: ../src/gui/camera_import_dialog.c:319 ../src/gui/gtk.c:707
+#: ../src/gui/camera_import_dialog.c:321 ../src/gui/gtk.c:750
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -887,21 +725,21 @@ msgstr ""
 "Не загружать файлы с расширением .jpg и .jpeg. Это полезно при работе со "
 "съёмкой RAW+JPEG."
 
-#: ../src/gui/camera_import_dialog.c:324
+#: ../src/gui/camera_import_dialog.c:326
 msgid "delete originals after import"
 msgstr "Удалить оригиналы после импорта"
 
-#: ../src/gui/camera_import_dialog.c:328
+#: ../src/gui/camera_import_dialog.c:330
 msgid ""
 "check this option if you want to delete images on camera after download to "
 "computer"
 msgstr "Удалять ли фотографии с флэш-карты камеры после импорта снимков"
 
-#: ../src/gui/camera_import_dialog.c:332
+#: ../src/gui/camera_import_dialog.c:334
 msgid "override today's date"
 msgstr "Выставить другую дату"
 
-#: ../src/gui/camera_import_dialog.c:334
+#: ../src/gui/camera_import_dialog.c:336
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -913,11 +751,11 @@ msgstr ""
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
 #. Storage structure
-#: ../src/gui/camera_import_dialog.c:345
+#: ../src/gui/camera_import_dialog.c:347
 msgid "storage structure"
 msgstr "Структура хранения"
 
-#: ../src/gui/camera_import_dialog.c:346
+#: ../src/gui/camera_import_dialog.c:348
 msgid ""
 "the following three settings describe the directory structure and file "
 "renaming for import storage and images; if you dont know how to use this, "
@@ -927,29 +765,29 @@ msgstr ""
 "копировании снимков с камеры. Если вы не знаете, как с этим работать, лучше "
 "ничего не менять."
 
-#: ../src/gui/camera_import_dialog.c:352
+#: ../src/gui/camera_import_dialog.c:354
 msgid "storage directory"
 msgstr "Каталог хранения"
 
-#: ../src/gui/camera_import_dialog.c:355
+#: ../src/gui/camera_import_dialog.c:357
 msgid "directory structure"
 msgstr "Именование каталога"
 
-#: ../src/gui/camera_import_dialog.c:359
+#: ../src/gui/camera_import_dialog.c:361
 msgid "filename structure"
 msgstr "Именование файлов"
 
 #. Add example
-#: ../src/gui/camera_import_dialog.c:363
+#: ../src/gui/camera_import_dialog.c:365
 msgid "above settings expands to:"
 msgstr "Результат будет выглядеть так:"
 
 #. External backup
-#: ../src/gui/camera_import_dialog.c:374
+#: ../src/gui/camera_import_dialog.c:376
 msgid "external backup"
 msgstr "Резервное копирование"
 
-#: ../src/gui/camera_import_dialog.c:375
+#: ../src/gui/camera_import_dialog.c:377
 msgid ""
 "external backup is an option to automatic do a backup of the imported image"
 "(s) to another physical location, when activated it does looks for specified "
@@ -962,29 +800,29 @@ msgstr ""
 "создаёт в нем резервную копию, воссоздавая структуру хранения данных в "
 "основном каталоге фотографий."
 
-#: ../src/gui/camera_import_dialog.c:381
+#: ../src/gui/camera_import_dialog.c:383
 msgid "enable backup"
 msgstr "Включить резервное копирование"
 
-#: ../src/gui/camera_import_dialog.c:383
+#: ../src/gui/camera_import_dialog.c:385
 msgid "check this option to enable automatic backup of imported images"
 msgstr "Использовать ли автоматическое создание резервных копий"
 
-#: ../src/gui/camera_import_dialog.c:385
+#: ../src/gui/camera_import_dialog.c:387
 msgid "warn if no backup destinations are present"
 msgstr "Предупреждать о недоступности хранилища резервных копий"
 
-#: ../src/gui/camera_import_dialog.c:387
+#: ../src/gui/camera_import_dialog.c:389
 msgid ""
 "check this option to get an interactive warning if no backupdestinations are "
 "present"
 msgstr "Предупреждать ли вас о недоступности каталога для резервных копий"
 
-#: ../src/gui/camera_import_dialog.c:389
+#: ../src/gui/camera_import_dialog.c:391
 msgid "backup foldername"
 msgstr "Имя каталога с резервными копиями"
 
-#: ../src/gui/camera_import_dialog.c:391
+#: ../src/gui/camera_import_dialog.c:393
 msgid ""
 "this is the name of folder that indicates a backup destination,\n"
 "if such a folder is found in any mounter media it is used as a backup "
@@ -994,30 +832,30 @@ msgstr ""
 "Если этот каталог найдет на момент импорта, он используется для хранения "
 "копий."
 
-#: ../src/gui/camera_import_dialog.c:407
+#: ../src/gui/camera_import_dialog.c:409
 msgid "images"
 msgstr "Снимки"
 
-#: ../src/gui/camera_import_dialog.c:408
+#: ../src/gui/camera_import_dialog.c:410
 msgid "settings"
 msgstr "Параметры"
 
 #. Lets run dialog
-#: ../src/gui/camera_import_dialog.c:565
+#: ../src/gui/camera_import_dialog.c:567
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
 msgstr "Выберите снимки, которые хотите импортировать как новую съёмку"
 
-#: ../src/gui/camera_import_dialog.c:606
+#: ../src/gui/camera_import_dialog.c:608
 msgid "please set the basedirectory settings before importing"
 msgstr "Укажите параметры корневого каталога перед импортом"
 
-#: ../src/gui/camera_import_dialog.c:613
+#: ../src/gui/camera_import_dialog.c:615
 msgid "please set the subdirectory settings before importing"
 msgstr "Укажите параметров подкаталога перед началом импорта"
 
-#: ../src/gui/camera_import_dialog.c:620
+#: ../src/gui/camera_import_dialog.c:622
 msgid "please set the filenamepattern settings before importing"
 msgstr "Укажите схему именования файлов перед началом импорта"
 
@@ -1048,80 +886,291 @@ msgstr "Дистанционная съёмка"
 msgid "no supported devices found"
 msgstr "Поддерживаемых устройств не обнаружено"
 
-#. switch(input_color)
-#. {
-#. case 0: // linear rgb
-#. snprintf(colstring, 512, "%s: (%.03f, %.03f, %.03f)", _("linear rgb"), col[0], col[1], col[2]);
-#. break;
-#. case 1: // Lab
-#: ../src/gui/gtk.c:338
-msgid "Lab"
-msgstr "LAB"
-
-#: ../src/gui/gtk.c:406
+#: ../src/gui/gtk.c:442
 msgid "organize and develop images from digital cameras"
 msgstr "Организация и обработка цифровых фотографий"
 
-#: ../src/gui/gtk.c:411
+#: ../src/gui/gtk.c:447
 msgid "* developers *"
 msgstr "Разработчики"
 
-#: ../src/gui/gtk.c:416
+#: ../src/gui/gtk.c:452
 msgid "* ubuntu packaging, color management, video tutorials *"
 msgstr "Сборки для Ubuntu, управление цветом, видеоуроки"
 
-#: ../src/gui/gtk.c:419
+#: ../src/gui/gtk.c:455
 msgid "* networking, battle testing, translation expert *"
 msgstr "Хулиган, затейник и спец по локализации"
 
-#: ../src/gui/gtk.c:422
+#: ../src/gui/gtk.c:458
 msgid "* contributors *"
 msgstr "Участники"
 
-#: ../src/gui/gtk.c:462
+#: ../src/gui/gtk.c:498
 msgid "translator-credits"
 msgstr "Александр Прокудин <alexandre@prokoudine.info>"
 
-#: ../src/gui/gtk.c:679
+#: ../src/gui/gtk.c:722
 msgid "import film"
 msgstr "Импортировать съёмку"
 
-#: ../src/gui/gtk.c:698
+#: ../src/gui/gtk.c:741
 msgid "import directories recursively"
 msgstr "Импортировать вложенные папки"
 
-#: ../src/gui/gtk.c:699
+#: ../src/gui/gtk.c:742
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "Рекурсивно импортировать подкаталоги, для каждого подкаталога будет создана "
 "своя съёмка"
 
-#: ../src/gui/gtk.c:750
+#: ../src/gui/gtk.c:793
 msgid "import image"
 msgstr "Импортировать фотографию"
 
-#: ../src/gui/gtk.c:775
+#: ../src/gui/gtk.c:818
 msgid "supported images"
 msgstr "Поддерживаемые форматы"
 
-#: ../src/gui/gtk.c:780 ../src/libs/copy_history.c:77 ../src/libs/styles.c:241
+#: ../src/gui/gtk.c:823 ../src/libs/copy_history.c:76 ../src/libs/styles.c:240
 msgid "all files"
 msgstr "Все файлы"
 
-#: ../src/gui/gtk.c:1128
-msgid "show global preferences"
-msgstr "Открыть диалог настройки программы"
-
-#: ../src/gui/gtk.c:1243
+#: ../src/gui/gtk.c:1228
 msgid "take snapshot"
 msgstr "Сделать снимок"
 
-#: ../src/gui/gtk.c:1244
+#: ../src/gui/gtk.c:1229
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
 msgstr ""
+
+#: ../src/gui/gtk.c:1459
+msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
+msgstr "<span color=\"#7f7f7f\"><big><b>Световой стол</b></big></span>"
+
+#. Adding the list label
+#: ../src/gui/gtk.c:1476
+msgid "list"
+msgstr "Перечислять:"
+
+#: ../src/gui/gtk.c:1484
+msgid "all"
+msgstr "Все"
+
+#: ../src/gui/gtk.c:1485
+msgid "unstarred"
+msgstr "Без оценки"
+
+#: ../src/gui/gtk.c:1486
+msgid "1 star"
+msgstr "1 звезда"
+
+#: ../src/gui/gtk.c:1487
+msgid "2 star"
+msgstr "2 звезды"
+
+#: ../src/gui/gtk.c:1488
+msgid "3 star"
+msgstr "3 звезды"
+
+#: ../src/gui/gtk.c:1489
+msgid "4 star"
+msgstr "4 звезды"
+
+#: ../src/gui/gtk.c:1490
+msgid "5 star"
+msgstr "5 звёзд"
+
+#: ../src/gui/gtk.c:1491
+msgid "rejected"
+msgstr "Отклонённые"
+
+#. Adding the sort label
+#: ../src/gui/gtk.c:1499
+msgid "images sorted by"
+msgstr "Критерий сортировки:"
+
+#: ../src/gui/gtk.c:1507 ../src/gui/gtk.c:1745
+msgid "filename"
+msgstr "Имя файла"
+
+#: ../src/gui/gtk.c:1508
+msgid "time"
+msgstr "Дата и время"
+
+#: ../src/gui/gtk.c:1509
+msgid "rating"
+msgstr "Оценка"
+
+#: ../src/gui/gtk.c:1510
+msgid "id"
+msgstr "Идентификатор"
+
+#: ../src/gui/gtk.c:1511
+msgid "color label"
+msgstr "Цветовая метка"
+
+#: ../src/gui/gtk.c:1522
+msgid "show global preferences"
+msgstr "Открыть диалог настройки программы"
+
+#: ../src/gui/gtk.c:1583
+msgid "about darktable"
+msgstr "О darktable"
+
+#: ../src/gui/gtk.c:1626
+msgid "navigation"
+msgstr "Навигация"
+
+#: ../src/gui/gtk.c:1692 ../src/libs/collect.h:33
+msgid "history"
+msgstr "История изменений"
+
+#: ../src/gui/gtk.c:1746 ../src/gui/presets.c:260
+msgid "model"
+msgstr "Модель"
+
+#: ../src/gui/gtk.c:1747 ../src/gui/presets.c:267
+msgid "maker"
+msgstr "Производитель"
+
+#. aperture
+#: ../src/gui/gtk.c:1748 ../src/gui/presets.c:309 ../src/libs/camera.c:501
+msgid "aperture"
+msgstr "Диафрагма"
+
+#. exposure
+#: ../src/gui/gtk.c:1749 ../src/gui/presets.c:294 ../src/iop/exposure.c:42
+#: ../src/iop/exposure.c:354 ../src/iop/relight.c:302
+msgid "exposure"
+msgstr "Экспозиция"
+
+#: ../src/gui/gtk.c:1750
+msgid "f-length"
+msgstr "Фокусное расстояние"
+
+#: ../src/gui/gtk.c:1751
+msgid "distance"
+msgstr "Расстояние"
+
+#. iso
+#: ../src/gui/gtk.c:1752 ../src/gui/presets.c:281 ../src/libs/camera.c:531
+msgid "iso"
+msgstr "ISO"
+
+#: ../src/gui/gtk.c:1753
+msgid "date/time"
+msgstr "Дата и время"
+
+#: ../src/gui/gtk.c:1754 ../src/gui/presets.c:274
+msgid "lens"
+msgstr "Объектив"
+
+#: ../src/gui/gtk.c:1755 ../src/iop/relight.c:305
+msgid "width"
+msgstr "Ширина"
+
+#: ../src/gui/gtk.c:1756
+msgid "height"
+msgstr "Высота"
+
+#: ../src/gui/gtk.c:1757 ../src/libs/collect.h:29
+msgid "film roll"
+msgstr "Съёмка"
+
+#: ../src/gui/gtk.c:1758 ../src/imageio/storage/flickr.c:500
+#: ../src/imageio/storage/gallery.c:154 ../src/imageio/storage/picasa.c:767
+#: ../src/libs/collect.h:35 ../src/libs/metadata.c:264
+msgid "title"
+msgstr "Название"
+
+#: ../src/gui/gtk.c:1759 ../src/libs/collect.h:37 ../src/libs/metadata.c:290
+msgid "creator"
+msgstr "Создатель"
+
+#: ../src/gui/gtk.c:1760 ../src/imageio/storage/picasa.c:769
+#: ../src/libs/collect.h:39 ../src/libs/metadata.c:316
+msgid "rights"
+msgstr "Права"
+
+#: ../src/gui/gtk.c:1775
+msgid "image information"
+msgstr "Метаданные"
+
+#. Attaching the label to hold the information
+#: ../src/gui/gtk.c:1805
+msgid "-"
+msgstr "-"
+
+#: ../src/gui/gtk.c:1831
+msgid "snapshots"
+msgstr "Мгновенные снимки"
+
+#. Adding the single import button
+#: ../src/gui/gtk.c:1897 ../src/iop/borders.c:362 ../src/iop/clipping.c:822
+msgid "image"
+msgstr "Фотография"
+
+#: ../src/gui/gtk.c:1899
+msgid "select one or more images to import"
+msgstr "Выберите отдельные фотографии для импорта"
+
+#. Adding the import button
+#: ../src/gui/gtk.c:1910
+msgid "folder"
+msgstr "Из папки"
+
+#: ../src/gui/gtk.c:1913
+msgid "select a folder to import as film roll"
+msgstr "Выберите папку для импорта как съёмки"
+
+#: ../src/gui/gtk.c:2077
+msgid "histogram"
+msgstr "Гистограмма"
+
+#: ../src/gui/gtk.c:2177
+msgid "more plugins"
+msgstr "Управление модулями"
+
+#: ../src/gui/gtk.c:2272
+msgid "mean"
+msgstr "Среднее"
+
+#: ../src/gui/gtk.c:2273
+msgid "min"
+msgstr "Минимальное"
+
+#: ../src/gui/gtk.c:2274
+msgid "max"
+msgstr "Максимальное"
+
+#: ../src/gui/gtk.c:2287
+msgid "rgb"
+msgstr "RGB"
+
+#: ../src/gui/gtk.c:2288
+msgid "Lab"
+msgstr "LAB"
+
+#. Creating the colorpicker output label
+#: ../src/gui/gtk.c:2300
+msgid "(---)"
+msgstr "(---)"
+
+#: ../src/gui/gtk.c:2313
+msgid "zoomable light table"
+msgstr "Масштабируемый световой стол"
+
+#. FIXME: Hack to get a translated name without the need to touch the .po files
+#. char* n = _("zoomable light table\nfile manager");
+#. while(*n != '\n') n++; n++;
+#. return n;
+#: ../src/gui/gtk.c:2314 ../src/libs/file_manager.c:43
+msgid "file manager"
+msgstr "Файловый менеджер"
 
 #: ../src/gui/histogram.c:35 ../src/gui/histogram.c:190
 msgid ""
@@ -1139,221 +1188,221 @@ msgstr ""
 "Перетаскивание меняет точку чёрного,\n"
 "двойной щелчок обнуляет изменения"
 
-#: ../src/gui/iop_history.c:96
+#: ../src/gui/iop_history.c:94
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "Стиль «%s» применён к текущему изображению"
 
-#: ../src/gui/iop_history.c:129
+#: ../src/gui/iop_history.c:127
 msgid "no styles have been created yet"
 msgstr "Пока что не создано ни одного стиля"
 
-#: ../src/gui/iop_history.c:138
+#: ../src/gui/iop_history.c:136
 msgid "compress history stack"
 msgstr "Сжать историю изменений"
 
-#: ../src/gui/iop_history.c:139
+#: ../src/gui/iop_history.c:137
 msgid "create a minimal history stack which produces the same image"
 msgstr "Создать минимальную историю изменений, дающую тот же результат"
 
-#: ../src/gui/iop_history.c:147
+#: ../src/gui/iop_history.c:145
 msgid "create a style from the current history stack"
 msgstr "Создать стиль из этой истории изменений"
 
-#: ../src/gui/iop_history.c:153
+#: ../src/gui/iop_history.c:151
 msgid "applies a style selected from popup menu"
 msgstr "Применить стиль из списка известных"
 
-#: ../src/gui/iop_history.c:178 ../src/gui/iop_history.c:269
+#: ../src/gui/iop_history.c:176 ../src/gui/iop_history.c:267
 msgid "0 - original"
 msgstr "0 - Исходный вариант"
 
 #. gtk_widget_set_size_request (bbox,-1,22);
 #. add buttong for active pipe
-#: ../src/gui/iop_modulegroups.c:216
+#: ../src/gui/iop_modulegroups.c:215
 msgid "active"
 msgstr "Активные"
 
-#: ../src/gui/iop_modulegroups.c:218
+#: ../src/gui/iop_modulegroups.c:217
 msgid "the modules used in active pipe"
 msgstr "Только модули, использованные в обработке текущего снимка"
 
 #. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_activepipe_widget,TRUE,TRUE,0);
 #. add buttong for active pipe
-#: ../src/gui/iop_modulegroups.c:222
+#: ../src/gui/iop_modulegroups.c:221
 msgid "favorite"
 msgstr "Избранные"
 
-#: ../src/gui/iop_modulegroups.c:224
+#: ../src/gui/iop_modulegroups.c:223
 msgid "show modules explicit specified by user"
 msgstr ""
 
 #. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_userdefined_widget,TRUE,TRUE,0);
 #. add button for basic plugins
 #. _iop_modulegroups_basic_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/gui/iop_modulegroups.c:229
+#: ../src/gui/iop_modulegroups.c:228
 msgid "basic"
 msgstr "Основные"
 
-#: ../src/gui/iop_modulegroups.c:231
+#: ../src/gui/iop_modulegroups.c:230
 msgid "basic group"
 msgstr "Группа основных модулей обработки"
 
 #. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
 #. add button for color plugins
 #. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/gui/iop_modulegroups.c:236
+#: ../src/gui/iop_modulegroups.c:235
 msgid "color"
 msgstr "Цвет"
 
-#: ../src/gui/iop_modulegroups.c:238
+#: ../src/gui/iop_modulegroups.c:237
 msgid "color group"
 msgstr "Группа модулей цветокоррекции"
 
 #. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_color_widget,TRUE,TRUE,0);
 #. add button for correction plugins
 #. _iop_modulegroups_correct_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../src/gui/iop_modulegroups.c:243
+#: ../src/gui/iop_modulegroups.c:242
 msgid "correct"
 msgstr "Коррекция"
 
-#: ../src/gui/iop_modulegroups.c:245
+#: ../src/gui/iop_modulegroups.c:244
 msgid "correction group"
 msgstr "Группа исправляющих модулей обработки"
 
 #. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_correct_widget,TRUE,TRUE,0);
 #. add buttons for artistic plugins
 #. _iop_modulegroups_effect_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0	);
-#: ../src/gui/iop_modulegroups.c:250
+#: ../src/gui/iop_modulegroups.c:249
 msgid "effect"
 msgstr "Эффекты"
 
-#: ../src/gui/iop_modulegroups.c:252
+#: ../src/gui/iop_modulegroups.c:251
 msgid "effect group"
 msgstr "Группа модулей художественной обработки"
 
-#: ../src/gui/preferences.c:29
+#: ../src/gui/preferences.c:28
 msgid "darktable preferences"
 msgstr "Параметры darktable"
 
-#: ../src/gui/preferences.c:31
+#: ../src/gui/preferences.c:30
 msgid "close"
 msgstr "Закрыть"
 
-#: ../src/gui/presets.c:107 ../src/gui/presets.c:521 ../src/gui/presets.c:534
-#: ../src/libs/lib.c:60
+#: ../src/gui/presets.c:109 ../src/gui/presets.c:523 ../src/gui/presets.c:536
+#: ../src/libs/lib.c:59
 msgid "(default)"
 msgstr "(по умолчанию)"
 
-#: ../src/gui/presets.c:208
+#: ../src/gui/presets.c:210
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "Изменить профиль «%s» для модуля «%s»"
 
-#: ../src/gui/presets.c:233 ../src/libs/lib.c:140
+#: ../src/gui/presets.c:235 ../src/libs/lib.c:139
 msgid "name of the preset"
 msgstr "Имя профиля"
 
-#: ../src/gui/presets.c:237 ../src/libs/lib.c:144
+#: ../src/gui/presets.c:239 ../src/libs/lib.c:143
 msgid "description or further information"
 msgstr "Описание профиля"
 
-#: ../src/gui/presets.c:239
+#: ../src/gui/presets.c:241
 msgid "auto apply this preset to matching images"
 msgstr ""
 "Автоматически применять к фотографиям,\n"
 "соответствующим указанным критериям"
 
-#: ../src/gui/presets.c:241
+#: ../src/gui/presets.c:243
 msgid "only show this preset for matching images"
 msgstr ""
 "Показывать этот профиль только для фотографий, \n"
 "соответствующих указанным критериям"
 
-#: ../src/gui/presets.c:242
+#: ../src/gui/presets.c:244
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
 msgstr "Будьте осторожны — возможно, вы видите этот профиль в последний раз"
 
-#: ../src/gui/presets.c:257
+#: ../src/gui/presets.c:259
 #, c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "Строка для поиска модели камеры (% используется для выбора всего)"
 
-#: ../src/gui/presets.c:264
+#: ../src/gui/presets.c:266
 #, c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr ""
 "Строка для поиска производителя камеры (% используется для выбора всего)"
 
-#: ../src/gui/presets.c:271
+#: ../src/gui/presets.c:273
 #, c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "Строка для поиска модели объектива (% используется для выбора всего)"
 
-#: ../src/gui/presets.c:283
+#: ../src/gui/presets.c:285
 msgid "minimum iso value"
 msgstr "Минимальное значение ISO"
 
-#: ../src/gui/presets.c:287
+#: ../src/gui/presets.c:289
 msgid "maximum iso value"
 msgstr "Максимальное значение ISO"
 
-#: ../src/gui/presets.c:297
+#: ../src/gui/presets.c:299
 msgid "minimum exposure time"
 msgstr "Минимальное время экспозиции"
 
-#: ../src/gui/presets.c:298
+#: ../src/gui/presets.c:300
 msgid "maximum exposure time"
 msgstr "Максимальное время экспозиции"
 
-#: ../src/gui/presets.c:312
+#: ../src/gui/presets.c:314
 msgid "minimum aperture value"
 msgstr "Минимальное значение диафрагмы"
 
-#: ../src/gui/presets.c:313
+#: ../src/gui/presets.c:315
 msgid "maximum aperture value"
 msgstr "Максимальное значение диафрагмы"
 
 #. focal length
-#: ../src/gui/presets.c:322 ../src/libs/camera.c:511
+#: ../src/gui/presets.c:324 ../src/libs/camera.c:511
 msgid "focal length"
 msgstr "Фокусное расстояние"
 
-#: ../src/gui/presets.c:329
+#: ../src/gui/presets.c:331
 msgid "minimum focal length"
 msgstr "Минимальное фокусное расстояние"
 
-#: ../src/gui/presets.c:330
+#: ../src/gui/presets.c:332
 msgid "maximum focal length"
 msgstr "Максимальное фокусное расстояние"
 
 #. then show edit dialog
-#: ../src/gui/presets.c:393 ../src/gui/presets.c:398 ../src/gui/presets.c:405
-#: ../src/libs/lib.c:174 ../src/libs/lib.c:179 ../src/libs/lib.c:185
+#: ../src/gui/presets.c:395 ../src/gui/presets.c:400 ../src/gui/presets.c:407
+#: ../src/libs/lib.c:173 ../src/libs/lib.c:178 ../src/libs/lib.c:184
 msgid "new preset"
 msgstr "новый профиль"
 
-#: ../src/gui/presets.c:555 ../src/libs/lib.c:305
+#: ../src/gui/presets.c:557 ../src/libs/lib.c:304
 msgid "edit this preset.."
 msgstr "Изменить этот профиль"
 
-#: ../src/gui/presets.c:559 ../src/libs/lib.c:309
+#: ../src/gui/presets.c:561 ../src/libs/lib.c:308
 msgid "delete this preset"
 msgstr "Удалить этот профиль"
 
 #. only show if it is not the default already
-#: ../src/gui/presets.c:567
+#: ../src/gui/presets.c:569
 msgid "use preset as default"
 msgstr "Использовать этот профиль по умолчанию"
 
-#: ../src/gui/presets.c:574 ../src/libs/lib.c:316
+#: ../src/gui/presets.c:576 ../src/libs/lib.c:315
 msgid "store new preset.."
 msgstr "Создать новый профиль..."
 
 #. only show this if presets already contains a default
-#: ../src/gui/presets.c:584
+#: ../src/gui/presets.c:586
 msgid "remove default"
 msgstr "Забыть исходные параметры"
 
@@ -1390,7 +1439,7 @@ msgstr "Изменение"
 msgid "can't create style out of unaltered image"
 msgstr "Невозможно создать стиль из фотографии без изменений"
 
-#: ../src/gui/tool_colorlabels.c:42
+#: ../src/gui/tool_colorlabels.c:41
 msgid ""
 "toggle red label\n"
 "of selected images (f1)"
@@ -1398,7 +1447,7 @@ msgstr ""
 "Переключить красную метку во всех\n"
 "выделенных фотографиях (F1)"
 
-#: ../src/gui/tool_colorlabels.c:47
+#: ../src/gui/tool_colorlabels.c:46
 msgid ""
 "toggle yellow label\n"
 "of selected images (f2)"
@@ -1406,7 +1455,7 @@ msgstr ""
 "Переключить жёлтую метку во всех\n"
 "выделенных фотографиях (F2)"
 
-#: ../src/gui/tool_colorlabels.c:52
+#: ../src/gui/tool_colorlabels.c:51
 msgid ""
 "toggle green label\n"
 "of selected images (f3)"
@@ -1414,7 +1463,7 @@ msgstr ""
 "Переключить зелёную метку во всех\n"
 "выделенных фотографиях (F3)"
 
-#: ../src/gui/tool_colorlabels.c:57
+#: ../src/gui/tool_colorlabels.c:56
 msgid ""
 "toggle blue label\n"
 "of selected images (f4)"
@@ -1422,7 +1471,7 @@ msgstr ""
 "Переключить синюю метку во всех\n"
 "выделенных фотографиях (F4)"
 
-#: ../src/gui/tool_colorlabels.c:62
+#: ../src/gui/tool_colorlabels.c:61
 msgid ""
 "toggle purple label\n"
 "of selected images (f5)"
@@ -1430,11 +1479,11 @@ msgstr ""
 "Переключить пурпурную метку во всех\n"
 "выделенных фотографиях (F5)"
 
-#: ../src/gui/tool_colorlabels.c:67
+#: ../src/gui/tool_colorlabels.c:66
 msgid "clear all labels of selected images"
 msgstr "Снять все метки с выбранных фотографий"
 
-#: ../src/imageio/format/copy.c:142 ../src/libs/copy_history.c:201
+#: ../src/imageio/format/copy.c:142 ../src/libs/copy_history.c:200
 msgid "copy"
 msgstr "Скопировать"
 
@@ -1480,17 +1529,18 @@ msgstr "8-разрядный PPM"
 msgid "8/16-bit tiff"
 msgstr "8/16-разрядный TIFF"
 
-#: ../src/imageio/storage/disk.c:55
+#: ../src/imageio/storage/disk.c:54
 msgid "file on disk"
 msgstr "файлы на диске"
 
-#: ../src/imageio/storage/disk.c:63 ../src/imageio/storage/disk.c:130
-#: ../src/imageio/storage/gallery.c:78 ../src/imageio/storage/gallery.c:147
-#: ../src/libs/styles.c:201
+#: ../src/imageio/storage/disk.c:62 ../src/imageio/storage/disk.c:131
+#: ../src/imageio/storage/gallery.c:77 ../src/imageio/storage/gallery.c:148
+#: ../src/libs/styles.c:200
 msgid "select directory"
 msgstr "Выберите каталог"
 
-#: ../src/imageio/storage/disk.c:106
+#: ../src/imageio/storage/disk.c:105
+#, fuzzy
 msgid ""
 "enter the path where to put exported images:\n"
 "$(ROLL_NAME) - roll of the input image\n"
@@ -1510,6 +1560,8 @@ msgid ""
 "$(EXIF_HOUR) - exif hour\n"
 "$(EXIF_MINUTE) - exif minute\n"
 "$(EXIF_SECOND) - exif second\n"
+"$(STARS) - star rating\n"
+"$(LABELS) - colorlabels\n"
 "$(PICTURES_FOLDER) - pictures folder\n"
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
@@ -1536,18 +1588,18 @@ msgstr ""
 "$(HOME_FOLDER) — домашний каталог\n"
 "$(DESKTOP_FOLDER) — каталог рабочего стола"
 
-#: ../src/imageio/storage/disk.c:191 ../src/imageio/storage/gallery.c:227
+#: ../src/imageio/storage/disk.c:192 ../src/imageio/storage/gallery.c:228
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "Не удалось создать каталог «%s»!"
 
-#: ../src/imageio/storage/disk.c:227 ../src/imageio/storage/email.c:111
-#: ../src/imageio/storage/gallery.c:331
+#: ../src/imageio/storage/disk.c:228 ../src/imageio/storage/email.c:110
+#: ../src/imageio/storage/gallery.c:332
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d экспортировано в %s%s"
 
-#: ../src/imageio/storage/email.c:54
+#: ../src/imageio/storage/email.c:53
 msgid "send as email"
 msgstr "отправить по почте"
 
@@ -1645,11 +1697,11 @@ msgstr "%d/%d экспортировано в альбом Flickr"
 msgid "Flickr account not authenticated"
 msgstr "Авторизация на Flickr не выполнена"
 
-#: ../src/imageio/storage/gallery.c:70
+#: ../src/imageio/storage/gallery.c:69
 msgid "website gallery"
 msgstr "Веб-галерея"
 
-#: ../src/imageio/storage/gallery.c:123
+#: ../src/imageio/storage/gallery.c:122
 #, fuzzy
 msgid ""
 "enter the path where to create the website gallery:\n"
@@ -1670,6 +1722,8 @@ msgid ""
 "$(EXIF_HOUR) - exif hour\n"
 "$(EXIF_MINUTE) - exif minute\n"
 "$(EXIF_SECOND) - exif second\n"
+"$(STARS) - star rating\n"
+"$(LABELS) - colorlabels\n"
 "$(PICTURES_FOLDER) - pictures folder\n"
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
@@ -1696,7 +1750,7 @@ msgstr ""
 "$(HOME_FOLDER) — домашний каталог\n"
 "$(DESKTOP_FOLDER) — каталог рабочего стола"
 
-#: ../src/imageio/storage/gallery.c:159
+#: ../src/imageio/storage/gallery.c:160
 #, fuzzy
 msgid "enter the title of the website"
 msgstr "Введите имя нового стиля"
@@ -1740,30 +1794,31 @@ msgstr "%d/%d экспортировано в альбом Picasa WebAlbum"
 msgid "local contrast 2"
 msgstr "Локальный контраст"
 
-#: ../src/iop/anlfyeni.c:275 ../src/iop/localc.c:283
+#: ../src/iop/anlfyeni.c:275 ../src/iop/localc.c:289
 msgid "sensitivity of edge detection"
 msgstr "Чувствительность определения краёв"
 
-#: ../src/iop/anlfyeni.c:276 ../src/iop/localc.c:284
+#: ../src/iop/anlfyeni.c:276 ../src/iop/localc.c:290
 msgid "sensitivity"
 msgstr "Чувствительность"
 
-#: ../src/iop/anlfyeni.c:278 ../src/iop/localc.c:286
+#: ../src/iop/anlfyeni.c:278 ../src/iop/localc.c:292
 #, fuzzy
 msgid "spatial extent of the effect around edges"
 msgstr "Пространственный предел гауссовой функции"
 
-#: ../src/iop/anlfyeni.c:279 ../src/iop/lens.c:1358 ../src/iop/localc.c:287
-#: ../src/iop/vignette.c:852 ../src/iop/watermark.c:674
+#: ../src/iop/anlfyeni.c:279 ../src/iop/lens.c:1358 ../src/iop/localc.c:293
+#: ../src/iop/vignette.c:852 ../src/iop/watermark.c:676
 msgid "scale"
 msgstr "Масштаб"
 
-#: ../src/iop/anlfyeni.c:281 ../src/iop/localc.c:289
+#: ../src/iop/anlfyeni.c:281 ../src/iop/localc.c:295
 msgid "strength of the local contrast"
 msgstr "Сила эффекта"
 
 #: ../src/iop/anlfyeni.c:282 ../src/iop/bloom.c:330 ../src/iop/grain.c:512
-#: ../src/iop/localc.c:290 ../src/iop/stuckpixels.c:234
+#: ../src/iop/hotpixels.c:274 ../src/iop/localc.c:296
+#: ../src/iop/stuckpixels.c:234
 msgid "strength"
 msgstr "Сила"
 
@@ -1771,111 +1826,113 @@ msgstr "Сила"
 msgid "equalizer"
 msgstr "Эквалайзер"
 
-#: ../src/iop/atrous.c:665
+#: ../src/iop/atrous.c:686
 msgid "enhance coarse"
 msgstr "Усилить шероховатости"
 
-#: ../src/iop/atrous.c:679
+#: ../src/iop/atrous.c:700
 msgid "sharpen and denoise (strong)"
 msgstr "Сильно повысить резкость и убрать шум"
 
-#: ../src/iop/atrous.c:693
+#: ../src/iop/atrous.c:714
 msgid "sharpen and denoise"
 msgstr "Повысить резкость и убрать шум"
 
-#: ../src/iop/atrous.c:707 ../src/iop/equalizer.c:260
+#: ../src/iop/atrous.c:728 ../src/iop/equalizer.c:260
 msgid "sharpen (strong)"
 msgstr "Повышенная резкость"
 
-#: ../src/iop/atrous.c:721
+#: ../src/iop/atrous.c:742
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "Резкость"
 
-#: ../src/iop/atrous.c:735 ../src/iop/bilateral.cc:70
+#: ../src/iop/atrous.c:756 ../src/iop/bilateral.cc:73
 #: ../src/iop/equalizer.c:286
 msgid "denoise"
 msgstr "Подавление шума"
 
-#: ../src/iop/atrous.c:751 ../src/iop/equalizer.c:296
+#: ../src/iop/atrous.c:772 ../src/iop/equalizer.c:296
 msgid "denoise (strong)"
 msgstr "Сильное подавление шума"
 
-#: ../src/iop/atrous.c:766 ../src/iop/bloom.c:67
+#: ../src/iop/atrous.c:787 ../src/iop/bloom.c:67
 msgid "bloom"
 msgstr "Свечение"
 
-#: ../src/iop/atrous.c:780
+#: ../src/iop/atrous.c:801
 msgid "clarity (subtle)"
 msgstr "Чёткость (лёгкая)"
 
-#: ../src/iop/atrous.c:794
+#: ../src/iop/atrous.c:815
 msgid "clarity"
 msgstr "Чёткость"
 
-#: ../src/iop/atrous.c:1042 ../src/iop/atrous.c:1046
+#: ../src/iop/atrous.c:1063 ../src/iop/atrous.c:1067
 msgid "coarse"
 msgstr "крупное"
 
-#: ../src/iop/atrous.c:1048 ../src/iop/atrous.c:1052
+#: ../src/iop/atrous.c:1069 ../src/iop/atrous.c:1073
 msgid "fine"
 msgstr "мелкое"
 
-#: ../src/iop/atrous.c:1059
+#: ../src/iop/atrous.c:1080
 msgid "contrasty"
 msgstr "контрастное"
 
-#: ../src/iop/atrous.c:1060 ../src/iop/atrous.c:1064
+#: ../src/iop/atrous.c:1081 ../src/iop/atrous.c:1085
 msgid "smooth"
 msgstr ""
 
-#: ../src/iop/atrous.c:1065
+#: ../src/iop/atrous.c:1086
 msgid "noisy"
 msgstr "шумное"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1068
+#: ../src/iop/atrous.c:1089
 msgid "bold"
 msgstr ""
 
-#: ../src/iop/atrous.c:1069
+#: ../src/iop/atrous.c:1090
 msgid "dull"
 msgstr "плоское"
 
-#: ../src/iop/atrous.c:1250 ../src/iop/equalizer.c:343
+#: ../src/iop/atrous.c:1271 ../src/iop/equalizer.c:343
+#: ../src/iop/nlmeans.c:462
 msgid "luma"
 msgstr "Яркость"
 
-#: ../src/iop/atrous.c:1251
+#: ../src/iop/atrous.c:1272
 msgid "change lightness at each feature size"
 msgstr ""
 
-#: ../src/iop/atrous.c:1252 ../src/iop/equalizer.c:344
+#: ../src/iop/atrous.c:1273 ../src/iop/equalizer.c:344
+#: ../src/iop/nlmeans.c:464
 msgid "chroma"
 msgstr "Цвет"
 
-#: ../src/iop/atrous.c:1253
+#: ../src/iop/atrous.c:1274
 msgid "change color saturation at each feature size"
 msgstr ""
 
-#: ../src/iop/atrous.c:1254
+#: ../src/iop/atrous.c:1275 ../src/iop/highpass.c:406
 msgid "sharpness"
 msgstr "Резкость"
 
-#: ../src/iop/atrous.c:1255
+#: ../src/iop/atrous.c:1276
 msgid "sharpness of edges at each feature size"
 msgstr ""
 
-#: ../src/iop/atrous.c:1291 ../src/iop/soften.c:352
+#: ../src/iop/atrous.c:1312 ../src/iop/soften.c:352
 msgid "mix"
 msgstr "Смешивание"
 
-#: ../src/iop/atrous.c:1292
+#: ../src/iop/atrous.c:1313
 msgid "make effect stronger or weaker"
 msgstr "Сделать эффект сильнее или слабее"
 
 #: ../src/iop/basecurve.c:50 ../src/iop/profile_gamma.c:181
-#: ../src/iop/tonecurve.c:109
+#: ../src/iop/tonecurve.c:123
 msgid "linear"
 msgstr "Линейная кривая"
 
@@ -1931,7 +1988,7 @@ msgstr "fotogenetic (EV3)"
 msgid "base curve"
 msgstr "Базовая кривая"
 
-#: ../src/iop/basecurve.c:592
+#: ../src/iop/basecurve.c:600
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on RGB channels"
@@ -1940,23 +1997,23 @@ msgstr ""
 "Ордината: выход\n"
 "Работает в каналах RGB"
 
-#: ../src/iop/bilateral.cc:304
+#: ../src/iop/bilateral.cc:325
 msgid "spatial extent of the gaussian"
 msgstr "Пространственный предел гауссовой функции"
 
-#: ../src/iop/bilateral.cc:305
+#: ../src/iop/bilateral.cc:326
 msgid "how much to blur red"
 msgstr "Как много размывать в красном канале"
 
-#: ../src/iop/bilateral.cc:306
+#: ../src/iop/bilateral.cc:327
 msgid "how much to blur green"
 msgstr "Как много размывать в зелёном канале"
 
-#: ../src/iop/bilateral.cc:307
+#: ../src/iop/bilateral.cc:328
 msgid "how much to blur blue"
 msgstr "Как много размывать в синем канале"
 
-#: ../src/iop/bilateral.cc:309 ../src/iop/clahe.c:344 ../src/iop/sharpen.c:358
+#: ../src/iop/bilateral.cc:330 ../src/iop/clahe.c:344 ../src/iop/sharpen.c:375
 msgid "radius"
 msgstr "Радиус"
 
@@ -1964,7 +2021,7 @@ msgstr "Радиус"
 msgid "size"
 msgstr "Размер"
 
-#: ../src/iop/bloom.c:328 ../src/iop/sharpen.c:364
+#: ../src/iop/bloom.c:328 ../src/iop/hotpixels.c:267 ../src/iop/sharpen.c:381
 msgid "threshold"
 msgstr "Порог"
 
@@ -1979,6 +2036,84 @@ msgstr "Порог света"
 #: ../src/iop/bloom.c:338
 msgid "the strength of bloom"
 msgstr "Сила свечения"
+
+#: ../src/iop/borders.c:64
+msgid "framing"
+msgstr "Рамка"
+
+#: ../src/iop/borders.c:168
+msgid "15:10 postcard black"
+msgstr "Чёрная открытка 15:10"
+
+#: ../src/iop/borders.c:170
+msgid "15:10 postcard white"
+msgstr "Белая открытка 15:10"
+
+#: ../src/iop/borders.c:267
+msgid "select frame color"
+msgstr "Выберите цвет рамки"
+
+#: ../src/iop/borders.c:352
+msgid "border size"
+msgstr "Размер"
+
+#: ../src/iop/borders.c:355
+msgid "size of the border in percent of the full image"
+msgstr "Размер рамки в процентах от всего изображения"
+
+#: ../src/iop/borders.c:358 ../src/iop/clipping.c:816
+msgid "aspect"
+msgstr "Формат"
+
+#: ../src/iop/borders.c:363 ../src/iop/clipping.c:823
+msgid "golden cut"
+msgstr "Золотое сечение"
+
+#: ../src/iop/borders.c:364 ../src/iop/clipping.c:824
+msgid "1:2"
+msgstr "1:2"
+
+#: ../src/iop/borders.c:365 ../src/iop/clipping.c:825
+msgid "3:2"
+msgstr "3:2"
+
+#: ../src/iop/borders.c:366 ../src/iop/clipping.c:826
+msgid "4:3"
+msgstr "4:3"
+
+#: ../src/iop/borders.c:367 ../src/iop/clipping.c:827
+msgid "square"
+msgstr "Квадрат"
+
+#: ../src/iop/borders.c:368 ../src/iop/clipping.c:828
+msgid "DIN"
+msgstr "DIN"
+
+#: ../src/iop/borders.c:369 ../src/iop/clipping.c:829
+msgid "16:9"
+msgstr "16:9"
+
+#: ../src/iop/borders.c:373 ../src/iop/clipping.c:836
+msgid ""
+"set the aspect ratio (w:h)\n"
+"press ctrl-x to swap sides"
+msgstr ""
+"Укажите соотношение сторон (ш : в),\n"
+"нажмите Ctrl+X для смены ориентации"
+
+#. TODO: what about this?
+#. g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
+#: ../src/iop/borders.c:379 ../src/iop/clipping.c:842
+msgid "swap the aspect ratio (ctrl-x)"
+msgstr "Переключить ориентацию (Ctrl+X)"
+
+#: ../src/iop/borders.c:384
+msgid "frame color"
+msgstr "Цвет"
+
+#: ../src/iop/borders.c:389 ../src/iop/colorzones.c:799
+msgid "pick gui color from image"
+msgstr "Взять цвет с фотографии"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:57
@@ -2006,22 +2141,22 @@ msgid "output channel"
 msgstr "Канал вывода"
 
 #. adding the labels
-#: ../src/iop/channelmixer.c:336 ../src/iop/colorzones.c:791
-#: ../src/iop/colorzones.c:811 ../src/iop/graduatednd.c:526
+#: ../src/iop/channelmixer.c:336 ../src/iop/colorzones.c:792
+#: ../src/iop/colorzones.c:812 ../src/iop/graduatednd.c:505
 #: ../src/iop/splittoning.c:425 ../src/iop/splittoning.c:484
 msgid "hue"
 msgstr "Тон"
 
 #: ../src/iop/channelmixer.c:337 ../src/iop/colorcorrection.c:193
-#: ../src/iop/colorzones.c:792 ../src/iop/colorzones.c:810
-#: ../src/iop/graduatednd.c:527 ../src/iop/soften.c:347
+#: ../src/iop/colorzones.c:793 ../src/iop/colorzones.c:811
+#: ../src/iop/graduatednd.c:506 ../src/iop/soften.c:347
 #: ../src/iop/splittoning.c:426 ../src/iop/splittoning.c:485
 #: ../src/iop/velvia.c:237 ../src/iop/vignette.c:857
 msgid "saturation"
 msgstr "Насыщенность"
 
-#: ../src/iop/channelmixer.c:338 ../src/iop/colorzones.c:793
-#: ../src/iop/colorzones.c:809
+#: ../src/iop/channelmixer.c:338 ../src/iop/colorzones.c:794
+#: ../src/iop/colorzones.c:810
 msgid "lightness"
 msgstr "Светлота"
 
@@ -2085,7 +2220,7 @@ msgstr "ч/б, меньше синих артефактов"
 msgid "local contrast"
 msgstr "Локальный контраст"
 
-#: ../src/iop/clahe.c:346 ../src/iop/sharpen.c:361
+#: ../src/iop/clahe.c:346 ../src/iop/sharpen.c:378
 msgid "amount"
 msgstr "Сила"
 
@@ -2114,168 +2249,124 @@ msgid "rotate by 180"
 msgstr "Повернуть на 180°"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:766 ../src/iop/clipping.c:852
+#: ../src/iop/clipping.c:783 ../src/iop/clipping.c:869
 msgid "flip"
 msgstr "Отразить"
 
-#: ../src/iop/clipping.c:773
+#: ../src/iop/clipping.c:790
 msgid "flip image horizontally"
 msgstr "Отразить снимок по горизонтали"
 
-#: ../src/iop/clipping.c:774
+#: ../src/iop/clipping.c:791
 msgid "flip image vertically"
 msgstr "Отразить снимок по вертикали"
 
-#: ../src/iop/clipping.c:777
+#: ../src/iop/clipping.c:794
 msgid "angle"
 msgstr "Угол"
 
-#: ../src/iop/clipping.c:781
+#: ../src/iop/clipping.c:798
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "Щёлкните правой клавишей мыши по снимку и перетащите указатель для рисования "
 "прямой линии"
 
-#: ../src/iop/clipping.c:786
+#: ../src/iop/clipping.c:803
 msgid "keystone h"
 msgstr "Гор. перспектива"
 
-#: ../src/iop/clipping.c:787
+#: ../src/iop/clipping.c:804
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "Скорректировать перспективу в горизонтальной плоскости"
 
-#: ../src/iop/clipping.c:793
+#: ../src/iop/clipping.c:810
 msgid "keystone v"
 msgstr "Верт. перспектива"
 
-#: ../src/iop/clipping.c:794
+#: ../src/iop/clipping.c:811
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "Скорректировать перспективу в вертикальной плоскости"
 
-#: ../src/iop/clipping.c:799
-msgid "aspect"
-msgstr "Соотношение"
-
-#: ../src/iop/clipping.c:804
+#: ../src/iop/clipping.c:821
 msgid "free"
-msgstr "Произвольное"
+msgstr "Произвольный"
 
-#: ../src/iop/clipping.c:806
-msgid "golden cut"
-msgstr "Золотое сечение"
-
-#: ../src/iop/clipping.c:807
-msgid "1:2"
-msgstr "1:2"
-
-#: ../src/iop/clipping.c:808
-msgid "3:2"
-msgstr "3:2"
-
-#: ../src/iop/clipping.c:809
-msgid "4:3"
-msgstr "4:3"
-
-#: ../src/iop/clipping.c:810
-msgid "square"
-msgstr "Квадрат"
-
-#: ../src/iop/clipping.c:811
-msgid "DIN"
-msgstr "DIN"
-
-#: ../src/iop/clipping.c:812
-msgid "16:9"
-msgstr "16:9"
-
-#: ../src/iop/clipping.c:819
-msgid ""
-"set the aspect ratio (w:h)\n"
-"press ctrl-x to swap sides"
-msgstr ""
-"Укажите соотношение сторон (ш : в),\n"
-"нажмите Ctrl+X для смены ориентации"
-
-#: ../src/iop/clipping.c:825
-msgid "swap the aspect ratio (ctrl-x)"
-msgstr "Переключить ориентацию (Ctrl+X)"
-
-#: ../src/iop/clipping.c:832
+#: ../src/iop/clipping.c:849
 msgid "guides"
 msgstr "Композиция"
 
-#: ../src/iop/clipping.c:835
+#: ../src/iop/clipping.c:852
 msgid "none"
 msgstr "Нет"
 
-#: ../src/iop/clipping.c:836
+#: ../src/iop/clipping.c:853
 msgid "grid"
 msgstr "Сетка"
 
-#: ../src/iop/clipping.c:837
+#: ../src/iop/clipping.c:854
 msgid "rules of thirds"
 msgstr "Правило третей"
 
-#: ../src/iop/clipping.c:838
+#: ../src/iop/clipping.c:855
 msgid "diagonal method"
 msgstr "Диагонали"
 
-#: ../src/iop/clipping.c:839
+#: ../src/iop/clipping.c:856
 msgid "harmonious triangles"
 msgstr "Гармоничные треугольники"
 
-#: ../src/iop/clipping.c:840
+#: ../src/iop/clipping.c:857
 msgid "golden mean"
 msgstr "Золотое сечение"
 
-#: ../src/iop/clipping.c:842
+#: ../src/iop/clipping.c:859
 msgid ""
 "with this option, you can display guide lines to help compose your "
 "photograph."
 msgstr "Различные варианты подсказок по композиции при кадрировании"
 
-#: ../src/iop/clipping.c:846
+#: ../src/iop/clipping.c:863
 msgid "type"
 msgstr "Тип"
 
-#: ../src/iop/clipping.c:859
+#: ../src/iop/clipping.c:876
 msgid "flip guides horizontally"
 msgstr "Отразить линии по горизонтали"
 
-#: ../src/iop/clipping.c:860
+#: ../src/iop/clipping.c:877
 msgid "flip guides vertically"
 msgstr "Отразить линии по вертикали"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:862
+#: ../src/iop/clipping.c:879
 msgid "golden sections"
 msgstr "Золотые деления"
 
-#: ../src/iop/clipping.c:864
+#: ../src/iop/clipping.c:881
 msgid "enable this option to show golden sections."
 msgstr "Включите, чтобы видеть золотые деления"
 
-#: ../src/iop/clipping.c:867
+#: ../src/iop/clipping.c:884
 msgid "spiral sections"
 msgstr "Деления спирали"
 
-#: ../src/iop/clipping.c:868
+#: ../src/iop/clipping.c:885
 msgid "enable this option to show golden spiral sections."
 msgstr "Включите, чтобы видеть деления золотой спирали"
 
-#: ../src/iop/clipping.c:871
+#: ../src/iop/clipping.c:888
 msgid "golden spiral"
 msgstr "Золотая спираль"
 
-#: ../src/iop/clipping.c:872
+#: ../src/iop/clipping.c:889
 msgid "enable this option to show a golden spiral guide."
 msgstr "Включите, чтобы видеть золотую спираль"
 
-#: ../src/iop/clipping.c:875
+#: ../src/iop/clipping.c:892
 msgid "golden triangles"
 msgstr "Треугольники"
 
-#: ../src/iop/clipping.c:876
+#: ../src/iop/clipping.c:893
 msgid "enable this option to show golden triangles."
 msgstr "Включите, чтобы видеть золотые треугольники"
 
@@ -2296,47 +2387,47 @@ msgstr "Укажите насыщенность фильтра"
 msgid "input color profile"
 msgstr "Цветовой профиль камеры"
 
-#: ../src/iop/colorin.c:348
+#: ../src/iop/colorin.c:371
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "Неподдерживаемый профиль ввода заменён на линейный RGB!"
 
-#: ../src/iop/colorin.c:550 ../src/libs/export.c:523
+#: ../src/iop/colorin.c:573 ../src/libs/export.c:514
 msgid "profile"
 msgstr "Профиль"
 
-#: ../src/iop/colorin.c:558
+#: ../src/iop/colorin.c:581
 msgid "standard color matrix"
 msgstr "Стандартная цветовая матрица"
 
-#: ../src/iop/colorin.c:560
+#: ../src/iop/colorin.c:583
 msgid "enhanced color matrix"
 msgstr "Улучшенная цветовая матрица"
 
-#: ../src/iop/colorin.c:562
+#: ../src/iop/colorin.c:585
 msgid "sRGB (e.g. jpg)"
 msgstr "sRGB (например, JPEG)"
 
-#: ../src/iop/colorin.c:564 ../src/iop/colorout.c:700
-#: ../src/iop/colorout.c:701 ../src/iop/colorout.c:702
-#: ../src/libs/export.c:476
+#: ../src/iop/colorin.c:587 ../src/iop/colorout.c:728
+#: ../src/iop/colorout.c:729 ../src/iop/colorout.c:730
+#: ../src/libs/export.c:467
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/iop/colorin.c:566 ../src/iop/colorout.c:688
-#: ../src/iop/colorout.c:689 ../src/iop/colorout.c:690
-#: ../src/libs/export.c:488
+#: ../src/iop/colorin.c:589 ../src/iop/colorout.c:716
+#: ../src/iop/colorout.c:717 ../src/iop/colorout.c:718
+#: ../src/libs/export.c:479
 msgid "linear RGB"
 msgstr "Линейный RGB"
 
-#: ../src/iop/colorin.c:568
+#: ../src/iop/colorin.c:591
 msgid "linear infrared BGR"
 msgstr "Линейный инфракрасный BGR"
 
-#: ../src/iop/colorin.c:570
+#: ../src/iop/colorin.c:593
 msgid "linear XYZ"
 msgstr "Линейный XYZ"
 
-#: ../src/iop/colorin.c:579
+#: ../src/iop/colorin.c:602
 #, c-format
 msgid "icc profiles in %s/color/in or %s/color/in"
 msgstr "Цветовые профили из %s/color/in или %s/color/in"
@@ -2345,80 +2436,80 @@ msgstr "Цветовые профили из %s/color/in или %s/color/in"
 msgid "output color profile"
 msgstr "Цветовой профиль вывода"
 
-#: ../src/iop/colorout.c:413
+#: ../src/iop/colorout.c:439
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "Неподдерживаемый профиль вывода заменён на sRGB!"
 
-#: ../src/iop/colorout.c:533 ../src/iop/colorout.c:540
+#: ../src/iop/colorout.c:561 ../src/iop/colorout.c:568
 msgid "SoftProof"
 msgstr "Цветопроба"
 
-#: ../src/iop/colorout.c:652
+#: ../src/iop/colorout.c:680
 msgid "output intent"
 msgstr "Цветопередача вывода"
 
-#: ../src/iop/colorout.c:653
+#: ../src/iop/colorout.c:681
 msgid "output profile"
 msgstr "Профиль вывода"
 
-#: ../src/iop/colorout.c:654
+#: ../src/iop/colorout.c:682
 msgid "softproof profile"
 msgstr "Профиль цветопробы"
 
-#: ../src/iop/colorout.c:656
+#: ../src/iop/colorout.c:684
 msgid "display intent"
 msgstr "Цветопередача монитора"
 
-#: ../src/iop/colorout.c:657
+#: ../src/iop/colorout.c:685
 msgid "display profile"
 msgstr "Профиль монитора"
 
-#: ../src/iop/colorout.c:664 ../src/iop/colorout.c:669
-#: ../src/libs/export.c:459
+#: ../src/iop/colorout.c:692 ../src/iop/colorout.c:697
+#: ../src/libs/export.c:450
 msgid "perceptual"
 msgstr "Воспринимаемая"
 
-#: ../src/iop/colorout.c:665 ../src/iop/colorout.c:670
-#: ../src/libs/export.c:460
+#: ../src/iop/colorout.c:693 ../src/iop/colorout.c:698
+#: ../src/libs/export.c:451
 msgid "relative colorimetric"
 msgstr "Отн. колориметрическая"
 
-#: ../src/iop/colorout.c:666 ../src/iop/colorout.c:671
-#: ../src/libs/export.c:461
+#: ../src/iop/colorout.c:694 ../src/iop/colorout.c:699
+#: ../src/libs/export.c:452
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Насыщенная"
 
-#: ../src/iop/colorout.c:667 ../src/iop/colorout.c:672
-#: ../src/libs/export.c:462
+#: ../src/iop/colorout.c:695 ../src/iop/colorout.c:700
+#: ../src/libs/export.c:453
 msgid "absolute colorimetric"
 msgstr "Абс. колориметрическая"
 
-#: ../src/iop/colorout.c:682 ../src/iop/colorout.c:683
-#: ../src/iop/colorout.c:684 ../src/libs/export.c:534
+#: ../src/iop/colorout.c:710 ../src/iop/colorout.c:711
+#: ../src/iop/colorout.c:712 ../src/libs/export.c:525
 msgid "system display profile"
 msgstr "Профиль монитора"
 
-#: ../src/iop/colorout.c:694 ../src/iop/colorout.c:695
-#: ../src/iop/colorout.c:696 ../src/libs/export.c:469
+#: ../src/iop/colorout.c:722 ../src/iop/colorout.c:723
+#: ../src/iop/colorout.c:724 ../src/libs/export.c:460
 msgid "sRGB (web-safe)"
 msgstr "sRGB (для веба)"
 
-#: ../src/iop/colorout.c:725
+#: ../src/iop/colorout.c:753
 msgid "rendering intent"
 msgstr "Цветопередача"
 
-#: ../src/iop/colorout.c:726
+#: ../src/iop/colorout.c:754
 #, c-format
 msgid "icc profiles in %s/color/out or %s/color/out"
 msgstr "Цветовые профили из %s/color/out или %s/color/out"
 
-#: ../src/iop/colorout.c:728
+#: ../src/iop/colorout.c:756
 #, c-format
 msgid "display icc profiles in %s/color/out or %s/color/out"
 msgstr "Цветовые профили мониторов в %s/color/out или %s/color/out"
 
-#: ../src/iop/colorout.c:730
+#: ../src/iop/colorout.c:758
 #, fuzzy, c-format
 msgid "softproof icc profiles in %s/color/out or %s/color/out"
 msgstr "Профили вывода в %s/color/out или %s/color/out"
@@ -2451,35 +2542,48 @@ msgstr "Применить характеристики проанализиро
 msgid "color zones"
 msgstr "Цветовые зоны"
 
-#: ../src/iop/colorzones.c:279
+#: ../src/iop/colorzones.c:280
 msgid "red black white"
 msgstr "Ч/б и красный"
 
-#: ../src/iop/colorzones.c:294
+#: ../src/iop/colorzones.c:295
 msgid "black white and skin tones"
 msgstr "Ч/б и телесные тона"
 
-#: ../src/iop/colorzones.c:310
+#: ../src/iop/colorzones.c:311
 msgid "polarizing filter"
 msgstr "Поляризационный фильтр"
 
-#: ../src/iop/colorzones.c:349
+#: ../src/iop/colorzones.c:350
 msgid "natural skin tones"
 msgstr "Естественные телесные тона"
 
-#: ../src/iop/colorzones.c:787
+#: ../src/iop/colorzones.c:788
 msgid "select by"
 msgstr "Критерий выбора"
 
-#: ../src/iop/colorzones.c:798
-msgid "pick gui color from image"
-msgstr "Взять цвет с фотографии"
-
-#: ../src/iop/demosaic.c:81
+#: ../src/iop/demosaic.c:92
 msgid "demosaic"
 msgstr "Дебайеризация"
 
-#: ../src/iop/demosaic.c:895
+#. //////////////////////////
+#: ../src/iop/demosaic.c:968 ../src/iop/highlights.c:381
+msgid "method"
+msgstr "Способ"
+
+#: ../src/iop/demosaic.c:971
+msgid "ppg"
+msgstr "PPG"
+
+#: ../src/iop/demosaic.c:972
+msgid "AMaZE"
+msgstr "AMaZE"
+
+#: ../src/iop/demosaic.c:973
+msgid "demosaicing raw data method"
+msgstr ""
+
+#: ../src/iop/demosaic.c:978
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -2489,23 +2593,23 @@ msgstr ""
 "При значении 0.0 фильтр отключается.\n"
 "При значении 1.0 края игнорируются."
 
-#: ../src/iop/demosaic.c:896
+#: ../src/iop/demosaic.c:979
 msgid "edge threshold"
 msgstr "Краевой порог"
 
-#: ../src/iop/demosaic.c:900
+#: ../src/iop/demosaic.c:983
 msgid "color smoothing"
 msgstr "Медианный фильтр"
 
-#: ../src/iop/demosaic.c:906
+#: ../src/iop/demosaic.c:988
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Сколько шагов медианного фильтра сделать после дебайеризации"
 
-#: ../src/iop/demosaic.c:910
+#: ../src/iop/demosaic.c:991
 msgid "match greens"
 msgstr "Выравнивание зелёного"
 
-#: ../src/iop/demosaic.c:914
+#: ../src/iop/demosaic.c:994
 msgid ""
 "switch on green equilibration before demosaicing.\n"
 "necessary for some mid-range cameras such as the EOS 400D."
@@ -2536,23 +2640,23 @@ msgstr ""
 "Некоторое время он будет доступен, чтобы\n"
 "вы могли спокойно перейти на новый эквалайзер."
 
-#: ../src/iop/exposure.c:346
+#: ../src/iop/exposure.c:349
 msgid "adjust the black level"
 msgstr "Изменить уровень чёрного"
 
-#: ../src/iop/exposure.c:347
+#: ../src/iop/exposure.c:350
 msgid "black"
 msgstr "Тёмные области"
 
-#: ../src/iop/exposure.c:350
+#: ../src/iop/exposure.c:353
 msgid "adjust the exposure correction"
 msgstr "Изменить коррекцию экспозиции"
 
-#: ../src/iop/exposure.c:357
+#: ../src/iop/exposure.c:360
 msgid "auto"
 msgstr "Авто"
 
-#: ../src/iop/exposure.c:360
+#: ../src/iop/exposure.c:363
 msgid "percentage of bright values clipped out"
 msgstr "Процент вырезаемых ярких значений"
 
@@ -2571,91 +2675,91 @@ msgctxt "gammaslider"
 msgid "gamma"
 msgstr "Гамма"
 
-#: ../src/iop/graduatednd.c:57
+#: ../src/iop/graduatednd.c:58
 msgid "neutral grey ND2 (soft)"
 msgstr "Нейтрально-серый ND2 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:61
+#: ../src/iop/graduatednd.c:62
 msgid "neutral grey ND4 (soft)"
 msgstr "Нейтрально-серый ND4 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:65
+#: ../src/iop/graduatednd.c:66
 msgid "neutral grey ND8 (soft)"
 msgstr "Нейтрально-серый ND8 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:69
+#: ../src/iop/graduatednd.c:70
 msgid "neutral grey ND2 (hard)"
 msgstr "Нейтрально-серый ND2 (жёсткая граница)"
 
-#: ../src/iop/graduatednd.c:73
+#: ../src/iop/graduatednd.c:74
 msgid "neutral grey ND4 (hard)"
 msgstr "Нейтрально-серый ND4 (жёсткая граница)"
 
-#: ../src/iop/graduatednd.c:77
+#: ../src/iop/graduatednd.c:78
 msgid "neutral grey ND8 (hard)"
 msgstr "Нейтрально-серый ND8 (жёсткая граница)"
 
-#: ../src/iop/graduatednd.c:81
+#: ../src/iop/graduatednd.c:82
 msgid "orange ND2 (soft)"
 msgstr "Оранжевый ND2 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:85
+#: ../src/iop/graduatednd.c:86
 msgid "yellow ND2 (soft)"
 msgstr "Жёлтый ND2 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:89
+#: ../src/iop/graduatednd.c:90
 msgid "purple ND2 (soft)"
 msgstr "Пурпурный ND2 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:93
+#: ../src/iop/graduatednd.c:94
 msgid "green ND2 (soft)"
 msgstr "Зелёный ND2 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:97
+#: ../src/iop/graduatednd.c:98
 msgid "red ND2 (soft)"
 msgstr "Красный ND2 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:101
+#: ../src/iop/graduatednd.c:102
 msgid "blue ND2 (soft)"
 msgstr "Синий ND2 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:105
+#: ../src/iop/graduatednd.c:106
 msgid "brown ND4 (soft)"
 msgstr "Коричневый ND2 (мягкая граница)"
 
-#: ../src/iop/graduatednd.c:135
+#: ../src/iop/graduatednd.c:136
 msgid "graduated density"
 msgstr "Градиентный фильтр"
 
-#: ../src/iop/graduatednd.c:536
+#: ../src/iop/graduatednd.c:515
 msgid "density"
 msgstr "Плотность"
 
-#: ../src/iop/graduatednd.c:538
+#: ../src/iop/graduatednd.c:517
 msgid "compression"
 msgstr "Сжатие"
 
-#: ../src/iop/graduatednd.c:540
+#: ../src/iop/graduatednd.c:519
 msgid "rotation"
 msgstr "Вращение"
 
-#: ../src/iop/graduatednd.c:542
+#: ../src/iop/graduatednd.c:521
 msgid "split"
 msgstr "Разделение"
 
-#: ../src/iop/graduatednd.c:579
+#: ../src/iop/graduatednd.c:558
 msgid "select the hue tone of filter"
 msgstr "Укажите тон фильтра"
 
-#: ../src/iop/graduatednd.c:593
+#: ../src/iop/graduatednd.c:572
 msgid "select the saturation of filter"
 msgstr "Укажите насыщенность фильтра"
 
-#: ../src/iop/graduatednd.c:600
+#: ../src/iop/graduatednd.c:579
 msgid "the density in EV for the filter"
 msgstr "Плотность фильтра в шагах экспозиции"
 
-#: ../src/iop/graduatednd.c:602
+#: ../src/iop/graduatednd.c:581
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
@@ -2664,11 +2768,11 @@ msgstr ""
 "Сжатие градации:\n"
 "0% = мягкая, 100% = жёсткая"
 
-#: ../src/iop/graduatednd.c:603
+#: ../src/iop/graduatednd.c:582
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "Вращение фильтра, между -180° и 180°"
 
-#: ../src/iop/graduatednd.c:604
+#: ../src/iop/graduatednd.c:583
 msgid "offset of filter in angle of rotation"
 msgstr "Положение промежуточной точки перехода"
 
@@ -2692,45 +2796,82 @@ msgstr "Зернистость"
 msgid "highlight reconstruction"
 msgstr "Восстановление пересветов"
 
-#: ../src/iop/highlights.c:376
-msgid "method"
-msgstr "Способ"
-
-#: ../src/iop/highlights.c:379
+#: ../src/iop/highlights.c:384
 msgid "clip highlights"
 msgstr "Вырезать пересветы"
 
-#: ../src/iop/highlights.c:380
+#: ../src/iop/highlights.c:385
 msgid "reconstruct in LCh"
 msgstr "Восстановить в LCh"
 
-#: ../src/iop/highlights.c:381
+#: ../src/iop/highlights.c:386
 msgid "highlight reconstruction method"
 msgstr "Способ восстановления пересвеченных участков"
 
-#: ../src/iop/highlights.c:391
+#: ../src/iop/highlights.c:396
 msgid "blend lightness (0 is same as clipping)"
 msgstr "Смешивание светлоты (0 аналогичен вырезанию)"
 
-#: ../src/iop/highlights.c:392
+#: ../src/iop/highlights.c:397
 msgid "blend colorness (0 is same as clipping)"
 msgstr "Смешивание цветности (0 аналогичен вырезанию)"
 
-#: ../src/iop/highlights.c:393
+#: ../src/iop/highlights.c:398
 msgid "blend hue (0 is same as clipping)"
 msgstr "Смешивание тона (0 аналогичен вырезанию)"
 
-#: ../src/iop/highlights.c:394
+#: ../src/iop/highlights.c:399
 msgid "blend L"
 msgstr "Смешивание L"
 
-#: ../src/iop/highlights.c:395
+#: ../src/iop/highlights.c:400
 msgid "blend C"
 msgstr "Смешивание C"
 
-#: ../src/iop/highlights.c:396
+#: ../src/iop/highlights.c:401
 msgid "blend h"
 msgstr "Смешивание h"
+
+#: ../src/iop/highpass.c:79
+msgid "highpass"
+msgstr "Частотный фильтр"
+
+#: ../src/iop/highpass.c:408
+msgid "contrast boost"
+msgstr "Усиление контраста"
+
+#: ../src/iop/highpass.c:413
+msgid "the sharpness of highpass filter"
+msgstr "Резкость частотного фильтра"
+
+#: ../src/iop/highpass.c:414
+msgid "the contrast of highpass filter"
+msgstr "Контраст частотного фильтра"
+
+#: ../src/iop/hotpixels.c:63
+msgid "hot pixels"
+msgstr "«Выбитые» пикселы"
+
+#: ../src/iop/hotpixels.c:148 ../src/iop/stuckpixels.c:139
+#, c-format
+msgid "fixed %d pixels"
+msgstr "Исправлено: %d"
+
+#: ../src/iop/hotpixels.c:268
+msgid "lower threshold for hot pixel"
+msgstr "Нижний порог «выбитых» пикселов"
+
+#: ../src/iop/hotpixels.c:275
+msgid "strength of hot pixel correction"
+msgstr "Сила корректирующего эффекта"
+
+#: ../src/iop/hotpixels.c:280
+msgid "detect by 3 neighbours"
+msgstr "Искать по 3 соседним"
+
+#: ../src/iop/hotpixels.c:287 ../src/iop/stuckpixels.c:242
+msgid "mark fixed pixels"
+msgstr "Пометить исправленные"
 
 #: ../src/iop/lens.c:45
 msgid "lens correction"
@@ -2941,6 +3082,18 @@ msgstr ""
 "меняется прокручиванием колеса мыши\n"
 "и перетаскиванием её указателя"
 
+#: ../src/iop/nlmeans.c:57
+msgid "denoising (extra slow)"
+msgstr "Подавление шума (медленное)"
+
+#: ../src/iop/nlmeans.c:466
+msgid "how much to smooth brightness"
+msgstr "Сила эффекта в яркостном канале"
+
+#: ../src/iop/nlmeans.c:467
+msgid "how much to smooth colors"
+msgstr "Сила эффекта в цветностных каналах"
+
 #: ../src/iop/overexposed.c:58
 msgid "overexposed"
 msgstr "Индикатор ошибок экспозиции"
@@ -2998,19 +3151,19 @@ msgstr "Заполнение тенью на -0.25EV по 4 зонам"
 msgid "fill light"
 msgstr "Заполнение светом"
 
-#: ../src/iop/relight.c:369
+#: ../src/iop/relight.c:317
 msgid "select the center of fill-light"
 msgstr "Выберите центр заполнения светом"
 
-#: ../src/iop/relight.c:385
+#: ../src/iop/relight.c:335
 msgid "toggle tool for picking median lightness in image"
 msgstr "Включить пипетку для снятия усреднённой светлоты на фотографии"
 
-#: ../src/iop/relight.c:386
+#: ../src/iop/relight.c:336
 msgid "the fill-light in EV"
 msgstr "Заполнение светом в шагах экспозиции"
 
-#: ../src/iop/relight.c:388
+#: ../src/iop/relight.c:338
 #, no-c-format
 msgid "width of fill-light area defined in zones"
 msgstr "Ширина заполняемой светом области в зонах"
@@ -3020,16 +3173,16 @@ msgctxt "sharpen"
 msgid "sharpen"
 msgstr "Резкость"
 
-#: ../src/iop/sharpen.c:357
+#: ../src/iop/sharpen.c:374
 #, fuzzy
 msgid "spatial extent of the unblurring"
 msgstr "Пространственный предел гауссовой функции"
 
-#: ../src/iop/sharpen.c:360
+#: ../src/iop/sharpen.c:377
 msgid "strength of the sharpen"
 msgstr "Сила повышения резкости"
 
-#: ../src/iop/sharpen.c:363
+#: ../src/iop/sharpen.c:380
 msgid "threshold to activate sharpen"
 msgstr "Порог активации повышения резкости"
 
@@ -3113,7 +3266,7 @@ msgstr "Сжимать эффект в светах и тенях и сохра�
 msgid "spot removal"
 msgstr "Удаление пятен"
 
-#: ../src/iop/spots.c:175
+#: ../src/iop/spots.c:180
 msgid ""
 "click on a spot and drag on canvas to heal.\n"
 "use the mouse wheel to adjust size.\n"
@@ -3123,11 +3276,11 @@ msgstr ""
 "для выбора исправляющего участка.\n"
 "По правой клавише мыши замена удаляется."
 
-#: ../src/iop/spots.c:179
+#: ../src/iop/spots.c:184
 msgid "number of strokes:"
 msgstr "Количество замен:"
 
-#: ../src/iop/spots.c:336
+#: ../src/iop/spots.c:341
 msgid "spot removal only supports up to 32 spots"
 msgstr "Можно удалять не более 32 пятен"
 
@@ -3135,49 +3288,40 @@ msgstr "Можно удалять не более 32 пятен"
 msgid "stuck pixels"
 msgstr "«Выбитые» пикселы"
 
-#: ../src/iop/stuckpixels.c:139
-#, c-format
-msgid "fixed %d pixels"
-msgstr "Исправлено: %d"
-
 #: ../src/iop/stuckpixels.c:235
 msgid "strength of stuck pixel correction threshold"
 msgstr ""
-
-#: ../src/iop/stuckpixels.c:242
-msgid "mark fixed pixels"
-msgstr "Пометить исправленные"
 
 #: ../src/iop/temperature.c:85
 msgctxt "modulename"
 msgid "white balance"
 msgstr "Баланс белого"
 
-#: ../src/iop/temperature.c:441
+#: ../src/iop/temperature.c:457
 msgid "tint"
 msgstr "Оттенок"
 
-#: ../src/iop/temperature.c:442
+#: ../src/iop/temperature.c:458
 msgid "temperature in"
 msgstr "Исходная температура"
 
-#: ../src/iop/temperature.c:444
+#: ../src/iop/temperature.c:460
 msgid "temperature out"
 msgstr "Конечная температура"
 
-#: ../src/iop/temperature.c:467
+#: ../src/iop/temperature.c:483
 msgid "camera white balance"
 msgstr "ББ камеры"
 
-#: ../src/iop/temperature.c:468
+#: ../src/iop/temperature.c:484
 msgid "spot white balance"
 msgstr "Пипетка"
 
-#: ../src/iop/temperature.c:469
+#: ../src/iop/temperature.c:485
 msgid "passthrough"
 msgstr "Пропустить"
 
-#: ../src/iop/temperature.c:495
+#: ../src/iop/temperature.c:511
 msgid "fine tune white balance preset"
 msgstr "Скорректировать профиль баланса белого"
 
@@ -3185,15 +3329,15 @@ msgstr "Скорректировать профиль баланса белог�
 msgid "tone curve"
 msgstr "Кривая тоновоспроизведения"
 
-#: ../src/iop/tonecurve.c:119
+#: ../src/iop/tonecurve.c:133
 msgid "med contrast"
 msgstr "Средний контраст"
 
-#: ../src/iop/tonecurve.c:129
+#: ../src/iop/tonecurve.c:143
 msgid "high contrast"
 msgstr "Высокий контраст"
 
-#: ../src/iop/tonecurve.c:250
+#: ../src/iop/tonecurve.c:264
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on L channel"
@@ -3202,15 +3346,15 @@ msgstr ""
 "Ордината: выход\n"
 "Работает в канале L"
 
-#: ../src/iop/tonemap.cc:73
+#: ../src/iop/tonemap.cc:76
 msgid "tone mapping"
 msgstr "Проекция тонов"
 
-#: ../src/iop/tonemap.cc:261
+#: ../src/iop/tonemap.cc:282
 msgid "contrast compression"
 msgstr "Сжатие контраста"
 
-#: ../src/iop/tonemap.cc:266
+#: ../src/iop/tonemap.cc:287
 msgid "spatial extent"
 msgstr "Пространство"
 
@@ -3318,28 +3462,28 @@ msgstr "Соотношение ширины и высоты"
 msgid "watermark"
 msgstr "Водяные знаки"
 
-#: ../src/iop/watermark.c:655
+#: ../src/iop/watermark.c:657
 msgid "marker"
 msgstr "Знак"
 
-#: ../src/iop/watermark.c:656
+#: ../src/iop/watermark.c:658
 msgid "alignment"
 msgstr "Размещение"
 
-#: ../src/iop/watermark.c:696
+#: ../src/iop/watermark.c:698
 msgid "x offset"
 msgstr "Смещение по X"
 
-#: ../src/iop/watermark.c:697
+#: ../src/iop/watermark.c:699
 msgid "y offset"
 msgstr "Смещение по Y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:703
+#: ../src/iop/watermark.c:705
 msgid "the opacity of the watermark"
 msgstr "Непрозрачность водяного знака"
 
-#: ../src/iop/watermark.c:704
+#: ../src/iop/watermark.c:706
 msgid "the scale of the watermark"
 msgstr "Масштаб водяного знака"
 
@@ -3465,7 +3609,7 @@ msgstr "Автоматический ББ"
 msgid "zone system"
 msgstr "Зонная система"
 
-#: ../src/iop/zonesystem.c:370
+#: ../src/iop/zonesystem.c:375
 msgid ""
 "lightness zones\n"
 "use mouse scrollwheel to change the number of zones\n"
@@ -3608,48 +3752,48 @@ msgstr "Сеанс"
 msgid "create"
 msgstr "Создать"
 
-#: ../src/libs/collect.c:66
+#: ../src/libs/collect.c:83
 msgid "collect images"
 msgstr "Подборка фотографий"
 
-#: ../src/libs/collect.c:124 ../src/libs/collect.c:126
+#: ../src/libs/collect.c:220 ../src/libs/collect.c:222
 msgid "not altered"
 msgstr "Не изменённые"
 
-#: ../src/libs/collect.c:248 ../src/libs/collect.c:262
-#: ../src/libs/collect.c:528
+#: ../src/libs/collect.c:344 ../src/libs/collect.c:358
+#: ../src/libs/collect.c:624
 msgid "clear this rule"
 msgstr "Стереть это правило"
 
-#: ../src/libs/collect.c:253
+#: ../src/libs/collect.c:349
 msgid "clear this rule or add new rules"
 msgstr "Стереть это правило или добавить новые"
 
-#: ../src/libs/collect.c:534
+#: ../src/libs/collect.c:630
 msgid "narrow down search"
 msgstr "Уточнить поиск"
 
-#: ../src/libs/collect.c:538
+#: ../src/libs/collect.c:634
 msgid "add more images"
 msgstr "Добавить фотографии"
 
-#: ../src/libs/collect.c:542
+#: ../src/libs/collect.c:638
 msgid "exclude images"
 msgstr "Исключить фотографии"
 
-#: ../src/libs/collect.c:548
+#: ../src/libs/collect.c:644
 msgid "change to: and"
 msgstr "Поменять на: И"
 
-#: ../src/libs/collect.c:552
+#: ../src/libs/collect.c:648
 msgid "change to: or"
 msgstr "Поменять на: ИЛИ"
 
-#: ../src/libs/collect.c:556
+#: ../src/libs/collect.c:652
 msgid "change to: except"
 msgstr "Поменять на: КРОМЕ"
 
-#: ../src/libs/collect.c:603
+#: ../src/libs/collect.c:700
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "Введите запрос, используйте «%» для выбора всего"
@@ -3678,24 +3822,24 @@ msgstr "Описание"
 msgid "publisher"
 msgstr "Издатель"
 
-#: ../src/libs/copy_history.c:44
+#: ../src/libs/copy_history.c:43
 msgid "history stack"
 msgstr "История изменений"
 
-#: ../src/libs/copy_history.c:62
+#: ../src/libs/copy_history.c:61
 msgid "open sidecar file"
 msgstr "Открыть файл с историей изменений"
 
-#: ../src/libs/copy_history.c:72
+#: ../src/libs/copy_history.c:71
 msgid "xmp sidecar files"
 msgstr "Файлы XMP"
 
-#: ../src/libs/copy_history.c:91
+#: ../src/libs/copy_history.c:90
 #, c-format
 msgid "error loading file '%s'"
 msgstr "Ошибка при загрузке файла '%s'"
 
-#: ../src/libs/copy_history.c:203
+#: ../src/libs/copy_history.c:202
 msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
@@ -3703,11 +3847,11 @@ msgstr ""
 "Скопировать параметры обработки\n"
 "первой выделенной фотографии (Ctrl+C)"
 
-#: ../src/libs/copy_history.c:206
+#: ../src/libs/copy_history.c:205
 msgid "discard"
 msgstr "Отбросить"
 
-#: ../src/libs/copy_history.c:207
+#: ../src/libs/copy_history.c:206
 msgid ""
 "discard history stack of\n"
 "all selected images"
@@ -3715,23 +3859,23 @@ msgstr ""
 "Отбросить параметры обработки\n"
 "всех выделенных фотографий"
 
-#: ../src/libs/copy_history.c:214
+#: ../src/libs/copy_history.c:213
 msgid "append"
 msgstr "Добавить"
 
-#: ../src/libs/copy_history.c:215
+#: ../src/libs/copy_history.c:214
 msgid "overwrite"
 msgstr "Перезаписать"
 
-#: ../src/libs/copy_history.c:216
+#: ../src/libs/copy_history.c:215
 msgid "how to handle existing history"
 msgstr "Как обращаться с существующей историей изменений"
 
-#: ../src/libs/copy_history.c:220
+#: ../src/libs/copy_history.c:219
 msgid "paste"
 msgstr "Вставить"
 
-#: ../src/libs/copy_history.c:222
+#: ../src/libs/copy_history.c:221
 msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
@@ -3739,11 +3883,11 @@ msgstr ""
 "Вставить параметры обработки\n"
 "во все выделенные фотографии (Ctrl+V)"
 
-#: ../src/libs/copy_history.c:230
+#: ../src/libs/copy_history.c:229
 msgid "load sidecar file"
 msgstr "Загрузить из XMP"
 
-#: ../src/libs/copy_history.c:231
+#: ../src/libs/copy_history.c:230
 msgid ""
 "open an xmp sidecar file\n"
 "and apply it to selected images"
@@ -3751,31 +3895,31 @@ msgstr ""
 "Открыть файл с историей изменений\n"
 "и применить его к выбранным фотографиям"
 
-#: ../src/libs/copy_history.c:234
+#: ../src/libs/copy_history.c:233
 msgid "write sidecar files"
 msgstr "Записать файлы XMP"
 
-#: ../src/libs/copy_history.c:235
+#: ../src/libs/copy_history.c:234
 msgid "write history stack and tags to xmp sidecar files"
 msgstr "Записать историю изменений в одноимённые файлы XMP"
 
-#: ../src/libs/export.c:66
+#: ../src/libs/export.c:65
 msgid "export selected"
 msgstr "Экспорт выбранного"
 
-#: ../src/libs/export.c:392
+#: ../src/libs/export.c:383
 msgid "target storage"
 msgstr "Куда сохранить"
 
-#: ../src/libs/export.c:412
+#: ../src/libs/export.c:403
 msgid "file format"
 msgstr "Формат файлов"
 
-#: ../src/libs/export.c:427
+#: ../src/libs/export.c:418
 msgid "global options"
 msgstr "Общие параметры"
 
-#: ../src/libs/export.c:431
+#: ../src/libs/export.c:422
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -3783,7 +3927,7 @@ msgstr ""
 "Максимальная ширина конечной фотографии,\n"
 "при значении 0 размер не меняется"
 
-#: ../src/libs/export.c:433
+#: ../src/libs/export.c:424
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -3799,56 +3943,36 @@ msgstr ""
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #.
-#: ../src/libs/export.c:445
+#: ../src/libs/export.c:436
 msgid "max size"
 msgstr "Макс. размер"
 
-#: ../src/libs/export.c:450
+#: ../src/libs/export.c:441
 msgid "x"
 msgstr "×"
 
-#: ../src/libs/export.c:454
+#: ../src/libs/export.c:445
 msgid "intent"
 msgstr "Цветопередача"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#: ../src/libs/export.c:458 ../src/libs/export.c:529
+#: ../src/libs/export.c:449 ../src/libs/export.c:520
 msgid "image settings"
 msgstr "Как в изображении"
 
-#: ../src/libs/export.c:556
+#: ../src/libs/export.c:547
 #, c-format
 msgid "output icc profiles in %s/color/out or %s/color/out"
 msgstr "Профили вывода в %s/color/out или %s/color/out"
 
-#: ../src/libs/export.c:565
-msgid "threads"
-msgstr "Потоков"
-
-#: ../src/libs/export.c:569
-msgid ""
-"export using this number of threads.\n"
-"beware! each thread will use ~1GB of ram."
-msgstr ""
-"Выполнить экспорт в это число потоков.\n"
-"Внимание, каждый поток использует ~1ГБ памяти."
-
 #. Export Button
-#: ../src/libs/export.c:572 ../src/libs/styles.c:348
+#: ../src/libs/export.c:556 ../src/libs/styles.c:347
 msgid "export"
 msgstr "Экспортировать"
 
-#: ../src/libs/export.c:573
+#: ../src/libs/export.c:557
 msgid "export with current settings (ctrl-e)"
 msgstr "Экспортировать с текущими параметрами (Ctrl+E)"
-
-#. FIXME: Hack to get a translated name without the need to touch the .po files
-#. char* n = _("zoomable light table\nfile manager");
-#. while(*n != '\n') n++; n++;
-#. return n;
-#: ../src/libs/file_manager.c:43
-msgid "file manager"
-msgstr "Файловый менеджер"
 
 #: ../src/libs/file_manager.c:90
 msgid ""
@@ -3861,64 +3985,64 @@ msgid ""
 "rmdir <dir>\t\t\tdelete empty directory"
 msgstr ""
 
-#: ../src/libs/image.c:39
+#: ../src/libs/image.c:38
 msgid "selected image[s]"
 msgstr "Выбранные фотографии"
 
-#: ../src/libs/image.c:83
+#: ../src/libs/image.c:82
 msgid "remove"
 msgstr "Убрать из каталога"
 
-#: ../src/libs/image.c:84
+#: ../src/libs/image.c:83
 msgid "remove from the collection"
 msgstr "Убрать из коллекции фотографий"
 
-#: ../src/libs/image.c:88 ../src/libs/styles.c:342 ../src/libs/tagging.c:431
+#: ../src/libs/image.c:87 ../src/libs/styles.c:341 ../src/libs/tagging.c:430
 msgid "delete"
 msgstr "Удалить"
 
-#: ../src/libs/image.c:89
+#: ../src/libs/image.c:88
 msgid "physically delete from disk"
 msgstr "Физически удалить с диска"
 
-#: ../src/libs/image.c:96
+#: ../src/libs/image.c:95
 msgid "create hdr"
 msgstr "Объединить в HDR"
 
-#: ../src/libs/image.c:99
+#: ../src/libs/image.c:98
 msgid "create a high dynamic range image from selected shots"
 msgstr "Объединить несколько снимков в одну HDR-фотографию"
 
-#: ../src/libs/image.c:101
+#: ../src/libs/image.c:100
 msgid "duplicate"
 msgstr "Создать копию"
 
-#: ../src/libs/image.c:102
+#: ../src/libs/image.c:101
 msgid "add a duplicate to the collection"
 msgstr "Добавить в коллекцию дубликат"
 
-#: ../src/libs/image.c:111
+#: ../src/libs/image.c:110
 msgid "rotate selected images 90 degrees ccw"
 msgstr "Повернуть выбранные фотографии на 90° против часовой стрелки"
 
-#: ../src/libs/image.c:116
+#: ../src/libs/image.c:115
 msgid "rotate selected images 90 degrees cw"
 msgstr "Повернуть выбранные фотографии на 90° по часовой стрелке"
 
-#: ../src/libs/image.c:121
+#: ../src/libs/image.c:120
 msgid "reset rotation"
 msgstr "Сбросить вращение"
 
-#: ../src/libs/image.c:122
+#: ../src/libs/image.c:121
 msgid "reset rotation to exif data"
 msgstr "Вернуться к вращению из данных Exif"
 
-#: ../src/libs/lib.c:119
+#: ../src/libs/lib.c:118
 #, c-format
 msgid "edit `%s'"
 msgstr "Изменить «%s»"
 
-#: ../src/libs/lib.c:241
+#: ../src/libs/lib.c:240
 msgid "deleting preset for obsolete module"
 msgstr "Удаляется профиль устаревшего модуля"
 
@@ -4075,19 +4199,19 @@ msgstr ""
 "Выделить необработанные фотографии\n"
 "в текущей коллекции"
 
-#: ../src/libs/styles.c:44
+#: ../src/libs/styles.c:43
 msgid "styles"
 msgstr "Стили обработки"
 
-#: ../src/libs/styles.c:223
+#: ../src/libs/styles.c:222
 msgid "select style"
 msgstr "Выберите  стиль"
 
-#: ../src/libs/styles.c:236
+#: ../src/libs/styles.c:235
 msgid "darktable style files"
 msgstr "Файлы стилей darktable"
 
-#: ../src/libs/styles.c:310
+#: ../src/libs/styles.c:309
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -4095,40 +4219,40 @@ msgstr ""
 "Доступные стили,\n"
 "дважды щёлкните для применения"
 
-#: ../src/libs/styles.c:316
+#: ../src/libs/styles.c:315
 msgid "enter style name"
 msgstr "Введите название стиля"
 
-#: ../src/libs/styles.c:329
+#: ../src/libs/styles.c:328
 msgid "create duplicate"
 msgstr "Создать копию фото"
 
-#: ../src/libs/styles.c:333
+#: ../src/libs/styles.c:332
 msgid "creates a duplicate of the image before applying style"
 msgstr "Создать копию фотографии перед применением стиля"
 
 #. TODO: Unfinished stuff
-#: ../src/libs/styles.c:337
+#: ../src/libs/styles.c:336
 msgid "edit"
 msgstr "Изменить"
 
-#: ../src/libs/styles.c:344
+#: ../src/libs/styles.c:343
 msgid "deletes the selected style in list above"
 msgstr "Удалить выбранный в списке стиль"
 
-#: ../src/libs/styles.c:349
+#: ../src/libs/styles.c:348
 msgid "export the selected style into a style file"
 msgstr "Экспортировать выбранный стиль в файл"
 
-#: ../src/libs/styles.c:354
+#: ../src/libs/styles.c:353
 msgid "import style from a style file"
 msgstr "Импортировать стиль из файла"
 
-#: ../src/libs/tagging.c:51
+#: ../src/libs/tagging.c:50
 msgid "tagging"
 msgstr "Метки"
 
-#: ../src/libs/tagging.c:275
+#: ../src/libs/tagging.c:274
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -4146,11 +4270,11 @@ msgstr[2] ""
 "Вы действительно хотите удалить метку «%s»?\n"
 "Она применена к %d фотографиям."
 
-#: ../src/libs/tagging.c:278
+#: ../src/libs/tagging.c:277
 msgid "delete tag?"
 msgstr "Удалить метку?"
 
-#: ../src/libs/tagging.c:364
+#: ../src/libs/tagging.c:363
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -4158,27 +4282,27 @@ msgstr ""
 "Назначенные метки,\n"
 "щёлкните дважды для снятия"
 
-#: ../src/libs/tagging.c:371
+#: ../src/libs/tagging.c:370
 msgid "attach"
 msgstr "Назначить"
 
-#: ../src/libs/tagging.c:372
+#: ../src/libs/tagging.c:371
 msgid "attach tag to all selected images"
 msgstr "Назначить метку всем выбранным фотографиям"
 
-#: ../src/libs/tagging.c:377
+#: ../src/libs/tagging.c:376
 msgid "detach"
 msgstr "Снять"
 
-#: ../src/libs/tagging.c:378
+#: ../src/libs/tagging.c:377
 msgid "detach tag from all selected images"
 msgstr "Снять метку со всех выбранных фотографий"
 
-#: ../src/libs/tagging.c:392
+#: ../src/libs/tagging.c:391
 msgid "enter tag name"
 msgstr "Введите название метки"
 
-#: ../src/libs/tagging.c:418
+#: ../src/libs/tagging.c:417
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -4186,17 +4310,17 @@ msgstr ""
 "Связанные метки;\n"
 "двойной щелчок снимает их"
 
-#: ../src/libs/tagging.c:425
+#: ../src/libs/tagging.c:424
 msgid "new"
 msgstr "Создать"
 
-#: ../src/libs/tagging.c:426
+#: ../src/libs/tagging.c:425
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr "Создать новую метку с введённым названием"
 
-#: ../src/libs/tagging.c:432
+#: ../src/libs/tagging.c:431
 msgid "delete selected tag"
 msgstr "Удалить выбранную метку"
 
@@ -4228,7 +4352,7 @@ msgstr "Показать модуль «%s»"
 #: ../src/views/darkroom.c:298
 #, c-format
 msgid "%s as favorite"
-msgstr ""
+msgstr "%s как избранный"
 
 #. construct tooltip text into option
 #: ../src/views/darkroom.c:313
@@ -4249,25 +4373,102 @@ msgstr "Лента фотографий"
 msgid "lighttable"
 msgstr "Световой стол"
 
-#: ../src/views/lighttable.c:172
+#: ../src/views/lighttable.c:194
 msgid "this collection is empty."
 msgstr "Эта коллекция пуста."
 
-#: ../src/views/lighttable.c:174
+#: ../src/views/lighttable.c:196
 msgid "if you didn't import any images yet"
 msgstr "Вы ещё не импортировали изображения."
 
-#: ../src/views/lighttable.c:176
+#: ../src/views/lighttable.c:198
 msgid "do that from the top left expander."
 msgstr "Сделайте это здесь."
 
-#: ../src/views/lighttable.c:183
+#: ../src/views/lighttable.c:205
 msgid "try to relax the filter settings in the top panel"
 msgstr ""
 
-#: ../src/views/lighttable.c:190
+#: ../src/views/lighttable.c:212
 msgid "or in the collection plugin in the left panel."
 msgstr ""
+
+#~ msgid "full resolution image buffers to keep in main memory cache"
+#~ msgstr "Буферы полноразмерных фотографий в основном кэше памяти"
+
+#, fuzzy
+#~ msgid ""
+#~ "how many full-resolution floating point buffers of loaded raw images to "
+#~ "keep in main memory at maximum.  set this variable to num_threads + 1 if "
+#~ "you want multithreaded export (keep one for darkroom mode).  be warned: "
+#~ "every thread will need about 1GB of memory (needs a restart)."
+#~ msgstr ""
+#~ "Максимальное количество полноразмерных буферов с плавающей точкой для "
+#~ "загруженных фотографий, которые нужно хранить в памяти. Значение читается "
+#~ "только при запуске программы."
+
+#~ msgid "( --- )"
+#~ msgstr "( --- )"
+
+#~ msgid "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
+#~ msgstr "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
+
+#~ msgid ""
+#~ "all\n"
+#~ "unstarred\n"
+#~ "1 star\n"
+#~ "2 star\n"
+#~ "3 star\n"
+#~ "4 star\n"
+#~ "5 star\n"
+#~ "rejected"
+#~ msgstr ""
+#~ "Все\n"
+#~ "Без оценки\n"
+#~ "1 звезда\n"
+#~ "2 звезды\n"
+#~ "3 звезды\n"
+#~ "4 звезды\n"
+#~ "5 звёзд\n"
+#~ "Удалённые"
+
+#~ msgid ""
+#~ "filename\n"
+#~ "time\n"
+#~ "rating\n"
+#~ "id\n"
+#~ "color label"
+#~ msgstr ""
+#~ "Имя файла\n"
+#~ "Дата и время\n"
+#~ "Оценка\n"
+#~ "ID\n"
+#~ "Цветовая метка"
+
+#~ msgid ""
+#~ "mean\n"
+#~ "min\n"
+#~ "max"
+#~ msgstr ""
+#~ "среднее\n"
+#~ "минимальное\n"
+#~ "максимальное"
+
+#~ msgid "pick"
+#~ msgstr "Снять"
+
+#~ msgid "switch to darkroom mode"
+#~ msgstr "Переключиться в режим проявки"
+
+#~ msgid "threads"
+#~ msgstr "Потоков"
+
+#~ msgid ""
+#~ "export using this number of threads.\n"
+#~ "beware! each thread will use ~1GB of ram."
+#~ msgstr ""
+#~ "Выполнить экспорт в это число потоков.\n"
+#~ "Внимание, каждый поток использует ~1ГБ памяти."
 
 #~ msgid " "
 #~ msgstr " "
@@ -4409,9 +4610,6 @@ msgstr ""
 #~ msgid "all film rolls"
 #~ msgstr "Все съёмки"
 
-#~ msgid "denoise (slow)"
-#~ msgstr "Подавление шума"
-
 #~ msgid "perspective"
 #~ msgstr "Перспектива"
 
@@ -4429,9 +4627,6 @@ msgstr ""
 
 #~ msgid "select color by"
 #~ msgstr "Выбирать цвета по:"
-
-#~ msgid "filter size"
-#~ msgstr "Размер фильтра"
 
 #~ msgid "matches selected images"
 #~ msgstr "Совпадают с выбранными фотографиями"
@@ -4611,9 +4806,6 @@ msgstr ""
 
 #~ msgid "DCB"
 #~ msgstr "DCB"
-
-#~ msgid "AMaZE"
-#~ msgstr "AMaZE"
 
 #~ msgid "VCD"
 #~ msgstr "VCD"
