@@ -1086,6 +1086,10 @@ int key_released(dt_view_t *self, guint key, guint state)
 {
   dt_gui_accels_t *accels = &darktable.gui->accels;
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  if(!darktable.control->key_accelerators_on)
+    return 0;
+
   if(key == accels->lighttable_preview.accel_key
      && state == accels->lighttable_preview.accel_mods)
   {
@@ -1108,6 +1112,10 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   dt_gui_accels_t *accels = &darktable.gui->accels;
+
+  if(!darktable.control->key_accelerators_on)
+    return 0;
+
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
 
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
