@@ -1272,92 +1272,44 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
-  int fullscreen, visible;
+  int visible;
   GtkWidget *widget;
+  dt_gui_accels_t* accels = &darktable.gui->accels;
+
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;
 
-  switch (key)
+  if(key == accels->global_sideborders.accel_key
+     && state == accels->global_sideborders.accel_mods)
   {
-    case GDK_F7:
-      dt_gui_contrast_decrease ();
-      break;
-    case GDK_F8:
-      dt_gui_contrast_increase ();
-      break;
-    case GDK_F9:
-      dt_gui_brightness_decrease();
-      break;
-    case GDK_F10:
-      dt_gui_brightness_increase();
-      break;
+    widget = darktable.gui->widgets.left;
+    visible = GTK_WIDGET_VISIBLE(widget);
+    if(visible) gtk_widget_hide(widget);
+    else gtk_widget_show(widget);
 
-    case GDK_F11:
-      widget = darktable.gui->widgets.main_window;
-      fullscreen = dt_conf_get_bool("ui_last/fullscreen");
-      if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
-      else           gtk_window_fullscreen  (GTK_WINDOW(widget));
-      fullscreen ^= 1;
-      dt_conf_set_bool("ui_last/fullscreen", fullscreen);
-      dt_dev_invalidate(darktable.develop);
-      break;
-    case GDK_Escape:
-    case GDK_Caps_Lock:
-      widget = darktable.gui->widgets.main_window;
-      gtk_window_unfullscreen(GTK_WINDOW(widget));
-      fullscreen = 0;
-      dt_conf_set_bool("ui_last/fullscreen", fullscreen);
-      dt_dev_invalidate(darktable.develop);
-      break;
-    case GDK_Tab:
-      widget = darktable.gui->widgets.left;
-      visible = GTK_WIDGET_VISIBLE(widget);
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
+    widget = darktable.gui->widgets.right;
+    if(visible) gtk_widget_hide(widget);
+    else gtk_widget_show(widget);
 
-      widget = darktable.gui->widgets.right;
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
+    dt_dev_invalidate(darktable.develop);
 
-      /*widget = darktable.gui->widgets.bottom;
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
-
-      widget = darktable.gui->widgets.top;
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);*/
-      dt_dev_invalidate(darktable.develop);
-      break;
-    default:
-      return 0;
-      break;
+    widget = darktable.gui->widgets.center;
+    gtk_widget_queue_draw(widget);
+    widget = darktable.gui->widgets.navigation;
+    gtk_widget_queue_draw(widget);
+    return 1;
   }
 
-  widget = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(widget);
-  widget = darktable.gui->widgets.navigation;
-  gtk_widget_queue_draw(widget);
-  return 1;
+  return 0;
 }
 
 int dt_control_key_pressed(guint key, guint state)
 {
-  // this line is here to find the right key code on different platforms (mac).
-  // printf("key code pressed: %d\n", which);
+  int needRedraw;
   GtkWidget *widget;
-  int needRedraw=0;
-  switch (key)
-  {
-    case GDK_period:
-      dt_ctl_switch_mode();
-      needRedraw=1;
-      break;
-    default:
-      // propagate to view modules.
-      needRedraw = dt_view_manager_key_pressed(darktable.view_manager, key,
+
+  needRedraw = dt_view_manager_key_pressed(darktable.view_manager, key,
                                                state);
-      break;
-  }
   if( needRedraw )
   {
     widget = darktable.gui->widgets.center;

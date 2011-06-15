@@ -112,6 +112,94 @@ static void key_accel_changed(GtkAccelMap *object,
   gtk_accel_map_lookup_entry("<Darktable>/lighttable/preview",
                              &darktable.gui->accels.lighttable_preview);
 
+  // Global
+  gtk_accel_map_lookup_entry("<Darktable>/toggle_side_borders",
+                             &darktable.gui->accels.global_sideborders);
+
+}
+
+static void brightness_key_accel_callback(GtkAccelGroup *accel_group,
+                                          GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier,
+                                          gpointer data)
+{
+  GtkWidget *widget;
+
+  if(data)
+    dt_gui_brightness_increase();
+  else
+    dt_gui_brightness_decrease();
+
+  widget = darktable.gui->widgets.center;
+  gtk_widget_queue_draw(widget);
+  widget = darktable.gui->widgets.navigation;
+  gtk_widget_queue_draw(widget);
+}
+
+static void contrast_key_accel_callback(GtkAccelGroup *accel_group,
+                                        GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier,
+                                        gpointer data)
+{
+  GtkWidget *widget;
+
+  if(data)
+    dt_gui_contrast_increase();
+  else
+    dt_gui_contrast_decrease();
+
+  widget = darktable.gui->widgets.center;
+  gtk_widget_queue_draw(widget);
+  widget = darktable.gui->widgets.navigation;
+  gtk_widget_queue_draw(widget);
+}
+
+static void fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
+                                          GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier,
+                                          gpointer data)
+{
+  GtkWidget *widget;
+  int fullscreen;
+
+  if(data)
+  {
+    widget = darktable.gui->widgets.main_window;
+    fullscreen = dt_conf_get_bool("ui_last/fullscreen");
+    if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
+    else           gtk_window_fullscreen  (GTK_WINDOW(widget));
+    fullscreen ^= 1;
+    dt_conf_set_bool("ui_last/fullscreen", fullscreen);
+    dt_dev_invalidate(darktable.develop);
+  }
+  else
+  {
+    widget = darktable.gui->widgets.main_window;
+    gtk_window_unfullscreen(GTK_WINDOW(widget));
+    fullscreen = 0;
+    dt_conf_set_bool("ui_last/fullscreen", fullscreen);
+    dt_dev_invalidate(darktable.develop);
+  }
+
+  widget = darktable.gui->widgets.center;
+  gtk_widget_queue_draw(widget);
+  widget = darktable.gui->widgets.navigation;
+  gtk_widget_queue_draw(widget);
+}
+
+static void view_switch_key_accel_callback(GtkAccelGroup *accel_group,
+                                          GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier,
+                                          gpointer data)
+{
+  GtkWidget *widget;
+
+  dt_ctl_switch_mode();
+
+  widget = darktable.gui->widgets.center;
+  gtk_widget_queue_draw(widget);
+  widget = darktable.gui->widgets.navigation;
+  gtk_widget_queue_draw(widget);
 }
 
 static gboolean
@@ -1327,6 +1415,67 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_accel_group_connect_by_path(
       darktable.gui->accels_global, "<Darktable>/quit",
       g_cclosure_new(G_CALLBACK(quit_callback), NULL, NULL));
+
+  // Contrast and brightness accelerators
+  gtk_accel_map_add_entry("<Darktable>/brightness/increase",
+                         GDK_F10, 0);
+  gtk_accel_map_add_entry("<Darktable>/brightness/decrease",
+                          GDK_F9, 0);
+  gtk_accel_map_add_entry("<Darktable>/contrast/increase",
+                          GDK_F8, 0);
+  gtk_accel_map_add_entry("<Darktable>/contrast/decrease",
+                          GDK_F7, 0);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global,
+      "<Darktable>/brightness/increase",
+      g_cclosure_new(G_CALLBACK(brightness_key_accel_callback),
+                     (gpointer)1, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global,
+      "<Darktable>/brightness/decrease",
+      g_cclosure_new(G_CALLBACK(brightness_key_accel_callback),
+                     (gpointer)0, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global,
+      "<Darktable>/contrast/increase",
+      g_cclosure_new(G_CALLBACK(contrast_key_accel_callback),
+                     (gpointer)1, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global,
+      "<Darktable>/contrast/decrease",
+      g_cclosure_new(G_CALLBACK(contrast_key_accel_callback),
+                     (gpointer)0, NULL));
+
+  // Full-screen accelerators
+  gtk_accel_map_add_entry("<Darktable>/fullscreen/toggle",
+                          GDK_F11, 0);
+  gtk_accel_map_add_entry("<Darktable>/fullscreen/leave",
+                          GDK_Escape, 0);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global,
+      "<Darktable>/fullscreen/toggle",
+      g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
+                     (gpointer)1, NULL));
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global,
+      "<Darktable>/fullscreen/leave",
+      g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
+                     (gpointer)0, NULL));
+
+  // Side-border hide/show
+  gtk_accel_map_add_entry("<Darktable>/toggle_side_borders",
+                          GDK_Tab, 0);
+
+  // View-switch
+  gtk_accel_map_add_entry("<Darktable>/switch_view",
+                          GDK_period, 0);
+
+  gtk_accel_group_connect_by_path(
+      darktable.gui->accels_global,
+      "<Darktable>/switch_view",
+      g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
   darktable.gui->reset = 0;
   for(int i=0; i<3; i++) darktable.gui->bgcolor[i] = 0.1333;

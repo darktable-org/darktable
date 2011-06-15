@@ -52,7 +52,8 @@ typedef struct dt_gui_accels_t
   GtkAccelKey
       filmstrip_forward, filmstrip_back,
       lighttable_up, lighttable_down, lighttable_right, lighttable_left,
-      lighttable_center, lighttable_preview;
+      lighttable_center, lighttable_preview,
+      global_sideborders;
 } dt_gui_accels_t;
 
 // flat view of all our widgets. could probably be modularized
