@@ -28,16 +28,6 @@
 #define DT_GUI_VIEW_SWITCH_TO_LIBRARY   2
 #define DT_GUI_VIEW_SWITCH_TO_DARKROOM  3
 
-typedef struct dt_gui_key_accel_t
-{
-  guint   state;
-  guint   keyval;
-  guint16 hardware_keycode;
-  void (*callback)(void *);
-  void *data;
-}
-dt_gui_key_accel_t;
-
 typedef struct dt_gui_snapshot_t
 {
   float zoom_x, zoom_y, zoom_scale;
@@ -51,8 +41,8 @@ typedef struct dt_gui_accels_t
 {
   GtkAccelKey
       filmstrip_forward, filmstrip_back,
-      lighttable_up, lighttable_down, lighttable_right, lighttable_left,
-      lighttable_center, lighttable_preview,
+      lighttable_up, lighttable_down, lighttable_right,
+      lighttable_left, lighttable_center, lighttable_preview,
       global_sideborders;
 } dt_gui_accels_t;
 
@@ -189,7 +179,6 @@ typedef struct dt_gui_gtk_t
 
   GdkPixmap *pixmap;
   GList *redraw_widgets;
-  GList *key_accels;
   GtkMenu *presets_popup_menu;
   dt_gui_navigation_t navigation;
   dt_gui_histogram_t histogram;
@@ -215,9 +204,5 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus (GtkWidget *w);
-
-/** register an accel callback for the whole window. data is not freed on unregister. */
-void dt_gui_key_accel_register(guint state, guint keyval, void (*callback)(void *), void *data);
-void dt_gui_key_accel_unregister(void (*callback)(void *));
 
 #endif

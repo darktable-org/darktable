@@ -1100,32 +1100,6 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
   return dt_control_configure(da, event, user_data);
 }
 
-void dt_gui_key_accel_register(guint state, guint keyval, void (*callback)(void *), void *data)
-{
-  dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)malloc(sizeof(dt_gui_key_accel_t));
-  a->state = state;
-  a->keyval = keyval;
-  a->callback = callback;
-  a->data = data;
-  darktable.gui->key_accels = g_list_append(darktable.gui->key_accels, a);
-}
-
-void dt_gui_key_accel_unregister(void (*callback)(void *))
-{
-  GList *i = darktable.gui->key_accels;
-  while(i)
-  {
-    dt_gui_key_accel_t *a = (dt_gui_key_accel_t *)i->data;
-    GList *ii = g_list_next(i);
-    if(a->callback == callback)
-    {
-      free(a);
-      darktable.gui->key_accels = g_list_delete_link(darktable.gui->key_accels, i);
-    }
-    i = ii;
-  }
-}
-
 static gboolean
 key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
@@ -1389,7 +1363,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
 
   darktable.gui->redraw_widgets = NULL;
-  darktable.gui->key_accels = NULL;
 
   // register keys for view switching
   gtk_accel_map_add_entry("<Darktable>/views/capture", GDK_t, 0);
