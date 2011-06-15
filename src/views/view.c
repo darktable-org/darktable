@@ -160,6 +160,10 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
 
 int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 {
+  // Before switching views, restore accelerators if disabled
+  if(!darktable.control->key_accelerators_on)
+    dt_control_key_accelerators_on(darktable.control);
+
   // destroy old module list
   GtkContainer *table = GTK_CONTAINER(darktable.gui->widgets.module_list);
   gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
