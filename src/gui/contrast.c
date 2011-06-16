@@ -129,9 +129,14 @@ dt_gui_contrast_init ()
   _main_window_orginal_style = gtk_style_copy (window->style);
 
   /* get clearlooks-brightbg orginal style */
-  window = darktable.gui->widgets.import_eventbox;
-  gtk_widget_realize(window);
-  _module_orginal_style = gtk_style_copy (window->style);
+
+  /* create a eventbox and add to */
+  GtkWidget *ev = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(darktable.gui->widgets.plugins_vbox_left), ev);
+  gtk_widget_realize(ev);
+  _module_orginal_style = gtk_style_copy (ev->style);
+
+  gtk_widget_destroy(ev);
 
   /* apply current contrast value */
   _gui_contrast_apply ();
