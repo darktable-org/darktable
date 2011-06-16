@@ -29,7 +29,6 @@
 #include "common/darktable.h"
 #ifdef HAVE_GPHOTO2
 #   include "common/camera_control.h"
-#   include "gui/devices.h"
 #   include "views/capture.h"
 #endif
 #include "common/collection.h"
@@ -66,7 +65,6 @@ static void init_navigation(GtkWidget *container);
 static void init_left(GtkWidget *container);
 static void init_history_box(GtkWidget *container);
 static void init_snapshots(GtkWidget *container);
-static void init_import(GtkWidget *container);
 static void init_left_scroll_window(GtkWidget *container);
 static void init_jobs_list(GtkWidget *container);
 
@@ -708,160 +706,6 @@ preferences_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_gui_preferences_show();
 }
 
-void
-import_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  GtkWidget *win = darktable.gui->widgets.main_window;
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import film"),
-                           GTK_WINDOW (win),
-                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                           (char *)NULL);
-
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
-
-  char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
-  if(last_directory != NULL)
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
-
-  // add extra lines to 'extra'. don't forget to destroy the widgets later.
-  GtkWidget *extra;
-  extra = gtk_vbox_new(FALSE, 0);
-
-  // recursive opening.
-  GtkWidget *recursive;
-  recursive = gtk_check_button_new_with_label (_("import directories recursively"));
-  g_object_set(recursive, "tooltip-text", _("recursively import subdirectories. each directory goes into a new film roll."), NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (recursive), dt_conf_get_bool("ui_last/import_recursive"));
-  gtk_widget_show (recursive);
-  gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
-
-  // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-  GtkWidget *ignore_jpeg;
-  ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
-  g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-  gtk_widget_show (ignore_jpeg);
-  gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);
-
-  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), extra);
-
-  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
-  {
-    dt_conf_set_bool("ui_last/import_recursive", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (recursive)));
-    dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ignore_jpeg)));
-    dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
-
-    char *filename;
-    GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
-    GSList *it = list;
-    int id = 0;
-    while(it)
-    {
-      filename = (char *)it->data;
-      id = dt_film_import(filename);
-      g_free (filename);
-      it = g_slist_next(it);
-    }
-    if(id)
-    {
-      dt_film_open(id);
-      dt_ctl_switch_mode_to(DT_LIBRARY);
-    }
-    g_slist_free (list);
-  }
-  gtk_widget_destroy(recursive);
-  gtk_widget_destroy(ignore_jpeg);
-  gtk_widget_destroy(extra);
-  gtk_widget_destroy (filechooser);
-  win = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(win);
-}
-
-void
-import_image_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  GtkWidget *win = darktable.gui->widgets.main_window;
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
-                           GTK_WINDOW (win),
-                           GTK_FILE_CHOOSER_ACTION_OPEN,
-                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                           (char *)NULL);
-
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
-
-  char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
-  if(last_directory != NULL)
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
-
-  char *cp, **extensions, ext[1024];
-  GtkFileFilter *filter;
-  filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  extensions = g_strsplit(dt_supported_extensions, ",", 100);
-  for(char **i=extensions; *i!=NULL; i++)
-  {
-    snprintf(ext, 1024, "*.%s", *i);
-    gtk_file_filter_add_pattern(filter, ext);
-    gtk_file_filter_add_pattern(filter, cp=g_ascii_strup(ext, -1));
-    g_free(cp);
-  }
-  g_strfreev(extensions);
-  gtk_file_filter_set_name(filter, _("supported images"));
-  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
-
-  filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  gtk_file_filter_add_pattern(filter, "*");
-  gtk_file_filter_set_name(filter, _("all files"));
-  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
-
-  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
-  {
-    dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
-
-    char *filename = NULL;
-    dt_film_t film;
-    GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
-    GSList *it = list;
-    int id = 0;
-    int filmid = 0;
-    while(it)
-    {
-      filename = (char *)it->data;
-      gchar *directory = g_path_get_dirname((const gchar *)filename);
-      filmid = dt_film_new(&film, directory);
-      id = dt_image_import(filmid, filename, TRUE);
-      if(!id) dt_control_log(_("error loading file `%s'"), filename);
-      g_free (filename);
-      g_free (directory);
-      it = g_slist_next(it);
-    }
-
-    if(id)
-    {
-      dt_film_open(filmid);
-      // make sure buffers are loaded (load full for testing)
-      dt_image_t *img = dt_image_cache_get(id, 'r');
-      dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
-      if(!buf)
-      {
-        dt_image_cache_release(img, 'r');
-        dt_control_log(_("file `%s' has unknown format!"), img->filename);
-      }
-      else
-      {
-        dt_image_release(img, DT_IMAGE_FULL, 'r');
-        dt_image_cache_release(img, 'r');
-        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
-        dt_ctl_switch_mode_to(DT_DEVELOP);
-      }
-    }
-  }
-  gtk_widget_destroy (filechooser);
-  win = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(win);
-}
 
 static gboolean
 scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
@@ -1146,10 +990,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   widget = darktable.gui->widgets.right_scrolled_window;
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  // Update the devices module with available devices
-#ifdef HAVE_GPHOTO2
-  dt_gui_devices_init();
-#endif
   dt_gui_background_jobs_init();
 
   /* Have the delete event (window close) end the program */
@@ -1750,80 +1590,6 @@ void init_snapshots(GtkWidget *container)
   gtk_widget_hide(darktable.gui->widgets.snapshots_eventbox);
 }
 
-void init_import(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the event box
-  widget = gtk_event_box_new();
-  darktable.gui->widgets.import_eventbox = widget;
-  gtk_widget_set_name(widget, "import_eventbox");
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_show(widget);
-
-  // Adding the expander
-  container = widget;
-
-  widget = gtk_expander_new(_("import"));
-  darktable.gui->widgets.import_expander = widget;
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), TRUE);
-  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  // Adding the alignment
-  container = widget;
-
-  widget = gtk_alignment_new(.5, .5, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  // Adding the inner vbox
-  container = widget;
-
-  widget = gtk_vbox_new(FALSE, 5);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  container = widget;
-
-  // Adding the single import button
-  widget = gtk_button_new_with_label(_("image"));
-  gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
-  gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_widget_set_receives_default(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (import_image_button_clicked),
-                    NULL);
-
-  // Adding the import button
-  widget = gtk_button_new_with_label(_("folder"));
-  gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
-  gtk_widget_set_tooltip_text(widget,
-                              _("select a folder to import as film roll"));
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_widget_set_receives_default(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_show(widget);
-
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (import_button_clicked),
-                    NULL);
-
-  // Adding the devices expander
-  widget = gtk_vbox_new(FALSE, 5);
-  darktable.gui->widgets.devices_expander_body = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK);
-  gtk_widget_show(widget);
-}
-
 void init_left_scroll_window(GtkWidget *container)
 {
   GtkWidget *widget;
@@ -1877,12 +1643,8 @@ void init_left_scroll_window(GtkWidget *container)
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_widget_show(widget);
 
-  container = widget;
-
-  // Initializing the import controls
-  init_import(container);
-
   // Initializing the left-side plugins box
+  container = widget;
   widget = gtk_vbox_new(FALSE, 10);
   darktable.gui->widgets.plugins_vbox_left = widget;
   gtk_widget_set_name(widget, "plugins_vbox_left");

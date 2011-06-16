@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
-set(MODULES export copy_history styles tagging image select collect recentcollect metadata metadata_view)
+set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view)
 
+add_library(import MODULE "import.c")
 add_library(export MODULE "export.c")
 add_library(copy_history MODULE "copy_history.c")
 add_library(styles MODULE "styles.c")

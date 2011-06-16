@@ -682,8 +682,6 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.plugins_vbox_left;
   gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.import_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, TRUE);
 

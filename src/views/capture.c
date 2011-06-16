@@ -345,8 +345,6 @@ void enter(dt_view_t *self)
   GtkWidget *widget;
   widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.import_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.top;
   gtk_widget_set_visible(widget, TRUE);
   widget = darktable.gui->widgets.bottom_darkroom_box;
@@ -440,8 +438,6 @@ void leave(dt_view_t *self)
 
   // Restore user interface
   GtkWidget *widget;
-  widget = darktable.gui->widgets.import_eventbox;
-  gtk_widget_set_visible(widget, TRUE);
   widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.histogram_expander;

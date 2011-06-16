@@ -754,10 +754,8 @@ void enter(dt_view_t *self)
   GtkBox *box_left = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
   GList *modules = g_list_last(darktable.lib->plugins);
 
-  // Adjust gui
-  GtkWidget *widget = darktable.gui->widgets.import_eventbox;
-  gtk_widget_set_visible(widget, TRUE);
 
+  // Adjust gui
   gtk_widget_set_visible(darktable.gui->
                          widgets.modulegroups_eventbox, FALSE);
 
