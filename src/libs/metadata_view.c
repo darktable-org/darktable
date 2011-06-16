@@ -102,7 +102,7 @@ uint32_t views()
 
 int position()
 {
-  return 399;
+  return 299;
 }
 
 static void _metadata_update_value(GtkLabel *label, char *value)
