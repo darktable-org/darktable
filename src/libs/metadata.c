@@ -391,11 +391,6 @@ void init_presets(dt_lib_module_t *self)
   add_rights_preset(self, _("all rights reserved"), _("All rights reserved."));
 }
 
-// FIXME: Is this ever called?
-void init(dt_iop_module_t *module)
-{
-}
-
 void* get_params(dt_lib_module_t *self, int *size)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
