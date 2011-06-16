@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "common/darktable.h"
 #include "common/film.h"
 #include "common/image_cache.h"
@@ -27,6 +28,9 @@
 #include "libs/lib.h"
 
 DT_MODULE(1)
+
+// #ifdef HAVE_GPHOTO2
+
 
 /** helper function to update ui with available cameras and ther actionbuttons */
 static void _lib_import_ui_devices_update(dt_lib_module_t *self);
@@ -57,6 +61,8 @@ int position()
 {
   return 999;
 }
+
+#ifdef HAVE_GPHOTO2
 
 /* scan for new devices button callback */
 static void _lib_import_scan_devices_callback(GtkButton *button,gpointer data)
@@ -239,6 +245,8 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   /* unlock */
   if(needlock) gdk_threads_leave();
 }
+
+#endif // HAVE_GPHOTO2
 
 static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_data) 
 {
@@ -424,6 +432,7 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_import_folder_callback),
                     self);
 
+#ifdef HAVE_GPHOTO2
   /* add devices container for cameras */
   d->devices = GTK_BOX(gtk_vbox_new(FALSE,5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
@@ -435,14 +444,18 @@ void gui_init(dt_lib_module_t *self)
   dt_camctl_register_listener(darktable.camctl, &d->camctl_listener );
   _lib_import_ui_devices_update(self);
 
+#endif
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 { 
   dt_lib_import_t *d = (dt_lib_import_t*)self->data;
 
+#ifdef HAVE_GPHOTO2
   /* unregister camctl listener */
   dt_camctl_unregister_listener(darktable.camctl, &d->camctl_listener );
+#endif
 
   /* cleanup mem */
   g_free(self->data);
