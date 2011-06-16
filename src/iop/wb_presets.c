@@ -2612,6 +2612,13 @@ const wb_data wb_preset[] =
   { "NIKON", "D5000", DaylightFluorescent, 0,	{ 1.925781, 1, 1.074219, 0 } },
   { "NIKON", "D5000", HighTempMercuryVaporFluorescent, 0, { 2.207031, 1, 1.292969, 0 } },
 
+  { "NIKON", "D5100", Incandescent, 0,        { 0.811665, 1, 0.486027, 0 } },
+  { "NIKON", "D5100", Fluorescent, 0,         { 1.210323, 1, 0.516129, 0 } },
+  { "NIKON", "D5100", Directsunlight, 0,     { 1.696078, 1, 0.653595, 0 } },
+  { "NIKON", "D5100", Flash, 0,               { 2.063604, 1, 0.706714, 0 } },
+  { "NIKON", "D5100", Cloudy, 0,              { 1.913793, 1, 0.689655, 0 } },
+  { "NIKON", "D5100", Shade, 0,               { 2.332724, 1, 0.731261, 0 } },
+
   { "NIKON", "E5400", Daylight, -3,		{ 2.046875, 1, 1.449219, 0 } },
   { "NIKON", "E5400", Daylight, 0,		{ 1.800781, 1, 1.636719, 0 } },
   { "NIKON", "E5400", Daylight, 3,		{ 1.539062, 1, 1.820312, 0 } },
