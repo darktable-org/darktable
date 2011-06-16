@@ -1182,10 +1182,6 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = darktable.gui->widgets.navigation_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  bit = dt_conf_get_int("ui_last/expander_import");
-  widget = darktable.gui->widgets.import_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
   bit = dt_conf_get_int("ui_last/expander_snapshots");
   widget = darktable.gui->widgets.snapshots_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
@@ -1234,12 +1230,6 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_navigation", bit);
-
-  bit = dt_conf_get_int("ui_last/expander_import");
-  widget = darktable.gui->widgets.import_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_import", bit);
 
   bit = dt_conf_get_int("ui_last/expander_snapshots");
   widget = darktable.gui->widgets.snapshots_expander;

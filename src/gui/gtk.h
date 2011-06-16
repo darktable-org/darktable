@@ -112,11 +112,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *left;
   GtkWidget *left_vbox;
 
-  // Import widgets
-  GtkWidget *import_eventbox;
-  GtkWidget *import_expander;
-  GtkWidget *devices_expander_body;
-
   // Left side plugins
   GtkWidget *plugins_vbox_left;
 
