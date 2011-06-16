@@ -95,6 +95,7 @@ const char* name()
   return _("image information");
 }
 
+/* show module in left panel in all views */
 uint32_t views()
 {
   return DT_LIGHTTABLE_VIEW | DT_DARKTABLE_VIEW | DT_CAPTURE_VIEW | DT_LEFT_PANEL_VIEW;
@@ -105,6 +106,7 @@ int position()
   return 299;
 }
 
+/* helper function for updating a metadata value */
 static void _metadata_update_value(GtkLabel *label, char *value)
 {
     gtk_label_set_text(GTK_LABEL(label), value);
@@ -114,6 +116,7 @@ static void _metadata_update_value(GtkLabel *label, char *value)
 
 #define NODATA_STRING "-"
 
+/* update all values to reflect mouse over image id or no data at all */
 static void _metadata_view_update_values(dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
@@ -208,6 +211,7 @@ fill_minuses:
 
 }
 
+/* calback for the mouse over image change signal */
 static void _mouse_over_image_callback(gpointer instance,gpointer user_data) 
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -243,7 +247,8 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
+  dt_control_signal_disconnect(darktable.signals,
+			    G_CALLBACK(_mouse_over_image_callback), self);
   g_free(self->data);
   self->data = NULL;
 }
