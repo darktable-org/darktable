@@ -38,6 +38,13 @@ struct dt_develop_blend_params_t;
 #define	IOP_SPECIAL_GROUP_ACTIVE_PIPE 16
 #define	IOP_SPECIAL_GROUP_USER_DEFINED 32
 
+#define IOP_TAG_DISTORT     1
+// might be some other filters togglable by user?
+//#define IOP_TAG_SLOW        2
+//#define IOP_TAG_DETAIL_FIX  4
+//#define IOP_TAG_DECORATION  8
+
+
 #define	IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
 
 /** Flag for the iop module to be enabled/included by default when creating a style */
@@ -79,6 +86,10 @@ typedef struct dt_iop_module_so_t
   const char* (*name)     ();
   int (*groups)           ();
   int (*flags)            ();
+
+  int (*operation_tags)         (); 
+  int (*operation_tags_filter)  (); 
+
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 
   void (*gui_update)      (struct dt_iop_module_t *self);
@@ -167,6 +178,10 @@ typedef struct dt_iop_module_t
   int (*groups)           ();
   /** get the iop module flags. */
   int (*flags)            ();
+
+  int (*operation_tags)         (); 
+
+  int (*operation_tags_filter)  (); 
   /** how many bytes per pixel in the output. */
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 

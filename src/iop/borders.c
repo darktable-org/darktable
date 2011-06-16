@@ -70,6 +70,12 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+int
+operation_tags ()
+{
+  return IOP_TAG_DISTORT;
+}
+
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
 void
