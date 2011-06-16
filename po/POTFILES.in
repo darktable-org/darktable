@@ -23,7 +23,6 @@ src/gui/gtk.c
 src/gui/histogram.c
 src/gui/iop_history.c
 src/gui/iop_modulegroups.c
-src/gui/metadata.c
 src/gui/navigation.c
 src/gui/preferences.c
 src/gui/presets.c
@@ -97,6 +96,7 @@ src/libs/file_manager.c
 src/libs/image.c
 src/libs/lib.c
 src/libs/metadata.c
+src/libs/metadata_view.c
 src/libs/recentcollect.c
 src/libs/select.c
 src/libs/styles.c

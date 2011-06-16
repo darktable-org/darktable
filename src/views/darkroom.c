@@ -29,7 +29,6 @@
 #include "common/debug.h"
 #include "common/tags.h"
 #include "gui/gtk.h"
-#include "gui/metadata.h"
 #include "gui/iop_modulegroups.h"
 
 #include <stdlib.h>
@@ -933,8 +932,7 @@ void mouse_leave(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   int32_t mouse_over_id = dev->image->id;
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
-  dt_gui_metadata_update();
-
+ 
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
@@ -950,7 +948,6 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   {
     mouse_over_id = dev->image->id;
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
-    dt_gui_metadata_update();
   }
 
   dt_control_t *ctl = darktable.control;
