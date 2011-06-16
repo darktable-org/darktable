@@ -92,7 +92,7 @@ dt_lib_metadata_view_t;
 
 const char* name()
 {
-  return _("metadata");
+  return _("image information");
 }
 
 uint32_t views()
