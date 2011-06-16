@@ -41,7 +41,6 @@
 #include "dtgtk/button.h"
 #include "gui/contrast.h"
 #include "gui/gtk.h"
-#include "gui/metadata.h"
 #include "gui/iop_history.h"
 #include "gui/iop_modulegroups.h"
 
@@ -66,7 +65,6 @@ static void init_top(GtkWidget *container);
 static void init_navigation(GtkWidget *container);
 static void init_left(GtkWidget *container);
 static void init_history_box(GtkWidget *container);
-static void init_info_box(GtkWidget *container);
 static void init_snapshots(GtkWidget *container);
 static void init_import(GtkWidget *container);
 static void init_left_scroll_window(GtkWidget *container);
@@ -412,12 +410,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     dt_cleanup();
     gtk_main_quit();
   }
-  else
-  {
-    widget = darktable.gui->widgets.metadata_expander;
-    if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) dt_gui_metadata_update();
-  }
-
+ 
   return TRUE;
 }
 
@@ -1715,103 +1708,6 @@ void init_history_box(GtkWidget *container)
 
 }
 
-void init_info_box(GtkWidget *container)
-{
-  int i;
-  GtkWidget *widget;
-
-  GtkWidget** widgets[] =
-  {
-    &darktable.gui->widgets.metadata_label_filename,
-    &darktable.gui->widgets.metadata_label_model,
-    &darktable.gui->widgets.metadata_label_maker,
-    &darktable.gui->widgets.metadata_label_aperture,
-    &darktable.gui->widgets.metadata_label_exposure,
-    &darktable.gui->widgets.metadata_label_focal_length,
-    &darktable.gui->widgets.metadata_label_focus_distance,
-    &darktable.gui->widgets.metadata_label_iso,
-    &darktable.gui->widgets.metadata_label_datetime,
-    &darktable.gui->widgets.metadata_label_lens,
-    &darktable.gui->widgets.metadata_label_width,
-    &darktable.gui->widgets.metadata_label_height,
-    &darktable.gui->widgets.metadata_label_filmroll,
-    &darktable.gui->widgets.metadata_label_title,
-    &darktable.gui->widgets.metadata_label_creator,
-    &darktable.gui->widgets.metadata_label_rights
-  };
-
-  gchar* labels[] =
-  {
-    _("filename"),
-    _("model"),
-    _("maker"),
-    _("aperture"),
-    _("exposure"),
-    _("f-length"),
-    _("distance"),
-    _("iso"),
-    _("date/time"),
-    _("lens"),
-    _("width"),
-    _("height"),
-    _("film roll"),
-    _("title"),
-    _("creator"),
-    _("rights")
-  };
-
-  (void)widgets;
-  (void)labels;
-
-  // Adding the event box
-  widget = gtk_event_box_new();
-  gtk_widget_set_name(widget, "metadata_eventbox");
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_show(widget);
-
-  // Adding the expander
-  container = widget;
-
-  widget = gtk_expander_new(_("image information"));
-  darktable.gui->widgets.metadata_expander = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_widget_show(widget);
-
-  // Adding the table
-  container = widget;
-
-  widget = gtk_table_new(16, 2, FALSE);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
-  gtk_container_set_border_width(GTK_CONTAINER(widget), 5);
-  gtk_widget_show(widget);
-
-  // Attaching the information labels
-  container = widget;
-
-  for(i = 0; i < 16; i++)
-  {
-    // Attaching the field title
-    widget = gtk_label_new(labels[i]);
-    gtk_table_attach(GTK_TABLE(container), widget, 0, 1, i, i + 1,
-                     GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-    gtk_misc_set_alignment(GTK_MISC(widget), 0, 0.5);
-    gtk_misc_set_padding(GTK_MISC(widget), 5, 0);
-    gtk_widget_show(widget);
-
-    // Attaching the label to hold the information
-    widget = gtk_label_new(_("-"));
-    *(widgets[i]) = widget;
-    gtk_table_attach(GTK_TABLE(container), widget, 1, 2, i, i + 1,
-                     GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-    gtk_misc_set_alignment(GTK_MISC(widget), 0, 0.5);
-    gtk_widget_show(widget);
-  }
-
-
-}
 
 void init_snapshots(GtkWidget *container)
 {
@@ -1995,9 +1891,6 @@ void init_left_scroll_window(GtkWidget *container)
 
   // Initializing the snapshots box
   init_snapshots(container);
-
-  // Initializing the image information box
-  init_info_box(container);
 
   // Initializing the history box
   init_history_box(container);

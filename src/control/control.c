@@ -75,7 +75,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("ui_last/panel_bottom",  0);
 
   dt_conf_set_int  ("ui_last/expander_library",     1<<DT_LIBRARY);
-  dt_conf_set_int  ("ui_last/expander_metadata",    0);
   dt_conf_set_int  ("ui_last/expander_navigation", -1);
   dt_conf_set_int  ("ui_last/expander_histogram",  -1);
   dt_conf_set_int  ("ui_last/expander_history",    -1);
@@ -1199,9 +1198,6 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = darktable.gui->widgets.histogram_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  bit = dt_conf_get_int("ui_last/expander_metadata");
-  widget = darktable.gui->widgets.metadata_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 }
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
@@ -1263,11 +1259,6 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_histogram", bit);
 
-  bit = dt_conf_get_int("ui_last/expander_metadata");
-  widget = darktable.gui->widgets.metadata_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_metadata", bit);
 }
 
 int dt_control_key_pressed_override(uint16_t which)

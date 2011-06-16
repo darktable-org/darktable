@@ -51,7 +51,6 @@ FILE(GLOB SOURCE_FILES
   "gui/histogram.c"  
   "gui/iop_history.c"  
   "gui/iop_modulegroups.c"  
-  "gui/metadata.c"  
   "gui/navigation.c"  
   "gui/preferences.c"  
   "gui/presets.c"  
