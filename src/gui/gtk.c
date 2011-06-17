@@ -2402,7 +2402,7 @@ void init_center_bottom(GtkWidget *container)
 
   // Adding the center box
   subcontainer = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), subcontainer, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(container), subcontainer, FALSE, TRUE, 0);
 
   // Initializing the color picker panel
   widget = gtk_hbox_new(FALSE, 5);
