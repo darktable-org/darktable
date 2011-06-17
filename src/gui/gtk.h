@@ -44,6 +44,7 @@ typedef struct dt_gui_accels_t
       lighttable_up, lighttable_down, lighttable_right,
       lighttable_left, lighttable_center, lighttable_preview,
       global_sideborders;
+
 } dt_gui_accels_t;
 
 // flat view of all our widgets. could probably be modularized
@@ -175,7 +176,13 @@ typedef struct dt_gui_gtk_t
   // Cached accelerator keys for key_pressed shortcuts
   dt_gui_accels_t accels;
 
+  // GUI widgets
   dt_gui_widgets_t widgets;
+
+  // Accel remapping data
+  gchar *accel_remap_str;
+  GtkTreePath *accel_remap_path;
+
 
   GdkPixmap *pixmap;
   GList *redraw_widgets;
