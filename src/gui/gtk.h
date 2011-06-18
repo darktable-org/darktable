@@ -19,7 +19,6 @@
 #define DT_GUI_GTK_H
 
 #include <gtk/gtk.h>
-#include "gui/navigation.h"
 #include "gui/histogram.h"
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
@@ -50,8 +49,8 @@ dt_gui_snapshot_t;
 
    metadata   - Fixed, availble in all views
    histogram  -
-   navigation - 
- 
+   navigation - Fixed
+
 */
 
 typedef struct dt_gui_widgets_t
@@ -125,10 +124,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *history_expander;
   GtkWidget *history_expander_body;
 
-  // Navigation panel
-  GtkWidget *navigation_expander;
-  GtkWidget *navigation;
-
   // Top panel
   GtkWidget *top;
 
@@ -149,7 +144,7 @@ typedef struct dt_gui_gtk_t
   GList *redraw_widgets;
   GList *key_accels;
   GtkMenu *presets_popup_menu;
-  dt_gui_navigation_t navigation;
+  
   dt_gui_histogram_t histogram;
 
   int32_t num_snapshots, request_snapshot, selected_snapshot;
