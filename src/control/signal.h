@@ -33,6 +33,9 @@ typedef enum dt_signal_t {
    */
   DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
 
+  /** \brief This signal fires when control redraw is queued.
+  */
+  DT_SIGNAL_CONTROL_DRAW_ALL,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
