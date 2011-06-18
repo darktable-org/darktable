@@ -1082,12 +1082,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
         darktable.gui->picked_color_output_cs_max[k] =
         darktable.gui->picked_color_output_cs_min[k] = 0;
 
-
-  // nice endmarker drawing.
-  widget = darktable.gui->widgets.endmarker_left;
-  g_signal_connect (G_OBJECT (widget), "expose-event",
-                    G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
-
   widget = darktable.gui->widgets.center;
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   // GTK_WIDGET_SET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
@@ -1507,6 +1501,9 @@ void init_left(GtkWidget *container)
   init_left_scroll_window(container);
   init_jobs_list(container);
 
+  /* lets show all widgets */
+  gtk_widget_show_all(container);
+
 }
 
 void init_history_box(GtkWidget *container)
@@ -1657,12 +1654,6 @@ void init_left_scroll_window(GtkWidget *container)
   // Initializing the history box
   init_history_box(container);
 
-  // Adding the left end marker
-  widget = gtk_drawing_area_new();
-  darktable.gui->widgets.endmarker_left = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
-  gtk_widget_set_size_request(widget, -1, 50);
-  gtk_widget_show(widget);
 }
 
 void init_jobs_list(GtkWidget *container)

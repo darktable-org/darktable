@@ -125,9 +125,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *history_expander;
   GtkWidget *history_expander_body;
 
-  // Left end marker
-  GtkWidget *endmarker_left;
-
   // Navigation panel
   GtkWidget *navigation_expander;
   GtkWidget *navigation;
