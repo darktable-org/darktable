@@ -105,11 +105,11 @@ groups ()
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
+  assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
   // get our data struct:
   dt_iop_colorcontrast_params_t *d = (dt_iop_colorcontrast_params_t *)piece->data;
   // how many colors in our buffer?
   const int ch = piece->colors;
-  assert(ch == 3);
   // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
   // optional: parallelize it!
@@ -127,8 +127,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float a_in = pt_in[1];
       float b_in = pt_in[2];
       pt_out[0] = L_in;
-      pt_out[1] = a_in*(d->a_steepness) + (d->a_offset);
-      pt_out[2] = b_in*(d->b_steepness) + (d->b_offset);
+      pt_out[1] = CLAMPS(a_in*(d->a_steepness) + (d->a_offset), -128.0, 128.0);
+      pt_out[2] = CLAMPS(b_in*(d->b_steepness) + (d->b_offset), -128.0, 128.0);
     }
   }
 }
@@ -137,8 +137,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void reload_defaults(dt_iop_module_t *module)
 {
   // change default_enabled depending on type of image, or set new default_params even.
-
   // if this callback exists, it has to write default_params and default_enabled.
+  dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t)
+  {
+    1.0, 0.0, 1.0, 0.0
+  };
+  memcpy(module->params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
+  module->default_enabled = 0;
 }
 
 /** init, cleanup, commit to pipeline */
