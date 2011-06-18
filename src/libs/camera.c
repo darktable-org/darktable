@@ -80,7 +80,8 @@ name ()
 
 uint32_t views()
 {
-  return DT_CAPTURE_VIEW;
+  /* show module in right panel plugingbox in tethering view*/
+  return DT_VIEW_TETHERING | DT_VIEW_PANEL_RIGHT | DT_VIEW_PANEL_PLUGINS;
 }
 
 

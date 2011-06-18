@@ -34,7 +34,7 @@ name ()
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_PANEL_RIGHT | DT_VIEW_PANEL_PLUGINS;
 }
 
 static void

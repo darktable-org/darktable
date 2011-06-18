@@ -54,7 +54,7 @@ name ()
 
 uint32_t views()
 {
-  return DT_CAPTURE_VIEW;
+  return DT_VIEW_TETHERING;
 }
 
 

@@ -21,6 +21,7 @@
 #include "common/image_cache.h"
 #include "common/debug.h"
 #include "common/history.h"
+#include "libs/lib.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -118,6 +119,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
     goto out;
   }
   if(!g_module_symbol(view->module, "name",            (gpointer)&(view->name)))            view->name = NULL;
+  if(!g_module_symbol(view->module, "view",            (gpointer)&(view->view)))            view->view = NULL;
   if(!g_module_symbol(view->module, "init",            (gpointer)&(view->init)))            view->init = NULL;
   if(!g_module_symbol(view->module, "cleanup",         (gpointer)&(view->cleanup)))         view->cleanup = NULL;
   if(!g_module_symbol(view->module, "expose",          (gpointer)&(view->expose)))          view->expose = NULL;
@@ -169,20 +171,122 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   /* Special case when entering nothing (just before leaving dt) */
   if ( k==DT_MODE_NONE )
-    {
-      if(vm->current_view >= 0 && v->leave) v->leave(v);
-      vm->current_view = -1 ;
-      return 0 ;
-    }
-
-  int newv = vm->current_view;
-  if(k < vm->num_views) newv = k;
-  dt_view_t *nv = vm->view + newv;
-  if(nv->try_enter) error = nv->try_enter(nv);
-  if(!error)
   {
     if(vm->current_view >= 0 && v->leave) v->leave(v);
+    vm->current_view = -1 ;
+    return 0 ;
+  }
+
+  int newv = vm->current_view;
+  if (k < vm->num_views) newv = k;
+  dt_view_t *nv = vm->view + newv;
+
+  if (nv->try_enter) 
+    error = nv->try_enter(nv);
+
+  if (!error)
+  {
+    GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
+    GtkBox *box_left = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
+    GList *plugins;
+    
+    /* cleanup current view before initialization of new  */
+    if (vm->current_view >=0)
+    {
+      /* leave current view */
+      if(v->leave) v->leave(v);
+   
+      /* iterator plugins and cleanup plugins in current view */
+      plugins = g_list_last(darktable.lib->plugins);
+      while (plugins)
+      {
+	  dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+	  
+	  if (!plugin && !plugin->views)
+	    fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
+	  
+	  /* does this module belong to current view ?*/
+	  if (plugin->views() & v->view(v) )
+	    plugin->gui_cleanup(plugin);
+
+	  /* get next plugin */
+	  plugins = g_list_previous(plugins);
+      }
+
+      /* remove all plugin module expanders from containers */
+      gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_vm_remove_child, (gpointer)box);
+      gtk_container_foreach(GTK_CONTAINER(box_left), (GtkCallback)dt_vm_remove_child, (gpointer)box_left);
+    }
+
+    /* change current view to the new view */
     vm->current_view = newv;
+
+    /* lets add plugins related to new view */
+    plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+      if( plugin->views() & nv->view(v) )
+      {
+	/* module should be in this view, lets initialize */                                                                         
+	plugin->gui_init(plugin);
+
+	fprintf(stderr,"Adding %s to panel\n",plugin->name(plugin));
+	/* add module widget to the ui */
+	GtkWidget *expander = dt_lib_gui_get_expander(plugin);
+	if(plugin->views() & DT_VIEW_PANEL_LEFT)
+	  gtk_box_pack_start(box_left, expander, FALSE, FALSE, 0);
+	else
+	  gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+
+      }
+
+      /* lets get next plugin */
+      plugins = g_list_previous(plugins);
+    }
+
+    /* add endmarkers to left and right box */
+    GtkWidget *endmarker = gtk_drawing_area_new();
+    gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
+    g_signal_connect (G_OBJECT (endmarker), "expose-event",
+                    G_CALLBACK (dt_control_expose_endmarker), 0);
+    gtk_widget_set_size_request(endmarker, -1, 50);
+
+    endmarker = gtk_drawing_area_new();
+    gtk_box_pack_start(box_left, endmarker, FALSE, FALSE, 0);
+    g_signal_connect (G_OBJECT (endmarker), "expose-event",
+		      G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+    gtk_widget_set_size_request(endmarker, -1, 50);
+
+    /* show all widgets */
+    gtk_widget_show_all(GTK_WIDGET(box));
+    gtk_widget_show_all(GTK_WIDGET(box_left));
+
+    /* hide/show modules as last config */
+    plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+      if(plugin->views() & nv->view(v) )
+      {
+		/* set expanded if last mode was that */
+	char var[1024];
+	snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
+	gboolean expanded = dt_conf_get_bool(var);
+	gtk_expander_set_expanded (plugin->expander, expanded);
+	
+	/* show all widgets in expander */
+	gtk_widget_show_all(GTK_WIDGET(plugin->expander));
+
+	/* show/hide plugin widget depending on expanded flag */
+	if(expanded) gtk_widget_show_all(plugin->widget);
+	else         gtk_widget_hide_all(plugin->widget);	
+      }
+
+      /* lets get next plugin */
+      plugins = g_list_previous(plugins); 
+    }
+
     if(newv >= 0 && nv->enter) nv->enter(nv);
   }
   return error;

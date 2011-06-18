@@ -75,6 +75,11 @@ const char *name(dt_view_t *self)
   return _("lighttable");
 }
 
+uint32_t view(dt_view_t *self)
+{
+  return DT_VIEW_LIGHTTABLE;
+}
+
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_library_t));
@@ -749,58 +754,12 @@ star_key_accel_callback(void *data)
 
 void enter(dt_view_t *self)
 {
-  // add expanders
-  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-  GtkBox *box_left = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
-  GList *modules = g_list_last(darktable.lib->plugins);
-
-
+  
   // Adjust gui
   gtk_widget_set_visible(darktable.gui->
                          widgets.modulegroups_eventbox, FALSE);
 
-  while(modules)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if( module->views() & DT_LIGHTTABLE_VIEW )
-    {
-      // Module does support this view let's add it to plugin box
-      module->gui_init(module);
-      // add the widget created by gui_init to an expander and both to list.
-      GtkWidget *expander = dt_lib_gui_get_expander(module);
-      if(module->views() & DT_LEFT_PANEL_VIEW) gtk_box_pack_start(box_left, expander, FALSE, FALSE, 0);
-      else gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
-    }
-    modules = g_list_previous(modules);
-  }
-
-  // end marker widget:
-  GtkWidget *endmarker = gtk_drawing_area_new();
-  gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
-  g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                    G_CALLBACK (dt_control_expose_endmarker), 0);
-  gtk_widget_set_size_request(endmarker, -1, 50);
-
-  gtk_widget_show_all(GTK_WIDGET(box));
-  gtk_widget_show_all(GTK_WIDGET(box_left));
-
-  // close expanders
-  modules = darktable.lib->plugins;
-  while(modules)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if( module->views() & DT_LIGHTTABLE_VIEW )
-    {
-      // Module does support this view let's add it to plugin box
-      char var[1024];
-      snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
-      gboolean expanded = dt_conf_get_bool(var);
-      gtk_expander_set_expanded (module->expander, expanded);
-      if(expanded) gtk_widget_show_all(module->widget);
-      else         gtk_widget_hide_all(module->widget);
-    }
-    modules = g_list_next(modules);
-  }
+  /* assign keys */
   dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
   dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
   dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
@@ -808,6 +767,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
   dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
   dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
+
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->stars_registered = 1;
   dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_0, zoom_key_accel_callback, (void *)0);
@@ -837,18 +797,6 @@ void leave(dt_view_t *self)
   dt_gui_key_accel_unregister(zoom_key_accel_callback);
   dt_gui_key_accel_unregister(go_up_key_accel_callback);
   dt_gui_key_accel_unregister(go_down_key_accel_callback);
-  GList *it = darktable.lib->plugins;
-  while(it)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(it->data);
-    if( module->views() & DT_LIGHTTABLE_VIEW )
-      module->gui_cleanup(module);
-    it = g_list_next(it);
-  }
-  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
-  box = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
-  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 }
 
 void reset(dt_view_t *self)
