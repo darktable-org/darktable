@@ -26,7 +26,9 @@ typedef struct dt_control_signal_t {
 
 static char *_signal_name[DT_SIGNAL_COUNT] = {
   // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
-  "dt-global-mouse-over-image-change"
+  "dt-global-mouse-over-image-change",
+  // DT_SIGNAL_CONTROL_DRAW_ALL
+  "dt-global-control-draw-all"
 };
 
 
