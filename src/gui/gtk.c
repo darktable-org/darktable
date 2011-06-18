@@ -61,7 +61,6 @@ static void init_top_controls(GtkWidget *container);
 static void init_dt_label(GtkWidget *container);
 static void init_top(GtkWidget *container);
 
-static void init_navigation(GtkWidget *container);
 static void init_left(GtkWidget *container);
 static void init_history_box(GtkWidget *container);
 static void init_snapshots(GtkWidget *container);
@@ -387,10 +386,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
                     event->area.x, event->area.y,
                     event->area.x, event->area.y,
                     event->area.width, event->area.height);
-
-  // update other widgets
-  GtkWidget *widget = darktable.gui->widgets.navigation;
-  gtk_widget_queue_draw(widget);
 
   GList *wdl = darktable.gui->redraw_widgets;
   while(wdl)
@@ -971,6 +966,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     panel_width = 300;
     dt_conf_set_int("panel_width", panel_width);
   }
+
   widget = darktable.gui->widgets.right;
   gtk_widget_set_size_request (widget, panel_width, -1);
   widget = darktable.gui->widgets.left;
@@ -1036,12 +1032,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (expose_borders), (gpointer)3);
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)3);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
-
-
-
-  widget = darktable.gui->widgets.navigation;
-  dt_gui_navigation_init(&gui->navigation, widget);
-  gtk_widget_set_size_request(widget, -1, panel_width*.5);
 
   widget = darktable.gui->widgets.histogram;
   gtk_widget_set_size_request(widget, -1, panel_width*.5);
@@ -1121,7 +1111,6 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
   g_free(darktable.control->xprofile_data);
   darktable.control->xprofile_size = 0;
-  dt_gui_navigation_cleanup(&gui->navigation);
   dt_gui_histogram_cleanup(&gui->histogram);
 }
 
@@ -1439,39 +1428,6 @@ void init_top(GtkWidget *container)
   init_view_label(widget);
 }
 
-void init_navigation(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the eventbox
-  widget = gtk_event_box_new();
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-
-  // Adding the expander
-  container = widget;
-
-  widget = gtk_expander_new(_("navigation"));
-  darktable.gui->widgets.navigation_expander = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_widget_set_no_show_all(widget, TRUE);
-
-  // Adding the drawing surface
-  container = widget;
-
-  widget = gtk_drawing_area_new();
-  darktable.gui->widgets.navigation = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_events(widget,
-                        GDK_EXPOSURE_MASK
-                        | GDK_POINTER_MOTION_MASK
-                        | GDK_POINTER_MOTION_HINT_MASK
-                        | GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK
-                        | GDK_STRUCTURE_MASK);
-  gtk_widget_show(widget);
-}
-
 void init_left(GtkWidget *container)
 {
 
@@ -1497,7 +1453,6 @@ void init_left(GtkWidget *container)
   // Initializing the sub-sections
   container = widget;
 
-  init_navigation(container);
   init_left_scroll_window(container);
   init_jobs_list(container);
 
@@ -1544,7 +1499,6 @@ void init_history_box(GtkWidget *container)
   gtk_widget_show(widget);
 
 }
-
 
 void init_snapshots(GtkWidget *container)
 {
