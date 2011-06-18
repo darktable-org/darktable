@@ -1122,7 +1122,12 @@ void dt_control_queue_draw_all()
     GtkWidget *widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
     // darktable.control->last_expose_time = time;
+
+    /* raise the redraw all signal */
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_DRAW_ALL);
+
     if(needlock) gdk_threads_leave();
+
   }
 }
 
