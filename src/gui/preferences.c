@@ -429,10 +429,15 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   gboolean global;
 
   gchar accel[256];
+  gchar datadir[1024];
+  gchar accelpath[1024];
 
   // We can just ignore mod key presses outright
   if(event->is_modifier)
     return FALSE;
+
+  dt_get_user_config_dir(datadir, 1024);
+  snprintf(accelpath, 1024, "%s/keyboardrc", datadir);
 
   // Otherwise, determine whether we're in remap mode or not
   if(darktable.gui->accel_remap_str)
@@ -503,8 +508,8 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
     gtk_tree_path_free(darktable.gui->accel_remap_path);
     darktable.gui->accel_remap_path = NULL;
 
-    // ...and dump the keybindings out to testkeys, for now at least
-    gtk_accel_map_save("testkeys");
+    // Save the changed keybindings
+    gtk_accel_map_save(accelpath);
 
     return TRUE;
   }
@@ -526,8 +531,8 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
     gtk_accel_map_change_entry(accel, 0, 0, TRUE);
     update_accels_model(model);
 
-    // Debug output
-    gtk_accel_map_save("testkeys");
+    // Saving the changed bindings
+    gtk_accel_map_save(accelpath);
 
     return TRUE;
   }
