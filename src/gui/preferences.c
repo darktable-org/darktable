@@ -38,12 +38,12 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
                             const gchar *accel_path, guint accel_key,
                             GdkModifierType accel_mods, gboolean changed);
 static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str);
-static void update_accels_model(GtkTreeModel *model);
+static void update_accels_model(gpointer widget, gpointer data);
 static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
                                     gchar *path);
 static void delete_matching_accels(gpointer path, gpointer key_event);
 static gint _strcmp(gconstpointer a, gconstpointer b);
-
+static void import_export(GtkButton *button, gpointer data);
 
 // Signal handlers
 static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
@@ -51,6 +51,7 @@ static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
                                gpointer data);
+
 
 
 void dt_gui_preferences_show()
@@ -90,9 +91,11 @@ void dt_gui_preferences_show()
 
 static void init_tab_accels(GtkWidget *book)
 {
-  GtkWidget *container = gtk_vbox_new(FALSE, 0);
+  GtkWidget *container = gtk_vbox_new(FALSE, 5);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
+  GtkWidget *button;
+  GtkWidget *hbox;
   GtkTreeStore *model = gtk_tree_store_new(N_COLUMNS,
                                            G_TYPE_STRING, G_TYPE_STRING);
   GtkCellRenderer *renderer;
@@ -139,14 +142,32 @@ static void init_tab_accels(GtkWidget *book)
 
   // Attaching the model to the treeview
   gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(model));
-  g_object_unref(G_OBJECT(model));
 
   // Adding the treeview to its containers
   gtk_container_add(GTK_CONTAINER(scroll), tree);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
                                  GTK_POLICY_AUTOMATIC,
                                  GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 10);
+  gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
+
+  // Adding the import/export buttons
+  hbox = gtk_hbox_new(FALSE, 5);
+
+  button = gtk_button_new_with_label(_("import"));
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(import_export), (gpointer)0);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(update_accels_model), (gpointer)model);
+
+  button = gtk_button_new_with_label(_("export"));
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(import_export), (gpointer)1);
+
+  gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
+
+  g_object_unref(G_OBJECT(model));
 
 }
 
@@ -275,8 +296,9 @@ static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str)
   }
 }
 
-static void update_accels_model(GtkTreeModel *model)
+static void update_accels_model(gpointer widget, gpointer data)
 {
+  GtkTreeModel *model = (GtkTreeModel*)data;
   GtkTreeIter iter;
   gchar path[256];
   gchar *end;
@@ -501,7 +523,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
 
     // Then update the text in the BINDING_COLUMN of each row
-    update_accels_model(model);
+    update_accels_model(model, NULL);
 
     // Finally clear the remap state
     darktable.gui->accel_remap_str = NULL;
@@ -529,7 +551,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
     gtk_tree_path_free(path);
 
     gtk_accel_map_change_entry(accel, 0, 0, TRUE);
-    update_accels_model(model);
+    update_accels_model(NULL, model);
 
     // Saving the changed bindings
     gtk_accel_map_save(accelpath);
@@ -539,6 +561,77 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   else
   {
     return FALSE;
+  }
+}
+
+static void import_export(GtkButton *button, gpointer data)
+{
+  GtkWidget *chooser;
+  gchar confdir[1024];
+  gchar accelpath[1024];
+
+  if(data)
+  {
+    // Non-zero value indicates export
+    chooser = gtk_file_chooser_dialog_new(
+        _("select file to export"),
+        NULL,
+        GTK_FILE_CHOOSER_ACTION_SAVE,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+        NULL);
+    gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser),
+                                                   TRUE);
+    if(dt_conf_get_string("ui_last/export_path"))
+      gtk_file_chooser_set_current_folder(
+          GTK_FILE_CHOOSER(chooser),
+          dt_conf_get_string("ui_last/export_path"));
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "keyboardrc");
+    if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+    {
+      gtk_accel_map_save(
+          gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
+      dt_conf_set_string(
+          "ui_last/export_path",
+          gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser)));
+    }
+    gtk_widget_destroy(chooser);
+  }
+  else
+  {
+    // Zero value indicates import
+    chooser = gtk_file_chooser_dialog_new(
+        _("select file to import"),
+        NULL,
+        GTK_FILE_CHOOSER_ACTION_OPEN,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+        NULL);
+
+    if(dt_conf_get_string("ui_last/import_path"))
+      gtk_file_chooser_set_current_folder(
+          GTK_FILE_CHOOSER(chooser),
+          dt_conf_get_string("ui_last/import_path"));
+    if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+    {
+      if(g_file_test(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)),
+                     G_FILE_TEST_EXISTS))
+      {
+        // Loading the file
+        gtk_accel_map_load(
+            gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
+
+        // Saving to the permanent keyboardrc
+        dt_get_user_config_dir(confdir, 1024);
+        snprintf(accelpath, 1024, "%s/keyboardrc", confdir);
+        gtk_accel_map_save(accelpath);
+
+        dt_conf_set_string(
+            "ui_last/import_path",
+            gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser)));
+      }
+    }
+    gtk_widget_destroy(chooser);
   }
 }
 
