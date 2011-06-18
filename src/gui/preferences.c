@@ -41,6 +41,8 @@ static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str);
 static void update_accels_model(GtkTreeModel *model);
 static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
                                     gchar *path);
+static void delete_matching_accels(gpointer path, gpointer key_event);
+static gint _strcmp(gconstpointer a, gconstpointer b);
 
 
 // Signal handlers
@@ -331,6 +333,28 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
   }
 }
 
+static void delete_matching_accels(gpointer path, gpointer key_event)
+{
+  GtkAccelKey key;
+  GdkEventKey *event = (GdkEventKey*)key_event;
+
+  // Make sure we're not deleting the key we just remapped
+  if(!strcmp(path, darktable.gui->accel_remap_str))
+    return;
+
+  gtk_accel_map_lookup_entry(path, &key);
+
+  if(key.accel_key == event->keyval
+     && key.accel_mods == (event->state & KEY_STATE_MASK))
+    gtk_accel_map_change_entry(path, 0, 0, TRUE);
+
+}
+
+static gint _strcmp(gconstpointer a, gconstpointer b)
+{
+  return (gint)strcmp((const char*)b, (const char*)a);
+}
+
 static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
                                GtkTreeViewColumn *column, gpointer data)
 {
@@ -402,6 +426,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   GtkTreeSelection *selection =
       gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
   GtkTreePath *path;
+  gboolean global;
 
   gchar accel[256];
 
@@ -412,9 +437,63 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   // Otherwise, determine whether we're in remap mode or not
   if(darktable.gui->accel_remap_str)
   {
-    // First change the accel map entry
-    gtk_accel_map_change_entry(darktable.gui->accel_remap_str, event->keyval,
-                               event->state & KEY_STATE_MASK, TRUE);
+    // First delete any conflicting accelerators
+
+    // If a global accel is changed, modify _every_ group
+    global =
+        g_slist_find_custom(darktable.gui->accels_list_global,
+                            darktable.gui->accel_remap_str, _strcmp) != NULL;
+
+    // Global is always active, so anything that matches there must go
+    g_slist_foreach(darktable.gui->accels_list_global, delete_matching_accels,
+                    (gpointer)event);
+
+    // Now check for any matching accels in the same group
+    if(g_slist_find_custom(darktable.gui->accels_list_lighttable,
+                           darktable.gui->accel_remap_str, _strcmp) || global)
+      g_slist_foreach(darktable.gui->accels_list_lighttable,
+                      delete_matching_accels, (gpointer)event);
+    if(g_slist_find_custom(darktable.gui->accels_list_darkroom,
+                           darktable.gui->accel_remap_str, _strcmp) || global)
+      g_slist_foreach(darktable.gui->accels_list_darkroom,
+                      delete_matching_accels, (gpointer)event);
+    if(g_slist_find_custom(darktable.gui->accels_list_capture,
+                           darktable.gui->accel_remap_str, _strcmp) || global)
+      g_slist_foreach(darktable.gui->accels_list_capture,
+                      delete_matching_accels, (gpointer)event);
+
+    // Change the accel map entry
+    if(gtk_accel_map_change_entry(darktable.gui->accel_remap_str, event->keyval,
+                                   event->state & KEY_STATE_MASK, TRUE))
+    {
+      // If it succeeded delete any conflicting accelerators
+
+      // If a global accel is changed, modify _every_ group
+      global =
+          g_slist_find_custom(darktable.gui->accels_list_global,
+                              darktable.gui->accel_remap_str, _strcmp) != NULL;
+
+      // Global is always active, so anything that matches there must go
+      g_slist_foreach(darktable.gui->accels_list_global, delete_matching_accels,
+                      (gpointer)event);
+
+      // Now check for any matching accels in the same group
+      if(g_slist_find_custom(darktable.gui->accels_list_lighttable,
+                             darktable.gui->accel_remap_str, _strcmp) || global)
+        g_slist_foreach(darktable.gui->accels_list_lighttable,
+                        delete_matching_accels, (gpointer)event);
+      if(g_slist_find_custom(darktable.gui->accels_list_darkroom,
+                             darktable.gui->accel_remap_str, _strcmp) || global)
+        g_slist_foreach(darktable.gui->accels_list_darkroom,
+                        delete_matching_accels, (gpointer)event);
+      if(g_slist_find_custom(darktable.gui->accels_list_capture,
+                             darktable.gui->accel_remap_str, _strcmp) || global)
+        g_slist_foreach(darktable.gui->accels_list_capture,
+                        delete_matching_accels, (gpointer)event);
+
+    }
+
+
 
     // Then update the text in the BINDING_COLUMN of each row
     update_accels_model(model);

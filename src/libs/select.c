@@ -168,17 +168,17 @@ void init_key_accels()
   gtk_accel_map_add_entry("<Darktable>/modules/select/invert",
                           GDK_exclam, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_lighttable,
       "<Darktable>/modules/select/all",
       g_cclosure_new(G_CALLBACK(key_accel_callback),
                      (gpointer)0, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_lighttable,
       "<Darktable>/modules/select/none",
       g_cclosure_new(G_CALLBACK(key_accel_callback),
                      (gpointer)1, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_lighttable,
       "<Darktable>/modules/select/invert",
       g_cclosure_new(G_CALLBACK(key_accel_callback),

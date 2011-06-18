@@ -202,7 +202,7 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_lighttable,
       "<Darktable>/modules/copy_history/copy",
       g_cclosure_new(G_CALLBACK(key_accel_copy_callback),
@@ -225,7 +225,7 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_lighttable,
       "<Darktable>/modules/copy_history/paste",
       g_cclosure_new(G_CALLBACK(key_accel_paste_callback),

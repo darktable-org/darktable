@@ -77,7 +77,7 @@ init(dt_view_t *self)
   // Film strip shortcuts
   gtk_accel_map_add_entry("<Darktable>/darkroom/filmstrip/show_hide",
                           GDK_f, GDK_CONTROL_MASK);
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/filmstrip/show_hide",
       g_cclosure_new(G_CALLBACK(film_strip_key_accel),
@@ -91,15 +91,15 @@ init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/fit",
                           GDK_3, GDK_MOD1_MASK);
 
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/zoom/close",
       g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)1, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/zoom/fill",
       g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)2, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/zoom/fit",
       g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)3, NULL));
@@ -108,7 +108,7 @@ init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/darkroom/export",
                           GDK_e, GDK_CONTROL_MASK);
 
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/export",
       g_cclosure_new(G_CALLBACK(export_key_accel_callback), NULL, NULL));
@@ -120,12 +120,12 @@ init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/darkroom/image_back",
                           GDK_BackSpace, 0);
 
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/image_forward",
       g_cclosure_new(G_CALLBACK(skip_f_key_accel_callback),
                      (gpointer)self->data, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/image_back",
       g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback),

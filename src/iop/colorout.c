@@ -780,7 +780,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Connecting the accelerator
   g->softproof_callback = g_cclosure_new(G_CALLBACK(key_softproof_callback),
                                          (gpointer)self, NULL);
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/imageops/colorout/toggle_softproofing",
       g->softproof_callback);
@@ -806,6 +806,11 @@ void init_key_accels()
 {
   gtk_accel_map_add_entry("<Darktable>/imageops/colorout/toggle_softproofing",
                           GDK_s, 0);
+
+  dt_accel_group_connect_by_path(
+      darktable.gui->accels_darkroom,
+      "<Darktable>/imageops/colorout/toggle_softproofing",
+      NULL);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

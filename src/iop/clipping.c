@@ -883,15 +883,15 @@ void gui_init(struct dt_iop_module_t *self)
                                       (gpointer)self, NULL);
   g->undo_callback = g_cclosure_new(G_CALLBACK(key_undo_callback),
                                     (gpointer)self, NULL);
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/imageops/clipping/swap_aspect",
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/imageops/clipping/swap_aspect",
                                  g->swap_callback);
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/imageops/clipping/commit",
-                                  g->commit_callback);
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/imageops/clipping/undo",
-                                  g->undo_callback);
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/imageops/clipping/commit",
+                                 g->commit_callback);
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/imageops/clipping/undo",
+                                 g->undo_callback);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act >= 9) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
@@ -1558,6 +1558,17 @@ void init_key_accels()
                           GDK_Return, 0);
   gtk_accel_map_add_entry("<Darktable>/imageops/clipping/undo",
                           GDK_z, GDK_CONTROL_MASK);
+
+  // Making sure these get into the accelerator lists as well
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/imageops/clipping/swap_aspect",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/imageops/clipping/commit",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/imageops/clipping/undo",
+                                 NULL);
 }
 
 #undef PHI

@@ -103,41 +103,41 @@ void init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/darkroom/rating/reject", GDK_Delete,
                           0);
 
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/darkroom/rating/desert",
-                                  g_cclosure_new(
-                                      G_CALLBACK(star_key_accel_callback),
-                                      (gpointer)DT_VIEW_DESERT, NULL));
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/darkroom/rating/1",
-                                  g_cclosure_new(
-                                      G_CALLBACK(star_key_accel_callback),
-                                      (gpointer)DT_VIEW_STAR_1, NULL));
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/darkroom/rating/2",
-                                  g_cclosure_new(
-                                      G_CALLBACK(star_key_accel_callback),
-                                      (gpointer)DT_VIEW_STAR_2, NULL));
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/darkroom/rating/3",
-                                  g_cclosure_new(
-                                      G_CALLBACK(star_key_accel_callback),
-                                      (gpointer)DT_VIEW_STAR_3, NULL));
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/darkroom/rating/4",
-                                  g_cclosure_new(
-                                      G_CALLBACK(star_key_accel_callback),
-                                      (gpointer)DT_VIEW_STAR_4, NULL));
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/darkroom/rating/5",
-                                  g_cclosure_new(
-                                      G_CALLBACK(star_key_accel_callback),
-                                      (gpointer)DT_VIEW_STAR_5, NULL));
-  gtk_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                  "<Darktable>/darkroom/rating/reject",
-                                  g_cclosure_new(
-                                      G_CALLBACK(star_key_accel_callback),
-                                      (gpointer)DT_VIEW_REJECT, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/darkroom/rating/desert",
+                                 g_cclosure_new(
+                                     G_CALLBACK(star_key_accel_callback),
+                                     (gpointer)DT_VIEW_DESERT, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/darkroom/rating/1",
+                                 g_cclosure_new(
+                                     G_CALLBACK(star_key_accel_callback),
+                                     (gpointer)DT_VIEW_STAR_1, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/darkroom/rating/2",
+                                 g_cclosure_new(
+                                     G_CALLBACK(star_key_accel_callback),
+                                     (gpointer)DT_VIEW_STAR_2, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/darkroom/rating/3",
+                                 g_cclosure_new(
+                                     G_CALLBACK(star_key_accel_callback),
+                                     (gpointer)DT_VIEW_STAR_3, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/darkroom/rating/4",
+                                 g_cclosure_new(
+                                     G_CALLBACK(star_key_accel_callback),
+                                     (gpointer)DT_VIEW_STAR_4, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/darkroom/rating/5",
+                                 g_cclosure_new(
+                                     G_CALLBACK(star_key_accel_callback),
+                                     (gpointer)DT_VIEW_STAR_5, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/darkroom/rating/reject",
+                                 g_cclosure_new(
+                                     G_CALLBACK(star_key_accel_callback),
+                                     (gpointer)DT_VIEW_REJECT, NULL));
 
   gtk_accel_map_add_entry("<Darktable>/darkroom/history/copy",
                           GDK_c, GDK_CONTROL_MASK);
@@ -146,17 +146,17 @@ void init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/darkroom/history/discard",
                           GDK_d, GDK_CONTROL_MASK);
 
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/history/copy",
       g_cclosure_new(G_CALLBACK(copy_history_key_accel_callback),
                      (gpointer)strip, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/history/paste",
       g_cclosure_new(G_CALLBACK(paste_history_key_accel_callback),
                      (gpointer)strip, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/history/discard",
       g_cclosure_new(G_CALLBACK(discard_history_key_accel_callback),
@@ -168,27 +168,27 @@ void init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/darkroom/color/blue", GDK_F4, 0);
   gtk_accel_map_add_entry("<Darktable>/darkroom/color/purple", GDK_F5, 0);
 
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/color/red",
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                      (gpointer)0, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/color/yellow",
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                      (gpointer)1, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/color/green",
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                      (gpointer)2, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/color/blue",
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                      (gpointer)3, NULL));
-  gtk_accel_group_connect_by_path(
+  dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/color/purple",
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
@@ -198,6 +198,11 @@ void init(dt_view_t *self)
                           GDK_Right, 0);
   gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll_back",
                           GDK_Left, 0);
+
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/filmstrip/scroll_forward", NULL);
+  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                 "<Darktable>/filmstrip/scroll_back", NULL);
 }
 
 void cleanup(dt_view_t *self)
