@@ -53,6 +53,10 @@ init(dt_view_t *self)
 
 }
 
+uint32_t view(dt_view_t *self)
+{
+  return DT_VIEW_DARKROOM;
+}
 
 void cleanup(dt_view_t *self)
 {
@@ -663,7 +667,7 @@ void enter(dt_view_t *self)
   dev->gui_module = NULL;
   dt_dev_load_image(dev, dev->image);
 
-  // adjust gui:
+  /*  // adjust gui:
   GtkWidget *widget;
   gtk_widget_set_visible (darktable.gui->
                           widgets.modulegroups_eventbox, TRUE);
@@ -684,6 +688,7 @@ void enter(dt_view_t *self)
   gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, TRUE);
+  */
 
   // get top level vbox containing all expanders, plugins_vbox:
   GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
@@ -725,13 +730,6 @@ void enter(dt_view_t *self)
     }
     modules = g_list_previous(modules);
   }
-  // end marker widget:
-  GtkWidget *endmarker = gtk_drawing_area_new();
-
-  gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
-  g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                    G_CALLBACK (dt_control_expose_endmarker), 0);
-  gtk_widget_set_size_request(endmarker, -1, 50);
 
   gtk_widget_show_all(GTK_WIDGET(box));
   gtk_widget_show_all(GTK_WIDGET(module_list));
@@ -851,7 +849,7 @@ void leave(dt_view_t *self)
     childs=g_list_next(childs);
   }
 
-  GtkWidget *widget;
+  /*  GtkWidget *widget;
   widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, FALSE);
   widget = darktable.gui->widgets.histogram_expander;
@@ -868,6 +866,7 @@ void leave(dt_view_t *self)
   gtk_widget_set_visible(widget, TRUE);
   widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, FALSE);
+  */
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // tag image as changed

@@ -52,7 +52,7 @@ name ()
 uint32_t
 views()
 {
-  return DT_LIGHTTABLE_VIEW | DT_LEFT_PANEL_VIEW;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_PANEL_LEFT | DT_VIEW_PANEL_PLUGINS;
 }
 
 int
