@@ -33,9 +33,12 @@ typedef enum dt_signal_t {
    */
   DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
 
-  /** \brief This signal fires when control redraw is queued.
+  /** \brief This signal is raised when control redraw is queued.
   */
   DT_SIGNAL_CONTROL_DRAW_ALL,
+
+  /** \brief This signal is raised when histogram data is updated */
+  DT_SIGNAL_HISTOGRAM_CHANGE,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
