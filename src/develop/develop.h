@@ -79,6 +79,15 @@ typedef struct dt_develop_t
   float *histogram, *histogram_pre;
   float histogram_max, histogram_pre_max;
   uint8_t gamma[0x100];
+
+  /* exposure plugin hooks, used by histogram dragging functions */
+  struct {
+    struct dt_iop_module_t *module;
+    void  (*set_white)(struct dt_iop_module_t *exp, const float white);
+    float (*get_white)(struct dt_iop_module_t *exp);
+    void  (*set_black)(struct dt_iop_module_t *exp, const float black);
+    float (*get_black)(struct dt_iop_module_t *exp);
+  } exposure;
 }
 dt_develop_t;
 
@@ -122,4 +131,20 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
 
+/* 
+ * exposure plugin hook, set the white level 
+ */
+
+/** check if exposure iop hooks are available */
+gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
+/** reset exposure to defaults */
+void dt_dev_exposure_reset_defaults(dt_develop_t *dev);
+/** set exposure white level */
+void dt_dev_exposure_set_white(dt_develop_t *dev, const float white);
+/** get exposure white level */
+float dt_dev_exposure_get_white(dt_develop_t *dev);
+/** set exposure black level */
+void dt_dev_exposure_set_black(dt_develop_t *dev, const float black);
+/** get exposure black level */
+float dt_dev_exposure_get_black(dt_develop_t *dev);
 #endif

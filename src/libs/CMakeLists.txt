@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
-set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation)
+set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram)
 
 add_library(import MODULE "import.c")
 add_library(export MODULE "export.c")
@@ -15,6 +15,7 @@ add_library(recentcollect MODULE "recentcollect.c")
 add_library(metadata MODULE "metadata.c")
 add_library(metadata_view MODULE "metadata_view.c")
 add_library(navigation MODULE "navigation.c")
+add_library(histogram MODULE "histogram.c")
 
 if(APRIL_FOOLS)
 	if(VTE_FOUND)
