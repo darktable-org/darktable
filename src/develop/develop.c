@@ -955,7 +955,6 @@ dt_dev_is_current_image (dt_develop_t *dev, int imgid)
   return (dev->image && dev->image->id==imgid)?1:0;
 }
 
-
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
 {
   /* check if exposure iop module has registered its hooks */
@@ -1004,7 +1003,5 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
 
   return 0.0;
 }
-
-
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

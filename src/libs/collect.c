@@ -108,7 +108,11 @@ static void _lib_collect_update_params(dt_lib_collect_t *d) {
 
     /* get string */
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
-    snprintf(p->rule[i].string,PARAM_STRING_SIZE,"%s", dt_conf_get_string(confname));
+    gchar* string = dt_conf_get_string(confname);
+    if (string != NULL) {
+      snprintf(p->rule[i].string,PARAM_STRING_SIZE,"%s", string);
+      g_free(string);
+    }
 
     fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
   }

@@ -130,6 +130,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
+void dt_dev_invalidate_from_gui (dt_develop_t *dev);
 
 /* 
  * exposure plugin hook, set the white level 

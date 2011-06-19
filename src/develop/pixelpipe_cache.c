@@ -75,14 +75,18 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
   uint64_t hash = 5381 + imgid;
   // go through all modules up to module and compute a weird hash using the operation and params.
   GList *pieces = pipe->nodes;
+  dt_develop_t *dev = darktable.develop;
   for(int k=0; k<module&&pieces; k++)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
-    hash = ((hash << 5) + hash) ^ piece->hash;
-    if(piece->module->request_color_pick)
+    if(!(dev->gui_module && (dev->gui_module->operation_tags_filter() &  piece->module->operation_tags())))
     {
-      const char *str = (const char *)piece->module->color_picker_box;
-      for(int i=0; i<sizeof(float)*4; i++) hash = ((hash << 5) + hash) ^ str[i];
+      hash = ((hash << 5) + hash) ^ piece->hash;
+      if(piece->module->request_color_pick)
+      {
+        const char *str = (const char *)piece->module->color_picker_box;
+        for(int i=0; i<sizeof(float)*4; i++) hash = ((hash << 5) + hash) ^ str[i];
+      }
     }
     pieces = g_list_next(pieces);
   }

@@ -51,6 +51,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+operation_tags ()
+{
+  return IOP_TAG_DISTORT;
+}
+
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -452,7 +458,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
-  module->priority = 275;
+  module->priority = 280;
 }
 
 void cleanup(dt_iop_module_t *module)
