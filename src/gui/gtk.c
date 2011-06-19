@@ -40,7 +40,7 @@
 #include "dtgtk/button.h"
 #include "gui/contrast.h"
 #include "gui/gtk.h"
-#include "gui/iop_history.h"
+
 #include "gui/iop_modulegroups.h"
 
 #include "gui/presets.h"
@@ -62,7 +62,6 @@ static void init_dt_label(GtkWidget *container);
 static void init_top(GtkWidget *container);
 
 static void init_left(GtkWidget *container);
-static void init_history_box(GtkWidget *container);
 static void init_snapshots(GtkWidget *container);
 static void init_left_scroll_window(GtkWidget *container);
 static void init_jobs_list(GtkWidget *container);
@@ -1034,9 +1033,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   dt_gui_presets_init();
 
-  // image op history
-  dt_gui_iop_history_init();
-
   /* initializes the module groups buttonbar control */
   dt_gui_iop_modulegroups_init ();
 
@@ -1455,45 +1451,6 @@ void init_left(GtkWidget *container)
 
 }
 
-void init_history_box(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the event box
-  widget = gtk_event_box_new();
-  darktable.gui->widgets.history_eventbox = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_set_no_show_all(widget, TRUE);
-
-  // Adding the expander
-  container = widget;
-
-  widget = gtk_expander_new(_("history"));
-  darktable.gui->widgets.history_expander = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
-  gtk_widget_show(widget);
-
-  // Adding the alignment
-  container = widget;
-
-  widget = gtk_alignment_new(.5, .5, 1, 1);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
-  gtk_widget_show(widget);
-
-  // Adding the history body
-  container = widget;
-
-  widget = gtk_vbox_new(FALSE, 0);
-  darktable.gui->widgets.history_expander_body = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK);
-  gtk_widget_show(widget);
-
-}
-
 void init_snapshots(GtkWidget *container)
 {
   GtkWidget *widget;
@@ -1598,9 +1555,6 @@ void init_left_scroll_window(GtkWidget *container)
 
   // Initializing the snapshots box
   init_snapshots(container);
-
-  // Initializing the history box
-  init_history_box(container);
 
 }
 

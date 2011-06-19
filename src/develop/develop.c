@@ -599,10 +599,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   if (dev && dev->image) dev->image->dirty = 1;
   if(dev->gui_attached)
   {
-    // if gui_attached pop all operations down to dev->history_end
-    dt_control_clear_history_items (dev->history_end-1);
-
-    // remove unused history items:
     GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
     {
@@ -644,12 +640,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
-      if(dev->gui_attached)
-      {
-        char label[512]; // print on/off
-        dt_dev_get_history_item_label(hist, label, 512);
-        dt_control_add_history_item(dev->history_end-1, label);
-      }
       dev->history = g_list_append(dev->history, hist);
       dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
@@ -703,22 +693,17 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
   if(dev->gui_attached)
   {
-    // update history (on) (off) annotation
-    // dt_control_clear_history_items(dev->history_end);
-            
     /* signal that history has changed */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 
     /* redraw */
     dt_control_queue_draw_all();
-    
   }
 }
 
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dt_dev_pop_history_items(dev, 0);
-  dt_control_clear_history_items(dev->history_end-1);
   // remove unused history items:
   GList *history = g_list_nth(dev->history, dev->history_end);
   while(history)
@@ -808,7 +793,6 @@ void dt_dev_write_history(dt_develop_t *dev)
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  if(dev->gui_attached) dt_control_clear_history_items(-1);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
@@ -876,12 +860,6 @@ void dt_dev_read_history(dt_develop_t *dev)
     dev->history = g_list_append(dev->history, hist);
     dev->history_end ++;
 
-    if(dev->gui_attached)
-    {
-      char label[256];
-      dt_dev_get_history_item_label(hist, label, 256);
-      dt_control_add_history_item(dev->history_end-1, label);
-    }
   }
 
   if(dev->gui_attached)

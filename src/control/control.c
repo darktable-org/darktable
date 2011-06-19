@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika, henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1187,10 +1187,6 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   widget = darktable.gui->widgets.snapshots_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
-  bit = dt_conf_get_int("ui_last/expander_history");
-  widget = darktable.gui->widgets.history_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
 }
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
@@ -1227,12 +1223,6 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_snapshots", bit);
-
-  bit = dt_conf_get_int("ui_last/expander_history");
-  widget = darktable.gui->widgets.history_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_history", bit);
 
 }
 
@@ -1346,29 +1336,5 @@ int dt_control_key_released(uint16_t which)
   gtk_widget_queue_draw(widget);
   return 1;
 }
-#include "gui/iop_history.h"
-void dt_control_add_history_item(int32_t num_in, const char *label)
-{
-  dt_gui_iop_history_add_item(num_in,label);
-}
 
-void dt_control_clear_history_items(int32_t num)
-{
-  darktable.gui->reset = 1;
-  if( num == -1 )
-  {
-    /* reset if empty stack */
-    dt_gui_iop_history_reset();
-  }
-  else
-  {
-    /* pop items from top of history */
-    int size = dt_gui_iop_history_get_top () - MAX(0, num);
-    for(int k=1; k<size; k++)
-      dt_gui_iop_history_pop_top ();
-
-    dt_gui_iop_history_update_labels ();
-  }
-  darktable.gui->reset = 0;
-}
 
