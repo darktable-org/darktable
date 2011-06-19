@@ -458,7 +458,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
-  module->priority = 280;
+  module->priority = 292;
 }
 
 void cleanup(dt_iop_module_t *module)
