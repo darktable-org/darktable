@@ -730,12 +730,16 @@ post_process_collect_info:
       for(int k=19; k<4*64; k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       
-      /* singal that histogram has changed */
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_HISTOGRAM_CHANGE);
+      /* raise histogram has changed signal */
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTOGRAM_CHANGE);
 
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
-  }
+  } 
+  
+  /* raise preview pipe finished signal */
+  if(dev->gui_attached && pipe == dev->preview_pipe)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
 
   return 0;
 }
