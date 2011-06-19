@@ -32,10 +32,14 @@ nlmeans (read_only image2d_t in, write_only image2d_t out, const int P, const in
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const float4 norm2 = (float4)(nL*nL, nC*nC, nC*nC, 1.0f);
+  const float4 norm2 = (float4)(nL, nC, nC, 1.0f);
 
 #if 0
-  // TODO: shared mem += and update write image!
+  // this is 20s (compared to 29s brute force below) but still unusable:
+  // load a block of shared memory, initialize to zero
+  local float4 block[32*32];//get_local_size(0)*get_local_size(1)];
+  block[get_local_id(0)  + get_local_id(1) * get_local_size(0)] = (float4)0.0f;
+  barrier(CLK_LOCAL_MEM_FENCE);
 
   // coalesced mem accesses:
   const float4 p1  = read_imagef(in, sampleri, (int2)(x, y));
@@ -53,12 +57,27 @@ nlmeans (read_only image2d_t in, write_only image2d_t out, const int P, const in
         for(int pi=-P;pi<=P;pi++)
         {
           float4 p2 = read_imagef(in, sampleri, (int2)(x+pi+ki, y+pj+kj));
-          // TODO: update shm
+          p2.w = dist;
+          const int i = get_local_id(0) + pi, j = get_local_id(1) + pj;
+          if(i >= 0 && i < get_local_size(0) && j >= 0 && j < get_local_size(1))
+          {
+            // TODO: for non-linear gh(), this produces results different than the CPU
+            block[i + get_local_size(0) * j].x += gh(p2.x);
+            block[i + get_local_size(0) * j].y += gh(p2.y);
+            block[i + get_local_size(0) * j].z += gh(p2.z);
+            block[i + get_local_size(0) * j].w += gh(p2.w);
+          }
         }
       }
     }
   }
-  // TODO: write back normalized shm
+  // write back normalized shm
+  barrier(CLK_LOCAL_MEM_FENCE);
+  const float4 tmp = block[get_local_id(0)  + get_local_id(1) * get_local_size(0)];
+  tmp.x *= 1.0f/tmp.w;
+  tmp.y *= 1.0f/tmp.w;
+  tmp.z *= 1.0f/tmp.w;
+  write_imagef (out, (int2)(x, y), tmp);
 #endif
 
 
