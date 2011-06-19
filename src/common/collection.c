@@ -28,6 +28,7 @@
 #include "common/debug.h"
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/image.h"
 
 #define SELECT_QUERY "select distinct * from %s"
 #define ORDER_BY_QUERY "order by %s"

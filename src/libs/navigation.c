@@ -21,6 +21,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/image_cache.h"
+#include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
 

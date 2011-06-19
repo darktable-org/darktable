@@ -391,9 +391,6 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  darktable.gui->histogram.exposure  = NULL;
-  darktable.gui->histogram.set_white = NULL;
-  darktable.gui->histogram.get_white = NULL;
   free(self->gui_data);
   self->gui_data = NULL;
 }

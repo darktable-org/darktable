@@ -68,7 +68,6 @@ static void init_left_scroll_window(GtkWidget *container);
 static void init_jobs_list(GtkWidget *container);
 
 static void init_right(GtkWidget *container);
-static void init_histogram(GtkWidget *container);
 static void init_module_groups(GtkWidget *container);
 static void init_plugins(GtkWidget *container);
 static void init_module_list(GtkWidget *container);
@@ -1033,10 +1032,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect (G_OBJECT (widget), "button-press-event", G_CALLBACK (borders_button_pressed), (gpointer)3);
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
 
-  widget = darktable.gui->widgets.histogram;
-  gtk_widget_set_size_request(widget, -1, panel_width*.5);
-  dt_gui_histogram_init(&gui->histogram, widget);
-
   dt_gui_presets_init();
 
   // image op history
@@ -1111,7 +1106,6 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 {
   g_free(darktable.control->xprofile_data);
   darktable.control->xprofile_size = 0;
-  dt_gui_histogram_cleanup(&gui->histogram);
 }
 
 void dt_gui_gtk_run(dt_gui_gtk_t *gui)
@@ -1655,46 +1649,10 @@ void init_right(GtkWidget *container)
   // Initializing each section of the right side
   container = widget;
 
-  init_histogram(container);
   init_module_groups(container);
   init_plugins(container);
   init_module_list(container);
 
-}
-
-void init_histogram(GtkWidget *container)
-{
-  GtkWidget* widget;
-
-  // Creating the outer event box
-  widget = gtk_event_box_new();
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_show(widget);
-
-  // Creating the expander
-  container = widget;
-
-  widget = gtk_expander_new(_("histogram"));
-  darktable.gui->widgets.histogram_expander = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_no_show_all(widget, TRUE);
-  gtk_widget_set_can_focus(widget, TRUE);
-
-  // Creating the histogram surface
-  container = widget;
-
-  widget = gtk_drawing_area_new();
-  darktable.gui->widgets.histogram = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_events(widget,
-                        GDK_EXPOSURE_MASK
-                        | GDK_POINTER_MOTION_MASK
-                        | GDK_POINTER_MOTION_HINT_MASK
-                        | GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK
-                        | GDK_LEAVE_NOTIFY_MASK
-                        | GDK_STRUCTURE_MASK);
-  gtk_widget_show(widget);
 }
 
 void init_module_groups(GtkWidget *container)

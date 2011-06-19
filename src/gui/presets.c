@@ -21,6 +21,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "develop/develop.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
 

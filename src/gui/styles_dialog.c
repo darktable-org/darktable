@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/styles.h"
 #include "common/history.h"
+#include "develop/imageop.h"
 #include "control/control.h"
 #include "gui/styles.h"
 #include "gui/gtk.h"

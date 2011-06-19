@@ -48,7 +48,6 @@ FILE(GLOB SOURCE_FILES
   "gui/background_jobs.c"  
   "gui/contrast.c"  
   "gui/gtk.c"  
-  "gui/histogram.c"  
   "gui/iop_history.c"  
   "gui/iop_modulegroups.c"  
   "gui/preferences.c"  
