@@ -704,8 +704,14 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   if(dev->gui_attached)
   {
     // update history (on) (off) annotation
-    dt_control_clear_history_items(dev->history_end);
+    // dt_control_clear_history_items(dev->history_end);
+            
+    /* signal that history has changed */
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+
+    /* redraw */
     dt_control_queue_draw_all();
+    
   }
 }
 
@@ -877,11 +883,15 @@ void dt_dev_read_history(dt_develop_t *dev)
       dt_control_add_history_item(dev->history_end-1, label);
     }
   }
+
   if(dev->gui_attached)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
     dt_dev_invalidate_all(dev);
+
+    /* signal history changed */
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   sqlite3_finalize (stmt);
 }
