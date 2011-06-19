@@ -973,4 +973,53 @@ dt_dev_invalidate_from_gui (dt_develop_t *dev)
   dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
 }
 
+gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
+{
+  /* check if exposure iop module has registered its hooks */
+  if( dev->exposure.module && 
+      dev->exposure.set_black && dev->exposure.get_black &&
+      dev->exposure.set_white && dev->exposure.get_white)
+    return TRUE;
+
+  return FALSE;
+}
+
+void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
+{
+  if (dev->exposure.module)
+    dev->exposure.module->reload_defaults(dev->exposure.module);
+
+  /*memcpy(d->exposure->params, d->exposure->default_params, d->exposure->params_size);
+    d->exposure->gui_update(d->exposure);
+    dt_dev_add_history_item(d->exposure->dev, d->exposure, TRUE);*/
+}
+
+void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
+{
+   if (dev->exposure.module && dev->exposure.set_white)
+     dev->exposure.set_white(dev->exposure.module, white);
+}
+
+float dt_dev_exposure_get_white(dt_develop_t *dev)
+{
+  if (dev->exposure.module && dev->exposure.set_white)
+     return dev->exposure.get_white(dev->exposure.module);
+
+  return 0.0;
+}
+
+void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
+{
+  if (dev->exposure.module && dev->exposure.set_black)
+     dev->exposure.set_black(dev->exposure.module, black);
+}
+
+float dt_dev_exposure_get_black(dt_develop_t *dev)
+{
+  if (dev->exposure.module && dev->exposure.set_black)
+     return dev->exposure.get_black(dev->exposure.module);
+
+  return 0.0;
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

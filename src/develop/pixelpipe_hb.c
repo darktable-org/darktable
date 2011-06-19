@@ -19,6 +19,7 @@
 #include "develop/blend.h"
 #include "gui/gtk.h"
 #include "control/control.h"
+#include "control/signal.h"
 #include "common/opencl.h"
 
 #include <assert.h>
@@ -728,7 +729,10 @@ post_process_collect_info:
       // don't count <= 0 pixels
       for(int k=19; k<4*64; k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      dt_control_queue_draw(darktable.gui->widgets.histogram);
+      
+      /* singal that histogram has changed */
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_HISTOGRAM_CHANGE);
+
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
