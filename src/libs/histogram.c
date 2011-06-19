@@ -109,8 +109,8 @@ void gui_init(dt_lib_module_t *self)
   int panel_width = dt_conf_get_int("panel_width");
   gtk_widget_set_size_request(self->widget, -1, panel_width*.5);
 
-  /* connect to histogram change signal */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_HISTOGRAM_CHANGE, G_CALLBACK(_lib_histogram_change_callback), self);
+  /* connect to preview pipe finished  signal */
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, G_CALLBACK(_lib_histogram_change_callback), self);
  
  
 }
