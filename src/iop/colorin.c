@@ -26,11 +26,11 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
-#include "libraw/libraw.h"
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
 #include "common/opencl.h"
 #include "dtgtk/resetlabel.h"
+#include "external/adobe_coeff.c"
 
 DT_MODULE(1)
 
@@ -272,10 +272,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-#error "gegl version needs some more care!"
-#else
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
   const int num_threads = dt_get_num_threads();
@@ -300,21 +296,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!strcmp(p->iccprofile, "cmatrix"))
   {
     // color matrix
-    int ret;
     dt_image_full_path(self->dev->image->id, filename, 1024);
-    libraw_data_t *raw = libraw_init(0);
-    ret = libraw_open_file(raw, filename);
-    if(!ret)
-    {
-      float cmat[3][4];
-      for(int k=0; k<4; k++) for(int i=0; i<3; i++)
-        {
-          // d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
-          cmat[i][k] = raw->color.rgb_cam[i][k];
-        }
-      d->input = dt_colorspaces_create_cmatrix_profile(cmat);
-    }
-    libraw_close(raw);
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+    float cam_xyz[12];
+    dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+    d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
   else if(!strcmp(p->iccprofile, "sRGB"))
   {
@@ -379,7 +366,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
