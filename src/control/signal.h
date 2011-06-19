@@ -37,9 +37,6 @@ typedef enum dt_signal_t {
   */
   DT_SIGNAL_CONTROL_DRAW_ALL,
 
-  /** \brief This signal is raised when histogram data is updated */
-  DT_SIGNAL_DEVELOP_HISTOGRAM_CHANGE,
-
   /** \brief This signal is raised when develop preview pipe process is finished */
   DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
 
