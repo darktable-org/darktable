@@ -40,6 +40,9 @@ typedef enum dt_signal_t {
   /** \brief This signal is raised when develop preview pipe process is finished */
   DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
 
+  /** \brief This signal is raised when develop history is changed */
+  DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
