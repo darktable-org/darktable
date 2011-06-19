@@ -117,6 +117,9 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  /* disconnect from signal */
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_histogram_change_callback), self);
+
   g_free(self->data);
   self->data = NULL;
 }
