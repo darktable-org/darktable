@@ -110,14 +110,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, -1, panel_width*.5);
 
   /* connect to histogram change signal */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_HISTOGRAM_CHANGE, G_CALLBACK(_lib_histogram_change_callback), self);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_HISTOGRAM_CHANGE, G_CALLBACK(_lib_histogram_change_callback), self);
  
  
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  /* disconnect from signal */
+  /* disconnect callback from  signal */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_histogram_change_callback), self);
 
   g_free(self->data);
