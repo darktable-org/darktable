@@ -145,5 +145,14 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const            f
   return 0;
 }
 
+static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel)
+{
+  cairo_move_to(cr, 0, 0);
+  for(int k=0; k<64; k++)
+    cairo_line_to(cr, k, hist[4*k+channel]);
+  cairo_line_to(cr, 63, 0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+}
 #endif
 

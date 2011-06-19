@@ -23,7 +23,6 @@
 #include <assert.h>
 #include <string.h>
 #include "iop/tonecurve.h"
-#include "gui/histogram.h"
 #include "gui/presets.h"
 #include "develop/develop.h"
 #include "control/control.h"
@@ -391,7 +390,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_save(cr);
     cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
     cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-    dt_gui_histogram_draw_8(cr, hist, 3);
+    dt_draw_histogram_8(cr, hist, 3);
     cairo_restore(cr);
   }
 

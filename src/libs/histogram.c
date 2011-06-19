@@ -21,6 +21,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/image_cache.h"
+#include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -45,8 +46,6 @@ static gboolean _lib_histogram_button_release_callback(GtkWidget *widget, GdkEve
 static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 static gboolean _lib_histogram_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
-
-static void _lib_histogram_draw_8(cairo_t *cr, float *hist, int32_t channel);
 
 const char* name()
 {
@@ -195,11 +194,11 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
     // cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     cairo_set_line_width(cr, 1.);
     cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
-    _lib_histogram_draw_8(cr, hist, 0);
+    dt_draw_histogram_8(cr, hist, 0);
     cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
-    _lib_histogram_draw_8(cr, hist, 1);
+    dt_draw_histogram_8(cr, hist, 1);
     cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-    _lib_histogram_draw_8(cr, hist, 2);
+    dt_draw_histogram_8(cr, hist, 2);
     cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
     cairo_restore(cr);
@@ -355,12 +354,3 @@ static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEvent
   return TRUE;
 }
 
-static void _lib_histogram_draw_8(cairo_t *cr, float *hist, int32_t channel)
-{
-  cairo_move_to(cr, 0, 0);
-  for(int k=0; k<64; k++)
-    cairo_line_to(cr, k, hist[4*k+channel]);
-  cairo_line_to(cr, 63, 0);
-  cairo_close_path(cr);
-  cairo_fill(cr);
-}

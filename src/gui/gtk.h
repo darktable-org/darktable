@@ -19,7 +19,6 @@
 #define DT_GUI_GTK_H
 
 #include <gtk/gtk.h>
-#include "gui/histogram.h"
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
@@ -48,7 +47,7 @@ dt_gui_snapshot_t;
 /* flat view of all our widgets. should be modularized
 
    metadata   - Fixed, availble in all views
-   histogram  -
+   histogram  - Fixed
    navigation - Fixed
 
 */
@@ -93,10 +92,6 @@ typedef struct dt_gui_widgets_t
 
   // Module groups box
   GtkWidget *modulegroups_eventbox;
-
-  // Histogram widgets
-  GtkWidget *histogram_expander;
-  GtkWidget *histogram;
 
   // Right side widgets
   GtkWidget *right;
@@ -145,8 +140,6 @@ typedef struct dt_gui_gtk_t
   GList *key_accels;
   GtkMenu *presets_popup_menu;
   
-  dt_gui_histogram_t histogram;
-
   int32_t num_snapshots, request_snapshot, selected_snapshot;
   dt_gui_snapshot_t snapshot[4];
   cairo_surface_t *snapshot_image;

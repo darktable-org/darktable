@@ -25,7 +25,6 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "iop/equalizer.h"
-#include "gui/histogram.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
