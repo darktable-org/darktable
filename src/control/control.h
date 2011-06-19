@@ -149,10 +149,6 @@ void dt_control_write_sidecar_files();
 void dt_control_delete_images();
 void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
 
-// called from core
-void dt_control_add_history_item(int32_t num, const char *label);
-void dt_control_clear_history_items(int32_t num);
-
 // could be both
 void dt_control_queue_draw_all();
 void dt_control_queue_draw(GtkWidget *widget);

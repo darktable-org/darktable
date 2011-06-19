@@ -114,11 +114,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *snapshots_expander;
   GtkWidget *snapshots_body;
 
-  // History box
-  GtkWidget *history_eventbox;
-  GtkWidget *history_expander;
-  GtkWidget *history_expander_body;
-
   // Top panel
   GtkWidget *top;
 
