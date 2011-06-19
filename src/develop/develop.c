@@ -1010,4 +1010,9 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return 0.0;
 }
 
+void dt_dev_invalidate_from_gui (dt_develop_t *dev)
+{
+  dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
