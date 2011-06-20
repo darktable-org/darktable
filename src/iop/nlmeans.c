@@ -98,6 +98,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
   float max_L = 100.0f, max_C = 256.0f;
   float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
+  nL *= nL; nC *= nC;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -362,7 +363,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_nlmeans_params_t));
   module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
   // about the first thing to do in Lab space:
-  module->priority = 310;
+  module->priority = 454;
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
   module->data = NULL;
@@ -376,7 +377,6 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-#if 1
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 5; // nlmeans.cl, from programs.conf
@@ -392,7 +392,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   free(module->data);
   module->data = NULL;
 }
-#endif
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

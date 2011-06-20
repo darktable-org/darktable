@@ -81,7 +81,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 int
@@ -351,7 +351,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_highpass_params_t));
   module->default_params = malloc(sizeof(dt_iop_highpass_params_t));
   module->default_enabled = 0;
-  module->priority = 880;
+  module->priority = 704;
   module->params_size = sizeof(dt_iop_highpass_params_t);
   module->gui_data = NULL;
   dt_iop_highpass_params_t tmp = (dt_iop_highpass_params_t)

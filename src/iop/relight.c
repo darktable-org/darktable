@@ -35,7 +35,6 @@
 #include "dtgtk/gradientslider.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "LibRaw/libraw/libraw.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -242,7 +241,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_enabled = 0;
-  module->priority = 720;
+  module->priority = 613;
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t)

@@ -1894,6 +1894,7 @@ void init_history_box(GtkWidget *container)
   // Adding the event box
   widget = gtk_event_box_new();
   darktable.gui->widgets.history_eventbox = widget;
+  gtk_widget_set_name(widget, "history_eventbox");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
   gtk_widget_set_no_show_all(widget, TRUE);
 

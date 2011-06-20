@@ -478,6 +478,7 @@ int32_t dt_image_cache_bsearch(const int32_t id)
 
 int dt_image_cache_compare_id(const int16_t *l1, const int16_t *l2)
 {
+  // FIXME: this takes a very long time (says perf)
   return darktable.image_cache->line[*l1].image.id - darktable.image_cache->line[*l2].image.id;
 }
 

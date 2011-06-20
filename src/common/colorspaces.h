@@ -41,6 +41,12 @@ cmsHPROFILE dt_colorspaces_create_xyz_profile(void);
 /** create a profile from a color matrix from dcraw. */
 cmsHPROFILE dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4]);
 
+/** create a profile from a camera->xyz matrix. */
+cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float cam_xyz[3][3]);
+
+/** create a profile from a xyz->camera matrix. */
+cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float cam_xyz[3][3]);
+
 /** create a ICC virtual profile from the shipped presets in darktable. */
 cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel);
 
