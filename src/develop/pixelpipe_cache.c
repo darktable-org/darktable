@@ -75,10 +75,10 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
   uint64_t hash = 5381 + imgid;
   // go through all modules up to module and compute a weird hash using the operation and params.
   GList *pieces = pipe->nodes;
-  dt_develop_t *dev = darktable.develop;
   for(int k=0; k<module&&pieces; k++)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
+    dt_develop_t *dev = piece->module->dev;
     if(!(dev->gui_module && (dev->gui_module->operation_tags_filter() &  piece->module->operation_tags())))
     {
       hash = ((hash << 5) + hash) ^ piece->hash;
