@@ -254,7 +254,7 @@ extern "C"
     module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_enabled = 1;
-    module->priority = 250;
+  module->priority = 159;
     module->params_size = sizeof(dt_iop_tonemapping_params_t);
     module->gui_data = NULL;
   }

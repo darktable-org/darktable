@@ -195,11 +195,11 @@ def add_edges(gr):
   gr.add_edge(('splittoning', 'channelmixer'))
   
   # want to change exposure/basecurve after tone mapping
-  gr.add_edge(('exposure', 'tonemapping'))
-  gr.add_edge(('basecurve', 'tonemapping'))
+  gr.add_edge(('exposure', 'tonemap'))
+  gr.add_edge(('basecurve', 'tonemap'))
   # need demosaiced data, but not Lab:
-  gr.add_edge(('tonemapping', 'demosaic'))
-  gr.add_edge(('colorin', 'tonemapping'))
+  gr.add_edge(('tonemap', 'demosaic'))
+  gr.add_edge(('colorin', 'tonemap'))
   
   # want to fine-tune stuff after injection of color transfer:
   gr.add_edge(('atrous', 'colortransfer'))
@@ -214,13 +214,19 @@ def add_edges(gr):
   gr.add_edge(('lowlight', 'colortransfer'))
   gr.add_edge(('bloom', 'colortransfer'))
 
+  # deprecated:
+  gr.add_edge(('colorout', 'bilateral'))
+  gr.add_edge(('bilateral', 'colorin'))
+  gr.add_edge(('colorout', 'equalizer'))
+  gr.add_edge(('equalizer', 'colorin'))
+
 
 gr = digraph()
 gr.add_nodes([
 'anlfyeni',
 'atrous',
 'basecurve',
-# 'bilateral', # deprecated
+'bilateral', # deprecated
 'bloom',
 'borders',
 'cacorrect',
@@ -233,7 +239,7 @@ gr.add_nodes([
 'colortransfer',
 'colorzones',
 'demosaic',
-# 'equalizer', # deprecated
+'equalizer', # deprecated
 'exposure',
 'gamma',
 'graduatednd',
@@ -256,7 +262,7 @@ gr.add_nodes([
 'stuckpixels',
 'temperature',
 'tonecurve',
-'tonemapping',
+'tonemap',
 'velvia',
 'vignette',
 'watermark',
@@ -285,7 +291,7 @@ for n in sorted_nodes:
   if not os.path.isfile(filename):
     continue
   replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;)", "  module->priority = %d;"%priority)
-  priority -= 1000.0/(length-2)
+  priority -= 1000.0/(length-1)
 
 # beauty-print the sorted pipe as pdf:
 gr2 = digraph()

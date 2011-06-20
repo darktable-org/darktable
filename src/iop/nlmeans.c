@@ -363,7 +363,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_nlmeans_params_t));
   module->default_params = malloc(sizeof(dt_iop_nlmeans_params_t));
   // about the first thing to do in Lab space:
-  module->priority = 439;
+  module->priority = 454;
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
   module->data = NULL;

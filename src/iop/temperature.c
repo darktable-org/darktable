@@ -363,7 +363,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 24;
+  module->priority = 22;
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
