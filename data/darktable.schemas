@@ -83,7 +83,7 @@
       <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>30000</default>
+      <default>500</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>small thumbnails to keep in main memory cache</short>
