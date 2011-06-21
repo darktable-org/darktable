@@ -107,7 +107,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, -1, panel_width*.5);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_CONTROL_DRAW_ALL, G_CALLBACK(_lib_navigation_control_draw_all_callback), self);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL, G_CALLBACK(_lib_navigation_control_draw_all_callback), self);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, G_CALLBACK(_lib_navigation_control_draw_all_callback), self);
 }
 

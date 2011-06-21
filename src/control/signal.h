@@ -35,8 +35,8 @@ typedef enum dt_signal_t {
 
   /** \brief This signal is raised when control redraw is queued.
   */
-  DT_SIGNAL_CONTROL_DRAW_ALL,
-
+  DT_SIGNAL_CONTROL_REDRAW_ALL,
+  
   /** \brief This signal is raised when develop preview pipe process is finished */
   DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
 

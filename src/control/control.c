@@ -1099,47 +1099,32 @@ void dt_control_log_busy_leave()
   dt_control_queue_draw_all();
 }
 
+// deprecate this function.
 void dt_control_gui_queue_draw()
 {
-  // double time = dt_get_wtime();
-  // if(time - darktable.control->last_expose_time < 0.1f) return;
+  /* raise the redraw center signal */
   if(dt_control_running())
-  {
-    GtkWidget *widget = darktable.gui->widgets.center;
-    gtk_widget_queue_draw(widget);
-    // darktable.control->last_expose_time = time;
-  }
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
 }
 
 void dt_control_queue_draw_all()
 {
-  // double time = dt_get_wtime();
-  // if(time - darktable.control->last_expose_time < 0.1f) return;
-  if(dt_control_running())
-  {
+  /* raise the redraw all signal */
+  if (dt_control_running()) {
     int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
     if(needlock) gdk_threads_enter();
-    GtkWidget *widget = darktable.gui->widgets.center;
-    gtk_widget_queue_draw(widget);
-    // darktable.control->last_expose_time = time;
-
-    /* raise the redraw all signal */
-    dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_DRAW_ALL);
-
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
     if(needlock) gdk_threads_leave();
-
   }
 }
 
+/* thread safe helper function for widget redraw on the gtk thread */
 void dt_control_queue_draw(GtkWidget *widget)
 {
-  // double time = dt_get_wtime();
-  // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
   {
     if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
     gtk_widget_queue_draw(widget);
-    // darktable.control->last_expose_time = time;
     if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
   }
 }
@@ -1183,10 +1168,6 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
-  bit = dt_conf_get_int("ui_last/expander_snapshots");
-  widget = darktable.gui->widgets.snapshots_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
 }
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
@@ -1217,12 +1198,6 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_top", bit);
-
-  bit = dt_conf_get_int("ui_last/expander_snapshots");
-  widget = darktable.gui->widgets.snapshots_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_snapshots", bit);
 
 }
 

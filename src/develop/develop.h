@@ -71,6 +71,7 @@ typedef struct dt_develop_t
   dt_pthread_mutex_t history_mutex;
   int32_t history_end;
   GList *history;
+
   // operations pipeline
   int32_t iop_instance;
   GList *iop;
@@ -80,14 +81,33 @@ typedef struct dt_develop_t
   float histogram_max, histogram_pre_max;
   uint8_t gamma[0x100];
 
-  /* exposure plugin hooks, used by histogram dragging functions */
+  /* proxy for communication between plugins and develop/darkroom */
   struct {
-    struct dt_iop_module_t *module;
-    void  (*set_white)(struct dt_iop_module_t *exp, const float white);
-    float (*get_white)(struct dt_iop_module_t *exp);
-    void  (*set_black)(struct dt_iop_module_t *exp, const float black);
-    float (*get_black)(struct dt_iop_module_t *exp);
-  } exposure;
+
+    /* 
+     * exposure plugin hooks, used by histogram dragging functions 
+     */
+    struct {
+      struct dt_iop_module_t *module;
+      void  (*set_white)(struct dt_iop_module_t *exp, const float white);
+      float (*get_white)(struct dt_iop_module_t *exp);
+      void  (*set_black)(struct dt_iop_module_t *exp, const float black);
+      float (*get_black)(struct dt_iop_module_t *exp);
+    } exposure;
+
+    /* 
+     * snapshots plugin hooks 
+     */
+    struct {
+      /* this flag is set by snapshot plugin to signal that expose of darkroom
+	 should store cairo surface as snapshot to disk using filename.
+      */
+      gboolean request;
+      const gchar *filename;
+    } snapshot;
+
+  } proxy;
+
 }
 dt_develop_t;
 
@@ -148,4 +168,8 @@ float dt_dev_exposure_get_white(dt_develop_t *dev);
 void dt_dev_exposure_set_black(dt_develop_t *dev, const float black);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
+
+/** request snapshot */
+void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
+
 #endif

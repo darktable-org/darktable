@@ -66,6 +66,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  memset(dev,0,sizeof(dt_develop_t));
   float downsampling = dt_conf_get_float ("preview_subsample");
   dev->preview_downsampling = downsampling <= 1.0 && downsampling >= 0.1 ? downsampling : .5;
   dev->gui_module = NULL;
@@ -964,9 +965,9 @@ dt_dev_invalidate_from_gui (dt_develop_t *dev)
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
 {
   /* check if exposure iop module has registered its hooks */
-  if( dev->exposure.module && 
-      dev->exposure.set_black && dev->exposure.get_black &&
-      dev->exposure.set_white && dev->exposure.get_white)
+  if( dev->proxy.exposure.module && 
+      dev->proxy.exposure.set_black && dev->proxy.exposure.get_black &&
+      dev->proxy.exposure.set_white && dev->proxy.exposure.get_white)
     return TRUE;
 
   return FALSE;
@@ -974,8 +975,8 @@ gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
 
 void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
 {
-  if (dev->exposure.module)
-    dev->exposure.module->reload_defaults(dev->exposure.module);
+  if (dev->proxy.exposure.module)
+    dev->proxy.exposure.module->reload_defaults(dev->proxy.exposure.module);
 
   /*memcpy(d->exposure->params, d->exposure->default_params, d->exposure->params_size);
     d->exposure->gui_update(d->exposure);
@@ -984,30 +985,37 @@ void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
 
 void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
 {
-   if (dev->exposure.module && dev->exposure.set_white)
-     dev->exposure.set_white(dev->exposure.module, white);
+   if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+     dev->proxy.exposure.set_white(dev->proxy.exposure.module, white);
 }
 
 float dt_dev_exposure_get_white(dt_develop_t *dev)
 {
-  if (dev->exposure.module && dev->exposure.set_white)
-     return dev->exposure.get_white(dev->exposure.module);
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+     return dev->proxy.exposure.get_white(dev->proxy.exposure.module);
 
   return 0.0;
 }
 
 void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
 {
-  if (dev->exposure.module && dev->exposure.set_black)
-     dev->exposure.set_black(dev->exposure.module, black);
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_black)
+     dev->proxy.exposure.set_black(dev->proxy.exposure.module, black);
 }
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
-  if (dev->exposure.module && dev->exposure.set_black)
-     return dev->exposure.get_black(dev->exposure.module);
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_black)
+     return dev->proxy.exposure.get_black(dev->proxy.exposure.module);
 
   return 0.0;
+}
+
+void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
+{
+  dev->proxy.snapshot.filename = filename;
+  dev->proxy.snapshot.request = TRUE;
+  dt_control_queue_draw_all();
 }
 
 void dt_dev_invalidate_from_gui (dt_develop_t *dev)
