@@ -343,8 +343,10 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     vm->film_strip.expose(&(vm->film_strip), cr, vm->film_strip.width, vm->film_strip.height, px, py);
     cairo_restore(cr);
   }
+
   if(v->expose)
   {
+    /* expose the view */
     cairo_rectangle(cr, 0, 0, v->width, v->height);
     cairo_clip(cr);
     cairo_new_path(cr);
@@ -355,6 +357,23 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
       py = -1.0;
     }
     v->expose(v, cr, v->width, v->height, px, py);
+  
+    /* expose plugins */
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+      
+      if (!plugin && !plugin->views)
+        fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
+	  
+      /* does this module belong to current view ?*/
+      if (plugin->gui_post_expose && plugin->views() & v->view(v) )
+	plugin->gui_post_expose(plugin,cr,v->width,v->height,px,py );
+
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    } 
   }
 }
 
