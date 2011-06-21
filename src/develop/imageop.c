@@ -460,17 +460,6 @@ void dt_iop_load_modules_so()
   darktable.iop = res;
 }
 
-static void show_module_callback(GtkAccelGroup *accel_group,
-                                 GObject *acceleratable,
-                                 guint keyval, GdkModifierType modifier,
-                                 gpointer data)
-
-{
-  dt_iop_module_t *module = (dt_iop_module_t*)data;
-  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
-  dt_iop_request_focus(module);
-}
-
 GList *dt_iop_load_modules(dt_develop_t *dev)
 {
   GList *res = NULL;
@@ -478,7 +467,6 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   dt_iop_module_so_t *module_so;
   dev->iop_instance = 0;
   GList *iop = darktable.iop;
-  char accelpath[256];
   while(iop)
   {
     module_so = (dt_iop_module_so_t *)iop->data;
@@ -498,15 +486,6 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     memcpy(module->factory_params, module->params, module->params_size);
     module->factory_enabled = module->default_enabled;
     dt_iop_reload_defaults(module);
-
-    // Connecting the (optional) module show accelerator
-    snprintf(accelpath, 256, "<Darktable>/imageops/%s/show",
-             (module->name)());
-    module->show_closure = g_cclosure_new(G_CALLBACK(show_module_callback),
-                                                     module, NULL);
-    dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                   accelpath, module->show_closure);
-
     iop = g_list_next(iop);
   }
 

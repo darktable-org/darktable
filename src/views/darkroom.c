@@ -749,8 +749,30 @@ static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
 }
 
 
+static void show_module_callback(GtkAccelGroup *accel_group,
+                                 GObject *acceleratable,
+                                 guint keyval, GdkModifierType modifier,
+                                 gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+
+  // Showing the module, if it isn't already visible
+  if(!dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))
+  {
+    dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), 1);
+    gtk_widget_queue_draw(module->showhide);
+  }
+
+  dt_gui_iop_modulegroups_switch(module->groups());
+  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
+  dt_iop_request_focus(module);
+}
+
 void enter(dt_view_t *self)
 {
+  char accelpath[256];
+
   // Attaching accelerator group
   gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
                              darktable.gui->accels_darkroom);
@@ -810,6 +832,14 @@ void enter(dt_view_t *self)
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
+      // Connecting the (optional) module show accelerator
+      snprintf(accelpath, 256, "<Darktable>/imageops/%s/show",
+               (module->name)());
+      module->show_closure = g_cclosure_new(G_CALLBACK(show_module_callback),
+                                                       module, NULL);
+      dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+                                     accelpath, module->show_closure);
+
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
       char filename[1024], datadir[1024];
       dt_get_datadir(datadir, 1024);
