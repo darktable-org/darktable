@@ -201,23 +201,20 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_set_source_surface(cri, image_surface, 0, 0);
     cairo_paint(cri);
   }
-
-  if(darktable.gui->request_snapshot)
+  
+  /* check if we should create a snapshot of view */
+  if(darktable.develop->proxy.snapshot.request)
   {
-    cairo_surface_write_to_png(image_surface, darktable.gui->snapshot[0].filename);
-    darktable.gui->request_snapshot = 0;
-  }
-  // and if a snapshot is currently selected, draw it on top!
-  if(darktable.gui->snapshot_image)
-  {
-    cairo_set_source_surface(cri, darktable.gui->snapshot_image, 0, 0);
-    cairo_rectangle(cri, 0, 0, width*.5f, height);
-    cairo_fill(cri);
-    cairo_set_source_rgb(cri, .7, .7, .7);
-    cairo_set_line_width(cri, 1.0);
-    cairo_move_to(cri, width*.5f, 0.0f);
-    cairo_line_to(cri, width*.5f, height);
-    cairo_stroke(cri);
+    /* reset the request */
+    darktable.develop->proxy.snapshot.request = FALSE;
+    
+    /* validation of snapshot filename */
+    g_assert(darktable.develop->proxy.snapshot.filename != NULL);
+    
+    /* Store current image surface to snapshot file. 
+       FIXME: add checks so that we dont make snapshots of preview pipe image surface.
+    */
+    cairo_surface_write_to_png(image_surface, darktable.develop->proxy.snapshot.filename);
   }
 
   // execute module callback hook.

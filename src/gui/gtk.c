@@ -48,6 +48,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
+#include "control/signal.h"
 #include "views/view.h"
 #include "tool_colorlabels.h"
 
@@ -62,7 +63,6 @@ static void init_dt_label(GtkWidget *container);
 static void init_top(GtkWidget *container);
 
 static void init_left(GtkWidget *container);
-static void init_snapshots(GtkWidget *container);
 static void init_left_scroll_window(GtkWidget *container);
 static void init_jobs_list(GtkWidget *container);
 
@@ -596,103 +596,6 @@ image_sort_changed (GtkComboBox *widget, gpointer user_data)
   update_query();
 }
 
-
-static void
-snapshot_add_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-
-  if (!darktable.develop->image) return;
-  char wdname[64], oldfilename[30];
-  GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
-  GtkWidget *sbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbody)), 0);
-
-  GtkWidget *wid = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbox)), 0);
-  gchar *label1 = g_strdup (gtk_button_get_label (GTK_BUTTON (wid)));
-  snprintf (oldfilename, 30, "%s", darktable.gui->snapshot[3].filename);
-  for (int k=1; k<4; k++)
-  {
-    wid = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbox)), k);
-    if (k<MIN (4,darktable.gui->num_snapshots+1)) gtk_widget_set_visible (wid, TRUE);
-    gchar *label2 = g_strdup(gtk_button_get_label (GTK_BUTTON (wid)));
-    gtk_button_set_label (GTK_BUTTON (wid), label1);
-    g_free (label1);
-    label1 = label2;
-    darktable.gui->snapshot[k] = darktable.gui->snapshot[k-1];
-  }
-
-  // rotate filenames, so we don't waste hd space
-  snprintf(darktable.gui->snapshot[0].filename, 30, "%s", oldfilename);
-  g_free(label1);
-
-  wid = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbox)), 0);
-  char *fname = darktable.develop->image->filename + strlen(darktable.develop->image->filename);
-  while(fname > darktable.develop->image->filename && *fname != '/') fname--;
-  snprintf(wdname, 64, "%s", fname);
-  fname = wdname + strlen(wdname);
-  while(fname > wdname && *fname != '.') fname --;
-  if(*fname != '.') fname = wdname + strlen(wdname);
-  if(wdname + 64 - fname > 4) sprintf(fname, "(%d)", darktable.develop->history_end);
-  // snprintf(wdname, 64, _("snapshot %d"), darktable.gui->num_snapshots+1);
-
-  gtk_button_set_label (GTK_BUTTON (wid), wdname);
-  gtk_widget_set_visible (wid, TRUE);
-
-  /* get zoom pos from develop */
-  dt_gui_snapshot_t *s = darktable.gui->snapshot + 0;
-  DT_CTL_GET_GLOBAL (s->zoom_y, dev_zoom_y);
-  DT_CTL_GET_GLOBAL (s->zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL (s->zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL (s->closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL (s->zoom_scale, dev_zoom_scale);
-
-  /* set take snap bit for darkroom */
-  darktable.gui->request_snapshot = 1;
-  darktable.gui->num_snapshots ++;
-  dt_control_gui_queue_draw ();
-
-}
-
-static void
-snapshot_toggled (GtkToggleButton *widget, long int which)
-{
-  if(!gtk_toggle_button_get_active(widget) && darktable.gui->selected_snapshot == which)
-  {
-    if(darktable.gui->snapshot_image)
-    {
-      cairo_surface_destroy(darktable.gui->snapshot_image);
-      darktable.gui->snapshot_image = NULL;
-      dt_control_gui_queue_draw();
-    }
-  }
-  else if(gtk_toggle_button_get_active(widget))
-  {
-    GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
-    GtkWidget *sbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (sbody)), 0);
-
-    for(int k=0; k<4; k++)
-    {
-      GtkWidget *w = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER(sbox)), k);
-      if(GTK_TOGGLE_BUTTON(w) != widget)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
-    }
-    if(darktable.gui->snapshot_image)
-    {
-      cairo_surface_destroy(darktable.gui->snapshot_image);
-      darktable.gui->snapshot_image = NULL;
-    }
-    darktable.gui->selected_snapshot = which;
-    dt_gui_snapshot_t *s = darktable.gui->snapshot + which;
-    DT_CTL_SET_GLOBAL(dev_zoom_y,     s->zoom_y);
-    DT_CTL_SET_GLOBAL(dev_zoom_x,     s->zoom_x);
-    DT_CTL_SET_GLOBAL(dev_zoom,       s->zoom);
-    DT_CTL_SET_GLOBAL(dev_closeup,    s->closeup);
-    DT_CTL_SET_GLOBAL(dev_zoom_scale, s->zoom_scale);
-    dt_dev_invalidate(darktable.develop);
-    darktable.gui->snapshot_image = cairo_image_surface_create_from_png(s->filename);
-    dt_control_gui_queue_draw();
-  }
-}
-
 void
 preferences_button_clicked (GtkWidget *widget, gpointer user_data)
 {
@@ -930,14 +833,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   GtkWidget *widget;
 
-  gui->num_snapshots = 0;
-  gui->request_snapshot = 0;
-  gui->selected_snapshot = 0;
-  gui->snapshot_image = NULL;
   gui->pixmap = NULL;
   gui->center_tooltip = 0;
-  memset(gui->snapshot, 0, sizeof(gui->snapshot));
-  for(int k=0; k<4; k++) snprintf(gui->snapshot[k].filename, 30, "/tmp/dt_snapshot_%d.png", k);
   gui->presets_popup_menu = NULL;
   if (!g_thread_supported ()) g_thread_init(NULL);
   gdk_threads_init();
@@ -1035,27 +932,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   /* initializes the module groups buttonbar control */
   dt_gui_iop_modulegroups_init ();
-
-  // snapshot management
-  GtkWidget *sbody = darktable.gui->widgets.snapshots_body;
-  GtkWidget *svbox = gtk_vbox_new (FALSE,0);
-  GtkWidget *sbutton = gtk_button_new_with_label (_("take snapshot"));
-  g_object_set (sbutton, "tooltip-text", _("take snapshot to compare with another image or the same image at another stage of development"), (char *)NULL);
-  gtk_box_pack_start (GTK_BOX (sbody),svbox,FALSE,FALSE,0);
-  gtk_box_pack_start (GTK_BOX (sbody),sbutton,FALSE,FALSE,0);
-  g_signal_connect(G_OBJECT(sbutton), "clicked", G_CALLBACK(snapshot_add_button_clicked), NULL);
-  gtk_widget_show_all(sbody);
-
-  for (long k=1; k<5; k++)
-  {
-    char wdname[20];
-    snprintf (wdname, 20, "snapshot_%ld_togglebutton", k);
-    GtkWidget *button = dtgtk_togglebutton_new_with_label (wdname,NULL,CPF_STYLE_FLAT);
-    gtk_box_pack_start (GTK_BOX (svbox),button,FALSE,FALSE,0);
-    g_signal_connect (G_OBJECT (button), "clicked",
-                      G_CALLBACK (snapshot_toggled),
-                      (gpointer)(k-1));
-  }
 
   // color picker
   for(int k = 0; k < 3; k++)
@@ -1451,47 +1327,6 @@ void init_left(GtkWidget *container)
 
 }
 
-void init_snapshots(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the event box
-  widget = gtk_event_box_new();
-  darktable.gui->widgets.snapshots_eventbox = widget;
-  gtk_widget_set_name(widget, "snapshots_eventbox");
-  gtk_widget_set_no_show_all(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_show(widget);
-
-  // Adding the expander
-  container = widget;
-
-  widget = gtk_expander_new(_("snapshots"));
-  darktable.gui->widgets.snapshots_expander = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_expander_set_spacing(GTK_EXPANDER(widget), 10);
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_widget_show(widget);
-
-  // Adding the alignment
-  container = widget;
-
-  widget = gtk_alignment_new(.5, .5, 1, 1);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 10, 5, 10);
-  gtk_widget_show(widget);
-
-  // Adding the snapshots body
-  container = widget;
-
-  widget = gtk_vbox_new(FALSE, 0);
-  darktable.gui->widgets.snapshots_body = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  gtk_widget_hide(darktable.gui->widgets.snapshots_eventbox);
-}
-
 void init_left_scroll_window(GtkWidget *container)
 {
   GtkWidget *widget;
@@ -1552,9 +1387,6 @@ void init_left_scroll_window(GtkWidget *container)
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
   gtk_widget_show(widget);
-
-  // Initializing the snapshots box
-  init_snapshots(container);
 
 }
 
@@ -1698,6 +1530,13 @@ void init_module_list(GtkWidget *container)
   gtk_widget_show(widget);
 }
 
+static void _gui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
+{
+  g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
+  gtk_widget_queue_draw(widget);
+}
+
+
 void init_center(GtkWidget *container)
 {
   GtkWidget* widget;
@@ -1706,6 +1545,10 @@ void init_center(GtkWidget *container)
   widget = gtk_drawing_area_new();
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   darktable.gui->widgets.center = widget;
+
+  /* connect widget into redraw signals */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL, G_CALLBACK(_gui_widget_redraw_callback), widget);
+  
 
   // Configuring the drawing area
   gtk_widget_set_size_request(widget, -1, 500);

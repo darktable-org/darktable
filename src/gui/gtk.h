@@ -36,14 +36,6 @@ typedef struct dt_gui_key_accel_t
 }
 dt_gui_key_accel_t;
 
-typedef struct dt_gui_snapshot_t
-{
-  float zoom_x, zoom_y, zoom_scale;
-  int32_t zoom, closeup;
-  char filename[30];
-}
-dt_gui_snapshot_t;
-
 /* flat view of all our widgets. should be modularized
 
    metadata   - Fixed, availble in all views
@@ -109,11 +101,6 @@ typedef struct dt_gui_widgets_t
   // Left side plugins
   GtkWidget *plugins_vbox_left;
 
-  // Snapshots window
-  GtkWidget *snapshots_eventbox;
-  GtkWidget *snapshots_expander;
-  GtkWidget *snapshots_body;
-
   // Top panel
   GtkWidget *top;
 
@@ -135,10 +122,6 @@ typedef struct dt_gui_gtk_t
   GList *key_accels;
   GtkMenu *presets_popup_menu;
   
-  int32_t num_snapshots, request_snapshot, selected_snapshot;
-  dt_gui_snapshot_t snapshot[4];
-  cairo_surface_t *snapshot_image;
-
   int32_t reset;
   float bgcolor[3];
 

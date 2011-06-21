@@ -335,11 +335,11 @@ void gui_init(struct dt_iop_module_t *self)
   /* register hooks with current dev so that  histogram 
      can interact with this module.
    */
-  darktable.develop->exposure.module = self;
-  darktable.develop->exposure.set_white = dt_iop_exposure_set_white;
-  darktable.develop->exposure.get_white = dt_iop_exposure_get_white;
-  darktable.develop->exposure.set_black = dt_iop_exposure_set_black;
-  darktable.develop->exposure.get_black = dt_iop_exposure_get_black;
+  darktable.develop->proxy.exposure.module = self;
+  darktable.develop->proxy.exposure.set_white = dt_iop_exposure_set_white;
+  darktable.develop->proxy.exposure.get_white = dt_iop_exposure_get_white;
+  darktable.develop->proxy.exposure.set_black = dt_iop_exposure_set_black;
+  darktable.develop->proxy.exposure.get_black = dt_iop_exposure_get_black;
 
   self->request_color_pick = 0;
 
