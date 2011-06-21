@@ -415,7 +415,29 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
   }
   else if(vm->film_strip_on && v->height + tb < y && vm->film_strip.mouse_moved)
     vm->film_strip.mouse_moved(&vm->film_strip, x, y - v->height - tb, which);
-  else if(v->mouse_moved) v->mouse_moved(v, x, y, which);
+  else
+  {
+    /* lets check if any plugins want to handle mouse move */
+    gboolean handled = FALSE;
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    
+      /* does this module belong to current view ?*/
+      if (plugin->mouse_moved && plugin->views() & v->view(v) )
+	if(plugin->mouse_moved(plugin, x, y, which))
+	  handled = TRUE;
+      
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    } 
+
+    /* if not handled by any plugin let pass to view handler*/
+    if(!handled && v->mouse_moved) 
+      v->mouse_moved(v, x, y, which);
+  }
+    
 
   int state = vm->film_strip_on && (v->height + tb > y) && (y > v->height);
   if(state && !oldstate)      dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
@@ -431,7 +453,29 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
   dt_control_change_cursor(GDK_LEFT_PTR);
   if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_released)
     return vm->film_strip.button_released(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, state);
-  else if(v->button_released) return v->button_released(v, x, y, which, state);
+  else
+  {
+    /* lets check if any plugins want to handle button press */
+    gboolean handled = FALSE;
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    
+      /* does this module belong to current view ?*/
+      if (plugin->button_released && plugin->views() & v->view(v) )
+	if(plugin->button_released(plugin, x, y, which,state))
+	  handled = TRUE;
+      
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    } 
+
+    /* if not handled by any plugin let pass to view handler*/
+    if(!handled && v->button_released) 
+      v->button_released(v, x, y, which,state);
+  } 
+
   return 0;
 }
 
@@ -447,7 +491,29 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   }
   else if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_pressed)
     return vm->film_strip.button_pressed(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, type, state);
-  else if(v->button_pressed) return v->button_pressed(v, x, y, which, type, state);
+  else
+  {
+    /* lets check if any plugins want to handle button press */
+    gboolean handled = FALSE;
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    
+      /* does this module belong to current view ?*/
+      if (plugin->button_pressed && plugin->views() & v->view(v) )
+	if(plugin->button_pressed(plugin, x, y, which,type,state))
+	  handled = TRUE;
+      
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    } 
+
+    /* if not handled by any plugin let pass to view handler*/
+    if(!handled && v->button_pressed) 
+      v->button_pressed(v, x, y, which,type,state);
+  }
+
   return 0;
 }
 
