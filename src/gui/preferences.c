@@ -44,6 +44,7 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
 static void delete_matching_accels(gpointer path, gpointer key_event);
 static gint _strcmp(gconstpointer a, gconstpointer b);
 static void import_export(GtkButton *button, gpointer data);
+static void restore_defaults(GtkButton *button, gpointer data);
 
 // Signal handlers
 static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
@@ -150,8 +151,17 @@ static void init_tab_accels(GtkWidget *book)
                                  GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
 
-  // Adding the import/export buttons
   hbox = gtk_hbox_new(FALSE, 5);
+
+  // Adding the restore defaults button
+  button = gtk_button_new_with_label(_("default"));
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(restore_defaults), NULL);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(update_accels_model), (gpointer)model);
+
+  // Adding the import/export buttons
 
   button = gtk_button_new_with_label(_("import"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
@@ -523,7 +533,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
 
     // Then update the text in the BINDING_COLUMN of each row
-    update_accels_model(model, NULL);
+    update_accels_model(NULL, model);
 
     // Finally clear the remap state
     darktable.gui->accel_remap_str = NULL;
@@ -633,6 +643,33 @@ static void import_export(GtkButton *button, gpointer data)
     }
     gtk_widget_destroy(chooser);
   }
+}
+
+static void restore_defaults(GtkButton *button, gpointer data)
+{
+  gchar dir[1024];
+  gchar path[1024];
+
+  GtkWidget *message = gtk_message_dialog_new(
+      NULL, GTK_DIALOG_MODAL,
+      GTK_MESSAGE_WARNING,
+      GTK_BUTTONS_OK_CANCEL,
+      _("Are you sure you want to restore the default keybindings?  This will "
+        "erase any modifications you have made."));
+  if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
+  {
+    // First load the default keybindings for immediate effect
+    dt_get_datadir(dir, 1024);
+    snprintf(path, 1024, "%s/keyboardrc", dir);
+    gtk_accel_map_load(path);
+
+    // Then delete any changes to the user's keyboardrc so it gets reset
+    // on next startup
+    dt_get_user_config_dir(dir, 1024);
+    snprintf(path, 1024, "%s/keyboardrc", dir);
+    g_file_delete(g_file_new_for_path(path), NULL, NULL);
+  }
+  gtk_widget_destroy(message);
 }
 
 #undef ACCEL_COLUMN
