@@ -204,7 +204,7 @@ gui_init (dt_lib_module_t *self)
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
   dt_accel_group_connect_by_path(
       darktable.gui->accels_lighttable,
-      "<Darktable>/modules/copy_history/copy",
+      "<Darktable>/modules/copy history/copy",
       g_cclosure_new(G_CALLBACK(key_accel_copy_callback),
                      (gpointer)self, NULL));
   g_object_set(G_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"), (char *)NULL);
@@ -227,7 +227,7 @@ gui_init (dt_lib_module_t *self)
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
   dt_accel_group_connect_by_path(
       darktable.gui->accels_lighttable,
-      "<Darktable>/modules/copy_history/paste",
+      "<Darktable>/modules/copy history/paste",
       g_cclosure_new(G_CALLBACK(key_accel_paste_callback),
                      (gpointer)self, NULL));
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), (char *)NULL);
@@ -272,8 +272,8 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels()
 {
-  gtk_accel_map_add_entry("<Darktable>/modules/copy_history/copy",
+  gtk_accel_map_add_entry("<Darktable>/modules/copy history/copy",
                           GDK_c, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/modules/copy_history/paste",
+  gtk_accel_map_add_entry("<Darktable>/modules/copy history/paste",
                           GDK_v, GDK_CONTROL_MASK);
 }

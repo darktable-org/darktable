@@ -782,7 +782,7 @@ void gui_init(struct dt_iop_module_t *self)
                                          (gpointer)self, NULL);
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
-      "<Darktable>/imageops/colorout/toggle_softproofing",
+      "<Darktable>/imageops/output color profile/toggle softproofing",
       g->softproof_callback);
 
 }
@@ -804,12 +804,12 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 void init_key_accels()
 {
-  gtk_accel_map_add_entry("<Darktable>/imageops/colorout/toggle_softproofing",
+  gtk_accel_map_add_entry("<Darktable>/imageops/output color profile/toggle_softproofing",
                           GDK_s, 0);
 
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
-      "<Darktable>/imageops/colorout/toggle_softproofing",
+      "<Darktable>/imageops/output color profile/toggle softproofing",
       NULL);
 }
 

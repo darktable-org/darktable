@@ -93,9 +93,9 @@ static void key_accel_changed(GtkAccelMap *object,
   // Updating all the stored accelerator keys/mods for key_pressed shortcuts
 
   // Filmstrip
-  gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll_forward",
+  gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll forward",
                              &darktable.gui->accels.filmstrip_forward);
-  gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll_back",
+  gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll back",
                              &darktable.gui->accels.filmstrip_back);
 
   // Lighttable
@@ -113,7 +113,7 @@ static void key_accel_changed(GtkAccelMap *object,
                              &darktable.gui->accels.lighttable_preview);
 
   // Global
-  gtk_accel_map_lookup_entry("<Darktable>/toggle_side_borders",
+  gtk_accel_map_lookup_entry("<Darktable>/toggle side borders",
                              &darktable.gui->accels.global_sideborders);
 
 }
@@ -1473,20 +1473,20 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                      (gpointer)0, NULL));
 
   // Side-border hide/show
-  gtk_accel_map_add_entry("<Darktable>/toggle_side_borders",
+  gtk_accel_map_add_entry("<Darktable>/toggle side borders",
                           GDK_Tab, 0);
 
   dt_accel_group_connect_by_path(darktable.gui->accels_global,
-                                 "<Darktable>/toggle_side_borders",
+                                 "<Darktable>/toggle side borders",
                                  NULL);
 
   // View-switch
-  gtk_accel_map_add_entry("<Darktable>/switch_view",
+  gtk_accel_map_add_entry("<Darktable>/switch view",
                           GDK_period, 0);
 
   dt_accel_group_connect_by_path(
       darktable.gui->accels_global,
-      "<Darktable>/switch_view",
+      "<Darktable>/switch view",
       g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
   darktable.gui->reset = 0;

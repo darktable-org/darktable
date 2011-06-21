@@ -194,15 +194,15 @@ void init(dt_view_t *self)
       g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                      (gpointer)4, NULL));
 
-  gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll_forward",
+  gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll forward",
                           GDK_Right, 0);
-  gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll_back",
+  gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll back",
                           GDK_Left, 0);
 
   dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/filmstrip/scroll_forward", NULL);
+                                 "<Darktable>/filmstrip/scroll forward", NULL);
   dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/filmstrip/scroll_back", NULL);
+                                 "<Darktable>/filmstrip/scroll back", NULL);
 }
 
 void cleanup(dt_view_t *self)

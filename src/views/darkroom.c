@@ -75,11 +75,11 @@ init(dt_view_t *self)
   dt_dev_init((dt_develop_t *)self->data, 1);
 
   // Film strip shortcuts
-  gtk_accel_map_add_entry("<Darktable>/darkroom/filmstrip/show_hide",
+  gtk_accel_map_add_entry("<Darktable>/darkroom/filmstrip/show hide",
                           GDK_f, GDK_CONTROL_MASK);
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
-      "<Darktable>/darkroom/filmstrip/show_hide",
+      "<Darktable>/darkroom/filmstrip/show hide",
       g_cclosure_new(G_CALLBACK(film_strip_key_accel),
                      (gpointer)self, NULL));
 
@@ -115,19 +115,19 @@ init(dt_view_t *self)
 
 
   // Shortcut to skip images
-  gtk_accel_map_add_entry("<Darktable>/darkroom/image_forward",
+  gtk_accel_map_add_entry("<Darktable>/darkroom/image forward",
                           GDK_space, 0);
-  gtk_accel_map_add_entry("<Darktable>/darkroom/image_back",
+  gtk_accel_map_add_entry("<Darktable>/darkroom/image back",
                           GDK_BackSpace, 0);
 
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
-      "<Darktable>/darkroom/image_forward",
+      "<Darktable>/darkroom/image forward",
       g_cclosure_new(G_CALLBACK(skip_f_key_accel_callback),
                      (gpointer)self->data, NULL));
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
-      "<Darktable>/darkroom/image_back",
+      "<Darktable>/darkroom/image back",
       g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback),
                      (gpointer)self->data, NULL));
 }

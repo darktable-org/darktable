@@ -134,12 +134,12 @@ void init(dt_view_t *self)
   lib->filenamepattern = dt_conf_get_string("plugins/capture/storage/namepattern");
 
   // Setup key accelerators in capture view...
-  gtk_accel_map_add_entry("<Darktable>/capture/film_strip_toggle",
+  gtk_accel_map_add_entry("<Darktable>/capture/toggle film strip",
                           GDK_f, GDK_CONTROL_MASK);
 
   dt_accel_group_connect_by_path(
       darktable.gui->accels_capture,
-      "<Darktable>/capture/film_strip_toggle",
+      "<Darktable>/capture/toggle film strip",
       g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL));
 }
 

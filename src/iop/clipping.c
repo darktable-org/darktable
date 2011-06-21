@@ -884,13 +884,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->undo_callback = g_cclosure_new(G_CALLBACK(key_undo_callback),
                                     (gpointer)self, NULL);
   dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/swap_aspect",
+                                 "<Darktable>/imageops/crop and rotate/swap aspect",
                                  g->swap_callback);
   dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/commit",
+                                 "<Darktable>/imageops/crop and rotate/commit",
                                  g->commit_callback);
   dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/undo",
+                                 "<Darktable>/imageops/crop and rotate/undo",
                                  g->undo_callback);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act >= 9) act = 0;
@@ -1552,22 +1552,22 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
 
 void init_key_accels()
 {
-  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/swap_aspect",
+  gtk_accel_map_add_entry("<Darktable>/imageops/crop and rotate/swap aspect",
                           GDK_x, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/commit",
+  gtk_accel_map_add_entry("<Darktable>/imageops/crop and rotate/commit",
                           GDK_Return, 0);
-  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/undo",
+  gtk_accel_map_add_entry("<Darktable>/imageops/crop and rotate/undo",
                           GDK_z, GDK_CONTROL_MASK);
 
   // Making sure these get into the accelerator lists as well
   dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/swap_aspect",
+                                 "<Darktable>/imageops/crop and rotate/swap aspect",
                                  NULL);
   dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/commit",
+                                 "<Darktable>/imageops/crop and rotate/commit",
                                  NULL);
   dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/undo",
+                                 "<Darktable>/imageops/crop and rotate/undo",
                                  NULL);
 }
 
