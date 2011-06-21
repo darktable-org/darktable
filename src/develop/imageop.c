@@ -453,7 +453,7 @@ void dt_iop_load_modules_so()
 
     // Adding the optional show accelerator to the table (blank)
     snprintf(accelpath, 256, "<Darktable>/imageops/%s/show",
-             (module->name)());
+             (module->op));
     gtk_accel_map_add_entry(accelpath, 0, 0);
   }
   g_dir_close(dir);
