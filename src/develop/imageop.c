@@ -540,6 +540,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     {
       memcpy(str+module->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
       memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
+      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     }
 
     // assume process_cl is ready, commit_params can overwrite this.
