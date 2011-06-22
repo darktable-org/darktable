@@ -61,6 +61,15 @@ static void go_up_key_accel_callback(GtkAccelGroup *accel_group,
 static void go_down_key_accel_callback(GtkAccelGroup *accel_group,
                                        GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer data);
+static void
+go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data);
+static void
+go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data);
+
 
 /**
  * this organises the whole library:
@@ -184,6 +193,11 @@ void init(dt_view_t *self)
                           GDK_g, GDK_CONTROL_MASK);
   gtk_accel_map_add_entry("<Darktable>/lighttable/go/down",
                           GDK_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/go/page up",
+                          GDK_Page_Up, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/go/page down",
+                          GDK_Page_Down, 0);
+
 
   dt_accel_group_connect_by_path(darktable.gui->accels_lighttable,
                                  "<Darktable>/lighttable/go/up",
@@ -194,6 +208,16 @@ void init(dt_view_t *self)
                                  "<Darktable>/lighttable/go/down",
                                  g_cclosure_new(
                                      G_CALLBACK(go_down_key_accel_callback),
+                                     (gpointer)self, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_lighttable,
+                                 "<Darktable>/lighttable/go/page up",
+                                 g_cclosure_new(
+                                     G_CALLBACK(go_pgup_key_accel_callback),
+                                     (gpointer)self, NULL));
+  dt_accel_group_connect_by_path(darktable.gui->accels_lighttable,
+                                 "<Darktable>/lighttable/go/page down",
+                                 g_cclosure_new(
+                                     G_CALLBACK(go_pgdown_key_accel_callback),
                                      (gpointer)self, NULL));
 
   gtk_accel_map_add_entry("<Darktable>/lighttable/color/red", GDK_F1, 0);
@@ -255,9 +279,6 @@ void init(dt_view_t *self)
                           GDK_z, 0);
   dt_accel_group_connect_by_path(darktable.gui->accels_lighttable,
                                  "<Darktable>/lighttable/preview", NULL);
-
-
-
 
 }
 
@@ -830,6 +851,36 @@ go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   lib->offset = 0x1fffffff;
   dt_control_queue_draw_all();
 }
+
+static void
+go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data)
+{
+  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  const int scroll_by_rows = 4; /* This should be the number of visible rows. */
+  const int offset_delta = scroll_by_rows * iir;
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->offset = MAX(lib->offset - offset_delta, 0);
+  dt_control_queue_draw_all();
+}
+
+static void
+go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data)
+{
+  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  const int scroll_by_rows = 4; /* This should be the number of visible rows. */
+  const int offset_delta = scroll_by_rows * iir;
+  int count = dt_collection_get_count (darktable.collection);
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->offset = MIN(lib->offset + offset_delta, count);
+  dt_control_queue_draw_all();
+}
+
 
 static void
 zoom_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
