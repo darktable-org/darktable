@@ -455,6 +455,8 @@ void dt_iop_load_modules_so()
     snprintf(accelpath, 256, "<Darktable>/imageops/%s/show",
              (module->op));
     gtk_accel_map_add_entry(accelpath, 0, 0);
+    dt_accel_group_connect_by_path(darktable.gui->accels_darkroom, accelpath,
+                                   NULL);
   }
   g_dir_close(dir);
   darktable.iop = res;

@@ -647,6 +647,9 @@ static void import_export(GtkButton *button, gpointer data)
 
 static void restore_defaults(GtkButton *button, gpointer data)
 {
+  GList *ops;
+  dt_iop_module_so_t *op;
+  gchar accelpath[256];
   gchar dir[1024];
   gchar path[1024];
 
@@ -662,6 +665,16 @@ static void restore_defaults(GtkButton *button, gpointer data)
     dt_get_datadir(dir, 1024);
     snprintf(path, 1024, "%s/keyboardrc", dir);
     gtk_accel_map_load(path);
+
+    // Now deleting any iop show shortcuts
+    ops = darktable.iop;
+    while(ops)
+    {
+      op = (dt_iop_module_so_t*)ops->data;
+      snprintf(accelpath, 256, "<Darktable>/imageops/%s/show", op->op);
+      gtk_accel_map_change_entry(accelpath, 0, 0, TRUE);
+      ops = g_list_next(ops);
+    }
 
     // Then delete any changes to the user's keyboardrc so it gets reset
     // on next startup
