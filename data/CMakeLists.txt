@@ -23,7 +23,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_B
 #
 # Add files that should go into shared
 #
-set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc keyboardrc)
+set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc)
 install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
 
 #

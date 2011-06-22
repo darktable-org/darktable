@@ -662,8 +662,8 @@ static void restore_defaults(GtkButton *button, gpointer data)
   if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
   {
     // First load the default keybindings for immediate effect
-    dt_get_datadir(dir, 1024);
-    snprintf(path, 1024, "%s/keyboardrc", dir);
+    dt_get_user_config_dir(dir, 1024);
+    snprintf(path, 1024, "%s/keyboardrc_default", dir);
     gtk_accel_map_load(path);
 
     // Now deleting any iop show shortcuts
