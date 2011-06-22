@@ -156,11 +156,10 @@ static void strip_semicolons_from_keymap(const char* path)
   // First ignoring the first three lines
   for(i = 0; i < 3; i++)
   {
+    c = fgetc(fin);
     while(c != '\n')
       c = fgetc(fin);
-    c = fgetc(fin);
   }
-  ungetc(c, fin);
 
   // Then ignore the first two characters of each line, copying the rest out
   while(c != EOF)
