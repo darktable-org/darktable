@@ -95,6 +95,17 @@ typedef struct dt_develop_t
       float (*get_black)(struct dt_iop_module_t *exp);
     } exposure;
 
+    /*
+     * modulegroups plugin hooks
+     */
+    struct {
+      struct dt_lib_module_t *module;
+      /* switch module group */
+      void (*set)(struct dt_lib_module_t *self, uint32_t group);
+      /* get current module group */
+      uint32_t (*get)(struct dt_lib_module_t *self);
+    } modulegroups;
+
     /* 
      * snapshots plugin hooks 
      */
@@ -168,6 +179,16 @@ float dt_dev_exposure_get_white(dt_develop_t *dev);
 void dt_dev_exposure_set_black(dt_develop_t *dev, const float black);
 /** get exposure black level */
 float dt_dev_exposure_get_black(dt_develop_t *dev);
+
+/*
+ * modulegroups plugin hooks
+ */
+/** check if modulegroups hooks are available */
+gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
+/** set the active modulegroup */
+void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
+/** get the active modulegroup */
+uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
 
 /** request snapshot */
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);

@@ -1005,6 +1005,29 @@ float dt_dev_exposure_get_black(dt_develop_t *dev)
   return 0.0;
 }
 
+gboolean dt_dev_modulegroups_available(dt_develop_t *dev) 
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->proxy.modulegroups.get)
+    return TRUE;
+
+  return FALSE;
+}
+
+void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set)
+    dev->proxy.modulegroups.set(dev->proxy.modulegroups.module, group);
+}
+
+uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.get)
+    return dev->proxy.modulegroups.get(dev->proxy.modulegroups.module);
+
+  return 0;
+}
+
+
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
 {
   dev->proxy.snapshot.filename = filename;
