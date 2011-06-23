@@ -131,6 +131,8 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   int width = widget->allocation.width, height = widget->allocation.height;
 
   dt_develop_t *dev = darktable.develop;
+  if(dev->preview_dirty) return TRUE;
+
 
   /* generate image into cairo surface*/
   
