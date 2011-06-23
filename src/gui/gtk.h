@@ -74,32 +74,8 @@ typedef struct dt_gui_widgets_t
   GtkWidget *bottom_border;
   GtkWidget *top_border;
 
-  // Module list widgets
-  GtkWidget *module_list_eventbox;
-  GtkWidget *module_list;
-
-  // Right scrolled window widgets
-  GtkWidget *right_scrolled_window;
-  GtkWidget *plugins_vbox;
-
-  // Module groups box
-  GtkWidget *modulegroups_eventbox;
-
-  // Right side widgets
-  GtkWidget *right;
-  GtkWidget *right_vbox;
-
   // Jobs list
   GtkWidget *jobs_content_box;
-
-  // Left side widgets
-  GtkWidget *left_scrolled_window;
-  GtkWidget *left_scrolled;
-  GtkWidget *left;
-  GtkWidget *left_vbox;
-
-  // Left side plugins
-  GtkWidget *plugins_vbox_left;
 
   // Top panel
   GtkWidget *top;
@@ -110,11 +86,20 @@ typedef struct dt_gui_widgets_t
 
   // Top-right label
   GtkWidget *view_label;
+
+  /* left panel */
+  GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and fille on center
+  GtkTable *panel_right;               
+
+
 }
 dt_gui_widgets_t;
 
 typedef struct dt_gui_gtk_t
 {
+
+  struct dt_ui_t *ui;
+
   dt_gui_widgets_t widgets;
 
   GdkPixmap *pixmap;
@@ -144,4 +129,73 @@ void dt_gui_key_accel_block_on_focus (GtkWidget *w);
 void dt_gui_key_accel_register(guint state, guint keyval, void (*callback)(void *), void *data);
 void dt_gui_key_accel_unregister(void (*callback)(void *));
 
+
+/*
+ * new ui api 
+ */
+
+
+typedef enum dt_ui_container_t
+{
+  /* the top container of left panel, the top container
+     disables the module expander and does not scroll with other modules 
+  */
+  DT_UI_CONTAINER_PANEL_LEFT_TOP,
+
+  /* the center container of left panel, the center container
+     contains the scrollable area that all plugins are placed within and last
+     widget is the end marker. 
+     This container will always expand|fill empty veritcal space
+  */
+  DT_UI_CONTAINER_PANEL_LEFT_CENTER,
+
+  /* the bottom container of left panel, this container works just like
+     the top container but will be attached to bottom in the panel, such as
+     plugins like background jobs module in lighttable and the plugin selection 
+     module in darkroom,
+  */
+  DT_UI_CONTAINER_PANEL_LEFT_BOTTOM,
+
+  DT_UI_CONTAINER_PANEL_RIGHT_TOP,
+  DT_UI_CONTAINER_PANEL_RIGHT_CENTER,
+  DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM,
+
+  /* Count of containers */
+  DT_UI_CONTAINER_SIZE
+} dt_ui_container_t;
+
+typedef enum dt_ui_panel_t
+{
+  DT_UI_PANEL_TOP,
+  DT_UI_PANEL_BOTTOM,
+  DT_UI_PANEL_LEFT,
+  DT_UI_PANEL_RIGHT,
+
+  DT_UI_PANEL_SIZE
+} dt_ui_panel_t;
+
+typedef enum dt_ui_border_t
+{
+  DT_UI_BORDER_TOP,
+  DT_UI_BORDER_BOTTOM,
+  DT_UI_BORDER_LEFT,
+  DT_UI_BORDER_RIGHT,
+
+  DT_UI_BORDER_SIZE
+} dt_ui_border_t;
+
+/** \brief initialize the ui context */
+struct dt_ui_t *dt_ui_initialize(int argc, char **argv);
+/** \brief destroys the context and frees resources */
+void dt_ui_destroy(struct dt_ui_t *ui);
+/** \brief add's a widget to a defined container */
+void dt_ui_container_add_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
+/** \brief gives a widget focus in the container */
+void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
+/** \brief removes all child widgets from container */
+void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c);
+/** \biref shows/hide a panel */
+void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show);
+/** \biref get visible state of panel */
+gboolean dt_ui_panel_visible(struct dt_ui_t *ui,const dt_ui_panel_t);
 #endif

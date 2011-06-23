@@ -1149,61 +1149,53 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
 
   bit = dt_conf_get_int("ui_last/panel_left");
-  widget = darktable.gui->widgets.left;
-  if(bit & (1<<mode)) gtk_widget_show(widget);
-  else gtk_widget_hide(widget);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (bit&(1<<mode)) ? TRUE : FALSE);
 
   bit = dt_conf_get_int("ui_last/panel_right");
-  widget = darktable.gui->widgets.right;
-  if(bit & (1<<mode)) gtk_widget_show(widget);
-  else gtk_widget_hide(widget);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (bit&(1<<mode)) ? TRUE : FALSE);
 
   bit = dt_conf_get_int("ui_last/panel_top");
-  widget = darktable.gui->widgets.top;
-  if(bit & (1<<mode)) gtk_widget_show(widget);
-  else gtk_widget_hide(widget);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
 
   bit = dt_conf_get_int("ui_last/panel_bottom");
-  widget = darktable.gui->widgets.bottom;
-  if(bit & (1<<mode)) gtk_widget_show(widget);
-  else gtk_widget_hide(widget);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, (bit&(1<<mode)) ? TRUE : FALSE);
 
 }
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 {
   int8_t bit;
-  GtkWidget *widget;
 
+  /* store left panel visible state */
   bit = dt_conf_get_int("ui_last/panel_left");
-  widget = darktable.gui->widgets.left;
-  if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
-  else                           bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_left", bit);
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_left",bit);
 
+  /* store right panel visible state */
   bit = dt_conf_get_int("ui_last/panel_right");
-  widget = darktable.gui->widgets.right;
-  if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
-  else                           bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_right", bit);
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_right",bit);
 
-  bit = dt_conf_get_int("ui_last/panel_bottom");
-  widget = darktable.gui->widgets.bottom;
-  if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
-  else                           bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_bottom", bit);
-
+  /* store top panel visible state */
   bit = dt_conf_get_int("ui_last/panel_top");
-  widget = darktable.gui->widgets.top;
-  if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
-  else                           bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_top", bit);
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_top",bit);
+
+  /* store bottom panel visible state */
+  bit = dt_conf_get_int("ui_last/panel_bottom");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_bottom",bit);
+
 
 }
 
 int dt_control_key_pressed_override(uint16_t which)
 {
-  int fullscreen, visible;
+  int fullscreen;
   GtkWidget *widget;
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;
@@ -1241,24 +1233,17 @@ int dt_control_key_pressed_override(uint16_t which)
       dt_dev_invalidate(darktable.develop);
       break;
     case KEYCODE_Tab:
-      widget = darktable.gui->widgets.left;
-      visible = GTK_WIDGET_VISIBLE(widget);
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
-
-      widget = darktable.gui->widgets.right;
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
-
-      /*widget = darktable.gui->widgets.bottom;
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
-
-      widget = darktable.gui->widgets.top;
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);*/
-      dt_dev_invalidate(darktable.develop);
-      break;
+      {
+	gboolean visible = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT);
+	dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, !visible);
+	dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, !visible);
+	/*
+	  dt_ui_panel_show(DT_UI_PANEL_TOP, !visible);
+	  dt_ui_panel_show(DT_UI_PANEL_BOTTOM, !visible);
+	*/
+	
+	dt_dev_invalidate(darktable.develop);
+      } break;
     default:
       return 0;
       break;

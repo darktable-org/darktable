@@ -29,7 +29,6 @@
 #include "common/debug.h"
 #include "common/tags.h"
 #include "gui/gtk.h"
-#include "gui/iop_modulegroups.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -264,6 +263,7 @@ void reset(dt_view_t *self)
 }
 
 
+#if 0 // TODO move into iop module list module
 static void module_tristate_changed_callback(GtkWidget *button,gint state, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -315,6 +315,8 @@ static void module_tristate_changed_callback(GtkWidget *button,gint state, gpoin
 
   g_object_set(G_OBJECT(button), "tooltip-text", option, (char *)NULL);
 }
+
+#endif
 
 
 int try_enter(dt_view_t *self)
@@ -389,7 +391,8 @@ static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
   // store last active group
-  dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+  // dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+
   // store last active plugin:
   if(darktable.develop->gui_module)
     dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
@@ -498,7 +501,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     }
     modules = g_list_next(modules);
   }
-  dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
+  //  dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
@@ -664,32 +667,24 @@ void enter(dt_view_t *self)
   dev->gui_module = NULL;
   dt_dev_load_image(dev, dev->image);
 
-  /*  // adjust gui:
-  GtkWidget *widget;
-  gtk_widget_set_visible (darktable.gui->
-                          widgets.modulegroups_eventbox, TRUE);
+  /* add IOP modules to plugin list */
+  GList *modules = g_list_last(dev->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    module->gui_init(module);
+    
+    /* add module to right panel */
+    GtkWidget *expander = dt_iop_gui_get_expander(module);
+    module->topwidget = GTK_WIDGET(expander);
+    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
-  widget = darktable.gui->widgets.navigation_expander;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.histogram_expander;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.snapshots_eventbox;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.history_eventbox;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.bottom_darkroom_box;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.bottom_lighttable_box;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.plugins_vbox_left;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.module_list_eventbox;
-  gtk_widget_set_visible(widget, TRUE);
-  */
+    modules = g_list_previous(modules);
+  }
 
+#if 0 // TODO Make a module out of this
   // get top level vbox containing all expanders, plugins_vbox:
   GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-  GtkTable *module_list = GTK_TABLE(darktable.gui->widgets.module_list);
   gtk_table_set_row_spacings(module_list,2);
   gtk_table_set_col_spacings(module_list,2);
   GList *modules = g_list_last(dev->iop);
@@ -731,12 +726,11 @@ void enter(dt_view_t *self)
   gtk_widget_show_all(GTK_WIDGET(box));
   gtk_widget_show_all(GTK_WIDGET(module_list));
 
-
   /* set list of modules to modulegroups */
   dt_gui_iop_modulegroups_set_list (dev->iop);
 
   // hack: now hide all custom expander widgets again.
-  modules = dev->iop;
+  GList *modules = dev->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -767,6 +761,7 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
+#endif
 
 
   // synch gui and flag gegl pipe as dirty
@@ -790,13 +785,13 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, export_key_accel_callback, NULL);
 
   // switch on groups as they where last time:
-  dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
+  // dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
 
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   if(active_plugin)
   {
-    modules = dev->iop;
+    GList *modules = dev->iop;
     while(modules)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -815,16 +810,10 @@ void enter(dt_view_t *self)
 }
 
 
-static void
-dt_dev_remove_child(GtkWidget *widget, gpointer data)
-{
-  gtk_container_remove(GTK_CONTAINER(data), widget);
-}
-
 void leave(dt_view_t *self)
 {
   // store groups for next time:
-  dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+  //dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
 
   // store last active plugin:
   if(darktable.develop->gui_module)
@@ -846,24 +835,6 @@ void leave(dt_view_t *self)
     childs=g_list_next(childs);
   }
 
-  /*  GtkWidget *widget;
-  widget = darktable.gui->widgets.navigation_expander;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.histogram_expander;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.snapshots_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.history_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.bottom_darkroom_box;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.bottom_lighttable_box;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.plugins_vbox_left;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.module_list_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  */
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // tag image as changed
@@ -884,7 +855,7 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
-  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
+ 
   while(dev->history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
@@ -894,6 +865,7 @@ void leave(dt_view_t *self)
     free(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
+
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
@@ -907,7 +879,7 @@ void leave(dt_view_t *self)
     free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
-  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_dev_remove_child, (gpointer)box);
+
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
   // release full buffer
