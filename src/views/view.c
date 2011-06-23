@@ -251,16 +251,18 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
 	fprintf(stderr,"Adding %s to panel\n",plugin->name(plugin));
 	/* add module widget to the ui */
-	GtkWidget *expander = dt_lib_gui_get_expander(plugin);
+	GtkWidget *w = NULL;
+	w = dt_lib_gui_get_expander(plugin);
+	
 	if(plugin->views() & DT_VIEW_PANEL_LEFT)
 	{
-	  if(plugin->views() & DT_VIEW_PANEL_TOP)        dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_TOP, expander);
-	  if(plugin->views() & DT_VIEW_PANEL_PLUGINS)    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, expander);
-	  if(plugin->views() & DT_VIEW_PANEL_BOTTOM)     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_BOTTOM, expander);
+	  if(plugin->views() & DT_VIEW_PANEL_TOP)        dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_TOP, w);
+	  if(plugin->views() & DT_VIEW_PANEL_PLUGINS)    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, w);
+	  if(plugin->views() & DT_VIEW_PANEL_BOTTOM)     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_BOTTOM, w);
 	} else {
-	  if(plugin->views() & DT_VIEW_PANEL_TOP)        dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_TOP, expander);
-	  if(plugin->views() & DT_VIEW_PANEL_PLUGINS)    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-	  if(plugin->views() & DT_VIEW_PANEL_BOTTOM)     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM, expander);
+	  if(plugin->views() & DT_VIEW_PANEL_TOP)        dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_TOP, w);
+	  if(plugin->views() & DT_VIEW_PANEL_PLUGINS)    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, w);
+	  if(plugin->views() & DT_VIEW_PANEL_BOTTOM)     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM, w);
 	}
       }
 
@@ -273,20 +275,27 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     while (plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      if(plugin->views() & nv->view(v) )
+      if(plugin->views() & nv->view(v))
       {
-		/* set expanded if last mode was that */
+	/* set expanded if last mode was that */
 	char var[1024];
-	snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
-	gboolean expanded = dt_conf_get_bool(var);
-	gtk_expander_set_expanded (plugin->expander, expanded);
+	gboolean expanded = FALSE;
+	if (plugin->expandable())
+	{
+	  snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
+	  expanded = dt_conf_get_bool(var);
+	  gtk_expander_set_expanded (plugin->expander, expanded);
 	
-	/* show all widgets in expander */
-	gtk_widget_show_all(GTK_WIDGET(plugin->expander));
+	  /* show all widgets in expander */
+	  gtk_widget_show_all(GTK_WIDGET(plugin->expander));
+	}
 
-	/* show/hide plugin widget depending on expanded flag */
-	if(expanded) gtk_widget_show_all(plugin->widget);
-	else         gtk_widget_hide_all(plugin->widget);	
+	/* show/hide plugin widget depending on expanded flag or if plugin
+	   not is expandeable() */
+	if(expanded || !plugin->expandable()) 
+	  gtk_widget_show_all(plugin->widget);
+	else         
+	  gtk_widget_hide_all(plugin->widget);	
       }
 
       /* lets get next plugin */

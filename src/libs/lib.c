@@ -329,6 +329,9 @@ dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
   return apos - bpos;
 }
 
+/* default expandable implementation */
+static int _lib_default_expandable() { return 1; };
+
 static int
 dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *plugin_name)
 {
@@ -346,6 +349,8 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   }
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "views",                  (gpointer)&(module->views)))                  goto error;
+  if(!g_module_symbol(module->module, "expandable",             (gpointer)&(module->expandable)))             module->expandable = _lib_default_expandable;
+
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
@@ -446,6 +451,9 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
   GtkExpander *expander = GTK_EXPANDER (object);
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
 
+  /* bail out if module is static */
+  if(!module->expandable()) return;
+
   char var[1024];
   snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
   dt_conf_set_bool(var, gtk_expander_get_expanded (expander));
@@ -516,6 +524,9 @@ popup_callback(GtkButton *button, dt_lib_module_t *module)
 GtkWidget *
 dt_lib_gui_get_expander (dt_lib_module_t *module)
 {
+  if(!module->expandable())
+    return module->widget;
+
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));

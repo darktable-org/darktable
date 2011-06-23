@@ -51,6 +51,10 @@ typedef struct dt_lib_module_t
   const char* (*name)     ();
   /** get the views which the module should be loaded in. */
   uint32_t (*views)       ();
+  /** check if module should use a expander or not, default implementation
+      will make the module expandable and storing the expanding state, 
+      if not the module will always be shown without the expander. */
+  int (*expandable) ();
 
   /** callback methods for gui. */
   /** construct widget. */
