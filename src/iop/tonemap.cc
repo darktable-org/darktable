@@ -210,7 +210,7 @@ extern "C"
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)p1;
     dt_iop_tonemapping_data_t *d = (dt_iop_tonemapping_data_t *)piece->data;
     d->contrast = p->contrast;
-    d->Fsize = p->Fsize;
+    d->Fsize = p->Fsize/100.0;
   }
 
   void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -230,7 +230,7 @@ extern "C"
     dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
     dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)module->params;
     dtgtk_slider_set_value(g->contrast, p->contrast);
-    dtgtk_slider_set_value(g->Fsize, p->Fsize);
+    dtgtk_slider_set_value(g->Fsize, p->Fsize*100.0);
   }
 
   void reload_defaults(dt_iop_module_t *module)
@@ -282,7 +282,7 @@ extern "C"
     dtgtk_slider_set_label(g->contrast,_("contrast compression"));
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
 
-    g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,1.0, 0.2, p->Fsize, 1));
+    g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,100.0, 1.0, p->Fsize*100.0, 1));
     dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
     dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
     dtgtk_slider_set_unit(g->Fsize,(gchar *)"%");
