@@ -249,7 +249,6 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 	/* module should be in this view, lets initialize */                                                                         
 	plugin->gui_init(plugin);
 
-	fprintf(stderr,"Adding %s to panel\n",plugin->name(plugin));
 	/* add module widget to the ui */
 	GtkWidget *w = NULL;
 	w = dt_lib_gui_get_expander(plugin);

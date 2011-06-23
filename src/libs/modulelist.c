@@ -89,7 +89,6 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    fprintf(stderr,"Horay Module %s\n",module->op);
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
