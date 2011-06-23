@@ -1042,13 +1042,13 @@ weight (const float c1, const float c2)
   return ((c1 > 65500.0f) ^ (c2 > 65500.0f)) ? 0.0f : 1.0f;
 }
 #else
-static float
+/*static float
 weight (const float c0, const float c1, const float c2, const float c3, const float c4)
 {
   const float c = 65534.0f;
   const float cc = fmaxf(fmaxf(c1, c2), fmaxf(c3, c4));
   return ((c0 > c) ^ (cc > c)) ? 0.001f : 1.0f;
-}
+}*/
 #endif
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
@@ -1098,40 +1098,45 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
+    int py = (y + roi_out->y)/roi_out->scale;
+    py = MAX(0, py & ~1) + rggby;
+    py = MIN((((roi_in->height-3) & ~1u) + rggby), py);
+    const int maxjj = MIN(maxj,  py + 2*samples);
+    const int minjj = MAX(rggby, py - 2*samples);
+
     float *outc = out + 4*out_stride*y;
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
-      int px = (x + roi_out->x)/roi_out->scale, py = (y + roi_out->y)/roi_out->scale;
+      int px = (x + roi_out->x)/roi_out->scale;
 
       // round down to next even number and jump to rggb block:
       px = MAX(0, px & ~1) + rggbx;
-      py = MAX(0, py & ~1) + rggby;
-
       px = MIN((((roi_in->width -3) & ~1u) + rggbx), px);
-      py = MIN((((roi_in->height-3) & ~1u) + rggby), py);
+
+      const int idx = px   + in_stride*py;
 
       // const float pc1  = in[px   + in_stride*py];
       // const float pc23 = .5f*(in[px+1 + in_stride*py] + in[px   + in_stride*(py + 1)]);
       // const float pc4  = in[px+1 + in_stride*(py + 1)];
-      const float pc = fmaxf(fmaxf(in[px   + in_stride*py], in[px+1 + in_stride*py]), fmaxf(in[px   + in_stride*(py + 1)], in[px+1 + in_stride*(py + 1)]));
+      const uint16_t pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
 
       __m128 num = _mm_setzero_ps();
-      const int maxjj = MIN(maxj,  py + 2*samples), maxii = MIN(maxi,  px + 2*samples);
-      const int minjj = MAX(rggby, py - 2*samples), minii = MAX(rggbx, px - 2*samples);
+      const int maxii = MIN(maxi,  px + 2*samples);
+      const int minii = MAX(rggbx, px - 2*samples);
       for(int j=minjj; j<=maxjj; j+=2)
         for(int i=minii; i<=maxii; i+=2)
         {
           // get four mosaic pattern uint16:
-          const float p1 = in[i   + in_stride*j];
-          const float p2 = in[i+1 + in_stride*j];
-          const float p3 = in[i   + in_stride*(j + 1)];
-          const float p4 = in[i+1 + in_stride*(j + 1)];
+          const uint16_t p1 = in[i   + in_stride*j];
+          const uint16_t p2 = in[i+1 + in_stride*j];
+          const uint16_t p3 = in[i   + in_stride*(j + 1)];
+          const uint16_t p4 = in[i+1 + in_stride*(j + 1)];
 
           // const float wr = weight(pc1, p1);
           // const float wg = weight(pc23, .5f*(p2+p3));
-          const float w = weight(pc, p1, p2, p3, p4);
+          const float w = ((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)) ? 0.001f : 1.0f;
           // const float wb = weight(pc4, p4);
 
           // const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
