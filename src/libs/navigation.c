@@ -60,6 +60,11 @@ uint32_t views()
   return DT_VIEW_DARKROOM | DT_VIEW_PANEL_LEFT | DT_VIEW_PANEL_TOP;
 }
 
+int expandable() 
+{
+  return 0;
+}
+
 int position()
 {
   return 1001;
