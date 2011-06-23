@@ -469,6 +469,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     }
     modules = g_list_previous(modules);
   }
+
   // hack: now hide all custom expander widgets again.
   modules = dev->iop;
   while(modules)
@@ -682,87 +683,10 @@ void enter(dt_view_t *self)
     modules = g_list_previous(modules);
   }
 
-#if 0 // TODO Make a module out of this
-  // get top level vbox containing all expanders, plugins_vbox:
-  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-  gtk_table_set_row_spacings(module_list,2);
-  gtk_table_set_col_spacings(module_list,2);
-  GList *modules = g_list_last(dev->iop);
-  int ti = 0, tj = 0;
-  while(modules)
-  {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    module->gui_init(module);
-    // add the widget created by gui_init to an expander and both to list.
-    GtkWidget *expander = dt_iop_gui_get_expander(module);
-    module->topwidget = GTK_WIDGET(expander);
-    gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
-    if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
-    {
-      module->showhide = dtgtk_tristatebutton_new(NULL,0);
-      char filename[1024], datadir[1024];
-      dt_get_datadir(datadir, 1024);
-      snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
-      if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-        snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);
-      GtkWidget *image = gtk_image_new_from_file(filename);
-      gtk_button_set_image(GTK_BUTTON(module->showhide), image);
-      g_signal_connect(G_OBJECT(module->showhide), "tristate-changed",
-                       G_CALLBACK(module_tristate_changed_callback), module);
-      gtk_table_attach(module_list, module->showhide, ti, ti+1, tj, tj+1,
-                       GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-                       GTK_SHRINK,
-                       0, 0);
-      if(ti < 5) ti++;
-      else
-      {
-        ti = 0;
-        tj ++;
-      }
-    }
-    modules = g_list_previous(modules);
-  }
-
-  gtk_widget_show_all(GTK_WIDGET(box));
-  gtk_widget_show_all(GTK_WIDGET(module_list));
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE);
 
   /* set list of modules to modulegroups */
-  dt_gui_iop_modulegroups_set_list (dev->iop);
-
-  // hack: now hide all custom expander widgets again.
-  GList *modules = dev->iop;
-  while(modules)
-  {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(strcmp(module->op, "gamma"))
-    {
-      char option[1024];
-      snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
-      gboolean active = dt_conf_get_bool (option);
-      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
-      gboolean favorite = dt_conf_get_bool (option);
-      gint state=0;
-      if(active)
-      {
-        state++;
-        if(favorite) state++;
-      }
-
-      if(module->showhide)
-        dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
-
-      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-      active = dt_conf_get_bool (option);
-      gtk_expander_set_expanded (module->expander, active);
-    }
-    else
-    {
-      gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
-    }
-    modules = g_list_next(modules);
-  }
-#endif
-
+  //dt_gui_iop_modulegroups_set_list (dev->iop);
 
   // synch gui and flag gegl pipe as dirty
   // FIXME: this assumes static pipeline as well
