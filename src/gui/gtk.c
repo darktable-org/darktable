@@ -52,6 +52,40 @@
 #include "views/view.h"
 #include "tool_colorlabels.h"
 
+
+/*                                                                                                                                                                                                                                      
+ * NEW UI API                                                                                                                                                                                                                           
+ */
+
+#define DT_UI_PANEL_MODULE_SPACING 10
+
+typedef struct dt_ui_t {
+  /* container widgets */
+  GtkWidget *containers[DT_UI_CONTAINER_SIZE];
+
+  /* border widgets */
+  GtkWidget *borders[DT_UI_BORDER_SIZE];
+
+  /* panel widgets */
+  GtkWidget *panels[DT_UI_PANEL_SIZE];
+
+} dt_ui_t;
+
+/* initialize the whole left panel */
+static void _ui_init_panel_left(struct dt_ui_t *ui, GtkWidget *container);
+/* initialize the whole right panel */
+static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container);
+/* initialize the top container of panel */
+static GtkWidget *_ui_init_panel_container_top(GtkWidget *container);
+/* initialize the center container of panel */
+static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean left);
+/* initialize the bottom container of panel */
+static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container);
+
+
+/*
+ * OLD UI API
+ */
 static void init_widgets();
 
 static void init_main_table(GtkWidget *container);
@@ -62,15 +96,6 @@ static void init_top_controls(GtkWidget *container);
 static void init_dt_label(GtkWidget *container);
 static void init_top(GtkWidget *container);
 
-static void init_left(GtkWidget *container);
-static void init_left_scroll_window(GtkWidget *container);
-static void init_jobs_list(GtkWidget *container);
-
-static void init_right(GtkWidget *container);
-static void init_module_groups(GtkWidget *container);
-static void init_plugins(GtkWidget *container);
-static void init_module_list(GtkWidget *container);
-
 static void init_center(GtkWidget *container);
 static void init_center_bottom(GtkWidget *container);
 static void init_colorpicker(GtkWidget *container);
@@ -79,7 +104,8 @@ static void init_lighttable_box(GtkWidget* container);
 static gboolean
 borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
-  GtkWidget *widget;
+#if 0 // TODO: Implementation
+   GtkWidget *widget;
   long int which = (long int)user_data;
   int32_t bit = 0;
   int mode = dt_conf_get_int("ui_last/view");
@@ -130,6 +156,7 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
       break;
   }
   gtk_widget_queue_draw(w);
+#endif
   return TRUE;
 }
 
@@ -223,12 +250,10 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   // draw gui arrows.
   cairo_set_source_rgb (cr, .6, .6, .6);
 
-  GtkWidget *panel;
   switch(which)
   {
     case 0: // left
-      panel = darktable.gui->widgets.left;
-      if(GTK_WIDGET_VISIBLE(panel))
+      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT))
       {
         cairo_move_to (cr, width, height/2-width);
         cairo_rel_line_to (cr, 0.0, 2*width);
@@ -242,8 +267,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 1: // right
-      panel = darktable.gui->widgets.right;
-      if(GTK_WIDGET_VISIBLE(panel))
+      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT))
       {
         cairo_move_to (cr, 0.0, height/2-width);
         cairo_rel_line_to (cr, 0.0, 2*width);
@@ -257,8 +281,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 2: // top
-      panel = darktable.gui->widgets.top;
-      if(GTK_WIDGET_VISIBLE(panel))
+      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP))
       {
         cairo_move_to (cr, width/2-height, height);
         cairo_rel_line_to (cr, 2*height, 0.0);
@@ -272,8 +295,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     default: // bottom
-      panel = darktable.gui->widgets.bottom;
-      if(GTK_WIDGET_VISIBLE(panel))
+      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM))
       {
         cairo_move_to (cr, width/2-height, 0.0);
         cairo_rel_line_to (cr, 2*height, 0.0);
@@ -832,7 +854,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   (void)setenv("GTK2_RC_FILES", path, 1);
 
   GtkWidget *widget;
-
+  gui->ui = dt_ui_initialize(argc,argv);
   gui->pixmap = NULL;
   gui->center_tooltip = 0;
   gui->presets_popup_menu = NULL;
@@ -862,8 +884,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     dt_conf_set_int("panel_width", panel_width);
   }
 
+#if 0 // FIXME
   widget = darktable.gui->widgets.right;
-  gtk_widget_set_size_request (widget, panel_width, -1);
+  gtk_widget_set_size_request (gui->ui->panels[DT_UI_PANEL_RIGHT], panel_width, -1);
   widget = darktable.gui->widgets.left;
   gtk_widget_set_size_request (widget, panel_width, -1);
   widget = darktable.gui->widgets.right;
@@ -880,8 +903,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   widget = darktable.gui->widgets.right_scrolled_window;
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+#endif
 
-  dt_gui_background_jobs_init();
+  //  dt_gui_background_jobs_init();
 
   /* Have the delete event (window close) end the program */
   dt_get_datadir(datadir, 1024);
@@ -931,7 +955,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_presets_init();
 
   /* initializes the module groups buttonbar control */
-  dt_gui_iop_modulegroups_init ();
+  // dt_gui_iop_modulegroups_init ();
 
   // color picker
   for(int k = 0; k < 3; k++)
@@ -945,11 +969,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
 
   // TODO: make this work as: libgnomeui testgnome.c
-  GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
+  /*  GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
   GtkScrolledWindow *swin = GTK_SCROLLED_WINDOW(darktable.gui->
                                                 widgets.right_scrolled_window);
   gtk_container_set_focus_vadjustment (box, gtk_scrolled_window_get_vadjustment (swin));
-
+  */
   dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
 
   darktable.gui->redraw_widgets = NULL;
@@ -1115,11 +1139,11 @@ void init_main_table(GtkWidget *container)
   init_center(widget);
   gtk_widget_show(widget);
 
-  // Initializing the right side
-  init_right(container);
+  /* initialize  left panel */
+  _ui_init_panel_left(darktable.gui->ui, container);
 
-  // Initializing the left side
-  init_left(container);
+  /* initialize right panel */
+  _ui_init_panel_right(darktable.gui->ui, container);
 }
 
 void init_view_label(GtkWidget *container)
@@ -1294,102 +1318,7 @@ void init_top(GtkWidget *container)
   init_view_label(widget);
 }
 
-void init_left(GtkWidget *container)
-{
-
-  GtkWidget *widget;
-
-  // Adding the alignment
-  widget = gtk_alignment_new(.5, .5, 1, 1);
-  darktable.gui->widgets.left = widget;
-  gtk_widget_set_name(widget, "left");
-  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 5, 0);
-  gtk_table_attach(GTK_TABLE(container), widget, 1, 2, 1, 2,
-                   GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
-  gtk_widget_show(widget);
-
-  // Adding the vbox
-  container = widget;
-
-  widget = gtk_vbox_new(FALSE, 10);
-  darktable.gui->widgets.left_vbox = widget;
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_size_request(widget, 0, -1);
-
-  // Initializing the sub-sections
-  container = widget;
-
-  init_left_scroll_window(container);
-  init_jobs_list(container);
-
-  /* lets show all widgets */
-  gtk_widget_show_all(container);
-
-}
-
-void init_left_scroll_window(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the outer scrolled window
-  widget = gtk_scrolled_window_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
-                                                                     0,
-                                                                     100,
-                                                                     1,
-                                                                     10,
-                                                                     10)),
-                                   GTK_ADJUSTMENT(gtk_adjustment_new(0,
-                                                                     0,
-                                                                     100,
-                                                                     1,
-                                                                     10,
-                                                                     10)));
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget),
-                                    GTK_CORNER_TOP_RIGHT);
-  darktable.gui->widgets.left_scrolled_window = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  // Adding the viewport
-  container = widget;
-
-  widget = gtk_viewport_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
-                                                              0,
-                                                              100,
-                                                              1,
-                                                              10,
-                                                              10)),
-                            GTK_ADJUSTMENT(gtk_adjustment_new(0,
-                                                              0,
-                                                              100,
-                                                              1,
-                                                              10,
-                                                              10)));
-  gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
-  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  // Adding the main vbox
-  container = widget;
-
-  widget = gtk_vbox_new(FALSE, 10);
-  darktable.gui->widgets.left_scrolled = widget;
-  gtk_widget_set_size_request(widget, 0, -1);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  // Initializing the left-side plugins box
-  container = widget;
-  widget = gtk_vbox_new(FALSE, 10);
-  darktable.gui->widgets.plugins_vbox_left = widget;
-  gtk_widget_set_name(widget, "plugins_vbox_left");
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
-  gtk_widget_show(widget);
-
-}
-
+#if 0 /* TODO: Create module out of this */
 void init_jobs_list(GtkWidget *container)
 {
   GtkWidget *widget;
@@ -1407,40 +1336,9 @@ void init_jobs_list(GtkWidget *container)
   gtk_container_set_border_width(GTK_CONTAINER(widget), 5);
   gtk_container_add(GTK_CONTAINER(container), widget);
 }
+#endif
 
-void init_right(GtkWidget *container)
-{
-  GtkWidget* widget;
-
-  // Attaching the outer GtkAlignment
-  widget = gtk_alignment_new(.5, .5, 1, 1);
-  gtk_widget_set_name(widget, "right");
-  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 0, 5);
-  darktable.gui->widgets.right = widget;
-  gtk_table_attach(GTK_TABLE(container), widget, 3, 4, 1, 2,
-                   GTK_SHRINK,
-                   GTK_SHRINK | GTK_EXPAND | GTK_FILL,
-                   0, 0);
-  gtk_widget_show(widget);
-
-  // Adding the inner vbox
-  container = widget;
-
-  widget = gtk_vbox_new(FALSE, 10);
-  darktable.gui->widgets.right_vbox = widget;
-  gtk_widget_set_size_request(widget, 0, -1);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  // Initializing each section of the right side
-  container = widget;
-
-  init_module_groups(container);
-  init_plugins(container);
-  init_module_list(container);
-
-}
-
+#if 0 // TODO create module out of this
 void init_module_groups(GtkWidget *container)
 {
   GtkWidget* widget;
@@ -1451,60 +1349,9 @@ void init_module_groups(GtkWidget *container)
 
   gtk_widget_show(widget);
 }
+#endif
 
-void init_plugins(GtkWidget *container)
-{
-  GtkWidget* widget;
-
-  // Creating the outer scrolled window
-  widget = gtk_scrolled_window_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
-                                                                     0,
-                                                                     100,
-                                                                     1,
-                                                                     10,
-                                                                     10)),
-                                   GTK_ADJUSTMENT(gtk_adjustment_new(0,
-                                                                     0,
-                                                                     100,
-                                                                     1,
-                                                                     10,
-                                                                     10)));
-  darktable.gui->widgets.right_scrolled_window = widget;
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  // Creating the viewport
-  container = widget;
-
-  widget = gtk_viewport_new(GTK_ADJUSTMENT(gtk_adjustment_new(0,
-                                                              0,
-                                                              100,
-                                                              1,
-                                                              10,
-                                                              10)),
-                            GTK_ADJUSTMENT(gtk_adjustment_new(0,
-                                                              0,
-                                                              100,
-                                                              1,
-                                                              10,
-                                                              10)));
-  gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
-  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  // Creating the innermost vbox
-  container = widget;
-
-  widget = gtk_vbox_new(FALSE, 10);
-  darktable.gui->widgets.plugins_vbox = widget;
-  gtk_widget_set_name(widget, "plugins_vbox");
-  gtk_widget_set_size_request(widget, 0, -1);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-}
-
+#if 0 // TODO create module out of this 
 void init_module_list(GtkWidget *container)
 {
   GtkWidget* widget;
@@ -1529,6 +1376,7 @@ void init_module_list(GtkWidget *container)
   darktable.gui->widgets.module_list = widget;
   gtk_widget_show(widget);
 }
+#endif
 
 static void _gui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
@@ -1692,3 +1540,172 @@ void init_lighttable_box(GtkWidget* container)
   gtk_widget_show(widget);
 
 }
+
+/*
+ * NEW UI API
+ */
+
+
+dt_ui_t *dt_ui_initialize(int argc, char **argv)
+{
+  dt_ui_t *ui=g_malloc(sizeof(dt_ui_t));
+  memset(ui,0,sizeof(dt_ui_t));
+  return ui;
+}
+
+void dt_ui_destroy(struct dt_ui_t *ui)
+{
+  g_free(ui);
+}
+
+void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w)
+{
+  //  if(!GTK_IS_BOX(ui->containers[c])) return;
+  g_return_if_fail(GTK_IS_BOX(ui->containers[c]));
+  gtk_box_pack_start(GTK_BOX(ui->containers[c]),w,FALSE,FALSE,0);
+  gtk_widget_show_all(w);
+}
+
+void dt_ui_container_focus_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w)
+{
+  //if(!GTK_IS_CONTAINER(ui->containers[c])) return;
+  g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
+  gtk_container_set_focus_child(GTK_CONTAINER(ui->containers[c]), w);
+  gtk_widget_queue_draw(ui->containers[c]);
+}
+
+void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c)
+{
+  g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
+  gtk_container_foreach(GTK_CONTAINER(ui->containers[c]), (GtkCallback)gtk_widget_destroy, (gpointer)c);
+}
+
+void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
+{
+  //if(!GTK_IS_WIDGET(ui->panels[p])) return;
+  g_return_if_fail(GTK_IS_WIDGET(ui->panels[p]));
+
+  if(show)
+    gtk_widget_show(ui->panels[p]);
+  else
+    gtk_widget_hide(ui->panels[p]);
+}
+
+gboolean dt_ui_panel_visible(dt_ui_t *ui,const dt_ui_panel_t p)
+{
+  //if(!GTK_IS_WIDGET(ui->panels[p])) return FALSE;
+  g_return_val_if_fail(GTK_IS_WIDGET(ui->panels[p]),FALSE);
+  return gtk_widget_get_visible(ui->panels[p]);
+}
+
+static GtkWidget * _ui_init_panel_container_top(GtkWidget *container)
+{
+  GtkWidget *w = gtk_vbox_new(FALSE, DT_UI_PANEL_MODULE_SPACING);
+  gtk_box_pack_start(GTK_BOX(container),w,FALSE,FALSE,DT_UI_PANEL_MODULE_SPACING);
+  return w;
+}
+
+static GtkWidget * _ui_init_panel_container_center(GtkWidget *container, gboolean left)
+{
+
+  GtkWidget *widget;
+  GtkAdjustment *a[4];
+
+  a[0] = GTK_ADJUSTMENT(gtk_adjustment_new(0,0,100,1,10,10));
+  a[1] = GTK_ADJUSTMENT(gtk_adjustment_new(0,0,100,1,10,10));
+  a[2] = GTK_ADJUSTMENT(gtk_adjustment_new(0,0,100,1,10,10));
+  a[3] = GTK_ADJUSTMENT(gtk_adjustment_new(0,0,100,1,10,10));
+
+  /* create the scrolled window */
+  widget = gtk_scrolled_window_new(a[0],a[1]);
+  gtk_widget_set_can_focus(widget, TRUE);
+  gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget), left?GTK_CORNER_TOP_LEFT:GTK_CORNER_TOP_RIGHT);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_widget_set_size_request (widget,dt_conf_get_int("panel_width")-5-13, -1);
+
+  /* create the scrolled viewport */
+  container = widget;
+  widget = gtk_viewport_new(a[2],a[3]);
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
+  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+
+  /* create the container */
+  container = widget;
+  widget = gtk_vbox_new(FALSE, DT_UI_PANEL_MODULE_SPACING);
+  gtk_widget_set_name(widget, "plugins_vbox_left");
+  gtk_widget_set_size_request (widget,0, -1);
+  gtk_container_add(GTK_CONTAINER(container),widget);
+
+
+
+  return widget;
+}
+
+static GtkWidget * _ui_init_panel_container_bottom(GtkWidget *container)
+{
+  GtkWidget *w = gtk_vbox_new(FALSE, DT_UI_PANEL_MODULE_SPACING);
+  gtk_box_pack_start(GTK_BOX(container),w,FALSE,FALSE,DT_UI_PANEL_MODULE_SPACING);
+  return w;
+}
+     
+static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
+{
+  GtkWidget *widget;
+  
+  /* create left panel main widget and add it to ui */
+  widget = ui->panels[DT_UI_PANEL_LEFT] = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_widget_set_name(widget, "left");
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 5, 0);
+  gtk_table_attach(GTK_TABLE(container), widget, 1, 2, 1, 2,
+	    GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
+
+  /* set panel width */
+  gtk_widget_set_size_request(widget,dt_conf_get_int("panel_width"), -1);
+    
+  // Adding the vbox which will containt TOP,CENTER,BOTTOM                                                                                                                                                                             
+  container = widget;
+  widget = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  
+  /* add top,center,bottom*/
+  container = widget;
+  ui->containers[DT_UI_CONTAINER_PANEL_LEFT_TOP] = _ui_init_panel_container_top(container);
+  ui->containers[DT_UI_CONTAINER_PANEL_LEFT_CENTER] = _ui_init_panel_container_center(container, FALSE);
+  ui->containers[DT_UI_CONTAINER_PANEL_LEFT_BOTTOM] = _ui_init_panel_container_bottom(container);
+  
+  /* lets show all widgets */
+  gtk_widget_show_all(ui->panels[DT_UI_PANEL_LEFT]);  
+}
+
+static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  /* create left panel main widget and add it to ui */
+  widget = ui->panels[DT_UI_PANEL_RIGHT] = gtk_alignment_new(.5, .5, 1, 1);
+  gtk_widget_set_name(widget, "right");
+  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 0, 5);
+  gtk_table_attach(GTK_TABLE(container), widget, 3, 4, 1, 2,
+		   GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL, 0, 0);
+
+  /* set panel width */
+  gtk_widget_set_size_request(widget,dt_conf_get_int("panel_width"), -1);
+
+  // Adding the vbox which will containt TOP,CENTER,BOTTOM                                                                                                                                                                             
+  container = widget;
+  widget = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(container), widget);
+  gtk_widget_set_size_request(widget, 0, -1);
+
+  /* add top,center,bottom*/
+  container = widget;
+  ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_TOP] = _ui_init_panel_container_top(container);
+  ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_CENTER] = _ui_init_panel_container_center(container, TRUE);
+  ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM] = _ui_init_panel_container_bottom(container);
+
+  /* lets show all widgets */
+  gtk_widget_show_all(ui->panels[DT_UI_PANEL_RIGHT]);
+}
+

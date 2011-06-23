@@ -132,7 +132,7 @@ dt_gui_contrast_init ()
 
   /* create a eventbox and add to */
   GtkWidget *ev = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(darktable.gui->widgets.plugins_vbox_left), ev);
+  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER,ev);
   gtk_widget_realize(ev);
   _module_orginal_style = gtk_style_copy (ev->style);
 

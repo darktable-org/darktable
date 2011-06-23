@@ -755,11 +755,7 @@ star_key_accel_callback(void *data)
 void enter(dt_view_t *self)
 {
   
-  // Adjust gui
-  gtk_widget_set_visible(darktable.gui->
-                         widgets.modulegroups_eventbox, FALSE);
-
-  /* assign keys */
+   /* assign keys */
   dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
   dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
   dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
@@ -913,14 +909,12 @@ int key_released(dt_view_t *self, uint16_t which)
     case KEYCODE_z:
     {
       lib->full_preview_id = -1;
-      GtkWidget *widget = darktable.gui->widgets.left;
-      if(lib->full_preview & 1) gtk_widget_show(widget);
-      widget = darktable.gui->widgets.right;
-      if(lib->full_preview & 2)gtk_widget_show(widget);
-      widget = darktable.gui->widgets.bottom;
-      if(lib->full_preview & 4)gtk_widget_show(widget);
-      widget = darktable.gui->widgets.top;
-      if(lib->full_preview & 8)gtk_widget_show(widget);
+     
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT,   ( lib->full_preview & 1));
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2));
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, ( lib->full_preview & 4));
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP,    ( lib->full_preview & 8));
+      
       lib->full_preview = 0;
     }
     break;
@@ -945,19 +939,17 @@ int key_pressed(dt_view_t *self, uint16_t which)
         // encode panel visibility into full_preview
         lib->full_preview = 0;
         lib->full_preview_id = mouse_over_id;
+
         // let's hide some gui components
-        GtkWidget *widget = darktable.gui->widgets.left;
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 0;
-        gtk_widget_hide(widget);
-        widget = darktable.gui->widgets.right;
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 1;
-        gtk_widget_hide(widget);
-        widget = darktable.gui->widgets.bottom;
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 2;
-        gtk_widget_hide(widget);
-        widget = darktable.gui->widgets.top;
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 3;
-        gtk_widget_hide(widget);
+        lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)&1) << 0;
+        dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE);
+	lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT)&1) << 1;
+        dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE);
+	lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM)&1) << 2;
+        dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE);
+	lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP)&1) << 3;
+        dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
+
         //dt_dev_invalidate(darktable.develop);
       }
       return 0;
