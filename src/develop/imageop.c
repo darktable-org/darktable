@@ -452,7 +452,7 @@ void dt_iop_load_modules_so()
       (module->init_key_accels)();
 
     // Adding the optional show accelerator to the table (blank)
-    snprintf(accelpath, 256, "<Darktable>/imageops/%s/show",
+    snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
              (module->op));
     gtk_accel_map_add_entry(accelpath, 0, 0);
     dt_accel_group_connect_by_path(darktable.gui->accels_darkroom, accelpath,
@@ -509,7 +509,7 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   module->cleanup(module);
 
   // Disconnecting the show accelerator
-  snprintf(accelpath, 256, "<Darktable>/imageops/%s/show",
+  snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
            (module->name)());
   gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
                              module->show_closure);

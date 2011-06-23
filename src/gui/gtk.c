@@ -93,9 +93,9 @@ static void key_accel_changed(GtkAccelMap *object,
   // Updating all the stored accelerator keys/mods for key_pressed shortcuts
 
   // Filmstrip
-  gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll forward",
+  gtk_accel_map_lookup_entry("<Darktable>/darkroom/filmstrip/scroll forward",
                              &darktable.gui->accels.filmstrip_forward);
-  gtk_accel_map_lookup_entry("<Darktable>/filmstrip/scroll back",
+  gtk_accel_map_lookup_entry("<Darktable>/darkroom/filmstrip/scroll back",
                              &darktable.gui->accels.filmstrip_back);
 
   // Lighttable
