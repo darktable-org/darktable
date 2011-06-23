@@ -31,6 +31,8 @@ static char *_signal_name[DT_SIGNAL_COUNT] = {
   "dt-control-draw-all",                          // DT_SIGNAL_CONTROL_DRAW_ALL
 
   /* Develop related signals */
+  "dt-develop-initialized",                       // DT_SIGNAL_DEVELOP_INITIALIZED
+
   "dt-develop-preview-pipe-finished",             // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
   "dt-develop-history-change"                     // DT_SIGNAL_HISTORY_CHANGE
 };

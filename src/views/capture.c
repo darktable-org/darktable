@@ -343,25 +343,6 @@ void enter(dt_view_t *self)
 
   lib->mode = dt_conf_get_int("plugins/capture/mode");
 
-  // adjust gui:
-  /*  GtkWidget *widget;
-  widget = darktable.gui->widgets.histogram_expander;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.top;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.bottom_darkroom_box;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.bottom_lighttable_box;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.plugins_vbox_left;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.module_list_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-
-  gtk_widget_set_visible(darktable.gui->
-                         widgets.modulegroups_eventbox, FALSE);
-  */
-
   // Check if we should enable view of the filmstrip
   if(dt_conf_get_bool("plugins/filmstrip/on"))
   {
@@ -394,26 +375,6 @@ void leave(dt_view_t *self)
     dt_film_remove(cv->film->id );
 
   dt_gui_key_accel_unregister(film_strip_key_accel);
-
-  // Restore user interface
-  /* GtkWidget *widget;
-  widget = darktable.gui->widgets.navigation_expander;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.histogram_expander;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.snapshots_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.history_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.bottom_darkroom_box;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.bottom_lighttable_box;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.plugins_vbox_left;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.module_list_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  */
 
 }
 

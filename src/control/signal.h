@@ -36,7 +36,13 @@ typedef enum dt_signal_t {
   /** \brief This signal is raised when control redraw is queued.
   */
   DT_SIGNAL_CONTROL_REDRAW_ALL,
-  
+
+  /** \brief This signal is raised when darktable.develop is initialized.
+      \note any modules that wants to acces darktable->develop should connect
+      to this signal to be sure darktable.develop is initialized.
+   */
+  DT_SIGNAL_DEVELOP_INITIALIZE,
+
   /** \brief This signal is raised when develop preview pipe process is finished */
   DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
 

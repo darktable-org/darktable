@@ -1351,33 +1351,6 @@ void init_module_groups(GtkWidget *container)
 }
 #endif
 
-#if 0 // TODO create module out of this 
-void init_module_list(GtkWidget *container)
-{
-  GtkWidget* widget;
-
-  // Adding the event box
-  widget = gtk_event_box_new();
-  gtk_widget_set_name(widget, "module_list_eventbox");
-  gtk_widget_set_no_show_all(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  darktable.gui->widgets.module_list_eventbox = widget;
-
-  // Adding the expander
-  container = widget;
-  widget = gtk_expander_new(_("more plugins"));
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  // Adding the grid
-  container = widget;
-  widget = gtk_table_new(2, 6, TRUE);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  darktable.gui->widgets.module_list = widget;
-  gtk_widget_show(widget);
-}
-#endif
-
 static void _gui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
   g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
