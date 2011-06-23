@@ -131,18 +131,25 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   int width = widget->allocation.width, height = widget->allocation.height;
 
   dt_develop_t *dev = darktable.develop;
+
+  /* generate image into cairo surface*/
+  
+  /* get the current style */
+  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+  
+  /* fill background */ 
+  cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
+  cairo_paint(cr);
+
+  width -= 2*inset;
+  height -= 2*inset;
+  cairo_translate(cr, inset, inset);
+
+  /* draw navigation image if available */
   if(dev->image && dev->preview_pipe->backbuf && !dev->preview_dirty)
   {
-    GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
-    cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t *cr = cairo_create(cst);
-    cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
-    cairo_paint(cr);
-
-    width -= 2*inset;
-    height -= 2*inset;
-    cairo_translate(cr, inset, inset);
-
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
     const int wd = dev->preview_pipe->backbuf_width;
@@ -200,14 +207,16 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_rectangle(cr, -boxw/2, -boxh/2, boxw, boxh);
       cairo_stroke(cr);
     }
-
-    cairo_destroy(cr);
-    cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-    cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-    cairo_paint(cr_pixmap);
-    cairo_destroy(cr_pixmap);
-    cairo_surface_destroy(cst);
   }
+
+  /* blit memsurface into widget */
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+  
   return TRUE;
 }
 
