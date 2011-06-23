@@ -391,7 +391,7 @@ static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
   // store last active group
-  // dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+  dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
 
   // store last active plugin:
   if(darktable.develop->gui_module)
@@ -737,7 +737,7 @@ void enter(dt_view_t *self)
 void leave(dt_view_t *self)
 {
   // store groups for next time:
-  //dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
+  dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(darktable.develop));
 
   // store last active plugin:
   if(darktable.develop->gui_module)

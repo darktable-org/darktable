@@ -615,8 +615,7 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
 {
   if(event->button == 1 && (event->state & GDK_SHIFT_MASK)) // TODO: this can also be done when some auto-collapse option is set ...
   {
-#if 0 // TODO fix this with new modulegroups module
-    int current_group = dt_gui_iop_modulegroups_get();
+    int current_group = dt_dev_modulegroups_get(module->dev);
     GList *iop = g_list_first(module->dev->iop);
     while(iop)
     {
@@ -630,7 +629,6 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
 
       iop = g_list_next(iop);
     }
-#endif
 
     /* prevent expander to handle the button press because we alread did :) */
     return TRUE;
