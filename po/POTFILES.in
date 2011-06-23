@@ -99,6 +99,7 @@ src/libs/import.c
 src/libs/lib.c
 src/libs/metadata.c
 src/libs/metadata_view.c
+src/libs/modulelist.c
 src/libs/navigation.c
 src/libs/recentcollect.c
 src/libs/select.c
