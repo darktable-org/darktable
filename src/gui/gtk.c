@@ -41,8 +41,6 @@
 #include "gui/contrast.h"
 #include "gui/gtk.h"
 
-#include "gui/iop_modulegroups.h"
-
 #include "gui/presets.h"
 #include "gui/preferences.h"
 #include "control/control.h"
@@ -954,9 +952,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   dt_gui_presets_init();
 
-  /* initializes the module groups buttonbar control */
-  // dt_gui_iop_modulegroups_init ();
-
   // color picker
   for(int k = 0; k < 3; k++)
     darktable.gui->picked_color_output_cs[k] =
@@ -1335,19 +1330,6 @@ void init_jobs_list(GtkWidget *container)
   gtk_widget_set_no_show_all(widget, TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(widget), 5);
   gtk_container_add(GTK_CONTAINER(container), widget);
-}
-#endif
-
-#if 0 // TODO create module out of this
-void init_module_groups(GtkWidget *container)
-{
-  GtkWidget* widget;
-
-  widget = gtk_event_box_new();
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  darktable.gui->widgets.modulegroups_eventbox = widget;
-
-  gtk_widget_show(widget);
 }
 #endif
 

@@ -36,14 +36,6 @@ typedef struct dt_gui_key_accel_t
 }
 dt_gui_key_accel_t;
 
-/* flat view of all our widgets. should be modularized
-
-   metadata   - Fixed, availble in all views
-   histogram  - Fixed
-   navigation - Fixed
-
-*/
-
 typedef struct dt_gui_widgets_t
 {
   GtkWidget *main_window;
@@ -90,7 +82,6 @@ typedef struct dt_gui_widgets_t
   /* left panel */
   GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and fille on center
   GtkTable *panel_right;               
-
 
 }
 dt_gui_widgets_t;

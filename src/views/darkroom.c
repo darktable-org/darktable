@@ -262,63 +262,6 @@ void reset(dt_view_t *self)
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
 }
 
-
-#if 0 // TODO move into iop module list module
-static void module_tristate_changed_callback(GtkWidget *button,gint state, gpointer user_data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  char option[512]= {0};
-
-  if(state==0)
-  {
-    /* module is hidden lets set gconf values */
-    gtk_widget_hide(GTK_WIDGET(module->topwidget));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, FALSE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, FALSE);
-    gtk_expander_set_expanded(module->expander, FALSE);
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("show %s"), module->name());
-  }
-  else if(state==1)
-  {
-    /* module is shown lets set gconf values */
-    dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->topwidget));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, FALSE);
-
-    gtk_expander_set_expanded(module->expander, TRUE);
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("%s as favorite"), module->name());
-  }
-  else if(state==2)
-  {
-    /* module is shown and favorite lets set gconf values */
-    dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->topwidget));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, TRUE);
-
-    gtk_expander_set_expanded(module->expander, TRUE);
-
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("hide %s"), module->name());
-  }
-
-  g_object_set(G_OBJECT(button), "tooltip-text", option, (char *)NULL);
-}
-
-#endif
-
-
 int try_enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -502,7 +445,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     }
     modules = g_list_next(modules);
   }
-  //  dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
+  dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
@@ -683,10 +626,8 @@ void enter(dt_view_t *self)
     modules = g_list_previous(modules);
   }
 
+  /* signal that darktable.develop is initialized and ready to be used */
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE);
-
-  /* set list of modules to modulegroups */
-  //dt_gui_iop_modulegroups_set_list (dev->iop);
 
   // synch gui and flag gegl pipe as dirty
   // FIXME: this assumes static pipeline as well
@@ -709,7 +650,7 @@ void enter(dt_view_t *self)
   dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, export_key_accel_callback, NULL);
 
   // switch on groups as they where last time:
-  // dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
+  dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
