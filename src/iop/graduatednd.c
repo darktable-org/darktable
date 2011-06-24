@@ -275,9 +275,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
+  const dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
   const int ch = piece->colors;
 
   const int ix= (roi_in->x);
@@ -286,46 +284,54 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float ih=piece->buf_in.height*roi_out->scale;
   const float hw=iw/2.0;
   const float hh=ih/2.0;
-  float v=(-data->rotation/180)*M_PI;
+  const float hw_inv=1.0/hw;
+  const float hh_inv=1.0/hh;
+  const float v=(-data->rotation/180)*M_PI;
   const float sinv=sin(v);
   const float cosv=cos(v);
   const float filter_radie=sqrt((hh*hh)+(hw*hw))/hh;
+  const float offset=data->offset/100.0*2;
 
   float color[3];
   hsl2rgb(color,data->hue,data->saturation,0.5);
 
+#if 1
+  const float filter_compression = 1.0/filter_radie/(1.0-(0.5+(data->compression/100.0)*0.9/2.0))*0.5;
+#else
+  const float compression = data->compression/100.0f;
+  const float t = 1.0f - .8f/(.8f + compression);
+  const float c = 1.0f + 1000.0f*powf(4.0, compression);
+#endif
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, color, data) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
-    for(int x=0; x<roi_out->width; x++)
+    int k=roi_out->width*y*ch;
+    const float *in = (float*)ivoid + k;
+    float *out = (float*)ovoid + k;
+    for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
     {
-      int k=(roi_out->width*y+x)*ch;
 
       /* first rotate and offset */
-      dt_iop_vector_2d_t pv= {-1,-1};
-      float sx=-1.0+((ix+x)/iw)*2.0;
-      float sy=-1.0+((iy+y)/ih)*2.0;
-      pv.x=cosv*sx-sinv*sy;
-      pv.y=sinv*sx-cosv*sy;
-      pv.y+=-1.0+((data->offset/100.0)*2);
+      const float sx=-1.0+(ix+x)*hw_inv;
+      const float sy=-1.0+(iy+y)*hh_inv;
+      const dt_iop_vector_2d_t pv= {
+	cosv*sx-sinv*sy,
+	sinv*sx-cosv*sy-1.0+offset
+      };
 
-      float length=pv.y/filter_radie;
 #if 1
-      float compression = (data->compression/100.0)*0.9;
-      length/=1.0-(0.5+(compression/2.0));
-      float density = ( 1.0 / exp2f (data->density * CLIP( ((1.0+length)/2.0)) ) );
+      const float length=pv.y*filter_compression;
+      const float density = exp2f(-data->density * CLIP( 0.5+length ));
 #else
-      const float compression = data->compression/100.0f;
-      const float t = 1.0f - .8f/(.8f + compression);
-      const float c = 1.0f + 1000.0f*powf(4.0, compression);
+      const float length=pv.y/filter_radie;
       const float density = 1.0f/exp2f(data->density*f(t, c, length));
 #endif
 
       for( int l=0; l<3; l++)
-        out[k+l] = fmaxf(0.0, (in[k+l]*(density/(1.0-(1.0-density)*color[l])) ));
+        out[l] = fmaxf(0.0, (in[l]*(density/(1.0-(1.0-density)*color[l])) ));
 
     }
   }
