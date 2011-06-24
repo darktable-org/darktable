@@ -492,13 +492,28 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
                       delete_matching_accels, (gpointer)event);
     if(g_slist_find_custom(darktable.gui->accels_list_darkroom,
                            darktable.gui->accel_remap_str, _strcmp) || global)
+    {
       g_slist_foreach(darktable.gui->accels_list_darkroom,
                       delete_matching_accels, (gpointer)event);
+      g_slist_foreach(darktable.gui->accels_list_filmstrip,
+                      delete_matching_accels, (gpointer)event);
+    }
     if(g_slist_find_custom(darktable.gui->accels_list_capture,
                            darktable.gui->accel_remap_str, _strcmp) || global)
+    {
       g_slist_foreach(darktable.gui->accels_list_capture,
                       delete_matching_accels, (gpointer)event);
-
+      g_slist_foreach(darktable.gui->accels_list_filmstrip,
+                      delete_matching_accels, (gpointer)event);
+    }
+    if(g_slist_find_custom(darktable.gui->accels_list_filmstrip,
+                           darktable.gui->accel_remap_str, _strcmp) || global)
+    {
+      g_slist_foreach(darktable.gui->accels_list_darkroom,
+                      delete_matching_accels, (gpointer)event);
+      g_slist_foreach(darktable.gui->accels_list_capture,
+                      delete_matching_accels, (gpointer)event);
+    }
     // Change the accel map entry
     if(gtk_accel_map_change_entry(darktable.gui->accel_remap_str, event->keyval,
                                    event->state & KEY_STATE_MASK, TRUE))

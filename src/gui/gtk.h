@@ -169,12 +169,13 @@ typedef struct dt_gui_gtk_t
 {
   // Keyboard accelerator groups
   GtkAccelGroup
-      *accels_global, *accels_lighttable, *accels_darkroom, *accels_capture;
+      *accels_global, *accels_lighttable, *accels_darkroom, *accels_capture,
+      *accels_filmstrip;
 
   // Accelerator group path lists
   GSList
       *accels_list_global, *accels_list_lighttable, *accels_list_darkroom,
-      *accels_list_capture;
+      *accels_list_capture, *accels_list_filmstrip;
 
   // Cached accelerator keys for key_pressed shortcuts
   dt_gui_accels_t accels;

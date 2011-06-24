@@ -80,8 +80,7 @@ init(dt_view_t *self)
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/filmstrip/show hide",
-      g_cclosure_new(G_CALLBACK(film_strip_key_accel),
-                     (gpointer)self, NULL));
+      NULL);
 
   // Zoom shortcuts
   gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/close",
@@ -94,15 +93,15 @@ init(dt_view_t *self)
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/zoom/close",
-      g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)1, NULL));
+      NULL);
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/zoom/fill",
-      g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)2, NULL));
+      NULL);
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/zoom/fit",
-      g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)3, NULL));
+      NULL);
 
   // enable shortcut to export with current export settings:
   gtk_accel_map_add_entry("<Darktable>/darkroom/export",
@@ -111,7 +110,7 @@ init(dt_view_t *self)
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/export",
-      g_cclosure_new(G_CALLBACK(export_key_accel_callback), NULL, NULL));
+      NULL);
 
 
   // Shortcut to skip images
@@ -123,13 +122,11 @@ init(dt_view_t *self)
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/image forward",
-      g_cclosure_new(G_CALLBACK(skip_f_key_accel_callback),
-                     (gpointer)self->data, NULL));
+      NULL);
   dt_accel_group_connect_by_path(
       darktable.gui->accels_darkroom,
       "<Darktable>/darkroom/image back",
-      g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback),
-                     (gpointer)self->data, NULL));
+      NULL);
 }
 
 
@@ -1027,6 +1024,8 @@ void leave(dt_view_t *self)
     gtk_accel_group_disconnect(darktable.gui->accels_darkroom, c->data);
     c = g_slist_next(c);
   }
+  g_slist_free(((dt_develop_t*)self->data)->closures);
+  ((dt_develop_t*)self->data)->closures = NULL;
 
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());

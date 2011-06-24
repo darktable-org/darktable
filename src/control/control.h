@@ -47,6 +47,7 @@
 #define ACCELS_LIGHTTABLE  (1 << 1)
 #define ACCELS_DARKROOM    (1 << 2)
 #define ACCELS_CAPTURE     (1 << 3)
+#define ACCELS_FILMSTRIP   (1 << 4)
 
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)

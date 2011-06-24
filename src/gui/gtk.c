@@ -308,6 +308,8 @@ void dt_accel_group_connect_by_path(GtkAccelGroup *accel_group,
     list = &darktable.gui->accels_list_darkroom;
   else if(accel_group == darktable.gui->accels_capture)
     list = &darktable.gui->accels_list_capture;
+  else if(accel_group == darktable.gui->accels_filmstrip)
+    list = &darktable.gui->accels_list_filmstrip;
 
   // Only add if the accel isn't already in the list
   if(!g_slist_find_custom(*list, (gconstpointer)accel_path, _strcmp))
@@ -1236,11 +1238,13 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   darktable.gui->accels_darkroom = gtk_accel_group_new();
   darktable.gui->accels_lighttable = gtk_accel_group_new();
   darktable.gui->accels_capture = gtk_accel_group_new();
+  darktable.gui->accels_filmstrip = gtk_accel_group_new();
 
   darktable.gui->accels_list_global = NULL;
   darktable.gui->accels_list_lighttable = NULL;
   darktable.gui->accels_list_darkroom = NULL;
   darktable.gui->accels_list_capture = NULL;
+  darktable.gui->accels_list_filmstrip = NULL;
 
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()),

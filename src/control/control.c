@@ -477,6 +477,10 @@ void dt_control_key_accelerators_on(struct dt_control_t *s)
       gtk_window_add_accel_group(
           GTK_WINDOW(darktable.gui->widgets.main_window),
           darktable.gui->accels_capture);
+    if(state & ACCELS_FILMSTRIP)
+      gtk_window_add_accel_group(
+          GTK_WINDOW(darktable.gui->widgets.main_window),
+          darktable.gui->accels_filmstrip);
   }
 }
 
@@ -491,6 +495,8 @@ static void state_from_accels(gpointer data, gpointer state)
     *s |= ACCELS_DARKROOM;
   else if(data == (gpointer)darktable.gui->accels_capture)
     *s |= ACCELS_CAPTURE;
+  else if(data == (gpointer)darktable.gui->accels_filmstrip)
+    *s |= ACCELS_FILMSTRIP;
 
   gtk_window_remove_accel_group(
       GTK_WINDOW(darktable.gui->widgets.main_window),
