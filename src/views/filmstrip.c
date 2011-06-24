@@ -104,7 +104,7 @@ void init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/filmstrip/rating/3", GDK_3, 0);
   gtk_accel_map_add_entry("<Darktable>/filmstrip/rating/4", GDK_4, 0);
   gtk_accel_map_add_entry("<Darktable>/filmstrip/rating/5", GDK_5, 0);
-  gtk_accel_map_add_entry("<Darktable>/filmstrip/rating/reject", GDK_Delete,
+  gtk_accel_map_add_entry("<Darktable>/filmstrip/rating/reject", GDK_r,
                           0);
 
   dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
