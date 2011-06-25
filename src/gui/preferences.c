@@ -93,6 +93,7 @@ void dt_gui_preferences_show()
 
 static void init_tab_accels(GtkWidget *book)
 {
+  GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 0.9, 1.0);
   GtkWidget *container = gtk_vbox_new(FALSE, 5);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
@@ -105,7 +106,9 @@ static void init_tab_accels(GtkWidget *book)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_notebook_append_page(GTK_NOTEBOOK(book), container,
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 20, 20, 20, 20);
+  gtk_container_add(GTK_CONTAINER(alignment), container);
+  gtk_notebook_append_page(GTK_NOTEBOOK(book), alignment,
                            gtk_label_new(_("shortcuts")));
 
   // Building the accelerator tree
@@ -157,7 +160,7 @@ static void init_tab_accels(GtkWidget *book)
 
   // Adding the restore defaults button
   button = gtk_button_new_with_label(_("default"));
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(restore_defaults), NULL);
   g_signal_connect(G_OBJECT(button), "clicked",
