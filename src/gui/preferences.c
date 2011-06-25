@@ -28,7 +28,8 @@
 
 #define ACCEL_COLUMN 0
 #define BINDING_COLUMN 1
-#define N_COLUMNS 2
+#define TRANS_COLUMN 2
+#define N_COLUMNS 3
 
 static void init_tab_accels(GtkWidget *book);
 static void tree_insert_accel(gpointer data, const gchar *accel_path,
@@ -98,7 +99,8 @@ static void init_tab_accels(GtkWidget *book)
   GtkWidget *button;
   GtkWidget *hbox;
   GtkTreeStore *model = gtk_tree_store_new(N_COLUMNS,
-                                           G_TYPE_STRING, G_TYPE_STRING);
+                                           G_TYPE_STRING, G_TYPE_STRING,
+                                           G_TYPE_STRING);
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
 
@@ -109,13 +111,13 @@ static void init_tab_accels(GtkWidget *book)
   // Building the accelerator tree
   gtk_accel_map_foreach((gpointer)model, tree_insert_accel);
   gtk_tree_sortable_set_sort_column_id(
-      GTK_TREE_SORTABLE(model), ACCEL_COLUMN, GTK_SORT_ASCENDING);
+      GTK_TREE_SORTABLE(model), TRANS_COLUMN, GTK_SORT_ASCENDING);
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
       _("accelerator"), renderer,
-      "text", ACCEL_COLUMN,
+      "text", TRANS_COLUMN,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
@@ -240,6 +242,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     gtk_tree_store_set(model, &iter,
                        ACCEL_COLUMN, first,
                        BINDING_COLUMN, name,
+                       TRANS_COLUMN, _(first),
                        -1);
     g_free(name);
   }
@@ -270,6 +273,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
       gtk_tree_store_set(model, &iter,
                          ACCEL_COLUMN, first,
                          BINDING_COLUMN, "",
+                         TRANS_COLUMN, _(first),
                          -1);
     }
 
