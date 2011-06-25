@@ -40,38 +40,38 @@
 #define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
 DT_MODULE(1)
 
-typedef struct dt_iop_blur_t
+typedef struct dt_iop_gaussian_t
 {
   float radius;
   float polarity;
   float saturation;
 }
-dt_iop_blur_params_t;
+dt_iop_gaussian_params_t;
 
-typedef struct dt_iop_blur_gui_data_t
+typedef struct dt_iop_gaussian_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2, vbox3;
   GtkWidget  *label1,*label2, label3;		     // radius, polarity, saturation
   GtkDarktableSlider *scale1,*scale2,*scale3;       // radius, polarity, saturation
 }
-dt_iop_blur_gui_data_t;
+dt_iop_gaussian_gui_data_t;
 
-typedef struct dt_iop_blur_data_t
+typedef struct dt_iop_gaussian_data_t
 {
   float radius;
   float polarity;
   float saturation;
 }
-dt_iop_blur_data_t;
+dt_iop_gaussian_data_t;
 
-typedef struct dt_iop_blur_global_data_t
+typedef struct dt_iop_gaussian_global_data_t
 {
-  int kernel_blur_invert;
-  int kernel_blur_hblur;
-  int kernel_blur_vblur;
-  int kernel_blur_mix;
+  int kernel_gaussian_invert;
+  int kernel_gaussian_hblur;
+  int kernel_gaussian_vblur;
+  int kernel_gaussian_mix;
 }
-dt_iop_blur_global_data_t;
+dt_iop_gaussian_global_data_t;
 
 
 const char *name()
@@ -94,8 +94,8 @@ groups ()
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  //dt_iop_blur_data_t *d = (dt_iop_blur_data_t *)piece->data;
-  //dt_iop_blur_global_data_t *gd = (dt_iop_blur_global_data_t *)self->data;
+  //dt_iop_gaussian_data_t *d = (dt_iop_gaussian_data_t *)piece->data;
+  //dt_iop_gaussian_global_data_t *gd = (dt_iop_gaussian_global_data_t *)self->data;
 
   cl_int err = -999;
   cl_mem dev_tmp = NULL;
@@ -187,7 +187,7 @@ error:
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  //dt_iop_blur_data_t *data = (dt_iop_blur_data_t *)piece->data;
+  //dt_iop_gaussian_data_t *data = (dt_iop_gaussian_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
@@ -301,7 +301,7 @@ radius_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_blur_params_t *p = (dt_iop_blur_params_t *)self->params;
+  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
   p->radius= dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -311,7 +311,7 @@ polarity_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_blur_params_t *p = (dt_iop_blur_params_t *)self->params;
+  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
   p->polarity = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -321,19 +321,19 @@ saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_blur_params_t *p = (dt_iop_blur_params_t *)self->params;
+  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
   p->saturation = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_blur_params_t *p = (dt_iop_blur_params_t *)p1;
+  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)p1;
 #ifdef HAVE_GEGL
   fprintf(stderr, "[highpass] TODO: implement gegl version!\n");
   // pull in new params to gegl
 #else
-  dt_iop_blur_data_t *d = (dt_iop_blur_data_t *)piece->data;
+  dt_iop_gaussian_data_t *d = (dt_iop_gaussian_data_t *)piece->data;
   d->radius = p->radius;
   d->polarity = p->polarity;
   d->saturation = p->saturation;
@@ -346,8 +346,8 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_blur_data_t));
-  memset(piece->data,0,sizeof(dt_iop_blur_data_t));
+  piece->data = malloc(sizeof(dt_iop_gaussian_data_t));
+  memset(piece->data,0,sizeof(dt_iop_gaussian_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -366,8 +366,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
-  dt_iop_blur_gui_data_t *g = (dt_iop_blur_gui_data_t *)self->gui_data;
-  dt_iop_blur_params_t *p = (dt_iop_blur_params_t *)module->params;
+  dt_iop_gaussian_gui_data_t *g = (dt_iop_gaussian_gui_data_t *)self->gui_data;
+  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)module->params;
   dtgtk_slider_set_value(g->scale1, p->radius);
   dtgtk_slider_set_value(g->scale2, p->polarity);
   dtgtk_slider_set_value(g->scale3, p->saturation);
@@ -375,29 +375,29 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_blur_params_t));
-  module->default_params = malloc(sizeof(dt_iop_blur_params_t));
+  module->params = malloc(sizeof(dt_iop_gaussian_params_t));
+  module->default_params = malloc(sizeof(dt_iop_gaussian_params_t));
   module->default_enabled = 0;
   module->priority = 714;
-  module->params_size = sizeof(dt_iop_blur_params_t);
+  module->params_size = sizeof(dt_iop_gaussian_params_t);
   module->gui_data = NULL;
-  dt_iop_blur_params_t tmp = (dt_iop_blur_params_t)
+  dt_iop_gaussian_params_t tmp = (dt_iop_gaussian_params_t)
   {
     25, 1, 1
   };
-  memcpy(module->params, &tmp, sizeof(dt_iop_blur_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_blur_params_t));
+  memcpy(module->params, &tmp, sizeof(dt_iop_gaussian_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_gaussian_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 4; // highpass.cl, from programs.conf
-  dt_iop_blur_global_data_t *gd = (dt_iop_blur_global_data_t *)malloc(sizeof(dt_iop_blur_global_data_t));
+  dt_iop_gaussian_global_data_t *gd = (dt_iop_gaussian_global_data_t *)malloc(sizeof(dt_iop_gaussian_global_data_t));
   module->data = gd;
-  gd->kernel_blur_invert = dt_opencl_create_kernel(darktable.opencl, program, "highpass_invert");
-  gd->kernel_blur_hblur = dt_opencl_create_kernel(darktable.opencl, program, "highpass_hblur");
-  gd->kernel_blur_vblur = dt_opencl_create_kernel(darktable.opencl, program, "highpass_vblur");
-  gd->kernel_blur_mix = dt_opencl_create_kernel(darktable.opencl, program, "highpass_mix");
+  gd->kernel_gaussian_invert = dt_opencl_create_kernel(darktable.opencl, program, "highpass_invert");
+  gd->kernel_gaussian_hblur = dt_opencl_create_kernel(darktable.opencl, program, "highpass_hblur");
+  gd->kernel_gaussian_vblur = dt_opencl_create_kernel(darktable.opencl, program, "highpass_vblur");
+  gd->kernel_gaussian_mix = dt_opencl_create_kernel(darktable.opencl, program, "highpass_mix");
 }
 
 
@@ -411,11 +411,11 @@ void cleanup(dt_iop_module_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_blur_global_data_t *gd = (dt_iop_blur_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_blur_invert);
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_blur_hblur);
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_blur_vblur);
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_blur_mix);
+  dt_iop_gaussian_global_data_t *gd = (dt_iop_gaussian_global_data_t *)module->data;
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_gaussian_invert);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_gaussian_hblur);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_gaussian_vblur);
+  dt_opencl_free_kernel(darktable.opencl, gd->kernel_gaussian_mix);
   free(module->data);
   module->data = NULL;
 }
@@ -423,9 +423,9 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_blur_gui_data_t));
-  dt_iop_blur_gui_data_t *g = (dt_iop_blur_gui_data_t *)self->gui_data;
-  dt_iop_blur_params_t *p = (dt_iop_blur_params_t *)self->params;
+  self->gui_data = malloc(sizeof(dt_iop_gaussian_gui_data_t));
+  dt_iop_gaussian_gui_data_t *g = (dt_iop_gaussian_gui_data_t *)self->gui_data;
+  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
 
   self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 500.0, 0.1, p->radius, 2));
