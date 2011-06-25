@@ -74,7 +74,7 @@ exposure (read_only image2d_t in, write_only image2d_t out, const float black, c
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel = (pixel - black)*scale;
+  pixel = fmax(0.0f,(pixel - black)*scale);
   write_imagef (out, (int2)(x, y), pixel);
 }
 

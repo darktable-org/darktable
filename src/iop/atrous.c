@@ -118,6 +118,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 static __m128
 weight (const float *c1, const float *c2, const float sharpen)
 {
