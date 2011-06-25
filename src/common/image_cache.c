@@ -461,7 +461,8 @@ void dt_image_cache_cleanup(dt_image_cache_t *cache)
   dt_pthread_mutex_destroy(&(cache->mutex));
 }
 
-int32_t dt_image_cache_bsearch(const int32_t id)
+// return position of cache index in cache->by_id
+int16_t dt_image_cache_bsearch(const int32_t id)
 {
   dt_image_cache_t *cache = darktable.image_cache;
   unsigned int min = 0, max = cache->num_lines;
@@ -473,12 +474,7 @@ int32_t dt_image_cache_bsearch(const int32_t id)
     t = (min + max)/2;
   }
   if(cache->line[cache->by_id[t]].image.id != id) return -1;
-  return cache->by_id[t];
-}
-
-int dt_image_cache_compare_id(const int16_t *l1, const int16_t *l2)
-{
-  return darktable.image_cache->line[*l1].image.id - darktable.image_cache->line[*l2].image.id;
+  return t;
 }
 
 dt_image_t *dt_image_cache_get(int32_t id, const char mode)
@@ -498,19 +494,31 @@ void dt_image_cache_clear(int32_t id)
 {
   dt_image_cache_t *cache = darktable.image_cache;
   dt_pthread_mutex_lock(&(cache->mutex));
-  int32_t res = dt_image_cache_bsearch(id);
-  if(res >= 0 && !cache->line[res].lock.write && !cache->line[res].lock.users)
+
+  int16_t pos = dt_image_cache_bsearch(id);
+
+  if (pos < 0)
+  {
+    dt_pthread_mutex_unlock(&(cache->mutex));
+    return;
+  }
+
+  // we going to assign -1 to id for this cache entry, so fix by_id sorting
+  int32_t cache_line = cache->by_id[pos];
+  memmove(cache->by_id+1,cache->by_id,pos*sizeof(int16_t));
+  cache->by_id[0] = cache_line;
+
+  if(!cache->line[cache_line].lock.write && !cache->line[cache_line].lock.users)
   {
     // clean out mipmaps
-    dt_image_cleanup(&(cache->line[res].image));
+    dt_image_cleanup(&(cache->line[cache_line].image));
     // also clean up metadata etc.
-    dt_image_init(&(cache->line[res].image));
+    dt_image_init(&(cache->line[cache_line].image));
   }
   // if still locked, at least invalidate the data.
-  else if(res >= 0)
   {
-    cache->line[res].image.film_id = -1;
-    cache->line[res].image.id = -1;
+    cache->line[cache_line].image.film_id = -1;
+    cache->line[cache_line].image.id = -1;
 
   }
   dt_pthread_mutex_unlock(&(cache->mutex));
@@ -525,11 +533,18 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
   if(dt_image_cache_check_consistency(cache))
     fprintf(stderr, "[image_cache_get_uninited] cache is corrupted!\n");
 #endif
-  // int16_t *res = bsearch(&id, cache->by_id, cache->num_lines, sizeof(int16_t), (int(*)(const void *, const void *))&dt_image_cache_compare_id);
-  int32_t res = dt_image_cache_bsearch(id);
+  
   dt_image_t *ret = NULL;
   int16_t k = cache->lru;
-  if(res < 0)
+
+  int16_t pos = dt_image_cache_bsearch(id);
+  int32_t cache_line;
+
+  if (pos >= 0)
+  {
+    cache_line = cache->by_id[pos];
+  }
+  else
   {
     // get least recently used image without lock and replace it:
     for(int i=0; i<cache->num_lines; i++)
@@ -549,44 +564,89 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
       dt_pthread_mutex_unlock(&(cache->mutex));
       return NULL;
     }
+    cache_line = k;
+
+    int16_t oldpos = dt_image_cache_bsearch(cache->line[cache_line].image.id);
+
+    // fix by_id sorting, this is faster then sorting everything again
+    if (cache->line[cache->by_id[0]].image.id > id)
+    {
+      // if new id should be in the beginning
+      memmove(cache->by_id+1,cache->by_id,oldpos*sizeof(int16_t));
+      cache->by_id[0] = cache_line;
+    }
+    else if (cache->line[cache->by_id[cache->num_lines-1]].image.id < id)
+    {
+      // if new id should be in the end
+      memmove(cache->by_id+oldpos,cache->by_id+oldpos+1,(cache->num_lines-oldpos-1)*sizeof(int16_t));
+      cache->by_id[cache->num_lines-1] = cache_line;
+    }
+    else if (oldpos > 0 && cache->line[cache->by_id[oldpos-1]].image.id > id)
+    {
+      // if new id should be in the middle and before old position
+      unsigned int min = 0, max = oldpos-1;
+      unsigned int pos = max/2;
+      while (pos != min)
+      {
+        if(cache->line[cache->by_id[pos]].image.id < id) min = pos;
+        else max = pos;
+        pos = (min + max)/2;
+      }
+      memmove(cache->by_id+pos+1,cache->by_id+pos,(oldpos-pos)*sizeof(int16_t));
+      cache->by_id[pos] = cache_line;
+    }
+    else if (oldpos < cache->num_lines - 1 && cache->line[cache->by_id[oldpos+1]].image.id < id)
+    {
+      // if new id should be in the middle and after old position
+      unsigned int min = oldpos+1, max = cache->num_lines-1;
+      unsigned int pos = max/2;
+      while (pos != min)
+      {
+        if(cache->line[cache->by_id[pos]].image.id < id) min = pos;
+        else max = pos;
+        pos = (min + max)/2;
+      }
+      memmove(cache->by_id+oldpos,cache->by_id+oldpos+1,(pos-oldpos)*sizeof(int16_t));
+      cache->by_id[pos] = cache_line;
+    }
+    // otherwise do nothing, sorting is ok
+
     // data/sidecar is flushed at each change for data safety, so no need to write xmp here:
-    dt_image_cache_flush_no_sidecars(&(cache->line[k].image));
-    dt_image_cleanup(&(cache->line[k].image));
-    dt_image_init(&(cache->line[k].image));
-    cache->line[k].image.id = id;
-    cache->line[k].image.cacheline = k;
-    cache->line[k].image.film_id = -1;
-    // TODO: insertion sort faster here?
-    qsort(cache->by_id, cache->num_lines, sizeof(int16_t), (int(*)(const void *, const void *))&dt_image_cache_compare_id);
-    res = k;
+    dt_image_cache_flush_no_sidecars(&(cache->line[cache_line].image));
+    dt_image_cleanup(&(cache->line[cache_line].image));
+    dt_image_init(&(cache->line[cache_line].image));
+    cache->line[cache_line].image.id = id;
+    cache->line[cache_line].image.cacheline = cache_line;
+    cache->line[cache_line].image.film_id = -1;
   }
-  if(cache->line[res].lock.write)
+
+  if(cache->line[cache_line].lock.write)
   {
     ret = NULL;
   }
   else
   {
     // update lock
-    cache->line[res].lock.users++;
-    if(mode == 'w') cache->line[res].lock.write = 1;
-    ret = &(cache->line[res].image);
+    cache->line[cache_line].lock.users++;
+    if(mode == 'w') cache->line[cache_line].lock.write = 1;
+    ret = &(cache->line[cache_line].image);
   }
   // update least recently used/most recently used linked list:
   // new top:
-  if(cache->mru != res)
+  if(cache->mru != cache_line)
   {
     // mru next pointer is end marker, but we are not already stored as cache->mru ???
-    g_assert(cache->line[res].mru != cache->num_lines);
+    g_assert(cache->line[cache_line].mru != cache->num_lines);
     // fill gap:
-    if(cache->line[res].lru >= 0)
-      cache->line[cache->line[res].lru].mru = cache->line[res].mru;
-    cache->line[cache->line[res].mru].lru = cache->line[res].lru;
+    if(cache->line[cache_line].lru >= 0)
+      cache->line[cache->line[cache_line].lru].mru = cache->line[cache_line].mru;
+    cache->line[cache->line[cache_line].mru].lru = cache->line[cache_line].lru;
 
-    if(cache->lru == res) cache->lru = cache->line[res].mru;
-    cache->line[cache->mru].mru = res;
-    cache->line[res].mru = cache->num_lines;
-    cache->line[res].lru = cache->mru;
-    cache->mru = res;
+    if(cache->lru == cache_line) cache->lru = cache->line[cache_line].mru;
+    cache->line[cache->mru].mru = cache_line;
+    cache->line[cache_line].mru = cache->num_lines;
+    cache->line[cache_line].lru = cache->mru;
+    cache->mru = cache_line;
   }
 #ifdef _DEBUG
   if(dt_image_cache_check_consistency(cache))

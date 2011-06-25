@@ -401,7 +401,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   if (dev->image && dev->image->dirty)
   {
     // tag image as changed
-    // TODO: only tag the image when there was a real change.
+    // only tag the image when there was a real change.
     guint tagid = 0;
     dt_tag_new("darktable|changed", &tagid);
     dt_tag_attach(tagid, dev->image->id);
@@ -413,12 +413,6 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     // commit updated mipmaps to db
     // TODO: bg process?
     dt_dev_process_to_mip(dev);
-  }
-  else if (dev->image && dev->image->dirty == 0)
-  {
-    // TODO: Remove this printf once we're confident that we don't skip saving on images that
-    // TODO: _have_ been modified.
-    fprintf(stderr, "Skipping save for unmodified image %s\n", dev->image->filename);
   }
 
   // release full buffer

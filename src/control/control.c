@@ -434,6 +434,7 @@ void dt_control_init(dt_control_t *s)
       // add column for blendops
       sqlite3_exec(darktable.db, "alter table history add column blendop_params blob", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "alter table style_items add column blendop_params blob", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "alter table presets add column blendop_params blob", NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }

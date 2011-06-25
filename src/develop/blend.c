@@ -108,19 +108,24 @@ static void _blend_normal(dt_iop_colorspace_type_t cst,const float opacity,const
 static void _blend_lighten(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
 {
   int channels = _blend_colorspace_channels(cst);
-  float ta[3], tb[3];
+  float ta[3], tb[3], tbo;
+  float max[4]={0},min[4]={0};
+
+  _blend_colorspace_channel_range(cst,min,max);
+
   for(int j=0;j<stride;j+=4)
   {
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
 
-       tb[0] =  (ta[0] * (1.0 - opacity)) + ((ta[0]>tb[0]?ta[0]:tb[0]) * opacity);
+       tbo = tb[0];
+       tb[0] =  CLAMP_RANGE(ta[0] * (1.0 - opacity) + (ta[0]>tb[0]?ta[0]:tb[0]) * opacity, min[0], max[0]);
 
        if (flag == 0)
        {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + ((ta[0]>tb[0]?ta[1]:tb[1]) * opacity);
-         tb[2] =  (ta[2] * (1.0 - opacity)) + ((ta[0]>tb[0]?ta[2]:tb[2]) * opacity);
+         tb[1] = CLAMP_RANGE(ta[1] * (1.0f - fabs(tbo - tb[0])) + 0.5f * (ta[1] + tb[1]) * fabs(tbo - tb[0]), min[1], max[1]);
+         tb[2] = CLAMP_RANGE(ta[2] * (1.0f - fabs(tbo - tb[0])) + 0.5f * (ta[2] + tb[2]) * fabs(tbo - tb[0]), min[2], max[2]);
        }
        else
        {
@@ -132,7 +137,7 @@ static void _blend_lighten(dt_iop_colorspace_type_t cst,const float opacity,cons
     }
     else
       for(int k=0;k<channels;k++)
-        b[j+k] =  (a[j+k] * (1.0 - opacity)) + ((fmax(a[j+k],b[j+k])) * opacity);
+        b[j+k] =  CLAMP_RANGE(a[j+k] * (1.0 - opacity) + fmax(a[j+k],b[j+k]) * opacity, min[k], max[k]);
       
   }
 }
@@ -141,19 +146,24 @@ static void _blend_lighten(dt_iop_colorspace_type_t cst,const float opacity,cons
 static void _blend_darken(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
 {
   int channels = _blend_colorspace_channels(cst);
-  float ta[3], tb[3];
+  float ta[3], tb[3], tbo;
+  float max[4]={0},min[4]={0};
+
+  _blend_colorspace_channel_range(cst,min,max);
+
   for(int j=0;j<stride;j+=4)
   {
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
 
-       tb[0] =  (ta[0] * (1.0 - opacity)) + ((ta[0]<tb[0]?ta[0]:tb[0]) * opacity);
+       tbo = tb[0];
+       tb[0] =  CLAMP_RANGE(ta[0] * (1.0 - opacity) + (ta[0]<tb[0]?ta[0]:tb[0]) * opacity, min[0], max[0]);
 
        if (flag == 0)
        {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + ((ta[0]<tb[0]?ta[1]:tb[1]) * opacity);
-         tb[2] =  (ta[2] * (1.0 - opacity)) + ((ta[0]<tb[0]?ta[2]:tb[2]) * opacity);
+         tb[1] = CLAMP_RANGE(ta[1] * (1.0f - fabs(tbo - tb[0])) + 0.5f * (ta[1] + tb[1]) * fabs(tbo - tb[0]), min[1], max[1]);
+         tb[2] = CLAMP_RANGE(ta[2] * (1.0f - fabs(tbo - tb[0])) + 0.5f * (ta[2] + tb[2]) * fabs(tbo - tb[0]), min[2], max[2]);
        }
        else
        {
@@ -165,7 +175,7 @@ static void _blend_darken(dt_iop_colorspace_type_t cst,const float opacity,const
     }
     else
       for(int k=0;k<channels;k++)
-        b[j+k] =  (a[j+k] * (1.0 - opacity)) + ((fmin(a[j+k],b[j+k])) * opacity);
+        b[j+k] =  CLAMP_RANGE(a[j+k] * (1.0 - opacity) + fmin(a[j+k],b[j+k]) * opacity, min[k], max[k]);
       
   }
   // return fmin(a,b);
@@ -177,21 +187,33 @@ static void _blend_multiply(dt_iop_colorspace_type_t cst,const float opacity,con
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
-
   float max[4]={0},min[4]={0};
+  float lmin = 0.0, lmax, la, lb;
+
   _blend_colorspace_channel_range(cst,min,max);
 
   for(int j=0;j<stride;j+=4)
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
+       lmax = max[0]+fabs(min[0]); 
+       la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+       lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax);
 
-       tb[0] = CLAMP_RANGE( ((ta[0] * (1.0 - opacity)) + ((ta[0] * tb[0]) * opacity)), min[0], max[0]);
+       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity)) + ((la * lb) * opacity)), min[0], max[0]) - fabs(min[0]);
 
        if (flag == 0)
        {
-         tb[1] = CLAMP_RANGE( ((ta[1] * (1.0 - opacity)) + ((ta[1] * tb[1]) * opacity)), min[1], max[1]);
-         tb[2] = CLAMP_RANGE( ((ta[2] * (1.0 - opacity)) + ((ta[2] * tb[2]) * opacity)), min[2], max[2]);
+         if (ta[0] > 0.01f)
+         {
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity) + (ta[1] + tb[1]) * tb[0]/ta[0] * opacity, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity) + (ta[2] + tb[2]) * tb[0]/ta[0] * opacity, min[2], max[2]);
+         }
+         else
+         { 
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity) + (ta[1] + tb[1]) * tb[0]/0.01f * opacity, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity) + (ta[2] + tb[2]) * tb[0]/0.01f * opacity, min[2], max[2]);
+         }
        }
        else
        {
@@ -203,7 +225,14 @@ static void _blend_multiply(dt_iop_colorspace_type_t cst,const float opacity,con
     }
     else
       for(int k=0;k<channels;k++)
+      {
+        lmax = max[k]+fabs(min[k]);
+        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
+        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
+
         b[j+k] = CLAMP_RANGE( ((a[j+k] * (1.0 - opacity)) + ((a[j+k] * b[j+k]) * opacity)), min[k], max[k]);
+      }
+
   
   // return (a*b);
 }
@@ -214,17 +243,21 @@ static void _blend_average(dt_iop_colorspace_type_t cst,const float opacity,cons
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
+  float max[4]={0},min[4]={0};
+
+  _blend_colorspace_channel_range(cst,min,max);
+
   for(int j=0;j<stride;j+=4)
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
 
-       tb[0] = (ta[0] * (1.0 - opacity)) + ( ((ta[0] + tb[0])/2.0) * opacity);
+       tb[0] = CLAMP_RANGE(ta[0] * (1.0 - opacity) + (ta[0] + tb[0])/2.0 * opacity, min[0], max[0]);
 
        if (flag == 0)
        {
-         tb[1] =   (ta[1] * (1.0 - opacity)) + ( ((ta[1] + tb[1])/2.0) * opacity);
-         tb[2] =   (ta[2] * (1.0 - opacity)) + ( ((ta[2] + tb[2])/2.0) * opacity);
+         tb[1] = CLAMP_RANGE(ta[1] * (1.0 - opacity) +  (ta[1] + tb[1])/2.0 * opacity, min[1], max[1]);
+         tb[2] = CLAMP_RANGE(ta[2] * (1.0 - opacity) +  (ta[2] + tb[2])/2.0 * opacity, min[2], max[2]);
        }
        else
        {
@@ -236,7 +269,7 @@ static void _blend_average(dt_iop_colorspace_type_t cst,const float opacity,cons
     }
     else
       for(int k=0;k<channels;k++)
-        b[j+k] =  (a[j+k] * (1.0 - opacity)) + ( ((a[j+k] + b[j+k])/2.0) * opacity);
+        b[j+k] =  CLAMP_RANGE(a[j+k] * (1.0 - opacity) + (a[j+k] + b[j+k])/2.0 * opacity, min[k], max[k]);
   
   // return (a+b)/2.0;
 }
@@ -323,6 +356,7 @@ static void _blend_substract(dt_iop_colorspace_type_t cst,const float opacity,co
 }
 
 
+
 /* difference */
 static void _blend_difference(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
 {
@@ -337,15 +371,17 @@ static void _blend_difference(dt_iop_colorspace_type_t cst,const float opacity,c
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
-       lmax = max[0]+fabs(min[0]); la = ta[0]+fabs(min[0]); lb = tb[0]+fabs(min[0]);
+       lmax = max[0]+fabs(min[0]); 
+       la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax); 
+       lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax);
 
        tb[0] = CLAMP_RANGE( (la * (1.0 - opacity)) + ( fabs(la - lb) * opacity), lmin, lmax)-fabs(min[0]);
 
        if (flag == 0)
        {
-         lmax = max[1]+fabs(min[1]); la = ta[1]+fabs(min[1]); lb = tb[1]+fabs(min[1]);
+         lmax = max[1]+fabs(min[1]); la = CLAMP_RANGE(ta[1]+fabs(min[1]), lmin, lmax); lb = CLAMP_RANGE(tb[1]+fabs(min[1]), lmin, lmax);
          tb[1] = CLAMP_RANGE( (la * (1.0 - opacity)) + ( fabs(la - lb) * opacity), lmin, lmax)-fabs(min[1]);
-         lmax = max[2]+fabs(min[2]); la = ta[2]+fabs(min[2]); lb = tb[2]+fabs(min[2]);
+         lmax = max[2]+fabs(min[2]); la = CLAMP_RANGE(ta[2]+fabs(min[2]), lmin, lmax); lb = CLAMP_RANGE(tb[2]+fabs(min[2]), lmin, lmax);
          tb[2] = CLAMP_RANGE( (la * (1.0 - opacity)) + ( fabs(la - lb) * opacity), lmin, lmax)-fabs(min[2]);
        }
        else
@@ -383,14 +419,24 @@ static void _blend_screen(dt_iop_colorspace_type_t cst,const float opacity,const
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
-       lmax = max[0]+fabs(min[0]); la = ta[0]+fabs(min[0]); lb = tb[0]+fabs(min[0]);
+       lmax = max[0]+fabs(min[0]); 
+       la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+       lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax);
 
        tb[0] = CLAMP_RANGE( (la * (1.0 - opacity)) + (( (lmax - (lmax-la) * (lmax-lb)) ) * opacity), lmin, lmax)-fabs(min[0]);
 
        if (flag == 0)
        {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + tb[1] * opacity;
-         tb[2] =  (ta[2] * (1.0 - opacity)) + tb[2] * opacity;
+         if (ta[0] > 0.01f)
+         {
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity) + 0.5f * (ta[1] + tb[1]) * tb[0]/ta[0] * opacity, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity) + 0.5f * (ta[2] + tb[2]) * tb[0]/ta[0] * opacity, min[2], max[2]);
+         }
+         else
+         { 
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity) + 0.5f * (ta[1] + tb[1]) * tb[0]/0.01f * opacity, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity) + 0.5f * (ta[2] + tb[2]) * tb[0]/0.01f * opacity, min[2], max[2]);
+         }
        }
        else
        {
@@ -404,7 +450,9 @@ static void _blend_screen(dt_iop_colorspace_type_t cst,const float opacity,const
     {
       for(int k=0;k<channels;k++)
       {
-        lmax = max[k]+fabs(min[k]); la = a[j+k]+fabs(min[k]); lb = b[j+k]+fabs(min[k]);
+        lmax = max[k]+fabs(min[k]);
+        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
+        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
 
         b[j+k] =  CLAMP_RANGE( (la * (1.0 - opacity)) + (( (lmax - (lmax-la) * (lmax-lb)) ) * opacity), lmin, lmax)-fabs(min[k]);
       }
@@ -424,6 +472,7 @@ static void _blend_overlay(dt_iop_colorspace_type_t cst,const float opacity,cons
   int channels = _blend_colorspace_channels(cst);
   float max[4]={0},min[4]={0};
   float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
+  float opacity2 = opacity*opacity;
 
   _blend_colorspace_channel_range(cst,min,max);
   
@@ -431,16 +480,29 @@ static void _blend_overlay(dt_iop_colorspace_type_t cst,const float opacity,cons
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
-       lmax = max[0]+fabs(min[0]); la = ta[0]+fabs(min[0]); lb = tb[0]+fabs(min[0]); halfmax = lmax/2.0; doublemax = lmax*2.0;
+       lmax = max[0]+fabs(min[0]);
+       la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+       lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax);
+       halfmax = lmax/2.0;
+       doublemax = lmax*2.0;
 
-       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity)) + (
+       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity2)) + (
           (la>halfmax) ? ( lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) ) : ( ( doublemax*la) * lb )
-          ) * opacity), lmin, lmax)-fabs(min[0]);
+          ) * opacity2), lmin, lmax)-fabs(min[0]);
+
 
        if (flag == 0)
        {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + tb[1] * opacity;
-         tb[2] =  (ta[2] * (1.0 - opacity)) + tb[2] * opacity;
+         if (ta[0] > 0.01f)
+         {
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity2) + (ta[1] + tb[1]) * tb[0]/ta[0] * opacity2, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity2) + (ta[2] + tb[2]) * tb[0]/ta[0] * opacity2, min[2], max[2]);
+         }
+         else
+         { 
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity2) + (ta[1] + tb[1]) * tb[0]/0.01f * opacity2, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity2) + (ta[2] + tb[2]) * tb[0]/0.01f * opacity2, min[2], max[2]);
+         }
        }
        else
        {
@@ -454,11 +516,15 @@ static void _blend_overlay(dt_iop_colorspace_type_t cst,const float opacity,cons
     {
       for(int k=0;k<channels;k++)
       {
-        lmax = max[k]+fabs(min[k]); la = a[j+k]+fabs(min[k]); lb = b[j+k]+fabs(min[k]); halfmax = lmax/2.0; doublemax = lmax*2.0;
+        lmax = max[k]+fabs(min[k]);
+        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
+        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
+        halfmax = lmax/2.0;
+        doublemax = lmax*2.0;
 
-        b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity)) + (
+        b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity2)) + (
           (la>halfmax) ? ( lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) ) : ( ( doublemax*la) * lb )
-          ) * opacity), lmin, lmax)-fabs(min[k]);
+          ) * opacity2), lmin, lmax)-fabs(min[k]);
       }
     }
     
@@ -478,6 +544,7 @@ static void _blend_softlight(dt_iop_colorspace_type_t cst,const float opacity,co
   int channels = _blend_colorspace_channels(cst);
   float max[4]={0},min[4]={0};
   float lmin = 0.0, lmax, la, lb, halfmax;
+  float opacity2 = opacity*opacity;
 
   _blend_colorspace_channel_range(cst,min,max);
   
@@ -485,16 +552,27 @@ static void _blend_softlight(dt_iop_colorspace_type_t cst,const float opacity,co
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
-       lmax = max[0]+fabs(min[0]); la = ta[0]+fabs(min[0]); lb = tb[0]+fabs(min[0]); halfmax = lmax/2.0;
+       lmax = max[0]+fabs(min[0]);
+       la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+       lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax);
+       halfmax = lmax/2.0;
 
-       tb[0] =  CLAMP_RANGE( ((la * (1.0 - opacity)) + (
-          (la>halfmax)? ( lmax - (lmax-la)  * (lmax - (lb-halfmax))) : ( la * (lb+halfmax) )
-        ) * opacity), lmin, lmax)-fabs(min[0]);
+       tb[0] =  CLAMP_RANGE( ((la * (1.0 - opacity2)) + (
+          (lb>halfmax)? ( lmax - (lmax-la)  * (lmax - (lb-halfmax))) : ( la * (lb+halfmax) )
+        ) * opacity2), lmin, lmax)-fabs(min[0]);
 
        if (flag == 0)
        {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + tb[1] * opacity;
-         tb[2] =  (ta[2] * (1.0 - opacity)) + tb[2] * opacity;
+         if (ta[0] > 0.01f)
+         {
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity2) + (ta[1] + tb[1]) * tb[0]/ta[0] * opacity2, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity2) + (ta[2] + tb[2]) * tb[0]/ta[0] * opacity2, min[2], max[2]);
+         }
+         else
+         { 
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity2) + (ta[1] + tb[1]) * tb[0]/0.01f * opacity2, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity2) + (ta[2] + tb[2]) * tb[0]/0.01f * opacity2, min[2], max[2]);
+         }
        }
        else
        {
@@ -508,11 +586,14 @@ static void _blend_softlight(dt_iop_colorspace_type_t cst,const float opacity,co
     {
       for(int k=0;k<channels;k++)
       {
-        lmax = max[k]+fabs(min[k]); la = a[j+k]+fabs(min[k]); lb = b[j+k]+fabs(min[k]); halfmax = lmax/2.0;
+        lmax = max[k]+fabs(min[k]);
+        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
+        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
+        halfmax = lmax/2.0;
 
-        b[j+k] =   CLAMP_RANGE( ((la * (1.0 - opacity)) + (
-          (la>halfmax)? ( lmax - (lmax-la)  * (lmax - (lb-halfmax))) : ( la * (lb+halfmax) )
-        ) * opacity), lmin, lmax)-fabs(min[k]);
+        b[j+k] =   CLAMP_RANGE( ((la * (1.0 - opacity2)) + (
+          (lb>halfmax)? ( lmax - (lmax-la)  * (lmax - (lb-halfmax))) : ( la * (lb+halfmax) )
+        ) * opacity2), lmin, lmax)-fabs(min[k]);
       }
     }
  
@@ -520,7 +601,7 @@ static void _blend_softlight(dt_iop_colorspace_type_t cst,const float opacity,co
   float max,min;
   _blend_colorspace_channel_range(cst,channel,&min,&max);
   const float halfmax=max/2.0;
-  return (a>halfmax) ? max - (max-a) * (max - (b-halfmax)) : a * (b+halfmax);
+  return (b>halfmax) ? max - (max-a) * (max - (b-halfmax)) : a * (b+halfmax);
   */
 }
 
@@ -531,6 +612,7 @@ static void _blend_hardlight(dt_iop_colorspace_type_t cst,const float opacity,co
   int channels = _blend_colorspace_channels(cst);
   float max[4]={0},min[4]={0};
   float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
+  float opacity2 = opacity*opacity;
 
   _blend_colorspace_channel_range(cst,min,max);
   
@@ -538,16 +620,29 @@ static void _blend_hardlight(dt_iop_colorspace_type_t cst,const float opacity,co
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
-       lmax = max[0]+fabs(min[0]); la = ta[0]+fabs(min[0]); lb = tb[0]+fabs(min[0]); halfmax = lmax/2.0; doublemax = lmax*2.0;
+       lmax = max[0]+fabs(min[0]);
+       la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+       lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax);
+       halfmax = lmax/2.0;
+       doublemax = lmax*2.0;
 
-       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity)) + (
-          (la>halfmax) ? ( lmax - (lmax-la)  * (lmax - doublemax*(lb-halfmax))) : ( la * (lb+halfmax) )
-        ) * opacity), lmin, lmax)-fabs(min[0]);
+       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity2)) + (
+          (lb>halfmax) ? ( lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) ) : ( ( doublemax*la) * lb )
+          ) * opacity2), lmin, lmax)-fabs(min[0]);
+
 
        if (flag == 0)
        {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + tb[1] * opacity;
-         tb[2] =  (ta[2] * (1.0 - opacity)) + tb[2] * opacity;
+         if (ta[0] > 0.01f)
+         {
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity2) + (ta[1] + tb[1]) * tb[0]/ta[0] * opacity2, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity2) + (ta[2] + tb[2]) * tb[0]/ta[0] * opacity2, min[2], max[2]);
+         }
+         else
+         { 
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity2) + (ta[1] + tb[1]) * tb[0]/0.01f * opacity2, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity2) + (ta[2] + tb[2]) * tb[0]/0.01f * opacity2, min[2], max[2]);
+         }
        }
        else
        {
@@ -561,21 +656,27 @@ static void _blend_hardlight(dt_iop_colorspace_type_t cst,const float opacity,co
     {
       for(int k=0;k<channels;k++)
       {
-        lmax = max[k]+fabs(min[k]); la = a[j+k]+fabs(min[k]); lb = b[j+k]+fabs(min[k]); halfmax = lmax/2.0; doublemax = lmax*2.0;
+        lmax = max[k]+fabs(min[k]);
+        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
+        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
+        halfmax = lmax/2.0;
+        doublemax = lmax*2.0;
 
-        b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity)) + (
-          (la>halfmax) ? ( lmax - (lmax-la)  * (lmax - doublemax*(lb-halfmax))) : ( la * (lb+halfmax) )
-        ) * opacity), lmin, lmax)-fabs(min[k]);
+        b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity2)) + (
+          (lb>halfmax) ? ( lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) ) : ( ( doublemax*la) * lb )
+          ) * opacity2), lmin, lmax)-fabs(min[k]);
       }
     }
-  /*
+    
+/*
   float max,min;
   _blend_colorspace_channel_range(cst,channel,&min,&max);
   const float halfmax=max/2.0;
   const float doublemax=max*2.0;
-  return (a>halfmax) ? max - (max-a) * (max - doublemax*(b-halfmax)) : a * (b+halfmax);
+  return (b>halfmax) ? max - (max - doublemax*(a-halfmax)) * (max-b) : (doublemax*a) * b;
   */
 }
+
 
 /* vividlight */
 static void _blend_vividlight(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
@@ -654,6 +755,7 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,
   int channels = _blend_colorspace_channels(cst);
   float max[4]={0},min[4]={0};
   float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
+  float opacity2 = opacity*opacity;
 
   _blend_colorspace_channel_range(cst,min,max);
   
@@ -661,16 +763,26 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
-       lmax = max[0]+fabs(min[0]); la = ta[0]+fabs(min[0]); lb = tb[0]+fabs(min[0]); halfmax = lmax/2.0; doublemax = lmax*2.0;
+       lmax = max[0]+fabs(min[0]);
+       la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+       lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax); 
+       halfmax = lmax/2.0; 
+       doublemax = lmax*2.0;
 
-       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity)) + (
-          (la>halfmax) ? ( la + doublemax*(lb-halfmax) ) : ( la + doublemax*lb-lmax )
-        ) * opacity), lmin, lmax)-fabs(min[0]);
+       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity2)) + ( la + doublemax*lb-lmax ) * opacity2), lmin, lmax)-fabs(min[0]);
 
        if (flag == 0)
        {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + tb[1] * opacity;
-         tb[2] =  (ta[2] * (1.0 - opacity)) + tb[2] * opacity;
+         if (ta[0] > 0.01f)
+         {
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity2) + (ta[1] + tb[1]) * tb[0]/ta[0] * opacity2, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity2) + (ta[2] + tb[2]) * tb[0]/ta[0] * opacity2, min[2], max[2]);
+         }
+         else
+         { 
+           tb[1] = CLAMP_RANGE(ta[1] * (1.0f - opacity2) + (ta[1] + tb[1]) * tb[0]/0.01f * opacity2, min[1], max[1]);
+           tb[2] = CLAMP_RANGE(ta[2] * (1.0f - opacity2) + (ta[2] + tb[2]) * tb[0]/0.01f * opacity2, min[2], max[2]);
+         }
        }
        else
        {
@@ -684,11 +796,13 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,
     {
       for(int k=0;k<channels;k++)
       {
-        lmax = max[k]+fabs(min[k]); la = a[j+k]+fabs(min[k]); lb = b[j+k]+fabs(min[k]); halfmax = lmax/2.0; doublemax = lmax*2.0;
+        lmax = max[k]+fabs(min[k]); 
+        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax); 
+        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax); 
+        halfmax = lmax/2.0; 
+        doublemax = lmax*2.0;
 
-        b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity)) + (
-          (la>halfmax) ? ( la + doublemax*(lb-halfmax) ) : ( la + doublemax*lb-lmax )
-        ) * opacity), lmin, lmax)-fabs(min[k]);
+        b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity2)) + ( la + doublemax*lb-lmax ) * opacity2), lmin, lmax)-fabs(min[k]);
       }
     }
   /*
@@ -696,7 +810,7 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,
   _blend_colorspace_channel_range(cst,channel,&min,&max);
   const float halfmax=max/2.0;
   const float doublemax=max*2.0;
-  return (a>halfmax) ? a + doublemax*(b-halfmax) : a +doublemax*b-max;
+  return a +doublemax*b-max;
   */
 }
 
@@ -707,6 +821,7 @@ static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float opacity,con
   int channels = _blend_colorspace_channels(cst);
   float max[4]={0},min[4]={0};
   float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
+  float opacity2 = opacity*opacity;
 
   _blend_colorspace_channel_range(cst,min,max);
   
@@ -714,22 +829,18 @@ static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float opacity,con
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
-       lmax = max[0]+fabs(min[0]); la = ta[0]+fabs(min[0]); lb = tb[0]+fabs(min[0]); halfmax = lmax/2.0; doublemax = lmax*2.0;
+       lmax = max[0]+fabs(min[0]);
+       la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+       lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax); 
+       halfmax = lmax/2.0; 
+       doublemax = lmax*2.0;
 
-       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity)) + (
-          (la>halfmax) ? ( fmax(la,doublemax*(lb-halfmax)) ) : ( fmin(la,doublemax*lb) )
-        ) * opacity), lmin, lmax)-fabs(min[0]);
+       tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity2)) + (
+          (lb>halfmax) ? ( fmax(la,doublemax*(lb-halfmax)) ) : ( fmin(la,doublemax*lb) )
+        ) * opacity2), lmin, lmax)-fabs(min[0]);
 
-       if (flag == 0)
-       {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + tb[1] * opacity;
-         tb[2] =  (ta[2] * (1.0 - opacity)) + tb[2] * opacity;
-       }
-       else
-       {
-         tb[1] = ta[1];
-         tb[2] = ta[2];
-       }
+       tb[1] = ta[1];
+       tb[2] = ta[2];
 
        _blend_Lab_rescale(tb, &b[j]);
     }
@@ -737,11 +848,15 @@ static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float opacity,con
     {
       for(int k=0;k<channels;k++)
       {
-        lmax = max[k]+fabs(min[k]); la = a[j+k]+fabs(min[k]); lb = b[j+k]+fabs(min[k]); halfmax = lmax/2.0; doublemax = lmax*2.0;
+        lmax = max[k]+fabs(min[k]); 
+        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax); 
+        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax); 
+        halfmax = lmax/2.0; 
+        doublemax = lmax*2.0;
 
-        b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity)) + (
-          (la>halfmax) ? ( fmax(la,doublemax*(lb-halfmax)) ) : ( fmin(la,doublemax*lb) )
-        ) * opacity), lmin, lmax)-fabs(min[k]);
+        b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity2)) + (
+          (lb>halfmax) ? ( fmax(la,doublemax*(lb-halfmax)) ) : ( fmin(la,doublemax*lb) )
+        ) * opacity2), lmin, lmax)-fabs(min[k]);
       }
     }
   /*
@@ -749,7 +864,7 @@ static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float opacity,con
   _blend_colorspace_channel_range(cst,channel,&min,&max);
   const float halfmax=max/2.0;
   const float doublemax=max*2.0;
-  return (a>halfmax) ? fmax(a,doublemax*(b-halfmax)) : fmin(a,doublemax*b);
+  return (b>halfmax) ? fmax(a,doublemax*(b-halfmax)) : fmin(a,doublemax*b);
   */
 }
 

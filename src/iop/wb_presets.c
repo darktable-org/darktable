@@ -206,6 +206,14 @@ const wb_data wb_preset[] =
   { "Canon", "PowerShot S90", Flash, 0,		{ 2.045784, 1, 1.671692, 0 } },
   { "Canon", "PowerShot S90", Underwater, 0,	{ 2.022297, 1, 1.830546, 0 } },
 
+  { "Canon", "PowerShot S95", Daylight, 0,	{ 1.6182, 1, 2.1430, 0 } },
+  { "Canon", "PowerShot S95", Cloudy, 0,	{ 1.6920, 1, 2.0179, 0 } },
+  { "Canon", "PowerShot S95", Tungsten, 0,	{ 1.2314, 1, 3.1015, 0 } },
+  { "Canon", "PowerShot S95", Fluorescent, 0,	{ 1.6593, 1, 2.0940, 0 } },
+  { "Canon", "PowerShot S95", FluorescentHigh, 0, { 1.7272, 1, 1.9811, 0 } },
+  { "Canon", "PowerShot S95", Flash, 0,		{ 1.9955, 1, 1.7768, 0 } },
+  { "Canon", "PowerShot S95", Underwater, 0,	{ 1.7607, 1, 2.1224, 0 } },
+
   { "Canon", "PowerShot Pro1", Daylight, 0,	{ 1.829238, 1, 1.571253, 0 } },
   { "Canon", "PowerShot Pro1", Cloudy, 0,	{ 1.194139, 1, 2.755800, 0 } },
   { "Canon", "PowerShot Pro1", Tungsten, 0,	{ 1.701416, 1, 2.218790, 0 } },

@@ -1245,6 +1245,7 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip)
     img->pixels = NULL;
   }
   else return;
+  // FIXME: for some reason this takes a looong time: (says perf)
   for(int k=0; k<darktable.mipmap_cache->num_entries[mip]; k++)
     if(darktable.mipmap_cache->mip_lru[mip][k] == img) darktable.mipmap_cache->mip_lru[mip][k] = NULL;
   darktable.mipmap_cache->total_size[mip] -= img->mip_buf_size[mip];

@@ -59,7 +59,7 @@ const char *name()
 int
 groups ()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_CORRECT;
 }
 
 int
@@ -148,7 +148,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_stuckpixels_params_t));
   module->default_params = malloc(sizeof(dt_iop_stuckpixels_params_t));
   module->default_enabled = 0;
-  module->priority = 160;
+  module->priority = 45;
   module->params_size = sizeof(dt_iop_stuckpixels_params_t);
   module->gui_data = NULL;
   const dt_iop_stuckpixels_params_t tmp =

@@ -118,6 +118,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 static __m128
 weight (const float *c1, const float *c2, const float sharpen)
 {
@@ -577,7 +583,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 370;
+  module->priority = 477;
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
