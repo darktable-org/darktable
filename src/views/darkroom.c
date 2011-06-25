@@ -78,7 +78,7 @@ init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/darkroom/filmstrip/show hide",
                           GDK_f, GDK_CONTROL_MASK);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
+      darktable.control->accels_darkroom,
       "<Darktable>/darkroom/filmstrip/show hide",
       NULL);
 
@@ -91,15 +91,15 @@ init(dt_view_t *self)
                           GDK_3, GDK_MOD1_MASK);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
+      darktable.control->accels_darkroom,
       "<Darktable>/darkroom/zoom/close",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
+      darktable.control->accels_darkroom,
       "<Darktable>/darkroom/zoom/fill",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
+      darktable.control->accels_darkroom,
       "<Darktable>/darkroom/zoom/fit",
       NULL);
 
@@ -108,7 +108,7 @@ init(dt_view_t *self)
                           GDK_e, GDK_CONTROL_MASK);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
+      darktable.control->accels_darkroom,
       "<Darktable>/darkroom/export",
       NULL);
 
@@ -120,11 +120,11 @@ init(dt_view_t *self)
                           GDK_BackSpace, 0);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
+      darktable.control->accels_darkroom,
       "<Darktable>/darkroom/image forward",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_darkroom,
+      darktable.control->accels_darkroom,
       "<Darktable>/darkroom/image back",
       NULL);
 }
@@ -775,31 +775,31 @@ static void connect_closures(dt_view_t *self)
   closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
                            (gpointer)self, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/filmstrip/show hide",
                                  closure);
 
   // Zoom shortcuts
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)1, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/zoom/close",
                                  closure);
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)2, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/zoom/fill",
                                  closure);
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)3, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/zoom/fit",
                                  closure);
 
   // enable shortcut to export with current export settings:
   closure = g_cclosure_new(G_CALLBACK(export_key_accel_callback), NULL, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/export",
                                  closure);
 
@@ -808,13 +808,13 @@ static void connect_closures(dt_view_t *self)
   closure = g_cclosure_new(G_CALLBACK(skip_f_key_accel_callback),
                            (gpointer)self->data, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/image forward",
                                  closure);
   closure = g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback),
                            (gpointer)self->data, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/image back",
                                  closure);
 
@@ -826,7 +826,7 @@ void enter(dt_view_t *self)
 
   // Attaching accelerator group
   gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                             darktable.gui->accels_darkroom);
+                             darktable.control->accels_darkroom);
 
   // Connecting the closures
   connect_closures(self);
@@ -890,7 +890,7 @@ void enter(dt_view_t *self)
       snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show", module->op);
       module->show_closure = g_cclosure_new(G_CALLBACK(show_module_callback),
                                                        module, NULL);
-      dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
+      dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                      accelpath, module->show_closure);
 
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
@@ -1016,12 +1016,12 @@ void leave(dt_view_t *self)
 
   // Detaching the accelerator group
   gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                                darktable.gui->accels_darkroom);
+                                darktable.control->accels_darkroom);
 
   // Disconnecting and deleting the closures
   while(c)
   {
-    gtk_accel_group_disconnect(darktable.gui->accels_darkroom, c->data);
+    dt_accel_group_disconnect(darktable.control->accels_darkroom, c->data);
     c = g_slist_next(c);
   }
   g_slist_free(((dt_develop_t*)self->data)->closures);

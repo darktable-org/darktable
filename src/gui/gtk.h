@@ -36,17 +36,6 @@ typedef struct dt_gui_snapshot_t
 }
 dt_gui_snapshot_t;
 
-// All the accelerator keys for the key_pressed style shortcuts
-typedef struct dt_gui_accels_t
-{
-  GtkAccelKey
-      filmstrip_forward, filmstrip_back,
-      lighttable_up, lighttable_down, lighttable_right,
-      lighttable_left, lighttable_center, lighttable_preview,
-      global_sideborders;
-
-} dt_gui_accels_t;
-
 // flat view of all our widgets. could probably be modularized
 // to be a bit nicer (put metadata/histogram/.. in their gui/* files):
 typedef struct dt_gui_widgets_t
@@ -167,26 +156,9 @@ dt_gui_widgets_t;
 
 typedef struct dt_gui_gtk_t
 {
-  // Keyboard accelerator groups
-  GtkAccelGroup
-      *accels_global, *accels_lighttable, *accels_darkroom, *accels_capture,
-      *accels_filmstrip;
-
-  // Accelerator group path lists
-  GSList
-      *accels_list_global, *accels_list_lighttable, *accels_list_darkroom,
-      *accels_list_capture, *accels_list_filmstrip;
-
-  // Cached accelerator keys for key_pressed shortcuts
-  dt_gui_accels_t accels;
 
   // GUI widgets
   dt_gui_widgets_t widgets;
-
-  // Accel remapping data
-  gchar *accel_remap_str;
-  GtkTreePath *accel_remap_path;
-
 
   GdkPixmap *pixmap;
   GList *redraw_widgets;
@@ -220,5 +192,7 @@ void dt_gui_key_accel_block_on_focus (GtkWidget *w);
 void dt_accel_group_connect_by_path(GtkAccelGroup *accel_group,
                                     const gchar *accel_path,
                                     GClosure *closure);
+void dt_accel_group_disconnect(GtkAccelGroup *accel_group,
+                               GClosure *closure);
 
 #endif

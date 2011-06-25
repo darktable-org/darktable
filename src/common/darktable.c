@@ -414,7 +414,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
 
   // The GUI must be initialized before the views, because the init()
-  // functions of the views depend on darktable.gui->accels_* to register
+  // functions of the views depend on darktable.control->accels_* to register
   // their keyboard accelerators
 
   if(init_gui)

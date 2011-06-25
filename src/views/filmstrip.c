@@ -107,25 +107,25 @@ void init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/filmstrip/rating/reject", GDK_r,
                           0);
 
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/desert",
                                  NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/1",
                                  NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/2",
                                  NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/3",
                                  NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/4",
                                  NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/5",
                                  NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/reject",
                                  NULL);
 
@@ -137,15 +137,15 @@ void init(dt_view_t *self)
                           GDK_d, GDK_CONTROL_MASK);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/history/copy",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/history/paste",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/history/discard",
       NULL);
 
@@ -156,23 +156,23 @@ void init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/filmstrip/color/purple", GDK_F5, 0);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/red",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/yellow",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/green",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/blue",
       NULL);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/purple",
       NULL);
 
@@ -181,9 +181,9 @@ void init(dt_view_t *self)
   gtk_accel_map_add_entry("<Darktable>/filmstrip/scroll back",
                           GDK_Left, 0);
 
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/scroll forward", NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/scroll back", NULL);
 }
 
@@ -405,49 +405,49 @@ static void connect_closures(dt_view_t *self)
       G_CALLBACK(star_key_accel_callback),
       (gpointer)DT_VIEW_DESERT, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/desert",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(star_key_accel_callback),
       (gpointer)DT_VIEW_STAR_1, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/1",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(star_key_accel_callback),
       (gpointer)DT_VIEW_STAR_2, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/2",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(star_key_accel_callback),
       (gpointer)DT_VIEW_STAR_3, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/3",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(star_key_accel_callback),
       (gpointer)DT_VIEW_STAR_4, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/4",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(star_key_accel_callback),
       (gpointer)DT_VIEW_STAR_5, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/5",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(star_key_accel_callback),
       (gpointer)DT_VIEW_REJECT, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/rating/reject",
                                  closure);
 
@@ -455,21 +455,21 @@ static void connect_closures(dt_view_t *self)
                            (gpointer)strip, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/history/copy",
       closure);
   closure = g_cclosure_new(G_CALLBACK(paste_history_key_accel_callback),
                            (gpointer)strip, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/history/paste",
       closure);
   closure = g_cclosure_new(G_CALLBACK(discard_history_key_accel_callback),
                            (gpointer)strip, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/history/discard",
       closure);
 
@@ -477,41 +477,41 @@ static void connect_closures(dt_view_t *self)
                            (gpointer)0, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/red",
       closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                            (gpointer)1, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/yellow",
       closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                            (gpointer)2, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/green",
       closure);
   closure =  g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                             (gpointer)3, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/blue",
       closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
                            (gpointer)4, NULL);
   strip->closures = g_slist_prepend(strip->closures, closure);
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_filmstrip,
+      darktable.control->accels_filmstrip,
       "<Darktable>/filmstrip/color/purple",
       closure);
 
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/scroll forward", NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_filmstrip,
+  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
                                  "<Darktable>/filmstrip/scroll back", NULL);
 
 }
@@ -520,7 +520,7 @@ void enter(dt_view_t *self)
 {
   // Attaching accel group
   gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                             darktable.gui->accels_filmstrip);
+                             darktable.control->accels_filmstrip);
 
   // Connecting the closures
   connect_closures(self);
@@ -537,14 +537,14 @@ void leave(dt_view_t *self)
 
   while(c)
   {
-    gtk_accel_group_disconnect(darktable.gui->accels_filmstrip, c->data);
+    dt_accel_group_disconnect(darktable.control->accels_filmstrip, c->data);
     c = g_slist_next(c);
   }
   g_slist_free(strip->closures);
   strip->closures = NULL;
 
   gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                                darktable.gui->accels_filmstrip);
+                                darktable.control->accels_filmstrip);
 }
 
 // TODO: go to currently selected image in sister view (lt/tethered/darkroom)
@@ -607,7 +607,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
-  dt_gui_accels_t *accels = &darktable.gui->accels;
+  dt_control_accels_t *accels = &darktable.control->accels;
 
   if(!darktable.control->key_accelerators_on)
     return 0;

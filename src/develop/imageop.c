@@ -455,7 +455,7 @@ void dt_iop_load_modules_so()
     snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
              (module->op));
     gtk_accel_map_add_entry(accelpath, 0, 0);
-    dt_accel_group_connect_by_path(darktable.gui->accels_darkroom, accelpath,
+    dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
                                    NULL);
   }
   g_dir_close(dir);
@@ -511,7 +511,7 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   // Disconnecting the show accelerator
   snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
            (module->name)());
-  gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
+  dt_accel_group_disconnect(darktable.control->accels_darkroom,
                              module->show_closure);
 
   free(module->default_params); module->default_params = NULL ; 

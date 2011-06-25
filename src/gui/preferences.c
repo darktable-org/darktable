@@ -72,8 +72,8 @@ void dt_gui_preferences_show()
   gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
 
   // Make sure remap mode is off initially
-  darktable.gui->accel_remap_str = NULL;
-  darktable.gui->accel_remap_path = NULL;
+  darktable.control->accel_remap_str = NULL;
+  darktable.control->accel_remap_path = NULL;
 
   init_tab_gui(notebook);
   init_tab_core(notebook);
@@ -83,10 +83,10 @@ void dt_gui_preferences_show()
   gtk_widget_destroy(dialog);
 
   // Cleaning up any memory still allocated for remapping
-  if(darktable.gui->accel_remap_path)
+  if(darktable.control->accel_remap_path)
   {
-    gtk_tree_path_free(darktable.gui->accel_remap_path);
-    darktable.gui->accel_remap_path = NULL;
+    gtk_tree_path_free(darktable.control->accel_remap_path);
+    darktable.control->accel_remap_path = NULL;
   }
 
 }
@@ -375,7 +375,7 @@ static void delete_matching_accels(gpointer path, gpointer key_event)
   GdkEventKey *event = (GdkEventKey*)key_event;
 
   // Make sure we're not deleting the key we just remapped
-  if(!strcmp(path, darktable.gui->accel_remap_str))
+  if(!strcmp(path, darktable.control->accel_remap_str))
     return;
 
   gtk_accel_map_lookup_entry(path, &key);
@@ -422,8 +422,8 @@ static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
                        -1);
 
     // Activating remapping
-    darktable.gui->accel_remap_str = accel_path;
-    darktable.gui->accel_remap_path = gtk_tree_path_copy(path);
+    darktable.control->accel_remap_str = accel_path;
+    darktable.control->accel_remap_path = gtk_tree_path_copy(path);
   }
 }
 
@@ -435,22 +435,22 @@ static void tree_selection_changed(GtkTreeSelection *selection, gpointer data)
   GtkAccelKey key;
 
   // If remapping is currently activated, it needs to be deactivated
-  if(!darktable.gui->accel_remap_str)
+  if(!darktable.control->accel_remap_str)
     return;
 
   model = gtk_tree_view_get_model(gtk_tree_selection_get_tree_view(selection));
-  gtk_tree_model_get_iter(model, &iter, darktable.gui->accel_remap_path);
+  gtk_tree_model_get_iter(model, &iter, darktable.control->accel_remap_path);
 
   // Restoring the BINDING_COLUMN text
-  gtk_accel_map_lookup_entry(darktable.gui->accel_remap_str, &key);
+  gtk_accel_map_lookup_entry(darktable.control->accel_remap_str, &key);
   gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
                      BINDING_COLUMN,
                      gtk_accelerator_name(key.accel_key, key.accel_mods), -1);
 
   // Cleaning up the darktable.gui info
-  darktable.gui->accel_remap_str = NULL;
-  gtk_tree_path_free(darktable.gui->accel_remap_path);
-  darktable.gui->accel_remap_path = NULL;
+  darktable.control->accel_remap_str = NULL;
+  gtk_tree_path_free(darktable.control->accel_remap_path);
+  darktable.control->accel_remap_path = NULL;
 }
 
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
@@ -476,75 +476,75 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   snprintf(accelpath, 1024, "%s/keyboardrc", datadir);
 
   // Otherwise, determine whether we're in remap mode or not
-  if(darktable.gui->accel_remap_str)
+  if(darktable.control->accel_remap_str)
   {
     // First delete any conflicting accelerators
 
     // If a global accel is changed, modify _every_ group
     global =
-        g_slist_find_custom(darktable.gui->accels_list_global,
-                            darktable.gui->accel_remap_str, _strcmp) != NULL;
+        g_slist_find_custom(darktable.control->accels_list_global,
+                            darktable.control->accel_remap_str, _strcmp) != NULL;
 
     // Global is always active, so anything that matches there must go
-    g_slist_foreach(darktable.gui->accels_list_global, delete_matching_accels,
+    g_slist_foreach(darktable.control->accels_list_global, delete_matching_accels,
                     (gpointer)event);
 
     // Now check for any matching accels in the same group
-    if(g_slist_find_custom(darktable.gui->accels_list_lighttable,
-                           darktable.gui->accel_remap_str, _strcmp) || global)
-      g_slist_foreach(darktable.gui->accels_list_lighttable,
+    if(g_slist_find_custom(darktable.control->accels_list_lighttable,
+                           darktable.control->accel_remap_str, _strcmp) || global)
+      g_slist_foreach(darktable.control->accels_list_lighttable,
                       delete_matching_accels, (gpointer)event);
-    if(g_slist_find_custom(darktable.gui->accels_list_darkroom,
-                           darktable.gui->accel_remap_str, _strcmp) || global)
+    if(g_slist_find_custom(darktable.control->accels_list_darkroom,
+                           darktable.control->accel_remap_str, _strcmp) || global)
     {
-      g_slist_foreach(darktable.gui->accels_list_darkroom,
+      g_slist_foreach(darktable.control->accels_list_darkroom,
                       delete_matching_accels, (gpointer)event);
-      g_slist_foreach(darktable.gui->accels_list_filmstrip,
+      g_slist_foreach(darktable.control->accels_list_filmstrip,
                       delete_matching_accels, (gpointer)event);
     }
-    if(g_slist_find_custom(darktable.gui->accels_list_capture,
-                           darktable.gui->accel_remap_str, _strcmp) || global)
+    if(g_slist_find_custom(darktable.control->accels_list_capture,
+                           darktable.control->accel_remap_str, _strcmp) || global)
     {
-      g_slist_foreach(darktable.gui->accels_list_capture,
+      g_slist_foreach(darktable.control->accels_list_capture,
                       delete_matching_accels, (gpointer)event);
-      g_slist_foreach(darktable.gui->accels_list_filmstrip,
+      g_slist_foreach(darktable.control->accels_list_filmstrip,
                       delete_matching_accels, (gpointer)event);
     }
-    if(g_slist_find_custom(darktable.gui->accels_list_filmstrip,
-                           darktable.gui->accel_remap_str, _strcmp) || global)
+    if(g_slist_find_custom(darktable.control->accels_list_filmstrip,
+                           darktable.control->accel_remap_str, _strcmp) || global)
     {
-      g_slist_foreach(darktable.gui->accels_list_darkroom,
+      g_slist_foreach(darktable.control->accels_list_darkroom,
                       delete_matching_accels, (gpointer)event);
-      g_slist_foreach(darktable.gui->accels_list_capture,
+      g_slist_foreach(darktable.control->accels_list_capture,
                       delete_matching_accels, (gpointer)event);
     }
     // Change the accel map entry
-    if(gtk_accel_map_change_entry(darktable.gui->accel_remap_str, event->keyval,
+    if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, event->keyval,
                                    event->state & KEY_STATE_MASK, TRUE))
     {
       // If it succeeded delete any conflicting accelerators
 
       // If a global accel is changed, modify _every_ group
       global =
-          g_slist_find_custom(darktable.gui->accels_list_global,
-                              darktable.gui->accel_remap_str, _strcmp) != NULL;
+          g_slist_find_custom(darktable.control->accels_list_global,
+                              darktable.control->accel_remap_str, _strcmp) != NULL;
 
       // Global is always active, so anything that matches there must go
-      g_slist_foreach(darktable.gui->accels_list_global, delete_matching_accels,
+      g_slist_foreach(darktable.control->accels_list_global, delete_matching_accels,
                       (gpointer)event);
 
       // Now check for any matching accels in the same group
-      if(g_slist_find_custom(darktable.gui->accels_list_lighttable,
-                             darktable.gui->accel_remap_str, _strcmp) || global)
-        g_slist_foreach(darktable.gui->accels_list_lighttable,
+      if(g_slist_find_custom(darktable.control->accels_list_lighttable,
+                             darktable.control->accel_remap_str, _strcmp) || global)
+        g_slist_foreach(darktable.control->accels_list_lighttable,
                         delete_matching_accels, (gpointer)event);
-      if(g_slist_find_custom(darktable.gui->accels_list_darkroom,
-                             darktable.gui->accel_remap_str, _strcmp) || global)
-        g_slist_foreach(darktable.gui->accels_list_darkroom,
+      if(g_slist_find_custom(darktable.control->accels_list_darkroom,
+                             darktable.control->accel_remap_str, _strcmp) || global)
+        g_slist_foreach(darktable.control->accels_list_darkroom,
                         delete_matching_accels, (gpointer)event);
-      if(g_slist_find_custom(darktable.gui->accels_list_capture,
-                             darktable.gui->accel_remap_str, _strcmp) || global)
-        g_slist_foreach(darktable.gui->accels_list_capture,
+      if(g_slist_find_custom(darktable.control->accels_list_capture,
+                             darktable.control->accel_remap_str, _strcmp) || global)
+        g_slist_foreach(darktable.control->accels_list_capture,
                         delete_matching_accels, (gpointer)event);
 
     }
@@ -555,9 +555,9 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
     update_accels_model(NULL, model);
 
     // Finally clear the remap state
-    darktable.gui->accel_remap_str = NULL;
-    gtk_tree_path_free(darktable.gui->accel_remap_path);
-    darktable.gui->accel_remap_path = NULL;
+    darktable.control->accel_remap_str = NULL;
+    gtk_tree_path_free(darktable.control->accel_remap_path);
+    darktable.control->accel_remap_path = NULL;
 
     // Save the changed keybindings
     gtk_accel_map_save(accelpath);

@@ -755,7 +755,7 @@ void init_key_accels()
                           GDK_e, GDK_CONTROL_MASK);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_lighttable,
+      darktable.control->accels_lighttable,
       "<Darktable>/lighttable/plugins/export/export selected images",
       g_cclosure_new(G_CALLBACK(key_accel_callback), NULL, NULL));
 }

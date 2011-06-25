@@ -464,38 +464,38 @@ void dt_control_key_accelerators_on(struct dt_control_t *s)
     if(state & ACCELS_GLOBAL)
       gtk_window_add_accel_group(
           GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.gui->accels_global);
+          darktable.control->accels_global);
     if(state & ACCELS_LIGHTTABLE)
       gtk_window_add_accel_group(
           GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.gui->accels_lighttable);
+          darktable.control->accels_lighttable);
     if(state & ACCELS_DARKROOM)
       gtk_window_add_accel_group(
           GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.gui->accels_darkroom);
+          darktable.control->accels_darkroom);
     if(state & ACCELS_CAPTURE)
       gtk_window_add_accel_group(
           GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.gui->accels_capture);
+          darktable.control->accels_capture);
     if(state & ACCELS_FILMSTRIP)
       gtk_window_add_accel_group(
           GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.gui->accels_filmstrip);
+          darktable.control->accels_filmstrip);
   }
 }
 
 static void state_from_accels(gpointer data, gpointer state)
 {
   guint* s = (guint*)state;
-  if(data == (gpointer)darktable.gui->accels_global)
+  if(data == (gpointer)darktable.control->accels_global)
     *s |= ACCELS_GLOBAL;
-  else if(data == (gpointer)darktable.gui->accels_lighttable)
+  else if(data == (gpointer)darktable.control->accels_lighttable)
     *s |= ACCELS_LIGHTTABLE;
-  else if(data == (gpointer)darktable.gui->accels_darkroom)
+  else if(data == (gpointer)darktable.control->accels_darkroom)
     *s |= ACCELS_DARKROOM;
-  else if(data == (gpointer)darktable.gui->accels_capture)
+  else if(data == (gpointer)darktable.control->accels_capture)
     *s |= ACCELS_CAPTURE;
-  else if(data == (gpointer)darktable.gui->accels_filmstrip)
+  else if(data == (gpointer)darktable.control->accels_filmstrip)
     *s |= ACCELS_FILMSTRIP;
 
   gtk_window_remove_accel_group(
@@ -1326,7 +1326,7 @@ int dt_control_key_pressed_override(guint key, guint state)
 {
   int visible;
   GtkWidget *widget;
-  dt_gui_accels_t* accels = &darktable.gui->accels;
+  dt_control_accels_t* accels = &darktable.control->accels;
 
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;
