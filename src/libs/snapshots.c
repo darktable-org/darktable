@@ -28,6 +28,8 @@ DT_MODULE(1)
 
 #define DT_LIB_SNAPSHOTS_COUNT 4
 
+#define HANDLE_SIZE 0.02
+
 /* a snapshot */
 typedef struct dt_lib_snapshot_t
 {
@@ -58,9 +60,9 @@ typedef struct dt_lib_snapshots_t
   cairo_surface_t *snapshot_image;
 
   
-  /* change snapshot */
-  gboolean dragging;
-  double vp_width,vp_height,vp_xpointer;
+  /* change snapshot overlay controls */
+  gboolean dragging,vertical,inverted;
+  double vp_width,vp_height,vp_xpointer,vp_ypointer;
 
 }
 dt_lib_snapshots_t;
@@ -94,15 +96,52 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   {
     d->vp_width = width;
     d->vp_height = height;
-    
+
+    /* check if mouse pointer is on draggable area */
+    double xp = pointerx/d->vp_width;
+    double yp = pointery/d->vp_height;
+    double xpt = xp*0.01;
+    double ypt = yp*0.01;
+    gboolean mouse_over_control = d->vertical ? ((xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt)?TRUE:FALSE) :
+      ((yp > d->vp_ypointer-ypt && yp < d->vp_ypointer+ypt)?TRUE:FALSE);
+
+    /* set x,y,w,h of surface depending on split align and invert */
+    double x = d->vertical ? (d->inverted?width*d->vp_xpointer:0) : 0;
+    double y = d->vertical ? 0 : (d->inverted?height*d->vp_ypointer:0);
+    double w = d->vertical ? (d->inverted?(width * (1.0 - d->vp_xpointer)):width * d->vp_xpointer) : width;
+    double h = d->vertical ? height : (d->inverted?(height * (1.0 - d->vp_ypointer)):height * d->vp_ypointer);
+
     cairo_set_source_surface(cri, d->snapshot_image, 0, 0);
-    cairo_rectangle(cri, 0, 0, width*d->vp_xpointer, height);
+    //cairo_rectangle(cri, 0, 0, width*d->vp_xpointer, height);
+    cairo_rectangle(cri,x,y,w,h);
     cairo_fill(cri);
-    cairo_set_source_rgb(cri, .7, .7, .7);
-    cairo_set_line_width(cri, 1.0);
-    cairo_move_to(cri, width*d->vp_xpointer, 0.0f);
-    cairo_line_to(cri, width*d->vp_xpointer, height);
+
+    /* draw the split line */
+    cairo_set_source_rgb(cri, .7, .7, .7);        
+    cairo_set_line_width(cri, (mouse_over_control ? 2.0 : 0.5) );
+    
+    if(d->vertical)
+    {
+      cairo_move_to(cri, width*d->vp_xpointer, 0.0f);
+      cairo_line_to(cri, width*d->vp_xpointer, height);
+    } else {
+      cairo_move_to(cri, 0.0f,  height*d->vp_ypointer);
+      cairo_line_to(cri, width, height*d->vp_ypointer); 
+    }
     cairo_stroke(cri);
+
+    /* if mouse over control lets draw center rotate control, hide if split is dragged */
+    if(!d->dragging && mouse_over_control)
+    {
+      cairo_set_line_width(cri,0.5);
+      double s = width*HANDLE_SIZE;
+      dtgtk_cairo_paint_refresh(cri,
+				(d->vertical ? width*d->vp_xpointer : width*0.5)-(s*0.5),
+				(d->vertical ? height*0.5 : height*d->vp_ypointer)-(s*0.5),
+				s,s,1);
+    }
+
+
   }
 }
 
@@ -117,16 +156,46 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
   return 0;
 }
 
+static int _lib_snapshot_rotation_cnt = 0;
+
 int button_pressed (struct dt_lib_module_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   if(d->snapshot_image)
   {
     double xp = x/d->vp_width;
+    double yp = y/d->vp_height;
     double xpt = xp*0.01;
-    if (which==1 && (xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt)) 
+    double ypt = yp*0.01;
+
+    /* do the split rotating */
+    double hhs = HANDLE_SIZE*0.5;
+    if (which==1 && (
+	((d->vertical && xp > d->vp_xpointer-hhs && xp <  d->vp_xpointer+hhs) && 
+	 yp>0.5-hhs && yp<0.5+hhs) ||
+	((yp > d->vp_ypointer-hhs && yp < d->vp_ypointer+hhs) && xp>0.5-hhs && xp<0.5+hhs)
+		     ))
+    {
+      /* let's rotate */
+      _lib_snapshot_rotation_cnt++;
+
+      d->vertical = !d->vertical;
+      if(_lib_snapshot_rotation_cnt%2)
+	d->inverted = !d->inverted;
+
+      d->vp_xpointer = xp;
+      d->vp_ypointer = yp;
+      dt_control_queue_draw_all();
+    }
+    /* do the dragging !? */
+    else if (which==1 && 
+	(
+	 (d->vertical && xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt) ||
+	 (yp > d->vp_ypointer-ypt && yp < d->vp_ypointer+ypt)
+	 ))
     {
       d->dragging = TRUE;
+      d->vp_ypointer = yp;
       d->vp_xpointer = xp;
       dt_control_queue_draw_all();
     }
@@ -139,13 +208,23 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, int which)
 {
  
    dt_lib_snapshots_t *d=(dt_lib_snapshots_t *)self->data;
+
    if(d->snapshot_image)
    {
-     if(d->dragging) {
-       double xp = x/d->vp_width;
+     double xp = x/d->vp_width;
+     double yp = y/d->vp_height;
+     //double xpt = xp*0.01;
+
+     /* update x pointer */
+     if(d->dragging) 
+     {
        d->vp_xpointer = xp;
-       dt_control_queue_draw_all();
+       d->vp_ypointer = yp;
      }
+
+     /* is mouse over control or in draggin state?, lets redraw */
+     //    if(d->dragging || (xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt))
+       dt_control_queue_draw_all();
 
      return 1;
    } 
@@ -176,6 +255,7 @@ void gui_init(dt_lib_module_t *self)
   d->size = 4;
   d->snapshot = (dt_lib_snapshot_t *)g_malloc(sizeof(dt_lib_snapshot_t)*d->size);
   d->vp_xpointer = 0.5;
+  d->vp_ypointer = 0.5;
   memset(d->snapshot,0,sizeof(dt_lib_snapshot_t)*d->size);
 
   /* initialize ui containers */
