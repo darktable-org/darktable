@@ -289,10 +289,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("sensitivity of edge detection"), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("sensitivity"));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 4.0000, 0.010, p->scale, 3));
-  g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the effect around edges"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("spatial extent of the effect around edges"), (char *)NULL);
   dtgtk_slider_set_label(g->scale2,_("scale"));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 10.0000, 0.001, p->strength, 3));
-  g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("strength of the local contrast"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("strength of the local contrast"), (char *)NULL);
   dtgtk_slider_set_label(g->scale3,_("strength"));
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
