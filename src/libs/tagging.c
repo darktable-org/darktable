@@ -323,6 +323,11 @@ position ()
 }
 
 
+static void _lib_tagging_redraw_callback(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self =(dt_lib_module_t *)user_data;
+  gtk_widget_queue_draw(self->widget);
+}
 
 void
 gui_init (dt_lib_module_t *self)
@@ -335,7 +340,6 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget,100,-1);
 
   g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), (gpointer)self);
-  darktable.gui->redraw_widgets = g_list_append(darktable.gui->redraw_widgets, self->widget);
 
   GtkBox *box, *hbox;
   GtkWidget *button;
@@ -442,6 +446,8 @@ gui_init (dt_lib_module_t *self)
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(d->entry, completion);
 
+  /* connect to mouse over id */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(_lib_tagging_redraw_callback), self);
 
   set_keyword(self, d);
 }
@@ -449,7 +455,7 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
   free(self->data);
   self->data = NULL;
 }

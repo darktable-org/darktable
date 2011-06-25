@@ -405,14 +405,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
                     event->area.x, event->area.y,
                     event->area.width, event->area.height);
 
-  GList *wdl = darktable.gui->redraw_widgets;
-  while(wdl)
-  {
-    GtkWidget *w = (GtkWidget *)wdl->data;
-    gtk_widget_queue_draw(w);
-    wdl = g_list_next(wdl);
-  }
-
   update_colorpicker_panel();
 
   // test quit cond (thread safe, 2nd pass)
@@ -971,7 +963,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   */
   dt_ctl_get_display_profile(widget, &darktable.control->xprofile_data, &darktable.control->xprofile_size);
 
-  darktable.gui->redraw_widgets = NULL;
   darktable.gui->key_accels = NULL;
 
   // register keys for view switching

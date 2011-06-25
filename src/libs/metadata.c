@@ -361,7 +361,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  // darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
   dt_control_signal_disconnect(darktable.signals,G_CALLBACK(_mouse_over_image_callback),self);
   free(self->data);
   self->data = NULL;
