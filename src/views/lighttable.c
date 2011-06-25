@@ -172,9 +172,9 @@ void init(dt_view_t *self)
                                  NULL);
 
   gtk_accel_map_add_entry("<Darktable>/lighttable/go/up",
-                          GDK_g, GDK_CONTROL_MASK);
+                          GDK_g, 0);
   gtk_accel_map_add_entry("<Darktable>/lighttable/go/down",
-                          GDK_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+                          GDK_g, GDK_SHIFT_MASK);
   gtk_accel_map_add_entry("<Darktable>/lighttable/go/page up",
                           GDK_Page_Up, 0);
   gtk_accel_map_add_entry("<Darktable>/lighttable/go/page down",
