@@ -53,7 +53,7 @@ typedef struct dt_gui_widgets_t
   GtkWidget *lighttable_zoom_spinbutton;
 
   // Bottom containers
-  GtkWidget *bottom;
+
   GtkWidget *bottom_left_toolbox;
   GtkWidget *bottom_right_toolbox;
 
@@ -68,9 +68,6 @@ typedef struct dt_gui_widgets_t
 
   // Jobs list
   GtkWidget *jobs_content_box;
-
-  // Top panel
-  GtkWidget *top;
 
   // Image filters
   GtkWidget *image_filter;
