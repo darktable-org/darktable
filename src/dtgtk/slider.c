@@ -282,7 +282,7 @@ static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, g
   else if( // Masking allowed keys...
     event->keyval == GDK_minus || event->keyval == GDK_KP_Subtract ||
     event->keyval == GDK_plus || event->keyval == GDK_KP_Add ||
-    event->keyval == GDK_period ||
+    event->keyval == GDK_period || event->keyval == GDK_KP_Decimal ||
     event->keyval == GDK_Left  ||
     event->keyval == GDK_Right  ||
     event->keyval == GDK_Delete  ||
@@ -301,7 +301,7 @@ static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, g
   {
     return FALSE;
   }
-  // Prevent all other keys withing entry
+  // Prevent all other keys within entry
   return TRUE;
 }
 

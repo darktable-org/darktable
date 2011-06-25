@@ -751,12 +751,12 @@ set_params (dt_lib_module_t *self, const void *params, int size)
 
 void init_key_accels()
 {
-  gtk_accel_map_add_entry("<Darktable>/modules/export/export selected images",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/export/export selected images",
                           GDK_e, GDK_CONTROL_MASK);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_lighttable,
-      "<Darktable>/modules/export/export selected images",
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/export/export selected images",
       g_cclosure_new(G_CALLBACK(key_accel_callback), NULL, NULL));
 }
 

@@ -161,26 +161,26 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels()
 {
-  gtk_accel_map_add_entry("<Darktable>/modules/select/all",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/select/all",
                           GDK_a, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/modules/select/none",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/select/none",
                           GDK_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  gtk_accel_map_add_entry("<Darktable>/modules/select/invert",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/select/invert",
                           GDK_exclam, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_lighttable,
-      "<Darktable>/modules/select/all",
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/select/all",
       g_cclosure_new(G_CALLBACK(key_accel_callback),
                      (gpointer)0, NULL));
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_lighttable,
-      "<Darktable>/modules/select/none",
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/select/none",
       g_cclosure_new(G_CALLBACK(key_accel_callback),
                      (gpointer)1, NULL));
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_lighttable,
-      "<Darktable>/modules/select/invert",
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/select/invert",
       g_cclosure_new(G_CALLBACK(key_accel_callback),
                      (gpointer)2, NULL));
 }

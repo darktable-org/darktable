@@ -47,6 +47,7 @@
 #define ACCELS_LIGHTTABLE  (1 << 1)
 #define ACCELS_DARKROOM    (1 << 2)
 #define ACCELS_CAPTURE     (1 << 3)
+#define ACCELS_FILMSTRIP   (1 << 4)
 
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
@@ -136,6 +137,17 @@ int dt_control_job_get_state(dt_job_t *j);
 /** wait for a job to finish execution. */
 void dt_control_job_wait(dt_job_t *j);
 
+// All the accelerator keys for the key_pressed style shortcuts
+typedef struct dt_control_accels_t
+{
+  GtkAccelKey
+      filmstrip_forward, filmstrip_back,
+      lighttable_up, lighttable_down, lighttable_right,
+      lighttable_left, lighttable_center, lighttable_preview,
+      global_sideborders;
+
+} dt_control_accels_t;
+
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 20000
@@ -146,6 +158,23 @@ void dt_control_job_wait(dt_job_t *j);
  */
 typedef struct dt_control_t
 {
+  // Keyboard accelerator groups
+  GtkAccelGroup
+      *accels_global, *accels_lighttable, *accels_darkroom, *accels_capture,
+      *accels_filmstrip;
+
+  // Accelerator group path lists
+  GSList
+      *accels_list_global, *accels_list_lighttable, *accels_list_darkroom,
+      *accels_list_capture, *accels_list_filmstrip;
+
+  // Cached accelerator keys for key_pressed shortcuts
+  dt_control_accels_t accels;
+
+  // Accel remapping data
+  gchar *accel_remap_str;
+  GtkTreePath *accel_remap_path;
+
   // gui related stuff
   double tabborder;
   int32_t width, height;

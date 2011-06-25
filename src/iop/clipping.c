@@ -883,14 +883,14 @@ void gui_init(struct dt_iop_module_t *self)
                                       (gpointer)self, NULL);
   g->undo_callback = g_cclosure_new(G_CALLBACK(key_undo_callback),
                                     (gpointer)self, NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/swap aspect",
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/plugins/clipping/swap aspect",
                                  g->swap_callback);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/commit",
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/plugins/clipping/commit",
                                  g->commit_callback);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/undo",
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/plugins/clipping/undo",
                                  g->undo_callback);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act >= 9) act = 0;
@@ -1002,13 +1002,13 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
+  dt_accel_group_disconnect(darktable.control->accels_darkroom,
                              ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
                              swap_callback);
-  gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
+  dt_accel_group_disconnect(darktable.control->accels_darkroom,
                              ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
                              commit_callback);
-  gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
+  dt_accel_group_disconnect(darktable.control->accels_darkroom,
                              ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
                              undo_callback);
   free(self->gui_data);
@@ -1552,22 +1552,22 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
 
 void init_key_accels()
 {
-  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/swap aspect",
+  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/clipping/swap aspect",
                           GDK_x, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/commit",
+  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/clipping/commit",
                           GDK_Return, 0);
-  gtk_accel_map_add_entry("<Darktable>/imageops/clipping/undo",
+  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/clipping/undo",
                           GDK_z, GDK_CONTROL_MASK);
 
   // Making sure these get into the accelerator lists as well
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/swap aspect",
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/plugins/clipping/swap aspect",
                                  NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/commit",
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/plugins/clipping/commit",
                                  NULL);
-  dt_accel_group_connect_by_path(darktable.gui->accels_darkroom,
-                                 "<Darktable>/imageops/clipping/undo",
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/plugins/clipping/undo",
                                  NULL);
 }
 

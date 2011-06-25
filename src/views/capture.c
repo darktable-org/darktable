@@ -138,7 +138,7 @@ void init(dt_view_t *self)
                           GDK_f, GDK_CONTROL_MASK);
 
   dt_accel_group_connect_by_path(
-      darktable.gui->accels_capture,
+      darktable.control->accels_capture,
       "<Darktable>/capture/toggle film strip",
       g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL));
 }

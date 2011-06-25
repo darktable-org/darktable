@@ -47,7 +47,8 @@ typedef struct _iop_gui_blend_data_t
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
-  const void *blob = NULL;
+  const void *op_params = NULL;
+  const void *bl_params = NULL;
   memcpy(module->default_params, module->factory_params, module->params_size);
   module->default_enabled = module->factory_enabled;
 
@@ -58,7 +59,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
 
   // select matching default:
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, operation from presets where operation = ?1 and "
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and "
                               "autoapply=1 and "
                               "?2 like model and ?3 like maker and ?4 like lens and "
                               "?5 between iso_min and iso_max and "
@@ -100,41 +101,55 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     // try to find matching entry
-    blob  = sqlite3_column_blob(stmt, 0);
-    int length  = sqlite3_column_bytes(stmt, 0);
+    op_params  = sqlite3_column_blob(stmt, 0);
+    int op_length  = sqlite3_column_bytes(stmt, 0);
     int enabled = sqlite3_column_int(stmt, 1);
-    if(blob && length == module->params_size)
+    bl_params = sqlite3_column_blob(stmt, 3);
+    int bl_length = sqlite3_column_bytes(stmt, 3);
+    if(op_params && (op_length == module->params_size))
     {
       // printf("got default for image %d and operation %s\n", module->dev->image->id, sqlite3_column_text(stmt, 2));
-      memcpy(module->default_params, blob, length);
+      memcpy(module->default_params, op_params, op_length);
       module->default_enabled = enabled;
+      if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+      {
+        memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
+      }
     }
-    else blob = (void *)1;
+    else
+      op_params = (void *)1;
   }
   else
   {
     // global default
     sqlite3_finalize(stmt);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled from presets where operation = ?1 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, blendop_params from presets where operation = ?1 and def=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      blob  = sqlite3_column_blob(stmt, 0);
-      int length  = sqlite3_column_bytes(stmt, 0);
+      op_params  = sqlite3_column_blob(stmt, 0);
+      int op_length  = sqlite3_column_bytes(stmt, 0);
       int enabled = sqlite3_column_int(stmt, 1);
-      if(blob && length == module->params_size)
+      bl_params = sqlite3_column_blob(stmt, 2);
+      int bl_length = sqlite3_column_bytes(stmt, 2);
+      if(op_params && (op_length == module->params_size))
       {
-        memcpy(module->default_params, blob, length);
+        memcpy(module->default_params, op_params, op_length);
         module->default_enabled = enabled;
+        if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+        {
+          memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
+        }
       }
-      else blob = (void *)1;
+      else
+        op_params = (void *)1;
     }
   }
   sqlite3_finalize(stmt);
 
-  if(blob == (void *)1)
+  if(op_params == (void *)1 || bl_params == (void *)1)
   {
     printf("[iop_load_defaults]: module param sizes have changed! removing default :(\n");
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from presets where operation = ?1 and def=1", -1, &stmt, NULL);
@@ -452,10 +467,10 @@ void dt_iop_load_modules_so()
       (module->init_key_accels)();
 
     // Adding the optional show accelerator to the table (blank)
-    snprintf(accelpath, 256, "<Darktable>/imageops/%s/show",
+    snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
              (module->op));
     gtk_accel_map_add_entry(accelpath, 0, 0);
-    dt_accel_group_connect_by_path(darktable.gui->accels_darkroom, accelpath,
+    dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
                                    NULL);
   }
   g_dir_close(dir);
@@ -509,9 +524,9 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   module->cleanup(module);
 
   // Disconnecting the show accelerator
-  snprintf(accelpath, 256, "<Darktable>/imageops/%s/show",
+  snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
            (module->name)());
-  gtk_accel_group_disconnect(darktable.gui->accels_darkroom,
+  dt_accel_group_disconnect(darktable.control->accels_darkroom,
                              module->show_closure);
 
   free(module->default_params); module->default_params = NULL ; 
@@ -558,6 +573,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     {
       memcpy(str+module->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
       memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
+      // this should be redundant! (but is not)
+      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     }
 
     // assume process_cl is ready, commit_params can overwrite this.
@@ -1043,13 +1060,13 @@ weight (const float c1, const float c2)
   return ((c1 > 65500.0f) ^ (c2 > 65500.0f)) ? 0.0f : 1.0f;
 }
 #else
-static float
+/*static float
 weight (const float c0, const float c1, const float c2, const float c3, const float c4)
 {
   const float c = 65534.0f;
   const float cc = fmaxf(fmaxf(c1, c2), fmaxf(c3, c4));
   return ((c0 > c) ^ (cc > c)) ? 0.001f : 1.0f;
-}
+}*/
 #endif
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
@@ -1099,40 +1116,45 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
+    int py = (y + roi_out->y)/roi_out->scale;
+    py = MAX(0, py & ~1) + rggby;
+    py = MIN((((roi_in->height-3) & ~1u) + rggby), py);
+    const int maxjj = MIN(maxj,  py + 2*samples);
+    const int minjj = MAX(rggby, py - 2*samples);
+
     float *outc = out + 4*out_stride*y;
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
-      int px = (x + roi_out->x)/roi_out->scale, py = (y + roi_out->y)/roi_out->scale;
+      int px = (x + roi_out->x)/roi_out->scale;
 
       // round down to next even number and jump to rggb block:
       px = MAX(0, px & ~1) + rggbx;
-      py = MAX(0, py & ~1) + rggby;
-
       px = MIN((((roi_in->width -3) & ~1u) + rggbx), px);
-      py = MIN((((roi_in->height-3) & ~1u) + rggby), py);
+
+      const int idx = px   + in_stride*py;
 
       // const float pc1  = in[px   + in_stride*py];
       // const float pc23 = .5f*(in[px+1 + in_stride*py] + in[px   + in_stride*(py + 1)]);
       // const float pc4  = in[px+1 + in_stride*(py + 1)];
-      const float pc = fmaxf(fmaxf(in[px   + in_stride*py], in[px+1 + in_stride*py]), fmaxf(in[px   + in_stride*(py + 1)], in[px+1 + in_stride*(py + 1)]));
+      const uint16_t pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
 
       __m128 num = _mm_setzero_ps();
-      const int maxjj = MIN(maxj,  py + 2*samples), maxii = MIN(maxi,  px + 2*samples);
-      const int minjj = MAX(rggby, py - 2*samples), minii = MAX(rggbx, px - 2*samples);
+      const int maxii = MIN(maxi,  px + 2*samples);
+      const int minii = MAX(rggbx, px - 2*samples);
       for(int j=minjj; j<=maxjj; j+=2)
         for(int i=minii; i<=maxii; i+=2)
         {
           // get four mosaic pattern uint16:
-          const float p1 = in[i   + in_stride*j];
-          const float p2 = in[i+1 + in_stride*j];
-          const float p3 = in[i   + in_stride*(j + 1)];
-          const float p4 = in[i+1 + in_stride*(j + 1)];
+          const uint16_t p1 = in[i   + in_stride*j];
+          const uint16_t p2 = in[i+1 + in_stride*j];
+          const uint16_t p3 = in[i   + in_stride*(j + 1)];
+          const uint16_t p4 = in[i+1 + in_stride*(j + 1)];
 
           // const float wr = weight(pc1, p1);
           // const float wg = weight(pc23, .5f*(p2+p3));
-          const float w = weight(pc, p1, p2, p3, p4);
+          const float w = ((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)) ? 0.001f : 1.0f;
           // const float wb = weight(pc4, p4);
 
           // const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];

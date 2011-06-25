@@ -24,6 +24,7 @@
 #include "control/jobs.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -61,6 +62,13 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 6) dt_control_flip_images(2);
   else if(i == 7) dt_control_merge_hdr();
   dt_control_queue_draw_all();
+}
+
+static void key_accel_callback(GtkAccelGroup *accel_group,
+                               GObject *acceleratable, guint keyval,
+                               GdkModifierType modifier, gpointer data)
+{
+  button_clicked(NULL, data);
 }
 
 int
@@ -130,5 +138,24 @@ gui_cleanup (dt_lib_module_t *self)
 {
   // free(self->data);
   // self->data = NULL;
+}
+
+void init_key_accels()
+{
+  gtk_accel_map_add_entry(
+      "<Darktable>/lighttable/plugins/image/remove from collection",
+      GDK_Delete, 0);
+  gtk_accel_map_add_entry(
+      "<Darktable>/lighttable/plugins/image/delete from disk",
+      GDK_Delete, GDK_SHIFT_MASK);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/image/remove from collection",
+      g_cclosure_new(G_CALLBACK(key_accel_callback), (gpointer)0, NULL));
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/image/delete from disk",
+      g_cclosure_new(G_CALLBACK(key_accel_callback), (gpointer)1, NULL));
 }
 
