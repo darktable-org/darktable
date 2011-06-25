@@ -566,7 +566,25 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
     }
     cache_line = k;
 
-    int16_t oldpos = dt_image_cache_bsearch(cache->line[cache_line].image.id);
+    int16_t oldpos = 0;
+    // find the old position of cacheline in the by_id index
+    if (cache->line[cache_line].image.id < 0)
+    {
+      // can't use bsearch as we may have multiple -1 entries
+      while (oldpos < cache->num_lines && cache->by_id[oldpos] != cache_line) oldpos++;
+    }
+    else
+    {
+      oldpos = dt_image_cache_bsearch(cache->line[cache_line].image.id);
+    }
+
+    if (oldpos < 0 || cache->by_id[oldpos] != cache_line)
+    {
+      // should never happen, unless cache is broken
+      fprintf(stderr, "[image_cache_get_uninited] cache inconsistency found\n");
+      dt_pthread_mutex_unlock(&(cache->mutex));
+      return NULL;
+    }
 
     // fix by_id sorting, this is faster then sorting everything again
     if (cache->line[cache->by_id[0]].image.id > id)
