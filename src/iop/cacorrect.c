@@ -762,7 +762,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
       numpar=4;
       if (numblox[1]< 10)
       {
-        printf ("numblox = %d \n",numblox[1]);
+        // printf ("numblox = %d \n",numblox[1]);
         if(buffer) free(buffer);
         if(buffer1) free(buffer1);
         if(Gtmp) free(Gtmp);
