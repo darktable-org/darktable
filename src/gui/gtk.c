@@ -835,7 +835,6 @@ center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
   return TRUE;
 }
 
-#include "background_jobs.h"
 int
 dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
@@ -1272,32 +1271,11 @@ void init_dt_label(GtkWidget *container)
   gtk_widget_show(widget);
 }
 
-#if 0 /* TODO: Create module out of this */
-void init_jobs_list(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the outer event box
-  widget = gtk_event_box_new();
-  gtk_widget_set_name(widget, "background_job_eventbox");
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-
-  // Adding the content vbox
-  container = widget;
-  widget = gtk_vbox_new(FALSE, 0);
-  darktable.gui->widgets.jobs_content_box = widget;
-  gtk_widget_set_no_show_all(widget, TRUE);
-  gtk_container_set_border_width(GTK_CONTAINER(widget), 5);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-}
-#endif
-
 static void _gui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
   g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
   gtk_widget_queue_draw(widget);
 }
-
 
 void init_center(GtkWidget *container)
 {

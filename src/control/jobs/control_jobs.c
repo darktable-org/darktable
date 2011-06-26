@@ -78,7 +78,9 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("merging %d image", "merging %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+
+  const guint jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+ 
   float *pixels = NULL;
   float *weight = NULL;
   int wd = 0, ht = 0, first_imgid = -1;
@@ -145,8 +147,11 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     }
 
     t = g_list_delete_link(t, t);
+    
+    /* update backgroundjob ui plate */
     fraction+=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+
     dt_image_release(img, DT_IMAGE_FULL, 'r');
     dt_image_cache_release(img, 'r');
   }
@@ -165,7 +170,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
   dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, whitelevel);
-  dt_gui_background_jobs_set_progress(j, 1.0f);
+  
+  dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
 
   while(*c != '/' && c > pathname) c--;
   dt_control_log(_("wrote merged hdr `%s'"), c+1);
@@ -180,7 +186,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   free(pixels);
   free(weight);
 error:
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
 }
 
@@ -193,16 +199,16 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("duplicating %d image", "duplicating %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
     imgid = (long int)t->data;
     dt_image_duplicate(imgid);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
 }
 
@@ -216,16 +222,16 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
     imgid = (long int)t->data;
     dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
 }
 
@@ -238,7 +244,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   char query[1024];
   sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
@@ -264,7 +270,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     dt_image_remove(imgid);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
 
   char *imgname;
@@ -275,7 +281,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     list = g_list_delete_link(list, list);
   } 
   g_list_free(list);  
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
   return 0;
 }
@@ -290,7 +296,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("deleting %d image", "deleting %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new(DT_JOB_PROGRESS, message);
+  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   sqlite3_stmt *stmt;
 
@@ -342,7 +348,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   sqlite3_finalize(stmt);
   
@@ -354,7 +360,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     list = g_list_delete_link(list, list);
   } 
   g_list_free(list);
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
   return 0;
 }
@@ -504,8 +510,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   char message[512]= {0};
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
-  dt_gui_background_jobs_can_cancel (j,job);
+  
+  /* create a cancellable bgjob ui template */
+  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
+  dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
+  const dt_control_t *control = darktable.control;
 
   double fraction=0;
 #ifdef _OPENMP
@@ -515,7 +524,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
-  #pragma omp parallel default(none) private(imgid, size) shared(j, fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads) if(num_threads > 1)
+#pragma omp parallel default(none) private(imgid, size) shared(control,fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads) if(num_threads > 1)
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
@@ -570,7 +579,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #endif
       {
         fraction+=1.0/total;
-        dt_gui_background_jobs_set_progress( j, fraction );
+	dt_control_backgroundjobs_progress(control, jid, fraction);
       }
     }
 #ifdef _OPENMP
@@ -578,7 +587,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     #pragma omp master
 #endif
     {
-      dt_gui_background_jobs_destroy (j);
+      dt_control_backgroundjobs_destroy(control, jid);
       if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
       mstorage->free_params(mstorage, sdata);
     }

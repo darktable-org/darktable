@@ -1298,3 +1298,28 @@ int dt_control_key_released(uint16_t which)
 }
 
 
+
+guint dt_control_backgroundjobs_create(const struct dt_control_t *s, guint type,const gchar *message)
+{
+  if (s->proxy.backgroundjobs.module)
+    return s->proxy.backgroundjobs.create(s->proxy.backgroundjobs.module, type, message);
+  return 0;
+}
+
+void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, guint id)
+{
+  if (s->proxy.backgroundjobs.module)
+    s->proxy.backgroundjobs.destroy(s->proxy.backgroundjobs.module, id);
+}
+
+void dt_control_backgroundjobs_progress(const struct dt_control_t *s, guint id, double progress)
+{
+  if (s->proxy.backgroundjobs.module)
+    s->proxy.backgroundjobs.progress(s->proxy.backgroundjobs.module, id, progress);
+}
+
+void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, guint id, dt_job_t *job)
+{
+  if (s->proxy.backgroundjobs.module)
+    s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, id, job);
+}

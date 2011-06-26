@@ -45,7 +45,6 @@ FILE(GLOB SOURCE_FILES
   "develop/pixelpipe.c"
   "develop/blend.c"
   "dtgtk/*.c" 
-  "gui/background_jobs.c"  
   "gui/contrast.c"  
   "gui/gtk.c"  
   "gui/preferences.c"  

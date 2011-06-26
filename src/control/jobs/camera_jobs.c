@@ -34,7 +34,7 @@ int32_t dt_captured_image_import_job_run(dt_job_t *job)
 
   char message[512]= {0};
   snprintf(message, 512, _("importing image %s"), t->filename);
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_SINGLE, message );
+  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
 
   int id = dt_image_import(t->film_id, t->filename, TRUE);
   if(id)
@@ -44,8 +44,9 @@ int32_t dt_captured_image_import_job_run(dt_job_t *job)
     dt_control_queue_draw_all();
     //dt_ctl_switch_mode_to(DT_DEVELOP);
   }
-  dt_gui_background_jobs_set_progress( j , 1.0 );
-  dt_gui_background_jobs_destroy (j);
+ 
+  dt_control_backgroundjobs_progress(darktable.control, jid, 1.0);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
 }
 
@@ -65,7 +66,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   char message[512]= {0};
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
   double fraction=0;
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
+  const guint jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   /* Fetch all values for shutterspeed2 and initialize current value */
   GList *values=NULL;
@@ -88,8 +89,8 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   else
   {
     dt_control_log(_("please set your camera to manual mode first!"));
-    dt_gui_background_jobs_set_progress(j, 1.001f);
-    dt_gui_background_jobs_destroy(j);
+    dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
+    dt_control_backgroundjobs_destroy(darktable.control, jid);
     return 1;
   }
   GList *current_value = g_list_find(values,orginal_value);
@@ -123,7 +124,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       // Capture image
       dt_camctl_camera_capture(darktable.camctl,NULL);
       fraction+=1.0/total;
-      dt_gui_background_jobs_set_progress( j, fraction);
+      dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
     }
 
     // lets reset to orginal value before continue
@@ -138,7 +139,9 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       g_usleep(t->delay*G_USEC_PER_SEC);
 
   }
-  dt_gui_background_jobs_destroy (j);
+
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
+
 
   // free values
   if(values)
@@ -274,7 +277,8 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
   t->fraction+=1.0/g_list_length(t->images);
-  dt_gui_background_jobs_set_progress( t->bgj, t->fraction );
+  
+  dt_control_backgroundjobs_progress(darktable.control, t->bgj, t->fraction );
 
   if( dt_conf_get_bool("plugins/capture/camera/import/backup/enable") == TRUE )
   {
@@ -358,7 +362,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
     int total = g_list_length( t->images );
     char message[512]= {0};
     sprintf(message, ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
-    t->bgj = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+    t->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
     // Switch to new filmroll
     dt_film_open(t->film->id);
@@ -375,7 +379,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
     dt_camctl_register_listener(darktable.camctl,&listener);
     dt_camctl_import(darktable.camctl,t->camera,t->images,dt_conf_get_bool("plugins/capture/camera/import/delete_originals"));
     dt_camctl_unregister_listener(darktable.camctl,&listener);
-    dt_gui_background_jobs_destroy (t->bgj);
+    dt_control_backgroundjobs_destroy(darktable.control, t->bgj);
     dt_variables_params_destroy(t->vp);
   }
   else

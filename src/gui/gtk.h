@@ -66,9 +66,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *bottom_border;
   GtkWidget *top_border;
 
-  // Jobs list
-  GtkWidget *jobs_content_box;
-
   // Image filters
   GtkWidget *image_filter;
   GtkWidget *image_sort;

@@ -26,7 +26,7 @@
 #include "common/dtpthread.h"
 #include "control/settings.h"
 #include <gtk/gtk.h>
-#include "gui/background_jobs.h"
+#include "libs/lib.h"
 // #include "control/job.def"
 
 #define DT_CONTROL_MAX_JOBS 30
@@ -158,6 +158,17 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
 struct dt_control_t;
+struct dt_job_t;
+
+/* backgroundjobs proxy funcs */
+/** creates a background job and returns hash id reference */
+guint dt_control_backgroundjobs_create(const struct dt_control_t *s,guint type,const gchar *message);
+/** destroys a backgroundjob using hash id reference */
+void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, guint id);
+/** sets the progress of a backgroundjob using hash id reference */
+void dt_control_backgroundjobs_progress(const struct dt_control_t *s, guint id, double progress);
+/** assign a dt_job_t to a bgjob which makes it cancellable thru ui interaction */
+void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, guint id,struct dt_job_t *job);
 
 /** turn the use of key accelerators on */
 void dt_control_key_accelerators_on(struct dt_control_t *s);
@@ -256,6 +267,19 @@ typedef struct dt_control_t
   dt_job_t job_res[DT_CTL_WORKER_RESERVED];
   uint8_t new_res[DT_CTL_WORKER_RESERVED];
   pthread_t thread_res[DT_CTL_WORKER_RESERVED];
+
+  /* proxy */
+  struct {
+    /* proxy functions for backgroundjobs ui*/
+    struct {
+      dt_lib_module_t *module;
+      guint (*create)(dt_lib_module_t *self, int type, const gchar *message);
+      void (*destroy)(dt_lib_module_t *self, guint id);
+      void (*progress)(dt_lib_module_t *self, guint id, double progress);
+      void (*set_cancellable)(dt_lib_module_t *self, guint id, dt_job_t *job);
+    } backgroundjobs;
+  } proxy;
+
 }
 dt_control_t;
 
