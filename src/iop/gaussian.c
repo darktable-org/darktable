@@ -38,12 +38,15 @@
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
+#define CLAMP_RANGE(x,y,z) (CLAMP(x,y,z))
+#define GORDER 0
+
 DT_MODULE(1)
 
 typedef struct dt_iop_gaussian_t
 {
   float radius;
-  float polarity;
+  float contrast;
   float saturation;
 }
 dt_iop_gaussian_params_t;
@@ -51,15 +54,15 @@ dt_iop_gaussian_params_t;
 typedef struct dt_iop_gaussian_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2, vbox3;
-  GtkWidget  *label1,*label2, label3;		     // radius, polarity, saturation
-  GtkDarktableSlider *scale1,*scale2,*scale3;       // radius, polarity, saturation
+  GtkWidget  *label1,*label2, label3;		     // radius, contrast, saturation
+  GtkDarktableSlider *scale1,*scale2,*scale3;       // radius, contrast, saturation
 }
 dt_iop_gaussian_gui_data_t;
 
 typedef struct dt_iop_gaussian_data_t
 {
   float radius;
-  float polarity;
+  float contrast;
   float saturation;
 }
 dt_iop_gaussian_data_t;
@@ -90,6 +93,61 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+
+static 
+void compute_gauss_params(const float sigma, float *a0, float *a1, float *a2, float *a3, float *b1, float *b2, float *coefp, float *coefn)
+{
+  const float alpha = 1.695f / sigma;
+  const float ema = exp(-alpha);
+  const float ema2 = exp(-2.0f * alpha);
+  *b1 = -2.0f * ema;
+  *b2 = ema2;
+  *a0 = 0.0f;
+  *a1 = 0.0f;
+  *a2 = 0.0f;
+  *a3 = 0.0f;
+  *coefp = 0.0f;
+  *coefn = 0.0f;
+
+  switch(GORDER)
+  {
+    case 0:
+    {
+      const float k = (1.0f - ema)*(1.0f - ema)/(1.0f + (2.0f * alpha * ema) - ema2);
+      *a0 = k;
+      *a1 = k * (alpha - 1.0f) * ema;
+      *a2 = k * (alpha + 1.0f) * ema;
+      *a3 = -k * ema2;
+    }
+    break;
+
+    case 1:
+    {
+      *a0 = (1.0f - ema)*(1.0f - ema);
+      *a1 = 0.0f;
+      *a2 = -*a0;
+      *a3 = 0.0f;
+    }
+    break;
+
+    case 2:
+    default:
+    {
+      const float k = -(ema2 - 1.0f) / (2.0f * alpha * ema);
+      float kn = -2.0f * (-1.0f + (3.0f * ema) - (3.0f * ema * ema) + (ema * ema * ema));
+      kn /= ((3.0f * ema) + 1.0f + (3.0f * ema * ema) + (ema * ema * ema));
+      *a0 = kn;
+      *a1 = -kn * (1.0f + (k * alpha)) * ema;
+      *a2 = kn * (1.0f - (k * alpha)) * ema;
+      *a3 = -kn * ema2;
+    }
+  }
+
+  *coefp = (*a0 + *a1)/(1.0f + *b1 + *b2);
+  *coefn = (*a2 + *a3)/(1.0f + *b1 + *b2);
+}
+
+#if 0
 #ifdef HAVE_OPENCL
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -183,118 +241,189 @@ error:
   return FALSE;
 }
 #endif
+#endif
 
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  //dt_iop_gaussian_data_t *data = (dt_iop_gaussian_data_t *)piece->data;
+  dt_iop_gaussian_data_t *data = (dt_iop_gaussian_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
+  float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
-#endif
-  for(int k=0; k<roi_out->width*roi_out->height*ch; k++)
-    out[k] = in[k];
+  float sigma = fmax(0.0f,data->radius * roi_in->scale / piece ->iscale);
 
-#if 0
-  /* create inverted image and then blur */
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
-#endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
-    out[ch*k] = 100.0f-LCLIP(in[ch*k]);	// only L in Lab space
-
-
-  int rad = MAX_RADIUS*(fmin(100.0,data->sharpness+1)/100.0);
-  const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
-
-  /* horizontal blur out into out */
-  const int range = 2*radius+1;
-  const int hr = range/2;
-
-  const int size = roi_out->width>roi_out->height?roi_out->width:roi_out->height;
-  float *scanline = malloc((size*sizeof(float)));
-
-  for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
+  // no gaussian blur for very small sigma
+  if (sigma < 0.1f)
   {
-    int index=0;
-    for(int y=0; y<roi_out->height; y++)
+    for(int k=0; k<roi_out->width*roi_out->height; k++)
     {
-      float L=0;
-      int hits = 0;
-      for(int x=-hr; x<roi_out->width; x++)
-      {
-        int op = x - hr-1;
-        int np = x+hr;
-        if(op>=0)
-        {
-          L-=out[(index+op)*ch];
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          L+=out[(index+np)*ch];
-          hits++;
-        }
-        if(x>=0)
-          scanline[x] = L/hits;
-      }
+      out[k*ch+0] = CLAMP(in[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), 0.0f, 100.0f);
+      out[k*ch+1] = CLAMP(in[k*ch+1]*data->saturation, -128.0f, 128.0f);
+      out[k*ch+2] = CLAMP(in[k*ch+2]*data->saturation, -128.0f, 128.0f);
+      out[k*ch+3] = in[k*ch+3];
+    }
+    return;
+  }
 
-      for (int x=0; x<roi_out->width; x++)
-        out[(index+x)*ch] = scanline[x];
-      index+=roi_out->width;
+  // as the function name implies
+  compute_gauss_params(sigma, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+
+
+
+  float *temp = malloc(roi_out->width*roi_out->height*ch*sizeof(float));
+  if(temp==NULL) return;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+#endif
+  // vertical blur column by column
+  for(int i=0; i<roi_out->width; i++)
+  {
+    float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float yp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float xc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float yc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float xn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float xa[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float yn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+    // forward filter
+    for(int k=0; k < 4; k++)
+    {
+      xp[k] = in[i*ch+k];
+      yb[k] = xp[k] * coefp;
+      yp[k] = yb[k];
+    }
+ 
+    for(int j=0; j<roi_out->height; j++)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      for(int k=0; k < 4; k++)
+      {
+        xc[k] = in[offset+k];
+        yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
+
+        temp[offset+k] = yc[k];
+
+        xp[k] = xc[k];
+        yb[k] = yp[k];
+        yp[k] = yc[k];
+      }
     }
 
-    /* vertical pass on blurlightness */
-    const int opoffs = -(hr+1)*roi_out->width;
-    const int npoffs = (hr)*roi_out->width;
-    for(int x=0; x < roi_out->width; x++)
+    // backward filter
+    for(int k=0; k < 4; k++)
     {
-      float L=0;
-      int hits=0;
-      int index = -hr*roi_out->width+x;
-      for(int y=-hr; y<roi_out->height; y++)
-      {
-        int op=y-hr-1;
-        int np= y + hr;
-        if(op>=0)
-        {
-          L-=out[(index+opoffs)*ch];
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          L+=out[(index+npoffs)*ch];
-          hits++;
-        }
-        if(y>=0)
-          scanline[y] = L/hits;
-        index += roi_out->width;
-      }
+      xn[k] = in[((roi_out->height - 1) * roi_out->width + i)*ch+k];
+      xa[k] = xn[k];
+      yn[k] = xn[k] * coefn;
+      ya[k] = yn[k];
+    }
 
-      for (int y=0; y<roi_out->height; y++)
-        out[(y*roi_out->width+x)*ch] = scanline[y];
+    for(int j=roi_out->height - 1; j > -1; j--)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      for(int k=0; k < 4; k++)
+      {      
+        xc[k] = in[offset+k];
+
+        yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+        xa[k] = xn[k]; 
+        xn[k] = xc[k]; 
+        ya[k] = yn[k]; 
+        yn[k] = yc[k];
+
+        temp[offset+k] += yc[k];
+      }
     }
   }
 
-  free(scanline);
 
-  const float contrast_scale=((data->contrast/100.0)*7.5);
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
-#endif
+  // horizontal blur line by line
+  for(int j=0; j<roi_out->height; j++)
+  {
+    float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float yp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float xc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float yc[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float xn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float xa[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float yn[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+    // forward filter
+    for(int k=0; k < 4; k++)
+    {
+      xp[k] = temp[j*roi_out->width*ch+k];
+      yb[k] = xp[k] * coefp;
+      yp[k] = yb[k];
+    }
+ 
+    for(int i=0; i<roi_out->width; i++)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      for(int k=0; k < 4; k++)
+      {
+        xc[k] = temp[offset+k];
+        yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
+
+        out[offset+k] = yc[k];
+
+        xp[k] = xc[k];
+        yb[k] = yp[k];
+        yp[k] = yc[k];
+      }
+    }
+
+    // backward filter
+    for(int k=0; k < 4; k++)
+    {
+      xn[k] = temp[((j + 1)*roi_out->width - 1)*ch + k];
+      xa[k] = xn[k];
+      yn[k] = xn[k] * coefn;
+      ya[k] = yn[k];
+    }
+
+    for(int i=roi_out->width - 1; i > -1; i--)
+    {
+      int offset = (i + j * roi_out->width)*ch;
+
+      for(int k=0; k < 4; k++)
+      {      
+        xc[k] = temp[offset+k];
+
+        yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
+
+        xa[k] = xn[k]; 
+        xn[k] = xc[k]; 
+        ya[k] = yn[k]; 
+        yn[k] = yc[k];
+
+        out[offset+k] += yc[k];
+      }
+    }
+  }
+
+
+  free(temp);
+
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    int index = ch*k;
-    // Mix out and in
-    out[index] = out[index]*0.5 + in[index]*0.5;
-    out[index] = LCLIP(50.0f+((out[index]-50.0f)*contrast_scale));
-    out[index+1] = out[index+2] = 0.0f;		// desaturate a and b in Lab space
+    out[k*ch+0] = CLAMP(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), 0.0f, 100.0f);
+    out[k*ch+1] = CLAMP(out[k*ch+1]*data->saturation, -128.0f, 128.0f);
+    out[k*ch+2] = CLAMP(out[k*ch+2]*data->saturation, -128.0f, 128.0f);
   }
-#endif
 }
+
 
 static void
 radius_callback (GtkDarktableSlider *slider, gpointer user_data)
@@ -307,12 +436,12 @@ radius_callback (GtkDarktableSlider *slider, gpointer user_data)
 }
 
 static void
-polarity_callback (GtkDarktableSlider *slider, gpointer user_data)
+contrast_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
-  p->polarity = dtgtk_slider_get_value(slider);
+  p->contrast = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -335,7 +464,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
   dt_iop_gaussian_data_t *d = (dt_iop_gaussian_data_t *)piece->data;
   d->radius = p->radius;
-  d->polarity = p->polarity;
+  d->contrast = p->contrast;
   d->saturation = p->saturation;
 #endif
 }
@@ -369,7 +498,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_gaussian_gui_data_t *g = (dt_iop_gaussian_gui_data_t *)self->gui_data;
   dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)module->params;
   dtgtk_slider_set_value(g->scale1, p->radius);
-  dtgtk_slider_set_value(g->scale2, p->polarity);
+  dtgtk_slider_set_value(g->scale2, p->contrast);
   dtgtk_slider_set_value(g->scale3, p->saturation);
 }
 
@@ -429,10 +558,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 500.0, 0.1, p->radius, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->polarity, 2));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->contrast, 2));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation, 2));
   dtgtk_slider_set_label(g->scale1,_("radius"));
-  dtgtk_slider_set_label(g->scale2,_("polarity"));
+  dtgtk_slider_set_label(g->scale2,_("contrast"));
   dtgtk_slider_set_label(g->scale3,_("saturation"));
 
 
@@ -440,13 +569,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radius of gaussian blur filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the polarity (non-inverted/inverted) of gaussian blur filter"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of gaussian blur filter"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the color saturation of gaussian blur filter"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (polarity_callback), self);
+                    G_CALLBACK (contrast_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (saturation_callback), self);
 }
