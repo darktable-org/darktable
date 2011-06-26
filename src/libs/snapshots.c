@@ -261,6 +261,7 @@ void gui_init(dt_lib_module_t *self)
   d->snapshot = (dt_lib_snapshot_t *)g_malloc(sizeof(dt_lib_snapshot_t)*d->size);
   d->vp_xpointer = 0.5;
   d->vp_ypointer = 0.5;
+  d->vertical = TRUE;
   memset(d->snapshot,0,sizeof(dt_lib_snapshot_t)*d->size);
 
   /* initialize ui containers */
