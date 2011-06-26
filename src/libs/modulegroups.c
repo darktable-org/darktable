@@ -70,8 +70,14 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_PANEL_RIGHT | DT_VIEW_PANEL_TOP;
+  return DT_VIEW_DARKROOM;
 }
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_RIGHT_TOP;
+}
+
 
 /* this module should always be shown without expander */
 int expandable() 

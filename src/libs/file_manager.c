@@ -48,6 +48,11 @@ uint32_t views()
   return DT_LIGHTTABLE_VIEW|DT_CAPTURE_VIEW;
 }
 
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
+}
+
 void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_file_manager_t *d = (dt_lib_file_manager_t*) self->data;

@@ -349,6 +349,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   }
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "views",                  (gpointer)&(module->views)))                  goto error;
+  if(!g_module_symbol(module->module, "container",              (gpointer)&(module->container)))              goto error;
   if(!g_module_symbol(module->module, "expandable",             (gpointer)&(module->expandable)))             module->expandable = _lib_default_expandable;
 
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;

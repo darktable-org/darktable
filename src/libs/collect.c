@@ -166,11 +166,14 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 }
 
 
-uint32_t
-views()
+uint32_t views()
 {
-  /* show module in left panels plugins box in lightable view*/
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_PANEL_LEFT | DT_VIEW_PANEL_PLUGINS;
+  return DT_VIEW_LIGHTTABLE;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
 static dt_lib_collect_t*

@@ -63,7 +63,12 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_DARKROOM | DT_VIEW_PANEL_LEFT | DT_VIEW_PANEL_BOTTOM;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_DARKROOM;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_LEFT_BOTTOM;
 }
 
 int position()

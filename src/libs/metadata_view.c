@@ -98,7 +98,12 @@ const char* name()
 /* show module in left panel in all views */
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING |  DT_VIEW_PANEL_LEFT | DT_VIEW_PANEL_PLUGINS;
+  return DT_VIEW_LIGHTTABLE;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
 int position()

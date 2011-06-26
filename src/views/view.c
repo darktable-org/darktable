@@ -252,17 +252,10 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 	/* add module widget to the ui */
 	GtkWidget *w = NULL;
 	w = dt_lib_gui_get_expander(plugin);
-	
-	if(plugin->views() & DT_VIEW_PANEL_LEFT)
-	{
-	  if(plugin->views() & DT_VIEW_PANEL_TOP)        dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_TOP, w);
-	  if(plugin->views() & DT_VIEW_PANEL_PLUGINS)    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, w);
-	  if(plugin->views() & DT_VIEW_PANEL_BOTTOM)     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_BOTTOM, w);
-	} else {
-	  if(plugin->views() & DT_VIEW_PANEL_TOP)        dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_TOP, w);
-	  if(plugin->views() & DT_VIEW_PANEL_PLUGINS)    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, w);
-	  if(plugin->views() & DT_VIEW_PANEL_BOTTOM)     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM, w);
-	}
+
+	/* add module to it's container */
+	dt_ui_container_add_widget(darktable.gui->ui, plugin->container(), w);
+
       }
 
       /* lets get next plugin */

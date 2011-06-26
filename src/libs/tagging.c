@@ -52,7 +52,12 @@ name ()
 
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_PANEL_RIGHT | DT_VIEW_PANEL_PLUGINS;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 static void
