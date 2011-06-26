@@ -615,7 +615,7 @@ gui_init (dt_imageio_module_storage_t *self)
   if( _username && _password )
   {
     ui->user_token = _password;
-    refresh_albums(ui);
+    refresh_albums(ui);  
   }
   */
 
