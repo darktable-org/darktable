@@ -109,7 +109,7 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
   int32_t bit = 0;
   int mode = dt_conf_get_int("ui_last/view");
 
-  int which =  (int)g_object_get_data(G_OBJECT(w),"border");
+  long which = (long)g_object_get_data(G_OBJECT(w),"border");
   int panel = 0;
 
   switch(which)
