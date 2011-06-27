@@ -86,7 +86,7 @@ dt_capture_t;
 
 const char *name(dt_view_t *self)
 {
-  return _("capture");
+  return _("tethering");
 }
 
 uint32_t view(dt_view_t *self)

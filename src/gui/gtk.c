@@ -92,7 +92,6 @@ static void init_widgets();
 
 static void init_main_table(GtkWidget *container);
 
-static void init_view_label(GtkWidget *container);
 static void init_filter_box(GtkWidget *container);
 static void init_top_controls(GtkWidget *container);
 static void init_dt_label(GtkWidget *container);
@@ -1120,33 +1119,6 @@ void init_main_table(GtkWidget *container)
   _ui_init_panel_right(darktable.gui->ui, container);
 }
 
-void init_view_label(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the eventbox
-  widget = gtk_event_box_new();
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  g_signal_connect (G_OBJECT (widget), "button-press-event",
-                    G_CALLBACK (view_label_clicked),
-                    (gpointer)0);
-
-  // Adding the label
-  container = widget;
-
-  widget = gtk_label_new(_("<span color=\"#7f7f7f\"><big><b>"
-                           "light table mode</b></big></span>"));
-  darktable.gui->widgets.view_label = widget;
-  gtk_widget_set_name(widget, "view_label");
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_label_set_use_markup(GTK_LABEL(widget), TRUE);
-  gtk_misc_set_padding(GTK_MISC(widget), 20, 10);
-  gtk_widget_show(widget);
-
-}
-
 void init_filter_box(GtkWidget *container)
 {
 
@@ -1599,17 +1571,26 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
 {
   GtkWidget *widget;
 
-  // Adding the outer hbox                                                                                                                                                                                                                                                  
+  /* create the panel box */
   ui->panels[DT_UI_PANEL_TOP] = widget = gtk_hbox_new(FALSE, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 1, 4, 0, 1,
                    GTK_EXPAND | GTK_FILL | GTK_SHRINK, GTK_SHRINK, 0, 0);
+
+  /* add container for top left */
+  ui->containers[DT_UI_CONTAINER_PANEL_TOP_LEFT] = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_LEFT], FALSE, FALSE, 10);
+
+  /* add container for top center */
+  ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER] = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER], TRUE, TRUE, 0);
   
+  /* add container for top right */
+  ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT] = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT], FALSE, FALSE, 10);
 
   init_dt_label(widget);
 
   init_top_controls(widget);
-
-  init_view_label(widget);
 
 }
 

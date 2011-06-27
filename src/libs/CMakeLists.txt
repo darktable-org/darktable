@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# The modules
 set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs)
 
+# The tools
+set(MODULES ${MODULES} viewswitcher)
+
+# modules
 add_library(import MODULE "import.c")
 add_library(export MODULE "export.c")
 add_library(copy_history MODULE "copy_history.c")
@@ -21,6 +27,10 @@ add_library(snapshots MODULE "snapshots.c")
 add_library(modulelist MODULE "modulelist.c")
 add_library(modulegroups MODULE "modulegroups.c")
 add_library(backgroundjobs MODULE "backgroundjobs.c")
+
+# tools
+add_library(viewswitcher MODULE "tools/viewswitcher.c")
+
 
 if(APRIL_FOOLS)
 	if(VTE_FOUND)

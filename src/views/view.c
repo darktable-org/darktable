@@ -53,7 +53,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
 
   int res=0, midx=0;
-  char *modules[] = {"darkroom","lighttable","capture",NULL};
+  char *modules[] = {"lighttable","darkroom","capture",NULL};
   char *module = modules[midx];
   while(module != NULL)
   {
@@ -297,6 +297,9 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   /* enter view */
   if(newv >= 0 && nv->enter) nv->enter(nv);
+
+  /* raise view changed signal */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
 
   /* add endmarkers to left and right center containers */
   GtkWidget *endmarker = gtk_drawing_area_new();

@@ -70,9 +70,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *image_filter;
   GtkWidget *image_sort;
 
-  // Top-right label
-  GtkWidget *view_label;
-
   /* left panel */
   GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and fille on center
   GtkTable *panel_right;               
@@ -143,6 +140,14 @@ typedef enum dt_ui_container_t
   DT_UI_CONTAINER_PANEL_RIGHT_TOP,
   DT_UI_CONTAINER_PANEL_RIGHT_CENTER,
   DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM,
+
+
+  /* the top header bar, left slot where darktable name is placed */
+  DT_UI_CONTAINER_PANEL_TOP_LEFT,
+  /* center which is expanded as wide it can */
+  DT_UI_CONTAINER_PANEL_TOP_CENTER,
+  /* right side were the different views are accessed */
+  DT_UI_CONTAINER_PANEL_TOP_RIGHT,
 
   /* Count of containers */
   DT_UI_CONTAINER_SIZE
