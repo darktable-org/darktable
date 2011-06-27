@@ -161,15 +161,14 @@ static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *v)
 
 static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w,GdkEventButton *ev,gpointer user_data)
 {
-  fprintf(stderr,"Button %d  pressed view %d\n",ev->button,(int)user_data);
   if(ev->button == 1) 
   {
     /* FIXME: get rid of these mappings and old DT_xxx */
-    if ((int)user_data == DT_VIEW_LIGHTTABLE)
+    if ((long)user_data == DT_VIEW_LIGHTTABLE)
       dt_ctl_switch_mode_to(DT_LIBRARY);
-    else if ((int)user_data == DT_VIEW_DARKROOM) 
+    else if ((long)user_data == DT_VIEW_DARKROOM) 
       dt_ctl_switch_mode_to(DT_DEVELOP);
-    else if ((int)user_data == DT_VIEW_TETHERING)
+    else if ((long)user_data == DT_VIEW_TETHERING)
       dt_ctl_switch_mode_to(DT_CAPTURE);
 
     return TRUE;
