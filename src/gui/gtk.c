@@ -81,8 +81,10 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container);
 /* initialize the top container of panel */
 static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container);
-/* initialize the bottom container of panel */
-static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container);
+/* intialize the center top panel */
+static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container);
+/* initialize the center bottom panel */
+static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container);
 
 
 /*
@@ -94,10 +96,9 @@ static void init_main_table(GtkWidget *container);
 
 static void init_filter_box(GtkWidget *container);
 static void init_top_controls(GtkWidget *container);
-static void init_dt_label(GtkWidget *container);
 
 static void init_center(GtkWidget *container);
-static void init_center_bottom(GtkWidget *container);
+
 static void init_colorpicker(GtkWidget *container);
 static void init_lighttable_box(GtkWidget* container);
 
@@ -124,11 +125,11 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
       break;
     case 2:
       bit = dt_conf_get_int("ui_last/panel_top");
-      panel = DT_UI_PANEL_TOP;
+      panel = DT_UI_PANEL_CENTER_TOP;
       break;
     default:
       bit = dt_conf_get_int("ui_last/panel_bottom");
-      panel = DT_UI_PANEL_BOTTOM;
+      panel = DT_UI_PANEL_CENTER_BOTTOM;
       break;
   }
 
@@ -284,7 +285,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     case 2: // top
-      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP))
+      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP))
       {
         cairo_move_to (cr, width/2-height, height);
         cairo_rel_line_to (cr, 2*height, 0.0);
@@ -298,7 +299,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       }
       break;
     default: // bottom
-      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM))
+      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM))
       {
         cairo_move_to (cr, width/2-height, 0.0);
         cairo_rel_line_to (cr, 2*height, 0.0);
@@ -422,87 +423,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   return TRUE;
 }
 
-gboolean
-view_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{
-  if(event->button == 1)
-  {
-    dt_ctl_switch_mode();
-    return TRUE;
-  }
-  return FALSE;
-}
-
-gboolean
-darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{
-  GtkWidget *dialog = gtk_about_dialog_new();
-  gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
-  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, tobias ellinghaus et al. 2009-2011");
-  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
-  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://darktable.sf.net/");
-  gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
-  const char *authors[] =
-  {
-    _("* developers *"),
-    "Henrik Andersson",
-    "Johannes Hanika",
-    "Tobias Ellinghaus",
-    "",
-    _("* ubuntu packaging, color management, video tutorials *"),
-    "Pascal de Bruijn",
-    "",
-    _("* networking, battle testing, translation expert *"),
-    "Alexandre Prokoudine",
-    "",
-    _("* contributors *"),
-    "Alexandre Prokoudine",
-    "Alexander Rabtchevich",
-    "Andrea Purracchio",
-    "Andrey Kaminsky",
-    "Anton Blanchard",
-    "Bernhard Schneider",
-    "Boucman",
-    "Brian Teague",
-    "Bruce Guenter",
-    "Christian Fuchs",
-    "Christian Himpel",
-    "Daniele Giorgis",
-    "David Bremner",
-    "Ger Siemerink",
-    "Gianluigi Calcaterra",
-    "Gregor Quade",
-    "Jan Rinze",
-    "Jochen Schroeder",
-    "Jose Carlos Garcia Sogo",
-    "Karl Mikaelsson",
-    "Klaus Staedtler",
-    "Mikko Ruohola",
-    "Nao Nakashima",
-    "Olivier Tribout",
-    "Pascal de Bruijn",
-    "Pascal Obry",
-    "Robert Park",
-    "Richard Hughes",
-    "Simon Spannagel",
-    "Stephen van den Berg",
-    "Stuart Henderson",
-    "Thierry Leconte",
-    "Wyatt Olson",
-    "Xavier Besse",
-    "Zeus Panchenko",
-    NULL
-  };
-  gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
-
-  gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
-  GtkWidget *win = darktable.gui->widgets.main_window;
-  gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
-  gtk_dialog_run(GTK_DIALOG (dialog));
-  gtk_widget_destroy(dialog);
-  return TRUE;
-}
 
 static void
 colorpicker_mean_changed (GtkComboBox *widget, gpointer p)
@@ -1215,34 +1135,6 @@ void init_top_controls(GtkWidget *container)
   gtk_widget_show(widget);
 }
 
-void init_dt_label(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the eventbox
-  widget = gtk_event_box_new();
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  g_signal_connect(G_OBJECT (widget), "button-press-event",
-                   G_CALLBACK (darktable_label_clicked), (gpointer)0);
-
-  // Adding the label
-  container = widget;
-  widget = gtk_label_new("");
-  gtk_widget_set_name(widget, "darktable_label");
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_tooltip_text(widget, _("about darktable"));
-  gtk_widget_set_has_tooltip(widget, TRUE);
-  gtk_label_set_use_markup(GTK_LABEL(widget), TRUE);
-  gtk_label_set_width_chars(GTK_LABEL(widget), -1);
-  gtk_misc_set_padding(GTK_MISC(widget), 20, 10);
-  gtk_label_set_label(GTK_LABEL(widget), "<span color=\"#7f7f7f\"><big><b>"
-                      PACKAGE_NAME" "PACKAGE_VERSION"</b></big></span>");
-
-  gtk_widget_show(widget);
-}
-
 static void _gui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
   g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
@@ -1252,6 +1144,9 @@ static void _gui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 void init_center(GtkWidget *container)
 {
   GtkWidget* widget;
+
+  /* intiialize the center top panel */
+  _ui_init_panel_center_top(darktable.gui->ui, container);
 
   // Adding the center drawing area
   widget = gtk_drawing_area_new();
@@ -1275,46 +1170,12 @@ void init_center(GtkWidget *container)
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_visible(widget, TRUE);
 
-  /* initialize the bottom panel */
-  _ui_init_panel_bottom(darktable.gui->ui, container);
+
+  /* initialize the center bottom panel */
+  _ui_init_panel_center_bottom(darktable.gui->ui, container);
 
 }
 
-void init_center_bottom(GtkWidget *container)
-{
-  GtkWidget* widget;
-  GtkWidget* subcontainer;
-
-  // Adding the left toolbox
-  widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-  darktable.gui->widgets.bottom_left_toolbox = widget;
-
-  // Adding the center box
-  subcontainer = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), subcontainer, FALSE, TRUE, 0);
-
-  // Initializing the color picker panel
-  widget = gtk_hbox_new(FALSE, 5);
-  darktable.gui->widgets.bottom_darkroom_box = widget;
-  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
-  init_colorpicker(widget);
-
-  // Initializing the lightable layout box
-  widget = gtk_hbox_new(FALSE, 5);
-  darktable.gui->widgets.bottom_lighttable_box = widget;
-  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
-  init_lighttable_box(widget);
-  gtk_widget_show(widget);
-
-  // Adding the right toolbox
-  widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-  darktable.gui->widgets.bottom_right_toolbox = widget;
-
-}
 
 void init_colorpicker(GtkWidget *container)
 {
@@ -1581,24 +1442,80 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
   gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_LEFT], FALSE, FALSE, 10);
 
   /* add container for top center */
-  ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER] = gtk_hbox_new(FALSE,0);
+  ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER] = gtk_hbox_new(TRUE,0);
   gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER], TRUE, TRUE, 0);
+  /* add a filler to top center widget */
+  gtk_box_pack_start(GTK_BOX(ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER]), gtk_event_box_new(), TRUE,TRUE,0);
   
   /* add container for top right */
   ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT] = gtk_hbox_new(FALSE,0);
   gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT], FALSE, FALSE, 10);
 
-  init_dt_label(widget);
-
-  init_top_controls(widget);
-
 }
 
-static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
+static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
 {
   GtkWidget *widget;
-  ui->panels[DT_UI_PANEL_BOTTOM] = widget = gtk_hbox_new(FALSE, 0);
+
+  /* create the panel box */
+  ui->panels[DT_UI_PANEL_CENTER_TOP] = widget = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
-  init_center_bottom(widget);
+  /* add container for center top left */
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT] = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT], FALSE, FALSE, 10);
+
+  /* add container for center top center */
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER] = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER], TRUE, TRUE, 0);
+
+  /* add container for center top right */
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT] = gtk_hbox_new(FALSE,0);
+  gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT], FALSE, FALSE, 10);
+
+
+  /* TODO: Make modules out of these wigets */
+  init_top_controls(widget);
+}
+
+static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
+{
+  GtkWidget *widget;
+  ui->panels[DT_UI_PANEL_CENTER_BOTTOM] = widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+
+  container = widget;
+  GtkWidget* subcontainer;
+
+  /* adding the center bottom left toolbox */
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT] = widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  darktable.gui->widgets.bottom_left_toolbox = widget;
+
+  /* adding the center box */
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = subcontainer = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), subcontainer, FALSE, TRUE, 0);
+
+  /* initializing the colorpicker panel
+     TODO: Make module out of this
+   */
+  widget = gtk_hbox_new(FALSE, 5);
+  darktable.gui->widgets.bottom_darkroom_box = widget;
+  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
+  init_colorpicker(widget);
+
+  /* initializeing the lightable layout box 
+     TODO: Make module out of this
+   */
+  widget = gtk_hbox_new(FALSE, 5);
+  darktable.gui->widgets.bottom_lighttable_box = widget;
+  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
+  init_lighttable_box(widget);
+  gtk_widget_show(widget);
+
+  /* adding the right toolbox */
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] = widget = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
+  darktable.gui->widgets.bottom_right_toolbox = widget;
+
 }

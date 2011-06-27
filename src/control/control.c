@@ -1170,6 +1170,8 @@ void dt_control_queue_draw(GtkWidget *widget)
 
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
 {
+  if(mode==DT_MODE_NONE) return;
+
   int8_t bit;
   GtkWidget *widget;
 
@@ -1187,6 +1189,9 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   dt_lib_sort_t sort = dt_conf_get_int("ui_last/combo_sort");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
 
+  bit = dt_conf_get_int("ui_last/panel_header");
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
+
   bit = dt_conf_get_int("ui_last/panel_left");
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (bit&(1<<mode)) ? TRUE : FALSE);
 
@@ -1194,16 +1199,21 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (bit&(1<<mode)) ? TRUE : FALSE);
 
   bit = dt_conf_get_int("ui_last/panel_top");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
 
   bit = dt_conf_get_int("ui_last/panel_bottom");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, (bit&(1<<mode)) ? TRUE : FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (bit&(1<<mode)) ? TRUE : FALSE);
 
 }
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 {
   int8_t bit;
+  /* store header panel visible state */
+  bit = dt_conf_get_int("ui_last/panel_header");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_header",bit);
 
   /* store left panel visible state */
   bit = dt_conf_get_int("ui_last/panel_left");
@@ -1219,13 +1229,13 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 
   /* store top panel visible state */
   bit = dt_conf_get_int("ui_last/panel_top");
-  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP)) bit |= 1<<mode;
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP)) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_top",bit);
 
   /* store bottom panel visible state */
   bit = dt_conf_get_int("ui_last/panel_bottom");
-  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM)) bit |= 1<<mode;
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM)) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_bottom",bit);
 

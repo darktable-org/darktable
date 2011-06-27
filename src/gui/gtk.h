@@ -149,15 +149,30 @@ typedef enum dt_ui_container_t
   /* right side were the different views are accessed */
   DT_UI_CONTAINER_PANEL_TOP_RIGHT,
 
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT,
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER,
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT,
+
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT,
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER,
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT,
+
+
   /* Count of containers */
   DT_UI_CONTAINER_SIZE
 } dt_ui_container_t;
 
 typedef enum dt_ui_panel_t
 {
+  /* the header panel */
   DT_UI_PANEL_TOP,
-  DT_UI_PANEL_BOTTOM,
+  /* center top toolbar panel */
+  DT_UI_PANEL_CENTER_TOP,
+  /* center bottom toolbar panel */
+  DT_UI_PANEL_CENTER_BOTTOM,
+  /* left panel */
   DT_UI_PANEL_LEFT,
+  /* right panel */
   DT_UI_PANEL_RIGHT,
 
   DT_UI_PANEL_SIZE
