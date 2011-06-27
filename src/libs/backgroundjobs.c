@@ -168,7 +168,7 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, guint key)
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
   if(j) 
   {
-    g_hash_table_remove(d->jobs, (gpointer)key);
+    g_hash_table_remove(d->jobs, GUINT_TO_POINTER(key));
     
     /* remove job widget from jobbox */
     if(GTK_IS_WIDGET(j->widget))
