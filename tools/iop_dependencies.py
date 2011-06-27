@@ -98,6 +98,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'sharpen'))
   gr.add_edge(('colorout', 'grain'))
   gr.add_edge(('colorout', 'anlfyeni'))
+  gr.add_edge(('colorout', 'colorcontrast'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -113,6 +114,7 @@ def add_edges(gr):
   gr.add_edge(('grain', 'colorin'))
   gr.add_edge(('anlfyeni', 'colorin'))
   gr.add_edge(('highpass', 'colorin'))
+  gr.add_edge(('colorcontrast', 'colorin'))
   
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
@@ -238,6 +240,7 @@ gr.add_nodes([
 'colorout',
 'colortransfer',
 'colorzones',
+'colorcontrast',
 'demosaic',
 'equalizer', # deprecated
 'exposure',
@@ -290,7 +293,7 @@ for n in sorted_nodes:
     filename="../src/iop/%s.cc"%n
   if not os.path.isfile(filename):
     continue
-  replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;)", "  module->priority = %d;"%priority)
+  replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
   priority -= 1000.0/(length-1)
 
 # beauty-print the sorted pipe as pdf:

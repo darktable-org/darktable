@@ -1,6 +1,8 @@
+/* -*- Mode: c; c-basic-offset: 2; -*- */
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2010 johannes hanika
+    copyright (c) 2011 Sergey Astanin
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,14 +25,11 @@
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <assert.h>
 
-// this is the version of the modules parameters,
-// and includes version information about compile-time dt
 DT_MODULE(1)
 
-// TODO: some build system to support dt-less compilation and translation!
-
-typedef struct dt_iop_useless_params_t
+typedef struct dt_iop_colorcontrast_params_t
 {
   // these are stored in db.
   // make sure everything is in here does not
@@ -40,43 +39,48 @@ typedef struct dt_iop_useless_params_t
   // to a minimum. if you have to change this struct, it will break
   // users data bases, and you should increment the version
   // of DT_MODULE(VERSION) above!
-  int checker_scale;
+  float a_steepness;
+  float a_offset;
+  float b_steepness;
+  float b_offset;
 }
-dt_iop_useless_params_t;
+dt_iop_colorcontrast_params_t;
 
-typedef struct dt_iop_useless_gui_data_t
+typedef struct dt_iop_colorcontrast_gui_data_t
 {
   // whatever you need to make your gui happy.
   // stored in self->gui_data
-  GtkDarktableSlider *scale; // this is needed by gui_update
+  GtkVBox *vbox;
+  GtkDarktableSlider *a_scale; // this is needed by gui_update
+  GtkDarktableSlider *b_scale;
 }
-dt_iop_useless_gui_data_t;
+dt_iop_colorcontrast_gui_data_t;
 
-typedef struct dt_iop_useless_data_t
+typedef struct dt_iop_colorcontrast_data_t
 {
   // this is stored in the pixelpipeline after a commit (not the db),
   // you can do some precomputation and get this data in process().
   // stored in piece->data
-  int checker_scale; // in our case, no precomputation or
-  // anything is possible, so this is just a copy.
+  float a_steepness;
+  float a_offset;
+  float b_steepness;
+  float b_offset;
 }
-dt_iop_useless_data_t;
+dt_iop_colorcontrast_data_t;
 
-typedef struct dt_iop_useless_global_data_t
+typedef struct dt_iop_colorcontrast_global_data_t
 {
   // this is optionally stored in self->global_data
   // and can be used to alloc globally needed stuff
   // which is needed in gui mode and during processing.
-
-  // we don't need it for this example (as for most dt plugins)
 }
-dt_iop_useless_global_data_t;
+dt_iop_colorcontrast_global_data_t;
 
 // this returns a translatable name
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _("silly example");
+  return _("color contrast");
 }
 
 // some additional flags (self explanatory i think):
@@ -90,19 +94,8 @@ flags()
 int
 groups ()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_COLOR;
 }
-
-// implement this, if you have esoteric output bytes per pixel. default is 4*float
-/*
-int
-output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);
-  else return 4*sizeof(float);
-}
-*/
-
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
@@ -112,11 +105,9 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
+  assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
   // get our data struct:
-  dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
-  // the total scale is composed of scale before input to the pipeline (iscale),
-  // and the scale of the roi.
-  const float scale = piece->iscale/roi_in->scale;
+  dt_iop_colorcontrast_params_t *d = (dt_iop_colorcontrast_params_t *)piece->data;
   // how many colors in our buffer?
   const int ch = piece->colors;
   // iterate over all output pixels (same coordinates as input)
@@ -130,12 +121,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + ch*roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
-      // calculate world space coordinates:
-      int wi = (roi_in->x + i) * scale, wj = (roi_in->y + j) * scale;
-      if((wi/d->checker_scale+wj/d->checker_scale)&1) for(int c=0; c<3; c++) out[c] = 0;
-      else                                            for(int c=0; c<3; c++) out[c] = in[c];
-      in += ch;
-      out += ch;
+      float *pt_in = in + ch*i;
+      float *pt_out = out + ch*i;
+      float L_in = pt_in[0];
+      float a_in = pt_in[1];
+      float b_in = pt_in[2];
+      pt_out[0] = L_in;
+      pt_out[1] = CLAMPS(a_in*(d->a_steepness) + (d->a_offset), -128.0, 128.0);
+      pt_out[2] = CLAMPS(b_in*(d->b_steepness) + (d->b_offset), -128.0, 128.0);
     }
   }
 }
@@ -144,32 +137,36 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void reload_defaults(dt_iop_module_t *module)
 {
   // change default_enabled depending on type of image, or set new default_params even.
-
   // if this callback exists, it has to write default_params and default_enabled.
+  dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t)
+  {
+    1.0, 0.0, 1.0, 0.0
+  };
+  memcpy(module->params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
+  module->default_enabled = 0;
 }
 
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; //malloc(sizeof(dt_iop_useless_global_data_t));
-  module->params = malloc(sizeof(dt_iop_useless_params_t));
-  module->default_params = malloc(sizeof(dt_iop_useless_params_t));
+  module->data = NULL; //malloc(sizeof(dt_iop_colorcontrast_global_data_t));
+  module->params = malloc(sizeof(dt_iop_colorcontrast_params_t));
+  module->default_params = malloc(sizeof(dt_iop_colorcontrast_params_t));
   // our module is disabled by default
-  // by default:
   module->default_enabled = 0;
-  // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 901; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_useless_params_t);
+  // we are pretty late in the pipe:
+  module->priority = 733; // module order created by iop_dependencies.py, do not edit!
+  module->params_size = sizeof(dt_iop_colorcontrast_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_useless_params_t tmp = (dt_iop_useless_params_t)
+  dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t)
   {
-    50
+    1.0, 0.0, 1.0, 0.0
   };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_useless_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_useless_params_t));
+  memcpy(module->params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -185,14 +182,17 @@ void cleanup(dt_iop_module_t *module)
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)params;
-  dt_iop_useless_data_t *d = (dt_iop_useless_data_t *)piece->data;
-  d->checker_scale = p->checker_scale;
+  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)params;
+  dt_iop_colorcontrast_data_t *d = (dt_iop_colorcontrast_data_t *)piece->data;
+  d->a_steepness = p->a_steepness;
+  d->a_offset = p->a_offset;
+  d->b_steepness = p->b_steepness;
+  d->a_offset = p->a_offset;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_useless_data_t));
+  piece->data = malloc(sizeof(dt_iop_colorcontrast_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -203,13 +203,25 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 /** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */
 static void
-slider_callback(GtkRange *range, dt_iop_module_t *self)
+a_slider_callback(GtkRange *range, dt_iop_module_t *self)
 {
   // this is important to avoid cycles!
   if(darktable.gui->reset) return;
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  p->checker_scale = dtgtk_slider_get_value(g->scale);
+  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
+  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
+  p->a_steepness = dtgtk_slider_get_value(g->a_scale);
+  // let core know of the changes
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+b_slider_callback(GtkRange *range, dt_iop_module_t *self)
+{
+  // this is important to avoid cycles!
+  if(darktable.gui->reset) return;
+  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
+  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
+  p->b_steepness = dtgtk_slider_get_value(g->b_scale);
   // let core know of the changes
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -218,25 +230,43 @@ slider_callback(GtkRange *range, dt_iop_module_t *self)
 void gui_update    (dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  dt_iop_useless_params_t *p = (dt_iop_useless_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale, p->checker_scale);
+  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
+  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
+  dtgtk_slider_set_value(g->a_scale, p->a_steepness);
+  dtgtk_slider_set_value(g->b_scale, p->b_steepness);
 }
 
 void gui_init     (dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
-  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE, 1, 100, 1, 50, 0));
-  self->widget = GTK_WIDGET(g->scale);
-  g_signal_connect (G_OBJECT (g->scale), "value-changed",
-                    G_CALLBACK (slider_callback), self);
+  self->gui_data = malloc(sizeof(dt_iop_colorcontrast_gui_data_t));
+  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
+  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
+  g->a_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 5.0, 0.01, p->a_steepness, 2));
+  dtgtk_slider_set_label(g->a_scale,_("green vs magenta"));
+  g->b_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 5.0, 0.01, p->b_steepness, 2));
+  dtgtk_slider_set_label(g->b_scale,_("blue vs yellow"));
+  
+  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->a_scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->b_scale), TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->a_scale), "tooltip-text",
+	       _("steepness of the a* curve in Lab"), (char *)NULL);
+  g_object_set(G_OBJECT(g->b_scale), "tooltip-text",
+	       _("steepness of the b* curve in Lab"), (char *)NULL);
+
+
+  g_signal_connect(G_OBJECT(g->a_scale), "value-changed",
+		   G_CALLBACK(a_slider_callback), self);
+  g_signal_connect(G_OBJECT(g->b_scale), "value-changed",
+		   G_CALLBACK(b_slider_callback), self);
 }
 
 void gui_cleanup  (dt_iop_module_t *self)
 {
-  // nothing else necessary, gtk will clean up the slider.
+  // nothing else necessary, gtk will clean up the sliders.
   free(self->gui_data);
   self->gui_data = NULL;
 }
