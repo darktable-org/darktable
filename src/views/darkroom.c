@@ -75,11 +75,11 @@ init(dt_view_t *self)
   dt_dev_init((dt_develop_t *)self->data, 1);
 
   // Film strip shortcuts
-  gtk_accel_map_add_entry("<Darktable>/darkroom/filmstrip/show hide",
+  gtk_accel_map_add_entry("<Darktable>/darkroom/toggle film strip",
                           GDK_f, GDK_CONTROL_MASK);
   dt_accel_group_connect_by_path(
       darktable.control->accels_darkroom,
-      "<Darktable>/darkroom/filmstrip/show hide",
+      "<Darktable>/darkroom/toggle film strip",
       NULL);
 
   // Zoom shortcuts
@@ -770,7 +770,7 @@ static void connect_closures(dt_view_t *self)
                            (gpointer)self, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
   dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                 "<Darktable>/darkroom/filmstrip/show hide",
+                                 "<Darktable>/darkroom/toggle film strip",
                                  closure);
 
   // Zoom shortcuts

@@ -171,27 +171,27 @@ void init(dt_view_t *self)
                                  "<Darktable>/lighttable/zoom/min",
                                  NULL);
 
-  gtk_accel_map_add_entry("<Darktable>/lighttable/go/up",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/navigate/up",
                           GDK_g, 0);
-  gtk_accel_map_add_entry("<Darktable>/lighttable/go/down",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/navigate/down",
                           GDK_g, GDK_SHIFT_MASK);
-  gtk_accel_map_add_entry("<Darktable>/lighttable/go/page up",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/navigate/page up",
                           GDK_Page_Up, 0);
-  gtk_accel_map_add_entry("<Darktable>/lighttable/go/page down",
+  gtk_accel_map_add_entry("<Darktable>/lighttable/navigate/page down",
                           GDK_Page_Down, 0);
 
 
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/go/up",
+                                 "<Darktable>/lighttable/navigate/up",
                                  NULL);
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/go/down",
+                                 "<Darktable>/lighttable/navigate/down",
                                  NULL);
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/go/page up",
+                                 "<Darktable>/lighttable/navigate/page up",
                                  NULL);
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/go/page down",
+                                 "<Darktable>/lighttable/navigate/page down",
                                  NULL);
 
   gtk_accel_map_add_entry("<Darktable>/lighttable/color/red", GDK_F1, 0);
@@ -1028,28 +1028,28 @@ static void connect_closures(dt_view_t *self)
       (gpointer)self, NULL);
   lib->closures = g_slist_prepend(lib->closures, closure);
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/go/up",
+                                 "<Darktable>/lighttable/navigate/up",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(go_down_key_accel_callback),
       (gpointer)self, NULL);
   lib->closures = g_slist_prepend(lib->closures, closure);
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/go/down",
+                                 "<Darktable>/lighttable/navigate/down",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(go_pgup_key_accel_callback),
       (gpointer)self, NULL);
   lib->closures = g_slist_prepend(lib->closures, closure);
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/go/page up",
+                                 "<Darktable>/lighttable/navigate/page up",
                                  closure);
   closure = g_cclosure_new(
       G_CALLBACK(go_pgdown_key_accel_callback),
       (gpointer)self, NULL);
   lib->closures = g_slist_prepend(lib->closures, closure);
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/go/page down",
+                                 "<Darktable>/lighttable/navigate/page down",
                                  closure);
 
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),

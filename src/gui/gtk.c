@@ -113,7 +113,7 @@ static void key_accel_changed(GtkAccelMap *object,
                              &darktable.control->accels.lighttable_preview);
 
   // Global
-  gtk_accel_map_lookup_entry("<Darktable>/toggle side borders",
+  gtk_accel_map_lookup_entry("<Darktable>/interface/toggle side borders",
                              &darktable.control->accels.global_sideborders);
 
 }
@@ -1441,59 +1441,59 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
       g_cclosure_new(G_CALLBACK(quit_callback), NULL, NULL));
 
   // Contrast and brightness accelerators
-  gtk_accel_map_add_entry("<Darktable>/brightness/increase",
+  gtk_accel_map_add_entry("<Darktable>/interface/increase brightness",
                          GDK_F10, 0);
-  gtk_accel_map_add_entry("<Darktable>/brightness/decrease",
+  gtk_accel_map_add_entry("<Darktable>/interface/decrease brightness",
                           GDK_F9, 0);
-  gtk_accel_map_add_entry("<Darktable>/contrast/increase",
+  gtk_accel_map_add_entry("<Darktable>/interface/increase contrast",
                           GDK_F8, 0);
-  gtk_accel_map_add_entry("<Darktable>/contrast/decrease",
+  gtk_accel_map_add_entry("<Darktable>/interface/decrease contrast",
                           GDK_F7, 0);
 
   dt_accel_group_connect_by_path(
       darktable.control->accels_global,
-      "<Darktable>/brightness/increase",
+      "<Darktable>/interface/increase brightness",
       g_cclosure_new(G_CALLBACK(brightness_key_accel_callback),
                      (gpointer)1, NULL));
   dt_accel_group_connect_by_path(
       darktable.control->accels_global,
-      "<Darktable>/brightness/decrease",
+      "<Darktable>/interface/decrease brightness",
       g_cclosure_new(G_CALLBACK(brightness_key_accel_callback),
                      (gpointer)0, NULL));
   dt_accel_group_connect_by_path(
       darktable.control->accels_global,
-      "<Darktable>/contrast/increase",
+      "<Darktable>/interface/increase contrast",
       g_cclosure_new(G_CALLBACK(contrast_key_accel_callback),
                      (gpointer)1, NULL));
   dt_accel_group_connect_by_path(
       darktable.control->accels_global,
-      "<Darktable>/contrast/decrease",
+      "<Darktable>/interface/decrease contrast",
       g_cclosure_new(G_CALLBACK(contrast_key_accel_callback),
                      (gpointer)0, NULL));
 
   // Full-screen accelerators
-  gtk_accel_map_add_entry("<Darktable>/fullscreen/toggle",
+  gtk_accel_map_add_entry("<Darktable>/interface/toggle fullscreen",
                           GDK_F11, 0);
-  gtk_accel_map_add_entry("<Darktable>/fullscreen/leave",
+  gtk_accel_map_add_entry("<Darktable>/interface/leave fullscreen",
                           GDK_Escape, 0);
 
   dt_accel_group_connect_by_path(
       darktable.control->accels_global,
-      "<Darktable>/fullscreen/toggle",
+      "<Darktable>/interface/toggle fullscreen",
       g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
                      (gpointer)1, NULL));
   dt_accel_group_connect_by_path(
       darktable.control->accels_global,
-      "<Darktable>/fullscreen/leave",
+      "<Darktable>/interface/leave fullscreen",
       g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
                      (gpointer)0, NULL));
 
   // Side-border hide/show
-  gtk_accel_map_add_entry("<Darktable>/toggle side borders",
+  gtk_accel_map_add_entry("<Darktable>/interface/toggle side borders",
                           GDK_Tab, 0);
 
   dt_accel_group_connect_by_path(darktable.control->accels_global,
-                                 "<Darktable>/toggle side borders",
+                                 "<Darktable>/interface/toggle side borders",
                                  NULL);
 
   // View-switch
