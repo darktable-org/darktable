@@ -76,6 +76,10 @@ operation_tags ()
   return IOP_TAG_DISTORT;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/framing/border size");
+}
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
 void
@@ -355,6 +359,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   g->size = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 50.0, 1.0, p->size*100.0, 2));
+  dtgtk_slider_set_accel(g->size,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/framing/border size");
   dtgtk_slider_set_label(g->size, _("border size"));
   dtgtk_slider_set_unit(g->size, "%");
   g_signal_connect (G_OBJECT (g->size), "value-changed", G_CALLBACK (size_callback), self);
