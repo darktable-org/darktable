@@ -88,7 +88,7 @@ void gui_init(dt_lib_module_t *self)
   memset(d,0,sizeof(dt_lib_backgroundjobs_t));
   self->data = (void *)d;
 
-  d->jobs = g_hash_table_new(NULL,NULL);
+  d->jobs = g_hash_table_new(g_int_hash,g_int_equal);
 
   /* initialize base */
   self->widget = d->jobbox = gtk_vbox_new(FALSE, 0);
@@ -125,7 +125,9 @@ static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gch
   j->type = type;
   j->widget = gtk_event_box_new();
 
+  /* create in hash out of j pointer*/
   guint key = g_direct_hash(j);
+  
   g_hash_table_insert(d->jobs, GUINT_TO_POINTER(key), j);
 
   /* intialize the ui elements for job */
