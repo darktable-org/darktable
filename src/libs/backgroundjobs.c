@@ -126,7 +126,7 @@ static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gch
   j->widget = gtk_event_box_new();
 
   guint key = g_direct_hash(j);
-  g_hash_table_insert(d->jobs, (gpointer)key, j);
+  g_hash_table_insert(d->jobs, GUINT_TO_POINTER(key), j);
 
   /* intialize the ui elements for job */
   gtk_widget_set_name (GTK_WIDGET (j->widget), "background_job_eventbox");
@@ -163,7 +163,7 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, guint key)
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
   int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
   if(needlock) gdk_threads_enter();
-  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, (gpointer)key);
+  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
   if(j) 
   {
     g_hash_table_remove(d->jobs, (gpointer)key);
@@ -195,7 +195,7 @@ static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, guint key
   if(needlock) gdk_threads_enter();
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
 
-  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, (gpointer)key);
+  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
   if (j)
   {
     GtkWidget *w=j->widget;
@@ -217,7 +217,7 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, guint key, doubl
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;  
   int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
   if(needlock) gdk_threads_enter();
-  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, (gpointer)key);
+  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
   if(j)
   {
     /* check if progress is above 1.0 and destroy bgjob if finished */
