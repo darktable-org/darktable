@@ -155,7 +155,7 @@ static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *v)
   g_object_set_data(G_OBJECT(b),"view-label",(gchar *)v->name(v));
   gtk_label_set_use_markup(GTK_LABEL(b), TRUE);
   gtk_widget_set_name(b,"view_label");
-  g_signal_connect(G_OBJECT(eb),"button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback), (gpointer)v->view(v));
+  g_signal_connect(G_OBJECT(eb),"button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback), (gpointer)(long)v->view(v));
   return eb;
 }
 
