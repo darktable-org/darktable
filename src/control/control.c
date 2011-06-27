@@ -1099,6 +1099,47 @@ void dt_control_log_busy_leave()
   dt_control_queue_draw_all();
 }
 
+void dt_control_gui_queue_draw()
+{
+  // double time = dt_get_wtime();
+  // if(time - darktable.control->last_expose_time < 0.1f) return;
+  if(dt_control_running())
+    {
+      GtkWidget *widget = darktable.gui->widgets.center;
+      gtk_widget_queue_draw(widget);
+      // darktable.control->last_expose_time = time;
+    }
+}
+
+void dt_control_queue_draw_all()
+{
+  // double time = dt_get_wtime();
+  // if(time - darktable.control->last_expose_time < 0.1f) return;
+  if(dt_control_running())
+    {
+      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
+      if(needlock) gdk_threads_enter();
+      GtkWidget *widget = darktable.gui->widgets.center;
+      gtk_widget_queue_draw(widget);
+      // darktable.control->last_expose_time = time;
+      if(needlock) gdk_threads_leave();
+    }
+}
+
+void dt_control_queue_draw(GtkWidget *widget)
+{
+  // double time = dt_get_wtime();
+  // if(time - darktable.control->last_expose_time < 0.1f) return;
+  if(dt_control_running())
+    {
+      if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
+      gtk_widget_queue_draw(widget);
+      // darktable.control->last_expose_time = time;
+      if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
+    }
+}
+
+#if 0 // REENABLE THIS LATER
 // deprecate this function.
 void dt_control_gui_queue_draw()
 {
@@ -1128,6 +1169,7 @@ void dt_control_queue_draw(GtkWidget *widget)
     if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
   }
 }
+#endif
 
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
 {
