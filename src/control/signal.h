@@ -37,6 +37,10 @@ typedef enum dt_signal_t {
   */
   DT_SIGNAL_CONTROL_REDRAW_ALL,
 
+  /** \brief This signal is raised by viewmanager when a view has changed.
+   */
+  DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+
   /** \brief This signal is raised when darktable.develop is initialized.
       \note any modules that wants to acces darktable->develop should connect
       to this signal to be sure darktable.develop is initialized.
