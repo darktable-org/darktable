@@ -294,6 +294,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   float color[3];
   hsl2rgb(color,data->hue,data->saturation,0.5);
+  if (data->density < 0)
+    for ( int l=0; l<3; l++ )
+      color[l] = 1.0-color[l];
 
 #if 1
   const float filter_compression = 1.0/filter_radie/(1.0-(0.5+(data->compression/100.0)*0.9/2.0))*0.5;
@@ -324,14 +327,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 #if 1
       const float length=pv.y*filter_compression;
-      const float density = exp2f(-data->density * CLIP( 0.5+length ));
+      const float density = (data->density > 0)
+	? exp2f(-data->density * CLIP( 0.5+length ))
+	: exp2f(data->density * CLIP( 0.5-length ));
 #else
       const float length=pv.y/filter_radie;
       const float density = 1.0f/exp2f(data->density*f(t, c, length));
 #endif
 
-      for( int l=0; l<3; l++)
-        out[l] = fmaxf(0.0, (in[l]*(density/(1.0-(1.0-density)*color[l])) ));
+      if (data->density > 0)
+	for( int l=0; l<3; l++)
+	  out[l] = fmaxf(0.0, in[l]*density / (1.0-(1.0-density)*color[l]) );
+      else
+	for( int l=0; l<3; l++)
+	  out[l] = fmaxf(0.0, in[l]/density * (1.0-(1.0-density)*color[l]) );
 
     }
   }
@@ -517,7 +526,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->label5 = dtgtk_reset_label_new(_("hue"), self, &p->hue, sizeof(float));
   g->label6 = dtgtk_reset_label_new(_("saturation"), self, &p->saturation, sizeof(float));
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, 0.1, p->density, 2));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-8.0, 8.0, 0.1, p->density, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compression, 0));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-180, 180,0.5, p->rotation, 2));
