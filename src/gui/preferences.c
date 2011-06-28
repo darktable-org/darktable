@@ -22,6 +22,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
+#include "develop/imageop.h"
 #include "preferences_gen.h"
 
 // Values for the accelerators treeview

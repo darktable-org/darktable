@@ -127,6 +127,7 @@ typedef struct darktable_t
   struct dt_lib_t                *lib;
   struct dt_view_manager_t       *view_manager;
   struct dt_control_t            *control;
+  struct dt_control_signal_t     *signals;
   struct dt_gui_gtk_t            *gui;
   struct dt_mipmap_cache_t       *mipmap_cache;
   struct dt_image_cache_t        *image_cache;

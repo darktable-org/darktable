@@ -38,20 +38,15 @@ FILE(GLOB SOURCE_FILES
   "control/jobs/control_jobs.c"  
   "control/jobs/develop_jobs.c"  
   "control/jobs/film_jobs.c"  
-  "control/jobs/image_jobs.c"  
+  "control/jobs/image_jobs.c"
+  "control/signal.c"
   "develop/develop.c"
   "develop/imageop.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
   "dtgtk/*.c" 
-  "gui/background_jobs.c"  
   "gui/contrast.c"  
   "gui/gtk.c"  
-  "gui/histogram.c"  
-  "gui/iop_history.c"  
-  "gui/iop_modulegroups.c"  
-  "gui/metadata.c"  
-  "gui/navigation.c"  
   "gui/preferences.c"  
   "gui/presets.c"  
   "gui/styles_dialog.c"  
@@ -205,7 +200,7 @@ endif(USE_OPENCL)
 
 
 if(GPHOTO2_FOUND)
-  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" "gui/devices.c" )
+  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" )
   add_definitions("-DHAVE_GPHOTO2")
 endif(GPHOTO2_FOUND)
 

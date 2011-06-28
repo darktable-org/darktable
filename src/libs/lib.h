@@ -18,11 +18,13 @@
 #ifndef DT_LIB_H
 #define DT_LIB_H
 
+#include "views/view.h"
 #include "common/darktable.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 
 struct dt_lib_module_t;
+
 /** struct responsible for all library related shared routines and plugins. */
 typedef struct dt_lib_t
 {
@@ -30,15 +32,6 @@ typedef struct dt_lib_t
   struct dt_lib_module_t *gui_module;
 }
 dt_lib_t;
-
-typedef enum dt_lib_view_support_t
-{
-  DT_LIGHTTABLE_VIEW=1,
-  DT_DARKTABLE_VIEW=2,
-  DT_CAPTURE_VIEW=4,
-  DT_LEFT_PANEL_VIEW=8
-}
-dt_lib_view_support_t;
 
 typedef struct dt_lib_module_t
 {
@@ -59,6 +52,12 @@ typedef struct dt_lib_module_t
   const char* (*name)     ();
   /** get the views which the module should be loaded in. */
   uint32_t (*views)       ();
+  /** get the container which the module should be placed in */
+  uint32_t (*container)   ();
+  /** check if module should use a expander or not, default implementation
+      will make the module expandable and storing the expanding state, 
+      if not the module will always be shown without the expander. */
+  int (*expandable) ();
 
   /** callback methods for gui. */
   /** construct widget. */

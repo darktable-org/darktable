@@ -1,3 +1,4 @@
+
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
@@ -332,6 +333,9 @@ dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
   return apos - bpos;
 }
 
+/* default expandable implementation */
+static int _lib_default_expandable() { return 1; };
+
 static int
 dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *plugin_name)
 {
@@ -349,7 +353,10 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   }
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "views",                  (gpointer)&(module->views)))                  goto error;
-  if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
+  if(!g_module_symbol(module->module, "container",              (gpointer)&(module->container)))              goto error;
+  if(!g_module_symbol(module->module, "expandable",             (gpointer)&(module->expandable)))             module->expandable = _lib_default_expandable;
+
+  if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
 
@@ -452,6 +459,9 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
   GtkExpander *expander = GTK_EXPANDER (object);
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
 
+  /* bail out if module is static */
+  if(!module->expandable()) return;
+
   char var[1024];
   snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
   dt_conf_set_bool(var, gtk_expander_get_expanded (expander));
@@ -461,10 +471,11 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
     gtk_widget_show_all(module->widget);
     // register to receive draw events
     darktable.lib->gui_module = module;
-    GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
-    gtk_container_set_focus_child(box, GTK_WIDGET(module->expander));
-    // redraw gui (in case post expose is set)
-    gtk_widget_queue_resize(darktable.gui->widgets.plugins_vbox);
+    
+    /* focus the current module */
+    for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
+      dt_ui_container_focus_widget(darktable.gui->ui, k, GTK_WIDGET(module->expander));
+
     dt_control_gui_queue_draw();
   }
   else
@@ -521,15 +532,27 @@ popup_callback(GtkButton *button, dt_lib_module_t *module)
 GtkWidget *
 dt_lib_gui_get_expander (dt_lib_module_t *module)
 {
+  if(!module->expandable())
+    return module->widget;
+
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-  g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
-  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
+  
+  /* only add reset button if module has implemented the gui_reset function */
+  if (module->gui_reset) 
+  {
+    GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+    gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
+    g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
+    gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
+    
+    g_signal_connect (G_OBJECT (resetbutton), "clicked",
+                    G_CALLBACK (dt_lib_gui_reset_callback), module);
+  }
+
   if(module->get_params)
   {
     GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
@@ -544,8 +567,6 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(al), module->widget);
 
-  g_signal_connect (G_OBJECT (resetbutton), "clicked",
-                    G_CALLBACK (dt_lib_gui_reset_callback), module);
   g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
                     G_CALLBACK (dt_lib_gui_expander_callback), module);
   gtk_expander_set_spacing(module->expander, 10);

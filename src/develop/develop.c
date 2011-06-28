@@ -67,7 +67,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   dev->closures = NULL;
-
+  memset(dev,0,sizeof(dt_develop_t));
   float downsampling = dt_conf_get_float ("preview_subsample");
   dev->preview_downsampling = downsampling <= 1.0 && downsampling >= 0.1 ? downsampling : .5;
   dev->gui_module = NULL;
@@ -602,10 +602,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   if (dev && dev->image) dev->image->dirty = 1;
   if(dev->gui_attached)
   {
-    // if gui_attached pop all operations down to dev->history_end
-    dt_control_clear_history_items (dev->history_end-1);
-
-    // remove unused history items:
     GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
     {
@@ -648,12 +644,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
-      if(dev->gui_attached)
-      {
-        char label[512]; // print on/off
-        dt_dev_get_history_item_label(hist, label, 512);
-        dt_control_add_history_item(dev->history_end-1, label);
-      }
       dev->history = g_list_append(dev->history, hist);
       dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
@@ -707,8 +697,10 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
   if(dev->gui_attached)
   {
-    // update history (on) (off) annotation
-    dt_control_clear_history_items(dev->history_end);
+    /* signal that history has changed */
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+
+    /* redraw */
     dt_control_queue_draw_all();
   }
 }
@@ -716,7 +708,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dt_dev_pop_history_items(dev, 0);
-  dt_control_clear_history_items(dev->history_end-1);
   // remove unused history items:
   GList *history = g_list_nth(dev->history, dev->history_end);
   while(history)
@@ -806,7 +797,6 @@ void dt_dev_write_history(dt_develop_t *dev)
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  if(dev->gui_attached) dt_control_clear_history_items(-1);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
@@ -875,18 +865,16 @@ void dt_dev_read_history(dt_develop_t *dev)
     dev->history = g_list_append(dev->history, hist);
     dev->history_end ++;
 
-    if(dev->gui_attached)
-    {
-      char label[256];
-      dt_dev_get_history_item_label(hist, label, 256);
-      dt_control_add_history_item(dev->history_end-1, label);
-    }
   }
+
   if(dev->gui_attached)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
     dt_dev_invalidate_all(dev);
+
+    /* signal history changed */
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   sqlite3_finalize (stmt);
 }
@@ -972,8 +960,86 @@ dt_dev_is_current_image (dt_develop_t *dev, int imgid)
   return (dev->image && dev->image->id==imgid)?1:0;
 }
 
-void
-dt_dev_invalidate_from_gui (dt_develop_t *dev)
+gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
+{
+  /* check if exposure iop module has registered its hooks */
+  if( dev->proxy.exposure.module && 
+      dev->proxy.exposure.set_black && dev->proxy.exposure.get_black &&
+      dev->proxy.exposure.set_white && dev->proxy.exposure.get_white)
+    return TRUE;
+
+  return FALSE;
+}
+
+void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
+{
+  if (dev->proxy.exposure.module)
+    dev->proxy.exposure.module->reload_defaults(dev->proxy.exposure.module);
+
+  /*memcpy(d->exposure->params, d->exposure->default_params, d->exposure->params_size);
+    d->exposure->gui_update(d->exposure);
+    dt_dev_add_history_item(d->exposure->dev, d->exposure, TRUE);*/
+}
+
+void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
+{
+   if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+     dev->proxy.exposure.set_white(dev->proxy.exposure.module, white);
+}
+
+float dt_dev_exposure_get_white(dt_develop_t *dev)
+{
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+     return dev->proxy.exposure.get_white(dev->proxy.exposure.module);
+
+  return 0.0;
+}
+
+void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
+{
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_black)
+     dev->proxy.exposure.set_black(dev->proxy.exposure.module, black);
+}
+
+float dt_dev_exposure_get_black(dt_develop_t *dev)
+{
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_black)
+     return dev->proxy.exposure.get_black(dev->proxy.exposure.module);
+
+  return 0.0;
+}
+
+gboolean dt_dev_modulegroups_available(dt_develop_t *dev) 
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->proxy.modulegroups.get)
+    return TRUE;
+
+  return FALSE;
+}
+
+void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set)
+    dev->proxy.modulegroups.set(dev->proxy.modulegroups.module, group);
+}
+
+uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.get)
+    return dev->proxy.modulegroups.get(dev->proxy.modulegroups.module);
+
+  return 0;
+}
+
+
+void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
+{
+  dev->proxy.snapshot.filename = filename;
+  dev->proxy.snapshot.request = TRUE;
+  dt_control_queue_draw_all();
+}
+
+void dt_dev_invalidate_from_gui (dt_develop_t *dev)
 {
   dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
 }

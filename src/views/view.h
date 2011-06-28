@@ -23,6 +23,17 @@
 #include <gmodule.h>
 #include <cairo.h>
 
+/** avilable views flags, a view should return it's type and
+    is also used in modules flags available in src/libs to
+    control which view the module should be available in also
+    which placement in the panels the module have.
+*/
+enum dt_view_type_flags_t {
+  DT_VIEW_LIGHTTABLE = 1,
+  DT_VIEW_DARKROOM = 2,
+  DT_VIEW_TETHERING = 4,
+};
+
 /**
  * main dt view module (as lighttable or darkroom)
  */
@@ -40,6 +51,7 @@ typedef struct dt_view_t
   float vscroll_size, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_viewport_size, hscroll_pos;
   const char *(*name)     (struct dt_view_t *self); // get translatable name
+  uint32_t (*view)        (struct dt_view_t *self); // get the view type
   void (*init)            (struct dt_view_t *self); // init *data
   void (*cleanup)         (struct dt_view_t *self); // cleanup *data
   void (*expose)          (struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery); // expose the module (gtk callback)

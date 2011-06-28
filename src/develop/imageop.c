@@ -23,7 +23,7 @@
 #include "develop/develop.h"
 #include "develop/blend.h"
 #include "gui/gtk.h"
-#include "gui/iop_modulegroups.h"
+//#include "gui/iop_modulegroups.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 #include "dtgtk/slider.h"
@@ -650,7 +650,7 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
 {
   if(event->button == 1 && (event->state & GDK_SHIFT_MASK)) // TODO: this can also be done when some auto-collapse option is set ...
   {
-    int current_group = dt_gui_iop_modulegroups_get();
+    int current_group = dt_dev_modulegroups_get(module->dev);
     GList *iop = g_list_first(module->dev->iop);
     while(iop)
     {
@@ -687,11 +687,12 @@ dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer u
 
     // register to receive draw events
     dt_iop_request_focus(module);
-    GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
-    gtk_container_set_focus_child(box, module->topwidget);
+ 
+    for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
+      dt_ui_container_focus_widget(darktable.gui->ui, k, module->topwidget);
+
     // redraw gui (in case post expose is set)
-    gtk_widget_queue_resize(darktable.gui->widgets.plugins_vbox);
-    dt_control_gui_queue_draw();
+     dt_control_gui_queue_draw();
   }
   else
   {

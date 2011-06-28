@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika, henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -75,7 +75,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("ui_last/panel_bottom",  0);
 
   dt_conf_set_int  ("ui_last/expander_library",     1<<DT_LIBRARY);
-  dt_conf_set_int  ("ui_last/expander_metadata",    0);
   dt_conf_set_int  ("ui_last/expander_navigation", -1);
   dt_conf_set_int  ("ui_last/expander_histogram",  -1);
   dt_conf_set_int  ("ui_last/expander_history",    -1);
@@ -1064,10 +1063,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   if(error) return;
 
   dt_control_restore_gui_settings(mode);
-  widget = darktable.gui->widgets.view_label;
-  if(oldmode != DT_MODE_NONE) g_object_set(G_OBJECT(widget), "tooltip-text", buf, (char *)NULL);
-  snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"), dt_view_manager_name(darktable.view_manager));
-  gtk_label_set_label(GTK_LABEL(widget), buf);
+  /* TODO: highlight current view */
   dt_conf_set_int ("ui_last/view", mode);
 }
 
@@ -1158,11 +1154,11 @@ void dt_control_gui_queue_draw()
   // double time = dt_get_wtime();
   // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
-  {
-    GtkWidget *widget = darktable.gui->widgets.center;
-    gtk_widget_queue_draw(widget);
-    // darktable.control->last_expose_time = time;
-  }
+    {
+      GtkWidget *widget = darktable.gui->widgets.center;
+      gtk_widget_queue_draw(widget);
+      // darktable.control->last_expose_time = time;
+    }
 }
 
 void dt_control_queue_draw_all()
@@ -1170,14 +1166,14 @@ void dt_control_queue_draw_all()
   // double time = dt_get_wtime();
   // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
-  {
-    int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-    if(needlock) gdk_threads_enter();
-    GtkWidget *widget = darktable.gui->widgets.center;
-    gtk_widget_queue_draw(widget);
-    // darktable.control->last_expose_time = time;
-    if(needlock) gdk_threads_leave();
-  }
+    {
+      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
+      if(needlock) gdk_threads_enter();
+      GtkWidget *widget = darktable.gui->widgets.center;
+      gtk_widget_queue_draw(widget);
+      // darktable.control->last_expose_time = time;
+      if(needlock) gdk_threads_leave();
+    }
 }
 
 void dt_control_queue_draw(GtkWidget *widget)
@@ -1185,16 +1181,50 @@ void dt_control_queue_draw(GtkWidget *widget)
   // double time = dt_get_wtime();
   // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
-  {
-    if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
-    gtk_widget_queue_draw(widget);
-    // darktable.control->last_expose_time = time;
-    if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
+    {
+      if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
+      gtk_widget_queue_draw(widget);
+      // darktable.control->last_expose_time = time;
+      if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
+    }
+}
+
+#if 0 // REENABLE THIS LATER
+// deprecate this function.
+void dt_control_gui_queue_draw()
+{
+  /* raise the redraw center signal */
+  if(dt_control_running())
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
+}
+
+void dt_control_queue_draw_all()
+{
+  /* raise the redraw all signal */
+  if (dt_control_running()) {
+    int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
+    if(needlock) gdk_threads_enter();
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
+    if(needlock) gdk_threads_leave();
   }
 }
 
+/* thread safe helper function for widget redraw on the gtk thread */
+void dt_control_queue_draw(GtkWidget *widget)
+{
+  if(dt_control_running())
+  {
+    if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
+    gtk_widget_queue_draw(widget);
+    if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
+  }
+}
+#endif
+
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
 {
+  if(mode==DT_MODE_NONE) return;
+
   int8_t bit;
   GtkWidget *widget;
 
@@ -1212,120 +1242,61 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   dt_lib_sort_t sort = dt_conf_get_int("ui_last/combo_sort");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
 
+  bit = dt_conf_get_int("ui_last/panel_header");
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
+
   bit = dt_conf_get_int("ui_last/panel_left");
-  widget = darktable.gui->widgets.left;
-  if(bit & (1<<mode)) gtk_widget_show(widget);
-  else gtk_widget_hide(widget);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (bit&(1<<mode)) ? TRUE : FALSE);
 
   bit = dt_conf_get_int("ui_last/panel_right");
-  widget = darktable.gui->widgets.right;
-  if(bit & (1<<mode)) gtk_widget_show(widget);
-  else gtk_widget_hide(widget);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (bit&(1<<mode)) ? TRUE : FALSE);
 
   bit = dt_conf_get_int("ui_last/panel_top");
-  widget = darktable.gui->widgets.top;
-  if(bit & (1<<mode)) gtk_widget_show(widget);
-  else gtk_widget_hide(widget);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
 
   bit = dt_conf_get_int("ui_last/panel_bottom");
-  widget = darktable.gui->widgets.bottom;
-  if(bit & (1<<mode)) gtk_widget_show(widget);
-  else gtk_widget_hide(widget);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (bit&(1<<mode)) ? TRUE : FALSE);
 
-  bit = dt_conf_get_int("ui_last/expander_navigation");
-  widget = darktable.gui->widgets.navigation_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
-  bit = dt_conf_get_int("ui_last/expander_import");
-  widget = darktable.gui->widgets.import_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
-  bit = dt_conf_get_int("ui_last/expander_snapshots");
-  widget = darktable.gui->widgets.snapshots_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
-  bit = dt_conf_get_int("ui_last/expander_history");
-  widget = darktable.gui->widgets.history_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
-  bit = dt_conf_get_int("ui_last/expander_histogram");
-  widget = darktable.gui->widgets.histogram_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
-
-  bit = dt_conf_get_int("ui_last/expander_metadata");
-  widget = darktable.gui->widgets.metadata_expander;
-  gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 }
 
 void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 {
   int8_t bit;
-  GtkWidget *widget;
+  /* store header panel visible state */
+  bit = dt_conf_get_int("ui_last/panel_header");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_header",bit);
 
+  /* store left panel visible state */
   bit = dt_conf_get_int("ui_last/panel_left");
-  widget = darktable.gui->widgets.left;
-  if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
-  else                           bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_left", bit);
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_left",bit);
 
+  /* store right panel visible state */
   bit = dt_conf_get_int("ui_last/panel_right");
-  widget = darktable.gui->widgets.right;
-  if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
-  else                           bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_right", bit);
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT)) bit |= 1<<mode;
+  else bit &= ~(1<<mode);
+  dt_conf_set_int("ui_last/panel_right",bit);
 
-  bit = dt_conf_get_int("ui_last/panel_bottom");
-  widget = darktable.gui->widgets.bottom;
-  if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
-  else                           bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_bottom", bit);
-
+  /* store top panel visible state */
   bit = dt_conf_get_int("ui_last/panel_top");
-  widget = darktable.gui->widgets.top;
-  if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
-  else                           bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_top", bit);
-
-  bit = dt_conf_get_int("ui_last/expander_navigation");
-  widget = darktable.gui->widgets.navigation_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP)) bit |= 1<<mode;
   else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_navigation", bit);
+  dt_conf_set_int("ui_last/panel_top",bit);
 
-  bit = dt_conf_get_int("ui_last/expander_import");
-  widget = darktable.gui->widgets.import_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
+  /* store bottom panel visible state */
+  bit = dt_conf_get_int("ui_last/panel_bottom");
+  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM)) bit |= 1<<mode;
   else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_import", bit);
+  dt_conf_set_int("ui_last/panel_bottom",bit);
 
-  bit = dt_conf_get_int("ui_last/expander_snapshots");
-  widget = darktable.gui->widgets.snapshots_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_snapshots", bit);
 
-  bit = dt_conf_get_int("ui_last/expander_history");
-  widget = darktable.gui->widgets.history_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_history", bit);
-
-  bit = dt_conf_get_int("ui_last/expander_histogram");
-  widget = darktable.gui->widgets.histogram_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_histogram", bit);
-
-  bit = dt_conf_get_int("ui_last/expander_metadata");
-  widget = darktable.gui->widgets.metadata_expander;
-  if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/expander_metadata", bit);
 }
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
-  int visible;
   GtkWidget *widget;
   dt_control_accels_t* accels = &darktable.control->accels;
 
@@ -1335,24 +1306,18 @@ int dt_control_key_pressed_override(guint key, guint state)
   if(key == accels->global_sideborders.accel_key
      && state == accels->global_sideborders.accel_mods)
   {
-    widget = darktable.gui->widgets.left;
-    visible = GTK_WIDGET_VISIBLE(widget);
-    if(visible) gtk_widget_hide(widget);
-    else gtk_widget_show(widget);
-
-    widget = darktable.gui->widgets.right;
-    if(visible) gtk_widget_hide(widget);
-    else gtk_widget_show(widget);
+    gboolean visible = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, !visible);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, !visible);
+    /*
+	  dt_ui_panel_show(DT_UI_PANEL_TOP, !visible);
+	  dt_ui_panel_show(DT_UI_PANEL_BOTTOM, !visible);
+	*/
 
     dt_dev_invalidate(darktable.develop);
-
-    widget = darktable.gui->widgets.center;
-    gtk_widget_queue_draw(widget);
-    widget = darktable.gui->widgets.navigation;
-    gtk_widget_queue_draw(widget);
-    return 1;
   }
-
+  widget = darktable.gui->widgets.center;
+  gtk_widget_queue_draw(widget);
   return 0;
 }
 
@@ -1367,10 +1332,8 @@ int dt_control_key_pressed(guint key, guint state)
   {
     widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
-    widget = darktable.gui->widgets.navigation;
-    gtk_widget_queue_draw(widget);
   }
-  return 1;
+  return 0;
 }
 
 int dt_control_key_released(guint key, guint state)
@@ -1388,33 +1351,32 @@ int dt_control_key_released(guint key, guint state)
 
   widget = darktable.gui->widgets.center;
   gtk_widget_queue_draw(widget);
-  widget = darktable.gui->widgets.navigation;
-  gtk_widget_queue_draw(widget);
-  return 1;
+  return 0;
 }
-#include "gui/iop_history.h"
-void dt_control_add_history_item(int32_t num_in, const char *label)
+
+
+
+guint dt_control_backgroundjobs_create(const struct dt_control_t *s, guint type,const gchar *message)
 {
-  dt_gui_iop_history_add_item(num_in,label);
+  if (s->proxy.backgroundjobs.module)
+    return s->proxy.backgroundjobs.create(s->proxy.backgroundjobs.module, type, message);
+  return 0;
 }
 
-void dt_control_clear_history_items(int32_t num)
+void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, guint id)
 {
-  darktable.gui->reset = 1;
-  if( num == -1 )
-  {
-    /* reset if empty stack */
-    dt_gui_iop_history_reset();
-  }
-  else
-  {
-    /* pop items from top of history */
-    int size = dt_gui_iop_history_get_top () - MAX(0, num);
-    for(int k=1; k<size; k++)
-      dt_gui_iop_history_pop_top ();
-
-    dt_gui_iop_history_update_labels ();
-  }
-  darktable.gui->reset = 0;
+  if (s->proxy.backgroundjobs.module)
+    s->proxy.backgroundjobs.destroy(s->proxy.backgroundjobs.module, id);
 }
 
+void dt_control_backgroundjobs_progress(const struct dt_control_t *s, guint id, double progress)
+{
+  if (s->proxy.backgroundjobs.module)
+    s->proxy.backgroundjobs.progress(s->proxy.backgroundjobs.module, id, progress);
+}
+
+void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, guint id, dt_job_t *job)
+{
+  if (s->proxy.backgroundjobs.module)
+    s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, id, job);
+}

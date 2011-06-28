@@ -22,7 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include "gui/histogram.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"

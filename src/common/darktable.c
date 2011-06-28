@@ -37,6 +37,7 @@
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
+#include "control/signal.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -271,6 +272,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_get_user_config_dir (datadir,1024);
   char filename[1024];
   snprintf(filename, 1024, "%s/darktablerc", datadir);
+
+  // Initialize the signal system
+  darktable.signals = dt_control_signal_init();
 
   // Initialize the filesystem watcher
   darktable.fswatch=dt_fswatch_new();

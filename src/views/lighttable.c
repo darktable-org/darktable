@@ -99,6 +99,11 @@ const char *name(dt_view_t *self)
   return _("lighttable");
 }
 
+uint32_t view(dt_view_t *self)
+{
+  return DT_VIEW_LIGHTTABLE;
+}
+
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_library_t));
@@ -1097,61 +1102,6 @@ void enter(dt_view_t *self)
 
   // Connecting the closures
   connect_closures(self);
-
-  // add expanders
-  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-  GtkBox *box_left = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
-  GList *modules = g_list_last(darktable.lib->plugins);
-
-  // Adjust gui
-  GtkWidget *widget = darktable.gui->widgets.import_eventbox;
-  gtk_widget_set_visible(widget, TRUE);
-
-  gtk_widget_set_visible(darktable.gui->
-                         widgets.modulegroups_eventbox, FALSE);
-
-  while(modules)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if( module->views() & DT_LIGHTTABLE_VIEW )
-    {
-      // Module does support this view let's add it to plugin box
-      module->gui_init(module);
-      // add the widget created by gui_init to an expander and both to list.
-      GtkWidget *expander = dt_lib_gui_get_expander(module);
-      if(module->views() & DT_LEFT_PANEL_VIEW) gtk_box_pack_start(box_left, expander, FALSE, FALSE, 0);
-      else gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
-    }
-    modules = g_list_previous(modules);
-  }
-
-  // end marker widget:
-  GtkWidget *endmarker = gtk_drawing_area_new();
-  gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
-  g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                    G_CALLBACK (dt_control_expose_endmarker), 0);
-  gtk_widget_set_size_request(endmarker, -1, 50);
-
-  gtk_widget_show_all(GTK_WIDGET(box));
-  gtk_widget_show_all(GTK_WIDGET(box_left));
-
-  // close expanders
-  modules = darktable.lib->plugins;
-  while(modules)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if( module->views() & DT_LIGHTTABLE_VIEW )
-    {
-      // Module does support this view let's add it to plugin box
-      char var[1024];
-      snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
-      gboolean expanded = dt_conf_get_bool(var);
-      gtk_expander_set_expanded (module->expander, expanded);
-      if(expanded) gtk_widget_show_all(module->widget);
-      else         gtk_widget_hide_all(module->widget);
-    }
-    modules = g_list_next(modules);
-  }
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -1175,19 +1125,6 @@ void leave(dt_view_t *self)
   }
   g_slist_free(((dt_library_t*)self->data)->closures);
   ((dt_library_t*)self->data)->closures = NULL;
-
-  GList *it = darktable.lib->plugins;
-  while(it)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(it->data);
-    if( module->views() & DT_LIGHTTABLE_VIEW )
-      module->gui_cleanup(module);
-    it = g_list_next(it);
-  }
-  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
-  box = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
-  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 }
 
 void reset(dt_view_t *self)
@@ -1293,15 +1230,14 @@ int key_released(dt_view_t *self, guint key, guint state)
   if(key == accels->lighttable_preview.accel_key
      && state == accels->lighttable_preview.accel_mods)
   {
+
     lib->full_preview_id = -1;
-    GtkWidget *widget = darktable.gui->widgets.left;
-    if(lib->full_preview & 1) gtk_widget_show(widget);
-    widget = darktable.gui->widgets.right;
-    if(lib->full_preview & 2)gtk_widget_show(widget);
-    widget = darktable.gui->widgets.bottom;
-    if(lib->full_preview & 4)gtk_widget_show(widget);
-    widget = darktable.gui->widgets.top;
-    if(lib->full_preview & 8)gtk_widget_show(widget);
+
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT,   ( lib->full_preview & 1));
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2));
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, ( lib->full_preview & 4));
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP,    ( lib->full_preview & 8));
+
     lib->full_preview = 0;
   }
 
@@ -1324,27 +1260,26 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      && state == accels->lighttable_preview.accel_mods)
   {
     int32_t mouse_over_id;
-    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id)
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
     if(!lib->full_preview && mouse_over_id != -1 )
     {
       // encode panel visibility into full_preview
       lib->full_preview = 0;
       lib->full_preview_id = mouse_over_id;
+
       // let's hide some gui components
-      GtkWidget *widget = darktable.gui->widgets.left;
-      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 0;
-      gtk_widget_hide(widget);
-      widget = darktable.gui->widgets.right;
-      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 1;
-      gtk_widget_hide(widget);
-      widget = darktable.gui->widgets.bottom;
-      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 2;
-      gtk_widget_hide(widget);
-      widget = darktable.gui->widgets.top;
-      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 3;
-      gtk_widget_hide(widget);
+      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)&1) << 0;
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE);
+      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT)&1) << 1;
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE);
+      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM)&1) << 2;
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE);
+      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP)&1) << 3;
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE);
+
       //dt_dev_invalidate(darktable.develop);
     }
+
     return 0;
   }
 

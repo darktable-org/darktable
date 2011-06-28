@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "develop/blend.h"
+#include "develop/develop.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
 

@@ -21,6 +21,7 @@
 #include "common/image_cache.h"
 #include "common/debug.h"
 #include "common/history.h"
+#include "libs/lib.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -52,7 +53,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
 
   int res=0, midx=0;
-  char *modules[] = {"darkroom","lighttable","capture",NULL};
+  char *modules[] = {"lighttable","darkroom","capture",NULL};
   char *module = modules[midx];
   while(module != NULL)
   {
@@ -118,6 +119,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
     goto out;
   }
   if(!g_module_symbol(view->module, "name",            (gpointer)&(view->name)))            view->name = NULL;
+  if(!g_module_symbol(view->module, "view",            (gpointer)&(view->view)))            view->view = NULL;
   if(!g_module_symbol(view->module, "init",            (gpointer)&(view->init)))            view->init = NULL;
   if(!g_module_symbol(view->module, "cleanup",         (gpointer)&(view->cleanup)))         view->cleanup = NULL;
   if(!g_module_symbol(view->module, "expose",          (gpointer)&(view->expose)))          view->expose = NULL;
@@ -165,30 +167,160 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     dt_control_key_accelerators_on(darktable.control);
 
   // destroy old module list
-  GtkContainer *table = GTK_CONTAINER(darktable.gui->widgets.module_list);
-  gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
-
   int error = 0;
   dt_view_t *v = vm->view + vm->current_view;
 
   /* Special case when entering nothing (just before leaving dt) */
   if ( k==DT_MODE_NONE )
-    {
-      if(vm->current_view >= 0 && v->leave) v->leave(v);
-      vm->current_view = -1 ;
-      return 0 ;
-    }
+  {
+    /* iterator plugins and cleanup plugins in current view */
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+      {
+	dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+
+	if (!plugin && !plugin->views)
+	  fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
+
+	/* does this module belong to current view ?*/
+	if (plugin->views() & v->view(v) )
+	  plugin->gui_cleanup(plugin);
+
+	/* get next plugin */
+	plugins = g_list_previous(plugins);
+      }
+
+    /* leave the current view*/
+    if(vm->current_view >= 0 && v->leave) v->leave(v);
+
+    /* remove all widets in all containers */
+    for(int l=0;l<DT_UI_CONTAINER_SIZE;l++)
+      dt_ui_container_clear(darktable.gui->ui, l);
+
+    vm->current_view = -1 ;
+    return 0 ;
+  }
 
   int newv = vm->current_view;
-  if(k < vm->num_views) newv = k;
+  if (k < vm->num_views) newv = k;
   dt_view_t *nv = vm->view + newv;
-  if(nv->try_enter) error = nv->try_enter(nv);
-  if(!error)
+
+  if (nv->try_enter) 
+    error = nv->try_enter(nv);
+
+  if (!error)
   {
-    if(vm->current_view >= 0 && v->leave) v->leave(v);
+     GList *plugins;
+    
+    /* cleanup current view before initialization of new  */
+    if (vm->current_view >=0)
+    {
+      /* leave current view */
+      if(v->leave) v->leave(v);
+   
+      /* iterator plugins and cleanup plugins in current view */
+      plugins = g_list_last(darktable.lib->plugins);
+      while (plugins)
+      {
+	  dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+	  
+	  if (!plugin && !plugin->views)
+	    fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
+	  
+	  /* does this module belong to current view ?*/
+	  if (plugin->views() & v->view(v) )
+	    plugin->gui_cleanup(plugin);
+
+	  /* get next plugin */
+	  plugins = g_list_previous(plugins);
+      }
+
+      /* remove all widets in all containers */
+      for(int l=0;l<DT_UI_CONTAINER_SIZE;l++)
+	dt_ui_container_clear(darktable.gui->ui, l);
+    }
+
+    /* change current view to the new view */
     vm->current_view = newv;
-    if(newv >= 0 && nv->enter) nv->enter(nv);
+
+    /* lets add plugins related to new view into panels */
+    plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+      if( plugin->views() & nv->view(v) )
+      {
+	/* module should be in this view, lets initialize */                                                                         
+	plugin->gui_init(plugin);
+
+	/* add module widget to the ui */
+	GtkWidget *w = NULL;
+	w = dt_lib_gui_get_expander(plugin);
+
+	/* add module to it's container */
+	dt_ui_container_add_widget(darktable.gui->ui, plugin->container(), w);
+
+      }
+
+      /* lets get next plugin */
+      plugins = g_list_previous(plugins);
+    }
+
+    /* hide/show modules as last config */
+    plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+      if(plugin->views() & nv->view(v))
+      {
+	/* set expanded if last mode was that */
+	char var[1024];
+	gboolean expanded = FALSE;
+	if (plugin->expandable())
+	{
+	  snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
+	  expanded = dt_conf_get_bool(var);
+	  gtk_expander_set_expanded (plugin->expander, expanded);
+	
+	  /* show all widgets in expander */
+	  gtk_widget_show_all(GTK_WIDGET(plugin->expander));
+	}
+
+	/* show/hide plugin widget depending on expanded flag or if plugin
+	   not is expandeable() */
+	if(expanded || !plugin->expandable()) 
+	  gtk_widget_show_all(plugin->widget);
+	else         
+	  gtk_widget_hide_all(plugin->widget);	
+      }
+
+      /* lets get next plugin */
+      plugins = g_list_previous(plugins); 
+    }
   }
+
+  /* enter view */
+  if(newv >= 0 && nv->enter) nv->enter(nv);
+
+  /* raise view changed signal */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
+
+  /* add endmarkers to left and right center containers */
+  GtkWidget *endmarker = gtk_drawing_area_new();
+  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
+  g_signal_connect (G_OBJECT (endmarker), "expose-event",
+                    G_CALLBACK (dt_control_expose_endmarker), 0);
+  gtk_widget_set_size_request(endmarker, -1, 50);
+  gtk_widget_show(endmarker);
+
+  endmarker = gtk_drawing_area_new();
+  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
+  g_signal_connect (G_OBJECT (endmarker), "expose-event",
+		    G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+  gtk_widget_set_size_request(endmarker, -1, 50);
+  gtk_widget_show(endmarker);
+
+
   return error;
 }
 
@@ -243,8 +375,10 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     vm->film_strip.expose(&(vm->film_strip), cr, vm->film_strip.width, vm->film_strip.height, px, py);
     cairo_restore(cr);
   }
+
   if(v->expose)
   {
+    /* expose the view */
     cairo_rectangle(cr, 0, 0, v->width, v->height);
     cairo_clip(cr);
     cairo_new_path(cr);
@@ -255,6 +389,23 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
       py = -1.0;
     }
     v->expose(v, cr, v->width, v->height, px, py);
+  
+    /* expose plugins */
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+      
+      if (!plugin && !plugin->views)
+        fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
+	  
+      /* does this module belong to current view ?*/
+      if (plugin->gui_post_expose && plugin->views() & v->view(v) )
+	plugin->gui_post_expose(plugin,cr,v->width,v->height,px,py );
+
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    } 
   }
 }
 
@@ -296,7 +447,29 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
   }
   else if(vm->film_strip_on && v->height + tb < y && vm->film_strip.mouse_moved)
     vm->film_strip.mouse_moved(&vm->film_strip, x, y - v->height - tb, which);
-  else if(v->mouse_moved) v->mouse_moved(v, x, y, which);
+  else
+  {
+    /* lets check if any plugins want to handle mouse move */
+    gboolean handled = FALSE;
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    
+      /* does this module belong to current view ?*/
+      if (plugin->mouse_moved && plugin->views() & v->view(v) )
+	if(plugin->mouse_moved(plugin, x, y, which))
+	  handled = TRUE;
+      
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    } 
+
+    /* if not handled by any plugin let pass to view handler*/
+    if(!handled && v->mouse_moved) 
+      v->mouse_moved(v, x, y, which);
+  }
+    
 
   int state = vm->film_strip_on && (v->height + tb > y) && (y > v->height);
   if(state && !oldstate)      dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
@@ -312,7 +485,29 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
   dt_control_change_cursor(GDK_LEFT_PTR);
   if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_released)
     return vm->film_strip.button_released(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, state);
-  else if(v->button_released) return v->button_released(v, x, y, which, state);
+  else
+  {
+    /* lets check if any plugins want to handle button press */
+    gboolean handled = FALSE;
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    
+      /* does this module belong to current view ?*/
+      if (plugin->button_released && plugin->views() & v->view(v) )
+	if(plugin->button_released(plugin, x, y, which,state))
+	  handled = TRUE;
+      
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    } 
+
+    /* if not handled by any plugin let pass to view handler*/
+    if(!handled && v->button_released) 
+      v->button_released(v, x, y, which,state);
+  } 
+
   return 0;
 }
 
@@ -328,7 +523,29 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   }
   else if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_pressed)
     return vm->film_strip.button_pressed(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, type, state);
-  else if(v->button_pressed) return v->button_pressed(v, x, y, which, type, state);
+  else
+  {
+    /* lets check if any plugins want to handle button press */
+    gboolean handled = FALSE;
+    GList *plugins = g_list_last(darktable.lib->plugins);
+    while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    
+      /* does this module belong to current view ?*/
+      if (plugin->button_pressed && plugin->views() & v->view(v) )
+	if(plugin->button_pressed(plugin, x, y, which,type,state))
+	  handled = TRUE;
+      
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    } 
+
+    /* if not handled by any plugin let pass to view handler*/
+    if(!handled && v->button_pressed) 
+      v->button_pressed(v, x, y, which,type,state);
+  }
+
   return 0;
 }
 

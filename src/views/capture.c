@@ -89,7 +89,12 @@ dt_capture_t;
 
 const char *name(dt_view_t *self)
 {
-  return _("capture");
+  return _("tethering");
+}
+
+uint32_t view(dt_view_t *self)
+{
+  return DT_VIEW_TETHERING;
 }
 
 static void
@@ -339,7 +344,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   while(modules)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if( (module->views() & DT_CAPTURE_VIEW) && module->gui_post_expose )
+    if( (module->views() & self->view(self)) && module->gui_post_expose )
       module->gui_post_expose(module,cri,width,height,pointerx,pointery);
     modules = g_list_next(modules);
   }
@@ -361,73 +366,6 @@ void enter(dt_view_t *self)
   dt_accel_group_connect_by_path(darktable.control->accels_capture,
                                  "<Darktable>/capture/toggle film strip",
                                  lib->filmstrip_toggle);
-
-  // add expanders
-  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-
-  // adjust gui:
-  GtkWidget *widget;
-  widget = darktable.gui->widgets.histogram_expander;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.import_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.top;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.bottom_darkroom_box;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.bottom_lighttable_box;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.plugins_vbox_left;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.module_list_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-
-  gtk_widget_set_visible(darktable.gui->
-                         widgets.modulegroups_eventbox, FALSE);
-
-  GList *modules = g_list_last(darktable.lib->plugins);
-  while(modules!=darktable.lib->plugins)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if( module->views() & DT_CAPTURE_VIEW )
-    {
-      // Module does support this view let's add it to plugin box
-      // soo here goes the special cases for capture view
-      if( !( strcmp(module->name(),"tethered shoot")==0 && lib->mode != DT_CAPTURE_MODE_TETHERED ) )
-      {
-        module->gui_init(module);
-        // add the widget created by gui_init to an expander and both to list.
-        GtkWidget *expander = dt_lib_gui_get_expander(module);
-        gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
-      }
-    }
-    modules = g_list_previous(modules);
-  }
-
-  // end marker widget:
-  GtkWidget *endmarker = gtk_drawing_area_new();
-  gtk_box_pack_start(box, endmarker, FALSE, FALSE, 0);
-  g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                    G_CALLBACK (dt_control_expose_endmarker), 0);
-  gtk_widget_set_size_request(endmarker, -1, 50);
-
-  gtk_widget_show_all(GTK_WIDGET(box));
-  // close expanders
-  modules = darktable.lib->plugins;
-  while(modules)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if( module->views() & DT_CAPTURE_VIEW )
-    {
-      char var[1024];
-      snprintf(var, 1024, "plugins/capture/%s/expanded", module->plugin_name);
-      gboolean expanded = dt_conf_get_bool(var);
-      gtk_expander_set_expanded (module->expander, expanded);
-      if(expanded) gtk_widget_show_all(module->widget);
-      else         gtk_widget_hide_all(module->widget);
-    }
-    modules = g_list_next(modules);
-  }
 
   // Check if we should enable view of the filmstrip
   if(dt_conf_get_bool("plugins/filmstrip/on"))
@@ -462,39 +400,6 @@ void leave(dt_view_t *self)
                                 darktable.control->accels_capture);
   dt_accel_group_disconnect(darktable.control->accels_capture,
                             cv->filmstrip_toggle);
-
-  // Restore user interface
-  GtkWidget *widget;
-  widget = darktable.gui->widgets.import_eventbox;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.navigation_expander;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.histogram_expander;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.snapshots_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.history_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.bottom_darkroom_box;
-  gtk_widget_set_visible(widget, FALSE);
-  widget = darktable.gui->widgets.bottom_lighttable_box;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.plugins_vbox_left;
-  gtk_widget_set_visible(widget, TRUE);
-  widget = darktable.gui->widgets.module_list_eventbox;
-  gtk_widget_set_visible(widget, FALSE);
-
-  // cleanup the DT_CAPTURE_VIEW modules
-  GList *it = darktable.lib->plugins;
-  while(it)
-  {
-    dt_lib_module_t *module = (dt_lib_module_t *)(it->data);
-    if( (module->views() & DT_CAPTURE_VIEW) )
-      module->gui_cleanup(module);
-    it = g_list_next(it);
-  }
-  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
-  gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 
 }
 
