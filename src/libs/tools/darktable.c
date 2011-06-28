@@ -30,7 +30,6 @@ DT_MODULE(1)
 
 typedef struct dt_lib_darktable_t
 {
-  cairo_surface_t *darktable_icon;
 }
 dt_lib_darktable_t;
 
@@ -75,21 +74,10 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   memset(d,0,sizeof(dt_lib_darktable_t));
 
-  d->darktable_icon = cairo_image_surface_create_from_png(DARKTABLE_DATADIR"../icons/hicolor/64x64/apps/darktable.png");
-
   /* create drawingarea */
-  self->widget = gtk_drawing_area_new();
-  gtk_widget_set_events(self->widget,
-                        GDK_EXPOSURE_MASK
-                        | GDK_POINTER_MOTION_MASK
-                        | GDK_POINTER_MOTION_HINT_MASK
-                        | GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK
-                        | GDK_STRUCTURE_MASK);
-  
+  self->widget = gtk_event_box_new();
+
   /* connect callbacks */
-  //GTK_WIDGET_UNSET_FLAGS (self->widget, GTK_DOUBLE_BUFFERED);
-  GTK_WIDGET_SET_FLAGS   (self->widget, GTK_APP_PAINTABLE);
   g_signal_connect (G_OBJECT (self->widget), "expose-event",
                     G_CALLBACK (_lib_darktable_expose_callback), self);
   g_signal_connect (G_OBJECT (self->widget), "button-press-event",
@@ -97,14 +85,12 @@ void gui_init(dt_lib_module_t *self)
   
   /* set size of draw area */
   int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, panel_width*2, 32);
+  gtk_widget_set_size_request(self->widget, panel_width*2, 48);
 
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
-  cairo_surface_destroy(d->darktable_icon);
   g_free(self->data);
   self->data = NULL;
 }
@@ -113,43 +99,39 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
-
-  int width = widget->allocation.width, height = widget->allocation.height;
-
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
   
+  cairo_t *cr = gdk_cairo_create(widget->window);
+
   /* fill background */ 
   cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
   cairo_paint(cr);
 
-  /* paint */
-  cairo_set_source_surface(cr, d->darktable_icon, 0, 0);
-  cairo_rectangle(cr,0,0,width,height);
-  cairo_fill(cr);
-
-  /* label */
-  cairo_set_source_rgb(cr, style->fg[0].red/65535.0, style->fg[0].green/65535.0, style->fg[0].blue/65535.0);
-  cairo_select_font_face(cr, "Sans",
-			 CAIRO_FONT_SLANT_NORMAL,
-			 CAIRO_FONT_WEIGHT_BOLD);
-
-  cairo_set_font_size(cr, 20);
-  cairo_move_to(cr, 20, 30);
-  cairo_show_text(cr, PACKAGE_NAME);
+  /* create a pango layout and print fancy  name/version string */
+  PangoLayout *layout;
+  layout = gtk_widget_create_pango_layout (widget,NULL); 
+  pango_font_description_set_weight (style->font_desc, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_absolute_size (style->font_desc, 32 * PANGO_SCALE);
+  pango_layout_set_font_description (layout,style->font_desc); 
   
-  /* blit memsurface into widget */
+  pango_layout_set_text (layout,PACKAGE_NAME,-1);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
+  cairo_move_to (cr, 5.0, 5.0);
+  pango_cairo_show_layout (cr, layout);
+
+  /* print version */
+  pango_font_description_set_absolute_size (style->font_desc, 10 * PANGO_SCALE);
+  pango_layout_set_font_description (layout,style->font_desc);
+  pango_layout_set_text (layout,PACKAGE_VERSION,-1);
+  cairo_move_to (cr, 7.0, 36.0);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
+  pango_cairo_show_layout (cr, layout);
+
+  /* cleanup */
+  g_object_unref (layout);
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
-  cairo_surface_destroy(cst);
-  
+    
   return TRUE;
 }
 
