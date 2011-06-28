@@ -31,11 +31,13 @@ typedef struct dt_gui_widgets_t
   GtkWidget *main_window;
 
   // Colorpicker widgets
+#if 0 // TODO: create a module out of this
   GtkWidget *bottom_darkroom_box;
   GtkWidget *colorpicker_button;
   GtkWidget *colorpicker_stat_combobox;
   GtkWidget *colorpicker_model_combobox;
   GtkWidget *colorpicker_output_label;
+#endif
 
   // Layout widgets
   GtkWidget *bottom_lighttable_box;

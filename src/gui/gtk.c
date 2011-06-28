@@ -48,8 +48,6 @@
 #include "control/conf.h"
 #include "control/signal.h"
 #include "views/view.h"
-#include "tool_colorlabels.h"
-
 
 /*                                                                                         
  * NEW UI API                                                             
@@ -99,7 +97,6 @@ static void init_top_controls(GtkWidget *container);
 
 static void init_center(GtkWidget *container);
 
-static void init_colorpicker(GtkWidget *container);
 static void init_lighttable_box(GtkWidget* container);
 
 
@@ -480,6 +477,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   return TRUE;
 }
 
+#if 0 // TODO: move this to module 
 static dt_iop_module_t *get_colorout_module()
 {
   GList *modules = darktable.develop->iop;
@@ -555,6 +553,8 @@ update_colorpicker_panel()
   }
 }
 
+#endif
+
 static gboolean
 expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 {
@@ -566,7 +566,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
                     event->area.x, event->area.y,
                     event->area.width, event->area.height);
 
-  update_colorpicker_panel();
+  //  update_colorpicker_panel();
 
   // test quit cond (thread safe, 2nd pass)
   if(!dt_control_running())
@@ -578,6 +578,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   return TRUE;
 }
 
+#if 0 // TODO: move this to module
 
 static void
 colorpicker_mean_changed (GtkComboBox *widget, gpointer p)
@@ -609,6 +610,8 @@ colorpicker_toggled (GtkToggleButton *button, gpointer p)
   }
   dt_control_gui_queue_draw();
 }
+
+#endif
 
 static void
 lighttable_zoom_changed (GtkSpinButton *widget, gpointer user_data)
@@ -1102,9 +1105,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* apply contrast to theme */
   dt_gui_contrast_init ();
 
-  // TODO: Scrap this temporary fix to properly hide colorpicker on startup
-  gtk_widget_hide(darktable.gui->widgets.bottom_darkroom_box);
-
   return 0;
 }
 
@@ -1334,12 +1334,6 @@ void init_top_controls(GtkWidget *container)
 
   container = widget;
 
-  // Adding color labels
-  widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_show(widget);
-  dt_create_color_label_buttons(GTK_BOX(widget));
-
   // Adding the filter controls
   widget = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
@@ -1395,6 +1389,7 @@ void init_center(GtkWidget *container)
 }
 
 
+#if 0
 void init_colorpicker(GtkWidget *container)
 {
   GtkWidget* widget;
@@ -1445,6 +1440,7 @@ void init_colorpicker(GtkWidget *container)
   darktable.gui->widgets.colorpicker_output_label = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
 }
+#endif
 
 void init_lighttable_box(GtkWidget* container)
 {
@@ -1713,14 +1709,6 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
   /* adding the center box */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = subcontainer = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container), subcontainer, FALSE, TRUE, 0);
-
-  /* initializing the colorpicker panel
-     TODO: Make module out of this
-   */
-  widget = gtk_hbox_new(FALSE, 5);
-  darktable.gui->widgets.bottom_darkroom_box = widget;
-  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
-  init_colorpicker(widget);
 
   /* initializeing the lightable layout box 
      TODO: Make module out of this

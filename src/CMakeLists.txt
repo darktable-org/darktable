@@ -50,7 +50,6 @@ FILE(GLOB SOURCE_FILES
   "gui/preferences.c"  
   "gui/presets.c"  
   "gui/styles_dialog.c"  
-  "gui/tool_colorlabels.c"  
   "libs/lib.c"
   "views/view.c"
   )

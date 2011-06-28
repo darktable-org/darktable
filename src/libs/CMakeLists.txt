@@ -8,6 +8,7 @@ set(MODULES import export copy_history styles tagging image select collect recen
 # The tools
 set(MODULES ${MODULES} viewswitcher)
 set(MODULES ${MODULES} darktable_label)
+set(MODULES ${MODULES} colorlabels)
 
 
 # modules
@@ -33,6 +34,7 @@ add_library(backgroundjobs MODULE "backgroundjobs.c")
 # tools
 add_library(viewswitcher MODULE "tools/viewswitcher.c")
 add_library(darktable_label MODULE "tools/darktable.c")
+add_library(colorlabels MODULE "tools/colorlabels.c")
 
 
 if(APRIL_FOOLS)
