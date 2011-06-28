@@ -297,29 +297,29 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       /* lets get next plugin */
       plugins = g_list_previous(plugins); 
     }
+  
+ 
+   /* enter view */
+   if(newv >= 0 && nv->enter) nv->enter(nv);
+ 
+   /* raise view changed signal */
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
+ 
+   /* add endmarkers to left and right center containers */
+   GtkWidget *endmarker = gtk_drawing_area_new();
+   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
+   g_signal_connect (G_OBJECT (endmarker), "expose-event",
+                     G_CALLBACK (dt_control_expose_endmarker), 0);
+   gtk_widget_set_size_request(endmarker, -1, 50);
+   gtk_widget_show(endmarker);
+   
+   endmarker = gtk_drawing_area_new();
+   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
+   g_signal_connect (G_OBJECT (endmarker), "expose-event",
+		     G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+   gtk_widget_set_size_request(endmarker, -1, 50);
+   gtk_widget_show(endmarker);   
   }
-
-  /* enter view */
-  if(newv >= 0 && nv->enter) nv->enter(nv);
-
-  /* raise view changed signal */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
-
-  /* add endmarkers to left and right center containers */
-  GtkWidget *endmarker = gtk_drawing_area_new();
-  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
-  g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                    G_CALLBACK (dt_control_expose_endmarker), 0);
-  gtk_widget_set_size_request(endmarker, -1, 50);
-  gtk_widget_show(endmarker);
-
-  endmarker = gtk_drawing_area_new();
-  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
-  g_signal_connect (G_OBJECT (endmarker), "expose-event",
-		    G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
-  gtk_widget_set_size_request(endmarker, -1, 50);
-  gtk_widget_show(endmarker);
-
 
   return error;
 }
