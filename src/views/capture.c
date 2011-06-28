@@ -351,6 +351,20 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
 }
 
+int try_enter(dt_view_t *self)
+{
+  /* verify that camera supports tethering and is available */
+  if (dt_camctl_can_enter_tether_mode(darktable.camctl,NULL) )
+  {
+    dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
+    return 0;
+  }
+
+  dt_control_log(_("no camera with tethering support available for use..."));
+
+  return 1;
+}
+
 void enter(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
