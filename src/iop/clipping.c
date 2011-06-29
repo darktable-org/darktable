@@ -845,7 +845,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
   g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
-  dtgtk_slider_set_accel(g->scale5,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/crop and rotate/angle");
+  dtgtk_slider_set_accel(g->scale5,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/angle");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale5), 0, 6, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
@@ -854,7 +854,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->keystone_h), "tooltip-text", _("adjust perspective for horizontal keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_h), "value-changed",
                     G_CALLBACK (keystone_callback_h), self);
-  dtgtk_slider_set_accel(g->keystone_h,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/crop and rotate/keystone h");
+  dtgtk_slider_set_accel(g->keystone_h,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone h");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_h), 0, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->keystone_v = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
@@ -862,7 +862,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->keystone_v), "tooltip-text", _("adjust perspective for vertical keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_v), "value-changed",
                     G_CALLBACK (keystone_callback_v), self);
-  dtgtk_slider_set_accel(g->keystone_h,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/crop and rotate/keystone v");
+  dtgtk_slider_set_accel(g->keystone_h,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_v), 0, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("aspect"));
@@ -1572,9 +1572,9 @@ void init_key_accels()
   dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/plugins/clipping/undo",
                                  NULL);
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/crop and rotate/angle");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/crop and rotate/keystone h");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/crop and rotate/keystone v");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/angle");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone h");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
 }
 
 #undef PHI
