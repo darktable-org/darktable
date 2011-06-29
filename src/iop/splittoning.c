@@ -317,7 +317,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->highlight_hue= p->highlight_hue;
   d->shadow_saturation = p->shadow_saturation;
   d->highlight_saturation = p->highlight_saturation;
-  d->balance = p->balance;
+  d->balance = p->balance/100.0;
   d->compress=p->compress;
 #endif
 }
@@ -355,7 +355,7 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_set_value(g->gslider3,p->highlight_hue);
   dtgtk_gradient_slider_set_value(g->gslider4,p->highlight_saturation);
   dtgtk_gradient_slider_set_value(g->gslider2,p->shadow_saturation);
-  dtgtk_slider_set_value(g->scale1, p->balance);
+  dtgtk_slider_set_value(g->scale1, p->balance*100.0);
   dtgtk_slider_set_value(g->scale2, p->compress);
 
   float color[3];
@@ -533,10 +533,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.010, p->balance, 2));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->balance*100.0, 2));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_RATIO);
   dtgtk_slider_set_label(g->scale1,_("balance"));
-  dtgtk_slider_set_unit(g->scale1,"%/%");
+  dtgtk_slider_set_unit(g->scale1,"%");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->compress, 2));
