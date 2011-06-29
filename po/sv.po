@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-06-27 22:41+0200\n"
-"PO-Revision-Date: 2011-06-29 22:38+0200\n"
+"PO-Revision-Date: 2011-06-29 22:43+0200\n"
 "Last-Translator: Mattias Eriksson <snaggen@acc.umu.se>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -920,7 +920,9 @@ msgstr "* bidragsgivare *"
 
 #: ../src/gui/gtk.c:498
 msgid "translator-credits"
-msgstr "översättare"
+msgstr ""
+"Henrik Andersson\n"
+"Mattias Eriksson"
 
 #: ../src/gui/gtk.c:722
 msgid "import film"
