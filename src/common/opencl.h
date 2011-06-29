@@ -127,7 +127,13 @@ void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, vo
 
 int dt_opencl_enqueue_copy_image(cl_command_queue q, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region, int events, cl_event *wait, cl_event *event);
 
+int dt_opencl_enqueue_copy_image_to_buffer(cl_command_queue q, cl_mem src_image, cl_mem dst_buffer, size_t *origin, size_t *region, size_t offset, int events, cl_event *wait, cl_event *event);
+
+int dt_opencl_enqueue_copy_buffer_to_image(cl_command_queue q, cl_mem src_buffer, cl_mem dst_image, size_t offset, size_t *origin, size_t *region, int events, cl_event *wait, cl_event *event);
+
 void* dt_opencl_alloc_device(const int width, const int height, const int devid, const int bpp);
+
+void* dt_opencl_alloc_device_buffer(const int size, const int devid);
 
 void dt_opencl_release_mem_object(void *mem);
 

@@ -453,6 +453,25 @@ int dt_opencl_enqueue_copy_image(cl_command_queue q, cl_mem src, cl_mem dst, siz
   return err;
 }
 
+int dt_opencl_enqueue_copy_image_to_buffer(cl_command_queue q, cl_mem src_image, cl_mem dst_buffer, size_t *origin, size_t *region, size_t offset, int events, cl_event *wait, cl_event *event)
+{
+  if(!darktable.opencl->inited) return -1;
+  cl_int err;
+  err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)(q, src_image, dst_buffer, origin, region, offset, events, wait, event);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image: %d\n", err);
+  return err;
+}
+
+int dt_opencl_enqueue_copy_buffer_to_image(cl_command_queue q, cl_mem src_buffer, cl_mem dst_image, size_t offset, size_t *origin, size_t *region, int events, cl_event *wait, cl_event *event)
+{
+  if(!darktable.opencl->inited) return -1;
+  cl_int err;
+  err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)(q, src_buffer, dst_image, offset, origin, region, events, wait, event);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer: %d\n", err);
+  return err;
+}
+
+
 void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, void *host)
 {
   if(!darktable.opencl->inited) return NULL;
@@ -536,6 +555,20 @@ void* dt_opencl_alloc_device(const int width, const int height, const int devid,
                                 NULL, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;
+}
+
+
+void* dt_opencl_alloc_device_buffer(const int size, const int devid)
+{
+  if(!darktable.opencl->inited) return NULL;
+  cl_int err;
+
+  cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer) (darktable.opencl->dev[devid].context,
+                               CL_MEM_READ_WRITE,
+                               size,
+                               NULL, &err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid, err);
+  return buf;
 }
 
 
