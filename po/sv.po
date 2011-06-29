@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-06-27 22:41+0200\n"
-"PO-Revision-Date: 2011-06-27 22:49+0200\n"
+"PO-Revision-Date: 2011-06-29 22:38+0200\n"
 "Last-Translator: Mattias Eriksson <snaggen@acc.umu.se>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -43,7 +43,7 @@ msgstr "dubbelklicka för att återställa till `%s'"
 
 #: ../build/src/preferences_gen.h:355 ../build/src/preferences_gen.h:615
 msgid " (needs a restart) "
-msgstr "(kräver omstart)"
+msgstr " (kräver omstart)"
 
 #: ../build/src/preferences_gen.h:360
 msgid "size of the side panels in pixels"
@@ -51,7 +51,7 @@ msgstr "storlek av sido panelerna i pixlar"
 
 #: ../build/src/preferences_gen.h:372
 msgid " (needs a restart)"
-msgstr "(kräver omstart)"
+msgstr " (kräver omstart)"
 
 #: ../build/src/preferences_gen.h:377
 msgid "don't use embedded preview jpeg, always use half-size raw"
@@ -61,7 +61,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:392
 msgid "ask before removing images"
-msgstr "fråga innan en bild raderas"
+msgstr "fråga innan en bild tas bort"
 
 #: ../build/src/preferences_gen.h:403
 msgid "always ask the user before any image is removed from db."
@@ -694,7 +694,7 @@ msgstr "importera"
 
 #: ../src/gui/camera_import_dialog.c:268
 msgid "my jobcode"
-msgstr "Min jobbkod"
+msgstr "min jobbkod"
 
 #. Top info
 #: ../src/gui/camera_import_dialog.c:276
@@ -4339,7 +4339,7 @@ msgid ""
 "name you entered"
 msgstr ""
 "skapa en ny tag med\n"
-" namnet du angav"
+"namnet du angav"
 
 #: ../src/libs/tagging.c:431
 msgid "delete selected tag"
