@@ -221,6 +221,8 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
   const char *src = accel_path;
   char *dest = first;
   gchar *name;
+  const gchar *translation = NULL;
+  GList *iops = darktable.iop;
 
   int i;
   gboolean found = FALSE;
@@ -272,11 +274,27 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
 
     if(!found)
     {
+      // We need to figure out a good translation for this text
+      // If it's the op-name of a module, we'll use its name() text
+      // Otherwise, just do a regular translation
+      while(iops)
+      {
+        if(!strcmp(((dt_iop_module_so_t*)iops->data)->op, first))
+        {
+          translation = ((dt_iop_module_so_t*)iops->data)->name();
+          break;
+        }
+        iops = g_list_next(iops);
+      }
+
+      if(!translation)
+        translation = _(first);
+
       gtk_tree_store_append(model, &iter, parent);
       gtk_tree_store_set(model, &iter,
                          ACCEL_COLUMN, first,
                          BINDING_COLUMN, "",
-                         TRANS_COLUMN, _(first),
+                         TRANS_COLUMN, translation,
                          -1);
     }
 
