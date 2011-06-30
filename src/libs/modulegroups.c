@@ -148,9 +148,6 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_widget_show_all(self->widget);
 
-  /* toggle to default group active pipe */
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (d->buttons[DT_MODULEGROUP_BASIC]),TRUE);
-
   /*
    * set the proxy functions 
    */
