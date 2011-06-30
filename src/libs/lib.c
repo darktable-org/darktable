@@ -377,7 +377,10 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
     module->get_params   = NULL;
     module->init_presets = NULL;
   }
-  if(!g_module_symbol(module->module, "init_key_accels(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self)", (gpointer)&(module->init_key_accels(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self))))        module->init_key_accels(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self) = NULL;
+
+  if(!g_module_symbol(module->module, "init_key_accels",          
+		      (gpointer)&(module->init_key_accels)))        
+    module->init_key_accels = NULL;
 
   return 0;
 error:
@@ -435,8 +438,8 @@ dt_lib_load_modules ()
 //     module->factory_enabled = module->default_enabled;
     init_presets(module);
     // Calling the keyboard shortcut initialization callback if present
-    if(module->init_key_accels(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self))
-      (module->init_key_accels(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self)(dt_lib_module_t *self))(module);
+    if(module->init_key_accels)
+      module->init_key_accels(module);
 //     dt_iop_load_default_params(module);
 
   }
