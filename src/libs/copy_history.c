@@ -275,7 +275,7 @@ gui_cleanup (dt_lib_module_t *self)
   self->data = NULL;
 }
 
-void init_key_accels()
+void init_key_accels(dt_lib_module_t *self)
 {
   gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/copy history/copy",
                           GDK_c, GDK_CONTROL_MASK);
