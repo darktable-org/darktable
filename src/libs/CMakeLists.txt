@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # The modules
-set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs)
+set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker)
 
 # The tools
 set(MODULES ${MODULES} viewswitcher)
@@ -30,6 +30,7 @@ add_library(snapshots MODULE "snapshots.c")
 add_library(modulelist MODULE "modulelist.c")
 add_library(modulegroups MODULE "modulegroups.c")
 add_library(backgroundjobs MODULE "backgroundjobs.c")
+add_library(colorpicker MODULE "colorpicker.c")
 
 # tools
 add_library(viewswitcher MODULE "tools/viewswitcher.c")
