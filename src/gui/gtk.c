@@ -244,11 +244,15 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
   if(dt_ui_panel_visible(ui, panel))
   {
     dt_ui_panel_show(ui, panel,FALSE);
+    if (panel==DT_UI_PANEL_CENTER_TOP)
+      dt_ui_panel_show(ui, DT_UI_PANEL_TOP,FALSE);
     bit &= ~(1<<mode);
   }
   else
   {
     dt_ui_panel_show(ui, panel, TRUE);
+    if (panel==DT_UI_PANEL_CENTER_TOP)
+      dt_ui_panel_show(ui, DT_UI_PANEL_TOP, TRUE);
     bit |=   1<<mode;
   }
 
