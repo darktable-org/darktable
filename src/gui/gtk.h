@@ -39,16 +39,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *colorpicker_output_label;
 #endif
 
-  // Layout widgets
-  GtkWidget *bottom_lighttable_box;
-  GtkWidget *lighttable_layout_combobox;
-  GtkWidget *lighttable_zoom_spinbutton;
-
-  // Bottom containers
-
-  GtkWidget *bottom_left_toolbox;
-  GtkWidget *bottom_right_toolbox;
-
   // Drawing areas
   GtkWidget *center;
 

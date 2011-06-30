@@ -1226,16 +1226,7 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   if(mode==DT_MODE_NONE) return;
 
   int8_t bit;
-  GtkWidget *widget;
 
-  widget = darktable.gui->widgets.lighttable_layout_combobox;
-  if(GTK_IS_WIDGET(widget))
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("plugins/lighttable/layout"));
-
-  widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
-  if(GTK_IS_WIDGET(widget))
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/lighttable/images_in_row"));
-  
   bit = dt_conf_get_int("ui_last/panel_header");
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
 

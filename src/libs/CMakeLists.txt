@@ -10,6 +10,7 @@ set(MODULES ${MODULES} viewswitcher)
 set(MODULES ${MODULES} darktable_label)
 set(MODULES ${MODULES} colorlabels)
 set(MODULES ${MODULES} filter)
+set(MODULES ${MODULES} lighttable_mode)
 
 # modules
 add_library(import MODULE "import.c")
@@ -36,6 +37,7 @@ add_library(viewswitcher MODULE "tools/viewswitcher.c")
 add_library(darktable_label MODULE "tools/darktable.c")
 add_library(colorlabels MODULE "tools/colorlabels.c")
 add_library(filter MODULE "tools/filter.c")
+add_library(lighttable_mode MODULE "tools/lighttable.c")
 
 if(APRIL_FOOLS)
 	if(VTE_FOUND)
