@@ -754,7 +754,7 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
   float max[4]={0},min[4]={0};
-  float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
+  float lmin = 0.0, lmax, la, lb, /*halfmax,*/ doublemax;
   float opacity2 = opacity*opacity;
 
   _blend_colorspace_channel_range(cst,min,max);
@@ -766,7 +766,7 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,
        lmax = max[0]+fabs(min[0]);
        la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
        lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax); 
-       halfmax = lmax/2.0; 
+//       halfmax = lmax/2.0; 
        doublemax = lmax*2.0;
 
        tb[0] = CLAMP_RANGE( ((la * (1.0 - opacity2)) + ( la + doublemax*lb-lmax ) * opacity2), lmin, lmax)-fabs(min[0]);
@@ -799,7 +799,7 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,
         lmax = max[k]+fabs(min[k]); 
         la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax); 
         lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax); 
-        halfmax = lmax/2.0; 
+//        halfmax = lmax/2.0; 
         doublemax = lmax*2.0;
 
         b[j+k] =  CLAMP_RANGE( ((la * (1.0 - opacity2)) + ( la + doublemax*lb-lmax ) * opacity2), lmin, lmax)-fabs(min[k]);

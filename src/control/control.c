@@ -1236,20 +1236,6 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   if(GTK_IS_WIDGET(widget))
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/lighttable/images_in_row"));
   
-  widget = darktable.gui->widgets.image_filter;
-  if(GTK_IS_WIDGET(widget))
-  {
-    dt_lib_filter_t filter = dt_conf_get_int("ui_last/combo_filter");
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)filter);
-  }
-
-  widget = darktable.gui->widgets.image_sort;
-  if(GTK_IS_WIDGET(widget))
-  {
-    dt_lib_sort_t sort = dt_conf_get_int("ui_last/combo_sort");
-    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
-  }
-
   bit = dt_conf_get_int("ui_last/panel_header");
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
 

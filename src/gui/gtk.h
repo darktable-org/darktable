@@ -58,10 +58,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *bottom_border;
   GtkWidget *top_border;
 
-  // Image filters
-  GtkWidget *image_filter;
-  GtkWidget *image_sort;
-
   /* left panel */
   GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and fille on center
   GtkTable *panel_right;               

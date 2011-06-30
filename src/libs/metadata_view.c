@@ -98,7 +98,7 @@ const char* name()
 /* show module in left panel in all views */
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM;
 }
 
 uint32_t container()
