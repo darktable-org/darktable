@@ -284,4 +284,6 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
 void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);
 
+dt_iop_module_t *get_colorout_module();
+
 #endif

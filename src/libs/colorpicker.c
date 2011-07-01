@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Robert Bieber.
+    copyright (c) 2011 Robert Bieber, Johannes Hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,14 +19,21 @@
 #include "common/darktable.h"
 #include "control/control.h"
 #include "control/conf.h"
-#include "libs/lib.h"
+#include "develop/develop.h"
+#include "develop/imageop.h"
+#include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
+#include "libs/lib.h"
 
 DT_MODULE(1);
 
 typedef struct dt_lib_colorpicker_t
 {
-  int nothing_to_store_yet;
+  GtkWidget *output_button;
+  GtkWidget *output_label;
+  GtkWidget *color_mode_selector;
+  GtkWidget *statistic_selector;
+  GtkWidget *picker_button;
 } dt_lib_colorpicker_t;
 
 const char *name()
@@ -54,19 +61,171 @@ int position()
   return 800;
 }
 
+// GUI callbacks
+
+static void _update_picker_output(dt_lib_module_t *self)
+{
+  GdkColor c;
+  dt_lib_colorpicker_t *data = self->data;
+  dt_iop_module_t *module = get_colorout_module();
+  if(module)
+  {
+    char colstring[512];
+
+    darktable.gui->reset = 1;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button),
+                                 module->request_color_pick);
+    darktable.gui->reset = 0;
+
+    int input_color = dt_conf_get_int("ui_last/colorpicker_model");
+
+    // always adjust picked color:
+    int m = dt_conf_get_int("ui_last/colorpicker_mode");
+    float fallback_col[] = {0,0,0};
+    float *rgb = fallback_col;
+    float *lab = fallback_col;
+    switch(m)
+    {
+      case 0: // mean
+        rgb = darktable.gui->picked_color_output_cs;
+        lab = module->picked_color;
+        break;
+      case 1: //min
+        rgb = darktable.gui->picked_color_output_cs_min;
+        lab = module->picked_color_min;
+        break;
+      default:
+        rgb = darktable.gui->picked_color_output_cs_max;
+        lab = module->picked_color_max;
+        break;
+    }
+    switch(input_color)
+    {
+    case 0: // rgb
+      snprintf(colstring, 512, "(%d, %d, %d)", (int)(255 * rgb[0]),
+               (int)(255 * rgb[1]), (int)(255 * rgb[2]));
+      break;
+    case 1: // Lab
+      snprintf(colstring, 512, "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
+      break;
+    }
+    gtk_label_set_label(GTK_LABEL(data->output_label), colstring);
+
+    // Setting the button color
+    c.red = rgb[0] * 65535;
+    c.green = rgb[1] * 65535;
+    c.blue = rgb[2] * 65535;
+    gtk_widget_modify_bg(data->output_button, GTK_STATE_INSENSITIVE, &c);
+  }
+}
+
+static void _picker_button_toggled (GtkToggleButton *button, gpointer p)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *module = get_colorout_module();
+  if(module)
+  {
+    dt_iop_request_focus(module);
+    module->request_color_pick = gtk_toggle_button_get_active(button);
+  }
+  else
+  {
+    dt_iop_request_focus(NULL);
+  }
+  dt_control_gui_queue_draw();
+}
+
+static void _statistic_changed (GtkComboBox *widget, gpointer p)
+{
+  dt_conf_set_int("ui_last/colorpicker_mode", gtk_combo_box_get_active(widget));
+  _update_picker_output((dt_lib_module_t*)p);
+}
+
+static void _color_mode_changed(GtkComboBox *widget, gpointer p)
+{
+  dt_conf_set_int("ui_last/colorpicker_model",
+                  gtk_combo_box_get_active(widget));
+  _update_picker_output((dt_lib_module_t*)p);
+}
+
+
 void gui_init(dt_lib_module_t *self)
 {
+  GtkWidget *container = gtk_vbox_new(FALSE, 0);
+  GtkWidget *output_row = gtk_hbox_new(FALSE, 10);
+  GtkWidget *output_options = gtk_vbox_new(FALSE, 10);
+
   // Initializing self data structure
   dt_lib_colorpicker_t *data =
       (dt_lib_colorpicker_t*)malloc(sizeof(dt_lib_colorpicker_t));
   self->data = (void*)data;
   memset(data, 0, sizeof(dt_lib_colorpicker_t));
 
-  self->widget = gtk_button_new_with_label("color picker");
+  // Initializing proxy functions
+  darktable.lib->proxy.colorpicker.module = self;
+  darktable.lib->proxy.colorpicker.update_panel =  _update_picker_output;
+
+  // Setting up the GUI
+  self->widget = container;
+  gtk_box_pack_start(GTK_BOX(container), output_row, TRUE, TRUE, 0);
+
+  // The output button
+  data->output_button = gtk_button_new();
+  gtk_widget_set_sensitive(data->output_button, FALSE);
+  gtk_box_pack_start(GTK_BOX(output_row), data->output_button, TRUE, TRUE, 0);
+
+  // The picker button, output selectors and label
+  gtk_box_pack_start(GTK_BOX(output_row), output_options, TRUE, TRUE, 0);
+
+  data->picker_button = gtk_toggle_button_new_with_label(_("pick color"));
+  gtk_box_pack_start(GTK_BOX(output_options), data->picker_button,
+                     TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(data->picker_button), "toggled",
+                   G_CALLBACK(_picker_button_toggled), NULL);
+
+  data->statistic_selector = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(data->statistic_selector),
+                            _("mean"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(data->statistic_selector),
+                            _("min"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(data->statistic_selector),
+                            _("max"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(data->statistic_selector),
+                           dt_conf_get_int("ui_last/colorpicker_mode"));
+  gtk_box_pack_start(GTK_BOX(output_options), data->statistic_selector,
+                     TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(data->statistic_selector), "changed",
+                   G_CALLBACK(_statistic_changed), self);
+
+  data->color_mode_selector = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(data->color_mode_selector),
+                            _("rgb"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(data->color_mode_selector),
+                            _("Lab"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(data->color_mode_selector),
+                           dt_conf_get_int("ui_last/colorpicker_model"));
+  gtk_box_pack_start(GTK_BOX(output_options), data->color_mode_selector,
+                     TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(data->color_mode_selector), "changed",
+                   G_CALLBACK(_color_mode_changed), self);
+
+  data->output_label = gtk_label_new(_(""));
+  gtk_label_set_justify(GTK_LABEL(data->output_label), GTK_JUSTIFY_CENTER);
+  gtk_widget_set_size_request(data->output_label, 80, -1);
+  gtk_box_pack_start(GTK_BOX(output_options), data->output_label,
+                     FALSE, FALSE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  // Clearing proxy functions
+  darktable.lib->proxy.colorpicker.module = NULL;
+  darktable.lib->proxy.colorpicker.update_panel = NULL;
+
+
   free(self->data);
   self->data = NULL;
 }

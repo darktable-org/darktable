@@ -30,6 +30,18 @@ typedef struct dt_lib_t
 {
   GList *plugins;
   struct dt_lib_module_t *gui_module;
+
+  /** Proxy functions for communication with views */
+  struct
+  {
+    /** Colorpicker plugin hooks */
+    struct
+    {
+      struct dt_lib_module_t *module;
+      void (*update_panel)(struct dt_lib_module_t *self);
+    } colorpicker;
+
+  } proxy;
 }
 dt_lib_t;
 

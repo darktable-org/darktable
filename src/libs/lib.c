@@ -586,8 +586,8 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
 void
 dt_lib_init (dt_lib_t *lib)
 {
-  lib->gui_module = NULL;
-  lib->plugins = NULL;
+  // Setting everything to null initially
+  memset(lib, 0, sizeof(dt_lib_t));
   (void)dt_lib_load_modules();
 }
 

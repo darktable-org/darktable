@@ -1286,4 +1286,16 @@ void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb)
   rgb[2] = yuv[0] + 2.028*yuv[1];
 }
 
+dt_iop_module_t *get_colorout_module()
+{
+  GList *modules = darktable.develop->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    if(!strcmp(module->op, "colorout")) return module;
+    modules = g_list_next(modules);
+  }
+  return NULL;
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
