@@ -12,7 +12,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer hotpixels stuckpixels lowlight spots rawdenoise borders nlmeans)
+set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer hotpixels lowlight spots rawdenoise borders nlmeans)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -50,7 +50,6 @@ add_library(atrous MODULE "atrous.c")
 add_library(cacorrect MODULE "cacorrect.c")
 add_library(overexposed MODULE "overexposed.c")
 add_library(hotpixels MODULE "hotpixels.c")
-add_library(stuckpixels MODULE "stuckpixels.c")
 add_library(lowlight MODULE "lowlight.c")
 add_library(spots MODULE "spots.c")
 add_library(rawdenoise MODULE "rawdenoise.c")
