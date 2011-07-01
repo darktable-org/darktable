@@ -136,41 +136,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-#define DT_LIBRARY_MAX_ZOOM 13
-
-int scrolled(dt_lib_module_t *self, double x, double y, int up)
-{
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-
-#if 0
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == 1 && state == 0)
-  {
-    if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
-    else   lib->track =  DT_LIBRARY_MAX_ZOOM;
-  }
-  else
-#endif
-  {
-    int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-    if(up)
-    {
-      zoom--;
-      if(zoom < 1) 
-	zoom = 1;
-    }
-    else
-    {
-      zoom++;
-      if(zoom > 2*DT_LIBRARY_MAX_ZOOM) 
-	zoom = 2*DT_LIBRARY_MAX_ZOOM;
-    }
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
-  }
-  return 0;
-}
-
-
 static void _lib_lighttable_zoom_changed (GtkSpinButton *widget, gpointer user_data)
 {
   const int i = gtk_spin_button_get_value(widget);
@@ -185,7 +150,7 @@ static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_d
   dt_control_gui_queue_draw();
 }
 
-
+#define DT_LIBRARY_MAX_ZOOM 13
 static void _lib_lighttable_zoom_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 						    guint keyval, GdkModifierType modifier, gpointer data)
 {

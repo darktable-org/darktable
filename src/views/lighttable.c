@@ -1094,6 +1094,37 @@ void mouse_leave(dt_view_t *self)
 }
 
 
+
+int scrolled(dt_view_t *self, double x, double y, int up, int state)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  if(layout == 1 && state == 0)
+    {
+      if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
+      else   lib->track =  DT_LIBRARY_MAX_ZOOM;
+    }
+  else
+    {
+      int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+      if(up)
+	{
+	  zoom--;
+	  if(zoom < 1)
+	    zoom = 1;
+	}
+      else
+	{
+	  zoom++;
+	  if(zoom > 2*DT_LIBRARY_MAX_ZOOM)
+	    zoom = 2*DT_LIBRARY_MAX_ZOOM;
+	}
+      //      gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
+    }
+  return 0;
+}
+
+
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   // update stars/etc :(
