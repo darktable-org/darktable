@@ -1157,6 +1157,7 @@ void dt_control_gui_queue_draw()
     {
       GtkWidget *widget = darktable.gui->widgets.center;
       gtk_widget_queue_draw(widget);
+      dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
       // darktable.control->last_expose_time = time;
     }
 }
@@ -1171,6 +1172,7 @@ void dt_control_queue_draw_all()
       if(needlock) gdk_threads_enter();
       GtkWidget *widget = darktable.gui->widgets.center;
       gtk_widget_queue_draw(widget);
+      dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
       // darktable.control->last_expose_time = time;
       if(needlock) gdk_threads_leave();
     }
@@ -1184,6 +1186,7 @@ void dt_control_queue_draw(GtkWidget *widget)
     {
       if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
       gtk_widget_queue_draw(widget);
+      dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
       // darktable.control->last_expose_time = time;
       if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
     }
