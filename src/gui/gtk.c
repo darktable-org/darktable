@@ -93,8 +93,6 @@ static void init_main_table(GtkWidget *container);
 
 static void init_center(GtkWidget *container);
 
-static void init_lighttable_box(GtkWidget* container);
-
 
 static void key_accel_changed(GtkAccelMap *object,
                               gchar *accel_path,
@@ -306,8 +304,7 @@ void dt_accel_group_connect_by_path(GtkAccelGroup *accel_group,
                                     const gchar *accel_path,
                                     GClosure *closure)
 {
-  if(!accel_group)
-    return;
+  g_return_if_fail(GTK_IS_ACCEL_GROUP(accel_group));
 
   GSList **list = NULL;
 
@@ -613,22 +610,6 @@ colorpicker_toggled (GtkToggleButton *button, gpointer p)
 
 #endif
 
-static void
-lighttable_zoom_changed (GtkSpinButton *widget, gpointer user_data)
-{
-  const int i = gtk_spin_button_get_value(widget);
-  dt_conf_set_int("plugins/lighttable/images_in_row", i);
-  dt_control_gui_queue_draw();
-}
-
-static void
-lighttable_layout_changed (GtkComboBox *widget, gpointer user_data)
-{
-  const int i = gtk_combo_box_get_active(widget);
-  dt_conf_set_int("plugins/lighttable/layout", i);
-  dt_control_gui_queue_draw();
-}
-
 static gboolean
 scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
@@ -814,6 +795,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
     snprintf(path, 1023, "%s/%s", DARKTABLE_DATADIR, themefile ? themefile : "darktable.gtkrc");
   (void)setenv("GTK2_RC_FILES", path, 1);
+
+  /* lets zero mem */
+  memset(gui,0,sizeof(dt_gui_gtk_t));
 
   GtkWidget *widget;
   gui->ui = dt_ui_initialize(argc,argv);
@@ -1316,39 +1300,6 @@ void init_colorpicker(GtkWidget *container)
 }
 #endif
 
-void init_lighttable_box(GtkWidget* container)
-{
-  GtkWidget* widget;
-
-  // Creating the layout combobox
-  widget = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("zoomable light table"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("file manager"));
-  darktable.gui->widgets.lighttable_layout_combobox = widget;
-
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (lighttable_layout_changed),
-                    (gpointer)0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  // Creating the zoom spinbutton
-  widget = gtk_spin_button_new(GTK_ADJUSTMENT(gtk_adjustment_new(7,
-                                                                 1,
-                                                                 26,
-                                                                 1,
-                                                                 3,
-                                                                 0)),
-                               0, 0);
-  darktable.gui->widgets.lighttable_zoom_spinbutton = widget;
-
-  g_signal_connect (G_OBJECT (widget), "value-changed",
-                    G_CALLBACK (lighttable_zoom_changed),
-                    (gpointer)0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-}
 
 /*
  * NEW UI API
@@ -1578,33 +1529,21 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
 static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 {
   GtkWidget *widget;
+
+  /* create the panel box */
   ui->panels[DT_UI_PANEL_CENTER_BOTTOM] = widget = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
-  container = widget;
-  GtkWidget* subcontainer;
-
   /* adding the center bottom left toolbox */
-  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT] = widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  darktable.gui->widgets.bottom_left_toolbox = widget;
-
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT] = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT], TRUE, TRUE, 0);
+  
   /* adding the center box */
-  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = subcontainer = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), subcontainer, FALSE, TRUE, 0);
-
-  /* initializeing the lightable layout box 
-     TODO: Make module out of this
-   */
-  widget = gtk_hbox_new(FALSE, 5);
-  darktable.gui->widgets.bottom_lighttable_box = widget;
-  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
-  init_lighttable_box(widget);
-  gtk_widget_show(widget);
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER], FALSE, TRUE, 0);
 
   /* adding the right toolbox */
-  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] = widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  darktable.gui->widgets.bottom_right_toolbox = widget;
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT], TRUE, TRUE, 0);
 
 }
