@@ -32,7 +32,7 @@ dt_lib_tool_lighttable_t;
 /* lightable layout changed */
 static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_data);
 /* zoom spinbutton change callback */
-static void _lib_lighttable_zoom_changed (GtkSpinButton *widget, gpointer user_data);
+static void _lib_lighttable_zoom_changed (GtkAdjustment *adjustment, gpointer user_data);
 /* zoom key accel callback */
 static void _lib_lighttable_zoom_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 						    guint keyval, GdkModifierType modifier, gpointer data);
@@ -88,19 +88,13 @@ void gui_init(dt_lib_module_t *self)
   
 
   /* create zoom spin button */
-  d->zoom = gtk_spin_button_new(GTK_ADJUSTMENT(gtk_adjustment_new(7,
-                                                                 1,
-                                                                 26,
-                                                                 1,
-                                                                 3,
-                                                                 0)),
-                               0, 0);
-
+  GtkAdjustment *adj = GTK_ADJUSTMENT(gtk_adjustment_new(7,1,26,1,3,0));
+  d->zoom = gtk_spin_button_new(adj, 1, 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), dt_conf_get_int("plugins/lighttable/images_in_row"));
-
-  g_signal_connect (G_OBJECT(d->zoom), "value-changed",
+  g_signal_connect (G_OBJECT(adj), "value-changed",
                     G_CALLBACK (_lib_lighttable_zoom_changed),
                     (gpointer)self);
+
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom, TRUE, TRUE, 0);
 
 }
@@ -136,9 +130,9 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_lighttable_zoom_changed (GtkSpinButton *widget, gpointer user_data)
+static void _lib_lighttable_zoom_changed (GtkAdjustment *adjustment, gpointer user_data)
 {
-  const int i = gtk_spin_button_get_value(widget);
+  const int i = gtk_adjustment_get_value(adjustment);
   dt_conf_set_int("plugins/lighttable/images_in_row", i);
   dt_control_gui_queue_draw();
 }
