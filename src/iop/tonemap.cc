@@ -173,7 +173,7 @@ extern "C"
         L = logf(L);
         const float B = val[0]/val[1];
         const float detail = L - B;
-        const float Ln = expf(B*(contr - 1.0f) + detail - 2.0f);
+        const float Ln = expf(B*(contr - 1.0f) + detail - 1.0f);
 
         out[0]=in[0]*Ln;
         out[1]=in[1]*Ln;
@@ -186,7 +186,7 @@ extern "C"
     float L = 0.2126*pmax[0]+ 0.7152*pmax[1] + 0.0722*pmax[2];
     if(L<=0.0) L=1e-6;
     L = logf(L);
-    const float Ln = expf(L*(contr - 1.0f) - 2.0f);
+    const float Ln = expf(L*(contr - 1.0f) - 1.0f);
     for(int k=0; k<3; k++) pmax[k] *= Ln;
   }
 
