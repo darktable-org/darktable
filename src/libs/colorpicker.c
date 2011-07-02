@@ -316,6 +316,8 @@ void gui_init(dt_lib_module_t *self)
   {
     data->history_button[i] = gtk_button_new();
     gtk_widget_set_size_request(data->history_button[i], -1, 40);
+    gtk_widget_set_tooltip_text(data->history_button[i],
+                                _("click to save a color in this slot"));
     gtk_box_pack_start(GTK_BOX(history_buttons_row), data->history_button[i],
                        TRUE, TRUE, 0);
 
