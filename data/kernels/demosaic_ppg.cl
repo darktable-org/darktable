@@ -427,3 +427,56 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
   write_imagef (out, (int2)(x, y), color);
 }
 
+/**
+ * FCN() is a functional equivalent to FC() avoiding right-shift operations. FC() would trigger
+ * a compiler error in kernel border_interpolate() for NVIDIA openCL drivers (as of version 270.41).
+ * TODO: revise if still needed for newer versions of NVIDIA's driver.
+ */
+int
+FCN(const int row, const int col, const unsigned int filters)
+{
+  return (filters >> (2*((2*row & 14) + (col & 1)) )) & 3;
+}
+
+/**
+ * Demosaic image border
+ */
+__kernel void
+border_interpolate(__read_only image2d_t in, __write_only image2d_t out, unsigned int width, unsigned int height, const unsigned int filters)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  int border = 3;
+  int avgwindow = 1;
+
+  if(x>=border && x<width-border && y>=border && y<height-border) return;
+
+  float4 o;
+  float sum[4] = { 0.0f };
+  int count[4] = { 0 };
+
+  for (int j=y-avgwindow; j<=y+avgwindow; j++) for (int i=x-avgwindow; i<=x+avgwindow; i++)
+  {
+    if (j>=0 && i>=0 && j<height && i<width)
+    {
+      int f = FCN(j,i,filters);
+      sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
+      count[f]++;
+    }
+  }
+
+  float i = read_imagef(in, sampleri, (int2)(x, y)).x;
+  o.x = count[0] > 0 ? sum[0]/count[0] : i;
+  o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
+  o.z = count[2] > 0 ? sum[2]/count[2] : i;
+
+  int f = FCN(y,x,filters);
+
+  if     (f == 0) o.x = i;
+  else if(f == 1) o.y = i;
+  else if(f == 2) o.z = i;
+  else            o.y = i;
+
+  write_imagef (out, (int2)(x, y), o);
+}
+
