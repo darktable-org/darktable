@@ -17,7 +17,7 @@
    version="1.0"
    sodipodi:docname="borders.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/jo/svn/darktable/pixmaps/plugins-darkroom/template.png"
+   inkscape:export-filename="/home/jo/vcs/darktable/data/pixmaps/plugins/darkroom/borders.png"
    inkscape:export-xdpi="10.8"
    inkscape:export-ydpi="10.8">
   <defs
@@ -41,8 +41,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.0225"
-     inkscape:cx="96.756385"
-     inkscape:cy="81.655015"
+     inkscape:cx="3.8021205"
+     inkscape:cy="88.329922"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -66,7 +66,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -85,11 +85,11 @@
        d="M 217.5,87.5 A 70,70 0 1 1 77.5,87.5 A 70,70 0 1 1 217.5,87.5 z"
        transform="translate(-47.5,12.5)" />
     <rect
-       style="fill:none;stroke:#cacac6;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:none;stroke:#cacac6;stroke-width:14;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect3753"
-       width="130"
-       height="130"
-       x="35"
-       y="35" />
+       width="140"
+       height="100"
+       x="30"
+       y="50" />
   </g>
 </svg>
