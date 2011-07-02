@@ -9,9 +9,8 @@ int main(int argc, char *arg[])
   dt_cache_t cache;
   dt_cache_init(&cache, 100000, 16, 64, 1);
 
-  // TODO: openmp
 #ifdef _OPENMP
-#  pragma omp parallel for default(none) schedule(static) shared(cache, stderr)
+#  pragma omp parallel for default(none) schedule(guided) shared(cache, stderr)
 #endif
   for(int k=0;k<10000;k++)
   {
