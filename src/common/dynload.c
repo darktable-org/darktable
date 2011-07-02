@@ -16,11 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef __APPLE__
 #include <sys/malloc.h>
-#else
-#include <malloc.h>
 #endif
 
 #include "common/dynload.h"
