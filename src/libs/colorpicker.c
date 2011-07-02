@@ -21,6 +21,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "dtgtk/label.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -35,6 +36,10 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *statistic_selector;
   GtkWidget *size_selector;
   GtkWidget *picker_button;
+  GtkWidget *history_button[5];
+
+  float history_rgb[5][3];
+  float history_lab[5][3];
 } dt_lib_colorpicker_t;
 
 const char *name()
@@ -155,13 +160,68 @@ static void _size_changed(GtkComboBox *widget, gpointer p)
                   gtk_combo_box_get_active(widget));
 }
 
+static void _history_button_clicked(GtkButton *button, gpointer self)
+{
+
+  unsigned int n;
+  unsigned int i;
+  int m;
+  GdkColor c;
+  dt_iop_module_t *module = get_colorout_module();
+  dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
+
+  // First figuring out which button we're dealing with
+  for(n = 0; data->history_button[n] != GTK_WIDGET(button) && n < 4; n++);
+
+  // Saving the current picker data
+  m = dt_conf_get_int("ui_last/colorpicker_mode");
+  float fallback_col[] = {0,0,0};
+  float *rgb = fallback_col;
+  float *lab = fallback_col;
+  switch(m)
+  {
+    case 0: // mean
+      rgb = darktable.gui->picked_color_output_cs;
+      lab = module->picked_color;
+      break;
+    case 1: //min
+      rgb = darktable.gui->picked_color_output_cs_min;
+      lab = module->picked_color_min;
+      break;
+    default:
+      rgb = darktable.gui->picked_color_output_cs_max;
+      lab = module->picked_color_max;
+      break;
+  }
+
+  for(i = 0; i < 3; i++)
+    data->history_rgb[n][i] = rgb[i];
+  for(i = 0; i < 3; i++)
+    data->history_lab[n][i] = lab[i];
+
+  c.red = rgb[0] * 65535;
+  c.green = rgb[1] * 65535;
+  c.blue = rgb[2] * 65535;
+  gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_NORMAL, &c);
+  gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &c);
+  gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_ACTIVE, &c);
+}
 
 void gui_init(dt_lib_module_t *self)
 {
-  GtkWidget *container = gtk_vbox_new(FALSE, 0);
+  unsigned int i;
+  unsigned int j;
+
+  GdkColor c;
+
+  GtkWidget *container = gtk_vbox_new(FALSE, 10);
   GtkWidget *output_row = gtk_hbox_new(FALSE, 10);
   GtkWidget *output_options = gtk_vbox_new(FALSE, 10);
   GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 10);
+  GtkWidget *history_label = dtgtk_label_new(_("history"),
+                                             DARKTABLE_LABEL_TAB
+                                             | DARKTABLE_LABEL_ALIGN_RIGHT);
+  GtkWidget *history_buttons_row = gtk_hbox_new(FALSE, 10);
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data =
@@ -243,6 +303,38 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(data->output_label, 80, -1);
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label,
                      FALSE, FALSE, 0);
+
+  // Adding the history
+  gtk_box_pack_start(GTK_BOX(container), history_label, TRUE, TRUE, 0);
+
+  // First the buttons
+  c.red = 0;
+  c.green = 0;
+  c.blue = 0;
+
+  for(i = 0; i < 5; i++)
+  {
+    data->history_button[i] = gtk_button_new();
+    gtk_widget_set_size_request(data->history_button[i], -1, 40);
+    gtk_box_pack_start(GTK_BOX(history_buttons_row), data->history_button[i],
+                       TRUE, TRUE, 0);
+
+    // Initializing each slot in the history to black
+    for(j = 0; j < 3; j++)
+      data->history_rgb[i][j] = 0;
+    for(j = 0; j < 3; j++)
+      data->history_lab[i][j] = 0;
+
+    gtk_widget_modify_bg(data->history_button[i], GTK_STATE_NORMAL, &c);
+    gtk_widget_modify_bg(data->history_button[i], GTK_STATE_PRELIGHT, &c);
+    gtk_widget_modify_bg(data->history_button[i], GTK_STATE_ACTIVE, &c);
+
+
+    g_signal_connect(G_OBJECT(data->history_button[i]), "clicked",
+                     G_CALLBACK(_history_button_clicked), (gpointer)self);
+  }
+  gtk_box_pack_start(GTK_BOX(container), history_buttons_row,
+                     TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
