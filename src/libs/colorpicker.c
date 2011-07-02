@@ -33,6 +33,7 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *output_label;
   GtkWidget *color_mode_selector;
   GtkWidget *statistic_selector;
+  GtkWidget *size_selector;
   GtkWidget *picker_button;
 } dt_lib_colorpicker_t;
 
@@ -148,12 +149,19 @@ static void _color_mode_changed(GtkComboBox *widget, gpointer p)
   _update_picker_output((dt_lib_module_t*)p);
 }
 
+static void _size_changed(GtkComboBox *widget, gpointer p)
+{
+  dt_conf_set_int("ui_last/colorpicker_size",
+                  gtk_combo_box_get_active(widget));
+}
+
 
 void gui_init(dt_lib_module_t *self)
 {
   GtkWidget *container = gtk_vbox_new(FALSE, 0);
   GtkWidget *output_row = gtk_hbox_new(FALSE, 10);
   GtkWidget *output_options = gtk_vbox_new(FALSE, 10);
+  GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 10);
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data =
@@ -177,12 +185,30 @@ void gui_init(dt_lib_module_t *self)
   // The picker button, output selectors and label
   gtk_box_pack_start(GTK_BOX(output_row), output_options, TRUE, TRUE, 0);
 
-  data->picker_button = gtk_toggle_button_new_with_label(_("pick color"));
-  gtk_box_pack_start(GTK_BOX(output_options), data->picker_button,
+  data->size_selector = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(data->size_selector),
+                            _("point"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(data->size_selector),
+                            _("area"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(data->size_selector),
+                           dt_conf_get_int("ui_last/colorpicker_size"));
+  gtk_widget_set_size_request(data->size_selector, 30, -1);
+  gtk_box_pack_start(GTK_BOX(picker_subrow), data->size_selector,
+                     TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(data->size_selector), "changed",
+                   G_CALLBACK(_size_changed), NULL);
+
+  data->picker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
+                                               CPF_STYLE_BOX);
+  gtk_widget_set_size_request(data->picker_button, 10, -1);
+  gtk_box_pack_start(GTK_BOX(picker_subrow), data->picker_button,
                      TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(data->picker_button), "toggled",
                    G_CALLBACK(_picker_button_toggled), NULL);
+
+  gtk_box_pack_start(GTK_BOX(output_options), picker_subrow, TRUE, TRUE, 0);
 
   data->statistic_selector = gtk_combo_box_new_text();
   gtk_combo_box_append_text(GTK_COMBO_BOX(data->statistic_selector),

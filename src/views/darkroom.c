@@ -979,10 +979,21 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     float zoom_x, zoom_y, bzoom_x, bzoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
     dt_dev_get_pointer_zoom_pos(dev, ctl->button_x + offx, ctl->button_y + offy, &bzoom_x, &bzoom_y);
-    dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f+bzoom_x, .5f+zoom_x));
-    dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f+bzoom_y, .5f+zoom_y));
-    dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f+bzoom_x, .5f+zoom_x));
-    dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f+bzoom_y, .5f+zoom_y));
+
+    if(dt_conf_get_int("ui_last/colorpicker_size") == 1)
+    {
+      dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f+bzoom_x, .5f+zoom_x));
+      dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f+bzoom_y, .5f+zoom_y));
+      dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(.5f+bzoom_x, .5f+zoom_x));
+      dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(.5f+bzoom_y, .5f+zoom_y));
+    }
+    else
+    {
+      dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f+zoom_x);
+      dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f+zoom_y);
+      dev->gui_module->color_picker_box[2] = fminf(1.0, .5f+zoom_x);
+      dev->gui_module->color_picker_box[3] = fminf(1.0, .5f+zoom_y);
+    }
 
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
@@ -1046,6 +1057,9 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     dev->gui_module->color_picker_box[1] = .5f+zoom_y;
     dev->gui_module->color_picker_box[2] = .5f+zoom_x;
     dev->gui_module->color_picker_box[3] = .5f+zoom_y;
+
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dt_dev_invalidate_all(dev);
     dt_control_queue_draw_all();
     return 1;
   }
