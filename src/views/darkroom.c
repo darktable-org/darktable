@@ -882,15 +882,6 @@ void leave(dt_view_t *self)
   if(dt_conf_get_bool("plugins/filmstrip/on"))
     dt_view_film_strip_close(darktable.view_manager);
 
-  GList *childs = gtk_container_get_children (
-                    GTK_CONTAINER (darktable.gui->widgets.bottom_left_toolbox));
-  while(childs)
-  {
-    gtk_widget_destroy ( GTK_WIDGET (childs->data));
-    childs=g_list_next(childs);
-  }
-
-
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // tag image as changed
   // TODO: only tag the image when there was a real change.

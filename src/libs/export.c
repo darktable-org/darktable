@@ -754,7 +754,7 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   return res;
 }
 
-void init_key_accels()
+void init_key_accels(dt_lib_module_t *self)
 {
   gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/export/export selected images",
                           GDK_e, GDK_CONTROL_MASK);

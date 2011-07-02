@@ -46,13 +46,7 @@
 
 DT_MODULE(1)
 
-#define DT_LIBRARY_MAX_ZOOM 13
-
-
 static void star_key_accel_callback(GtkAccelGroup *accel_group,
-                                    GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data);
-static void zoom_key_accel_callback(GtkAccelGroup *accel_group,
                                     GObject *acceleratable, guint keyval,
                                     GdkModifierType modifier, gpointer data);
 static void go_up_key_accel_callback(GtkAccelGroup *accel_group,
@@ -531,6 +525,11 @@ failure:
   }
 }
 
+// TODO: this is also defined in lib/tools/lighttable.c
+//       fix so this value is shared.. DT_CTL_SET maybe ?
+
+#define DT_LIBRARY_MAX_ZOOM 13
+
 static void
 expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
@@ -855,35 +854,6 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_control_queue_draw_all();
 }
 
-
-static void
-zoom_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                        guint keyval, GdkModifierType modifier, gpointer data)
-{
-  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
-  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  switch((long int)data)
-  {
-    case 1:
-      zoom = 1;
-      break;
-    case 2:
-      if(zoom <= 1) zoom = 1;
-      else zoom --;
-      // if(layout == 0) lib->center = 1;
-      break;
-    case 3:
-      if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-      else zoom ++;
-      // if(layout == 0) lib->center = 1;
-      break;
-    case 4:
-      zoom = DT_LIBRARY_MAX_ZOOM;
-      break;
-  }
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
-}
-
 static void
 star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
@@ -996,36 +966,6 @@ static void connect_closures(dt_view_t *self)
   lib->closures = g_slist_prepend(lib->closures, closure);
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
                                  "<Darktable>/lighttable/rating/reject",
-                                 closure);
-
-
-  closure = g_cclosure_new(
-      G_CALLBACK(zoom_key_accel_callback),
-      (gpointer)1, NULL);
-  lib->closures = g_slist_prepend(lib->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/zoom/max",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(zoom_key_accel_callback),
-      (gpointer)2, NULL);
-  lib->closures = g_slist_prepend(lib->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/zoom/in",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(zoom_key_accel_callback),
-      (gpointer)3, NULL);
-  lib->closures = g_slist_prepend(lib->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/zoom/out",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(zoom_key_accel_callback),
-      (gpointer)4, NULL);
-  lib->closures = g_slist_prepend(lib->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
-                                 "<Darktable>/lighttable/zoom/min",
                                  closure);
 
   closure = g_cclosure_new(
@@ -1151,6 +1091,37 @@ void mouse_leave(dt_view_t *self)
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
     dt_control_queue_draw_all(); // remove focus
   }
+}
+
+
+
+int scrolled(dt_view_t *self, double x, double y, int up, int state)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  if(layout == 1 && state == 0)
+    {
+      if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
+      else   lib->track =  DT_LIBRARY_MAX_ZOOM;
+    }
+  else
+    {
+      int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+      if(up)
+	{
+	  zoom--;
+	  if(zoom < 1)
+	    zoom = 1;
+	}
+      else
+	{
+	  zoom++;
+	  if(zoom > 2*DT_LIBRARY_MAX_ZOOM)
+	    zoom = 2*DT_LIBRARY_MAX_ZOOM;
+	}
+      //      gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
+    }
+  return 0;
 }
 
 
@@ -1337,34 +1308,6 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
     else   lib->track =  1;
   }
   dt_control_queue_draw_all();
-}
-
-void scrolled(dt_view_t *view, double x, double y, int up, int state)
-{
-  dt_library_t *lib = (dt_library_t *)view->data;
-  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == 1 && state == 0)
-  {
-    if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
-    else   lib->track =  DT_LIBRARY_MAX_ZOOM;
-  }
-  else
-  {
-    // zoom
-    int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-    if(up)
-    {
-      zoom--;
-      if(zoom < 1) zoom = 1;
-    }
-    else
-    {
-      zoom++;
-      if(zoom > 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-    }
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
-  }
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

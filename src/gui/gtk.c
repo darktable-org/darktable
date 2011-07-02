@@ -42,7 +42,6 @@
 #include "gui/gtk.h"
 
 #include "gui/presets.h"
-#include "gui/preferences.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -92,12 +91,7 @@ static void init_widgets();
 
 static void init_main_table(GtkWidget *container);
 
-static void init_filter_box(GtkWidget *container);
-static void init_top_controls(GtkWidget *container);
-
 static void init_center(GtkWidget *container);
-
-static void init_lighttable_box(GtkWidget* container);
 
 
 static void key_accel_changed(GtkAccelMap *object,
@@ -244,11 +238,15 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
   if(dt_ui_panel_visible(ui, panel))
   {
     dt_ui_panel_show(ui, panel,FALSE);
+    if (panel==DT_UI_PANEL_CENTER_TOP)
+      dt_ui_panel_show(ui, DT_UI_PANEL_TOP,FALSE);
     bit &= ~(1<<mode);
   }
   else
   {
     dt_ui_panel_show(ui, panel, TRUE);
+    if (panel==DT_UI_PANEL_CENTER_TOP)
+      dt_ui_panel_show(ui, DT_UI_PANEL_TOP, TRUE);
     bit |=   1<<mode;
   }
 
@@ -306,8 +304,7 @@ void dt_accel_group_connect_by_path(GtkAccelGroup *accel_group,
                                     const gchar *accel_path,
                                     GClosure *closure)
 {
-  if(!accel_group)
-    return;
+  g_return_if_fail(GTK_IS_ACCEL_GROUP(accel_group));
 
   GSList **list = NULL;
 
@@ -613,91 +610,6 @@ colorpicker_toggled (GtkToggleButton *button, gpointer p)
 
 #endif
 
-static void
-lighttable_zoom_changed (GtkSpinButton *widget, gpointer user_data)
-{
-  const int i = gtk_spin_button_get_value(widget);
-  dt_conf_set_int("plugins/lighttable/images_in_row", i);
-  dt_control_gui_queue_draw();
-}
-
-static void
-lighttable_layout_changed (GtkComboBox *widget, gpointer user_data)
-{
-  const int i = gtk_combo_box_get_active(widget);
-  dt_conf_set_int("plugins/lighttable/layout", i);
-  dt_control_gui_queue_draw();
-}
-
-static void
-update_query()
-{
-  /* sometimes changes, for similarity search e.g. */
-  dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
-
-  /* updates query */
-  dt_collection_update_query (darktable.collection);
-
-  /* updates visual */
-  GtkWidget *win = darktable.gui->widgets.center;
-  gtk_widget_queue_draw (win);
-
-  /* update film strip, jump to currently opened image, if any: */
-  if(darktable.develop->image)
-    dt_view_film_strip_scroll_to(darktable.view_manager, darktable.develop->image->id);
-}
-
-static void
-image_filter_changed (GtkComboBox *widget, gpointer user_data)
-{
-  // image_filter
-  int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_ALL);
-  else if(i == 1)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_NO);
-  else if(i == 2)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_1);
-  else if(i == 3)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_2);
-  else if(i == 4)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_3);
-  else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
-  else if(i == 6)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_5);
-  else if(i == 7)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_REJECT);
-
-
-  /* update collection star filter flags */
-  if (i == 0)
-    dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_RATING|COLLECTION_FILTER_EQUAL_RATING));
-  else if (i == 1 || i == 7)
-    dt_collection_set_filter_flags (darktable.collection, (dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_EQUAL_RATING) & ~COLLECTION_FILTER_ATLEAST_RATING);
-  else
-    dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_RATING );
-
-  /* set the star filter in collection */
-  dt_collection_set_rating(darktable.collection, i-1);
-
-  update_query();
-}
-
-
-static void
-image_sort_changed (GtkComboBox *widget, gpointer user_data)
-{
-  // image_sort
-  int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
-  else if(i == 1)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_DATETIME);
-  else if(i == 2)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_RATING);
-  else if(i == 3)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_ID);
-  else if(i == 4)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_COLOR);
-
-  update_query();
-}
-
-void
-preferences_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  dt_gui_preferences_show();
-}
-
-
 static gboolean
 scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
@@ -883,6 +795,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
     snprintf(path, 1023, "%s/%s", DARKTABLE_DATADIR, themefile ? themefile : "darktable.gtkrc");
   (void)setenv("GTK2_RC_FILES", path, 1);
+
+  /* lets zero mem */
+  memset(gui,0,sizeof(dt_gui_gtk_t));
 
   GtkWidget *widget;
   gui->ui = dt_ui_initialize(argc,argv);
@@ -1257,65 +1172,7 @@ void init_main_table(GtkWidget *container)
   _ui_init_panel_right(darktable.gui->ui, container);
 }
 
-void init_filter_box(GtkWidget *container)
-{
-
-  GtkWidget *widget;
-
-  // Adding the list label
-  widget = gtk_label_new(_("list"));
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 7);
-  gtk_widget_show(widget);
-
-  // Adding the list combobox
-  widget = gtk_combo_box_new_text();
-  darktable.gui->widgets.image_filter = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("all"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("unstarred"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("1 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("2 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("3 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("4 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("5 star"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rejected"));
-  gtk_widget_show(widget);
-
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (image_filter_changed),
-                    (gpointer)0);
-
-  // Adding the sort label
-  widget = gtk_label_new(_("images sorted by"));
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 7);
-  gtk_widget_show(widget);
-
-  // Adding the sort combobox
-  widget = gtk_combo_box_new_text();
-  darktable.gui->widgets.image_sort = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("filename"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("time"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rating"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("id"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("color label"));
-  gtk_widget_show(widget);
-
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (image_sort_changed),
-                    (gpointer)0);
-
-
-  // create preferences button:
-  widget = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
-  gtk_box_pack_end(GTK_BOX(container), widget, FALSE, FALSE, 20);
-  g_object_set(G_OBJECT(widget), "tooltip-text", _("show global preferences"),
-               (char *)NULL);
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (preferences_button_clicked),
-                    NULL);
-}
-
+#if 0 // TO BE REMOVED
 void init_top_controls(GtkWidget *container)
 {
   GtkWidget *widget;
@@ -1346,6 +1203,7 @@ void init_top_controls(GtkWidget *container)
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
   gtk_widget_show(widget);
 }
+#endif
 
 static void _gui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
@@ -1442,39 +1300,6 @@ void init_colorpicker(GtkWidget *container)
 }
 #endif
 
-void init_lighttable_box(GtkWidget* container)
-{
-  GtkWidget* widget;
-
-  // Creating the layout combobox
-  widget = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("zoomable light table"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("file manager"));
-  darktable.gui->widgets.lighttable_layout_combobox = widget;
-
-  g_signal_connect (G_OBJECT (widget), "changed",
-                    G_CALLBACK (lighttable_layout_changed),
-                    (gpointer)0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  // Creating the zoom spinbutton
-  widget = gtk_spin_button_new(GTK_ADJUSTMENT(gtk_adjustment_new(7,
-                                                                 1,
-                                                                 26,
-                                                                 1,
-                                                                 3,
-                                                                 0)),
-                               0, 0);
-  darktable.gui->widgets.lighttable_zoom_spinbutton = widget;
-
-  g_signal_connect (G_OBJECT (widget), "value-changed",
-                    G_CALLBACK (lighttable_zoom_changed),
-                    (gpointer)0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-}
 
 /*
  * NEW UI API
@@ -1497,7 +1322,18 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
 {
   //  if(!GTK_IS_BOX(ui->containers[c])) return;
   g_return_if_fail(GTK_IS_BOX(ui->containers[c]));
-  gtk_box_pack_start(GTK_BOX(ui->containers[c]),w,FALSE,FALSE,0);
+  switch(c)
+  {
+    /* if box is right lets pack at end for nicer alignment */
+    case DT_UI_CONTAINER_PANEL_TOP_RIGHT:
+    case DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT:
+    case DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT:
+      gtk_box_pack_end(GTK_BOX(ui->containers[c]),w,FALSE,FALSE,0);
+      break;
+    default:
+      gtk_box_pack_start(GTK_BOX(ui->containers[c]),w,FALSE,FALSE,0);
+      break;
+  }
   gtk_widget_show_all(w);
 }
 
@@ -1658,6 +1494,7 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
   /* add container for top center */
   ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER] = gtk_hbox_new(TRUE,0);
   gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER], TRUE, TRUE, 0);
+
   /* add a filler to top center widget */
   gtk_box_pack_start(GTK_BOX(ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER]), gtk_event_box_new(), TRUE,TRUE,0);
   
@@ -1677,51 +1514,36 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
 
   /* add container for center top left */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT] = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT], FALSE, FALSE, 10);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT], TRUE, TRUE, 10);
 
   /* add container for center top center */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER] = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER], TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER], FALSE, FALSE, 10);
 
   /* add container for center top right */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT] = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT], FALSE, FALSE, 10);
+  gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT], TRUE, TRUE, 10);
 
-
-  /* TODO: Make modules out of these wigets */
-  init_top_controls(widget);
 }
 
 static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 {
   GtkWidget *widget;
+
+  /* create the panel box */
   ui->panels[DT_UI_PANEL_CENTER_BOTTOM] = widget = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
-  container = widget;
-  GtkWidget* subcontainer;
-
   /* adding the center bottom left toolbox */
-  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT] = widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  darktable.gui->widgets.bottom_left_toolbox = widget;
-
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT] = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT], TRUE, TRUE, 0);
+  
   /* adding the center box */
-  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = subcontainer = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), subcontainer, FALSE, TRUE, 0);
-
-  /* initializeing the lightable layout box 
-     TODO: Make module out of this
-   */
-  widget = gtk_hbox_new(FALSE, 5);
-  darktable.gui->widgets.bottom_lighttable_box = widget;
-  gtk_box_pack_start(GTK_BOX(subcontainer), widget, TRUE, TRUE, 0);
-  init_lighttable_box(widget);
-  gtk_widget_show(widget);
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER], FALSE, TRUE, 0);
 
   /* adding the right toolbox */
-  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] = widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  darktable.gui->widgets.bottom_right_toolbox = widget;
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT], TRUE, TRUE, 0);
 
 }
