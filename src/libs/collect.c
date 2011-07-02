@@ -303,10 +303,12 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
     {
       folder = dt_image_film_roll_name(folder);
     }
+    gchar *value =  (gchar *)sqlite3_column_text(stmt, 0);
+    gchar *escaped_text = g_markup_escape_text(value, strlen(value));
     gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                         DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
-                        DT_LIB_COLLECT_COL_TOOLTIP, sqlite3_column_text(stmt, 0),
+                        DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
                         -1);
   }
   sqlite3_finalize(stmt);
