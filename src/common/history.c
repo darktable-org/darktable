@@ -17,6 +17,7 @@
 */
 
 #include "develop/develop.h"
+#include "control/control.h"
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/image_cache.h"
