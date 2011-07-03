@@ -51,6 +51,7 @@ src/iop/cacorrect.c
 src/iop/channelmixer.c
 src/iop/clahe.c
 src/iop/clipping.c
+src/iop/colorcontrast.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
 src/iop/colorout.c
@@ -78,7 +79,6 @@ src/iop/sharpen.c
 src/iop/soften.c
 src/iop/splittoning.c
 src/iop/spots.c
-src/iop/stuckpixels.c
 src/iop/temperature.c
 src/iop/tonecurve.c
 src/iop/tonemap.cc

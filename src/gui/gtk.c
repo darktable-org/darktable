@@ -461,12 +461,14 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
     "Andrea Purracchio",
     "Andrey Kaminsky",
     "Anton Blanchard",
+    "Antony Dovgal",
     "Bernhard Schneider",
     "Boucman",
     "Brian Teague",
     "Bruce Guenter",
     "Christian Fuchs",
     "Christian Himpel",
+    "Christian Tellefsen",
     "Daniele Giorgis",
     "David Bremner",
     "Ger Siemerink",
@@ -478,16 +480,22 @@ darktable_label_clicked (GtkWidget *widget, GdkEventButton *event, gpointer user
     "Karl Mikaelsson",
     "Klaus Staedtler",
     "Mikko Ruohola",
+    "Moritz Lipp",
     "Nao Nakashima",
     "Olivier Tribout",
+    "Omari Stephens",
     "Pascal de Bruijn",
     "Pascal Obry",
+    "Robert Bieber",
     "Robert Park",
+    "Rostyslav Pidgornyi",
     "Richard Hughes",
+    "Sergey Astanin",
     "Simon Spannagel",
     "Stephen van den Berg",
     "Stuart Henderson",
     "Thierry Leconte",
+    "Ulrich Pegelow",
     "Wyatt Olson",
     "Xavier Besse",
     "Zeus Panchenko",
@@ -1117,7 +1125,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
   else
   {
-    fprintf(stderr, "[gtk_init] could not find darktable.gtkrc in . or %s!\n", datadir);
+    fprintf(stderr, "[gtk_init] could not find `%s' in . or %s!\n", themefile, datadir);
     g_free(themefile);
     return 1;
   }
