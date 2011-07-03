@@ -33,15 +33,15 @@ gaussian_column(read_only image2d_t in, global float4 *out, unsigned int width, 
 {
   const int x = get_global_id(0);
 
-  float4 xp = 0.0f;
-  float4 yb = 0.0f;
-  float4 yp = 0.0f;
-  float4 xc = 0.0f;
-  float4 yc = 0.0f;
-  float4 xn = 0.0f;
-  float4 xa = 0.0f;
-  float4 yn = 0.0f;
-  float4 ya = 0.0f;
+  float4 xp = (float4)0.0f;
+  float4 yb = (float4)0.0f;
+  float4 yp = (float4)0.0f;
+  float4 xc = (float4)0.0f;
+  float4 yc = (float4)0.0f;
+  float4 xn = (float4)0.0f;
+  float4 xa = (float4)0.0f;
+  float4 yn = (float4)0.0f;
+  float4 ya = (float4)0.0f;
 
   // forward filter
   xp = read_imagef(in, sampleri, (int2)(x, 0));
@@ -61,8 +61,6 @@ gaussian_column(read_only image2d_t in, global float4 *out, unsigned int width, 
     out[x + y*width] = yc;
 
   }
-
-  barrier(CLK_GLOBAL_MEM_FENCE);
 
   // backward filter
   xn = read_imagef(in, sampleri, (int2)(x, height-1));
@@ -95,15 +93,15 @@ gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, uns
 {
   const int y = get_global_id(1);
 
-  float4 xp = 0.0f;
-  float4 yb = 0.0f;
-  float4 yp = 0.0f;
-  float4 xc = 0.0f;
-  float4 yc = 0.0f;
-  float4 xn = 0.0f;
-  float4 xa = 0.0f;
-  float4 yn = 0.0f;
-  float4 ya = 0.0f;
+  float4 xp = (float4)0.0f;
+  float4 yb = (float4)0.0f;
+  float4 yp = (float4)0.0f;
+  float4 xc = (float4)0.0f;
+  float4 yc = (float4)0.0f;
+  float4 xn = (float4)0.0f;
+  float4 xa = (float4)0.0f;
+  float4 yn = (float4)0.0f;
+  float4 ya = (float4)0.0f;
 
   // forward filter
   xp = read_imagef(in, sampleri, (int2)(0, y));
@@ -123,8 +121,6 @@ gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, uns
     out[x + y*width] = yc;
 
   }
-
-  barrier(CLK_GLOBAL_MEM_FENCE);
 
   // backward filter
   xn = read_imagef(in, sampleri, (int2)(width-1, y));
@@ -150,15 +146,16 @@ gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, uns
 
 
 kernel void 
-gaussian_mix(const global float4 *in, write_only image2d_t out, unsigned int width, const float contrast, const float saturation)
+gaussian_mix(read_only image2d_t in, write_only image2d_t out, const float contrast, const float saturation)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  float4 i = in[x + y*width];
+  float4 i = read_imagef(in, sampleri, (int2)(x, y));
   float4 o;
-  float4 min = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
-  float4 max = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+
+  const float4 min = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
+  const float4 max = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
 
   o.x = i.x*contrast + 50.0f * (1.0f - contrast);
   o.y = i.y*saturation;

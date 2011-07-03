@@ -39,13 +39,21 @@
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
 #define CLAMP_RANGE(x,y,z) (CLAMP(x,y,z))
-#define GORDER 0
+
 
 DT_MODULE(1)
 
-typedef struct dt_iop_gaussian_t
+typedef enum dt_iop_gaussian_order_t
 {
-  unsigned int gorder;
+  DT_IOP_GAUSSIAN_ZERO = 0,
+  DT_IOP_GAUSSIAN_ONE = 1,
+  DT_IOP_GAUSSIAN_TWO = 2
+}
+dt_iop_gaussian_order_t;
+
+typedef struct dt_iop_gaussian_params_t
+{
+  dt_iop_gaussian_order_t order;
   float radius;
   float contrast;
   float saturation;
@@ -57,12 +65,13 @@ typedef struct dt_iop_gaussian_gui_data_t
   GtkVBox   *vbox1,  *vbox2, vbox3;
   GtkWidget  *label1,*label2, label3;		     // radius, contrast, saturation
   GtkDarktableSlider *scale1,*scale2,*scale3;       // radius, contrast, saturation
+  GtkComboBox        *order;			    // order of gaussian
 }
 dt_iop_gaussian_gui_data_t;
 
 typedef struct dt_iop_gaussian_data_t
 {
-  unsigned int gorder;
+  dt_iop_gaussian_order_t order;
   float radius;
   float contrast;
   float saturation;
@@ -96,7 +105,7 @@ groups ()
 
 
 static 
-void compute_gauss_params(const float sigma, unsigned int gorder, float *a0, float *a1, float *a2, float *a3, 
+void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3, 
                           float *b1, float *b2, float *coefp, float *coefn)
 {
   const float alpha = 1.695f / sigma;
@@ -111,10 +120,10 @@ void compute_gauss_params(const float sigma, unsigned int gorder, float *a0, flo
   *coefp = 0.0f;
   *coefn = 0.0f;
 
-  switch(gorder)
+  switch(order)
   {
     default:
-    case 0:
+    case DT_IOP_GAUSSIAN_ZERO:
     {
       const float k = (1.0f - ema)*(1.0f - ema)/(1.0f + (2.0f * alpha * ema) - ema2);
       *a0 = k;
@@ -124,7 +133,7 @@ void compute_gauss_params(const float sigma, unsigned int gorder, float *a0, flo
     }
     break;
 
-    case 1:
+    case DT_IOP_GAUSSIAN_ONE:
     {
       *a0 = (1.0f - ema)*(1.0f - ema);
       *a1 = 0.0f;
@@ -133,7 +142,7 @@ void compute_gauss_params(const float sigma, unsigned int gorder, float *a0, flo
     }
     break;
 
-    case 2:
+    case DT_IOP_GAUSSIAN_TWO:
     {
       const float k = -(ema2 - 1.0f) / (2.0f * alpha * ema);
       float kn = -2.0f * (-1.0f + (3.0f * ema) - (3.0f * ema * ema) + (ema * ema * ema));
@@ -172,74 +181,71 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_mem dev_temp = dt_opencl_alloc_device_buffer(width*height*bpp, devid);
   if(dev_temp == NULL) goto error;
 
-  float sigma = fmax(0.0f,d->radius * roi_in->scale / piece ->iscale);
-  float contrast = d->contrast;
-  float saturation = d->saturation;
+  const float radius = fmax(0.1f, d->radius);
+  const float sigma = radius * roi_in->scale / piece ->iscale;
+  const float contrast = d->contrast;
+  const float saturation = d->saturation;
 
-  if(sigma < 0.1f)
-  {
-    // do not blur for small values of sigma; just copy input -> dev_temp
-    err = dt_opencl_enqueue_copy_image_to_buffer(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_temp, origin, region, 0, 0, NULL, NULL);
-    if(err != CL_SUCCESS) goto error;
-  }
-  else
-  {  
-    size_t sizes[3];
+  size_t sizes[3];
 
-    // compute gaussian parameters
-    float a0, a1, a2, a3, b1, b2, coefp, coefn;
-    compute_gauss_params(sigma, d->gorder, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
+  // compute gaussian parameters
+  float a0, a1, a2, a3, b1, b2, coefp, coefn;
+  compute_gauss_params(sigma, d->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
-    /* first blur step: column by column with dev_in -> dev_temp */
-    sizes[0] = width;
-    sizes[1] = 1;
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 2, sizeof(size_t), (void *)&width);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 3, sizeof(size_t), (void *)&height);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_gaussian_column, sizes);
-    if(err != CL_SUCCESS) goto error;
+  /* first blur step: column by column with dev_in -> dev_temp */
+  sizes[0] = width;
+  sizes[1] = 1;
+  sizes[2] = 1;
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 2, sizeof(size_t), (void *)&width);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 3, sizeof(size_t), (void *)&height);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_gaussian_column, sizes);
+  if(err != CL_SUCCESS) goto error;
 
-    // copy intermediate result from dev_temp -> dev_out
-    err = dt_opencl_enqueue_copy_buffer_to_image(darktable.opencl->dev[devid].cmd_queue, dev_temp, dev_out, 0, origin, region, 0, NULL, NULL);
-    if(err != CL_SUCCESS) goto error;
+  // copy intermediate result from dev_temp -> dev_out
+  err = dt_opencl_enqueue_copy_buffer_to_image(darktable.opencl->dev[devid].cmd_queue, dev_temp, dev_out, 0, origin, region, 0, NULL, NULL);
+  if(err != CL_SUCCESS) goto error;
 
-    /* second blur step: row by row with dev_out -> dev_temp */
-    sizes[0] = 1;
-    sizes[1] = height;
-    sizes[2] = 1;
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 0, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 1, sizeof(cl_mem), (void *)&dev_temp);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 2, sizeof(size_t), (void *)&width);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 3, sizeof(size_t), (void *)&height);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 4, sizeof(float), (void *)&a0);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 5, sizeof(float), (void *)&a1);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 6, sizeof(float), (void *)&a2);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 7, sizeof(float), (void *)&a3);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 8, sizeof(float), (void *)&b1);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 9, sizeof(float), (void *)&b2);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 10, sizeof(float), (void *)&coefp);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 11, sizeof(float), (void *)&coefn);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_gaussian_row, sizes);
-    if(err != CL_SUCCESS) goto error;
-  }
+  /* second blur step: row by row with dev_out -> dev_temp */
+  sizes[0] = 1;
+  sizes[1] = height;
+  sizes[2] = 1;
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 1, sizeof(cl_mem), (void *)&dev_temp);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 2, sizeof(size_t), (void *)&width);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 3, sizeof(size_t), (void *)&height);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 4, sizeof(float), (void *)&a0);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 5, sizeof(float), (void *)&a1);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 6, sizeof(float), (void *)&a2);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 7, sizeof(float), (void *)&a3);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 8, sizeof(float), (void *)&b1);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 9, sizeof(float), (void *)&b2);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 10, sizeof(float), (void *)&coefp);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_row, 11, sizeof(float), (void *)&coefn);
+  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_gaussian_row, sizes);
+  if(err != CL_SUCCESS) goto error;
 
-  /* final mixing step dev_temp -> dev_out */
-  size_t sizes[] = { width, height, 1 };
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_mix, 0, sizeof(cl_mem), (void *)&dev_temp);
+  // copy intermediate result from dev_temp -> dev_out
+  err = dt_opencl_enqueue_copy_buffer_to_image(darktable.opencl->dev[devid].cmd_queue, dev_temp, dev_out, 0, origin, region, 0, NULL, NULL);
+  if(err != CL_SUCCESS) goto error;
+
+  /* final mixing step dev_out -> dev_out */
+  sizes[0] = width;
+  sizes[1] = height;
+  sizes[2] = 1;
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_mix, 0, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_mix, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_mix, 2, sizeof(size_t), (void *)&width);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_mix, 3, sizeof(float), (void *)&contrast);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_mix, 4, sizeof(float), (void *)&saturation);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_mix, 2, sizeof(float), (void *)&contrast);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_gaussian_mix, 3, sizeof(float), (void *)&saturation);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_gaussian_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -263,25 +269,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
-  float sigma = fmax(0.0f,data->radius * roi_in->scale / piece ->iscale);
 
-  // no gaussian blur for very small sigma
-  if (sigma < 0.1f)
-  {
-    for(int k=0; k<roi_out->width*roi_out->height; k++)
-    {
-      out[k*ch+0] = CLAMP(in[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), 0.0f, 100.0f);
-      out[k*ch+1] = CLAMP(in[k*ch+1]*data->saturation, -128.0f, 128.0f);
-      out[k*ch+2] = CLAMP(in[k*ch+2]*data->saturation, -128.0f, 128.0f);
-      out[k*ch+3] = in[k*ch+3];
-    }
-    return;
-  }
+  const float radius = fmax(0.1f, data->radius);
+  const float sigma = radius * roi_in->scale / piece ->iscale;
 
   // as the function name implies
-  compute_gauss_params(sigma, data->gorder, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
-
-
+  compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
   float *temp = malloc(roi_out->width*roi_out->height*ch*sizeof(float));
   if(temp==NULL) return;
@@ -471,15 +464,26 @@ saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+static void
+order_changed (GtkComboBox *combo, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
+  p->order = gtk_combo_box_get_active(combo);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+void 
+commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)p1;
 #ifdef HAVE_GEGL
-  fprintf(stderr, "[highpass] TODO: implement gegl version!\n");
+  fprintf(stderr, "[gaussian] TODO: implement gegl version!\n");
   // pull in new params to gegl
 #else
   dt_iop_gaussian_data_t *d = (dt_iop_gaussian_data_t *)piece->data;
-  d->gorder = p->gorder;
+  d->order = p->order;
   d->radius = p->radius;
   d->contrast = p->contrast;
   d->saturation = p->saturation;
@@ -517,6 +521,7 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale1, p->radius);
   dtgtk_slider_set_value(g->scale2, p->contrast);
   dtgtk_slider_set_value(g->scale3, p->saturation);
+  gtk_combo_box_set_active(g->order, p->order);
 }
 
 void init(dt_iop_module_t *module)
@@ -572,7 +577,19 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
 
   self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 200.0, 0.1, p->radius, 2));
+
+  GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  GtkWidget *label = dtgtk_reset_label_new(_("filter order"), self, &p->order, sizeof(float));
+  gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
+  g->order = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(g->order, _("0th order"));
+  gtk_combo_box_append_text(g->order, _("1st order"));
+  gtk_combo_box_append_text(g->order, _("2nd order"));
+  gtk_object_set(GTK_OBJECT(g->order), "tooltip-text", _("filter order of gaussian blur"), (char *)NULL);
+  gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
+
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 200.0, 0.1, p->radius, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->contrast, 2));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation, 2));
   dtgtk_slider_set_label(g->scale1,_("radius"));
@@ -593,6 +610,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (contrast_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (saturation_callback), self);
+  g_signal_connect (G_OBJECT (g->order), "changed",
+                    G_CALLBACK (order_changed), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
