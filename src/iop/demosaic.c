@@ -775,7 +775,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
     // manage borders
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_border_interpolate, 2, sizeof(uint32_t), (void*)&roi_in->width);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_border_interpolate, 3, sizeof(uint32_t), (void*)&roi_in->height);
