@@ -103,7 +103,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->data;
 
   cl_int err = -999;
-  cl_mem dev_tmp = NULL;
   cl_mem dev_m = NULL;
   const int devid = piece->pipe->devid;
 
@@ -132,20 +131,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
   if (dev_m == NULL) goto error;
 
-  /* get intermediate buffer */
-  dev_tmp = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
-  if (dev_tmp == NULL) goto error;
-
   /* invert image */
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_tmp);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_out);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_invert, sizes);
   if(err != CL_SUCCESS) goto error;
 
   if(rad != 0)
   {
     /* horizontal blur */
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 0, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 0, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 3, sizeof(int), (void *)&wdh);
@@ -154,28 +149,26 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
     /* vertical blur */
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 3, sizeof(int), (void *)&wdh);
     err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_vblur, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
-  /* mixing tmp and in -> out */
+  /* mixing out and in -> out */
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 1, sizeof(cl_mem), (void *)&dev_tmp);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 2, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 3, sizeof(float), (void *)&contrast_scale);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  clReleaseMemObject(dev_tmp);
   clReleaseMemObject(dev_m);
   return TRUE;
 
 error:
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_highpass] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
