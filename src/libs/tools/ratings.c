@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/colorlabels.h"
+#include "common/ratings.h"
 #include "control/control.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
@@ -141,6 +141,7 @@ static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *
   int x=0;
   cairo_set_line_width(cr, 1.5);
   cairo_set_source_rgba(cr, style->fg[0].red/65535.0, style->fg[0].green/65535.0, style->fg[0].blue/65535.0, 0.8);
+  d->current = 0;
   for(int k=0;k<5;k++)
   {
     /* outline star */
@@ -151,12 +152,11 @@ static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *
       cairo_set_source_rgba(cr, style->fg[0].red/65535.0, style->fg[0].green/65535.0, style->fg[0].blue/65535.0, 0.5);
       cairo_stroke(cr);
       cairo_set_source_rgba(cr, style->fg[0].red/65535.0, style->fg[0].green/65535.0, style->fg[0].blue/65535.0, 0.8);
-      if(k>d->current) d->current = k;
+      if((k+1) > d->current) d->current = (k+1);
     } else
       cairo_stroke(cr);
     x+=STAR_SIZE+STAR_SPACING;
   }
-
 
   /* blit memsurface onto widget*/
   cairo_destroy(cr); 
@@ -182,11 +182,8 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
-  d=NULL;
-  /* set rating flags of all selected images
-     if no selection, notify user
-   */
-
+  if (d->current>0)
+    dt_ratings_apply_to_selection(d->current);
   return TRUE;
 }
 
