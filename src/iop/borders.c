@@ -78,7 +78,7 @@ operation_tags ()
 
 void init_key_accels()
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/framing/border size");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/border size");
 }
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
