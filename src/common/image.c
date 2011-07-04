@@ -76,9 +76,9 @@ void dt_image_write_sidecar_file(int imgid)
   // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
-    char filename[520];
-    dt_image_full_path(imgid, filename, 512);
-    dt_image_path_append_version(imgid, filename, 512);
+    char filename[DT_MAX_PATH+8];
+    dt_image_full_path(imgid, filename, DT_MAX_PATH);
+    dt_image_path_append_version(imgid, filename, DT_MAX_PATH);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, filename);
@@ -675,16 +675,16 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
   dt_image_t *img = dt_image_cache_get_uninited(id, 'w');
-  g_strlcpy(img->filename, imgfname, 256);
+  g_strlcpy(img->filename, imgfname, DT_MAX_PATH);
   img->id = id;
   img->film_id = film_id;
   img->dirty = 1;
 
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
-  char dtfilename[1024];
-  g_strlcpy(dtfilename, filename, 1024);
-  dt_image_path_append_version(img->id, dtfilename, 1024);
+  char dtfilename[DT_MAX_PATH];
+  g_strlcpy(dtfilename, filename, DT_MAX_PATH);
+  dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH);
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
   (void)dt_exif_xmp_read(img, dtfilename, 0);
@@ -706,14 +706,14 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
   // Add version wildcard
   gchar *fname = g_strdup(filename);
-  gchar pattern[1024];
-  g_snprintf(pattern, 1024, "%s", filename);
+  gchar pattern[DT_MAX_PATH];
+  g_snprintf(pattern, DT_MAX_PATH, "%s", filename);
   char *c1 = pattern + strlen(pattern);
   while(*c1 != '.' && c1 > pattern) c1--;
-  snprintf(c1, pattern + 1024 - c1, "_*");
+  snprintf(c1, pattern + DT_MAX_PATH - c1, "_*");
   char *c2 = fname + strlen(fname);
   while(*c2 != '.' && c2 > fname) c2--;
-  snprintf(c1+2, pattern + 1024 - c1 - 2, "%s.xmp", c2);
+  snprintf(c1+2, pattern + DT_MAX_PATH - c1 - 2, "%s.xmp", c2);
 
   if (!glob(pattern, 0, NULL, globbuf))
   {
@@ -924,8 +924,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
   if(!img) return 1;
   int ret = 0;
-  char filename[1024];
-  dt_image_full_path(img->id, filename, 1024);
+  char filename[DT_MAX_PATH];
+  dt_image_full_path(img->id, filename, DT_MAX_PATH);
   // reimport forced?
   if(mip != DT_IMAGE_FULL &&
       (img->force_reimport || img->width == 0 || img->height == 0))

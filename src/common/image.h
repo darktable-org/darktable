@@ -29,6 +29,9 @@
 // this is able to develop images on a 1920 monitor (-2*300 - 20 for the panels).
 #define DT_IMAGE_WINDOW_SIZE 1300
 
+/** define for max path/filename length */
+#define DT_MAX_PATH 1024
+
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
 {
@@ -106,7 +109,7 @@ typedef struct dt_image_t
   char exif_model[32];
   char exif_lens[52];
   char exif_datetime_taken[20];
-  char filename[512];
+  char filename[DT_MAX_PATH];
 
   // common stuff
   int32_t width, height, output_width, output_height;
