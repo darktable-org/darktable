@@ -88,9 +88,9 @@ groups ()
 }
 void init_key_accels()
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/local_contrast_2/sensitivity");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/local_contrast_2/scale");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/local_contrast_2/strength");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/anlfyeni/sensitivity");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/anlfyeni/scale");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/anlfyeni/strength");
 }
 
 static float lambda(float x, float mu, float alpha)

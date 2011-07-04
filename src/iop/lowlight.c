@@ -93,7 +93,7 @@ groups ()
 
 void init_key_accels()
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowlight vision/blue shift");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowlight/blue shift");
 }
 static float
 lookup(const float *lut, const float i)
