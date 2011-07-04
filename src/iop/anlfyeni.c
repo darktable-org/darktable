@@ -86,6 +86,12 @@ groups ()
 {
   return IOP_GROUP_EFFECT;
 }
+
+int flags()
+{
+  return IOP_FLAGS_DEPRECATED;
+}
+
 void init_key_accels()
 {
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/anlfyeni/sensitivity");
