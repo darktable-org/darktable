@@ -160,6 +160,10 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
 
 int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 {
+  // Before switching views, restore accelerators if disabled
+  if(!darktable.control->key_accelerators_on)
+    dt_control_key_accelerators_on(darktable.control);
+
   // destroy old module list
   GtkContainer *table = GTK_CONTAINER(darktable.gui->widgets.module_list);
   gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
@@ -328,20 +332,30 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   return 0;
 }
 
-int dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
+int dt_view_manager_key_pressed (dt_view_manager_t *vm, guint key, guint state)
 {
+  int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_pressed) return v->key_pressed(v, which);
-  return 0;
+  if(vm->film_strip_on)
+    film_strip_result = (vm->film_strip.key_pressed)(&vm->film_strip,
+                                                     key, state);
+  if(v->key_pressed)
+    return v->key_pressed(v, key, state) || film_strip_result;
+  return film_strip_result;
 }
 
-int dt_view_manager_key_released (dt_view_manager_t *vm, uint16_t which)
+int dt_view_manager_key_released (dt_view_manager_t *vm, guint key, guint state)
 {
+  int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_released) return v->key_released(v, which);
-  return 0;
+  if(vm->film_strip_on)
+    film_strip_result = (vm->film_strip.key_pressed)(&vm->film_strip,
+                                                     key, state);
+  if(v->key_released)
+    return v->key_released(v, key, state) || film_strip_result;
+  return film_strip_result;
 }
 
 void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)

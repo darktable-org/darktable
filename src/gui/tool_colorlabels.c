@@ -27,7 +27,7 @@
 static void
 color_label_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_colorlabels_key_accel_callback(user_data);
+  dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, user_data);
   dt_control_queue_draw_all();
 }
 

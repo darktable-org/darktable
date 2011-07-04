@@ -358,7 +358,6 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if(!g_module_symbol(module->module, "mouse_moved",            (gpointer)&(module->mouse_moved)))            module->mouse_moved = NULL;
   if(!g_module_symbol(module->module, "button_released",        (gpointer)&(module->button_released)))        module->button_released = NULL;
   if(!g_module_symbol(module->module, "button_pressed",         (gpointer)&(module->button_pressed)))         module->button_pressed = NULL;
-  if(!g_module_symbol(module->module, "key_pressed",            (gpointer)&(module->key_pressed)))            module->key_pressed = NULL;
   if(!g_module_symbol(module->module, "configure",              (gpointer)&(module->configure)))              module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
   if(!g_module_symbol(module->module, "position",               (gpointer)&(module->position)))               module->position = NULL;
@@ -371,6 +370,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
     module->get_params   = NULL;
     module->init_presets = NULL;
   }
+  if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
 
   return 0;
 error:
@@ -427,6 +427,9 @@ dt_lib_load_modules ()
 //     memcpy(module->factory_params, module->default_params, module->params_size);
 //     module->factory_enabled = module->default_enabled;
     init_presets(module);
+    // Calling the keyboard shortcut initialization callback if present
+    if(module->init_key_accels)
+      (module->init_key_accels)();
 //     dt_iop_load_default_params(module);
 
   }

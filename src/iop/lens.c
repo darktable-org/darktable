@@ -57,6 +57,12 @@ operation_tags ()
   return IOP_TAG_DISTORT;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens correction/scale");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens correction/tca R");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens correction/tca B");
+}
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -1362,6 +1368,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
   dtgtk_slider_set_label(g->scale, _("scale"));
+  dtgtk_slider_set_accel(g->scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens correction/scale");
   hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
 
@@ -1386,6 +1393,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->tca_b = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.99, 1.01, 0.0001, p->tca_b, 5));
   dtgtk_slider_set_label(g->tca_r, _("tca R"));
   dtgtk_slider_set_label(g->tca_b, _("tca B"));
+  dtgtk_slider_set_accel(g->tca_r,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens correction/tca R");
+  dtgtk_slider_set_accel(g->tca_b,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens correction/tca B");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_r), 0, 2, 6, 7, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->tca_b), 0, 2, 7, 8, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
