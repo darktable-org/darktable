@@ -466,12 +466,15 @@ void dt_iop_load_modules_so()
     if(module->init_key_accels)
       (module->init_key_accels)();
 
-    // Adding the optional show accelerator to the table (blank)
-    snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
-             (module->op));
-    gtk_accel_map_add_entry(accelpath, 0, 0);
-    dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
-                                   NULL);
+    if(!(module->flags() & IOP_FLAGS_DEPRECATED))
+    {
+      // Adding the optional show accelerator to the table (blank)
+      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
+               (module->op));
+      gtk_accel_map_add_entry(accelpath, 0, 0);
+      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
+                                     NULL);
+    }
   }
   g_dir_close(dir);
   darktable.iop = res;
