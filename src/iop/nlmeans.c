@@ -20,6 +20,7 @@
 #endif
 #include "develop/imageop.h"
 #include "dtgtk/slider.h"
+#include "control/control.h"
 #include "gui/gtk.h"
 #include "common/opencl.h"
 #include <gtk/gtk.h>
@@ -63,6 +64,11 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/nlmeans/luma");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/nlmeans/chroma");
+}
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);
@@ -462,6 +468,8 @@ void gui_init     (dt_iop_module_t *self)
   dtgtk_slider_set_unit (g->luma, "%");
   dtgtk_slider_set_label(g->chroma, _("chroma"));
   dtgtk_slider_set_unit (g->chroma, "%");
+  dtgtk_slider_set_accel(g->luma,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/denoising (extra slow)/luma");
+  dtgtk_slider_set_accel(g->chroma,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/denoising (extra slow)/chroma");
   g_object_set (GTK_OBJECT(g->luma),   "tooltip-text", _("how much to smooth brightness"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->chroma), "tooltip-text", _("how much to smooth colors"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->luma),   "value-changed", G_CALLBACK (luma_callback),   self);

@@ -140,6 +140,44 @@ darktable will now close down.\n\n%s"),message);
   }
 }
 
+static void strip_semicolons_from_keymap(const char* path)
+{
+  char pathtmp[1024];
+  FILE *fin = fopen(path, "r");
+  FILE *fout;
+  int i;
+  int c = '\0';
+
+  snprintf(pathtmp, 1024, "%s_tmp", path);
+  fout = fopen(pathtmp, "w");
+
+  // First ignoring the first three lines
+  for(i = 0; i < 3; i++)
+  {
+    c = fgetc(fin);
+    while(c != '\n')
+      c = fgetc(fin);
+  }
+
+  // Then ignore the first two characters of each line, copying the rest out
+  while(c != EOF)
+  {
+    fseek(fin, 2, SEEK_CUR);
+    do
+    {
+      c = fgetc(fin);
+      if(c != EOF)
+        fputc(c, fout);
+    }while(c != '\n' && c != EOF);
+  }
+
+  fclose(fin);
+  fclose(fout);
+  g_file_delete(g_file_new_for_path(path), NULL, NULL);
+  g_file_move(g_file_new_for_path(pathtmp), g_file_new_for_path(path), 0,
+              NULL, NULL, NULL, NULL);
+}
+
 int dt_init(int argc, char *argv[], const int init_gui)
 {
 #ifndef __SSE2__
@@ -373,8 +411,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
 
-  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
-  dt_view_manager_init(darktable.view_manager);
+  // The GUI must be initialized before the views, because the init()
+  // functions of the views depend on darktable.control->accels_* to register
+  // their keyboard accelerators
 
   if(init_gui)
   {
@@ -382,8 +421,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
   }
 
+  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
+  dt_view_manager_init(darktable.view_manager);
 
-  
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
@@ -398,6 +438,23 @@ int dt_init(int argc, char *argv[], const int init_gui)
     darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
     dt_imageio_init(darktable.imageio);
   }
+
+  // Loading the keybindings
+  char keyfile[1024];
+
+  // First dump the default keymapping
+  snprintf(keyfile, 1024, "%s/keyboardrc_default", datadir);
+  gtk_accel_map_save(keyfile);
+
+  // Removing extraneous semi-colons from the default keymap
+  strip_semicolons_from_keymap(keyfile);
+
+  // Then load any modified keys if available
+  snprintf(keyfile, 1024, "%s/keyboardrc", datadir);
+  if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
+    gtk_accel_map_load(keyfile);
+  else
+    gtk_accel_map_save(keyfile); // Save the default keymap if none is present
 
   int id = 0;
   if(init_gui && image_to_load)

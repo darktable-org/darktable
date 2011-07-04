@@ -22,6 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <gdk/gdkkeysyms.h>
 #include "iop/colorout.h"
 #include "develop/develop.h"
 #include "control/control.h"
@@ -32,6 +33,8 @@
 #include "dtgtk/resetlabel.h"
 
 DT_MODULE(2)
+
+static gchar *_get_profile_from_pos(GList *profiles, int pos);
 
 const char
 *name()
@@ -45,6 +48,35 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+static void key_softproof_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+{
+  dt_iop_module_t* self = (dt_iop_module_t*)data;
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+
+  /* toggle softproofing on/off */
+  g->softproofing = !g->softproofing;
+  if(g->softproofing)
+  {
+    int pos = gtk_combo_box_get_active(g->cbox5);
+    gchar *filename = _get_profile_from_pos(g->profiles, pos);
+    if (filename)
+    {
+      if (g->softproofprofile)
+        g_free(g->softproofprofile);
+      g->softproofprofile = g_strdup(filename);
+    }
+  }
+
+
+  /// FIXME: this is certanly the wrong way to do this...
+  p->seq++;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_draw_all();
+}
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
@@ -574,37 +606,6 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
   }
 }
 
-int  key_pressed(struct dt_iop_module_t *self, uint16_t which)
-{
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
-  /* toggle softproofing on/off */
-  if (which == KEYCODE_Space)
-  {
-    g->softproofing = !g->softproofing;
-    if(g->softproofing)
-    {
-      int pos = gtk_combo_box_get_active(g->cbox5);
-      gchar *filename = _get_profile_from_pos(g->profiles, pos);
-      if (filename)
-      {
-        if (g->softproofprofile)
-          g_free(g->softproofprofile);
-        g->softproofprofile = g_strdup(filename);
-      }
-    }
-
-
-    /// FIXME: this is certanly the wrong way to do this...
-    p->seq++;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    dt_control_queue_draw_all();
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -775,6 +776,15 @@ void gui_init(struct dt_iop_module_t *self)
                     (gpointer)self);
 
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+  // Connecting the accelerator
+  g->softproof_callback = g_cclosure_new(G_CALLBACK(key_softproof_callback),
+                                         (gpointer)self, NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/plugins/colorout/toggle softproofing",
+      g->softproof_callback);
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -785,8 +795,22 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->profiles->data);
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
   }
+  dt_accel_group_disconnect(darktable.control->accels_darkroom,
+                             ((dt_iop_colorout_gui_data_t*)(self->gui_data))->
+                             softproof_callback);
   free(self->gui_data);
   self->gui_data = NULL;
+}
+
+void init_key_accels()
+{
+  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/colorout/toggle softproofing",
+                          GDK_s, 0);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/plugins/colorout/toggle softproofing",
+      NULL);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

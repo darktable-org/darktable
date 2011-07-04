@@ -231,11 +231,11 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
+  if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
   if(!g_module_symbol(module->module, "mouse_leave",            (gpointer)&(module->mouse_leave)))            module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved",            (gpointer)&(module->mouse_moved)))            module->mouse_moved = NULL;
   if(!g_module_symbol(module->module, "button_released",        (gpointer)&(module->button_released)))        module->button_released = NULL;
   if(!g_module_symbol(module->module, "button_pressed",         (gpointer)&(module->button_pressed)))         module->button_pressed = NULL;
-  if(!g_module_symbol(module->module, "key_pressed",            (gpointer)&(module->key_pressed)))            module->key_pressed = NULL;
   if(!g_module_symbol(module->module, "configure",              (gpointer)&(module->configure)))              module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
 
@@ -305,7 +305,6 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->mouse_moved     = so->mouse_moved;
   module->button_released = so->button_released;
   module->button_pressed  = so->button_pressed;
-  module->key_pressed     = so->key_pressed;
   module->configure       = so->configure;
   module->scrolled        = so->scrolled;
 
@@ -439,7 +438,7 @@ void dt_iop_load_modules_so()
   GList *res = NULL;
   dt_iop_module_so_t *module;
   darktable.iop = NULL;
-  char plugindir[1024], op[20];
+  char plugindir[1024], op[20], accelpath[256];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
@@ -463,6 +462,19 @@ void dt_iop_load_modules_so()
     g_free(libname);
     res = g_list_append(res, module);
     init_presets(module);
+    // Calling the accelerator initialization callback, if present
+    if(module->init_key_accels)
+      (module->init_key_accels)();
+
+    if(!(module->flags() & IOP_FLAGS_DEPRECATED))
+    {
+      // Adding the optional show accelerator to the table (blank)
+      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
+               (module->op));
+      gtk_accel_map_add_entry(accelpath, 0, 0);
+      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
+                                     NULL);
+    }
   }
   g_dir_close(dir);
   darktable.iop = res;
@@ -511,6 +523,11 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   free(module->factory_params); module->factory_params = NULL ;  
   module->cleanup(module);
+
+  // Disconnecting the show accelerator
+  dt_accel_group_disconnect(darktable.control->accels_darkroom,
+                             module->show_closure);
+
   free(module->default_params); module->default_params = NULL ; 
   if (module->blend_params != NULL) 
     {

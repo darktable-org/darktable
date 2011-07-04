@@ -75,7 +75,6 @@ typedef struct dt_lib_module_t
   int  (*mouse_moved)     (struct dt_lib_module_t *self, double x, double y, int which);
   int  (*button_released) (struct dt_lib_module_t *self, double x, double y, int which, uint32_t state);
   int  (*button_pressed)  (struct dt_lib_module_t *self, double x, double y, int which, int type, uint32_t state);
-  int  (*key_pressed)     (struct dt_lib_module_t *self, uint16_t which);
   int  (*scrolled)        (struct dt_lib_module_t *self, double x, double y, int up);
   void (*configure)       (struct dt_lib_module_t *self, int width, int height);
   int  (*position)        ();
@@ -83,6 +82,8 @@ typedef struct dt_lib_module_t
   void* (*get_params)     (struct dt_lib_module_t *self, int *size);
   int   (*set_params)     (struct dt_lib_module_t *self, const void *params, int size);
   void  (*init_presets)   (struct dt_lib_module_t *self);
+  /** Optional callback for keyboard accelerators */
+  void (*init_key_accels)();
 }
 dt_lib_module_t;
 

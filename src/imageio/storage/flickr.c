@@ -534,7 +534,7 @@ gui_init (dt_imageio_module_storage_t *self)
   */
   GHashTable* table = dt_pwstorage_get("flickr");
   gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
-  gchar* _password = g_strdup( g_hash_table_lookup(table, "token"));
+  //gchar* _password = g_strdup( g_hash_table_lookup(table, "token"));
   g_hash_table_destroy(table);
   gtk_entry_set_text( ui->entry1,  _username == NULL?"":_username );
 //  gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
@@ -608,12 +608,17 @@ gui_init (dt_imageio_module_storage_t *self)
 //  g_signal_connect(G_OBJECT(ui->entry2), "changed", G_CALLBACK(flickr_entry_changed), (gpointer)ui);
   g_signal_connect(G_OBJECT(ui->comboBox1), "changed", G_CALLBACK(flickr_album_changed), (gpointer)ui);
 
+  /**
+ dont' populate the combo on startup, save 3 second
+
   // If username and password is stored, let's populate the combo
   if( _username && _password )
   {
     ui->user_token = _password;
     refresh_albums(ui);
   }
+  */
+
   if( _username )
     g_free (_username);
   gtk_combo_box_set_active( ui->comboBox1, 0);

@@ -78,9 +78,11 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
 }
 
 static void
-key_accel_callback(void *d)
+key_accel_callback(GtkAccelGroup *accel_group,
+                   GObject *acceleratable, guint keyval,
+                   GdkModifierType modifier, gpointer data)
 {
-  export_button_clicked(NULL, d);
+  export_button_clicked(NULL, (void*)data);
 }
 
 static void
@@ -568,13 +570,11 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)0);
 
   self->gui_reset(self);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, key_accel_callback, NULL);
 }
 
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_gui_key_accel_unregister(key_accel_callback);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
   if(old) gtk_container_remove(d->format_box, old);
@@ -747,6 +747,17 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   if(ssize) res += smod->set_params(smod, sdata, ssize);
   if(fsize) res += fmod->set_params(fmod, fdata, fsize);
   return res;
+}
+
+void init_key_accels()
+{
+  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/export/export selected images",
+                          GDK_e, GDK_CONTROL_MASK);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/export/export selected images",
+      g_cclosure_new(G_CALLBACK(key_accel_callback), NULL, NULL));
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
