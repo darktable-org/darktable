@@ -1199,6 +1199,11 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   dt_develop_t *dev = darktable.develop;
+  const int32_t width_i  = self->width;
+  const int32_t height_i = self->height;
+  if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
+  if(height_i > DT_IMAGE_WINDOW_SIZE) y += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+
   int handled = 0;
   if(dev->gui_module && dev->gui_module->button_released) handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
@@ -1276,6 +1281,11 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t width_i  = self->width;
+  const int32_t height_i = self->height;
+  if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
+  if(height_i > DT_IMAGE_WINDOW_SIZE) y += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+
   int handled = 0;
   if(dev->gui_module && dev->gui_module->scrolled) handled = dev->gui_module->scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
