@@ -34,6 +34,7 @@ FILE(GLOB SOURCE_FILES
   "common/opencl.c"
   "common/dynload.c"
   "common/dlopencl.c"
+  "common/ratings.c"
   "control/control.c"  
   "control/jobs/control_jobs.c"  
   "control/jobs/develop_jobs.c"  

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -268,6 +268,16 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   return count;
 }
 
+uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
+{
+  sqlite3_stmt *stmt = NULL;
+  uint32_t count=0;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select distinct count(imgid) from selected_images", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
 
 GList *dt_collection_get_selected (const dt_collection_t *collection)
 {

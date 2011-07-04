@@ -257,9 +257,12 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
 
 static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data; 
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   /* set current group */
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[group]), TRUE);
+  if(group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[group]))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[group]), TRUE);
+  else
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[DT_MODULEGROUP_BASIC]), TRUE);
 }
 
 static uint32_t _lib_modulegroups_get (dt_lib_module_t *self)
