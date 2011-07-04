@@ -43,6 +43,7 @@ typedef struct dt_cache_bucket_t
   int16_t  write;  // number of writers (0 or 1)
   uint32_t lru;    // for garbage collection: lru list
   uint32_t mru;
+  int32_t  cost;   // cost associated with this entry (such as byte size)
   uint32_t hash;
   uint32_t key;
   void*    data;
@@ -78,7 +79,7 @@ nearest_power_of_two(const uint32_t value)
 {
   uint32_t rc = 1;
   while(rc < value) rc <<= 1;
-  return rc;
+  return rc
 }
 
 static uint32_t
@@ -134,11 +135,13 @@ add_key_to_begining_of_list(dt_cache_bucket_t *const keys_bucket,
                             dt_cache_bucket_t *const free_bucket,
                             const uint32_t     hash,
                             const uint32_t     key,
+                            const int32_t      cost,
                             void              *data)
 {
   free_bucket->data = data;
   free_bucket->key  = key;
   free_bucket->hash = hash;
+  free_bucke->cost  = cost;
 
   if(keys_bucket->first_delta == 0)
   {
@@ -163,12 +166,14 @@ add_key_to_end_of_list(dt_cache_bucket_t *const keys_bucket,
                        dt_cache_bucket_t *const free_bucket,
                        const uint32_t     hash,
                        const uint32_t     key,
+                       const int32_t      cost,
                        void              *data,
                        dt_cache_bucket_t *const last_bucket)
 {
   free_bucket->data = data;
   free_bucket->key  = key;
   free_bucket->hash	= hash;
+  free_bucke->cost  = cost;
   free_bucket->next_delta = DT_CACHE_NULL_DELTA;
 
   if(last_bucket == NULL)
@@ -234,7 +239,7 @@ optimize_cacheline_use(dt_cache_t         *cache,
 
 
 void
-dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, int32_t cache_line_size, int32_t optimize_cacheline)
+dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, int32_t cache_line_size, int32_t cost_quota)
 {
   const uint32_t adj_num_threads = nearest_power_of_two(num_threads);
   cache->cache_mask = cache_line_size / sizeof(dt_cache_bucket_t) - 1;
@@ -246,10 +251,14 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
   cache->bucket_mask = adj_init_cap - 1;
   cache->segment_shift = __builtin_clz(cache->bucket_mask) - __builtin_clz(cache->segment_mask);
 
-  cache->segments = (dt_cache_segment_t *)malloc((cache->segment_mask + 1) * sizeof(dt_cache_segment_t));
-  cache->table    = (dt_cache_bucket_t  *)malloc(num_buckets * sizeof(dt_cache_bucket_t));
-  // cache->segments = (dt_cache_segment_t *)dt_alloc_align(64, (cache->segment_mask + 1) * sizeof(dt_cache_segment_t));
-  // cache->table    = (dt_cache_bucket_t  *)dt_alloc_align(64, num_buckets * sizeof(dt_cache_bucket_t));
+  cache->segments = (dt_cache_segment_t *)dt_alloc_align(64, (cache->segment_mask + 1) * sizeof(dt_cache_segment_t));
+  cache->table    = (dt_cache_bucket_t  *)dt_alloc_align(64, num_buckets * sizeof(dt_cache_bucket_t));
+
+  cache->optimize_cacheline = 1;
+
+  cache->cost = 0;
+  cache->cost_quota = cost_quota;
+  cache->lru_lock = 0;
 
   for(int k=0;k<=cache->segment_mask;k++)
   {
@@ -345,6 +354,47 @@ dt_cache_percent_keys_in_cache_line(const dt_cache_t *const cache)
 }
 #endif
 
+void
+lru_rip_out(dt_cache_t        *cache,
+            dt_cache_bucket_t *bucket)
+{
+  // must already hold the lock!
+}
+
+void
+lru_move_to_front(dt_cache_t        *cache,
+                  dt_cache_bucket_t *bucket)
+{
+  // TODO: use the segment locks for better scalability!
+  // TODO: would need to roll back changes in proximity after all (up to) three locks have been obtained.
+  dt_cache_lock(cache->lru_lock);
+  const int idx = bucket - cache->table;
+
+  if(cache->mru != idx)
+  {
+    // rip out bucket from lru list (TODO: make function)
+    if(bucket->lru == 0) cache->lru     = bucket->mru;
+    else cache->table[bucket->lru]->mru = bucket->mru;
+    if(bucket->mru == 0) cache->mru     = bucket->lru;
+    else cache->table[bucket->mru]->lru = bucket->lru;
+
+    // re-attach to most recently used end:
+    bucket->mru = 0;
+    bucket->lru = cache->mru;
+    cache->table[cache->mru].mru = idx;
+    cache->mru = idx;
+  }
+
+  dt_cache_unlock(cache->lru_lock);
+}
+
+void
+add_cost(dt_cache_t    *cache,
+         const int32_t  cost)
+{
+  __sync_fetch_and_add(&cache->cost, cost);
+}
+
 
 // if found, the data void* is returned. if not, it is set to be
 // the given *data and a new hash table entry is created, which can be
@@ -353,7 +403,7 @@ dt_cache_percent_keys_in_cache_line(const dt_cache_t *const cache)
 // TODO: do you get it with which locks? need to drop them?
 // TODO: r/w lock and drop later!
 void*
-dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data)
+dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data, const int32_t cost)
 {
   // just to support different keys:
   const uint32_t hash = key;
@@ -387,7 +437,7 @@ dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data)
     {
       if(free_bucket->hash == DT_CACHE_EMPTY_HASH)
       {
-        add_key_to_begining_of_list(start_bucket, free_bucket, hash, key, data);
+        add_key_to_begining_of_list(start_bucket, free_bucket, hash, key, cost, data);
         dt_cache_unlock(&segment->lock);
         return DT_CACHE_EMPTY_DATA;
       }
@@ -408,7 +458,7 @@ dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data)
   {
     if(free_max_bucket->hash == DT_CACHE_EMPTY_HASH)
     {
-      add_key_to_end_of_list(start_bucket, free_max_bucket, hash, key, data, last_bucket);
+      add_key_to_end_of_list(start_bucket, free_max_bucket, hash, key, cost, data, last_bucket);
       dt_cache_unlock(&segment->lock);
       return DT_CACHE_EMPTY_DATA;
     }
@@ -424,7 +474,7 @@ dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data)
   {
     if(free_min_bucket->hash == DT_CACHE_EMPTY_HASH)
     {
-      add_key_to_end_of_list(start_bucket, free_min_bucket, hash, key, data, last_bucket);
+      add_key_to_end_of_list(start_bucket, free_min_bucket, hash, key, cost, data, last_bucket);
       dt_cache_unlock(&segment->lock);
       return DT_CACHE_EMPTY_DATA;
     }

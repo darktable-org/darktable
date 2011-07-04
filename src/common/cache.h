@@ -34,6 +34,11 @@ typedef struct dt_cache_t
   uint32_t lru, mru;
   int cache_mask;
   int is_cacheline_alignment;
+  int cost;
+  int cost_quota;
+  // one fat lru lock, no use locking segments and possibly rolling back changes.
+  uint32_t lru_lock;
+  uint32_t cost_lock;
 }
 dt_cache_t;	
 
@@ -41,8 +46,14 @@ dt_cache_t;
 void dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, int32_t cache_line_size, int32_t optimize_cacheline);
 void dt_cache_cleanup(dt_cache_t *cache);
 
-void* dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data);
+
+// should only ever need to call these (porcelain)
+
+
+// plumbing:
+void*   dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data, const int32_t cost);
 int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key);
-void* dt_cache_remove(dt_cache_t *cache, const uint32_t key);
+void*   dt_cache_remove(dt_cache_t *cache, const uint32_t key);
+void    dt_cache_gc(dt_cache_t *cache);
 
 #endif

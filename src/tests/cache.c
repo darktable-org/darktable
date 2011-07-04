@@ -17,6 +17,9 @@
 */
 
 
+// define dt alloc, so we don't need to include the rest of dt:
+#define dt_alloc_align(A, B) malloc(B)
+
 // unit test for the concurrent hopscotch hashmap and the LRU cache built on top of it.
 #include "common/cache.h"
 
@@ -27,7 +30,7 @@
 int main(int argc, char *arg[])
 {
   dt_cache_t cache;
-  dt_cache_init(&cache, 110000, 16, 64, 1);
+  dt_cache_init(&cache, 110000, 16, 64, 20);
 
 #ifdef _OPENMP
 #  pragma omp parallel for default(none) schedule(guided) shared(cache, stderr)
@@ -37,8 +40,8 @@ int main(int argc, char *arg[])
     void *data = (void *)(long int)k;
     const int size = dt_cache_size(&cache);
     const int con1 = dt_cache_contains(&cache, k);
-    const int val1 = (int)(long int)dt_cache_put(&cache, k, data);
-    const int val2 = (int)(long int)dt_cache_put(&cache, k, data);
+    const int val1 = (int)(long int)dt_cache_put(&cache, k, data, 1);
+    const int val2 = (int)(long int)dt_cache_put(&cache, k, data, 1);
     const int con2 = dt_cache_contains(&cache, k);
     fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
     assert (con1 == 0);
