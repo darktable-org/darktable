@@ -191,37 +191,21 @@ static void tree_insert_accel(gpointer data, const gchar *accel_path,
                               guint accel_key, GdkModifierType accel_mods,
                               gboolean changed)
 {
+  char *lap = (char *)accel_path;
+  
+  /* if prefixed lets forward pointer */
+  if (!strncmp(lap,"<Darktable>",strlen("<Darktable>")))
+    lap += strlen("<Darktable>") + 1;
 
-  char first[256];
-  const char *src = accel_path;
-  char *dest = first;
-
-  // Stripping off the beginning <Darktable>
-  while(*src != '/')
-  {
-    *dest = *src;
-    dest++;
-    src++;
-  }
-  *dest = '\0';
-
-  // Ignore the <Darktable> at the beginning of each path
-  if(!strcmp(first, "<Darktable>"))
-    tree_insert_accel(data, src + 1, accel_key, accel_mods, changed);
-  else
-    tree_insert_rec((GtkTreeStore*)data, NULL, accel_path, accel_key,
+  /* lets recurse path */
+  tree_insert_rec((GtkTreeStore*)data, NULL, lap, accel_key,
                     accel_mods, changed);
-
 }
 
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
                             const gchar *accel_path, guint accel_key,
                             GdkModifierType accel_mods, gboolean changed)
 {
-  char first[256];
-  const char *src = accel_path;
-  char *dest = first;
-  gchar *name;
   const gchar *translation = NULL;
   GList *iops = darktable.iop;
 
@@ -230,77 +214,84 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
   gchar *val_str;
   GtkTreeIter iter;
 
+  /* if we are on end of path lets bail out of recursive insert */
+  if (*accel_path==0) return;
 
-  // Finding the top-level portion of the path
-  while(*src != '\0' && *src != '/')
+  /* check if we are on a leaf or a branch  */
+  if (!g_strrstr(accel_path,"/")) 
   {
-    *dest = *src;
-    dest++;
-    src++;
-  }
-  *dest = '\0';
-
-  if(*src == '\0')
-  {
-    // Handling a leaf node
-    name = gtk_accelerator_name(accel_key, accel_mods);
+    /* we are on a leaf lets add */
+    gchar *name = gtk_accelerator_name(accel_key, accel_mods);
     gtk_tree_store_append(model, &iter, parent);
     gtk_tree_store_set(model, &iter,
-                       ACCEL_COLUMN, first,
+                       ACCEL_COLUMN, accel_path,
                        BINDING_COLUMN, name,
-                       TRANS_COLUMN, _(first),
+                       TRANS_COLUMN, _(accel_path),
                        -1);
-    g_free(name);
-  }
+    g_free(name);    
+  } 
   else
   {
-    // Handling a branch node
+    /* we are on a branch let's get the node name */
+    gchar *eon = g_strstr_len(accel_path,strlen(accel_path),"/");
+    gchar *node = g_strndup(accel_path,eon-accel_path);
 
-    // First search for an already existing branch
-    for(i = 0;
-        i < gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent)
-        && !found;
-        i++)
+    /* search the tree if we alread have an sibiling with node name */
+    int sibilings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent);
+    for (i = 0; i < sibilings; i++)
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, parent, i);
       gtk_tree_model_get(GTK_TREE_MODEL(model), &iter,
-                         ACCEL_COLUMN, &val_str,
-                         -1);
-
-      if(!strcmp(val_str, first))
-        found = TRUE;
-
+			 ACCEL_COLUMN, &val_str,
+			 -1);
+      
+      /* do we match current sibiling */
+      if (!strcmp(val_str, node)) found = TRUE;
+      
       g_free(val_str);
+      
+      /* if we found a matching node let's break out */
+      if(found) break;
     }
 
+    /* if not found let's add a branch */
     if(!found)
     {
-      // We need to figure out a good translation for this text
-      // If it's the op-name of a module, we'll use its name() text
-      // Otherwise, just do a regular translation
+      /* check if current branch is a iop then get translation */
+      gchar *opname;
       while(iops)
       {
-        if(!strcmp(((dt_iop_module_so_t*)iops->data)->op, first))
-        {
-          translation = ((dt_iop_module_so_t*)iops->data)->name();
-          break;
-        }
-        iops = g_list_next(iops);
+	opname = ((dt_iop_module_so_t*)iops->data)->op;
+	
+	/* if iop module found, lets get translated name */
+	if (!strcmp(opname, node))
+	{
+	  translation = ((dt_iop_module_so_t*)iops->data)->name();
+	  break;
+	}
+
+	iops = g_list_next(iops);
       }
-
+      
+      /* not an iop, do a translation..
+	 TODO: Does this actually work ????
+       */
       if(!translation)
-        translation = _(first);
-
+	translation = _(node);
+      
       gtk_tree_store_append(model, &iter, parent);
       gtk_tree_store_set(model, &iter,
-                         ACCEL_COLUMN, first,
-                         BINDING_COLUMN, "",
-                         TRANS_COLUMN, translation,
-                         -1);
+			 ACCEL_COLUMN, node,
+			 BINDING_COLUMN, "",
+			 TRANS_COLUMN, translation,
+			 -1);
     }
 
-    tree_insert_rec(model, &iter, src + 1, accel_key, accel_mods, changed);
-
+    /* recurse further down the path */
+    tree_insert_rec(model, &iter, accel_path + strlen(node) + 1, accel_key, accel_mods, changed);
+    
+    /* free up data */
+    g_free(node);
   }
 }
 
