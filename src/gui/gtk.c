@@ -1,3 +1,4 @@
+
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
@@ -1372,7 +1373,7 @@ gboolean dt_ui_panel_visible(dt_ui_t *ui,const dt_ui_panel_t p)
 static GtkWidget * _ui_init_panel_container_top(GtkWidget *container)
 {
   GtkWidget *w = gtk_vbox_new(FALSE, DT_UI_PANEL_MODULE_SPACING);
-  gtk_box_pack_start(GTK_BOX(container),w,FALSE,FALSE,DT_UI_PANEL_MODULE_SPACING);
+  gtk_box_pack_start(GTK_BOX(container),w,FALSE,FALSE,4);
   return w;
 }
 
