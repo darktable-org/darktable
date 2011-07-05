@@ -22,7 +22,7 @@
 #include <inttypes.h>
 #include <gmodule.h>
 #include <cairo.h>
-
+#include <sqlite3.h>
 /**
  * main dt view module (as lighttable or darkroom)
  */
@@ -97,6 +97,24 @@ typedef struct dt_view_manager_t
   int32_t film_strip_dragging, film_strip_scroll_to, film_strip_active_image;
   void (*film_strip_activated)(const int imgid, void *data);
   void *film_strip_data;
+
+  /* reusable db statements 
+   * TODO: reconsider creating a common/database helper API
+   *       instead of having this spread around in sources..
+   */
+  struct {
+    /* select num from history where imgid = ?1*/
+    sqlite3_stmt *have_history;
+    /* select * from selected_images where imgid = ?1 */
+    sqlite3_stmt *is_selected;
+    /* delete from selected_images where imgid = ?1 */
+    sqlite3_stmt *delete_from_selected;
+    /* insert into selected_images values (?1) */
+    sqlite3_stmt *make_selected;
+    /* select color from color_labels where imgid=?1 */
+    sqlite3_stmt *get_color;
+
+  } statements;
 }
 dt_view_manager_t;
 
