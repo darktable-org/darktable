@@ -370,6 +370,16 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
+    case 11: // lens
+      snprintf(query, 1024, "(lens like '%%%s%%')", escaped_text);
+      break;
+    case 12: // iso
+      snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
+      break;
+    case 13: // aperature
+      snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
+      break;
+
 
     default: // case 3: // day
       snprintf(query, 1024, "(datetime_taken like '%%%s%%')", escaped_text);

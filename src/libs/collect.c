@@ -288,7 +288,15 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
       snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
-
+    case 11: // lens
+      snprintf(query, 1024, "select distinct lens, 1 from images where lens like '%%%s%%'", escaped_text);
+      break;
+    case 12: // iso
+      snprintf(query, 1024, "select distinct cast(iso as integer), 1 from images where iso like '%%%s%%'", escaped_text);
+      break;
+    case 13: // aperature
+      snprintf(query, 1024, "select distinct round(aperture,1), 1 from images where aperture like '%%%s%%'", escaped_text);
+      break;
     default: // case 3: // day
       snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", escaped_text);
       break;
