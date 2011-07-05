@@ -521,14 +521,10 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
-  char accelpath[256];
-
   free(module->factory_params); module->factory_params = NULL ;  
   module->cleanup(module);
 
   // Disconnecting the show accelerator
-  snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
-           (module->name)());
   dt_accel_group_disconnect(darktable.control->accels_darkroom,
                              module->show_closure);
 
