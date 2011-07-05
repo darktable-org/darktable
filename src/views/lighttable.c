@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-
+    copyright (c) 2011 Henrik Andersson.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -89,6 +89,16 @@ typedef struct dt_library_t
   int full_preview;
   int32_t full_preview_id;
 
+  /* prepared and reusable statements */
+  struct {
+    /* main query statment, should be update on listener signal of collection */
+    sqlite3_stmt *main_query;
+    /* select imgid from selected_images */
+    sqlite3_stmt *select_imgid_in_selection;
+    /* delete from selected_images where imgid != ?1 */
+    sqlite3_stmt *delete_except_arg;
+  } statements;
+
   // Closures list for accelerators
   GSList *closures;
 }
@@ -99,10 +109,30 @@ const char *name(dt_view_t *self)
   return _("lighttable");
 }
 
+static void _view_lighttable_collection_listener_callback(void *user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  /* check if we can get a query from collection */
+  const gchar *query=dt_collection_get_query (darktable.collection);
+  if(!query)
+    return;
+
+  /* if we have a statment lets clean it */
+  if(lib->statements.main_query)
+    sqlite3_finalize(lib->statements.main_query);
+
+  /* prepare a new main query statement for collection */
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &lib->statements.main_query, NULL);
+}
+
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_library_t));
   dt_library_t *lib = (dt_library_t *)self->data;
+  memset(self->data,0,sizeof(dt_library_t));
+
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_idx = -1;
   lib->selection_origin_idx = -1;
@@ -116,8 +146,15 @@ void init(dt_view_t *self)
   lib->full_preview_id=-1;
   lib->closures = NULL;
 
-  // Initializing accelerators
+  /* setup collection listener and initialize main_query statement */
+  dt_collection_listener_register(_view_lighttable_collection_listener_callback, self);
+  _view_lighttable_collection_listener_callback(self);
 
+  /* initialize reusable sql statements */
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &lib->statements.delete_except_arg, NULL);
+  
+
+  // Initializing accelerators
   gtk_accel_map_add_entry("<Darktable>/lighttable/rating/desert", GDK_0, 0);
   gtk_accel_map_add_entry("<Darktable>/lighttable/rating/1", GDK_1, 0);
   gtk_accel_map_add_entry("<Darktable>/lighttable/rating/2", GDK_2, 0);
@@ -332,7 +369,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   const int max_rows = 1 + (int)((height)/ht + .5);
   const int max_cols = iir;
-  sqlite3_stmt *stmt = NULL;
+
   int id, curidx;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
@@ -375,9 +412,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     cairo_stroke(cr);
   }
 
-  /* get the collection query */
-  const gchar *query=dt_collection_get_query (darktable.collection);
-  if(!query)
+  /* do we have a main query collection statement */
+  if(!lib->statements.main_query)
     return;
 
   if(offset < 0) lib->offset = offset = 0;
@@ -409,20 +445,23 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     }
   }
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_rows*iir);
-  sqlite3_stmt *stmt_del_sel;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt_del_sel, NULL);
+  /* let's reset and reuse the main_query statement */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+  DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
+ 
+  /* setup offset and row for the main query */
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset);
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, max_rows*iir);
+ 
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
     {
       curidx = grid_to_index(row, col, iir, offset);
 
-      if(sqlite3_step(stmt) == SQLITE_ROW)
+      if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
-        id = sqlite3_column_int(stmt, 0);
+        id = sqlite3_column_int(lib->statements.main_query, 0);
         dt_image_t *image = dt_image_cache_get(id, 'r');
         if (iir == 1 && row)
         {
@@ -440,11 +479,15 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         {
           if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
           {
-            // clear selection if no modifier is being held
-            DT_DEBUG_SQLITE3_BIND_INT(stmt_del_sel, 1, id);
-            sqlite3_step(stmt_del_sel);
-            sqlite3_reset(stmt_del_sel);
-            sqlite3_clear_bindings(stmt_del_sel);
+            /* clear selection if no modifier is being held */
+
+	    /* clear and reset statment */
+	    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
+	    DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
+	    
+	    /* reuse statement */
+	    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
+            sqlite3_step(lib->statements.delete_except_arg);
           }
           // Step 1: If this is the clicked cell, toggle it
           if(curidx == selidx)
@@ -482,22 +525,27 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   // End of loop; do post-loop update
   if (clicked1) lib->last_selected_idx = selidx;
 
-failure:
-  sqlite3_finalize(stmt_del_sel);
 #if 1
-  sqlite3_reset(stmt);
-  // not actually needed...
-  //sqlite3_clear_bindings(stmt);
+  /*
+   * FIXME: Is this really a good place to do this ? 
+   *        seems better to do this in paralell and
+   *        not on every expose event of lighttable...
+   */
+
+  /* clear and reset main query */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+  DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
+
+  /* setup offest and row for prefetch */
   const int prefetchrows = .5*max_rows+1;
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + max_rows*iir);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, prefetchrows*iir);
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset + max_rows*iir);
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, prefetchrows*iir);
 
   // prefetch jobs in inverse order: supersede previous jobs: most important last
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    // prefetch
-    imgids[imgids_num++] = sqlite3_column_int(stmt, 0);
-  }
+  while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+    imgids[imgids_num++] = sqlite3_column_int(lib->statements.main_query, 0);
+ 
+  /* lets prefetch images thumbs */
   while(imgids_num > 0)
   {
     imgids_num --;
@@ -512,7 +560,8 @@ failure:
     }
   }
 #endif
-  sqlite3_finalize(stmt);
+
+failure:
 
   oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
@@ -560,8 +609,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     zoom_y = lib->select_offset_y - /* (zoom == 1 ? 2. : 1.)*/pointery;
   }
 
-  const gchar *query = dt_collection_get_query (darktable.collection);
-  if(!query || query[0] == '\0') return;
+  if(!lib->statements.main_query) 
+    return;
 
   if     (track == 0);
   else if(track >  1)  zoom_y += ht;
@@ -622,7 +671,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   if(!pan && zoom != 1) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
   // set scrollbar positions, clamp zoom positions
-  sqlite3_stmt *stmt = NULL;
   int count = dt_collection_get_count (darktable.collection);
   if(count == 0)
   {
@@ -680,11 +728,9 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
 
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
-  sqlite3_stmt *stmt_del_sel;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt_del_sel, NULL);
+
   for(int row = 0; row < max_rows; row++)
   {
     if(offset < 0)
@@ -693,13 +739,18 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
       offset += DT_LIBRARY_MAX_ZOOM;
       continue;
     }
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
+
+    /* clear and reset main query */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+    DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
+    
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset);
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, max_cols);
     for(int col = 0; col < max_cols; col++)
     {
-      if(sqlite3_step(stmt) == SQLITE_ROW)
+      if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
-        id = sqlite3_column_int(stmt, 0);
+        id = sqlite3_column_int(lib->statements.main_query, 0);
         dt_image_t *image = dt_image_cache_get(id, 'r');
 
         // set mouse over id
@@ -713,11 +764,15 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         {
           if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
           {
-            // clear selected if no modifier
-            DT_DEBUG_SQLITE3_BIND_INT(stmt_del_sel, 1, id);
-            sqlite3_step(stmt_del_sel);
-            sqlite3_reset(stmt_del_sel);
-            sqlite3_clear_bindings(stmt_del_sel);
+	    /* clear selection except id */
+
+	    /* clear and resest statement */
+	    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
+	    DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg); 
+
+            /* reuse statment */
+            DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
+            sqlite3_step(lib->statements.delete_except_arg);
           }
           // FIXME: whatever comes first assumtion is broken!
           // if((lib->modifiers & GDK_SHIFT_MASK) && (last_seli == (1<<30)) &&
@@ -749,12 +804,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     }
     cairo_translate(cr, -max_cols*wd, ht);
     offset += DT_LIBRARY_MAX_ZOOM;
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
   }
 failure:
-  sqlite3_finalize(stmt);
-  sqlite3_finalize(stmt_del_sel);
 
   oldpan = pan;
   lib->zoom_x = zoom_x;
