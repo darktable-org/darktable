@@ -56,5 +56,6 @@
 #define DT_DEBUG_SQLITE3_BIND_DOUBLE(a,b,c)    __DT_DEBUG_ASSERT__(sqlite3_bind_double(a,b,c))
 #define DT_DEBUG_SQLITE3_BIND_TEXT(a,b,c,d,e)  __DT_DEBUG_ASSERT__(sqlite3_bind_text(a,b,c,d,e))
 #define DT_DEBUG_SQLITE3_BIND_BLOB(a,b,c,d,e)  __DT_DEBUG_ASSERT__(sqlite3_bind_blob(a,b,c,d,e))
-
+#define DT_DEBUG_SQLITE3_CLEAR_BINDINGS(a)     __DT_DEBUG_ASSERT__(sqlite3_clear_bindings(a))
+#define DT_DEBUG_SQLITE3_RESET(a)              __DT_DEBUG_ASSERT__(sqlite3_reset(a))
 #endif

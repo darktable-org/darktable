@@ -12,6 +12,25 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline">news</div>
 
       <div class="listtext">
+    	<img src="images/bay.jpg" class="img" alt="dreggn" /><h1>released 0.9</h1>
+      <em>(2011-06-01)</em> we <a href="http://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.tar.gz/download">released version 0.9</a>, with many new features:
+      <ul>
+        <li>run-time switchable opencl to exploit all the power of your GPU whenever you decide to install the driver</li>
+        <li>many new plugins, including a spot removal tool, better denoising (on raw pixels and non-local means) and many more</li>
+        <li>blend operations, overlay your plugin only 20 percent if you want</li>
+        <li>spot removal tool</li>
+        <li>low light vision tool</li>
+        <li>non-local-means denoising (relatively fast for nlmeans, but still slow)</li>
+        <li>first part of the google summer of code project already merged</li>
+        <li>framing plugin (adds postcard borders to match given aspect ratio)</li>
+        <li>tonemapping a lot faster now (probably the fastest high-dimensional bilateral filter available today)</li>
+        <li>changed images come with the darktable|changed tag</li>
+      </ul>
+      more updates to the page/install instructions to come, but you should be good by just extracting the tarball and typing <code>./build.sh</code>.
+      enjoy! and thanks to all our many contributors!
+      </div>
+
+      <div class="listtext">
     	<img src="images/donau.jpg" class="img" alt="dreggn" /><h1>released 0.8</h1>
       <em>(2011-02-15)</em> we released version 0.8, which obsoletes 0.7.1 in a lot of ways:
       <ul>

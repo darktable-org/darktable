@@ -1001,17 +1001,9 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const float opacity = fmin(fmax(0,(d->opacity/100.0)),1.0);
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
 
-  /* opencl does not allow reading from and writing to the same image buffer -> we need an intermediate one :-( */
-  dev_m = dt_opencl_alloc_device(roi_in->width, roi_in->height, devid, 4*sizeof(float));
-  if (dev_m == NULL) goto error;
-  size_t origin[] = {0, 0, 0};
-  size_t region[] = {roi_in->width, roi_in->height, 1};
-  err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_out, dev_m, origin, origin, region, 0, NULL, NULL);
-  if(err != CL_SUCCESS) goto error;
-
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 1, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 3, sizeof(int), (void *)&(d->mode));
   dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 4, sizeof(float), (void *)&opacity);
