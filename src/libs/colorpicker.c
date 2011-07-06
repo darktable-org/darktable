@@ -37,9 +37,13 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *size_selector;
   GtkWidget *picker_button;
   GtkWidget *history_button[5];
+  GtkWidget *history_label_rgb;
+  GtkWidget *history_label_lab;
+  GtkWidget *history_button_hovered;
 
   float history_rgb[5][3];
   float history_lab[5][3];
+
 } dt_lib_colorpicker_t;
 
 const char *name()
@@ -160,6 +164,49 @@ static void _size_changed(GtkComboBox *widget, gpointer p)
                   gtk_combo_box_get_active(widget));
 }
 
+static gboolean _history_button_enter(GtkWidget *widget, GdkEvent *event,
+                                      gpointer self)
+{
+  unsigned int n;
+  char text[512];
+  dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
+
+  // First figuring out which button we're dealing with
+  for(n = 0; data->history_button[n] != widget && n < 4; n++);
+
+  data->history_button_hovered = data->history_button[n];
+
+  // Then set the RGB label
+  snprintf(text, 512, "rgb(%d,%d,%d)",
+           (int)(255 * data->history_rgb[n][0]),
+           (int)(255 * data->history_rgb[n][1]),
+           (int)(255 * data->history_rgb[n][2]));
+  gtk_label_set_text(GTK_LABEL(data->history_label_rgb), text);
+
+  // ...and the lab label
+  snprintf(text, 512, "lab(%.01f,%.01f,%.01f)",
+           data->history_lab[n][0],
+           data->history_lab[n][1],
+           data->history_lab[n][2]);
+  gtk_label_set_text(GTK_LABEL(data->history_label_lab), text);
+
+  return FALSE;
+}
+
+static gboolean _history_button_leave(GtkWidget *widget, GdkEvent *event,
+                                      gpointer self)
+{
+  dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
+
+  // Clearing the history display labels
+  gtk_label_set_text(GTK_LABEL(data->history_label_rgb), "");
+  gtk_label_set_text(GTK_LABEL(data->history_label_lab), "");
+
+  data->history_button_hovered = NULL;
+
+  return FALSE;
+}
+
 static void _history_button_clicked(GtkButton *button, gpointer self)
 {
 
@@ -205,6 +252,9 @@ static void _history_button_clicked(GtkButton *button, gpointer self)
   gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_NORMAL, &c);
   gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &c);
   gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_ACTIVE, &c);
+
+  if(data->history_button_hovered)
+    _history_button_enter(data->history_button_hovered, NULL, self);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -222,6 +272,7 @@ void gui_init(dt_lib_module_t *self)
                                              DARKTABLE_LABEL_TAB
                                              | DARKTABLE_LABEL_ALIGN_RIGHT);
   GtkWidget *history_buttons_row = gtk_hbox_new(FALSE, 10);
+  GtkWidget *history_labels_row = gtk_hbox_new(TRUE, 10);
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data =
@@ -331,12 +382,26 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_modify_bg(data->history_button[i], GTK_STATE_PRELIGHT, &c);
     gtk_widget_modify_bg(data->history_button[i], GTK_STATE_ACTIVE, &c);
 
-
+    gtk_widget_set_events(data->history_button[i],
+                          GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+    g_signal_connect(G_OBJECT(data->history_button[i]), "enter-notify-event",
+                     G_CALLBACK(_history_button_enter), (gpointer)self);
+    g_signal_connect(G_OBJECT(data->history_button[i]), "leave-notify-event",
+                     G_CALLBACK(_history_button_leave), (gpointer)self);
     g_signal_connect(G_OBJECT(data->history_button[i]), "clicked",
                      G_CALLBACK(_history_button_clicked), (gpointer)self);
   }
   gtk_box_pack_start(GTK_BOX(container), history_buttons_row,
                      TRUE, TRUE, 0);
+
+  data->history_label_rgb = gtk_label_new("");
+  data->history_label_lab = gtk_label_new("");
+  gtk_box_pack_start(GTK_BOX(history_labels_row), data->history_label_rgb,
+                     TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(history_labels_row), data->history_label_lab,
+                     TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(container), history_labels_row, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
