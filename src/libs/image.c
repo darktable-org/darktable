@@ -147,7 +147,7 @@ void init_key_accels()
       GDK_Delete, 0);
   gtk_accel_map_add_entry(
       "<Darktable>/lighttable/plugins/image/delete from disk",
-      GDK_Delete, GDK_SHIFT_MASK);
+      0, 0);
 
   dt_accel_group_connect_by_path(
       darktable.control->accels_lighttable,
