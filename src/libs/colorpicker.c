@@ -37,8 +37,7 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *size_selector;
   GtkWidget *picker_button;
   GtkWidget *history_button[5];
-  GtkWidget *history_label_rgb;
-  GtkWidget *history_label_lab;
+  GtkWidget *history_label;
   GtkWidget *history_button_hovered;
 
   float history_rgb[5][3];
@@ -160,8 +159,12 @@ static void _color_mode_changed(GtkComboBox *widget, gpointer p)
 
 static void _size_changed(GtkComboBox *widget, gpointer p)
 {
+  dt_lib_colorpicker_t *data = ((dt_lib_module_t*)p)->data;
+
   dt_conf_set_int("ui_last/colorpicker_size",
                   gtk_combo_box_get_active(widget));
+  gtk_widget_set_sensitive(data->statistic_selector,
+                           dt_conf_get_int("ui_last/colorpicker_size"));
 }
 
 static gboolean _history_button_enter(GtkWidget *widget, GdkEvent *event,
@@ -176,19 +179,25 @@ static gboolean _history_button_enter(GtkWidget *widget, GdkEvent *event,
 
   data->history_button_hovered = data->history_button[n];
 
-  // Then set the RGB label
-  snprintf(text, 512, "rgb(%d,%d,%d)",
-           (int)(255 * data->history_rgb[n][0]),
-           (int)(255 * data->history_rgb[n][1]),
-           (int)(255 * data->history_rgb[n][2]));
-  gtk_label_set_text(GTK_LABEL(data->history_label_rgb), text);
+  if(dt_conf_get_int("ui_last/colorpicker_model") == 0)
+  {
+    // Then set RGB
+    snprintf(text, 512, "(%d, %d, %d)",
+             (int)(255 * data->history_rgb[n][0]),
+             (int)(255 * data->history_rgb[n][1]),
+             (int)(255 * data->history_rgb[n][2]));
+  }
+  else
+  {
+    // ...or Lab
+    snprintf(text, 512, "(%.03f, %.03f, %.03f)",
+             data->history_lab[n][0],
+             data->history_lab[n][1],
+             data->history_lab[n][2]);
 
-  // ...and the lab label
-  snprintf(text, 512, "lab(%.01f,%.01f,%.01f)",
-           data->history_lab[n][0],
-           data->history_lab[n][1],
-           data->history_lab[n][2]);
-  gtk_label_set_text(GTK_LABEL(data->history_label_lab), text);
+  }
+
+  gtk_label_set_text(GTK_LABEL(data->history_label), text);
 
   return FALSE;
 }
@@ -199,8 +208,7 @@ static gboolean _history_button_leave(GtkWidget *widget, GdkEvent *event,
   dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
 
   // Clearing the history display labels
-  gtk_label_set_text(GTK_LABEL(data->history_label_rgb), "");
-  gtk_label_set_text(GTK_LABEL(data->history_label_lab), "");
+  gtk_label_set_text(GTK_LABEL(data->history_label), "");
 
   data->history_button_hovered = NULL;
 
@@ -268,11 +276,13 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *output_row = gtk_hbox_new(FALSE, 10);
   GtkWidget *output_options = gtk_vbox_new(FALSE, 10);
   GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 10);
-  GtkWidget *history_label = dtgtk_label_new(_("history"),
+  GtkWidget *history_label = dtgtk_label_new(_("static history"),
                                              DARKTABLE_LABEL_TAB
                                              | DARKTABLE_LABEL_ALIGN_RIGHT);
   GtkWidget *history_buttons_row = gtk_hbox_new(FALSE, 10);
-  GtkWidget *history_labels_row = gtk_hbox_new(TRUE, 10);
+  GtkWidget *samples_label = dtgtk_label_new(_("live samples"),
+                                             DARKTABLE_LABEL_TAB
+                                             | DARKTABLE_LABEL_ALIGN_RIGHT);
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data =
@@ -308,7 +318,7 @@ void gui_init(dt_lib_module_t *self)
                      TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(data->size_selector), "changed",
-                   G_CALLBACK(_size_changed), NULL);
+                   G_CALLBACK(_size_changed), (gpointer)self);
 
   data->picker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
                                                CPF_STYLE_BOX);
@@ -330,6 +340,8 @@ void gui_init(dt_lib_module_t *self)
                             _("max"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->statistic_selector),
                            dt_conf_get_int("ui_last/colorpicker_mode"));
+  gtk_widget_set_sensitive(data->statistic_selector,
+                           dt_conf_get_int("ui_last/colorpicker_size"));
   gtk_box_pack_start(GTK_BOX(output_options), data->statistic_selector,
                      TRUE, TRUE, 0);
 
@@ -394,14 +406,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), history_buttons_row,
                      TRUE, TRUE, 0);
 
-  data->history_label_rgb = gtk_label_new("");
-  data->history_label_lab = gtk_label_new("");
-  gtk_box_pack_start(GTK_BOX(history_labels_row), data->history_label_rgb,
-                     TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(history_labels_row), data->history_label_lab,
-                     TRUE, TRUE, 0);
+  data->history_label = gtk_label_new("");
+  gtk_box_pack_start(GTK_BOX(container), data->history_label, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(container), history_labels_row, TRUE, TRUE, 0);
+  // Adding the live samples section
+  gtk_box_pack_start(GTK_BOX(container), samples_label, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
