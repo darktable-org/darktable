@@ -189,8 +189,8 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
 
 static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  self=NULL;
+/*  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  self=NULL;*/
   return TRUE;
 }
 
