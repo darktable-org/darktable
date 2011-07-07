@@ -313,12 +313,23 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_set_source_rgb(cri, .2, .2, .2);
 
     float *box = dev->gui_module->color_picker_box;
-    cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
-    cairo_stroke(cri);
-    cairo_translate(cri, 1.0/zoom_scale, 1.0/zoom_scale);
-    cairo_set_source_rgb(cri, .8, .8, .8);
-    cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
-    cairo_stroke(cri);
+    float *point = dev->gui_module->color_picker_point;
+    if(dt_conf_get_int("ui_last/colorpicker_size"))
+    {
+      cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
+      cairo_stroke(cri);
+      cairo_translate(cri, 1.0/zoom_scale, 1.0/zoom_scale);
+      cairo_set_source_rgb(cri, .8, .8, .8);
+      cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
+      cairo_stroke(cri);
+    }
+    else
+    {
+      cairo_move_to(cri, point[0] * wd, point[1] * ht - 5);
+      cairo_line_to(cri, point[0] * wd, point[1] * ht + 5);
+      cairo_move_to(cri, point[0] * wd - 5, point[1] * ht);
+      cairo_line_to(cri, point[0] * wd + 5, point[1] * ht);
+    }
   }
   else if(dev->gui_module && dev->gui_module->gui_post_expose)
   {
@@ -979,8 +990,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     float zoom_x, zoom_y, bzoom_x, bzoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
     dt_dev_get_pointer_zoom_pos(dev, ctl->button_x + offx, ctl->button_y + offy, &bzoom_x, &bzoom_y);
-
-    if(dt_conf_get_int("ui_last/colorpicker_size") == 1)
+    if(dt_conf_get_int("ui_last/colorpicker_size"))
     {
       dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f+bzoom_x, .5f+zoom_x));
       dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f+bzoom_y, .5f+zoom_y));
@@ -989,10 +999,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     }
     else
     {
-      dev->gui_module->color_picker_box[0] = fmaxf(0.0, .5f+zoom_x);
-      dev->gui_module->color_picker_box[1] = fmaxf(0.0, .5f+zoom_y);
-      dev->gui_module->color_picker_box[2] = fminf(1.0, .5f+zoom_x);
-      dev->gui_module->color_picker_box[3] = fminf(1.0, .5f+zoom_y);
+      dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+      dev->gui_module->color_picker_point[1] = .5f + zoom_y;
     }
 
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
@@ -1058,13 +1066,20 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   {
     float zoom_x, zoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
-    dev->gui_module->color_picker_box[0] = .5f+zoom_x;
-    dev->gui_module->color_picker_box[1] = .5f+zoom_y;
-    dev->gui_module->color_picker_box[2] = .5f+zoom_x;
-    dev->gui_module->color_picker_box[3] = .5f+zoom_y;
-
-    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dt_dev_invalidate_all(dev);
+    if(dt_conf_get_int("ui_last/colorpicker_size"))
+    {
+      dev->gui_module->color_picker_box[0] = .5f+zoom_x;
+      dev->gui_module->color_picker_box[1] = .5f+zoom_y;
+      dev->gui_module->color_picker_box[2] = .5f+zoom_x;
+      dev->gui_module->color_picker_box[3] = .5f+zoom_y;
+    }
+    else
+    {
+      dev->gui_module->color_picker_point[0] = .5f+zoom_x;
+      dev->gui_module->color_picker_point[1] = .5f+zoom_y;
+      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+      dt_dev_invalidate_all(dev);
+    }
     dt_control_queue_draw_all();
     return 1;
   }

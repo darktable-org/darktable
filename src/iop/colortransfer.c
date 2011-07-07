@@ -408,6 +408,7 @@ acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
   self->request_color_pick = 1;
   self->color_picker_box[0] = self->color_picker_box[1] = 0.0f;
   self->color_picker_box[2] = self->color_picker_box[3] = 1.0f;
+  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   p->flag = ACQUIRE;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);

@@ -433,27 +433,46 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       for(int k=0; k<3; k++) module->picked_color_min[k] =  666.0f;
       for(int k=0; k<3; k++) module->picked_color_max[k] = -666.0f;
       int box[4];
+      int point[2];
       float Lab[3], *in = (float *)input;
       for(int k=0; k<3; k++) Lab[k] = 0.0f;
+
+      // Initializing bounds of colorpicker box
       for(int k=0; k<4; k+=2) box[k] = MIN(roi_in.width -1, MAX(0, module->color_picker_box[k]*roi_in.width));
       for(int k=1; k<4; k+=2) box[k] = MIN(roi_in.height-1, MAX(0, module->color_picker_box[k]*roi_in.height));
-      const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-      for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+
+      // Initializing bounds of colorpicker point
+      point[0] = MIN(roi_in.width - 1, MAX(0, module->color_picker_point[0] * roi_in.width));
+      point[1] = MIN(roi_in.height - 1, MAX(0, module->color_picker_point[1] * roi_in.height));
+
+      if(dt_conf_get_int("ui_last/colorpicker_size"))
       {
-        const float L = in[4*(roi_in.width*j + i) + 0];
-        const float a = in[4*(roi_in.width*j + i) + 1];
-        const float b = in[4*(roi_in.width*j + i) + 2];
-        Lab[0] += w*L;
-        Lab[1] += w*a;
-        Lab[2] += w*b;
-        module->picked_color_min[0] = fminf(module->picked_color_min[0], L);
-        module->picked_color_min[1] = fminf(module->picked_color_min[1], a);
-        module->picked_color_min[2] = fminf(module->picked_color_min[2], b);
-        module->picked_color_max[0] = fmaxf(module->picked_color_max[0], L);
-        module->picked_color_max[1] = fmaxf(module->picked_color_max[1], a);
-        module->picked_color_max[2] = fmaxf(module->picked_color_max[2], b);
+        const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
+        for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+        {
+          const float L = in[4*(roi_in.width*j + i) + 0];
+          const float a = in[4*(roi_in.width*j + i) + 1];
+          const float b = in[4*(roi_in.width*j + i) + 2];
+          Lab[0] += w*L;
+          Lab[1] += w*a;
+          Lab[2] += w*b;
+          module->picked_color_min[0] = fminf(module->picked_color_min[0], L);
+          module->picked_color_min[1] = fminf(module->picked_color_min[1], a);
+          module->picked_color_min[2] = fminf(module->picked_color_min[2], b);
+          module->picked_color_max[0] = fmaxf(module->picked_color_max[0], L);
+          module->picked_color_max[1] = fmaxf(module->picked_color_max[1], a);
+          module->picked_color_max[2] = fmaxf(module->picked_color_max[2], b);
+          for(int k=0; k<3; k++) module->picked_color[k] = Lab[k];
+        }
       }
-      for(int k=0; k<3; k++) module->picked_color[k] = Lab[k];
+      else
+      {
+        for(int i = 0; i < 3; i++)
+          module->picked_color[i]
+              = module->picked_color_min[i]
+                = module->picked_color_max[i]
+                  = in[4*(roi_in.width*point[1] + point[0]) + i];
+      }
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
@@ -676,22 +695,35 @@ post_process_collect_info:
       for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs_min[k] =  666.0f;
       for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs_max[k] = -666.0f;
       int box[4];
+      int point[2];
       float rgb[3];
       for(int k=0; k<3; k++) rgb[k] = 0.0f;
       for(int k=0; k<4; k+=2) box[k] = MIN(roi_out->width -1, MAX(0, module->color_picker_box[k]*roi_out->width));
       for(int k=1; k<4; k+=2) box[k] = MIN(roi_out->height-1, MAX(0, module->color_picker_box[k]*roi_out->height));
+      point[0] = MIN(roi_out->width -1, MAX(0, module->color_picker_point[0] * roi_out->width));
+      point[1] = MIN(roi_out->height -1, MAX(0, module->color_picker_point[1] * roi_out->height));
       const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-      for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+      if(dt_conf_get_int("ui_last/colorpicker_size"))
       {
-        for(int k=0; k<3; k++)
+        for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
         {
-          darktable.gui->picked_color_output_cs_min[k] = fminf(darktable.gui->picked_color_output_cs_min[k], pixel[4*(roi_out->width*j + i) + k]);
-          darktable.gui->picked_color_output_cs_max[k] = fmaxf(darktable.gui->picked_color_output_cs_max[k], pixel[4*(roi_out->width*j + i) + k]);
-          rgb[k] += w*pixel[4*(roi_out->width*j + i) + k];
+          for(int k=0; k<3; k++)
+          {
+            darktable.gui->picked_color_output_cs_min[k] = fminf(darktable.gui->picked_color_output_cs_min[k], pixel[4*(roi_out->width*j + i) + k]);
+            darktable.gui->picked_color_output_cs_max[k] = fmaxf(darktable.gui->picked_color_output_cs_max[k], pixel[4*(roi_out->width*j + i) + k]);
+            rgb[k] += w*pixel[4*(roi_out->width*j + i) + k];
+          }
         }
+        for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs[k] = rgb[k];
       }
-      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs[k] = rgb[k];
-
+      else
+      {
+        for(int i = 0; i < 3; i++)
+          darktable.gui->picked_color_output_cs[i]
+              = darktable.gui->picked_color_output_cs_min[i]
+                = darktable.gui->picked_color_output_cs_max[i]
+                  = pixel[4*(roi_out->width*point[1] + point[0]) + i];
+      }
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
       if(needlock) gdk_threads_enter();

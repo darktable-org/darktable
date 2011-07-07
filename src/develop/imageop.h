@@ -137,6 +137,8 @@ typedef struct dt_iop_module_t
   int32_t request_color_pick;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
+  /** single point to pick if in point mode */
+  float color_picker_point[2];
   /** place to store the picked color. */
   float picked_color[3], picked_color_min[3], picked_color_max[3];
   /** reference for dlopened libs. */
