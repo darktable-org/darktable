@@ -224,7 +224,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     gtk_tree_store_append(model, &iter, parent);
     gtk_tree_store_set(model, &iter,
                        ACCEL_COLUMN, accel_path,
-                       BINDING_COLUMN, name,
+                       BINDING_COLUMN, g_dpgettext2("gtk20", "keyboard label", name),
                        TRANS_COLUMN, _(accel_path),
                        -1);
     g_free(name);    
