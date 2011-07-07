@@ -2104,7 +2104,7 @@ void init_import(GtkWidget *container)
   // Adding the expander
   container = widget;
 
-  widget = gtk_expander_new(_("import"));
+  widget = gtk_expander_new(C_("global import", "import"));
   darktable.gui->widgets.import_expander = widget;
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_expander_set_expanded(GTK_EXPANDER(widget), TRUE);
