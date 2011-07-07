@@ -308,7 +308,8 @@ static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str)
   strcpy(str, "<Darktable>");
 
   // For each index in the path, append a '/' and that section of the path
-  indices = gtk_tree_path_get_indices_with_depth(path, &depth);
+  depth = gtk_tree_path_get_depth(path);
+  indices = gtk_tree_path_get_indices(path);
   for(i = 0; i < depth; i++)
   {
     strcat(str, "/");

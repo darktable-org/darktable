@@ -19,6 +19,7 @@
 #define DT_GUI_GTK_H
 
 #include <gtk/gtk.h>
+#include <stdint.h>
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
