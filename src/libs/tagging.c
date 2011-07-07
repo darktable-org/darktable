@@ -122,17 +122,6 @@ set_keyword(dt_lib_module_t *self, dt_lib_tagging_t *d)
   update (self, 1);
 }
 
-static gboolean
-expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  int imgsel = -1;
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
-  if(imgsel != d->imgsel) update (self, 0);
-  return FALSE;
-}
-
 static void
 attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
@@ -331,7 +320,10 @@ position ()
 static void _lib_tagging_redraw_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self =(dt_lib_module_t *)user_data;
-  gtk_widget_queue_draw(self->widget);
+  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
+  int imgsel = -1; 
+  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  if(imgsel != d->imgsel) update (self, 0); 
 }
 
 void
@@ -343,8 +335,6 @@ gui_init (dt_lib_module_t *self)
 
   self->widget = gtk_vbox_new(TRUE, 5);
   gtk_widget_set_size_request(self->widget,100,-1);
-
-  g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), (gpointer)self);
 
   GtkBox *box, *hbox;
   GtkWidget *button;
