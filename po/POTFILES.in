@@ -19,14 +19,11 @@ src/control/jobs/image_jobs.c
 src/develop/develop.c
 src/develop/imageop.c
 src/dtgtk/resetlabel.c
-src/gui/background_jobs.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c
-src/gui/iop_modulegroups.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
-src/gui/tool_colorlabels.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
 src/imageio/format/jpeg.c
