@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include <glib/gstdio.h>
 #include <assert.h>
 
-#define DT_IMAGE_CACHE_FILE_VERSION 4
+#define DT_IMAGE_CACHE_FILE_VERSION 5
 #define DT_IMAGE_CACHE_FILE_NAME "mipmaps"
 
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
