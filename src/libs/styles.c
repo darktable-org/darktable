@@ -353,7 +353,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),exportButton,TRUE,TRUE,0);
   // Import Button
-  GtkWidget *importButton = gtk_button_new_with_label(_("import"));
+  GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import"));
   g_object_set (importButton, "tooltip-text", _("import style from a style file"), (char *)NULL);
   g_signal_connect (importButton, "clicked", G_CALLBACK(import_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),importButton,TRUE,TRUE,0);

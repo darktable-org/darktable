@@ -169,7 +169,7 @@ static void init_tab_accels(GtkWidget *book)
 
   // Adding the import/export buttons
 
-  button = gtk_button_new_with_label(_("import"));
+  button = gtk_button_new_with_label(C_("preferences", "import"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(import_export), (gpointer)0);
