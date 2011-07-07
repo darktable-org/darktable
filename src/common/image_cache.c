@@ -32,7 +32,9 @@
 #include <string.h>
 #include <glib/gstdio.h>
 #include <assert.h>
+#include <errno.h>
 
+#define DT_IMAGE_CACHE_FILE_MAGIC 0xD71337
 #define DT_IMAGE_CACHE_FILE_VERSION 5
 #define DT_IMAGE_CACHE_FILE_NAME "mipmaps"
 
@@ -101,7 +103,7 @@ void dt_image_cache_write(dt_image_cache_t *cache)
   if(!f) goto write_error;
 
   // write version info:
-  const int32_t magic = 0xD71337 + DT_IMAGE_CACHE_FILE_VERSION;
+  const int32_t magic = DT_IMAGE_CACHE_FILE_MAGIC + DT_IMAGE_CACHE_FILE_VERSION;
   written = fwrite(&magic, sizeof(int32_t), 1, f);
   if(written != 1) goto write_error;
   written = fwrite(&darktable.thumbnail_size, sizeof(int32_t), 1, f);
@@ -195,7 +197,7 @@ void dt_image_cache_write(dt_image_cache_t *cache)
     }
   }
   // write marker at the end
-  int32_t endmarker = 0xD71337;
+  int32_t endmarker = DT_IMAGE_CACHE_FILE_MAGIC;
   written = fwrite(&endmarker, sizeof(int32_t), 1, f);
   if(written != 1) goto write_error;
   fclose(f);
@@ -222,22 +224,50 @@ int dt_image_cache_read(dt_image_cache_t *cache)
   g_free(filename);
 
   FILE *f = fopen(dbfilename, "rb");
-  if(!f) goto read_error;
+  if(!f) 
+  {
+    if (errno == ENOENT)
+    {
+      fprintf(stderr, "[image_cache_read] cache is empty, file `%s' doesn't exist\n", dbfilename);
+    }
+    else
+    {
+      fprintf(stderr, "[image_cache_read] failed to open the cache from `%s'\n", dbfilename);
+    }
+    goto read_finalize;
+  }
 
   int32_t num = 0, rd = 0;
 
   // read version info:
-  const int32_t magic = 0xD71337 + DT_IMAGE_CACHE_FILE_VERSION;
+  const int32_t magic = DT_IMAGE_CACHE_FILE_MAGIC + DT_IMAGE_CACHE_FILE_VERSION;
   int32_t magic_file = 0;
   rd = fread(&magic_file, sizeof(int32_t), 1, f);
-  if(rd != 1 || magic_file != magic) goto read_error;
+  if(rd != 1) goto read_error;
+  if(magic_file != magic)
+  {
+    if(magic_file > DT_IMAGE_CACHE_FILE_MAGIC && magic_file < magic)
+        fprintf(stderr, "[image_cache_read] cache version too old, dropping `%s' cache\n", dbfilename);
+    else
+        fprintf(stderr, "[image_cache_read] invalid cache file, dropping `%s' cache\n", dbfilename);
+    goto read_finalize;
+  }
   rd = fread(&magic_file, sizeof(int32_t), 1, f);
-  if(rd != 1 || magic_file != darktable.thumbnail_size) goto read_error;
+  if(rd != 1) goto read_error;
+  if(magic_file != darktable.thumbnail_size) 
+  {
+    fprintf(stderr, "[image_cache_read] cache settings changed, dropping `%s' cache\n", dbfilename);
+    goto read_finalize;
+  }
 
   // read metadata:
   rd = fread(&num, sizeof(int32_t), 1, f);
   if(rd != 1) goto read_error;
-  if(cache->num_lines != num) goto read_error;
+  if(cache->num_lines != num) 
+  {
+    fprintf(stderr, "[image_cache_read] cache settings changed, dropping `%s' cache\n", dbfilename);
+    goto read_finalize;
+  }
   rd = fread(&num, sizeof(int16_t), 1, f);
   if(rd != 1) goto read_error;
   cache->lru = num;
@@ -334,9 +364,10 @@ int dt_image_cache_read(dt_image_cache_t *cache)
   return 0;
 
 read_error:
+  fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
+read_finalize:
   if(f) fclose(f);
   g_unlink(dbfilename);
-  fprintf(stderr, "[image_cache_read] failed to recover the cache from `%s'\n", dbfilename);
   dt_pthread_mutex_unlock(&(cache->mutex));
   return 1;
 }
