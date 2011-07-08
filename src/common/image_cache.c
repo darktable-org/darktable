@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include <glib/gstdio.h>
 #include <assert.h>
 
-#define DT_IMAGE_CACHE_FILE_VERSION 4
+#define DT_IMAGE_CACHE_FILE_VERSION 5
 #define DT_IMAGE_CACHE_FILE_NAME "mipmaps"
 
 int dt_image_cache_check_consistency(dt_image_cache_t *cache)
@@ -610,6 +610,7 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
         else max = pos;
         pos = (min + max)/2;
       }
+      pos++;
       memmove(cache->by_id+pos+1,cache->by_id+pos,(oldpos-pos)*sizeof(int16_t));
       cache->by_id[pos] = cache_line;
     }
@@ -617,7 +618,7 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
     {
       // if new id should be in the middle and after old position
       unsigned int min = oldpos+1, max = cache->num_lines-1;
-      unsigned int pos = max/2;
+      unsigned int pos = (min + max)/2;
       while (pos != min)
       {
         if(cache->line[cache->by_id[pos]].image.id < id) min = pos;

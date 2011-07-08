@@ -169,7 +169,7 @@ static void init_tab_accels(GtkWidget *book)
 
   // Adding the import/export buttons
 
-  button = gtk_button_new_with_label(_("import"));
+  button = gtk_button_new_with_label(C_("preferences", "import"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(import_export), (gpointer)0);
@@ -308,7 +308,8 @@ static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str)
   strcpy(str, "<Darktable>");
 
   // For each index in the path, append a '/' and that section of the path
-  indices = gtk_tree_path_get_indices_with_depth(path, &depth);
+  depth = gtk_tree_path_get_depth(path);
+  indices = gtk_tree_path_get_indices(path);
   for(i = 0; i < depth; i++)
   {
     strcat(str, "/");
