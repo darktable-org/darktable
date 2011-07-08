@@ -165,6 +165,8 @@ static void _size_changed(GtkComboBox *widget, gpointer p)
                   gtk_combo_box_get_active(widget));
   gtk_widget_set_sensitive(data->statistic_selector,
                            dt_conf_get_int("ui_last/colorpicker_size"));
+  dt_dev_invalidate_from_gui(darktable.develop);
+  _update_picker_output(p);
 }
 
 static gboolean _history_button_enter(GtkWidget *widget, GdkEvent *event,
