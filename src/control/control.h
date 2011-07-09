@@ -144,7 +144,7 @@ int dt_control_job_get_state(dt_job_t *j);
 /** wait for a job to finish execution. */
 void dt_control_job_wait(dt_job_t *j);
 
-// All the accelerator keys for the key_pressed style shortcuts
+//z All the accelerator keys for the key_pressed style shortcuts
 typedef struct dt_control_accels_t
 {
   GtkAccelKey

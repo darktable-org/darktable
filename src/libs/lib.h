@@ -39,6 +39,7 @@ typedef struct dt_lib_t
     {
       struct dt_lib_module_t *module;
       void (*update_panel)(struct dt_lib_module_t *self);
+      void (*update_samples)(struct dt_lib_module_t *self);
     } colorpicker;
 
   } proxy;
