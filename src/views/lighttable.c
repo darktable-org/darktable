@@ -109,7 +109,7 @@ uint32_t view(dt_view_t *self)
   return DT_VIEW_LIGHTTABLE;
 }
 
-static void _view_lighttable_collection_listener_callback(void *user_data)
+static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -148,8 +148,12 @@ void init(dt_view_t *self)
   lib->closures = NULL;
 
   /* setup collection listener and initialize main_query statement */
-  dt_collection_listener_register(_view_lighttable_collection_listener_callback, self);
-  _view_lighttable_collection_listener_callback(self);
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_COLLECTION_CHANGED, 
+			    G_CALLBACK(_view_lighttable_collection_listener_callback),
+			    (gpointer) self);
+
+  _view_lighttable_collection_listener_callback(NULL,self);
 
   /* initialize reusable sql statements */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid != ?1", -1, &lib->statements.delete_except_arg, NULL);

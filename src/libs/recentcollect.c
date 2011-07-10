@@ -18,6 +18,7 @@
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "control/conf.h"
+#include "control/signal.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "libs/lib.h"
@@ -299,7 +300,11 @@ void
 gui_init (dt_lib_module_t *self)
 {
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)malloc(sizeof(dt_lib_recentcollect_t));
-  dt_collection_listener_register(collection_updated, d);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+			    G_CALLBACK(collection_updated),
+			    (gpointer)d);
+
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 0);
   // add buttons in the list, set them all to invisible
@@ -317,7 +322,7 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_collection_listener_unregister(collection_updated);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self->data);
   free(self->data);
   self->data = NULL;
 }

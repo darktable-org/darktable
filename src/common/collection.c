@@ -38,13 +38,6 @@
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
 
-typedef struct dt_collection_listener_t
-{
-  void (*callback)(void *);
-  void *data;
-}
-dt_collection_listener_t;
-
 const dt_collection_t *
 dt_collection_new (const dt_collection_t *clone)
 {
@@ -388,32 +381,6 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
 }
 
 void
-dt_collection_listener_register(void (*callback)(void *), void *data)
-{
-  dt_collection_listener_t *a = (dt_collection_listener_t *)malloc(sizeof(dt_collection_listener_t));
-  a->callback = callback;
-  a->data = data;
-  darktable.collection_listeners = g_list_append(darktable.collection_listeners, a);
-}
-
-void
-dt_collection_listener_unregister(void (*callback)(void *))
-{
-  GList *i = darktable.collection_listeners;
-  while(i)
-  {
-    dt_collection_listener_t *a = (dt_collection_listener_t *)i->data;
-    GList *ii = g_list_next(i);
-    if(a->callback == callback)
-    {
-      free(a);
-      darktable.collection_listeners = g_list_delete_link(darktable.collection_listeners, i);
-    }
-    i = ii;
-  }
-}
-
-void
 dt_collection_update_query(const dt_collection_t *collection)
 {
   char query[1024], confname[200];
@@ -470,14 +437,9 @@ dt_collection_update_query(const dt_collection_t *collection)
     sqlite3_finalize(stmt);
   }
 
-  // notify our listeners:
-  GList *i = darktable.collection_listeners;
-  while(i)
-  {
-    dt_collection_listener_t *a = (dt_collection_listener_t *)i->data;
-    a->callback(a->data);
-    i = g_list_next(i);
-  }
+  /* raise signal of collection change */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
