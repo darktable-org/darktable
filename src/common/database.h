@@ -19,6 +19,8 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
+#include <glib.h>
+
 /** allocates and initializes database */
 struct dt_database_t *dt_database_init();
 /** closes down database and frees memory */
@@ -27,5 +29,6 @@ void dt_database_destroy(const struct dt_database_t *);
 struct sqlite3 *dt_database_get(const struct dt_database_t *);
 /** initialize the pool handles, needs control to be running */
 void dt_database_init_pool(const struct dt_database_t *);
-
+/** test if database is new */
+gboolean dt_database_is_new(const struct dt_database_t *db);
 #endif

@@ -27,6 +27,8 @@
 
 typedef struct dt_database_t
 {
+  gboolean is_new_database;
+
   /* database filename */
   gchar *dbfilename;
 
@@ -44,6 +46,11 @@ typedef struct dt_database_t
 static void _database_migrate_to_xdg_structure();
 
 
+gboolean dt_database_is_new(const dt_database_t *db)
+{
+  return db->is_new_database;
+}
+
 dt_database_t *dt_database_init(char *alternative)
 {
   /* migrate default database location to new default */
@@ -54,7 +61,7 @@ dt_database_t *dt_database_init(char *alternative)
   gchar dbfilename[1024] = {0};
   gchar datadir[1024] = {0};
 
-  dt_get_datadir(datadir, 1024);
+  dt_get_user_config_dir(datadir, 1024);
 
   if ( alternative == NULL )
   {
@@ -69,8 +76,18 @@ dt_database_t *dt_database_init(char *alternative)
     dbname = g_file_get_basename (g_file_new_for_path(alternative));
   }
 
-  /* test if database file is available */
-  if(!g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR))
+  /* create database */
+  dt_database_t *db = (dt_database_t *)g_malloc(sizeof(dt_database_t));
+  memset(db,0,sizeof(dt_database_t));
+  db->dbfilename = g_strdup(dbfilename);
+  db->is_new_database = FALSE;
+
+  /* test if databasefile is available */
+  if(!g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR)) 
+    db->is_new_database = TRUE;
+
+  /* opening / creating database */
+  if(sqlite3_open(db->dbfilename, &db->main_handle))
   {
     fprintf(stderr, "[init] could not find database ");
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
@@ -85,14 +102,6 @@ dt_database_t *dt_database_init(char *alternative)
     if (dbname != NULL) g_free(dbname);
     return NULL;
   }
-
-  /*
-   * Lets initialize the database 
-   */
-  dt_database_t *db = (dt_database_t *)g_malloc(sizeof(dt_database_t));
-  memset(db,0,sizeof(dt_database_t));
-  db->dbfilename = g_strdup(dbfilename);
-  __DT_DEBUG_ASSERT__(sqlite3_open(db->dbfilename, &db->main_handle));
 
   return db;
 }

@@ -366,8 +366,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
 
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  int load_cached = 1;
-  dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
+  
+  dt_image_cache_init(darktable.image_cache, 
+		      MIN(10000, MAX(500, thumbnails)), 
+		      dt_database_is_new(darktable.db));
 
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to register
