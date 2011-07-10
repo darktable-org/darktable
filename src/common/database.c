@@ -138,7 +138,7 @@ sqlite3 *dt_database_get(const dt_database_t *db)
   if(threadid > db->size-1)
     threadid = 0;
 
-  fprintf(stderr,"Getting database handle for thread %d\n",threadid);
+  //fprintf(stderr,"Getting database handle for thread %d\n",threadid);
   return db->handles[threadid];
 }
 
