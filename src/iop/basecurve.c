@@ -143,7 +143,7 @@ void init_presets (dt_iop_module_so_t *self)
 {
   // transform presets above to db entries.
   // sql begin
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   for(int k=0; k<basecurve_presets_cnt; k++)
   {
     // add the preset.
@@ -156,7 +156,7 @@ void init_presets (dt_iop_module_so_t *self)
     dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, basecurve_presets[k].autoapply);
   }
   // sql commit
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 #ifdef HAVE_OPENCL

@@ -546,14 +546,14 @@ void init_presets (dt_iop_module_t *self)
   {
     0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0
   };
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   p.angle = 90.0f;
   dt_gui_presets_add_generic(_("rotate by  90"), self->op, &p, sizeof(p), 1);
   p.angle = -90.0f;
   dt_gui_presets_add_generic(_("rotate by -90"), self->op, &p, sizeof(p), 1);
   p.angle = 180.0f;
   dt_gui_presets_add_generic(_("rotate by 180"), self->op, &p, sizeof(p), 1);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void reload_defaults(dt_iop_module_t *self)

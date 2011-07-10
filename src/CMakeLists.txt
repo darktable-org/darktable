@@ -9,6 +9,7 @@ FILE(GLOB SOURCE_FILES
   "common/colormatrices.c" 
   "common/colorspaces.c" 
   "common/darktable.c" 
+  "common/database.c"
   "common/exif.cc" 
   "common/film.c" 
   "common/fswatch.c" 

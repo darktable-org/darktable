@@ -704,7 +704,7 @@ void dt_image_cache_flush_no_sidecars(dt_image_t *img)
   img->dirty = 0;
   int rc;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, output_width = ?14, output_height = ?15, crop = ?16, raw_parameters = ?17, raw_denoise_threshold = ?18, raw_auto_bright_threshold = ?19, raw_black = ?20, raw_maximum = ?21, orientation = ?22 where id = ?23", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, output_width = ?14, output_height = ?15, crop = ?16, raw_parameters = ?17, raw_denoise_threshold = ?18, raw_auto_bright_threshold = ?19, raw_black = ?20, raw_maximum = ?21, orientation = ?22 where id = ?23", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);

@@ -25,6 +25,7 @@
 #include "config.h"
 #endif
 #include "common/dtpthread.h"
+#include "common/database.h"
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -131,7 +132,7 @@ typedef struct darktable_t
   struct dt_gui_gtk_t            *gui;
   struct dt_mipmap_cache_t       *mipmap_cache;
   struct dt_image_cache_t        *image_cache;
-  sqlite3                        *db;
+  const struct dt_database_t     *db;
   const struct dt_fswatch_t	     *fswatch;
   const struct dt_pwstorage_t    *pwstorage;
   const struct dt_camctl_t       *camctl;

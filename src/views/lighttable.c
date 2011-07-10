@@ -124,7 +124,7 @@ static void _view_lighttable_collection_listener_callback(void *user_data)
     sqlite3_finalize(lib->statements.main_query);
 
   /* prepare a new main query statement for collection */
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &lib->statements.main_query, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &lib->statements.main_query, NULL);
 
 }
 
@@ -152,7 +152,7 @@ void init(dt_view_t *self)
   _view_lighttable_collection_listener_callback(self);
 
   /* initialize reusable sql statements */
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &lib->statements.delete_except_arg, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid != ?1", -1, &lib->statements.delete_except_arg, NULL);
   
 
   // Initializing accelerators
@@ -928,7 +928,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
       if(mouse_over_id <= 0)
       {
         sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           dt_image_t *image = dt_image_cache_get(sqlite3_column_int(stmt, 0), 'r');

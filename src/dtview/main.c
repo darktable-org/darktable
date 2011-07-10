@@ -232,7 +232,7 @@ process_next_image()
   const gchar *query = dt_collection_get_query (darktable.collection);
   if(!query) return 1;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rand);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, rand+1);
   if(sqlite3_step(stmt) == SQLITE_ROW)

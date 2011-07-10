@@ -259,7 +259,7 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   const gchar *query = dt_collection_get_query(collection);
   char countquery[2048]= {0};
   snprintf(countquery, 2048, "select count(id) %s", query + 18);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, countquery, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), countquery, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -272,7 +272,7 @@ uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
 {
   sqlite3_stmt *stmt = NULL;
   uint32_t count=0;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select distinct count(imgid) from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct count(imgid) from selected_images", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
@@ -304,7 +304,7 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   else
     g_snprintf(query,512, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db,query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
@@ -463,7 +463,7 @@ dt_collection_update_query(const dt_collection_t *collection)
   if(cquery && cquery[0] != '\0')
   {
     snprintf(complete_query, 4096, "delete from selected_images where imgid not in (%s)", cquery);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, complete_query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), complete_query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
     sqlite3_step(stmt);
