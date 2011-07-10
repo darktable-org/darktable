@@ -50,8 +50,15 @@ typedef enum dt_signal_t {
   /** \brief This signal is raised when develop preview pipe process is finished */
   DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
 
+  /** \brief This signal is rasied when pipe is finished and the gui is attached */
+  DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+
   /** \brief This signal is raised when develop history is changed */
   DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+
+
+  /** \brief This signal is raised when collection query is changed */
+  DT_SIGNAL_COLLECTION_CHANGED,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
