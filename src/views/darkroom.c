@@ -397,14 +397,6 @@ select_this_image(const int imgid)
   }
 }
 
-/**
- * \brief Switch to the specified image
- *
- * Switches to the specified image, saving the state of the current image if needed.
- *
- * \param dev The developer
- * \param image The image to switch to
- */
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
@@ -417,29 +409,24 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   else
     dt_conf_set_string("plugins/darkroom/active", "");
   g_assert(dev->gui_attached);
+  // tag image as changed
+  // TODO: only tag the image when there was a real change.
+  // TODO: this applies especially for the expensive bits:
+  //       write xmp (disk) / re-create mip map
+  guint tagid = 0;
+  dt_tag_new("darktable|changed",&tagid);
+  dt_tag_attach(tagid, dev->image->id);
+  // commit image ops to db
+  dt_dev_write_history(dev);
 
-  // only save image/settings if image was modified
-  if (dev->image && dev->image->dirty)
-  {
-    // tag image as changed
-    // only tag the image when there was a real change.
-    guint tagid = 0;
-    dt_tag_new("darktable|changed", &tagid);
-    dt_tag_attach(tagid, dev->image->id);
-    // commit image ops to db
-    dt_dev_write_history(dev);
-    // write .xmp file
-    dt_image_write_sidecar_file(dev->image->id);
-
-    // commit updated mipmaps to db
-    // TODO: bg process?
-    dt_dev_process_to_mip(dev);
-  }
-
+  // commit updated mipmaps to db
+  // TODO: bg process?
+  dt_dev_process_to_mip(dev);
   // release full buffer
   if(dev->image && dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
 
+  // writes the .xmp and the database:
   dt_image_cache_flush(dev->image);
 
   dev->image = image;
@@ -553,12 +540,6 @@ film_strip_activated(const int imgid, void *data)
   dt_view_film_strip_prefetch();
 }
 
-/**
- * \brief Jump forward (diff) images in the collection
- *
- * \param[in] dev A pointer to the dt_develop_t to use for state
- * \param[in] diff The number of images to jump forward.  Use negative values to jump backward.
- */
 static void
 dt_dev_jump_image(dt_develop_t *dev, int diff)
 {
@@ -796,6 +777,7 @@ void enter(dt_view_t *self)
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     module->topwidget = GTK_WIDGET(expander);
+    module->show_closure = NULL;
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Connecting the (optional) module show accelerator
@@ -919,6 +901,11 @@ void leave(dt_view_t *self)
     char var[1024];
     snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
+
+    // disconnect the show accelerator
+    if(module->show_closure)
+      dt_accel_group_disconnect(darktable.control->accels_darkroom,
+                                module->show_closure);
 
     module->gui_cleanup(module);
     dt_iop_cleanup_module(module) ;
