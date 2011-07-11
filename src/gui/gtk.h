@@ -27,35 +27,6 @@
 #define DT_GUI_VIEW_SWITCH_TO_LIBRARY   2
 #define DT_GUI_VIEW_SWITCH_TO_DARKROOM  3
 
-#define DT_COLORPICKER_SIZE_POINT 0
-#define DT_COLORPICKER_SIZE_BOX 1
-
-/** The struct for live color picker samples */
-typedef struct dt_colorpicker_sample_t
-{
-
-  /** The sample area or point */
-  float point[2];
-  float box[4];
-  int size;
-
-  /** The actual picked colors */
-  float picked_color_rgb_mean[3];
-  float picked_color_rgb_min[3];
-  float picked_color_rgb_max[3];
-
-  float picked_color_lab_mean[3];
-  float picked_color_lab_min[3];
-  float picked_color_lab_max[3];
-
-  /** The GUI elements */
-  GtkWidget *container;
-  GtkWidget *output_button;
-  GtkWidget *output_label;
-  GtkWidget *delete_button;
-
-} dt_colorpicker_sample_t;
-
 typedef struct dt_gui_widgets_t
 {
   GtkWidget *main_window;
@@ -91,11 +62,6 @@ typedef struct dt_gui_gtk_t
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
-  GSList *color_picker_samples;
-
-  float picked_color_output_cs[3];
-  float picked_color_output_cs_min[3];
-  float picked_color_output_cs_max[3];
 }
 dt_gui_gtk_t;
 

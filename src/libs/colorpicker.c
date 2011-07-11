@@ -25,35 +25,10 @@
 #include "dtgtk/togglebutton.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
+#include "libs/colorpicker.h"
 
 DT_MODULE(1);
 
-typedef struct dt_lib_colorpicker_t
-{
-  GtkWidget *output_button;
-  GtkWidget *output_label;
-  GtkWidget *color_mode_selector;
-  GtkWidget *statistic_selector;
-  GtkWidget *size_selector;
-  GtkWidget *picker_button;
-  GtkWidget *history_button[5];
-  GtkWidget *history_label;
-  GtkWidget *history_button_hovered;
-  GtkWidget *samples_container;
-  GtkWidget *samples_mode_selector;
-  GtkWidget *samples_statistic_selector;
-  GtkWidget *add_sample_button;
-
-  float history_rgb[5][3];
-  float history_lab[5][3];
-
-} dt_lib_colorpicker_t;
-
-typedef struct dt_live_sample_t
-{
-  GtkWidget *output_button;
-  GtkWidget *output_label[3];
-} dt_live_sample_t;
 
 const char *name()
 {
@@ -106,15 +81,15 @@ static void _update_picker_output(dt_lib_module_t *self)
     switch(m)
     {
       case 0: // mean
-        rgb = darktable.gui->picked_color_output_cs;
+        rgb = darktable.lib->proxy.colorpicker.picked_color_mean;
         lab = module->picked_color;
         break;
       case 1: //min
-        rgb = darktable.gui->picked_color_output_cs_min;
+        rgb = darktable.lib->proxy.colorpicker.picked_color_min;
         lab = module->picked_color_min;
         break;
       default:
-        rgb = darktable.gui->picked_color_output_cs_max;
+        rgb = darktable.lib->proxy.colorpicker.picked_color_max;
         lab = module->picked_color_max;
         break;
     }
@@ -251,15 +226,15 @@ static void _history_button_clicked(GtkButton *button, gpointer self)
   switch(m)
   {
     case 0: // mean
-      rgb = darktable.gui->picked_color_output_cs;
+      rgb = darktable.lib->proxy.colorpicker.picked_color_mean;
       lab = module->picked_color;
       break;
     case 1: //min
-      rgb = darktable.gui->picked_color_output_cs_min;
+      rgb = darktable.lib->proxy.colorpicker.picked_color_min;
       lab = module->picked_color_min;
       break;
     default:
-      rgb = darktable.gui->picked_color_output_cs_max;
+      rgb = darktable.lib->proxy.colorpicker.picked_color_max;
       lab = module->picked_color_max;
       break;
   }
@@ -286,7 +261,7 @@ static void _update_samples_output(dt_lib_module_t *self)
   float *rgb = fallback;
   float *lab = fallback;
   char text[1024];
-  GSList *samples = darktable.gui->color_picker_samples;
+  GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
   dt_colorpicker_sample_t *sample = NULL;
   GdkColor c;
 
@@ -366,8 +341,8 @@ static void _remove_sample(GtkButton *widget, gpointer data)
   gtk_widget_destroy(sample->output_label);
   gtk_widget_destroy(sample->delete_button);
   gtk_widget_destroy(sample->container);
-  darktable.gui->color_picker_samples =
-      g_slist_remove(darktable.gui->color_picker_samples, data);
+  darktable.lib->proxy.colorpicker.live_samples =
+      g_slist_remove(darktable.lib->proxy.colorpicker.live_samples, data);
   free(sample);
 }
 
@@ -376,8 +351,8 @@ static void _add_sample(GtkButton *widget, gpointer self)
   dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
   dt_colorpicker_sample_t *sample =
       (dt_colorpicker_sample_t*)malloc(sizeof(dt_colorpicker_sample_t));
-  darktable.gui->color_picker_samples =
-      g_slist_append(darktable.gui->color_picker_samples, sample);
+  darktable.lib->proxy.colorpicker.live_samples =
+      g_slist_append(darktable.lib->proxy.colorpicker.live_samples, sample);
   dt_iop_module_t *module = get_colorout_module();
   int i;
 
@@ -427,13 +402,13 @@ static void _add_sample(GtkButton *widget, gpointer self)
     sample->picked_color_lab_min[i] = module->picked_color_min[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_rgb_max[i] =
-        darktable.gui->picked_color_output_cs_max[i];
+        darktable.lib->proxy.colorpicker.picked_color_max[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_rgb_mean[i] =
-        darktable.gui->picked_color_output_cs[i];
+        darktable.lib->proxy.colorpicker.picked_color_mean[i];
   for(i = 0; i < 3; i++)
     sample->picked_color_rgb_min[i] =
-        darktable.gui->picked_color_output_cs_min[i];
+        darktable.lib->proxy.colorpicker.picked_color_min[i];
 
   // Updating the display
   _update_samples_output((dt_lib_module_t*)self);
@@ -465,8 +440,15 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void*)data;
   memset(data, 0, sizeof(dt_lib_colorpicker_t));
 
-  // Initializing proxy functions
+  // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
+  darktable.lib->proxy.colorpicker.live_samples = NULL;
+  darktable.lib->proxy.colorpicker.picked_color_mean =
+      (float*)malloc(sizeof(float) * 3);
+  darktable.lib->proxy.colorpicker.picked_color_min =
+      (float*)malloc(sizeof(float) * 3);
+  darktable.lib->proxy.colorpicker.picked_color_max =
+      (float*)malloc(sizeof(float) * 3);
   darktable.lib->proxy.colorpicker.update_panel =  _update_picker_output;
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
 
@@ -638,8 +620,17 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.update_panel = NULL;
   darktable.lib->proxy.colorpicker.update_samples = NULL;
 
-  while(darktable.gui->color_picker_samples)
-    _remove_sample(NULL, darktable.gui->color_picker_samples->data);
+  free(darktable.lib->proxy.colorpicker.picked_color_mean);
+  free(darktable.lib->proxy.colorpicker.picked_color_min);
+  free(darktable.lib->proxy.colorpicker.picked_color_max);
+  darktable.lib->proxy.colorpicker.picked_color_mean
+      = darktable.lib->proxy.colorpicker.picked_color_min
+        = darktable.lib->proxy.colorpicker.picked_color_max
+          = NULL;
+
+
+  while(darktable.lib->proxy.colorpicker.live_samples)
+    _remove_sample(NULL, darktable.lib->proxy.colorpicker.live_samples->data);
 
   free(self->data);
   self->data = NULL;

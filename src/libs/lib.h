@@ -38,6 +38,10 @@ typedef struct dt_lib_t
     struct
     {
       struct dt_lib_module_t *module;
+      float *picked_color_mean;
+      float *picked_color_min;
+      float *picked_color_max;
+      GSList *live_samples;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);
     } colorpicker;

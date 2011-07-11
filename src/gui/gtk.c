@@ -487,8 +487,12 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
                     event->area.width, event->area.height);
 
   if(darktable.lib->proxy.colorpicker.module)
+  {
     darktable.lib->proxy.colorpicker.update_panel(
         darktable.lib->proxy.colorpicker.module);
+    darktable.lib->proxy.colorpicker.update_samples(
+        darktable.lib->proxy.colorpicker.module);
+  }
 
   // test quit cond (thread safe, 2nd pass)
   if(!dt_control_running())
@@ -794,12 +798,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect (G_OBJECT (widget), "scroll-event", G_CALLBACK (borders_scrolled), (gpointer)3);
   g_object_set_data(G_OBJECT (widget), "border", (gpointer)3);
   dt_gui_presets_init();
-
-  // color picker
-  for(int k = 0; k < 3; k++)
-    darktable.gui->picked_color_output_cs[k] =
-        darktable.gui->picked_color_output_cs_max[k] =
-        darktable.gui->picked_color_output_cs_min[k] = 0;
 
   widget = darktable.gui->widgets.center;
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
