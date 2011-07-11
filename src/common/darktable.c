@@ -48,7 +48,6 @@
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
-#include <malloc.h>
 
 #ifdef __APPLE__
 #include <sys/malloc.h>
