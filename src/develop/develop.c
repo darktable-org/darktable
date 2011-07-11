@@ -599,7 +599,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 {
   if(darktable.gui->reset) return;
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if (dev && dev->image) dev->image->dirty = 1;
   if(dev->gui_attached)
   {
     // if gui_attached pop all operations down to dev->history_end
@@ -733,17 +732,10 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   dt_dev_pop_history_items(dev, dev->history_end);
 }
 
-/**
- * \brief Pop items off the history stack until only at most (cnt) remain
- *
- * \param[in] dev the developer to use for state
- * \param[in] cnt the maximum number of elements to leave on the history stack
- */
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
   // printf("dev popping all history items >= %d\n", cnt);
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if (dev && dev->image) dev->image->dirty = 1;
   darktable.gui->reset = 1;
   dev->history_end = cnt;
   // reset gui params for all modules
@@ -783,11 +775,6 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   dt_control_queue_draw_all();
 }
 
-/**
- * \brief Write updated history to DB for the active image in the developer
- *
- * \param[in] dev The developer to use for state
- */
 void dt_dev_write_history(dt_develop_t *dev)
 {
   sqlite3_stmt *stmt;
