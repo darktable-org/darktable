@@ -975,8 +975,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     }
   }
   if(!ret) dt_image_validate(img, mip);
-  // TODO: insert abstract hook here?
-  dt_control_queue_draw_all();
+
   return ret;
 }
 

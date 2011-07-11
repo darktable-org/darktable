@@ -548,7 +548,7 @@ film_strip_activated(const int imgid, void *data)
   // select newly loaded image
   select_this_image(dev->image->id);
   // force redraw
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
   // prefetch next few from first selected image on.
   dt_view_film_strip_prefetch();
 }
@@ -609,7 +609,7 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       {
         dt_view_film_strip_prefetch();
       }
-      dt_control_queue_draw_all();
+      dt_control_queue_redraw();
     }
     sqlite3_finalize(stmt);
   }
@@ -660,7 +660,7 @@ film_strip_key_accel(GtkAccelGroup *accel_group,
 {
   dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated,
                             (void*)data);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void
@@ -761,6 +761,12 @@ static void connect_closures(dt_view_t *self)
 
 }
 
+static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
+{
+  fprintf(stderr,"Pipe finished, lets redraw!!!\n");
+  dt_control_queue_redraw();
+}
+
 void enter(dt_view_t *self)
 {
   char accelpath[256];
@@ -768,6 +774,12 @@ void enter(dt_view_t *self)
   // Attaching accelerator group
   gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
                              darktable.control->accels_darkroom);
+
+  /* connect to ui pipe finished signal for redraw */
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback), 
+			    (gpointer)self);
+
 
   // Connecting the closures
   connect_closures(self);
@@ -860,6 +872,11 @@ void leave(dt_view_t *self)
   // Detaching the accelerator group
   gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
                                 darktable.control->accels_darkroom);
+
+  /* disconnect from pipe finish signal */
+  dt_control_signal_disconnect(darktable.signals,
+			       G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
+			       (gpointer)self);
 
   // Disconnecting and deleting the closures
   while(c)
@@ -986,7 +1003,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
     return;
   }
   if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, which);
@@ -1013,7 +1030,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     ctl->button_x = x - offx;
     ctl->button_y = y - offy;
     dt_dev_invalidate(dev);
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
   }
 }
 
@@ -1051,7 +1068,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     dev->gui_module->color_picker_box[1] = .5f+zoom_y;
     dev->gui_module->color_picker_box[2] = .5f+zoom_x;
     dev->gui_module->color_picker_box[3] = .5f+zoom_y;
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
     return 1;
   }
   if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
@@ -1155,6 +1172,8 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
   }
   dt_dev_invalidate(dev);
+
+  dt_control_queue_redraw();
 }
 
 
@@ -1182,7 +1201,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
   DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
   dt_dev_invalidate(dev);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 

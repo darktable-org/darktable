@@ -396,7 +396,7 @@ spinbutton_changed (GtkSpinButton *button, dt_iop_module_t *self)
   memset(p->mean,0, sizeof(float)*MAXN*2);
   memset(p->var,0,  sizeof(float)*MAXN*2);
   //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
-  dt_control_queue_draw(self->widget);
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 static void
@@ -476,7 +476,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         if(fwrite(&g->flowback, self->params_size, 1, f) > 0) g->flowback.flag = APPLY;
         fclose(f);
       }
-      dt_control_queue_draw(self->widget);
+      dt_control_queue_redraw_widget(self->widget);
     }
   }
   else
@@ -524,7 +524,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_spin_button_set_value(g->spinbutton, p->n);
   //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   // redraw color cluster preview
-  dt_control_queue_draw(self->widget);
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 void init(dt_iop_module_t *module)

@@ -290,8 +290,7 @@ failure:
   if(darktable.gui->center_tooltip == 2) // not set in this round
   {
     darktable.gui->center_tooltip = 0;
-    GtkWidget *widget = darktable.gui->widgets.center;
-    g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+    g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", "", (char *)NULL);
   }
 
 
@@ -328,7 +327,7 @@ paste_history_key_accel_callback(GtkAccelGroup *accel_group,
   int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
   dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0)?TRUE:FALSE);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void
@@ -344,7 +343,7 @@ discard_history_key_accel_callback(GtkAccelGroup *accel_group,
   if(mouse_over_id <= 0) return;
 
   dt_history_delete_on_image(mouse_over_id);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void
@@ -378,7 +377,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group,
       }
       dt_image_cache_flush(image);
       dt_image_cache_release(image, 'r');
-      dt_control_queue_draw_all();
+      dt_control_queue_redraw();
       break;
     }
     default:
@@ -558,7 +557,7 @@ void reset(dt_view_t *self)
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   // update stars/etc :(
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
@@ -638,7 +637,7 @@ void scrolled(dt_view_t *view, double x, double y, int up, int state)
   else   strip->offset ++;
   darktable.view_manager->film_strip_scroll_to = -1;
   // expose will take care of bounds checking
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

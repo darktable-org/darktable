@@ -209,9 +209,6 @@ static void _lib_filter_update_query(dt_lib_module_t *self)
   /* updates query */
   dt_collection_update_query (darktable.collection);
 
-  /* updates visual */
-  dt_control_queue_draw_all();
-
   /* update film strip, jump to currently opened image, if any: */
   if(darktable.develop->image)
     dt_view_film_strip_scroll_to(darktable.view_manager, darktable.develop->image->id);

@@ -575,8 +575,7 @@ failure:
   if(darktable.gui->center_tooltip == 2) // not set in this round
   {
     darktable.gui->center_tooltip = 0;
-    GtkWidget *widget = darktable.gui->widgets.center;
-    g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
+    g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", "", (char *)NULL);
   }
 }
 
@@ -869,7 +868,7 @@ go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = 0;
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void
@@ -879,7 +878,7 @@ go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = 0x1fffffff;
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void
@@ -893,7 +892,7 @@ go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = MAX(lib->offset - offset_delta, 0);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void
@@ -908,7 +907,7 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = MIN(lib->offset + offset_delta, count);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void
@@ -963,7 +962,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
         dt_image_cache_flush(image);
         dt_image_cache_release(image, 'r');
       }
-      dt_control_queue_draw_all();
+      dt_control_queue_redraw();
       break;
     }
     default:
@@ -1091,11 +1090,21 @@ static void connect_closures(dt_view_t *self)
       closure);
 }
 
+static void _lighttable_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
+{
+  dt_control_queue_redraw();
+}
+
 void enter(dt_view_t *self)
 {
   // Attach accelerator group
   gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
                              darktable.control->accels_lighttable);
+
+  /* connect to signals */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+			    G_CALLBACK(_lighttable_mipamps_updated_signal_callback), 
+			    (gpointer)self);
 
   // Connecting the closures
   connect_closures(self);
@@ -1114,6 +1123,8 @@ void leave(dt_view_t *self)
   gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
                                 darktable.control->accels_lighttable);
 
+  /* disconnect from signals */
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipamps_updated_signal_callback), (gpointer)self);
   // Disconnecting accelerator closures
   while(c)
   {
@@ -1146,7 +1157,7 @@ void mouse_leave(dt_view_t *self)
   if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
   {
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-    dt_control_queue_draw_all(); // remove focus
+    dt_control_queue_redraw();
   }
 }
 
@@ -1185,7 +1196,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
   // update stars/etc :(
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 
@@ -1364,7 +1375,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
     if(up) lib->track = -1;
     else   lib->track =  1;
   }
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

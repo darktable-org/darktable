@@ -66,7 +66,6 @@ int  dt_control_key_pressed(guint key, guint state);
 int  dt_control_key_released(guint key, guint state);
 int  dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
-void dt_control_gui_queue_draw();
 void dt_control_log(const char* msg, ...);
 void dt_control_log_busy_enter();
 void dt_control_log_busy_leave();
@@ -75,9 +74,19 @@ void dt_control_write_sidecar_files();
 void dt_control_delete_images();
 void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
 
-// could be both
-void dt_control_queue_draw_all();
-void dt_control_queue_draw(GtkWidget *widget);
+/** \brief request redraw of the workspace.
+    This redraws the whole workspace within a gdk critical 
+    section to prevent several threads to carry out a redraw
+    which will end up in crashes.
+ */
+void dt_control_queue_redraw();
+
+/** \brief threadsafe request of redraw of specific widget.
+    Use this function if you need to redraw a specific widget
+    if your current thread context is not gtk main thread.
+*/
+void dt_control_queue_redraw_widget(GtkWidget *widget);
+
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 

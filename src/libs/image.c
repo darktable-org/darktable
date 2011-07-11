@@ -66,7 +66,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 5) dt_control_flip_images(1);
   else if(i == 6) dt_control_flip_images(2);
   else if(i == 7) dt_control_merge_hdr();
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void key_accel_callback(GtkAccelGroup *accel_group,

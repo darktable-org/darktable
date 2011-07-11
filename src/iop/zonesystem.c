@@ -258,7 +258,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   /* thread-safe redraw */
   if(  self->dev->gui_attached && g && buffer )
-    dt_control_queue_draw(g->preview);
+    dt_control_queue_redraw_widget(g->preview);
 
 }
 

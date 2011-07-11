@@ -65,6 +65,8 @@ typedef struct dt_ui_t {
   /* panel widgets */
   GtkWidget *panels[DT_UI_PANEL_SIZE];
 
+  /* center widget */
+  GtkWidget *center;
 } dt_ui_t;
 
 /* initialize the whole left panel */
@@ -83,7 +85,8 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container);
 static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container);
 /* initialize the center bottom panel */
 static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container);
-
+/* generic callback for redraw widget signals */
+static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
 
 /*
  * OLD UI API
@@ -91,9 +94,6 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container);
 static void init_widgets();
 
 static void init_main_table(GtkWidget *container);
-
-static void init_center(GtkWidget *container);
-
 
 static void key_accel_changed(GtkAccelMap *object,
                               gchar *accel_path,
@@ -134,15 +134,12 @@ static void brightness_key_accel_callback(GtkAccelGroup *accel_group,
                                           GdkModifierType modifier,
                                           gpointer data)
 {
-  GtkWidget *widget;
-
   if(data)
     dt_gui_brightness_increase();
   else
     dt_gui_brightness_decrease();
 
-  widget = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(widget);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void contrast_key_accel_callback(GtkAccelGroup *accel_group,
@@ -150,15 +147,12 @@ static void contrast_key_accel_callback(GtkAccelGroup *accel_group,
                                         GdkModifierType modifier,
                                         gpointer data)
 {
-  GtkWidget *widget;
-
   if(data)
     dt_gui_contrast_increase();
   else
     dt_gui_contrast_decrease();
 
-  widget = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(widget);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
@@ -188,8 +182,8 @@ static void fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
     dt_dev_invalidate(darktable.develop);
   }
 
-  widget = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(widget);
+  /* redraw center view */
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void view_switch_key_accel_callback(GtkAccelGroup *accel_group,
@@ -197,12 +191,8 @@ static void view_switch_key_accel_callback(GtkAccelGroup *accel_group,
                                           GdkModifierType modifier,
                                           gpointer data)
 {
-  GtkWidget *widget;
-
   dt_ctl_switch_mode();
-
-  widget = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(widget);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static gboolean
@@ -348,8 +338,7 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   float width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  GtkWidget *cwidget = darktable.gui->widgets.center;
-  GtkStyle *style = gtk_widget_get_style(cwidget);
+  GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
   cairo_set_source_rgb (cr,
                         .5f*style->bg[GTK_STATE_NORMAL].red/65535.0,
                         .5f*style->bg[GTK_STATE_NORMAL].green/65535.0,
@@ -648,8 +637,8 @@ void quit()
   darktable.control->running = 0;
   dt_pthread_mutex_unlock(&darktable.control->run_mutex);
   dt_pthread_mutex_unlock(&darktable.control->cond_mutex);
-  widget = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(widget);
+
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
@@ -861,7 +850,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   snprintf(path, 1024, "%s/icons", datadir);
   gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), path);
 
-  widget = darktable.gui->widgets.center;
+  widget = dt_ui_center(darktable.gui->ui);
 
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed), NULL);
@@ -912,7 +901,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
         darktable.gui->picked_color_output_cs_max[k] =
         darktable.gui->picked_color_output_cs_min[k] = 0;
 
-  widget = darktable.gui->widgets.center;
+  widget = dt_ui_center(darktable.gui->ui);
   GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   // GTK_WIDGET_SET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
   GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
@@ -1032,7 +1021,7 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 
 void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 {
-  GtkWidget *widget = darktable.gui->widgets.center;
+  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   darktable.gui->pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
   /* start the event loop */
   gtk_main ();
@@ -1159,12 +1148,43 @@ void init_main_table(GtkWidget *container)
   _ui_init_panel_top(darktable.gui->ui, container);
 
 
-  // Initializing the center
+
+  /* 
+   * initialize the center top/center/bottom 
+   */
   widget = gtk_vbox_new(FALSE, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 2, 3, 1, 2,
                    GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-  init_center(widget);
-  gtk_widget_show(widget);
+
+  /* intiialize the center top panel */
+  _ui_init_panel_center_top(darktable.gui->ui, widget);
+  
+  /* setup center drawing area */
+  GtkWidget *cda = gtk_drawing_area_new();
+  gtk_widget_set_size_request(cda, -1, 500);
+  gtk_widget_set_app_paintable(cda, TRUE);
+  gtk_widget_set_events(cda,
+			GDK_POINTER_MOTION_MASK
+			| GDK_POINTER_MOTION_HINT_MASK
+			| GDK_BUTTON_PRESS_MASK
+			| GDK_BUTTON_RELEASE_MASK
+			| GDK_ENTER_NOTIFY_MASK
+			| GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_set_can_focus(cda, TRUE);
+  gtk_widget_set_visible(cda, TRUE);
+
+  gtk_box_pack_start(GTK_BOX(widget), cda, TRUE, TRUE, 0);
+  darktable.gui->ui->center = cda;
+
+  /* center should redraw when signal redraw all is raised*/
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_CONTROL_REDRAW_ALL, 
+			    G_CALLBACK(_ui_widget_redraw_callback), 
+			    darktable.gui->ui->center);
+
+  /* initialize the center bottom panel */
+  _ui_init_panel_center_bottom(darktable.gui->ui, widget);
+  
 
   /* initialize  left panel */
   _ui_init_panel_left(darktable.gui->ui, container);
@@ -1205,48 +1225,6 @@ void init_top_controls(GtkWidget *container)
   gtk_widget_show(widget);
 }
 #endif
-
-static void _gui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
-{
-  g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
-  gtk_widget_queue_draw(widget);
-}
-
-void init_center(GtkWidget *container)
-{
-  GtkWidget* widget;
-
-  /* intiialize the center top panel */
-  _ui_init_panel_center_top(darktable.gui->ui, container);
-
-  // Adding the center drawing area
-  widget = gtk_drawing_area_new();
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  darktable.gui->widgets.center = widget;
-
-  /* connect widget into redraw signals */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL, G_CALLBACK(_gui_widget_redraw_callback), widget);
-  
-
-  // Configuring the drawing area
-  gtk_widget_set_size_request(widget, -1, 500);
-  gtk_widget_set_app_paintable(widget, TRUE);
-  gtk_widget_set_events(widget,
-                        GDK_POINTER_MOTION_MASK
-                        | GDK_POINTER_MOTION_HINT_MASK
-                        | GDK_BUTTON_PRESS_MASK
-                        | GDK_BUTTON_RELEASE_MASK
-                        | GDK_ENTER_NOTIFY_MASK
-                        | GDK_LEAVE_NOTIFY_MASK);
-  gtk_widget_set_can_focus(widget, TRUE);
-  gtk_widget_set_visible(widget, TRUE);
-
-
-  /* initialize the center bottom panel */
-  _ui_init_panel_center_bottom(darktable.gui->ui, container);
-
-}
-
 
 #if 0
 void init_colorpicker(GtkWidget *container)
@@ -1368,6 +1346,26 @@ gboolean dt_ui_panel_visible(dt_ui_t *ui,const dt_ui_panel_t p)
   //if(!GTK_IS_WIDGET(ui->panels[p])) return FALSE;
   g_return_val_if_fail(GTK_IS_WIDGET(ui->panels[p]),FALSE);
   return gtk_widget_get_visible(ui->panels[p]);
+}
+
+GtkWidget *dt_ui_center(dt_ui_t *ui)
+{
+  return ui->center;
+}
+
+void dt_ui_redraw_center(dt_ui_t *ui)
+{
+  /* enter gdk thread if needed*/
+  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
+  if(needlock) 
+    gdk_threads_enter();
+  
+  /* redraw center view */
+  gtk_widget_queue_draw(dt_ui_center(ui));
+ 
+  /* leave gdk thread if needed */
+  if(needlock) 
+    gdk_threads_leave();
 }
 
 static GtkWidget * _ui_init_panel_container_top(GtkWidget *container)
@@ -1547,4 +1545,11 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT], TRUE, TRUE, 0);
 
+}
+
+/* this is always called on gui thread */
+static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
+{
+  g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
+  gtk_widget_queue_draw(widget);
 }

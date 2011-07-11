@@ -101,8 +101,7 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
     g_free (dtfilename);
   }
   gtk_widget_destroy (filechooser);
-  win = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(win);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void
@@ -136,7 +135,7 @@ static void
 delete_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   dt_history_delete_on_selection ();
-  dt_control_gui_queue_draw ();
+  dt_control_queue_redraw ();
 }
 
 static void
@@ -163,7 +162,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   }
 
   /* redraw */
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw();
 }
 
 void

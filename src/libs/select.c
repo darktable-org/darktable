@@ -93,7 +93,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   /* free temporary collection and redraw visual*/
   dt_collection_free(collection);
 
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void key_accel_callback(GtkAccelGroup *accel_group,

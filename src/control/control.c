@@ -879,7 +879,7 @@ void *dt_control_expose(void *voidptr)
   int width, height, pointerx, pointery;
   if(!darktable.gui->pixmap) return NULL;
   gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
-  GtkWidget *widget = darktable.gui->widgets.center;
+  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
 
   //create a gtk-independant surface to draw on
@@ -1053,7 +1053,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
   darktable.gui->center_tooltip = 0;
-  GtkWidget *widget = darktable.gui->widgets.center;
+  GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
 
   char buf[512];
@@ -1082,7 +1082,7 @@ static gboolean _dt_ctl_log_message_timeout_callback (gpointer data)
     darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id=0;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
   return FALSE;
 }
 
@@ -1130,7 +1130,7 @@ void dt_control_log(const char* msg, ...)
   darktable.control->log_pos = (darktable.control->log_pos+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id=g_timeout_add(DT_CTL_LOG_TIMEOUT,_dt_ctl_log_message_timeout_callback,NULL);
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 void dt_control_log_busy_enter()
@@ -1138,7 +1138,6 @@ void dt_control_log_busy_enter()
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   darktable.control->log_busy++;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-  dt_control_queue_draw_all();
 }
 
 void dt_control_log_busy_leave()
@@ -1146,83 +1145,71 @@ void dt_control_log_busy_leave()
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   darktable.control->log_busy--;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-  dt_control_queue_draw_all();
 }
 
-void dt_control_gui_queue_draw()
+
+/* redraw mutex to synchronize redraws */
+G_LOCK_DEFINE(counter);
+GStaticMutex _control_redraw_mutex = G_STATIC_MUTEX_INIT;
+void dt_control_queue_redraw()
 {
-  // double time = dt_get_wtime();
-  // if(time - darktable.control->last_expose_time < 0.1f) return;
+  static uint32_t counter = 0;
+
   if(dt_control_running())
+  {
+    /* try lock redraw mutex, if fail we are currently redrawing */
+    if(g_static_mutex_trylock(&_control_redraw_mutex))
     {
-      GtkWidget *widget = darktable.gui->widgets.center;
-      gtk_widget_queue_draw(widget);
-      dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
-      // darktable.control->last_expose_time = time;
-    }
-}
+      /* alwasy ensure we are carrying out the redraw in gdk thread */
+      if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) 
+	gdk_threads_enter();
 
-void dt_control_queue_draw_all()
-{
-  // double time = dt_get_wtime();
-  // if(time - darktable.control->last_expose_time < 0.1f) return;
-  if(dt_control_running())
+      /* raise redraw all signal */
+      dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
+
+      /*
+       * check if someone requested a redraw while we were doing it,
+       * if so, let's reset counter and carry out an additional redraw... 
+       */
+      G_LOCK (counter);
+      if(counter)
+      {
+	counter = 0;
+	G_UNLOCK(counter);
+	/* carry out an additional redraw due there was ignored ones */
+	dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
+
+      } else G_UNLOCK(counter);
+      
+      /* leav critical section */
+      if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) 
+	gdk_threads_leave();
+
+      /* unlock redraw mutex */
+      g_static_mutex_unlock(&_control_redraw_mutex);
+    } 
+    else
     {
-      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-      if(needlock) gdk_threads_enter();
-      GtkWidget *widget = darktable.gui->widgets.center;
-      gtk_widget_queue_draw(widget);
-      dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
-      // darktable.control->last_expose_time = time;
-      if(needlock) gdk_threads_leave();
+      G_LOCK (counter);
+      //fprintf(stderr,"Skipping redraw counter %d\n",++counter);
+      counter++;
+      G_UNLOCK (counter);
     }
-}
-
-void dt_control_queue_draw(GtkWidget *widget)
-{
-  // double time = dt_get_wtime();
-  // if(time - darktable.control->last_expose_time < 0.1f) return;
-  if(dt_control_running())
-    {
-      if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
-      gtk_widget_queue_draw(widget);
-      dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
-      // darktable.control->last_expose_time = time;
-      if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
-    }
-}
-
-#if 0 // REENABLE THIS LATER
-// deprecate this function.
-void dt_control_gui_queue_draw()
-{
-  /* raise the redraw center signal */
-  if(dt_control_running())
-    dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
-}
-
-void dt_control_queue_draw_all()
-{
-  /* raise the redraw all signal */
-  if (dt_control_running()) {
-    int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-    if(needlock) gdk_threads_enter();
-    dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
-    if(needlock) gdk_threads_leave();
   }
 }
 
-/* thread safe helper function for widget redraw on the gtk thread */
-void dt_control_queue_draw(GtkWidget *widget)
+void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
-    if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) gdk_threads_enter();
+    if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) 
+      gdk_threads_enter();
     gtk_widget_queue_draw(widget);
-    if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) gdk_threads_leave();
+    if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) 
+      gdk_threads_leave();
   }
 }
-#endif
+
 
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
 {
@@ -1285,7 +1272,6 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
-  GtkWidget *widget;
   dt_control_accels_t* accels = &darktable.control->accels;
 
   /* check if key accelerators are enabled*/
@@ -1304,23 +1290,20 @@ int dt_control_key_pressed_override(guint key, guint state)
 
     dt_dev_invalidate(darktable.develop);
   }
-  widget = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(widget);
+ 
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
   return 0;
 }
 
 int dt_control_key_pressed(guint key, guint state)
 {
   int needRedraw;
-  GtkWidget *widget;
 
   needRedraw = dt_view_manager_key_pressed(darktable.view_manager, key,
                                                state);
   if( needRedraw )
-  {
-    widget = darktable.gui->widgets.center;
-    gtk_widget_queue_draw(widget);
-  }
+    gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  
   return 0;
 }
 
@@ -1328,7 +1311,7 @@ int dt_control_key_released(guint key, guint state)
 {
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
-  GtkWidget *widget;
+
   switch (key)
   {
     default:
@@ -1337,8 +1320,7 @@ int dt_control_key_released(guint key, guint state)
       break;
   }
 
-  widget = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(widget);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
   return 0;
 }
 

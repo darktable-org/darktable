@@ -254,7 +254,7 @@ int
 mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 {
   //TODO see vignette.c ...
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw();
   return 0;
 }
 

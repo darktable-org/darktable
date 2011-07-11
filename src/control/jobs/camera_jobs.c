@@ -41,7 +41,7 @@ int32_t dt_captured_image_import_job_run(dt_job_t *job)
   {
     //dt_film_open(1);
     dt_view_film_strip_set_active_image(darktable.view_manager,id);
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
     //dt_ctl_switch_mode_to(DT_DEVELOP);
   }
  

@@ -40,9 +40,6 @@ typedef struct dt_gui_widgets_t
   GtkWidget *colorpicker_output_label;
 #endif
 
-  // Drawing areas
-  GtkWidget *center;
-
   // Borders
   GtkWidget *left_border;
   GtkWidget *right_border;
@@ -138,7 +135,6 @@ typedef enum dt_ui_container_t
   DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER,
   DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT,
 
-
   /* Count of containers */
   DT_UI_CONTAINER_SIZE
 } dt_ui_container_t;
@@ -179,8 +175,13 @@ void dt_ui_container_add_widget(struct dt_ui_t *ui, const dt_ui_container_t c, G
 void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
 /** \brief removes all child widgets from container */
 void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c);
-/** \biref shows/hide a panel */
+/** \brief shows/hide a panel */
 void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show);
-/** \biref get visible state of panel */
+/** \brief get visible state of panel */
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui,const dt_ui_panel_t);
+/** \brief get the center drawable widget */
+GtkWidget *dt_ui_center(struct dt_ui_t *ui);
+/** \brief redraw center view */
+void dt_ui_redraw_center(struct dt_ui_t *ui);
+
 #endif
