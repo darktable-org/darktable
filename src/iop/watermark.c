@@ -99,6 +99,10 @@ int groups()
   return IOP_GROUP_EFFECT;
 }
 
+void init_key_accels()
+{
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/refresh");
+}
 
 static gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text)
 {
@@ -661,6 +665,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *hbox= gtk_hbox_new(FALSE,0);
   g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
+  dtgtk_button_set_accel(g->dtbutton1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/refresh");
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);

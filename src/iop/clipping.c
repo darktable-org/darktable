@@ -95,7 +95,6 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkLabel *label7;
   GtkDarktableToggleButton *flipHorGoldenGuide, *flipVerGoldenGuide;
   GtkCheckButton *goldenSectionBox, *goldenSpiralSectionBox, *goldenSpiralBox, *goldenTriangleBox;
-  GClosure *swap_callback;
   GClosure *commit_callback;
   GClosure *undo_callback;
 
@@ -879,16 +878,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
-  g->swap_callback = g_cclosure_new(G_CALLBACK(key_swap_callback),
-                                           (gpointer)self,
-                                           NULL);
   g->commit_callback = g_cclosure_new(G_CALLBACK(key_commit_callback),
                                       (gpointer)self, NULL);
   g->undo_callback = g_cclosure_new(G_CALLBACK(key_undo_callback),
                                     (gpointer)self, NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                 "<Darktable>/darkroom/plugins/clipping/swap aspect",
-                                 g->swap_callback);
   dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/plugins/clipping/commit",
                                  g->commit_callback);
@@ -905,6 +898,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(g->aspect_presets), TRUE, TRUE, 0);
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, CPF_STYLE_FLAT);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/swap the aspect ratio");
   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
   g_object_set(G_OBJECT(button), "tooltip-text", _("swap the aspect ratio (ctrl-x)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, FALSE, 0);
@@ -1005,9 +999,6 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_accel_group_disconnect(darktable.control->accels_darkroom,
-                             ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
-                             swap_callback);
   dt_accel_group_disconnect(darktable.control->accels_darkroom,
                              ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
                              commit_callback);
@@ -1555,17 +1546,12 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
 
 void init_key_accels()
 {
-  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/clipping/swap aspect",
-                          GDK_x, GDK_CONTROL_MASK);
   gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/clipping/commit",
                           GDK_Return, 0);
   gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/clipping/undo",
                           GDK_z, GDK_CONTROL_MASK);
 
   // Making sure these get into the accelerator lists as well
-  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                 "<Darktable>/darkroom/plugins/clipping/swap aspect",
-                                 NULL);
   dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/plugins/clipping/commit",
                                  NULL);
@@ -1575,6 +1561,7 @@ void init_key_accels()
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/angle");
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone h");
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/swap the aspect ratio");
 }
 
 #undef PHI

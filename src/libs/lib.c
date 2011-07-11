@@ -339,6 +339,7 @@ static int _lib_default_expandable() { return 1; };
 static int
 dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *plugin_name)
 {
+  char name[1024];
   module->dt = &darktable;
   module->widget = NULL;
   g_strlcpy(module->plugin_name, plugin_name, 20);
@@ -381,6 +382,17 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if(!g_module_symbol(module->module, "init_key_accels",          
 		      (gpointer)&(module->init_key_accels)))        
     module->init_key_accels = NULL;
+
+  if (module->gui_reset)
+  {
+    snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/reset plugin parameters",module->plugin_name);
+    dtgtk_button_init_accel(darktable.control->accels_lighttable,name);
+  }
+  if(module->get_params)
+  {
+    snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/show preset menu",module->plugin_name);
+    dtgtk_button_init_accel(darktable.control->accels_lighttable,name);
+  }
 
   return 0;
 error:
@@ -538,20 +550,23 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   if(!module->expandable())
     return module->widget;
 
+  char name[1024];
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  
+
   /* only add reset button if module has implemented the gui_reset function */
   if (module->gui_reset) 
   {
     GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
     gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
     g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
+    snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/reset plugin parameters",module->plugin_name);
+    dtgtk_button_set_accel(resetbutton,darktable.control->accels_lighttable,name);
     gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
-    
+
     g_signal_connect (G_OBJECT (resetbutton), "clicked",
                     G_CALLBACK (dt_lib_gui_reset_callback), module);
   }
@@ -561,6 +576,8 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
     GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
     gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
     g_object_set(G_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
+    snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/show preset menu",module->plugin_name);
+    dtgtk_button_set_accel(presetsbutton,darktable.control->accels_lighttable,name);
     gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (presetsbutton), "clicked", G_CALLBACK (popup_callback), module);
   }

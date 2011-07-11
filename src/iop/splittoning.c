@@ -88,6 +88,11 @@ groups ()
 {
   return IOP_GROUP_EFFECT;
 }
+void init_key_accels()
+{
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick primary color");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick secondary color");
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -412,6 +417,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(dtgtk_label_new(_("shadows"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
 
   g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  dtgtk_button_set_accel(g->colorpick1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick primary color");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick1),32,32);
 
   GtkWidget *hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
@@ -471,6 +477,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(dtgtk_label_new(_("highlights"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
 
   g->colorpick2 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  dtgtk_button_set_accel(g->colorpick2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick secondary color");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick2),32,32);
 
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
