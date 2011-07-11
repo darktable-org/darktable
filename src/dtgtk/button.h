@@ -49,5 +49,9 @@ GType dtgtk_button_get_type (void);
 /** Instansiate a new darktable button control passing paint function as content */
 GtkWidget* dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
 GtkWidget* dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags);
+/** add unmapped accelerators to increase and decrease slider */
+void dtgtk_button_set_accel(GtkDarktableButton *button, GtkAccelGroup *accel_group, const gchar *accel_path);
+/** register the slider shortcuts, can be called before the slider is created */
+void dtgtk_button_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path);
 G_END_DECLS
 #endif

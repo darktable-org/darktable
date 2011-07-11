@@ -438,7 +438,7 @@ void dt_iop_load_modules_so()
   GList *res = NULL;
   dt_iop_module_so_t *module;
   darktable.iop = NULL;
-  char plugindir[1024], op[20], accelpath[256];
+  char plugindir[1024], op[20], accelpath[1024];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
@@ -474,6 +474,10 @@ void dt_iop_load_modules_so()
       gtk_accel_map_add_entry(accelpath, 0, 0);
       dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
                                      NULL);
+      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
+      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
     }
   }
   g_dir_close(dir);
@@ -843,7 +847,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+  dtgtk_button_set_accel(resetbutton,darktable.control->accels_darkroom,name);
   GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+  dtgtk_button_set_accel(presetsbutton,darktable.control->accels_darkroom,name);
   gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
