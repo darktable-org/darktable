@@ -120,11 +120,13 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox2 = GTK_BOX(gtk_hbox_new(TRUE, 5));
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees ccw");
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees cw");
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)5);
@@ -162,5 +164,7 @@ void init_key_accels(dt_lib_module_t *self)
       darktable.control->accels_lighttable,
       "<Darktable>/lighttable/plugins/image/delete from disk",
       g_cclosure_new(G_CALLBACK(key_accel_callback), (gpointer)1, NULL));
+  dtgtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees cw");
+  dtgtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees ccw");
 }
 

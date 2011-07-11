@@ -79,6 +79,8 @@ operation_tags ()
 void init_key_accels()
 {
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/border size");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/swap the aspect ratio");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/pick gui color from image");
 }
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
@@ -386,10 +388,12 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, CPF_STYLE_FLAT);
   // TODO: what about this?
   //g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("swap the aspect ratio (ctrl-x)"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("swap the aspect ratio"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), button, 2, 3, 1, 2, GTK_EXPAND, 0, 0, 0);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/framing/swap the aspect ratio");
 
   g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE));
+  dtgtk_button_set_accel(g->colorpick,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/framing/pick gui color from image");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
   label = dtgtk_reset_label_new (_("frame color"), self, &p->color, 3*sizeof(float));
   g_signal_connect (G_OBJECT (g->colorpick), "clicked", G_CALLBACK (colorpick_callback), self);
