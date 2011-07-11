@@ -76,7 +76,8 @@ int position()
 static void _lib_histogram_change_callback(gpointer instance, gpointer user_data) 
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_control_queue_redraw_widget(self->widget);
+  /* always called on gdk critical section */
+  gtk_widget_queue_draw(self->widget);
 }
 
 void gui_init(dt_lib_module_t *self)
