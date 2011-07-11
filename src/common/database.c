@@ -126,6 +126,8 @@ void dt_database_init_pool(const dt_database_t *db)
 sqlite3 *dt_database_get(const dt_database_t *db)
 {
   int threadid = 0;
+
+  return db->main_handle;
   
   /* if no control is running lets return mainhandler */
   if(!darktable.control->running || !db->handles)
