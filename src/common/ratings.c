@@ -36,12 +36,12 @@ void dt_ratings_apply_to_selection (int rating)
 	       "update images set flags=(images.flags & ~7) | (7 & %d) where id in (select imgid from selected_images)",
 	       rating
 	       );
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 #endif
 
     /* for each selected image update rating */
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       dt_image_t *image = dt_image_cache_get(sqlite3_column_int(stmt, 0), 'r');

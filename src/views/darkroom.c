@@ -372,7 +372,7 @@ int try_enter(dt_view_t *self)
   {
     // try last selected
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       selected = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -409,14 +409,14 @@ select_this_image(const int imgid)
   // select this image, if no multiple selection:
   int count = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(imgid) from selected_images", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   if(count < 2)
   {
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into selected_images values (?1)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -597,13 +597,13 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
     sqlite3_stmt *stmt;
     dt_image_t *image;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       orig_imgid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
 
     snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, orig_imgid);
@@ -611,7 +611,7 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       offset = sqlite3_column_int(stmt, 0) - 1;
     sqlite3_finalize(stmt);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, qin, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + diff);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 1);
     if(sqlite3_step(stmt) == SQLITE_ROW)

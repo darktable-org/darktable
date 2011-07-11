@@ -52,7 +52,7 @@ dt_iop_graduatednd_params_t;
 
 void init_presets (dt_iop_module_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("neutral grey ND2 (soft)"), self->op, &(dt_iop_graduatednd_params_t)
   {
@@ -107,7 +107,7 @@ void init_presets (dt_iop_module_t *self)
     2,0,0,50,0.082927,0.25
   } , sizeof(dt_iop_graduatednd_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 typedef struct dt_iop_graduatednd_gui_data_t

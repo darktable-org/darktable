@@ -30,12 +30,15 @@ static char *_signal_name[DT_SIGNAL_COUNT] = {
 
   "dt-control-draw-all",                          // DT_SIGNAL_CONTROL_DRAW_ALL
 
-  "dt-viewmanager-view-changed",                       // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+  "dt-viewmanager-view-changed",                  // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+
+  "dt-collection-changed",                        // DT_SIGNAL_COLLECTION_CHANGED
 
   /* Develop related signals */
   "dt-develop-initialized",                       // DT_SIGNAL_DEVELOP_INITIALIZED
 
   "dt-develop-preview-pipe-finished",             // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
+  "dt-develop-ui-pipe-finished",                  // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
   "dt-develop-history-change"                     // DT_SIGNAL_HISTORY_CHANGE
 };
 

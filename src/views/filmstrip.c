@@ -204,7 +204,7 @@ scroll_to_image(dt_view_t *self)
   {
     snprintf(query, 1024, "select rowid from (%s) where id=?3", qin);
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1,  0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
@@ -257,7 +257,7 @@ void expose (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_
   if(offset > count-max_cols+1) strip->offset = offset = count-max_cols+1;
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
 

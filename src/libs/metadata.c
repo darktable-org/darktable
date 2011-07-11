@@ -127,13 +127,13 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else takes ages.
   if(imgsel < 0)  // selected images
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select key, value from meta_data where id in (select imgid from selected_images) group by key, value order by value", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select key, value from meta_data where id in (select imgid from selected_images) group by key, value order by value", -1, &stmt, NULL);
   }
   else     // single image under mouse cursor
   {
     char query[1024];
     snprintf(query, 1024, "select key, value from meta_data where id = %d group by key, value order by value", imgsel);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   }
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {

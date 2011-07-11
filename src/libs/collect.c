@@ -302,7 +302,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
       break;
   }
   g_free(escaped_text);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);

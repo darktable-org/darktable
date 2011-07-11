@@ -62,6 +62,12 @@ void init_key_accels()
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/scale");
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/tca R");
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/tca B");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/reset lens from exif data");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/reset camera from exif data");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/reset distance from exif data");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/find camera");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/find lens");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/auto scale");
 }
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -1050,6 +1056,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   g_signal_connect (G_OBJECT(g->cbe[0]), "changed",
                     G_CALLBACK(lens_comboentry_focal_update), self);
   GtkWidget* button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/reset lens from exif data");
   gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -1065,6 +1072,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   g_signal_connect (G_OBJECT(g->cbe[1]), "changed",
                     G_CALLBACK(lens_comboentry_aperture_update), self);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/reset camera from exif data");
   gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -1076,6 +1084,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   g_signal_connect (G_OBJECT(g->cbe[2]), "changed",
                     G_CALLBACK(lens_comboentry_distance_update), self);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/reset distance from exif data");
   gtk_box_pack_start(GTK_BOX(g->lens_param_box), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("reset from exif data"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -1303,6 +1312,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (camera_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->camera_model), TRUE, TRUE, 0);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/find camera");
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("find camera"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -1318,6 +1328,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (lens_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->lens_model), TRUE, TRUE, 0);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/find lens");
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("find lens"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -1373,6 +1384,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/auto scale");
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("auto scale"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
