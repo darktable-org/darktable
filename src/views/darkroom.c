@@ -878,6 +878,7 @@ void enter(dt_view_t *self)
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+    module->show_closure = NULL;
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Connecting the (optional) module show accelerator
@@ -1095,6 +1096,11 @@ void leave(dt_view_t *self)
     char var[1024];
     snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
+
+    // disconnect the show accelerator
+    if(module->show_closure)
+      dt_accel_group_disconnect(darktable.control->accels_darkroom,
+                                module->show_closure);
 
     module->gui_cleanup(module);
     dt_iop_cleanup_module(module) ;
