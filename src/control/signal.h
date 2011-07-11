@@ -56,6 +56,8 @@ typedef enum dt_signal_t {
   /** \brief This signal is raised when develop history is changed */
   DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
 
+  /** \brief This signal is raised when a mipmap has been generated and flushed to cache */
+  DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
 
   /** \brief This signal is raised when collection query is changed */
   DT_SIGNAL_COLLECTION_CHANGED,

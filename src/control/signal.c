@@ -36,7 +36,7 @@ static char *_signal_name[DT_SIGNAL_COUNT] = {
 
   /* Develop related signals */
   "dt-develop-initialized",                       // DT_SIGNAL_DEVELOP_INITIALIZED
-
+  "dt-develop-mipmap-updated",                    // DT_SIGNAL_DEVELOP_MIPMAP_UPDATED
   "dt-develop-preview-pipe-finished",             // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
   "dt-develop-ui-pipe-finished",                  // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
   "dt-develop-history-change"                     // DT_SIGNAL_HISTORY_CHANGE
