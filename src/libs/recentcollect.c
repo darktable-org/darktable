@@ -195,7 +195,7 @@ button_pressed (GtkButton *button, gpointer user_data)
   }
 }
 
-static void _lib_recentcollection_updated(void *user_data)
+static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self =(dt_lib_module_t *)user_data;
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
@@ -296,7 +296,7 @@ gui_reset (dt_lib_module_t *self)
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
     dt_conf_set_string(confname, "");
   }
-  _lib_recentcollection_updated(self);
+  _lib_recentcollection_updated(NULL,self);
 }
 
 void
@@ -316,7 +316,7 @@ gui_init (dt_lib_module_t *self)
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
   }
-  _lib_recentcollection_updated(self);
+  _lib_recentcollection_updated(NULL,self);
 
   /* connect collection changed signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
