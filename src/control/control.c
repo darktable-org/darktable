@@ -55,8 +55,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
   dt_conf_set_bool ("write_sidecar_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
-  dt_conf_set_float("preview_subsample", .125f);
-  dt_conf_set_int  ("mipmap_cache_thumbnails", 30000);
+  dt_conf_set_float("preview_subsample", 1.f);
+  dt_conf_set_int  ("mipmap_cache_thumbnails", 1000);
   dt_conf_set_int  ("parallel_export", 1);
   dt_conf_set_int  ("cache_memory", 536870912);
   dt_conf_set_int  ("database_cache_quality", 89);
@@ -82,6 +82,7 @@ void dt_ctl_settings_default(dt_control_t *c)
 
   dt_conf_set_int  ("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
   dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
+  dt_conf_set_int  ("ui_last/initial_rating", DT_LIB_FILTER_STAR_1);
 
   // import settings
   dt_conf_set_string ("capture/camera/storage/basedirectory", "$(PICTURES_FOLDER)/Darktable");
@@ -96,6 +97,10 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("plugins/collection/rating",            1);
   dt_conf_set_int  ("plugins/lighttable/collect/num_rules", 0);
 
+  // reasonable thumbnail res:
+  dt_conf_set_int  ("plugins/lighttable/thumbnail_size", 800);
+
+  // should be unused:
   dt_conf_set_float("gamma_linear", .1f);
   dt_conf_set_float("gamma_gamma", .45f);
 }
