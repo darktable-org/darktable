@@ -332,8 +332,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
     }
   }
   gtk_widget_destroy (filechooser);
-  win = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(win);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data) 
@@ -402,8 +401,7 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
   gtk_widget_destroy(ignore_jpeg);
   gtk_widget_destroy(extra);
   gtk_widget_destroy (filechooser);
-  win = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(win);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 void gui_init(dt_lib_module_t *self)

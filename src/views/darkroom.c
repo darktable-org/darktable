@@ -423,14 +423,6 @@ select_this_image(const int imgid)
   }
 }
 
-/**
- * \brief Switch to the specified image
- *
- * Switches to the specified image, saving the state of the current image if needed.
- *
- * \param dev The developer
- * \param image The image to switch to
- */
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
@@ -443,29 +435,24 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   else
     dt_conf_set_string("plugins/darkroom/active", "");
   g_assert(dev->gui_attached);
+  // tag image as changed
+  // TODO: only tag the image when there was a real change.
+  // TODO: this applies especially for the expensive bits:
+  //       write xmp (disk) / re-create mip map
+  guint tagid = 0;
+  dt_tag_new("darktable|changed",&tagid);
+  dt_tag_attach(tagid, dev->image->id);
+  // commit image ops to db
+  dt_dev_write_history(dev);
 
-  // only save image/settings if image was modified
-  if (dev->image && dev->image->dirty)
-  {
-    // tag image as changed
-    // only tag the image when there was a real change.
-    guint tagid = 0;
-    dt_tag_new("darktable|changed", &tagid);
-    dt_tag_attach(tagid, dev->image->id);
-    // commit image ops to db
-    dt_dev_write_history(dev);
-    // write .xmp file
-    dt_image_write_sidecar_file(dev->image->id);
-
-    // commit updated mipmaps to db
-    // TODO: bg process?
-    dt_dev_process_to_mip(dev);
-  }
-
+  // commit updated mipmaps to db
+  // TODO: bg process?
+  dt_dev_process_to_mip(dev);
   // release full buffer
   if(dev->image && dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
 
+  // writes the .xmp and the database:
   dt_image_cache_flush(dev->image);
 
   dev->image = image;
@@ -574,17 +561,11 @@ film_strip_activated(const int imgid, void *data)
   // select newly loaded image
   select_this_image(dev->image->id);
   // force redraw
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
   // prefetch next few from first selected image on.
   dt_view_film_strip_prefetch();
 }
 
-/**
- * \brief Jump forward (diff) images in the collection
- *
- * \param[in] dev A pointer to the dt_develop_t to use for state
- * \param[in] diff The number of images to jump forward.  Use negative values to jump backward.
- */
 static void
 dt_dev_jump_image(dt_develop_t *dev, int diff)
 {
@@ -635,7 +616,7 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       {
         dt_view_film_strip_prefetch();
       }
-      dt_control_queue_draw_all();
+      dt_control_queue_redraw();
     }
     sqlite3_finalize(stmt);
   }
@@ -686,7 +667,7 @@ film_strip_key_accel(GtkAccelGroup *accel_group,
 {
   dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated,
                             (void*)data);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 static void
@@ -787,6 +768,12 @@ static void connect_closures(dt_view_t *self)
 
 }
 
+static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
+{
+  fprintf(stderr,"Pipe finished, lets redraw!!!\n");
+  dt_control_queue_redraw();
+}
+
 void enter(dt_view_t *self)
 {
   char accelpath[256];
@@ -794,6 +781,12 @@ void enter(dt_view_t *self)
   // Attaching accelerator group
   gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
                              darktable.control->accels_darkroom);
+
+  /* connect to ui pipe finished signal for redraw */
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback), 
+			    (gpointer)self);
+
 
   // Connecting the closures
   connect_closures(self);
@@ -822,6 +815,7 @@ void enter(dt_view_t *self)
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     module->topwidget = GTK_WIDGET(expander);
+    module->show_closure = NULL;
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Connecting the (optional) module show accelerator
@@ -887,6 +881,11 @@ void leave(dt_view_t *self)
   gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
                                 darktable.control->accels_darkroom);
 
+  /* disconnect from pipe finish signal */
+  dt_control_signal_disconnect(darktable.signals,
+			       G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
+			       (gpointer)self);
+
   // Disconnecting and deleting the closures
   while(c)
   {
@@ -945,6 +944,11 @@ void leave(dt_view_t *self)
     char var[1024];
     snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
+
+    // disconnect the show accelerator
+    if(module->show_closure)
+      dt_accel_group_disconnect(darktable.control->accels_darkroom,
+                                module->show_closure);
 
     module->gui_cleanup(module);
     dt_iop_cleanup_module(module) ;
@@ -1020,7 +1024,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
     return;
   }
   if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, which);
@@ -1047,7 +1051,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     ctl->button_x = x - offx;
     ctl->button_y = y - offy;
     dt_dev_invalidate(dev);
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
   }
 }
 
@@ -1095,7 +1099,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
       dt_dev_invalidate_all(dev);
     }
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
     return 1;
   }
   if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
@@ -1199,6 +1203,8 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
   }
   dt_dev_invalidate(dev);
+
+  dt_control_queue_redraw();
 }
 
 
@@ -1226,7 +1232,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
   DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
   dt_dev_invalidate(dev);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 

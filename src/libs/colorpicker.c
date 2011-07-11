@@ -129,7 +129,7 @@ static void _picker_button_toggled (GtkToggleButton *button, gpointer p)
   {
     dt_iop_request_focus(NULL);
   }
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw();
 }
 
 static void _statistic_changed (GtkComboBox *widget, gpointer p)

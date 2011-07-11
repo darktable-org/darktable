@@ -490,15 +490,13 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
     /* focus the current module */
     for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
       dt_ui_container_focus_widget(darktable.gui->ui, k, GTK_WIDGET(module->expander));
-
-    dt_control_gui_queue_draw();
   }
   else
   {
     if(darktable.lib->gui_module == module)
     {
       darktable.lib->gui_module = NULL;
-      dt_control_gui_queue_draw();
+      dt_control_queue_redraw();
     }
     gtk_widget_hide_all(module->widget);
   }

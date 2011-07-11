@@ -295,7 +295,6 @@ restart:
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing", NULL);
 
   dev->preview_dirty = 0;
-  dt_control_queue_draw_all();
   dt_control_log_busy_leave();
   dev->mipf = NULL;
   dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
@@ -362,6 +361,9 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
   dt_image_cache_flush(dev->image); // write new output size to db.
   dt_image_release(dev->image, DT_IMAGE_MIP4, 'r');
   dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+
+  /* raise signal that mipmaps has been flushed to cache */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
@@ -418,7 +420,7 @@ restart:
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
   dev->image_dirty = 0;
 
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
   dt_control_log_busy_leave();
 }
 
@@ -599,7 +601,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 {
   if(darktable.gui->reset) return;
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if (dev && dev->image) dev->image->dirty = 1;
   if(dev->gui_attached)
   {
     GList *history = g_list_nth (dev->history, dev->history_end);
@@ -701,7 +702,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 
     /* redraw */
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
   }
 }
 
@@ -724,17 +725,10 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   dt_dev_pop_history_items(dev, dev->history_end);
 }
 
-/**
- * \brief Pop items off the history stack until only at most (cnt) remain
- *
- * \param[in] dev the developer to use for state
- * \param[in] cnt the maximum number of elements to leave on the history stack
- */
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 {
   // printf("dev popping all history items >= %d\n", cnt);
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if (dev && dev->image) dev->image->dirty = 1;
   darktable.gui->reset = 1;
   dev->history_end = cnt;
   // reset gui params for all modules
@@ -771,14 +765,9 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   darktable.gui->reset = 0;
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
-/**
- * \brief Write updated history to DB for the active image in the developer
- *
- * \param[in] dev The developer to use for state
- */
 void dt_dev_write_history(dt_develop_t *dev)
 {
   sqlite3_stmt *stmt;
@@ -1036,7 +1025,7 @@ void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
 {
   dev->proxy.snapshot.filename = filename;
   dev->proxy.snapshot.request = TRUE;
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 void dt_dev_invalidate_from_gui (dt_develop_t *dev)

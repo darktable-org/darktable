@@ -34,15 +34,8 @@
 #include <strings.h>
 #include <math.h>
 
-static void
-collection_updated(void *d)
-{
-  dt_control_queue_draw_all();
-}
-
 void dt_view_manager_init(dt_view_manager_t *vm)
 {
-  dt_collection_listener_register(collection_updated, NULL);
   vm->film_strip_dragging = 0;
   vm->film_strip_on = 0;
   vm->film_strip_size = dt_conf_get_float("plugins/filmstrip/size");
@@ -79,7 +72,6 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
 {
-  dt_collection_listener_unregister(collection_updated);
   for(int k=0; k<vm->num_views; k++) dt_view_unload_module(vm->view + k);
 }
 
@@ -358,8 +350,8 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     vm->film_strip.height = height * vm->film_strip_size;
     vm->film_strip.width  = width;
     cairo_rectangle(cr, -10, v->height, width+20, tb);
-    GtkWidget *widget = darktable.gui->widgets.center;
-    GtkStyle *style = gtk_widget_get_style(widget);
+ 
+    GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
     cairo_set_source_rgb (cr,
                           style->bg[GTK_STATE_NORMAL].red/65535.0,
                           style->bg[GTK_STATE_NORMAL].green/65535.0,
@@ -923,11 +915,10 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       {
         if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
         {
-          GtkWidget *widget = darktable.gui->widgets.center;
           char* tooltip = dt_history_get_items_as_string(img->id);
           if(tooltip != NULL)
           {
-            g_object_set(G_OBJECT(widget), "tooltip-text", tooltip, (char *)NULL);
+            g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", tooltip, (char *)NULL);
             g_free(tooltip);
           }
         }

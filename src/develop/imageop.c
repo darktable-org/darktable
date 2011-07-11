@@ -529,21 +529,17 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   free(module->factory_params); module->factory_params = NULL ;  
   module->cleanup(module);
 
-  // Disconnecting the show accelerator
-  dt_accel_group_disconnect(darktable.control->accels_darkroom,
-                             module->show_closure);
-
   free(module->default_params); module->default_params = NULL ; 
   if (module->blend_params != NULL) 
-    {
-      free(module->blend_params) ; 
-      module->blend_params = NULL ; 
-    }
-   if (module->default_blendop_params != NULL) 
-    {
-      free(module->default_blendop_params) ; 
-      module->default_blendop_params = NULL ; 
-    }
+  {
+    free(module->blend_params) ; 
+    module->blend_params = NULL ; 
+  }
+  if (module->default_blendop_params != NULL) 
+  {
+    free(module->default_blendop_params) ; 
+    module->default_blendop_params = NULL ; 
+  }
   dt_pthread_mutex_destroy(&module->params_mutex);
 }
 
@@ -695,15 +691,15 @@ dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer u
     for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
       dt_ui_container_focus_widget(darktable.gui->ui, k, module->topwidget);
 
-    // redraw gui (in case post expose is set)
-     dt_control_gui_queue_draw();
+    /* we need to redraw because iop might have post expose */
+    dt_control_queue_redraw();
   }
   else
   {
     if(module->dev->gui_module == module)
     {
       dt_iop_request_focus(NULL);
-      dt_control_gui_queue_draw();
+      dt_control_queue_redraw();
     }
     gtk_widget_hide(content);
   }

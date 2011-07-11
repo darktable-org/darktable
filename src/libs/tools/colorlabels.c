@@ -95,5 +95,5 @@ void gui_cleanup(dt_lib_module_t *self)
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,gpointer user_data)
 {
   dt_colorlabels_key_accel_callback(NULL, NULL, 0,0, user_data);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }

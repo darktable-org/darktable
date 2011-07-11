@@ -417,7 +417,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       for(int k=3; k<4*64; k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
       for(int k=19; k<4*64; k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      dt_control_queue_draw(module->widget);
+      dt_control_queue_redraw_widget(module->widget);
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -883,7 +883,15 @@ post_process_collect_info:
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
 
     }
-    else dt_pthread_mutex_unlock(&pipe->busy_mutex);
+    else 
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+      /* if gui attached, lets raise pipe finish signal */
+      if (dev->gui_attached && strcmp(module->op, "gamma") == 0)
+	dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
+	
+    }
   } 
   
   return 0;

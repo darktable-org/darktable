@@ -52,7 +52,7 @@ void dt_ratings_apply_to_selection (int rating)
     sqlite3_finalize(stmt);
 
     /* redraw view */
-    dt_control_queue_draw_all();
+    dt_control_queue_redraw();
   }
   else
     dt_control_log(_("no images selected for applying rating"));

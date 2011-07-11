@@ -583,7 +583,7 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 }
 
 static void
-collection_updated(void *d)
+collection_updated(gpointer instance,gpointer d)
 {
   _lib_collect_gui_update((dt_lib_collect_t *)d);
 }
@@ -682,7 +682,12 @@ void
 gui_init (dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)malloc(sizeof(dt_lib_collect_t));
-  dt_collection_listener_register(collection_updated, d);
+
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_COLLECTION_CHANGED,
+			    G_CALLBACK(collection_updated),
+			    (gpointer)d);
+
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
   gtk_widget_set_size_request(self->widget, 100, -1);
@@ -750,7 +755,7 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_collection_listener_unregister(collection_updated);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self->data);
   free(((dt_lib_collect_t*)self->data)->params);
   free(self->data);
   self->data = NULL;

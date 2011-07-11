@@ -101,7 +101,7 @@ static void
 film_strip_activated(const int imgid, void *data)
 {
   dt_view_film_strip_set_active_image(darktable.view_manager,imgid);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
   dt_view_film_strip_prefetch();
 }
 
@@ -122,7 +122,7 @@ void film_strip_key_accel(GtkAccelGroup *accel_group,
                           gpointer data)
 {
   dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 void init(dt_view_t *self)
@@ -509,7 +509,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   	if(up) lib->track = -1;
   	else   lib->track =  1;
   }*/
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw();
 }
 
 void scrolled(dt_view_t *view, double x, double y, int up)

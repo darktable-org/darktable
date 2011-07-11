@@ -251,7 +251,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
   dt_collection_update(darktable.collection);
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw();
 
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = NULL;
@@ -305,7 +305,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
   dt_collection_update(darktable.collection);
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw();
 
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = NULL;

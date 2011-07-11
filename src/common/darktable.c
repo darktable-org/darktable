@@ -186,6 +186,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
   return 1;
 #endif
+#ifdef M_MMAP_THRESHOLD
+  mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */   
+#endif
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
@@ -369,7 +372,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   
   dt_image_cache_init(darktable.image_cache, 
 		      MIN(10000, MAX(500, thumbnails)), 
-		      dt_database_is_new(darktable.db));
+		      !dt_database_is_new(darktable.db));
 
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to register

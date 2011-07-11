@@ -42,10 +42,10 @@ dt_image_debug_malloc(const void *ptr, const size_t size)
 {
 #ifdef _DEBUG
   assert(ptr == NULL || ptr == (void *)1);
-  dt_pthread_mutex_lock(&dt_database_get(darktable.db)_insert);
+  dt_pthread_mutex_lock(&darktable.db_insert);
   dt_image_debug_malloc_size += size;
   // dt_image_debug_malloc_size ++;
-  dt_pthread_mutex_unlock(&dt_database_get(darktable.db)_insert);
+  dt_pthread_mutex_unlock(&darktable.db_insert);
 #endif
   return dt_alloc_align(64, size);
 }
@@ -55,10 +55,10 @@ dt_image_debug_free(void *p, size_t size)
 {
 #ifdef _DEBUG
   if(!p) return;
-  dt_pthread_mutex_lock(&dt_database_get(darktable.db)_insert);
+  dt_pthread_mutex_lock(&darktable.db_insert);
   dt_image_debug_malloc_size -= size;
   // dt_image_debug_malloc_size --;
-  dt_pthread_mutex_unlock(&dt_database_get(darktable.db)_insert);
+  dt_pthread_mutex_unlock(&darktable.db_insert);
 #endif
   free(p);
 }
@@ -975,8 +975,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     }
   }
   if(!ret) dt_image_validate(img, mip);
-  // TODO: insert abstract hook here?
-  dt_control_queue_draw_all();
+
   return ret;
 }
 

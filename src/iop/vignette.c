@@ -492,7 +492,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       float new_falloff = 100.0 * delta_y / max;
       dtgtk_slider_set_value(g->falloff_scale, new_falloff);
     }
-    dt_control_gui_queue_draw();
+    dt_control_queue_redraw();
     return 1;
 
   }
@@ -509,7 +509,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     if(old_grab != grab) dt_control_change_cursor(GDK_LEFT_PTR);
   }
   old_grab = grab;
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw();
   return 0;
 }
 
