@@ -75,6 +75,7 @@ int position()
   return 1001;
 }
 
+
 static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer user_data) 
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -134,13 +135,14 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
-  //dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  //dt_lib_navigation_t *d = ( dt_lib_navigation_t *)self->data;
 
   const int inset = DT_NAVIGATION_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
 
   dt_develop_t *dev = darktable.develop;
+
+  /* bail out if dirty */
+  if(dev->preview_dirty) return FALSE;
 
   /* generate image into cairo surface*/
   

@@ -254,7 +254,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
 
 static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_data) 
 {
-  GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import image"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -336,7 +336,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
 
 static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data) 
 {
-   GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("import film"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,

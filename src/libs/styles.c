@@ -200,7 +200,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
   char *name = get_style_name(d);
   if(name)
   {
-    GtkWidget *win = darktable.gui->widgets.main_window;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                              GTK_WINDOW (win),
                              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -222,7 +222,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
 
 static void import_clicked (GtkWidget *w,gpointer user_data)
 {
-  GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select style"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,

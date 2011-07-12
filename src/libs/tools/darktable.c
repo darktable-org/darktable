@@ -205,8 +205,7 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
-  GtkWidget *win = darktable.gui->widgets.main_window;
-  gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
+  gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_dialog_run(GTK_DIALOG (dialog));
   gtk_widget_destroy(dialog);
 

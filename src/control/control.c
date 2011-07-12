@@ -157,7 +157,7 @@ int dt_control_load_config(dt_control_t *c)
   int height = dt_conf_get_int("ui_last/window_h");
   gint x = dt_conf_get_int("ui_last/window_x");
   gint y = dt_conf_get_int("ui_last/window_y");
-  GtkWidget *widget = darktable.gui->widgets.main_window;
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   gtk_window_move(GTK_WINDOW(widget),x,y);
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
@@ -172,7 +172,7 @@ int dt_control_write_config(dt_control_t *c)
   dt_ctl_gui_mode_t gui = dt_conf_get_int("ui_last/view");
   dt_control_save_gui_settings(gui);
 
-  GtkWidget *widget = darktable.gui->widgets.main_window;
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   gint x, y;
   gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
   dt_conf_set_int ("ui_last/window_x",  x);
@@ -465,27 +465,17 @@ void dt_control_key_accelerators_on(struct dt_control_t *s)
   if(!s->key_accelerators_on)
   {
     s->key_accelerators_on = 1;
-
+    GtkWindow *mw = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
     if(state & ACCELS_GLOBAL)
-      gtk_window_add_accel_group(
-          GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.control->accels_global);
+      gtk_window_add_accel_group(mw, darktable.control->accels_global);
     if(state & ACCELS_LIGHTTABLE)
-      gtk_window_add_accel_group(
-          GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.control->accels_lighttable);
+      gtk_window_add_accel_group(mw, darktable.control->accels_lighttable);
     if(state & ACCELS_DARKROOM)
-      gtk_window_add_accel_group(
-          GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.control->accels_darkroom);
+      gtk_window_add_accel_group(mw, darktable.control->accels_darkroom);
     if(state & ACCELS_CAPTURE)
-      gtk_window_add_accel_group(
-          GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.control->accels_capture);
+      gtk_window_add_accel_group(mw, darktable.control->accels_capture);
     if(state & ACCELS_FILMSTRIP)
-      gtk_window_add_accel_group(
-          GTK_WINDOW(darktable.gui->widgets.main_window),
-          darktable.control->accels_filmstrip);
+      gtk_window_add_accel_group(mw, darktable.control->accels_filmstrip);
   }
 }
 
@@ -504,14 +494,15 @@ static void state_from_accels(gpointer data, gpointer state)
     *s |= ACCELS_FILMSTRIP;
 
   gtk_window_remove_accel_group(
-      GTK_WINDOW(darktable.gui->widgets.main_window),
+      GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
       (GtkAccelGroup*)data);
 }
 
 void dt_control_key_accelerators_off(struct dt_control_t *s)
 {
   GSList *g = gtk_accel_groups_from_object(
-      G_OBJECT(darktable.gui->widgets.main_window));
+    G_OBJECT(dt_ui_main_window(darktable.gui->ui)));
+ 
   guint state = 0;
 
   // Setting the apropriate bits for currently active accel groups
@@ -529,7 +520,7 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
-  GtkWidget *widget = darktable.gui->widgets.main_window;
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GdkCursor* cursor = gdk_cursor_new(curs);
   gdk_window_set_cursor(widget->window, cursor);
   gdk_cursor_destroy(cursor);
@@ -1135,7 +1126,7 @@ void dt_control_log(const char* msg, ...)
   darktable.control->log_pos = (darktable.control->log_pos+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id=g_timeout_add(DT_CTL_LOG_TIMEOUT,_dt_ctl_log_message_timeout_callback,NULL);
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 void dt_control_log_busy_enter()
@@ -1151,7 +1142,7 @@ void dt_control_log_busy_leave()
   darktable.control->log_busy--;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   /* lets redraw */
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static gboolean *_control_gdk_thread_locks = NULL;
@@ -1159,11 +1150,14 @@ static gboolean *_control_gdk_thread_locks = NULL;
 gboolean dt_control_gdk_lock()
 {
   /* initialize threadslocks if not initialized */
-  if (!_control_gdk_thread_locks)
+  if (!_control_gdk_thread_locks) 
+  {
     _control_gdk_thread_locks = g_malloc(sizeof(gboolean) * darktable.control->num_threads + 1);
+    memset(_control_gdk_thread_locks,0,sizeof(gboolean) * darktable.control->num_threads + 1);
+  }
 
-  /* ig current thread is gui thread, no need to enter critical section */
-  if (!pthread_equal(darktable.control->gui_thread, pthread_self())) return FALSE;
+  /* if current thread is gui thread, no need to enter gdk critical section */
+  if (pthread_equal(darktable.control->gui_thread, pthread_self()) !=0 ) return FALSE;
 
   /* get current thread num */
   uint32_t threadid = -1;
@@ -1212,14 +1206,15 @@ void dt_control_gdk_unlock()
   if(_control_gdk_thread_locks[threadid])
   {
     _control_gdk_thread_locks[threadid] = FALSE;
-    gdk_threads_unlock();
+    gdk_threads_leave();
   }  
 }
 
 /* redraw mutex to synchronize redraws */
 G_LOCK_DEFINE(counter);
 GStaticMutex _control_redraw_mutex = G_STATIC_MUTEX_INIT;
-void dt_control_queue_redraw()
+
+void _control_queue_redraw_wrapper(dt_signal_t signal)
 {
   static uint32_t counter = 0;
 
@@ -1228,12 +1223,11 @@ void dt_control_queue_redraw()
     /* try lock redraw mutex, if fail we are currently redrawing */
     if(g_static_mutex_trylock(&_control_redraw_mutex))
     {
-      /* alwasy ensure we are carrying out the redraw in gdk thread */
-      if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) 
-	gdk_threads_enter();
+      /* always ensure we are carrying out the redraw in gdk thread */
+      gboolean i_own_lock = dt_control_gdk_lock();
 
-      /* raise redraw all signal */
-      dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
+      /* raise redraw signal */
+      dt_control_signal_raise(darktable.signals, signal);
 
       /*
        * check if someone requested a redraw while we were doing it,
@@ -1244,16 +1238,15 @@ void dt_control_queue_redraw()
       {
 	counter = 0;
 	G_UNLOCK(counter);
-	/* carry out an additional redraw due there was ignored ones */
-	dt_control_signal_raise(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL);
+	/* carry out an additional redraw due there was ignored ones
+	   make it redraw all to ensure all is redrawn..
+	 */
+	dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
 
       } else G_UNLOCK(counter);
       
-      /* leav critical section */
-      if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) 
-	gdk_threads_leave();
-
-      /* unlock redraw mutex */
+      if (i_own_lock) dt_control_gdk_unlock();
+      
       g_static_mutex_unlock(&_control_redraw_mutex);
     } 
     else
@@ -1264,6 +1257,16 @@ void dt_control_queue_redraw()
       G_UNLOCK (counter);
     }
   }
+}
+
+void dt_control_queue_redraw()
+{
+  _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_ALL);
+}
+
+void dt_control_queue_redraw_center() 
+{
+  _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
 void dt_control_queue_redraw_widget(GtkWidget *widget)

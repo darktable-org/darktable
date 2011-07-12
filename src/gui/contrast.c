@@ -122,7 +122,7 @@ void
 dt_gui_contrast_init ()
 {
   /* create a copy of orginal style of window */
-  GtkWidget *window = darktable.gui->widgets.main_window;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   /* realize window to enshure style is applied before copy */
   gtk_widget_realize(window);

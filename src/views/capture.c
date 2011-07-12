@@ -372,7 +372,7 @@ void enter(dt_view_t *self)
   lib->mode = dt_conf_get_int("plugins/capture/mode");
 
   // Adding the accelerators
-  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+  gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accels_capture);
 
   lib->filmstrip_toggle = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
@@ -410,7 +410,7 @@ void leave(dt_view_t *self)
     dt_film_remove(cv->film->id );
 
   // Detaching accelerators
-  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+  gtk_window_remove_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                                 darktable.control->accels_capture);
   dt_accel_group_disconnect(darktable.control->accels_capture,
                             cv->filmstrip_toggle);
