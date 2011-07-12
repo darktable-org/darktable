@@ -1150,6 +1150,8 @@ void dt_control_log_busy_leave()
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   darktable.control->log_busy--;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+  /* lets redraw */
+  dt_control_queue_redraw();
 }
 
 static gboolean *_control_gdk_thread_locks = NULL;
@@ -1201,6 +1203,7 @@ void dt_control_gdk_unlock()
   {
     threadid = 0;
     fprintf(stderr,"[control] CRITICAL, dt_control_gdk_unlock() on unmanaged thread.\n");
+    g_assert(!"[control] this should not happend and we raise SIGABRT to get more control of debugging the situation");
   }
   else
     threadid++;
