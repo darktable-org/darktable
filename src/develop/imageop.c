@@ -27,6 +27,7 @@
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 #include "dtgtk/slider.h"
+// #include "dtgtk/tristatebutton.h" //FIXME
 
 #include <strings.h>
 #include <assert.h>
@@ -658,7 +659,7 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
       /* if module is the current, always expand it */
       if(m==module)
         gtk_expander_set_expanded(m->expander, TRUE);
-      else if((current_group == 0 || (current_group & m->groups()) ))
+      else if((current_group == 0 || (current_group & m->groups()) || (current_group == IOP_SPECIAL_GROUP_ACTIVE_PIPE && m->enabled) /* || (current_group == IOP_SPECIAL_GROUP_USER_DEFINED && module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2) */ )) //FIXME
         gtk_expander_set_expanded(m->expander, FALSE);
 
       iop = g_list_next(iop);
