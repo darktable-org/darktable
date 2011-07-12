@@ -29,6 +29,7 @@ static char *_signal_name[DT_SIGNAL_COUNT] = {
   "dt-global-mouse-over-image-change",            // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
 
   "dt-control-draw-all",                          // DT_SIGNAL_CONTROL_DRAW_ALL
+  "dt-control-draw-center",                       // DT_SIGNAL_CONTROL_DRAW_CENTER
 
   "dt-viewmanager-view-changed",                  // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
 

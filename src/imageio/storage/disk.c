@@ -58,7 +58,7 @@ static void
 button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
-  GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,

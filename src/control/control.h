@@ -81,6 +81,12 @@ void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer
  */
 void dt_control_queue_redraw();
 
+/** \brief request redraw of center window.
+    This redraws the center view within a gdk critical section
+    to prevent several thrads to carry out the redraw.
+*/
+void dt_control_queue_redraw_center();
+
 /** \brief threadsafe request of redraw of specific widget.
     Use this function if you need to redraw a specific widget
     if your current thread context is not gtk main thread.

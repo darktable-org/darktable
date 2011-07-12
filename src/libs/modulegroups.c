@@ -39,7 +39,11 @@ typedef enum dt_lib_modulegroup_t
   DT_MODULEGROUP_COLOR,
   DT_MODULEGROUP_EFFECT,
 
-  DT_MODULEGROUP_SIZE
+  /* dont touch the following */
+  DT_MODULEGROUP_SIZE,
+
+  DT_MODULEGROUP_NONE
+
 } dt_lib_modulegroup_t;
 
 typedef struct dt_lib_modulegroups_t
@@ -155,6 +159,9 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.set = _lib_modulegroups_set;
   darktable.develop->proxy.modulegroups.get = _lib_modulegroups_get;
 
+  /* lets set default group */
+  _lib_modulegroups_set(self, DT_MODULEGROUP_BASIC);
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -215,7 +222,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 	  else
 	    gtk_widget_hide(w);
 	} break;
-	
+
+        case DT_MODULEGROUP_NONE:
+	{
+	  /* show all */
+	  gtk_widget_show(w);
+	} break;
+
         default:
 	{
 	  if ( _lib_modulegroups_test(d->current, module->groups()) &&
@@ -239,13 +252,24 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   for (int k = 0; k < DT_MODULEGROUP_SIZE; k++)
     g_signal_handlers_block_matched (d->buttons[k], G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
 
-  /* deactivate all but current button */
+  /* deactivate all buttons */
+  uint32_t cb = 0;
   for (int k = 0; k < DT_MODULEGROUP_SIZE; k++)
-    if (button != d->buttons[k])
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[k]), FALSE);
-    else // store current module
-      d->current = k;
-  
+  {
+    /* store toggled modulegroup */
+    if(d->buttons[k] == button) cb=k;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[k]), FALSE);
+  }
+
+
+  if (d->current == cb)
+    d->current = DT_MODULEGROUP_NONE;
+  else 
+  {
+    d->current = cb;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[cb]), TRUE);
+  } 
+
   /* unblock all button callbacks */
   for (int k = 0; k < DT_MODULEGROUP_SIZE; k++)
     g_signal_handlers_unblock_matched (d->buttons[k], G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
@@ -258,11 +282,21 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
 static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  /* this is a proxy function so it might be called from another thread */
+  gboolean i_own_lock = dt_control_gdk_lock();
+
+  _lib_modulegroups_update_iop_visibility(self);
+
+  /* if no change just do nothing.. */
+  if(d->current == group) return;
+    
   /* set current group */
   if(group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[group]))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[group]), TRUE);
-  else
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[DT_MODULEGROUP_BASIC]), TRUE);
+
+  if (i_own_lock) dt_control_gdk_unlock();
+
 }
 
 static uint32_t _lib_modulegroups_get (dt_lib_module_t *self)

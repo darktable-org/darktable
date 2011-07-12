@@ -67,6 +67,8 @@ typedef struct dt_ui_t {
 
   /* center widget */
   GtkWidget *center;
+  /* main widget */
+  GtkWidget *main_window;
 } dt_ui_t;
 
 /* initialize the whole left panel */
@@ -165,7 +167,7 @@ static void fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
 
   if(data)
   {
-    widget = darktable.gui->widgets.main_window;
+    widget = dt_ui_main_window(darktable.gui->ui);
     fullscreen = dt_conf_get_bool("ui_last/fullscreen");
     if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
     else           gtk_window_fullscreen  (GTK_WINDOW(widget));
@@ -175,7 +177,7 @@ static void fullscreen_key_accel_callback(GtkAccelGroup *accel_group,
   }
   else
   {
-    widget = darktable.gui->widgets.main_window;
+    widget = dt_ui_main_window(darktable.gui->ui);
     gtk_window_unfullscreen(GTK_WINDOW(widget));
     fullscreen = 0;
     dt_conf_set_bool("ui_last/fullscreen", fullscreen);
@@ -512,7 +514,7 @@ borders_scrolled (GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 void quit()
 {
   // thread safe quit, 1st pass:
-  GtkWindow *win = GTK_WINDOW(darktable.gui->widgets.main_window);
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   gtk_window_iconify(win);
 
   GtkWidget *widget;
@@ -724,7 +726,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   init_widgets();
 
   // Adding the global shortcut group to the main window
-  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+  gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accels_global);
 
   // set constant width from gconf key
@@ -923,7 +925,7 @@ void init_widgets()
 
   // Creating the main window
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  darktable.gui->widgets.main_window = widget;
+  darktable.gui->ui->main_window = widget;
   gtk_window_set_default_size(GTK_WINDOW(widget), 900, 500);
 
   gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
@@ -942,6 +944,12 @@ void init_widgets()
   widget = gtk_vbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_widget_show(widget);
+
+  /* connect to signal redraw all */
+  dt_control_signal_connect(darktable.signals,
+                            DT_SIGNAL_CONTROL_REDRAW_ALL,
+                            G_CALLBACK(_ui_widget_redraw_callback),
+                            darktable.gui->ui->main_window);
 
   container = widget;
 
@@ -981,7 +989,7 @@ void init_widgets()
   gtk_widget_show(widget);
 
   // Showing everything
-  gtk_widget_show_all(darktable.gui->widgets.main_window);
+  gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
 }
 
 void init_main_table(GtkWidget *container)
@@ -1063,9 +1071,9 @@ void init_main_table(GtkWidget *container)
   gtk_box_pack_start(GTK_BOX(widget), cda, TRUE, TRUE, 0);
   darktable.gui->ui->center = cda;
 
-  /* center should redraw when signal redraw all is raised*/
+  /* center should redraw when signal redraw center is raised*/
   dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_CONTROL_REDRAW_ALL, 
+			    DT_SIGNAL_CONTROL_REDRAW_CENTER, 
 			    G_CALLBACK(_ui_widget_redraw_callback), 
 			    darktable.gui->ui->center);
 
@@ -1186,13 +1194,9 @@ GtkWidget *dt_ui_center(dt_ui_t *ui)
   return ui->center;
 }
 
-
-void dt_ui_redraw_center(dt_ui_t *ui)
+GtkWidget *dt_ui_main_window(dt_ui_t *ui)
 {
-  gboolean i_own_lock = dt_control_gdk_lock();
-  /* redraw center view */
-  gtk_widget_queue_draw(dt_ui_center(ui));
-  if(i_own_lock) dt_control_gdk_unlock();
+  return ui->main_window;
 }
 
 static GtkWidget * _ui_init_panel_container_top(GtkWidget *container)
@@ -1374,9 +1378,12 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 
 }
 
-/* this is always called on gui thread */
+/* this is always called on gui thread !!! */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
-  g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
+  //  g_return_if_fail(GTK_IS_WIDGET(widget) && gtk_widget_is_drawable(widget));
+  gboolean i_own_lock = dt_control_gdk_lock();
   gtk_widget_queue_draw(widget);
+  if(i_own_lock) dt_control_gdk_unlock();
+
 }

@@ -29,7 +29,6 @@
 
 typedef struct dt_gui_widgets_t
 {
-  GtkWidget *main_window;
 
   // Borders
   GtkWidget *left_border;
@@ -170,7 +169,7 @@ void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show);
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui,const dt_ui_panel_t);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
-/** \brief redraw center view */
-void dt_ui_redraw_center(struct dt_ui_t *ui);
+/** \brief get the main window widget */
+GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 
 #endif

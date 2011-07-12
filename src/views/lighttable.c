@@ -1098,7 +1098,7 @@ static void _lighttable_mipamps_updated_signal_callback(gpointer instance, gpoin
 void enter(dt_view_t *self)
 {
   // Attach accelerator group
-  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+  gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accels_lighttable);
 
   /* connect to signals */
@@ -1120,7 +1120,7 @@ void leave(dt_view_t *self)
   GSList *c = ((dt_library_t*)self->data)->closures;
 
   // Removing keyboard accelerators
-  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+  gtk_window_remove_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                                 darktable.control->accels_lighttable);
 
   /* disconnect from signals */
@@ -1195,8 +1195,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
-  // update stars/etc :(
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 

@@ -33,9 +33,13 @@ typedef enum dt_signal_t {
    */
   DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
 
-  /** \brief This signal is raised when control redraw is queued.
+  /** \brief This signal is raised when dt_control_queue_redraw() is called.
   */
   DT_SIGNAL_CONTROL_REDRAW_ALL,
+
+  /** \brief This signal is raid when dt_control_queue_redraw_center() is called. 
+   */
+  DT_SIGNAL_CONTROL_REDRAW_CENTER,
 
   /** \brief This signal is raised by viewmanager when a view has changed.
    */

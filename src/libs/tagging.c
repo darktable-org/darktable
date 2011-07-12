@@ -259,7 +259,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   if( count > 0 && dt_conf_get_bool("plugins/lighttable/tagging/ask_before_delete_tag") )
   {
     GtkWidget *dialog;
-    GtkWidget *win = darktable.gui->widgets.main_window;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     const gchar *tagname=dt_tag_get_name(tagid);
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,

@@ -518,7 +518,7 @@ static void connect_closures(dt_view_t *self)
 void enter(dt_view_t *self)
 {
   // Attaching accel group
-  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+  gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accels_filmstrip);
 
   // Connecting the closures
@@ -542,7 +542,7 @@ void leave(dt_view_t *self)
   g_slist_free(strip->closures);
   strip->closures = NULL;
 
-  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+  gtk_window_remove_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                                 darktable.control->accels_filmstrip);
 }
 

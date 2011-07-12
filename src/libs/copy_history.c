@@ -62,7 +62,7 @@ write_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 static void
 load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
-  GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open sidecar file"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,

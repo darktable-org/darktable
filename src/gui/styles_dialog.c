@@ -187,7 +187,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
     sd->imgid = imgid;
     sprintf (title,"%s",_("create new style"));
   }
-  GtkWidget *window = darktable.gui->widgets.main_window;
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *dialog = GTK_DIALOG (gtk_dialog_new_with_buttons (title,
                                   GTK_WINDOW(window),
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
