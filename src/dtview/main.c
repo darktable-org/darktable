@@ -251,6 +251,7 @@ process_next_image()
 
 int main(int argc, char *arg[])
 {
+  gtk_init (&argc, &arg);
   random_state = use_random = 0;
   for(int k=1; k<argc; k++)
   {

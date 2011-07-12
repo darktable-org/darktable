@@ -596,7 +596,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
         c++;
         g->current_aspect = atof(text) / atof(c);
         apply_box_aspect(self, 5);
-        dt_control_queue_redraw();
+        dt_control_queue_redraw_center();
         dt_iop_request_focus(self);
       }
       g_free(text);
@@ -610,7 +610,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
     else
       g->current_aspect = g->aspect_ratios[which];
     apply_box_aspect(self, 5);
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
     dt_iop_request_focus(self);
   }
 }
@@ -710,7 +710,7 @@ key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   g->current_aspect = 1.0/g->current_aspect;
   apply_box_aspect(self, 5);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void key_commit_callback(GtkAccelGroup *accel_group,
@@ -741,7 +741,7 @@ static void key_undo_callback(GtkAccelGroup *accel_group,
   g->clip_w = g->old_clip_w;
   g->clip_h = g->old_clip_h;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -796,14 +796,14 @@ guides_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   }
 
   dt_iop_request_focus(self);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void
 guides_button_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
   // redraw guides
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1220,7 +1220,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pzx += 0.5f;
   pzy += 0.5f;
   cairo_set_dash (cr, &dashes, 0, 0);
-  cairo_set_source_rgba(cr, .3, .3, .3, .8);
+  cairo_set_source_rgba(cr, 0, 0, 0, .8);
   cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_rectangle (cr, -1, -1, wd+2, ht+2);
   cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
@@ -1384,7 +1384,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     // second mouse button, straighten activated:
     g->straightening = 1;
     dt_control_change_cursor(GDK_CROSSHAIR);
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   }
   else if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
@@ -1436,7 +1436,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
       apply_box_aspect(self, grab);
     }
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
     return 1;
   }
   else if (grab)
@@ -1454,14 +1454,14 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       else if(grab == 12) dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
       else if(grab == 9)  dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     }
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   }
   else
   {
     // somewhere besides borders. maybe rotate?
     if(old_grab != grab) dt_control_change_cursor(GDK_FLEUR);
     g->straightening = g->cropping = 0;
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   }
   old_grab = grab;
   return 0;

@@ -962,12 +962,13 @@ gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
 
 void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
 {
-  if (dev->proxy.exposure.module)
-    dev->proxy.exposure.module->reload_defaults(dev->proxy.exposure.module);
+  if (!dev->proxy.exposure.module) return;
 
-  /*memcpy(d->exposure->params, d->exposure->default_params, d->exposure->params_size);
-    d->exposure->gui_update(d->exposure);
-    dt_dev_add_history_item(d->exposure->dev, d->exposure, TRUE);*/
+  dt_iop_module_t *exposure = dev->proxy.exposure.module;
+  memcpy(exposure->params, exposure->default_params, exposure->params_size);
+  exposure->gui_update(exposure);
+  dt_dev_add_history_item(exposure->dev, exposure, TRUE);
+
 }
 
 void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
