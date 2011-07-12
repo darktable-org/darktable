@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PATH=`dirname $_`:$PATH
+
 # get dbfile from gconf
 dbfile=$(gconftool-2 --get /apps/darktable/database)
 # if it doesn't contain an absolute path, prepend the std dir
