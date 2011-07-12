@@ -201,9 +201,9 @@ static void _camctl_camera_disconnected_callback (const dt_camera_t *camera,void
   dt_camctl_detect_cameras(darktable.camctl);
   
   /* update gui with detected devices */
-  gdk_threads_enter();
+  gboolean i_own_lock = dt_control_gdk_lock();
   _lib_import_ui_devices_update(self);
-  gdk_threads_leave();
+  if(i_own_lock) dt_control_gdk_unlock();
 }
 
 /** camctl status listener callback */
@@ -213,8 +213,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   dt_lib_import_t *d = (dt_lib_import_t*)self->data;
 
   /* check if we need gdk locking */
-  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-  if(needlock) gdk_threads_enter();
+  gboolean i_have_lock = dt_control_gdk_lock();
 
   /* handle camctl status */
   switch(status)
@@ -248,7 +247,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   }
 
   /* unlock */
-  if(needlock) gdk_threads_leave();
+  if(i_have_lock) dt_control_gdk_unlock();
 }
 
 #endif // HAVE_GPHOTO2

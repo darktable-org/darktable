@@ -456,10 +456,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       for(int k=0; k<3; k++) module->picked_color[k] = Lab[k];
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-      if(needlock) gdk_threads_enter();
+
+      gboolean i_own_lock = dt_control_gdk_lock();      
       gtk_widget_queue_draw(module->widget);
-      if(needlock) gdk_threads_leave();
+      if (i_own_lock) dt_control_gdk_unlock();
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -693,10 +693,10 @@ post_process_collect_info:
       for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs[k] = rgb[k];
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-      if(needlock) gdk_threads_enter();
+      
+      gboolean i_own_lock = dt_control_gdk_lock();
       gtk_widget_queue_draw(module->widget);
-      if(needlock) gdk_threads_leave();
+      if (i_own_lock) dt_control_gdk_unlock();
 
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
