@@ -23,6 +23,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/label.h"
 #include "dtgtk/togglebutton.h"
+#include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/colorpicker.h"
@@ -357,11 +358,11 @@ static void _add_sample(GtkButton *widget, gpointer self)
   int i;
 
   // Initializing the UI
-  sample->container = gtk_hbox_new(FALSE, 10);
+  sample->container = gtk_hbox_new(FALSE, 2);
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container,
                      TRUE, TRUE, 0);
 
-  sample->output_button = gtk_button_new();
+  sample->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
   gtk_widget_set_size_request(sample->output_button, 40, -1);
   gtk_widget_set_sensitive(sample->output_button, FALSE);
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_button,
@@ -421,18 +422,18 @@ void gui_init(dt_lib_module_t *self)
 
   GdkColor c;
 
-  GtkWidget *container = gtk_vbox_new(FALSE, 10);
-  GtkWidget *output_row = gtk_hbox_new(FALSE, 10);
-  GtkWidget *output_options = gtk_vbox_new(FALSE, 10);
-  GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 10);
+  GtkWidget *container = gtk_vbox_new(FALSE, 5);
+  GtkWidget *output_row = gtk_hbox_new(FALSE, 2);
+  GtkWidget *output_options = gtk_vbox_new(FALSE, 5);
+  GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 2);
   GtkWidget *history_label = dtgtk_label_new(_("static history"),
                                              DARKTABLE_LABEL_TAB
                                              | DARKTABLE_LABEL_ALIGN_RIGHT);
-  GtkWidget *history_buttons_row = gtk_hbox_new(FALSE, 10);
+  GtkWidget *history_buttons_row = gtk_hbox_new(FALSE, 2);
   GtkWidget *samples_label = dtgtk_label_new(_("live samples"),
                                              DARKTABLE_LABEL_TAB
                                              | DARKTABLE_LABEL_ALIGN_RIGHT);
-  GtkWidget *samples_options_row = gtk_hbox_new(FALSE, 10);
+  GtkWidget *samples_options_row = gtk_hbox_new(FALSE, 2);
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data =
@@ -457,7 +458,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), output_row, TRUE, TRUE, 0);
 
   // The output button
-  data->output_button = gtk_button_new();
+  data->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
   gtk_widget_set_sensitive(data->output_button, FALSE);
   gtk_box_pack_start(GTK_BOX(output_row), data->output_button, TRUE, TRUE, 0);
 
@@ -535,7 +536,7 @@ void gui_init(dt_lib_module_t *self)
 
   for(i = 0; i < 5; i++)
   {
-    data->history_button[i] = gtk_button_new();
+    data->history_button[i] = dtgtk_button_new(NULL, CPF_STYLE_BOX);
     gtk_widget_set_size_request(data->history_button[i], -1, 40);
     gtk_widget_set_tooltip_text(data->history_button[i],
                                 _("click to save a color in this slot"));
@@ -608,7 +609,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(data->add_sample_button), "clicked",
                    G_CALLBACK(_add_sample), self);
 
-  data->samples_container = gtk_vbox_new(FALSE, 10);
+  data->samples_container = gtk_vbox_new(FALSE, 2);
   gtk_box_pack_start(GTK_BOX(container), data->samples_container,
                      TRUE, TRUE, 0);
 }
