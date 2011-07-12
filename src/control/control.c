@@ -1267,17 +1267,11 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
-    /* try to enter gdk critical section, will succeed if we
-       currently not are into one. 
-    */
-    gboolean have_lock = FALSE;
-    if(!pthread_equal(pthread_self(),darktable.control->gui_thread))
-      have_lock = g_mutex_trylock(gdk_threads_mutex);
-    
+    gboolean i_own_lock = dt_control_gdk_lock();
+
     gtk_widget_queue_draw(widget);
 
-    if(!pthread_equal(pthread_self() ,darktable.control->gui_thread) && have_lock) 
-      g_mutex_unlock(gdk_threads_mutex);
+    if (i_own_lock) dt_control_gdk_unlock();
   }
 }
 
