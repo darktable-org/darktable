@@ -346,6 +346,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
     }
 #endif
     darktable.control->running = 0;
+    darktable.control->accels_global = NULL;
+    darktable.control->accels_lighttable = NULL;
+    darktable.control->accels_darkroom = NULL;
+    darktable.control->accels_filmstrip = NULL;
+    darktable.control->accels_capture = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
   }
 
@@ -402,22 +407,25 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_imageio_init(darktable.imageio);
   }
 
-  // Loading the keybindings
-  char keyfile[1024];
+  if(init_gui)
+  {
+    // Loading the keybindings
+    char keyfile[1024];
 
-  // First dump the default keymapping
-  snprintf(keyfile, 1024, "%s/keyboardrc_default", datadir);
-  gtk_accel_map_save(keyfile);
+    // First dump the default keymapping
+    snprintf(keyfile, 1024, "%s/keyboardrc_default", datadir);
+    gtk_accel_map_save(keyfile);
 
-  // Removing extraneous semi-colons from the default keymap
-  strip_semicolons_from_keymap(keyfile);
+    // Removing extraneous semi-colons from the default keymap
+    strip_semicolons_from_keymap(keyfile);
 
-  // Then load any modified keys if available
-  snprintf(keyfile, 1024, "%s/keyboardrc", datadir);
-  if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
-    gtk_accel_map_load(keyfile);
-  else
-    gtk_accel_map_save(keyfile); // Save the default keymap if none is present
+    // Then load any modified keys if available
+    snprintf(keyfile, 1024, "%s/keyboardrc", datadir);
+    if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
+      gtk_accel_map_load(keyfile);
+    else
+      gtk_accel_map_save(keyfile); // Save the default keymap if none is present
+  }
 
   int id = 0;
   if(init_gui && image_to_load)
