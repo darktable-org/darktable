@@ -1186,19 +1186,13 @@ GtkWidget *dt_ui_center(dt_ui_t *ui)
   return ui->center;
 }
 
+
 void dt_ui_redraw_center(dt_ui_t *ui)
 {
-  /* enter gdk thread if needed*/
-  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-  if(needlock) 
-    gdk_threads_enter();
-  
+  gboolean i_own_lock = dt_control_gdk_lock();
   /* redraw center view */
   gtk_widget_queue_draw(dt_ui_center(ui));
- 
-  /* leave gdk thread if needed */
-  if(needlock) 
-    gdk_threads_leave();
+  if(i_own_lock) dt_control_gdk_unlock();
 }
 
 static GtkWidget * _ui_init_panel_container_top(GtkWidget *container)

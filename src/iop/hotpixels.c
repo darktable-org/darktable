@@ -150,12 +150,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if (g != NULL)
   {
     // lock gui thread mutex, if we are not called from gui thread (very likely)
-    int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-    if(needlock) gdk_threads_enter();
+    gboolean i_have_lock = dt_control_gdk_lock();
     char buf[256];
     snprintf(buf, sizeof buf, _("fixed %d pixels"), fixed);
     gtk_label_set_text(g->message, buf);
-    if(needlock) gdk_threads_leave();
+    if(i_have_lock) dt_control_gdk_unlock();
   }
 }
 

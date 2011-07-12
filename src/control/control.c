@@ -1152,6 +1152,66 @@ void dt_control_log_busy_leave()
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 }
 
+static gboolean *_control_gdk_thread_locks = NULL;
+
+gboolean dt_control_gdk_lock()
+{
+  /* initialize threadslocks if not initialized */
+  if (!_control_gdk_thread_locks)
+    _control_gdk_thread_locks = g_malloc(sizeof(gboolean) * darktable.control->num_threads + 1);
+
+  /* ig current thread is gui thread, no need to enter critical section */
+  if (!pthread_equal(darktable.control->gui_thread, pthread_self())) return FALSE;
+
+  /* get current thread num */
+  uint32_t threadid = -1;
+  while (threadid < darktable.control->num_threads-1) threadid++;
+
+  /* if we didnt detected which thread we are on, then
+   use fallback lock which will be shared */
+  if(threadid < 0) 
+  {
+    threadid = 0;
+    fprintf(stderr,"[control] Warning, dt_control_gdk_lock() on unmanaged thread.\n");
+  }
+  else
+    threadid++;
+  
+  /* lets enter critical section if thread is not entered on */
+  if (!_control_gdk_thread_locks[threadid])
+  {
+    _control_gdk_thread_locks[threadid] = TRUE;
+    gdk_threads_enter();
+    return TRUE;
+  }
+
+  /* no need to lock just fall thru */
+  return FALSE;
+}
+
+void dt_control_gdk_unlock()
+{
+  /* get current thread num */
+  uint32_t threadid = -1;
+  while (threadid < darktable.control->num_threads-1) threadid++;
+
+  /* if we didnt detected which thread we are on, then
+     use fallback lock which will be shared and log warning */
+  if(threadid < 0)
+  {
+    threadid = 0;
+    fprintf(stderr,"[control] CRITICAL, dt_control_gdk_unlock() on unmanaged thread.\n");
+  }
+  else
+    threadid++;
+
+  /* leave critical section if locked by current thread */
+  if(_control_gdk_thread_locks[threadid])
+  {
+    _control_gdk_thread_locks[threadid] = FALSE;
+    gdk_threads_unlock();
+  }  
+}
 
 /* redraw mutex to synchronize redraws */
 G_LOCK_DEFINE(counter);
@@ -1207,11 +1267,17 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
-    if(!pthread_equal(pthread_self(),darktable.control->gui_thread)) 
-      gdk_threads_enter();
+    /* try to enter gdk critical section, will succeed if we
+       currently not are into one. 
+    */
+    gboolean have_lock = FALSE;
+    if(!pthread_equal(pthread_self(),darktable.control->gui_thread))
+      have_lock = g_mutex_trylock(gdk_threads_mutex);
+    
     gtk_widget_queue_draw(widget);
-    if(!pthread_equal(pthread_self() ,darktable.control->gui_thread)) 
-      gdk_threads_leave();
+
+    if(!pthread_equal(pthread_self() ,darktable.control->gui_thread) && have_lock) 
+      g_mutex_unlock(gdk_threads_mutex);
   }
 }
 

@@ -538,10 +538,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       }
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-      if(needlock) gdk_threads_enter();
+
+      gboolean i_own_lock = dt_control_gdk_lock();      
       gtk_widget_queue_draw(module->widget);
-      if(needlock) gdk_threads_leave();
+      if (i_own_lock) dt_control_gdk_unlock();
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -842,10 +842,10 @@ post_process_collect_info:
                   = pixel[4*(roi_out->width*point[1] + point[0]) + i];
       }
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-      if(needlock) gdk_threads_enter();
+      
+      gboolean i_own_lock = dt_control_gdk_lock();
       gtk_widget_queue_draw(module->widget);
-      if(needlock) gdk_threads_leave();
+      if (i_own_lock) dt_control_gdk_unlock();
 
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
