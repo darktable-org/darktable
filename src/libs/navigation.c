@@ -75,7 +75,8 @@ int position()
   return 1001;
 }
 
-static void _lib_navigation_control_draw_all_callback(gpointer instance, gpointer user_data) 
+
+static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer user_data) 
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_control_queue_redraw_widget(self->widget);
@@ -117,14 +118,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, -1, panel_width*.5);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL, G_CALLBACK(_lib_navigation_control_draw_all_callback), self);
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, G_CALLBACK(_lib_navigation_control_draw_all_callback), self);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   /* disconnect from signal */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_navigation_control_draw_all_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
    
   g_free(self->data);
   self->data = NULL;
@@ -134,18 +135,14 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
-  // avoid accessing cleaned up mem during shutdown:
-  if(!darktable.control->running) return TRUE;
-  
-  //dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  //dt_lib_navigation_t *d = ( dt_lib_navigation_t *)self->data;
 
   const int inset = DT_NAVIGATION_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
 
   dt_develop_t *dev = darktable.develop;
-  if(dev->preview_dirty) return TRUE;
 
+  /* bail out if dirty */
+  if(dev->preview_dirty) return FALSE;
 
   /* generate image into cairo surface*/
   

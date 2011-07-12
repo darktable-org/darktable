@@ -59,7 +59,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
 void dt_gui_preferences_show()
 {
-  GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(
                         _("darktable preferences"), GTK_WINDOW (win),
                         GTK_DIALOG_MODAL,

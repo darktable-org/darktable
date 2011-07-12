@@ -81,11 +81,38 @@ void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer
  */
 void dt_control_queue_redraw();
 
+/** \brief request redraw of center window.
+    This redraws the center view within a gdk critical section
+    to prevent several thrads to carry out the redraw.
+*/
+void dt_control_queue_redraw_center();
+
 /** \brief threadsafe request of redraw of specific widget.
     Use this function if you need to redraw a specific widget
     if your current thread context is not gtk main thread.
 */
 void dt_control_queue_redraw_widget(GtkWidget *widget);
+
+/** \brief smart wrapper for entering gdk critical section.
+    This wrapper check is current thread context already have
+    entered a gdk criical section to prevent entering the critical
+    section that will reduce a application lock.
+
+    \return true if current call have the lock, see usage in note.
+
+    \note It's very importent that dt_control_gdk_unlock()
+    not is called if its locked on current thread in another place
+    so its very important to use the following code semantics:
+    \code
+    gboolean i_have_lock = dt_control_gdk_lock();
+    gtk_widget_queue_redraw();
+    if(i_have_lock) dt_control_gdk_unlock();
+    \endcode
+*/
+gboolean dt_control_gdk_lock();
+
+/** \brief smart wrapper for leaving a gdk critical section */
+void dt_control_gdk_unlock();
 
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);

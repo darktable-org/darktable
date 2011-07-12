@@ -117,8 +117,7 @@ static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gch
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t *)self->data;
 
   /* lets make this threadsafe */
-  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-  if(needlock) gdk_threads_enter();
+  gboolean i_own_lock = dt_control_gdk_lock();
 
   /* initialize a new job */
   dt_bgjob_t *j=(dt_bgjob_t*)g_malloc(sizeof(dt_bgjob_t));
@@ -156,15 +155,16 @@ static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gch
   gtk_widget_show_all(j->widget);
   gtk_widget_show(d->jobbox);
   
-  if(needlock) gdk_threads_leave();
+  if(i_own_lock) dt_control_gdk_lock();
   return key;
 }
 
 static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, guint key)
 {
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
-  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-  if(needlock) gdk_threads_enter();
+
+  gboolean i_own_lock = dt_control_gdk_lock();
+
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
   if(j) 
   {
@@ -181,7 +181,7 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, guint key)
     /* free allocted mem */
     g_free(j);
   }
-  if(needlock) gdk_threads_leave();
+  if(i_own_lock) dt_control_gdk_unlock();
 }
 
 static void _lib_backgroundjobs_cancel_callback(GtkWidget *w, gpointer user_data)
@@ -193,8 +193,8 @@ static void _lib_backgroundjobs_cancel_callback(GtkWidget *w, gpointer user_data
 static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, guint key, struct dt_job_t *job)
 {
   if(!darktable.control->running) return;
-  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-  if(needlock) gdk_threads_enter();
+  gboolean i_own_lock = dt_control_gdk_lock();
+
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
 
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
@@ -209,7 +209,7 @@ static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, guint key
     gtk_widget_show_all(button);
   }
   
-  if(needlock) gdk_threads_leave();
+  if(i_own_lock) dt_control_gdk_unlock();
 }
 
 
@@ -217,8 +217,8 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, guint key, doubl
 {
   if(!darktable.control->running) return;
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;  
-  int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-  if(needlock) gdk_threads_enter();
+  gboolean i_own_lock = dt_control_gdk_lock();
+
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
   if(j)
   {
@@ -239,6 +239,6 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, guint key, doubl
     }
   }
 
-  if(needlock) gdk_threads_leave();
+  if(i_own_lock) dt_control_gdk_unlock();
 }
 
