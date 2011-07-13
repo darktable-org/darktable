@@ -644,6 +644,7 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
   return iop_cs_rgb;
 }
 
+
 static gboolean
 expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
 {
@@ -656,9 +657,9 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
 
       /* if module is the current, always expand it */
-      if(m==module)
+      if (m == module)
         gtk_expander_set_expanded(m->expander, TRUE);
-      else if((current_group == 0 || (current_group & m->groups()) ))
+      else if((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, module->groups())))
         gtk_expander_set_expanded(m->expander, FALSE);
 
       iop = g_list_next(iop);
