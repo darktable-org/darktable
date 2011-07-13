@@ -67,6 +67,11 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group);
 */
 static uint32_t _lib_modulegroups_get(dt_lib_module_t *self);
 
+/* modulegroups proxy test function.
+   tests if iop module group flags matches modulegroup.
+*/
+static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+
 const char* name()
 {
   return _("modulegroups");
@@ -158,6 +163,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.module = self;
   darktable.develop->proxy.modulegroups.set = _lib_modulegroups_set;
   darktable.develop->proxy.modulegroups.get = _lib_modulegroups_get;
+  darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
 
   /* lets set default group */
   _lib_modulegroups_set(self, DT_MODULEGROUP_BASIC);
@@ -169,12 +175,12 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.module = NULL;
   darktable.develop->proxy.modulegroups.set = NULL;
   darktable.develop->proxy.modulegroups.get = NULL;
-  
+  darktable.develop->proxy.modulegroups.test  = NULL;
   g_free(self->data);
   self->data = NULL;
 }
 
-static gboolean _lib_modulegroups_test(uint32_t group, uint32_t iop_group)
+static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
 {
   if      (iop_group & IOP_SPECIAL_GROUP_ACTIVE_PIPE && group == DT_MODULEGROUP_ACTIVE_PIPE) return TRUE;
   else if (iop_group & IOP_SPECIAL_GROUP_USER_DEFINED && group == DT_MODULEGROUP_FAVORITES) return TRUE;
@@ -231,7 +237,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         default:
 	{
-	  if ( _lib_modulegroups_test(d->current, module->groups()) &&
+	  if ( _lib_modulegroups_test(self,d->current, module->groups()) &&
 	       (!module->showhide || (module->showhide && dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))) &&
 	       (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
 	    gtk_widget_show(w);
