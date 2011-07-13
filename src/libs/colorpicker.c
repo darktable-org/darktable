@@ -505,8 +505,9 @@ void gui_init(dt_lib_module_t *self)
 
   // The output button
   data->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
+  gtk_widget_set_size_request(data->output_button, 100, 100);
   gtk_widget_set_sensitive(data->output_button, FALSE);
-  gtk_box_pack_start(GTK_BOX(output_row), data->output_button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(output_row), data->output_button, FALSE, FALSE, 0);
 
   // The picker button, output selectors and label
   gtk_box_pack_start(GTK_BOX(output_row), output_options, TRUE, TRUE, 0);
@@ -527,9 +528,9 @@ void gui_init(dt_lib_module_t *self)
 
   data->picker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
                                                CPF_STYLE_BOX);
-  gtk_widget_set_size_request(data->picker_button, 10, -1);
+  gtk_widget_set_size_request(data->picker_button, 50, -1);
   gtk_box_pack_start(GTK_BOX(picker_subrow), data->picker_button,
-                     TRUE, TRUE, 0);
+                     FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(data->picker_button), "toggled",
                    G_CALLBACK(_picker_button_toggled), self);
