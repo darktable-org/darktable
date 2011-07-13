@@ -29,6 +29,7 @@
 #include "common/debug.h"
 #include "common/tags.h"
 #include "gui/gtk.h"
+#include "libs/colorpicker.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -291,6 +292,86 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_surface_write_to_png(image_surface, darktable.develop->proxy.snapshot.filename);
   }
 
+  // Displaying sample areas if enabled
+  if(darktable.lib->proxy.colorpicker.live_samples &&
+     darktable.lib->proxy.colorpicker.display_samples)
+  {
+    GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
+    dt_colorpicker_sample_t *sample = NULL;
+
+    cairo_save(cri);
+
+    int32_t zoom, closeup;
+    float zoom_x, zoom_y;
+    float wd = dev->preview_pipe->backbuf_width;
+    float ht = dev->preview_pipe->backbuf_height;
+    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
+    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+
+    cairo_translate(cri, width/2.0, height/2.0f);
+    cairo_scale(cri, zoom_scale, zoom_scale);
+    cairo_translate(cri, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
+
+    while(samples)
+    {
+      sample = samples->data;
+
+      cairo_set_line_width(cri, 1.0/zoom_scale);
+      if(sample == darktable.lib->proxy.colorpicker.selected_sample)
+        cairo_set_source_rgb(cri, .2, 0, 0);
+      else
+        cairo_set_source_rgb(cri, 0, 0, .2);
+
+      float *box = sample->box;
+      float *point = sample->point;
+      if(sample->size == DT_COLORPICKER_SIZE_BOX)
+      {
+        cairo_rectangle(cri, box[0]*wd, box[1]*ht,
+                        (box[2] - box[0])*wd, (box[3] - box[1])*ht);
+        cairo_stroke(cri);
+        cairo_translate(cri, 1.0/zoom_scale, 1.0/zoom_scale);
+        if(sample == darktable.lib->proxy.colorpicker.selected_sample)
+          cairo_set_source_rgb(cri, .8, 0, 0);
+        else
+          cairo_set_source_rgb(cri, 0, 0, .8);
+        cairo_rectangle(cri, box[0]*wd + 1.0/zoom_scale, box[1]*ht,
+                        (box[2] - box[0])*wd - 2./zoom_scale,
+                        (box[3] - box[1])*ht - 2./zoom_scale);
+        cairo_stroke(cri);
+      }
+      else
+      {
+        cairo_rectangle(cri, point[0] * wd - .01 * wd, point[1] * ht - .01 * wd,
+                        .02 * wd, .02 * wd);
+        cairo_stroke(cri);
+
+        if(sample == darktable.lib->proxy.colorpicker.selected_sample)
+          cairo_set_source_rgb(cri, .8, 0, 0);
+        else
+          cairo_set_source_rgb(cri, 0, 0, .8);
+        cairo_rectangle(cri, (point[0] - 0.01) * wd + 1.0/zoom_scale,
+                        point[1] * ht - 0.01 * wd + 1.0/zoom_scale,
+                        .02 * wd - 2./zoom_scale, .02 * wd - 2./zoom_scale);
+        cairo_move_to(cri, point[0] * wd,
+                      point[1] * ht - .01 * wd + 1./zoom_scale);
+        cairo_line_to(cri, point[0] * wd,
+                      point[1] * ht + .01 * wd - 1./zoom_scale);
+        cairo_move_to(cri, point[0] * wd - .01 * wd + 1./zoom_scale,
+                      point[1] * ht);
+        cairo_line_to(cri, point[0] * wd + .01 * wd - 1./zoom_scale,
+                      point[1] * ht);
+        cairo_stroke(cri);
+      }
+
+      samples = g_slist_next(samples);
+    }
+
+    cairo_restore(cri);
+  }
+
   // execute module callback hook.
   if(dev->gui_module && dev->gui_module->request_color_pick)
   {
@@ -314,13 +395,14 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
     float *box = dev->gui_module->color_picker_box;
     float *point = dev->gui_module->color_picker_point;
-    if(dt_conf_get_int("ui_last/colorpicker_size"))
+    if(darktable.lib->proxy.colorpicker.size)
     {
-      cairo_rectangle(cri, box[0]*wd, box[1]*ht, (box[2] - box[0])*wd, (box[3] - box[1])*ht);
+      cairo_rectangle(cri, box[0]*wd, box[1]*ht,
+                      (box[2] - box[0])*wd, (box[3] - box[1])*ht);
       cairo_stroke(cri);
       cairo_translate(cri, 1.0/zoom_scale, 1.0/zoom_scale);
       cairo_set_source_rgb(cri, .8, .8, .8);
-      cairo_rectangle(cri, box[0]*wd, box[1]*ht,
+      cairo_rectangle(cri, box[0]*wd + 1.0/zoom_scale, box[1]*ht,
                       (box[2] - box[0])*wd - 2./zoom_scale,
                       (box[3] - box[1])*ht - 2./zoom_scale);
       cairo_stroke(cri);
@@ -1009,7 +1091,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     float zoom_x, zoom_y, bzoom_x, bzoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
     dt_dev_get_pointer_zoom_pos(dev, ctl->button_x + offx, ctl->button_y + offy, &bzoom_x, &bzoom_y);
-    if(dt_conf_get_int("ui_last/colorpicker_size"))
+    if(darktable.lib->proxy.colorpicker.size)
     {
       dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(.5f+bzoom_x, .5f+zoom_x));
       dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(.5f+bzoom_y, .5f+zoom_y));
@@ -1085,7 +1167,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   {
     float zoom_x, zoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
-    if(dt_conf_get_int("ui_last/colorpicker_size"))
+    if(darktable.lib->proxy.colorpicker.size)
     {
       dev->gui_module->color_picker_box[0] = .5f+zoom_x;
       dev->gui_module->color_picker_box[1] = .5f+zoom_y;

@@ -18,6 +18,7 @@
 
 #include "develop/pixelpipe_cache.h"
 #include "develop/pixelpipe_hb.h"
+#include "libs/lib.h"
 #include <stdlib.h>
 
 
@@ -84,7 +85,7 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
       hash = ((hash << 5) + hash) ^ piece->hash;
       if(piece->module->request_color_pick)
       {
-        if(dt_conf_get_int("ui_last/colorpicker_size"))
+        if(darktable.lib->proxy.colorpicker.size)
         {
           const char *str = (const char *)piece->module->color_picker_box;
           for(int i=0; i<sizeof(float)*4; i++) hash = ((hash << 5) + hash) ^ str[i];

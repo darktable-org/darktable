@@ -152,6 +152,7 @@ static void _size_changed(GtkComboBox *widget, gpointer p)
 
   dt_conf_set_int("ui_last/colorpicker_size",
                   gtk_combo_box_get_active(widget));
+  darktable.lib->proxy.colorpicker.size = gtk_combo_box_get_active(widget);
   gtk_widget_set_sensitive(data->statistic_selector,
                            dt_conf_get_int("ui_last/colorpicker_size"));
   dt_dev_invalidate_from_gui(darktable.develop);
@@ -295,7 +296,9 @@ static void _update_samples_output(dt_lib_module_t *self)
     c.red = rgb[0] * 65535;
     c.green = rgb[1] * 65535;
     c.blue = rgb[2] * 65535;
-    gtk_widget_modify_bg(sample->output_button, GTK_STATE_INSENSITIVE, &c);
+    gtk_widget_modify_bg(sample->output_button, GTK_STATE_NORMAL, &c);
+    gtk_widget_modify_bg(sample->output_button, GTK_STATE_PRELIGHT, &c);
+    gtk_widget_modify_bg(sample->output_button, GTK_STATE_ACTIVE, &c);
 
     // Setting the output label
     switch(model)
@@ -334,6 +337,25 @@ static void _samples_mode_changed(GtkComboBox *widget, gpointer p)
   _update_samples_output((dt_lib_module_t*)p);
 }
 
+static gboolean _live_sample_enter(GtkWidget *widget, GdkEvent *event,
+                                   gpointer sample)
+{
+  darktable.lib->proxy.colorpicker.selected_sample =
+      (dt_colorpicker_sample_t*)sample;
+  dt_dev_invalidate_from_gui(darktable.develop);
+
+  return FALSE;
+}
+
+static gboolean _live_sample_leave(GtkWidget *widget, GdkEvent *event,
+                                   gpointer data)
+{
+  darktable.lib->proxy.colorpicker.selected_sample = NULL;
+  dt_dev_invalidate_from_gui(darktable.develop);
+
+  return FALSE;
+}
+
 static void _remove_sample(GtkButton *widget, gpointer data)
 {
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t*)data;
@@ -345,6 +367,7 @@ static void _remove_sample(GtkButton *widget, gpointer data)
   darktable.lib->proxy.colorpicker.live_samples =
       g_slist_remove(darktable.lib->proxy.colorpicker.live_samples, data);
   free(sample);
+  dt_dev_invalidate_from_gui(darktable.develop);
 }
 
 static void _add_sample(GtkButton *widget, gpointer self)
@@ -363,10 +386,17 @@ static void _add_sample(GtkButton *widget, gpointer self)
                      TRUE, TRUE, 0);
 
   sample->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
+  //gtk_widget_set_sensitive(sample->output_button, FALSE);
   gtk_widget_set_size_request(sample->output_button, 40, -1);
-  gtk_widget_set_sensitive(sample->output_button, FALSE);
+  gtk_widget_set_events(sample->output_button,
+                        GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_button,
                      FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(sample->output_button), "enter-notify-event",
+                   G_CALLBACK(_live_sample_enter), sample);
+  g_signal_connect(G_OBJECT(sample->output_button), "leave-notify-event",
+                   G_CALLBACK(_live_sample_leave), sample);
 
   sample->output_label = gtk_label_new("");
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label,
@@ -415,6 +445,16 @@ static void _add_sample(GtkButton *widget, gpointer self)
   _update_samples_output((dt_lib_module_t*)self);
 }
 
+static void _display_samples_changed(GtkToggleButton *button, gpointer data)
+{
+  dt_conf_set_int("ui_last/colorpicker_display_samples",
+                  gtk_toggle_button_get_active(button));
+  darktable.lib->proxy.colorpicker.display_samples =
+      gtk_toggle_button_get_active(button);
+  dt_dev_invalidate_from_gui(darktable.develop);
+}
+
+
 void gui_init(dt_lib_module_t *self)
 {
   unsigned int i;
@@ -434,6 +474,8 @@ void gui_init(dt_lib_module_t *self)
                                              DARKTABLE_LABEL_TAB
                                              | DARKTABLE_LABEL_ALIGN_RIGHT);
   GtkWidget *samples_options_row = gtk_hbox_new(FALSE, 2);
+  GtkWidget *display_samples_check_box =
+      gtk_check_button_new_with_label(_("display sample areas on image"));
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data =
@@ -443,6 +485,10 @@ void gui_init(dt_lib_module_t *self)
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
+  darktable.lib->proxy.colorpicker.size =
+      dt_conf_get_int("ui_last/colorpicker_size");
+  darktable.lib->proxy.colorpicker.display_samples =
+      dt_conf_get_int("ui_last/colorpicker_display_samples");
   darktable.lib->proxy.colorpicker.live_samples = NULL;
   darktable.lib->proxy.colorpicker.picked_color_mean =
       (float*)malloc(sizeof(float) * 3);
@@ -612,6 +658,16 @@ void gui_init(dt_lib_module_t *self)
   data->samples_container = gtk_vbox_new(FALSE, 2);
   gtk_box_pack_start(GTK_BOX(container), data->samples_container,
                      TRUE, TRUE, 0);
+
+  gtk_toggle_button_set_active(
+      GTK_TOGGLE_BUTTON(display_samples_check_box),
+      dt_conf_get_int("ui_last/colorpicker_display_samples"));
+  gtk_box_pack_start(GTK_BOX(container), display_samples_check_box,
+                     TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(display_samples_check_box), "toggled",
+                   G_CALLBACK(_display_samples_changed), NULL);
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)

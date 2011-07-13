@@ -508,7 +508,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       point[0] = MIN(roi_in.width - 1, MAX(0, module->color_picker_point[0] * roi_in.width));
       point[1] = MIN(roi_in.height - 1, MAX(0, module->color_picker_point[1] * roi_in.height));
 
-      if(dt_conf_get_int("ui_last/colorpicker_size"))
+      if(darktable.lib->proxy.colorpicker.size)
       {
         const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
         for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
@@ -820,7 +820,7 @@ post_process_collect_info:
       point[0] = MIN(roi_out->width -1, MAX(0, module->color_picker_point[0] * roi_out->width));
       point[1] = MIN(roi_out->height -1, MAX(0, module->color_picker_point[1] * roi_out->height));
       const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-      if(dt_conf_get_int("ui_last/colorpicker_size"))
+      if(darktable.lib->proxy.colorpicker.size)
       {
         for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
         {
