@@ -26,6 +26,7 @@
 //#include "gui/iop_modulegroups.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
+#include "dtgtk/tristatebutton.h"
 #include "dtgtk/slider.h"
 
 #include <strings.h>
@@ -644,6 +645,7 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
   return iop_cs_rgb;
 }
 
+
 static gboolean
 expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
 {
@@ -654,11 +656,20 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+      uint32_t additional_flags=0;
+
+      /* add special group flag for moduel in active pipe */
+      if(module->enabled)
+	additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
+
+      /* add special group flag for favorite */
+      if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
+	additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
       /* if module is the current, always expand it */
-      if(m==module)
+      if (m == module)
         gtk_expander_set_expanded(m->expander, TRUE);
-      else if((current_group == 0 || (current_group & m->groups()) ))
+      else if((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, module->groups()|additional_flags)))
         gtk_expander_set_expanded(m->expander, FALSE);
 
       iop = g_list_next(iop);

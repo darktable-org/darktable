@@ -107,6 +107,8 @@ typedef struct dt_develop_t
       void (*set)(struct dt_lib_module_t *self, uint32_t group);
       /* get current module group */
       uint32_t (*get)(struct dt_lib_module_t *self);
+      /* test if iop group flags matches modulegroup */
+      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
     } modulegroups;
 
     /* 
@@ -192,6 +194,8 @@ gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
+/** test if iop group flags matches modulegroup */
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group);
 
 /** request snapshot */
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);

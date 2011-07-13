@@ -1021,6 +1021,13 @@ uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
   return 0;
 }
 
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test)
+    return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, iop_group); 
+  return FALSE;
+}
+
 
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
 {
