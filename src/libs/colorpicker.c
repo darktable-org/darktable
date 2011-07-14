@@ -474,8 +474,6 @@ void gui_init(dt_lib_module_t *self)
                                              DARKTABLE_LABEL_TAB
                                              | DARKTABLE_LABEL_ALIGN_RIGHT);
   GtkWidget *samples_options_row = gtk_hbox_new(FALSE, 2);
-  GtkWidget *display_samples_check_box =
-      gtk_check_button_new_with_label(_("display sample areas on image"));
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data =
@@ -660,13 +658,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), data->samples_container,
                      TRUE, TRUE, 0);
 
+  data->display_samples_check_box =
+      gtk_check_button_new_with_label(_("display sample areas on image"));
   gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(display_samples_check_box),
+      GTK_TOGGLE_BUTTON(data->display_samples_check_box),
       dt_conf_get_int("ui_last/colorpicker_display_samples"));
-  gtk_box_pack_start(GTK_BOX(container), display_samples_check_box,
+  gtk_box_pack_start(GTK_BOX(container), data->display_samples_check_box,
                      TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(display_samples_check_box), "toggled",
+  g_signal_connect(G_OBJECT(data->display_samples_check_box), "toggled",
                    G_CALLBACK(_display_samples_changed), NULL);
 
 }
@@ -692,4 +692,48 @@ void gui_cleanup(dt_lib_module_t *self)
 
   free(self->data);
   self->data = NULL;
+}
+
+void gui_reset(dt_lib_module_t *self)
+{
+  dt_lib_colorpicker_t *data = self->data;
+  dt_iop_module_t *module = get_colorout_module();
+
+  int i;
+
+  // First turning off any active picking
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button), FALSE);
+
+  // Resetting the picked colors
+  for(i = 0; i < 3; i++)
+  {
+    darktable.lib->proxy.colorpicker.picked_color_mean[i]
+        = darktable.lib->proxy.colorpicker.picked_color_min[i]
+          = darktable.lib->proxy.colorpicker.picked_color_max[i]
+            = 0;
+
+    if(module)
+      module->picked_color[i]
+          = module->picked_color_min[i]
+            = module->picked_color_max[i]
+              = 0;
+  }
+
+  for(i = 0; i < 5; i++)
+    _history_button_clicked(GTK_BUTTON(data->history_button[i]), self);
+
+  _update_picker_output(self);
+
+  // Removing any live samples
+  while(darktable.lib->proxy.colorpicker.live_samples)
+    _remove_sample(NULL, darktable.lib->proxy.colorpicker.live_samples->data);
+
+  // Resetting GUI elements
+  gtk_combo_box_set_active(GTK_COMBO_BOX(data->size_selector), 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(data->statistic_selector), 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(data->color_mode_selector), 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(data->samples_mode_selector), 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(data->samples_statistic_selector), 0);
+  gtk_toggle_button_set_active(
+      GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
 }

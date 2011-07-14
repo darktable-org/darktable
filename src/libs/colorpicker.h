@@ -39,6 +39,7 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *samples_mode_selector;
   GtkWidget *samples_statistic_selector;
   GtkWidget *add_sample_button;
+  GtkWidget *display_samples_check_box;
 
   float history_rgb[5][3];
   float history_lab[5][3];
