@@ -482,7 +482,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
          pipe->opencl_error, return with value 1, and leave appropriate action to the calling function */
 
       /* try to run opencl module after checking some pre-requisites */
-      if(dt_opencl_is_enabled() && module->process_cl && piece->process_cl_ready  && 
+      if(pipe->opencl_enabled && module->process_cl && piece->process_cl_ready  && 
          dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height) && 
          dt_opencl_image_fits_device(pipe->devid, roi_out->width, roi_out->height))
       {
@@ -801,7 +801,7 @@ dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, dt_develop_t
 int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
 {
   pipe->processing = 1;
-  dt_opencl_update_enabled(); // update enabled flag from preferences
+  pipe->opencl_enabled = dt_opencl_update_enabled(); // update enabled flag from preferences
   pipe->devid = dt_opencl_lock_device(-1);
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
   dt_iop_roi_t roi = (dt_iop_roi_t)
@@ -830,9 +830,10 @@ restart:
     if (pipe->opencl_error)
     {
       if (cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
-      dt_opencl_disable();
-      dt_control_log("Warning: OpenCL was found to be unreliable on this system and is therefore disabled!");
+      // dt_opencl_disable();
+      // dt_control_log("Warning: OpenCL was found to be unreliable on this system and is therefore disabled!");
       dt_pthread_mutex_lock(&pipe->busy_mutex);
+      pipe->opencl_enabled = 0;
       pipe->opencl_error = 0;
       dt_dev_pixelpipe_flush_caches(pipe);
       dt_dev_pixelpipe_change(pipe, dev);

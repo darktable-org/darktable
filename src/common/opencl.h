@@ -116,7 +116,7 @@ int dt_opencl_is_enabled(void);
 void dt_opencl_disable(void);
 
 /** update enabled flag with value from preferences */
-void dt_opencl_update_enabled(void);
+int dt_opencl_update_enabled(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width, const int height, const int bpp);
@@ -188,7 +188,10 @@ static inline int dt_opencl_is_enabled(void)
   return 0;
 }
 static inline void dt_opencl_disable(void) {}
-static inline void dt_opencl_update_enabled(void) {}
+static inline int dt_opencl_update_enabled(void)
+{
+  return 0;
+}
 static inline void dt_opencl_release_mem_object(void *mem) {}
 #endif
 

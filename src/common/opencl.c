@@ -583,9 +583,9 @@ void dt_opencl_disable(void)
 
 
 /** update enabled flag with value from preferences */
-void dt_opencl_update_enabled(void)
+int dt_opencl_update_enabled(void)
 {
-  if(!darktable.opencl->inited) return;
+  if(!darktable.opencl->inited) return FALSE;
   const int prefs = dt_conf_get_bool("opencl");
 
   //printf("[opencl_update_enabled] preferences is set to %d\n", prefs);
@@ -595,7 +595,7 @@ void dt_opencl_update_enabled(void)
     darktable.opencl->enabled = prefs;
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");    
   }
-  return;
+  return darktable.opencl->enabled;
 }
 
 #endif
