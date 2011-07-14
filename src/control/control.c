@@ -1078,7 +1078,7 @@ static gboolean _dt_ctl_log_message_timeout_callback (gpointer data)
     darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
   darktable.control->log_message_timeout_id=0;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
   return FALSE;
 }
 

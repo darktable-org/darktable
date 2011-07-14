@@ -703,14 +703,14 @@ dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer u
       dt_ui_container_focus_widget(darktable.gui->ui, k, module->topwidget);
 
     /* we need to redraw because iop might have post expose */
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   }
   else
   {
     if(module->dev->gui_module == module)
     {
       dt_iop_request_focus(NULL);
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
     }
     gtk_widget_hide(content);
   }
