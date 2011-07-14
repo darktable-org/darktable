@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "gui/gtk.h"
 #include "gui/preferences.h"
 #include "develop/imageop.h"
+#include "libs/lib.h"
 #include "preferences_gen.h"
 
 // Values for the accelerators treeview
@@ -61,11 +62,11 @@ void dt_gui_preferences_show()
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(
-                        _("darktable preferences"), GTK_WINDOW (win),
-                        GTK_DIALOG_MODAL,
-                        _("close"),
-                        GTK_RESPONSE_ACCEPT,
-                        NULL);
+      _("darktable preferences"), GTK_WINDOW (win),
+      GTK_DIALOG_MODAL,
+      _("close"),
+      GTK_RESPONSE_ACCEPT,
+      NULL);
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
   gtk_window_resize(GTK_WINDOW(dialog), 600, 300);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
@@ -199,7 +200,7 @@ static void tree_insert_accel(gpointer data, const gchar *accel_path,
 
   /* lets recurse path */
   tree_insert_rec((GtkTreeStore*)data, NULL, lap, accel_key,
-                    accel_mods, changed);
+                  accel_mods, changed);
 }
 
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
@@ -208,6 +209,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
 {
   const gchar *translation = NULL;
   GList *iops = darktable.iop;
+  GList *libs = darktable.lib->plugins;
 
   int i;
   gboolean found = FALSE;
@@ -242,8 +244,8 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, parent, i);
       gtk_tree_model_get(GTK_TREE_MODEL(model), &iter,
-			 ACCEL_COLUMN, &val_str,
-			 -1);
+                         ACCEL_COLUMN, &val_str,
+                         -1);
       
       /* do we match current sibiling */
       if (!strcmp(val_str, node)) found = TRUE;
@@ -261,30 +263,43 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
       gchar *opname;
       while(iops)
       {
-	opname = ((dt_iop_module_so_t*)iops->data)->op;
-	
-	/* if iop module found, lets get translated name */
-	if (!strcmp(opname, node))
-	{
-	  translation = ((dt_iop_module_so_t*)iops->data)->name();
-	  break;
-	}
+        opname = ((dt_iop_module_so_t*)iops->data)->op;
 
-	iops = g_list_next(iops);
+        /* if iop module found, lets get translated name */
+        if (!strcmp(opname, node))
+        {
+          translation = ((dt_iop_module_so_t*)iops->data)->name();
+          break;
+        }
+
+        iops = g_list_next(iops);
       }
+
+      /* Check for libs as well */
       
-      /* not an iop, do a translation..
-	 TODO: Does this actually work ????
-       */
+      while(libs)
+      {
+        opname = ((dt_lib_module_t*)libs->data)->plugin_name;
+
+        if(!strcmp(opname, node))
+        {
+          translation = ((dt_lib_module_t*)libs->data)->name();
+          break;
+        }
+
+        libs = g_list_next(libs);
+      }
+
+      /* not an iop or lib, do a translation.. */
       if(!translation)
-	translation = _(node);
+        translation = _(node);
       
       gtk_tree_store_append(model, &iter, parent);
       gtk_tree_store_set(model, &iter,
-			 ACCEL_COLUMN, node,
-			 BINDING_COLUMN, "",
-			 TRANS_COLUMN, translation,
-			 -1);
+                         ACCEL_COLUMN, node,
+                         BINDING_COLUMN, "",
+                         TRANS_COLUMN, translation,
+                         -1);
     }
 
     /* recurse further down the path */
@@ -534,7 +549,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
     }
     // Change the accel map entry
     if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, event->keyval,
-                                   event->state & KEY_STATE_MASK, TRUE))
+                                  event->state & KEY_STATE_MASK, TRUE))
     {
       // If it succeeded delete any conflicting accelerators
 
@@ -584,7 +599,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
     // If nothing is selected, or branch node selected, just return
     if(!gtk_tree_selection_get_selected(selection, &model, &iter)
-       || gtk_tree_model_iter_has_child(model, &iter))
+      || gtk_tree_model_iter_has_child(model, &iter))
       return FALSE;
 
     // Otherwise, construct the proper accelerator path and delete its entry
