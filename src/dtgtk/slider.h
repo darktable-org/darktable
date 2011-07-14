@@ -76,7 +76,7 @@ typedef struct _GtkDarktableSliderClass
 
 enum
 {
-  VALUE_CHANGED,
+  SLIDER_VALUE_CHANGED,
   SLIDER_LAST_SIGNAL
 };
 
