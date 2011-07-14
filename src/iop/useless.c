@@ -79,6 +79,13 @@ const char *name()
   return _("silly example");
 }
 
+// some additional flags (self explanatory i think):
+int
+flags()
+{
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 // where does it appear in the gui?
 int
 groups ()
