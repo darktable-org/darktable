@@ -1145,69 +1145,51 @@ void dt_control_log_busy_leave()
   dt_control_queue_redraw_center();
 }
 
-static gboolean *_control_gdk_thread_locks = NULL;
-
+static GList *_control_gdk_lock_threads = NULL;
+static GStaticMutex _control_gdk_lock_threads_mutex = G_STATIC_MUTEX_INIT;
 gboolean dt_control_gdk_lock()
 {
-  /* initialize threadslocks if not initialized */
-  if (!_control_gdk_thread_locks) 
+  /* if current thread equals gui thread do nothing */
+  if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0) return FALSE;
+
+  /* if we dont have any managed locks just lock and return */
+  g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
+  if(!_control_gdk_lock_threads)
+     goto lock_and_return;
+ 
+  /* lets check if current thread has a managed lock */
+  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
   {
-    _control_gdk_thread_locks = g_malloc(sizeof(gboolean) * darktable.control->num_threads + 1);
-    memset(_control_gdk_thread_locks,0,sizeof(gboolean) * darktable.control->num_threads + 1);
+    /* current thread has a lock just do nothing */
+    g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
+    return FALSE;
   }
 
-  /* if current thread is gui thread, no need to enter gdk critical section */
-  if (pthread_equal(darktable.control->gui_thread, pthread_self()) !=0 ) return FALSE;
+lock_and_return:
+  /* lets add current thread to managed locks */
+  _control_gdk_lock_threads = g_list_append(_control_gdk_lock_threads, (gpointer)pthread_self());
+  g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
 
-  /* get current thread num */
-  uint32_t threadid = -1;
-  while (threadid < darktable.control->num_threads-1) threadid++;
+  /* enter gdk critical section */
+  gdk_threads_enter();
 
-  /* if we didnt detected which thread we are on, then
-   use fallback lock which will be shared */
-  if(threadid < 0) 
-  {
-    threadid = 0;
-    fprintf(stderr,"[control] Warning, dt_control_gdk_lock() on unmanaged thread.\n");
-  }
-  else
-    threadid++;
-  
-  /* lets enter critical section if thread is not entered on */
-  if (!_control_gdk_thread_locks[threadid])
-  {
-    _control_gdk_thread_locks[threadid] = TRUE;
-    gdk_threads_enter();
-    return TRUE;
-  }
-
-  /* no need to lock just fall thru */
-  return FALSE;
+  return TRUE;
 }
 
 void dt_control_gdk_unlock()
 {
-  /* get current thread num */
-  uint32_t threadid = -1;
-  while (threadid < darktable.control->num_threads-1) threadid++;
-
-  /* if we didnt detected which thread we are on, then
-     use fallback lock which will be shared and log warning */
-  if(threadid < 0)
+  /* check if current thread has a lock and remove if exists */
+  GList *item=NULL;
+  g_static_mutex_lock(&_control_gdk_lock_threads_mutex);
+  if((item=g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))) 
   {
-    threadid = 0;
-    fprintf(stderr,"[control] CRITICAL, dt_control_gdk_unlock() on unmanaged thread.\n");
-    g_assert(!"[control] this should not happend and we raise SIGABRT to get more control of debugging the situation");
-  }
-  else
-    threadid++;
-
-  /* leave critical section if locked by current thread */
-  if(_control_gdk_thread_locks[threadid])
-  {
-    _control_gdk_thread_locks[threadid] = FALSE;
+    /* remove lock */
+    _control_gdk_lock_threads = g_list_remove(_control_gdk_lock_threads,(gpointer)pthread_self());  
+    
+    /* leave critical section */
     gdk_threads_leave();
-  }  
+  }
+  g_static_mutex_unlock(&_control_gdk_lock_threads_mutex);
 }
 
 /* redraw mutex to synchronize redraws */
@@ -1261,12 +1243,16 @@ void _control_queue_redraw_wrapper(dt_signal_t signal)
 
 void dt_control_queue_redraw()
 {
+  gboolean i_own_lock = dt_control_gdk_lock();
   _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_ALL);
+  if (i_own_lock) dt_control_gdk_unlock();
 }
 
 void dt_control_queue_redraw_center() 
 {
+  gboolean i_own_lock = dt_control_gdk_lock();
   _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_CENTER);
+  if (i_own_lock) dt_control_gdk_unlock();
 }
 
 void dt_control_queue_redraw_widget(GtkWidget *widget)
