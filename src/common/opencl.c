@@ -180,8 +180,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         if(programname[0] == '\0') continue;
         snprintf(filename, 1024, "%s/kernels/%s", dtpath, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
-        const int prog = dt_opencl_load_program(cl, k, filename);
-        if(dt_opencl_build_program(cl, k, prog))
+        const int prog = dt_opencl_load_program(k, filename);
+        if(dt_opencl_build_program(k, prog))
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
           return;
@@ -233,14 +233,16 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   dt_pthread_mutex_destroy(&cl->lock);
 }
 
-void dt_opencl_finish(cl_command_queue q)
+void dt_opencl_finish(const int devid)
 {
-  if(!darktable.opencl->inited) return;
-  (darktable.opencl->dlocl->symbols->dt_clFinish)(q);
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited) return;
+  (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
 }
 
-int dt_opencl_lock_device(dt_opencl_t *cl, const int _dev)
+int dt_opencl_lock_device(const int _dev)
 {
+  dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
   int dev = _dev;
   if(dev < 0 || dev >= cl->num_devs) dev = 0;
@@ -255,16 +257,18 @@ int dt_opencl_lock_device(dt_opencl_t *cl, const int _dev)
   return dev;
 }
 
-void dt_opencl_unlock_device(dt_opencl_t *cl, const int dev)
+void dt_opencl_unlock_device(const int dev)
 {
+  dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return;
   if(dev < 0 || dev >= cl->num_devs) return;
   dt_pthread_mutex_unlock(&cl->dev[dev].lock);
 }
 
-int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename)
+int dt_opencl_load_program(const int dev, const char *filename)
 {
   cl_int err;
+  dt_opencl_t *cl = darktable.opencl;
   FILE *f = fopen(filename, "rb");
   if(!f)
   {
@@ -327,9 +331,10 @@ int dt_opencl_load_program(dt_opencl_t *cl, const int dev, const char *filename)
   }
 }
 
-int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int prog)
+int dt_opencl_build_program(const int dev, const int prog)
 {
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
+  dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
   cl_int err;
   err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, "-cl-fast-relaxed-math -cl-strict-aliasing", 0, 0);
@@ -361,8 +366,9 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int prog)
   return err;
 }
 
-int dt_opencl_create_kernel(dt_opencl_t *cl, const int prog, const char *name)
+int dt_opencl_create_kernel(const int prog, const char *name)
 {
+  dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
   if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
   dt_pthread_mutex_lock(&cl->lock);
@@ -399,8 +405,9 @@ error:
   return -1;
 }
 
-void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel)
+void dt_opencl_free_kernel(const int kernel)
 {
+  dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return;
   dt_pthread_mutex_lock(&cl->lock);
@@ -412,21 +419,24 @@ void dt_opencl_free_kernel(dt_opencl_t *cl, const int kernel)
   dt_pthread_mutex_unlock(&cl->lock);
 }
 
-int dt_opencl_get_max_work_item_sizes(dt_opencl_t *cl, const int dev, size_t *sizes)
+int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes)
 {
+  dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
   return (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t)*3, sizes, NULL);
 }
 
-int dt_opencl_set_kernel_arg(dt_opencl_t *cl, const int dev, const int kernel, const int num, const size_t size, const void *arg)
+int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg)
 {
+  dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   return (cl->dlocl->symbols->dt_clSetKernelArg)(cl->dev[dev].kernel[kernel], num, size, arg);
 }
 
-int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel, const size_t *sizes)
+int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes)
 {
+  dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   // const size_t local[2] = {16, 16};
@@ -435,7 +445,7 @@ int dt_opencl_enqueue_kernel_2d(dt_opencl_t *cl, const int dev, const int kernel
   return (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel], 2, NULL, sizes, local, 0, NULL, NULL);
 }
 
-int dt_opencl_copy_device_to_host(void *host, void *device, const int width, const int height, const int devid, const int bpp)
+int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width, const int height, const int bpp)
 {
   if(!darktable.opencl->inited) return -1;
   size_t origin[] = {0, 0, 0};
@@ -444,16 +454,16 @@ int dt_opencl_copy_device_to_host(void *host, void *device, const int width, con
   return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadImage)(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, NULL);
 }
 
-int dt_opencl_enqueue_copy_image(cl_command_queue q, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region, int events, cl_event *wait, cl_event *event)
+int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region)
 {
   if(!darktable.opencl->inited) return -1;
   cl_int err;
-  err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(q, src, dst, orig_src, orig_dst, region, events, wait, event);
+  err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst, region, 0, NULL, NULL);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image: %d\n", err);
   return err;
 }
 
-void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, void *host)
+void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
@@ -465,7 +475,7 @@ void* dt_opencl_copy_host_to_device_constant(const int size, const int devid, vo
   return dev;
 }
 
-void* dt_opencl_copy_host_to_device(void *host, const int width, const int height, const int devid, const int bpp)
+void* dt_opencl_copy_host_to_device(const int devid, void *host, const int width, const int height, const int bpp)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
@@ -506,7 +516,7 @@ void dt_opencl_release_mem_object(void *mem)
 }
 
 
-void* dt_opencl_alloc_device(const int width, const int height, const int devid, const int bpp)
+void* dt_opencl_alloc_device(const int devid, const int width, const int height, const int bpp)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;

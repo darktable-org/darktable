@@ -164,14 +164,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 2, sizeof(int), (void *)&d->mode);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 3, sizeof(float), (void *)&clip);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 4, sizeof(float), (void *)&d->blendL);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 5, sizeof(float), (void *)&d->blendC);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highlights, 6, sizeof(float), (void *)&d->blendh);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highlights, sizes);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 2, sizeof(int), (void *)&d->mode);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 3, sizeof(float), (void *)&clip);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 4, sizeof(float), (void *)&d->blendL);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 5, sizeof(float), (void *)&d->blendC);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 6, sizeof(float), (void *)&d->blendh);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights, sizes);
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 
@@ -295,13 +295,13 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)malloc(sizeof(dt_iop_highlights_global_data_t));
   module->data = gd;
-  gd->kernel_highlights = dt_opencl_create_kernel(darktable.opencl, program, "highlights");
+  gd->kernel_highlights = dt_opencl_create_kernel(program, "highlights");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highlights);
+  dt_opencl_free_kernel(gd->kernel_highlights);
   free(module->data);
   module->data = NULL;
 }

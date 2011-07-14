@@ -497,7 +497,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         }
         else
         {
-          cl_mem_input = dt_opencl_copy_host_to_device(input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+          cl_mem_input = dt_opencl_copy_host_to_device(pipe->devid, input, roi_in.width, roi_in.height, in_bpp);
           if (cl_mem_input == NULL)
           {
             dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n", module->op);
@@ -508,7 +508,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         /* try to allocate GPU memory for output */
         if (success_opencl)
         {
-          *cl_mem_output = dt_opencl_alloc_device(roi_out->width, roi_out->height, pipe->devid, bpp);
+          *cl_mem_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
           if (*cl_mem_output == NULL)
           {
             dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't allocate output buffer for module %s\n", module->op);
@@ -560,7 +560,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             cl_int err;
 
             /* copy back to CPU buffer, then clean unneeded buffer */
-            err = dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+            err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
             if (err != CL_SUCCESS)
             {
               /* fatal opencl error */
@@ -592,7 +592,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         {
           cl_int err;
 
-          err = dt_opencl_copy_device_to_host(input, cl_mem_input, roi_in.width, roi_in.height, pipe->devid, in_bpp);
+          err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
           // if (rand() % 5 == 0) err = !CL_SUCCESS; // Test code: simulate spurious failures
           if (err != CL_SUCCESS)
           {
@@ -776,7 +776,7 @@ dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, dt_develop_t
     {
       cl_int err;
 
-      err = dt_opencl_copy_device_to_host(*output, *cl_mem_output, roi_out->width, roi_out->height, pipe->devid, *out_bpp);
+      err = dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width, roi_out->height, *out_bpp);
       dt_opencl_release_mem_object(*cl_mem_output);
       *cl_mem_output = NULL;
 
@@ -802,7 +802,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 {
   pipe->processing = 1;
   dt_opencl_update_enabled(); // update enabled flag from preferences
-  pipe->devid = dt_opencl_lock_device(darktable.opencl, -1);
+  pipe->devid = dt_opencl_lock_device(-1);
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
   dt_iop_roi_t roi = (dt_iop_roi_t)
   {
@@ -840,7 +840,7 @@ restart:
       goto restart;
     }
     pipe->processing = 0;
-    dt_opencl_unlock_device(darktable.opencl, pipe->devid);
+    dt_opencl_unlock_device(pipe->devid);
     pipe->devid = -1;
     return 1;
   }
@@ -853,7 +853,7 @@ restart:
 
   // printf("pixelpipe homebrew process end\n");
   pipe->processing = 0;
-  dt_opencl_unlock_device(darktable.opencl, pipe->devid);
+  dt_opencl_unlock_device(pipe->devid);
   pipe->devid = -1;
   return 0;
 }

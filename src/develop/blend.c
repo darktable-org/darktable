@@ -1002,13 +1002,13 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
 
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 3, sizeof(int), (void *)&(d->mode));
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 4, sizeof(float), (void *)&opacity);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 5, sizeof(int), (void *)&blendflag);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, kernel, sizes);
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(d->mode));
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), (void *)&opacity);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&blendflag);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
   return TRUE;
@@ -1025,9 +1025,9 @@ void dt_develop_blend_init(dt_blendop_t *gd)
 {
 #ifdef HAVE_OPENCL
   const int program = 3; // blendop.cl, from programs.conf
-  gd->kernel_blendop_Lab = dt_opencl_create_kernel(darktable.opencl, program, "blendop_Lab");
-  gd->kernel_blendop_RAW = dt_opencl_create_kernel(darktable.opencl, program, "blendop_RAW");
-  gd->kernel_blendop_rgb = dt_opencl_create_kernel(darktable.opencl, program, "blendop_rgb");
+  gd->kernel_blendop_Lab = dt_opencl_create_kernel(program, "blendop_Lab");
+  gd->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
+  gd->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
 #else
   gd->kernel_blendop_Lab = gd->kernel_blendop_RAW = gd->kernel_blendop_rgb = -1;
 #endif
