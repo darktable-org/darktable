@@ -468,8 +468,8 @@ void gui_init     (dt_iop_module_t *self)
   dtgtk_slider_set_unit (g->luma, "%");
   dtgtk_slider_set_label(g->chroma, _("chroma"));
   dtgtk_slider_set_unit (g->chroma, "%");
-  dtgtk_slider_set_accel(g->luma,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/denoising (extra slow)/luma");
-  dtgtk_slider_set_accel(g->chroma,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/denoising (extra slow)/chroma");
+  dtgtk_slider_set_accel(g->luma,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/nlmeans/luma");
+  dtgtk_slider_set_accel(g->chroma,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/nlmeans/chroma");
   g_object_set (GTK_OBJECT(g->luma),   "tooltip-text", _("how much to smooth brightness"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->chroma), "tooltip-text", _("how much to smooth colors"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->luma),   "value-changed", G_CALLBACK (luma_callback),   self);
