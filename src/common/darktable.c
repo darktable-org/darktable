@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -46,6 +47,14 @@
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
+
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
+#include <malloc.h>
+#endif
+#ifdef __APPLE__
+#include <sys/malloc.h>
+#endif
+
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
@@ -134,12 +143,53 @@ darktable will now close down.\n\n%s"),message);
   }
 }
 
+static void strip_semicolons_from_keymap(const char* path)
+{
+  char pathtmp[1024];
+  FILE *fin = fopen(path, "r");
+  FILE *fout;
+  int i;
+  int c = '\0';
+
+  snprintf(pathtmp, 1024, "%s_tmp", path);
+  fout = fopen(pathtmp, "w");
+
+  // First ignoring the first three lines
+  for(i = 0; i < 3; i++)
+  {
+    c = fgetc(fin);
+    while(c != '\n')
+      c = fgetc(fin);
+  }
+
+  // Then ignore the first two characters of each line, copying the rest out
+  while(c != EOF)
+  {
+    fseek(fin, 2, SEEK_CUR);
+    do
+    {
+      c = fgetc(fin);
+      if(c != EOF)
+        fputc(c, fout);
+    }while(c != '\n' && c != EOF);
+  }
+
+  fclose(fin);
+  fclose(fout);
+  g_file_delete(g_file_new_for_path(path), NULL, NULL);
+  g_file_move(g_file_new_for_path(pathtmp), g_file_new_for_path(path), 0,
+              NULL, NULL, NULL, NULL);
+}
+
 int dt_init(int argc, char *argv[], const int init_gui)
 {
 #ifndef __SSE2__
   fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
   fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
   return 1;
+#endif
+#ifdef M_MMAP_THRESHOLD
+  mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */   
 #endif
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -335,7 +385,18 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
   else
   {
+    // this is in memory, so schema can't exist yet.
+    if(!strcmp(dbfilename, ":memory:"))
+    {
+      dt_control_create_database_schema();
+      dt_gui_presets_init(); // also init preset db schema.
+    }
     darktable.control->running = 0;
+    darktable.control->accels_global = NULL;
+    darktable.control->accels_lighttable = NULL;
+    darktable.control->accels_darkroom = NULL;
+    darktable.control->accels_filmstrip = NULL;
+    darktable.control->accels_capture = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
   }
 
@@ -361,8 +422,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
 
-  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
-  dt_view_manager_init(darktable.view_manager);
+  // The GUI must be initialized before the views, because the init()
+  // functions of the views depend on darktable.control->accels_* to register
+  // their keyboard accelerators
 
   if(init_gui)
   {
@@ -370,8 +432,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
   }
 
+  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
+  dt_view_manager_init(darktable.view_manager);
 
-  
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
@@ -385,6 +448,26 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
     darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
     dt_imageio_init(darktable.imageio);
+  }
+
+  if(init_gui)
+  {
+    // Loading the keybindings
+    char keyfile[1024];
+
+    // First dump the default keymapping
+    snprintf(keyfile, 1024, "%s/keyboardrc_default", datadir);
+    gtk_accel_map_save(keyfile);
+
+    // Removing extraneous semi-colons from the default keymap
+    strip_semicolons_from_keymap(keyfile);
+
+    // Then load any modified keys if available
+    snprintf(keyfile, 1024, "%s/keyboardrc", datadir);
+    if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
+      gtk_accel_map_load(keyfile);
+    else
+      gtk_accel_map_save(keyfile); // Save the default keymap if none is present
   }
 
   int id = 0;

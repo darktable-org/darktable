@@ -182,7 +182,10 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         const int prog = dt_opencl_load_program(cl, k, filename);
         if(dt_opencl_build_program(cl, k, prog))
+        {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
+          return;
+        }
       }
       fclose(f);
     }
@@ -221,6 +224,12 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
       (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
       (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
     }
+
+  if(cl->dlocl) {
+    free(cl->dlocl->symbols);
+    free(cl->dlocl);
+  }
+
   dt_pthread_mutex_destroy(&cl->lock);
 }
 
@@ -345,7 +354,10 @@ int dt_opencl_build_program(dt_opencl_t *cl, const int dev, const int prog)
       free(build_log);
     }
   }
-  dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
+  }
   return err;
 }
 

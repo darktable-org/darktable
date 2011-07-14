@@ -61,6 +61,9 @@ DT_MODULE(1)
 /** module data for the capture view */
 typedef struct dt_capture_t
 {
+  /** The only accelerator closure currently used in capture mode */
+  GClosure *filmstrip_toggle;
+
   /** The current image activated in capture view, either latest tethered shoot
   	or manually picked from filmstrip view...
   */
@@ -108,7 +111,10 @@ void capture_view_switch_key_accel(void *p)
     dt_ctl_switch_mode_to( DT_CAPTURE );
 }
 
-void film_strip_key_accel(void *data)
+void film_strip_key_accel(GtkAccelGroup *accel_group,
+                          GObject *acceleratable,
+                          guint keyval, GdkModifierType modifier,
+                          gpointer data)
 {
   dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
   dt_control_queue_draw_all();
@@ -130,6 +136,14 @@ void init(dt_view_t *self)
   lib->subdirectory = dt_conf_get_string("plugins/capture/storage/subpath");
   lib->filenamepattern = dt_conf_get_string("plugins/capture/storage/namepattern");
 
+  // Setup key accelerators in capture view...
+  gtk_accel_map_add_entry("<Darktable>/capture/toggle film strip",
+                          GDK_f, GDK_CONTROL_MASK);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_capture,
+      "<Darktable>/capture/toggle film strip",
+      NULL);
 }
 
 void cleanup(dt_view_t *self)
@@ -338,27 +352,38 @@ void enter(dt_view_t *self)
 
   lib->mode = dt_conf_get_int("plugins/capture/mode");
 
+  // Adding the accelerators
+  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                             darktable.control->accels_capture);
+
+  lib->filmstrip_toggle = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
+                                         (gpointer)self, NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_capture,
+                                 "<Darktable>/capture/toggle film strip",
+                                 lib->filmstrip_toggle);
+
   // add expanders
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
 
   // adjust gui:
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
+  widget = darktable.gui->widgets.import_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+  widget = darktable.gui->widgets.top;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
+  widget = darktable.gui->widgets.bottom_darkroom_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  widget = darktable.gui->widgets.bottom_lighttable_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
+  widget = darktable.gui->widgets.plugins_vbox_left;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, FALSE);
 
-  gtk_widget_set_visible(glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), FALSE);
+  gtk_widget_set_visible(darktable.gui->
+                         widgets.modulegroups_eventbox, FALSE);
 
   GList *modules = g_list_last(darktable.lib->plugins);
   while(modules!=darktable.lib->plugins)
@@ -412,9 +437,6 @@ void enter(dt_view_t *self)
     dt_view_film_strip_prefetch();
   }
 
-  // Setup key accelerators in capture view...
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
-
   // initialize a default session...
   dt_capture_view_set_jobcode(self, dt_conf_get_string("plugins/capture/jobcode"));
 
@@ -435,27 +457,31 @@ void leave(dt_view_t *self)
   if( dt_film_is_empty(cv->film->id) != 0)
     dt_film_remove(cv->film->id );
 
-  dt_gui_key_accel_unregister(film_strip_key_accel);
+  // Detaching accelerators
+  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                                darktable.control->accels_capture);
+  dt_accel_group_disconnect(darktable.control->accels_capture,
+                            cv->filmstrip_toggle);
 
   // Restore user interface
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
+  widget = darktable.gui->widgets.import_eventbox;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_eventbox");
+  widget = darktable.gui->widgets.snapshots_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "history_eventbox");
+  widget = darktable.gui->widgets.history_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
+  widget = darktable.gui->widgets.bottom_darkroom_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  widget = darktable.gui->widgets.bottom_lighttable_box;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
+  widget = darktable.gui->widgets.plugins_vbox_left;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, FALSE);
 
   // cleanup the DT_CAPTURE_VIEW modules
@@ -467,7 +493,7 @@ void leave(dt_view_t *self)
       module->gui_cleanup(module);
     it = g_list_next(it);
   }
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 
 }
@@ -546,51 +572,8 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 }
 
 
-int key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, guint key, guint state)
 {
-  /*dt_library_t *lib = (dt_library_t *)self->data;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
-  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  switch (which)
-  {
-  	case KEYCODE_Left: case KEYCODE_a:
-  		if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
-  		else lib->track = -1;
-  		break;
-  	case KEYCODE_Right: case KEYCODE_e:
-  		if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
-  		else lib->track = 1;
-  		break;
-  	case KEYCODE_Up: case KEYCODE_comma:
-  		lib->track = -DT_LIBRARY_MAX_ZOOM;
-  		break;
-  	case KEYCODE_Down: case KEYCODE_o:
-  		lib->track = DT_LIBRARY_MAX_ZOOM;
-  		break;
-  	case KEYCODE_1:
-  		zoom = 1;
-  		break;
-  	case KEYCODE_2:
-  		if(zoom <= 1) zoom = 1;
-  		else zoom --;
-  		if(layout == 0) lib->center = 1;
-  		break;
-  	case KEYCODE_3:
-  		if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-  		else zoom ++;
-  		if(layout == 0) lib->center = 1;
-  		break;
-  	case KEYCODE_4:
-  		zoom = DT_LIBRARY_MAX_ZOOM;
-  		break;
-  	case KEYCODE_apostrophe:
-  		lib->center = 1;
-  		break;
-  	default:
-  		return 0;
-  }
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);*/
   return 1;
 }
 
@@ -613,7 +596,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 void scrolled(dt_view_t *view, double x, double y, int up)
 {
   /*dt_library_t *lib = (dt_library_t *)view->data;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1)
   {

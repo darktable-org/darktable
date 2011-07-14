@@ -22,7 +22,7 @@
 #include <inttypes.h>
 #include <gmodule.h>
 #include <cairo.h>
-
+#include <sqlite3.h>
 /**
  * main dt view module (as lighttable or darkroom)
  */
@@ -54,8 +54,8 @@ typedef struct dt_view_t
   int  (*mouse_moved)     (struct dt_view_t *self, double x, double y, int which);
   int  (*button_released) (struct dt_view_t *self, double x, double y, int which, uint32_t state);
   int  (*button_pressed)  (struct dt_view_t *self, double x, double y, int which, int type, uint32_t state);
-  int  (*key_pressed)     (struct dt_view_t *self, uint16_t which);
-  int  (*key_released)     (struct dt_view_t *self, uint16_t which);
+  int  (*key_pressed)     (struct dt_view_t *self, guint key, guint state);
+  int  (*key_released)    (struct dt_view_t *self, guint key, guint state);
   void (*configure)       (struct dt_view_t *self, int width, int height);
   void (*scrolled)        (struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
   void (*border_scrolled) (struct dt_view_t *self, double x, double y, int which, int up); // mouse scrolled on left/right/top/bottom border (which 0123).
@@ -77,8 +77,10 @@ dt_view_image_over_t;
 /** expose an image, set image over flags. */
 void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
 
+/** Set the selection bit to a given value for the specified image */
+void dt_view_set_selection(int imgid, int value);
 /** toggle selection of given image. */
-void dt_view_toggle_selection(int iid);
+void dt_view_toggle_selection(int imgid);
 
 #define DT_VIEW_MAX_MODULES 10
 /**
@@ -95,6 +97,24 @@ typedef struct dt_view_manager_t
   int32_t film_strip_dragging, film_strip_scroll_to, film_strip_active_image;
   void (*film_strip_activated)(const int imgid, void *data);
   void *film_strip_data;
+
+  /* reusable db statements 
+   * TODO: reconsider creating a common/database helper API
+   *       instead of having this spread around in sources..
+   */
+  struct {
+    /* select num from history where imgid = ?1*/
+    sqlite3_stmt *have_history;
+    /* select * from selected_images where imgid = ?1 */
+    sqlite3_stmt *is_selected;
+    /* delete from selected_images where imgid = ?1 */
+    sqlite3_stmt *delete_from_selected;
+    /* insert into selected_images values (?1) */
+    sqlite3_stmt *make_selected;
+    /* select color from color_labels where imgid=?1 */
+    sqlite3_stmt *get_color;
+
+  } statements;
 }
 dt_view_manager_t;
 
@@ -117,8 +137,8 @@ void dt_view_manager_mouse_leave     (dt_view_manager_t *vm);
 void dt_view_manager_mouse_moved     (dt_view_manager_t *vm, double x, double y, int which);
 int dt_view_manager_button_released  (dt_view_manager_t *vm, double x, double y, int which, uint32_t state);
 int dt_view_manager_button_pressed   (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state);
-int dt_view_manager_key_pressed      (dt_view_manager_t *vm, uint16_t which);
-int dt_view_manager_key_released     (dt_view_manager_t *vm, uint16_t which);
+int dt_view_manager_key_pressed      (dt_view_manager_t *vm, guint key, guint state);
+int dt_view_manager_key_released     (dt_view_manager_t *vm, guint key, guint state);
 void dt_view_manager_configure       (dt_view_manager_t *vm, int width, int height);
 void dt_view_manager_scrolled        (dt_view_manager_t *vm, double x, double y, int up, int state);
 void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up);

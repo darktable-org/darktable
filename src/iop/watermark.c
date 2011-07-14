@@ -99,6 +99,10 @@ int groups()
   return IOP_GROUP_EFFECT;
 }
 
+void init_key_accels()
+{
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/refresh");
+}
 
 static gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text)
 {
@@ -461,6 +465,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
     }
+    g_dir_close(dir) ;
   }
 
   /* read watermarks from user config dir*/
@@ -472,7 +477,8 @@ static void refresh_watermarks( dt_iop_module_t *self )
       snprintf(filename, 2048, "%s/%s", configdir, d_name);
       gtk_combo_box_append_text( g->combobox1, d_name );
       count++;
-    }
+    } 
+    g_dir_close(dir) ;
   }
 
   _combo_box_set_active_text( g->combobox1, p->filename );
@@ -623,7 +629,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->default_params = malloc(sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
-  module->priority = 999;
+  module->priority = 866; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)
@@ -659,6 +665,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *hbox= gtk_hbox_new(FALSE,0);
   g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
+  dtgtk_button_set_accel(g->dtbutton1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/refresh");
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);

@@ -31,7 +31,6 @@
 #include <glib.h>
 #include <string.h>
 #include <strings.h>
-#include <glade/glade.h>
 #include <math.h>
 
 static void
@@ -51,6 +50,13 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   vm->num_views = 0;
   if(dt_view_load_module(&vm->film_strip, "filmstrip"))
     fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
+
+  /* prepare statements */
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images where imgid = ?1", -1, &vm->statements.is_selected, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid = ?1", -1, &vm->statements.delete_from_selected, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into selected_images values (?1)", -1, &vm->statements.make_selected, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1", -1, &vm->statements.have_history, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select color from color_labels where imgid=?1", -1, &vm->statements.get_color, NULL); 
 
   int res=0, midx=0;
   char *modules[] = {"darkroom","lighttable","capture",NULL};
@@ -161,12 +167,25 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
 
 int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 {
+  // Before switching views, restore accelerators if disabled
+  if(!darktable.control->key_accelerators_on)
+    dt_control_key_accelerators_on(darktable.control);
+
   // destroy old module list
-  GtkContainer *table = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
+  GtkContainer *table = GTK_CONTAINER(darktable.gui->widgets.module_list);
   gtk_container_foreach(table, (GtkCallback)dt_vm_remove_child, (gpointer)table);
 
   int error = 0;
   dt_view_t *v = vm->view + vm->current_view;
+
+  /* Special case when entering nothing (just before leaving dt) */
+  if ( k==DT_MODE_NONE )
+    {
+      if(vm->current_view >= 0 && v->leave) v->leave(v);
+      vm->current_view = -1 ;
+      return 0 ;
+    }
+
   int newv = vm->current_view;
   if(k < vm->num_views) newv = k;
   dt_view_t *nv = vm->view + newv;
@@ -207,7 +226,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     vm->film_strip.height = height * vm->film_strip_size;
     vm->film_strip.width  = width;
     cairo_rectangle(cr, -10, v->height, width+20, tb);
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkWidget *widget = darktable.gui->widgets.center;
     GtkStyle *style = gtk_widget_get_style(widget);
     cairo_set_source_rgb (cr,
                           style->bg[GTK_STATE_NORMAL].red/65535.0,
@@ -320,20 +339,30 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   return 0;
 }
 
-int dt_view_manager_key_pressed (dt_view_manager_t *vm, uint16_t which)
+int dt_view_manager_key_pressed (dt_view_manager_t *vm, guint key, guint state)
 {
+  int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_pressed) return v->key_pressed(v, which);
-  return 0;
+  if(vm->film_strip_on)
+    film_strip_result = (vm->film_strip.key_pressed)(&vm->film_strip,
+                                                     key, state);
+  if(v->key_pressed)
+    return v->key_pressed(v, key, state) || film_strip_result;
+  return film_strip_result;
 }
 
-int dt_view_manager_key_released (dt_view_manager_t *vm, uint16_t which)
+int dt_view_manager_key_released (dt_view_manager_t *vm, guint key, guint state)
 {
+  int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(v->key_released) return v->key_released(v, which);
-  return 0;
+  if(vm->film_strip_on)
+    film_strip_result = (vm->film_strip.key_pressed)(&vm->film_strip,
+                                                     key, state);
+  if(v->key_released)
+    return v->key_released(v, key, state) || film_strip_result;
+  return film_strip_result;
 }
 
 void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
@@ -374,13 +403,13 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
   view->hscroll_size = hsize;
   view->hscroll_viewport_size = hwinsize;
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "leftborder");
+  widget = darktable.gui->widgets.left_border;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "rightborder");
+  widget = darktable.gui->widgets.right_border;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottomborder");
+  widget = darktable.gui->widgets.bottom_border;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "topborder");
+  widget = darktable.gui->widgets.top_border;
   gtk_widget_queue_draw(widget);
 }
 
@@ -422,15 +451,25 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   int selected = 0, altered = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) selected = 1;
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
-  sqlite3_finalize(stmt);
+
+  /* clear and reset statements */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
+
+  /* bind imgid to prepared statments */
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid); 
+
+  /* lets check if imgid is selected */
+  if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) 
+    selected = 1;
+
+  /* lets check if imgid has history */
+  if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) 
+    altered = 1;
+  
   if(selected == 1)
   {
     outlinecol = 0.4;
@@ -667,7 +706,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       {
         if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
         {
-          GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+          GtkWidget *widget = darktable.gui->widgets.center;
           char* tooltip = dt_history_get_items_as_string(img->id);
           if(tooltip != NULL)
           {
@@ -689,18 +728,21 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     const float x = zoom == 1 ? (0.07)*fscale : .21*width;
     const float y = zoom == 1 ? 0.17*fscale: 0.1*height;
     const float r = zoom == 1 ? 0.01*fscale : 0.03*width;
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
+
+    /* clear and reset prepared statement */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color); 
+
+    /* setup statement and iterate rows */
+    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_color, 1, imgid);
+    while(sqlite3_step(darktable.view_manager->statements.get_color) == SQLITE_ROW)
     {
       cairo_save(cr);
-      int col = sqlite3_column_int(stmt, 0);
+      int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
       // see src/dtgtk/paint.c
       dtgtk_cairo_paint_label(cr, x+(3*r*col)-5*r, y-r, r*2, r*2, col);
       cairo_restore(cr);
     }
-    sqlite3_finalize(stmt);
   }
 
   if(img && (zoom == 1))
@@ -729,27 +771,82 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
 }
 
 
-
-void dt_view_toggle_selection(int iid)
+/**
+ * \brief Set the selection bit to a given value for the specified image
+ * \param[in] imgid The image id
+ * \param[in] value The boolean value for the bit
+ */
+void dt_view_set_selection(int imgid, int value)
 {
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  /* clear and reset statement */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+
+  /* setup statement and iterate over rows */
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
+
+  if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
   {
-    sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    if(!value)
+    {
+      /* Value is set and should be unset; get rid of it */
+
+      /* clear and reset statement */
+      DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.delete_from_selected);
+      DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.delete_from_selected);
+
+      /* setup statement and execute */
+      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.delete_from_selected, 1, imgid);
+      sqlite3_step(darktable.view_manager->statements.delete_from_selected);
+    }
+  }
+  else if(value)
+  {
+    /* Select bit is unset and should be set; add it */
+    
+    /* clear and reset statement */ 
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.make_selected);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.make_selected);
+    
+    /* setup statement and execute */  
+    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, imgid);
+    sqlite3_step(darktable.view_manager->statements.make_selected);
+  }
+ 
+}
+
+/**
+ * \brief Toggle the selection bit in the database for the specified image
+ * \param[in] imgid The image id
+ */
+void dt_view_toggle_selection(int imgid)
+{
+
+  /* clear and reset statement */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+
+  /* setup statement and iterate over rows */
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
+  if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
+  {
+    /* clear and reset statement */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.delete_from_selected);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.delete_from_selected);
+
+    /* setup statement and execute */
+    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.delete_from_selected, 1, imgid);
+    sqlite3_step(darktable.view_manager->statements.delete_from_selected);
   }
   else
   {
-    sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    /* clear and reset statement */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.make_selected);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.make_selected);
+
+    /* setup statement and execute */
+    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, imgid);
+    sqlite3_step(darktable.view_manager->statements.make_selected);
   }
 }
 
@@ -760,15 +857,17 @@ uint32_t dt_view_film_strip_get_active_image(dt_view_manager_t *vm)
 
 void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid)
 {
-  sqlite3_stmt *stmt;
-  // First off clear all selected images...
+  /* First off clear all selected images... */
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
 
-  // Then insert a selection of image id
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into selected_images values (?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, iid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+  /* clear and reset statement */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.make_selected);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.make_selected);
+
+  /* setup statement and execute */
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, iid);
+  sqlite3_step(darktable.view_manager->statements.make_selected);
+
   vm->film_strip_scroll_to=vm->film_strip_active_image=iid;
 }
 

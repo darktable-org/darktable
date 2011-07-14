@@ -38,6 +38,13 @@ struct dt_develop_blend_params_t;
 #define	IOP_SPECIAL_GROUP_ACTIVE_PIPE 16
 #define	IOP_SPECIAL_GROUP_USER_DEFINED 32
 
+#define IOP_TAG_DISTORT     1
+// might be some other filters togglable by user?
+//#define IOP_TAG_SLOW        2
+//#define IOP_TAG_DETAIL_FIX  4
+//#define IOP_TAG_DECORATION  8
+
+
 #define	IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
 
 /** Flag for the iop module to be enabled/included by default when creating a style */
@@ -79,18 +86,23 @@ typedef struct dt_iop_module_so_t
   const char* (*name)     ();
   int (*groups)           ();
   int (*flags)            ();
+
+  int (*operation_tags)         (); 
+  int (*operation_tags_filter)  (); 
+
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+  /** Optional callback for keyboard accelerators */
+  void (*init_key_accels)();
 
   int  (*mouse_leave)     (struct dt_iop_module_t *self);
   int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
   int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
   int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
-  int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
   int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
@@ -157,6 +169,9 @@ typedef struct dt_iop_module_t
   GtkWidget *showhide;
   /** expander containing the widget. */
   GtkExpander *expander;
+  /** The show accelerator callback to be removed on unload */
+  GClosure *show_closure;
+
 
   /** version of the parameters in the database. */
   int (*version)          ();
@@ -166,6 +181,10 @@ typedef struct dt_iop_module_t
   int (*groups)           ();
   /** get the iop module flags. */
   int (*flags)            ();
+
+  int (*operation_tags)         (); 
+
+  int (*operation_tags_filter)  (); 
   /** how many bytes per pixel in the output. */
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 

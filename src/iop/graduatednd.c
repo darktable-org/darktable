@@ -28,13 +28,13 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "common/colorspaces.h"
 #include "common/debug.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "LibRaw/libraw/libraw.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -146,6 +146,13 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/density");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/compression");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/rotation");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/split");
+}
 static inline float
 f (const float t, const float c, const float x)
 {
@@ -157,30 +164,6 @@ typedef struct dt_iop_vector_2d_t
   double x;
   double y;
 } dt_iop_vector_2d_t;
-
-static inline void hue2rgb(float m1,float m2,float hue,float *channel)
-{
-  if(hue<0.0) hue+=1.0;
-  else if(hue>1.0) hue-=1.0;
-
-  if( (6.0*hue) < 1.0) *channel=(m1+(m2-m1)*hue*6.0);
-  else if((2.0*hue) < 1.0) *channel=m2;
-  else if((3.0*hue) < 2.0) *channel=(m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
-  else *channel=m1;
-}
-
-static inline void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
-{
-  float m1,m2;
-  *r=*g=*b=l;
-  if( s==0) return;
-  m2=l<0.5?l*(1.0+s):l+s-l*s;
-  m1=(2.0*l-m2);
-  hue2rgb(m1,m2,h +(1.0/3.0), r);
-  hue2rgb(m1,m2,h, g);
-  hue2rgb(m1,m2,h - (1.0/3.0), b);
-
-}
 
 // static int
 // get_grab(float pointerx, float pointery, float zoom_scale){
@@ -309,7 +292,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float filter_radie=sqrt((hh*hh)+(hw*hw))/hh;
 
   float color[3];
-  hsl2rgb(&color[0],&color[1],&color[2],data->hue,data->saturation,0.5);
+  hsl2rgb(color,data->hue,data->saturation,0.5);
 
 
 #ifdef _OPENMP
@@ -448,7 +431,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 258;
+  module->priority = 222; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t)
@@ -478,7 +461,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   //fprintf(stderr," hue: %f, saturation: %f\n",hue,dtgtk_gradient_slider_get_value(g->gslider2));
   double saturation=1.0;
   float color[3];
-  hsl2rgb(&color[0],&color[1],&color[2],hue,saturation,0.5);
+  hsl2rgb(color,hue,saturation,0.5);
 
   GdkColor c;
   c.red=color[0]*65535.0;
@@ -543,6 +526,11 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale3,"°");
   dtgtk_slider_set_label(g->scale4,_("split"));
   dtgtk_slider_set_unit(g->scale4,"%");
+
+  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/density");
+  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/compression");
+  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/rotation");
+  dtgtk_slider_set_accel(g->scale4,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/split");
 
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);

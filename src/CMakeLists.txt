@@ -87,7 +87,7 @@ endif()
 #
 # Find all other required libraries for building
 #
-find_package(GTK2 2.6 REQUIRED gtk glade)
+find_package(GTK2 2.6 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
 add_definitions(${GTK2_DEFINITIONS})
@@ -160,15 +160,8 @@ if(GNOMEKEYRING_FOUND)
   add_definitions("-DHAVE_GKEYRING")
 endif(GNOMEKEYRING_FOUND)
 
-#find_package(OpenCL)
-#if(OPENCL_FOUND AND USE_OPENCL)
-#  include_directories(${OPENCL_INCLUDE_DIR})
-#  list(APPEND LIBS ${OPENCL_LIBRARIES})
-#  list(APPEND SOURCES "common/opencl.c")
-#  list(APPEND SOURCES "common/dynload.c")
-#  list(APPEND SOURCES "common/dlopencl.c")
-#  add_definitions("-DHAVE_OPENCL")
-#endif(OPENCL_FOUND AND USE_OPENCL)
+# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
+add_subdirectory(cltest)
 
 # build opengl slideshow viewer?
 find_package(SDL)
@@ -264,6 +257,15 @@ add_custom_command(
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPERTIES GENERATED 1)
 
 #
+# Generation of the accels translation strings file
+#
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_accel_strings.sh ${CMAKE_CURRENT_SOURCE_DIR} > ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h
+)
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h PROPERTIES GENERATED 1)
+
+#
 # Generate mapping of key strings to internal metadata id
 #
 add_custom_command(
@@ -279,7 +281,7 @@ add_library(metadata_dummy ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CU
 #
 # build libdarktable
 #
-add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
+add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h ${SOURCES})
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
 endif(APPLE)
@@ -309,7 +311,7 @@ if(NOT DONT_USE_RAWSPEED)
   add_subdirectory(rawspeed)
 endif(NOT DONT_USE_RAWSPEED)
 
-install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL}/darktable)
+install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 
 # Compile libraw modules

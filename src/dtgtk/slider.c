@@ -66,6 +66,7 @@ static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *
 static gboolean _slider_entry_key_event(GtkWidget *widget,GdkEventKey *event, gpointer data);
 
 static guint _signals[LAST_SIGNAL] = { 0 };
+static char accel_name_builder[1024];
 
 void _slider_get_value_area(GtkWidget *widget,GdkRectangle *rect)
 {
@@ -282,7 +283,7 @@ static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, g
   else if( // Masking allowed keys...
     event->keyval == GDK_minus || event->keyval == GDK_KP_Subtract ||
     event->keyval == GDK_plus || event->keyval == GDK_KP_Add ||
-    event->keyval == GDK_period ||
+    event->keyval == GDK_period || event->keyval == GDK_KP_Decimal ||
     event->keyval == GDK_Left  ||
     event->keyval == GDK_Right  ||
     event->keyval == GDK_Delete  ||
@@ -301,7 +302,7 @@ static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, g
   {
     return FALSE;
   }
-  // Prevent all other keys withing entry
+  // Prevent all other keys within entry
   return TRUE;
 }
 
@@ -665,4 +666,105 @@ GtkType dtgtk_slider_get_type()
   return dtgtk_slider_type;
 }
 
+static void slider_edit_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+	char sv[32]= {0};
+	slider->is_entry_active=TRUE;
+	gdouble value = gtk_adjustment_get_value(slider->adjustment);
+	sprintf(sv,"%.*f",slider->digits,value);
+	gtk_entry_set_text (GTK_ENTRY(slider->entry),sv);
+	gtk_widget_show (GTK_WIDGET(slider->entry));
+	gtk_widget_grab_focus (GTK_WIDGET(slider->entry));
+	gtk_widget_queue_draw (GTK_WIDGET(slider));
+}
+static void slider_increase_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+	float value = gtk_adjustment_get_value(slider->adjustment);
+	value += gtk_adjustment_get_step_increment(slider->adjustment);
+	if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+
+	gtk_adjustment_set_value(slider->adjustment, value);
+	gtk_widget_draw(GTK_WIDGET(slider),NULL);
+	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+}
+static void slider_decrease_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+	float value = gtk_adjustment_get_value(slider->adjustment);
+	value -= gtk_adjustment_get_step_increment(slider->adjustment);
+	if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+
+	gtk_adjustment_set_value(slider->adjustment, value);
+	gtk_widget_draw(GTK_WIDGET(slider),NULL);
+	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+}
+
+static void slider_reset_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+	gtk_adjustment_set_value(slider->adjustment, slider->default_value);
+	gtk_widget_draw(GTK_WIDGET(slider),NULL);
+	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+}
+
+void dtgtk_slider_set_accel(GtkDarktableSlider *slider, GtkAccelGroup *accel_group, const gchar *accel_path)
+{
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"increase");
+  if(0) _("increase"); // to have it in gettext
+  dt_accel_group_connect_by_path(accel_group,
+                                 accel_name_builder,
+                                 g_cclosure_new(
+                                     G_CALLBACK(slider_increase_callback),
+                                     (gpointer)slider, NULL));
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"reduce");
+  if(0) _("reduce"); // to have it in gettext
+  dt_accel_group_connect_by_path(accel_group,
+                                 accel_name_builder,
+                                 g_cclosure_new(
+                                     G_CALLBACK(slider_decrease_callback),
+                                     (gpointer)slider, NULL));
+	
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"reset");
+  if(0) _("reset"); // to have it in gettext
+  dt_accel_group_connect_by_path(accel_group,
+                                 accel_name_builder,
+                                 g_cclosure_new(
+                                     G_CALLBACK(slider_reset_callback),
+                                     (gpointer)slider, NULL));
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"edit");
+  dt_accel_group_connect_by_path(accel_group,
+                                 accel_name_builder,
+                                 g_cclosure_new(
+                                     G_CALLBACK(slider_edit_callback),
+                                     (gpointer)slider, NULL));
+}
+void dtgtk_slider_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path)
+{
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"increase");
+  gtk_accel_map_add_entry(accel_name_builder, 0, 0);
+  dt_accel_group_connect_by_path(accel_group, accel_name_builder,NULL);
+
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"reduce");
+  gtk_accel_map_add_entry(accel_name_builder, 0, 0);
+  dt_accel_group_connect_by_path(accel_group, accel_name_builder,NULL);
+
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"reset");
+  gtk_accel_map_add_entry(accel_name_builder, 0, 0);
+  dt_accel_group_connect_by_path(accel_group, accel_name_builder,NULL);
+
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"edit");
+  gtk_accel_map_add_entry(accel_name_builder, 0, 0);
+  dt_accel_group_connect_by_path(accel_group, accel_name_builder,NULL);
+
+}
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

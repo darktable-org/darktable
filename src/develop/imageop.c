@@ -27,6 +27,7 @@
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 #include "dtgtk/slider.h"
+// #include "dtgtk/tristatebutton.h" //FIXME
 
 #include <strings.h>
 #include <assert.h>
@@ -47,7 +48,8 @@ typedef struct _iop_gui_blend_data_t
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
-  const void *blob = NULL;
+  const void *op_params = NULL;
+  const void *bl_params = NULL;
   memcpy(module->default_params, module->factory_params, module->params_size);
   module->default_enabled = module->factory_enabled;
 
@@ -58,7 +60,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
 
   // select matching default:
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, operation from presets where operation = ?1 and "
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and "
                               "autoapply=1 and "
                               "?2 like model and ?3 like maker and ?4 like lens and "
                               "?5 between iso_min and iso_max and "
@@ -100,41 +102,55 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     // try to find matching entry
-    blob  = sqlite3_column_blob(stmt, 0);
-    int length  = sqlite3_column_bytes(stmt, 0);
+    op_params  = sqlite3_column_blob(stmt, 0);
+    int op_length  = sqlite3_column_bytes(stmt, 0);
     int enabled = sqlite3_column_int(stmt, 1);
-    if(blob && length == module->params_size)
+    bl_params = sqlite3_column_blob(stmt, 3);
+    int bl_length = sqlite3_column_bytes(stmt, 3);
+    if(op_params && (op_length == module->params_size))
     {
       // printf("got default for image %d and operation %s\n", module->dev->image->id, sqlite3_column_text(stmt, 2));
-      memcpy(module->default_params, blob, length);
+      memcpy(module->default_params, op_params, op_length);
       module->default_enabled = enabled;
+      if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+      {
+        memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
+      }
     }
-    else blob = (void *)1;
+    else
+      op_params = (void *)1;
   }
   else
   {
     // global default
     sqlite3_finalize(stmt);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled from presets where operation = ?1 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, blendop_params from presets where operation = ?1 and def=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      blob  = sqlite3_column_blob(stmt, 0);
-      int length  = sqlite3_column_bytes(stmt, 0);
+      op_params  = sqlite3_column_blob(stmt, 0);
+      int op_length  = sqlite3_column_bytes(stmt, 0);
       int enabled = sqlite3_column_int(stmt, 1);
-      if(blob && length == module->params_size)
+      bl_params = sqlite3_column_blob(stmt, 2);
+      int bl_length = sqlite3_column_bytes(stmt, 2);
+      if(op_params && (op_length == module->params_size))
       {
-        memcpy(module->default_params, blob, length);
+        memcpy(module->default_params, op_params, op_length);
         module->default_enabled = enabled;
+        if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+        {
+          memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
+        }
       }
-      else blob = (void *)1;
+      else
+        op_params = (void *)1;
     }
   }
   sqlite3_finalize(stmt);
 
-  if(blob == (void *)1)
+  if(op_params == (void *)1 || bl_params == (void *)1)
   {
     printf("[iop_load_defaults]: module param sizes have changed! removing default :(\n");
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from presets where operation = ?1 and def=1", -1, &stmt, NULL);
@@ -173,6 +189,18 @@ int _default_flags()
   return 0;
 }
 
+/* default operation tags for modules which does not implement the flags() function */
+int _default_operation_tags()
+{
+  return 0;
+}
+
+/* default operation tags filter for modules which does not implement the flags() function */
+int _default_operation_tags_filter()
+{
+  return 0;
+}
+
 /* default bytes per pixel: 4*sizeof(float). */
 int _default_output_bpp(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece)
 {
@@ -196,17 +224,19 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "groups",                 (gpointer)&(module->groups)))                 module->groups = _default_groups;
   if(!g_module_symbol(module->module, "flags",                  (gpointer)&(module->flags)))                  module->flags = _default_flags;
+  if(!g_module_symbol(module->module, "operation_tags",         (gpointer)&(module->operation_tags)))         module->operation_tags = _default_operation_tags;
+  if(!g_module_symbol(module->module, "operation_tags_filter",  (gpointer)&(module->operation_tags_filter)))  module->operation_tags_filter = _default_operation_tags_filter;
   if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = _default_output_bpp;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
+  if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
   if(!g_module_symbol(module->module, "mouse_leave",            (gpointer)&(module->mouse_leave)))            module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved",            (gpointer)&(module->mouse_moved)))            module->mouse_moved = NULL;
   if(!g_module_symbol(module->module, "button_released",        (gpointer)&(module->button_released)))        module->button_released = NULL;
   if(!g_module_symbol(module->module, "button_pressed",         (gpointer)&(module->button_pressed)))         module->button_pressed = NULL;
-  if(!g_module_symbol(module->module, "key_pressed",            (gpointer)&(module->key_pressed)))            module->key_pressed = NULL;
   if(!g_module_symbol(module->module, "configure",              (gpointer)&(module->configure)))              module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
 
@@ -264,6 +294,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->name        = so->name;
   module->groups      = so->groups;
   module->flags       = so->flags;
+  module->operation_tags  = so->operation_tags;
+  module->operation_tags_filter  = so->operation_tags_filter;
   module->output_bpp  = so->output_bpp;
   module->gui_update  = so->gui_update;
   module->gui_init    = so->gui_init;
@@ -274,7 +306,6 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->mouse_moved     = so->mouse_moved;
   module->button_released = so->button_released;
   module->button_pressed  = so->button_pressed;
-  module->key_pressed     = so->key_pressed;
   module->configure       = so->configure;
   module->scrolled        = so->scrolled;
 
@@ -408,7 +439,7 @@ void dt_iop_load_modules_so()
   GList *res = NULL;
   dt_iop_module_so_t *module;
   darktable.iop = NULL;
-  char plugindir[1024], op[20];
+  char plugindir[1024], op[20], accelpath[1024];
   const gchar *d_name;
   dt_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
@@ -432,6 +463,23 @@ void dt_iop_load_modules_so()
     g_free(libname);
     res = g_list_append(res, module);
     init_presets(module);
+    // Calling the accelerator initialization callback, if present
+    if(module->init_key_accels)
+      (module->init_key_accels)();
+
+    if(!(module->flags() & IOP_FLAGS_DEPRECATED))
+    {
+      // Adding the optional show accelerator to the table (blank)
+      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
+               (module->op));
+      gtk_accel_map_add_entry(accelpath, 0, 0);
+      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
+                                     NULL);
+      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
+      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
+    }
   }
   g_dir_close(dir);
   darktable.iop = res;
@@ -478,14 +526,25 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
-  free(module->factory_params);
+  free(module->factory_params); module->factory_params = NULL ;  
   module->cleanup(module);
-  free(module->default_params);
+
+  free(module->default_params); module->default_params = NULL ; 
+  if (module->blend_params != NULL) 
+  {
+    free(module->blend_params) ; 
+    module->blend_params = NULL ; 
+  }
+  if (module->default_blendop_params != NULL) 
+  {
+    free(module->default_blendop_params) ; 
+    module->default_blendop_params = NULL ; 
+  }
   dt_pthread_mutex_destroy(&module->params_mutex);
 }
 
 void dt_iop_unload_modules_so()
-{
+{  
   while(darktable.iop)
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;
@@ -514,6 +573,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     {
       memcpy(str+module->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
       memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
+      // this should be redundant! (but is not)
+      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     }
 
     // assume process_cl is ready, commit_params can overwrite this.
@@ -598,7 +659,7 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
       /* if module is the current, always expand it */
       if(m==module)
         gtk_expander_set_expanded(m->expander, TRUE);
-      else if((current_group == 0 || (current_group & m->groups()) ))
+      else if((current_group == 0 || (current_group & m->groups()) || (current_group == IOP_SPECIAL_GROUP_ACTIVE_PIPE && m->enabled) /* || (current_group == IOP_SPECIAL_GROUP_USER_DEFINED && module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2) */ )) //FIXME
         gtk_expander_set_expanded(m->expander, FALSE);
 
       iop = g_list_next(iop);
@@ -626,10 +687,10 @@ dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer u
 
     // register to receive draw events
     dt_iop_request_focus(module);
-    GtkContainer *box = GTK_CONTAINER(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+    GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
     gtk_container_set_focus_child(box, module->topwidget);
     // redraw gui (in case post expose is set)
-    gtk_widget_queue_resize(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+    gtk_widget_queue_resize(darktable.gui->widgets.plugins_vbox);
     dt_control_gui_queue_draw();
   }
   else
@@ -699,6 +760,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    if (darktable.develop->gui_module->operation_tags_filter())
+      dt_dev_invalidate_from_gui(darktable.develop);
   }
   darktable.develop->gui_module = module;
   if(module)
@@ -707,6 +770,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    if (module->operation_tags_filter())
+      dt_dev_invalidate_from_gui(darktable.develop);
   }
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
@@ -779,7 +844,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+  dtgtk_button_set_accel(resetbutton,darktable.control->accels_darkroom,name);
   GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+  dtgtk_button_set_accel(presetsbutton,darktable.control->accels_darkroom,name);
   gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
@@ -810,7 +879,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     bd->enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend")));
     GtkWidget *label = gtk_label_new(_("mode"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
-    bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.5, 100.0, 2));
+    bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, 100.0, 0));
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
@@ -995,13 +1064,13 @@ weight (const float c1, const float c2)
   return ((c1 > 65500.0f) ^ (c2 > 65500.0f)) ? 0.0f : 1.0f;
 }
 #else
-static float
+/*static float
 weight (const float c0, const float c1, const float c2, const float c3, const float c4)
 {
   const float c = 65534.0f;
   const float cc = fmaxf(fmaxf(c1, c2), fmaxf(c3, c4));
   return ((c0 > c) ^ (cc > c)) ? 0.001f : 1.0f;
-}
+}*/
 #endif
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
@@ -1051,40 +1120,45 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
+    int py = (y + roi_out->y)/roi_out->scale;
+    py = MAX(0, py & ~1) + rggby;
+    py = MIN((((roi_in->height-3) & ~1u) + rggby), py);
+    const int maxjj = MIN(maxj,  py + 2*samples);
+    const int minjj = MAX(rggby, py - 2*samples);
+
     float *outc = out + 4*out_stride*y;
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
-      int px = (x + roi_out->x)/roi_out->scale, py = (y + roi_out->y)/roi_out->scale;
+      int px = (x + roi_out->x)/roi_out->scale;
 
       // round down to next even number and jump to rggb block:
       px = MAX(0, px & ~1) + rggbx;
-      py = MAX(0, py & ~1) + rggby;
-
       px = MIN((((roi_in->width -3) & ~1u) + rggbx), px);
-      py = MIN((((roi_in->height-3) & ~1u) + rggby), py);
+
+      const int idx = px   + in_stride*py;
 
       // const float pc1  = in[px   + in_stride*py];
       // const float pc23 = .5f*(in[px+1 + in_stride*py] + in[px   + in_stride*(py + 1)]);
       // const float pc4  = in[px+1 + in_stride*(py + 1)];
-      const float pc = fmaxf(fmaxf(in[px   + in_stride*py], in[px+1 + in_stride*py]), fmaxf(in[px   + in_stride*(py + 1)], in[px+1 + in_stride*(py + 1)]));
+      const uint16_t pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
 
       __m128 num = _mm_setzero_ps();
-      const int maxjj = MIN(maxj,  py + 2*samples), maxii = MIN(maxi,  px + 2*samples);
-      const int minjj = MAX(rggby, py - 2*samples), minii = MAX(rggbx, px - 2*samples);
+      const int maxii = MIN(maxi,  px + 2*samples);
+      const int minii = MAX(rggbx, px - 2*samples);
       for(int j=minjj; j<=maxjj; j+=2)
         for(int i=minii; i<=maxii; i+=2)
         {
           // get four mosaic pattern uint16:
-          const float p1 = in[i   + in_stride*j];
-          const float p2 = in[i+1 + in_stride*j];
-          const float p3 = in[i   + in_stride*(j + 1)];
-          const float p4 = in[i+1 + in_stride*(j + 1)];
+          const uint16_t p1 = in[i   + in_stride*j];
+          const uint16_t p2 = in[i+1 + in_stride*j];
+          const uint16_t p3 = in[i   + in_stride*(j + 1)];
+          const uint16_t p4 = in[i+1 + in_stride*(j + 1)];
 
           // const float wr = weight(pc1, p1);
           // const float wg = weight(pc23, .5f*(p2+p3));
-          const float w = weight(pc, p1, p2, p3, p4);
+          const float w = ((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)) ? 0.001f : 1.0f;
           // const float wb = weight(pc4, p4);
 
           // const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];

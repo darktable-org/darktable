@@ -24,7 +24,6 @@
 #include "libs/lib.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -58,7 +57,7 @@ write_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 static void
 load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open sidecar file"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -97,7 +96,7 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
     g_free (dtfilename);
   }
   gtk_widget_destroy (filechooser);
-  win = glade_xml_get_widget (darktable.gui->main_window, "center");
+  win = darktable.gui->widgets.center;
   gtk_widget_queue_draw(win);
 }
 
@@ -171,16 +170,20 @@ gui_reset (dt_lib_module_t *self)
 }
 
 static void
-key_accel_copy_callback(void *user_data)
+key_accel_copy_callback(GtkAccelGroup *accel_group,
+                        GObject *acceleratable, guint keyval,
+                        GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
   copy_button_clicked(NULL, self);
 }
 
 static void
-key_accel_paste_callback(void *user_data)
+key_accel_paste_callback(GtkAccelGroup *accel_group,
+                         GObject *acceleratable, guint keyval,
+                         GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
   paste_button_clicked(NULL, self);
 }
 
@@ -199,7 +202,11 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, key_accel_copy_callback, (void *)self);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/copy history/copy",
+      g_cclosure_new(G_CALLBACK(key_accel_copy_callback),
+                     (gpointer)self, NULL));
   g_object_set(G_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"), (char *)NULL);
   gtk_box_pack_start(hbox, copy, TRUE, TRUE, 0);
 
@@ -218,7 +225,11 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, key_accel_paste_callback, (void *)self);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/copy history/paste",
+      g_cclosure_new(G_CALLBACK(key_accel_paste_callback),
+                     (gpointer)self, NULL));
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), (char *)NULL);
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
@@ -255,10 +266,14 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_gui_key_accel_unregister(key_accel_copy_callback);
-  dt_gui_key_accel_unregister(key_accel_paste_callback);
   free(self->data);
   self->data = NULL;
 }
 
-
+void init_key_accels()
+{
+  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/copy history/copy",
+                          GDK_c, GDK_CONTROL_MASK);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/copy history/paste",
+                          GDK_v, GDK_CONTROL_MASK);
+}

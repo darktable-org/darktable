@@ -112,9 +112,11 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
   sqlite3_finalize(stmt);
 }
 
-void dt_colorlabels_key_accel_callback(void *user_data)
+void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
+                                       GObject *acceleratable, guint keyval,
+                                       GdkModifierType modifier, gpointer data)
 {
-  const long int mode = (long int)user_data;
+  const long int mode = (long int)data;
   int selected;
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
   if(selected <= 0)
@@ -154,20 +156,6 @@ void dt_colorlabels_key_accel_callback(void *user_data)
   // synch to dttags:
   dt_image_synch_xmp(selected);
   dt_control_queue_draw_all();
-}
-
-void dt_colorlabels_register_key_accels()
-{
-  dt_gui_key_accel_register(0, GDK_F1, dt_colorlabels_key_accel_callback, (void *)0);
-  dt_gui_key_accel_register(0, GDK_F2, dt_colorlabels_key_accel_callback, (void *)1);
-  dt_gui_key_accel_register(0, GDK_F3, dt_colorlabels_key_accel_callback, (void *)2);
-  dt_gui_key_accel_register(0, GDK_F4, dt_colorlabels_key_accel_callback, (void *)3);
-  dt_gui_key_accel_register(0, GDK_F5, dt_colorlabels_key_accel_callback, (void *)4);
-}
-
-void dt_colorlabels_unregister_key_accels()
-{
-  dt_gui_key_accel_unregister(dt_colorlabels_key_accel_callback);
 }
 
 //FIXME: XMP uses Red, Green, ... while we use red, green, ... What should this function return?

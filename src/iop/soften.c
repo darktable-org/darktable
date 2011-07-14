@@ -100,10 +100,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     int index = ch*k;
     float h,s,l;
-    rgb2hsl(in[index],in[index+1],in[index+2],&h,&s,&l);
+    rgb2hsl(&in[index],&h,&s,&l);
     s*=saturation;
     l*=brightness;
-    hsl2rgb(&out[index],&out[index+1],&out[index+2],h,CLIP(s),CLIP(l));
+    hsl2rgb(&out[index],h,CLIP(s),CLIP(l));
   }
 
   const float w = piece->iwidth*piece->iscale;
@@ -308,7 +308,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_soften_params_t));
   module->default_params = malloc(sizeof(dt_iop_soften_params_t));
   module->default_enabled = 0;
-  module->priority = 995;
+  module->priority = 822; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_soften_params_t);
   module->gui_data = NULL;
   dt_iop_soften_params_t tmp = (dt_iop_soften_params_t)

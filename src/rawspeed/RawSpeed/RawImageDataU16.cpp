@@ -85,6 +85,7 @@ void RawImageDataU16::calculateBlackAreas() {
   if (!totalpixels) {
     for (int i = 0 ; i < 4; i++)
       blackLevelSeparate[i] = blackLevel;
+    free(histogram);
     return;
   }
 

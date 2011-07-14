@@ -898,7 +898,9 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   g_free(overprofile);
 
   // get only once at the beginning, in case the user changes it on the way:
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  const int high_quality_processing = ((format_params->max_width  == 0 || format_params->max_width  >= pipe.processed_width ) &&
+                                       (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)) ? 0 :
+                                        dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   const int width  = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
   const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
@@ -908,53 +910,50 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   int processed_height = scale*pipe.processed_height;
   const int bpp = format->bpp(format_params);
 
-  // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
-  if(bpp == 8 && (!high_quality_processing || (high_quality_processing && scale == 1.0f)))
-    dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-  else
-    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-
-
   // downsampling done last, if high quality processing was requested:
   uint8_t *outbuf = pipe.backbuf;
   uint8_t *moutbuf = NULL; // keep track of alloc'ed memory
   if(high_quality_processing)
   {
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     const float scalex = format_params->max_width  > 0 ? fminf(format_params->max_width /(float)pipe.processed_width,  1.0) : 1.0;
     const float scaley = format_params->max_height > 0 ? fminf(format_params->max_height/(float)pipe.processed_height, 1.0) : 1.0;
     const float scale = fminf(scalex, scaley);
-    if(scale < 1.0f)
-    {
-      processed_width  = scale*pipe.processed_width  + .5f;
-      processed_height = scale*pipe.processed_height + .5f;
-      moutbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
-      outbuf = moutbuf;
-      // now downscale into the new buffer:
-      dt_iop_roi_t roi_in, roi_out;
-      roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
-      roi_in.scale = 1.0;
-      roi_out.scale = scale;
-      roi_in.width = pipe.processed_width;
-      roi_in.height = pipe.processed_height;
-      roi_out.width = processed_width;
-      roi_out.height = processed_height;
-      dt_iop_clip_and_zoom((float *)outbuf, (float *)pipe.backbuf, &roi_out, &roi_in, processed_width, pipe.processed_width);
-    }
+    processed_width  = scale*pipe.processed_width  + .5f;
+    processed_height = scale*pipe.processed_height + .5f;
+    moutbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
+    outbuf = moutbuf;
+    // now downscale into the new buffer:
+    dt_iop_roi_t roi_in, roi_out;
+    roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
+    roi_in.scale = 1.0;
+    roi_out.scale = scale;
+    roi_in.width = pipe.processed_width;
+    roi_in.height = pipe.processed_height;
+    roi_out.width = processed_width;
+    roi_out.height = processed_height;
+    dt_iop_clip_and_zoom((float *)outbuf, (float *)pipe.backbuf, &roi_out, &roi_in, processed_width, pipe.processed_width);
+  }
+  else
+  {
+    // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
+    if(bpp == 8)
+      dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    else
+      dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    outbuf = pipe.backbuf;
   }
 
   // downconversion to low-precision formats:
   if(bpp == 8)
   {
     // ldr output: char
-    if(high_quality_processing && scale < 1.0f)
+    if(high_quality_processing)
     {
-      const float *const inbuf = (float *)pipe.backbuf;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(outbuf, processed_width, processed_height) schedule(static)
-#endif
+      const float *const inbuf = (float *)outbuf;
       for(int k=0; k<processed_width*processed_height; k++)
       {
-        // convert in place
+        // convert in place, this is unfortunately very serial.. 
         const uint8_t r = CLAMP(inbuf[4*k+0]*0xff, 0, 0xff);
         const uint8_t g = CLAMP(inbuf[4*k+1]*0xff, 0, 0xff);
         const uint8_t b = CLAMP(inbuf[4*k+2]*0xff, 0, 0xff);

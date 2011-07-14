@@ -1,6 +1,6 @@
 build/src/preferences_gen.h
+build/src/accelstrings_gen.h
 data/darktable.schemas
-data/darktable.glade
 src/common/collection.c
 src/common/darktable.h
 src/common/darktable.c
@@ -52,6 +52,7 @@ src/iop/cacorrect.c
 src/iop/channelmixer.c
 src/iop/clahe.c
 src/iop/clipping.c
+src/iop/colorcontrast.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
 src/iop/colorout.c
@@ -64,10 +65,13 @@ src/iop/gamma.c
 src/iop/graduatednd.c
 src/iop/grain.c
 src/iop/highlights.c
+src/iop/highpass.c
+src/iop/hotpixels.c
 src/iop/lens.c
 src/iop/localc.c
 src/iop/lowlight.c
 src/iop/monochrome.c
+src/iop/nlmeans.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
@@ -76,7 +80,6 @@ src/iop/sharpen.c
 src/iop/soften.c
 src/iop/splittoning.c
 src/iop/spots.c
-src/iop/stuckpixels.c
 src/iop/temperature.c
 src/iop/tonecurve.c
 src/iop/tonemap.cc

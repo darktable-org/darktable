@@ -24,7 +24,6 @@
 #include "libs/lib.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -197,7 +196,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
   char *name = get_style_name(d);
   if(name)
   {
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    GtkWidget *win = darktable.gui->widgets.main_window;
     GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                              GTK_WINDOW (win),
                              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -219,7 +218,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
 
 static void import_clicked (GtkWidget *w,gpointer user_data)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select style"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -350,7 +349,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),exportButton,TRUE,TRUE,0);
   // Import Button
-  GtkWidget *importButton = gtk_button_new_with_label(_("import"));
+  GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import"));
   g_object_set (importButton, "tooltip-text", _("import style from a style file"), (char *)NULL);
   g_signal_connect (importButton, "clicked", G_CALLBACK(import_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),importButton,TRUE,TRUE,0);

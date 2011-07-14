@@ -66,6 +66,8 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  dev->closures = NULL;
+
   float downsampling = dt_conf_get_float ("preview_subsample");
   dev->preview_downsampling = downsampling <= 1.0 && downsampling >= 0.1 ? downsampling : .5;
   dev->gui_module = NULL;
@@ -164,6 +166,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   while(dev->history)
   {
     free(((dt_dev_history_item_t *)dev->history->data)->params);
+    free(((dt_dev_history_item_t *)dev->history->data)->blend_params);
     free( (dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
@@ -609,6 +612,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
       // printf("removing obsoleted history item: %s\n", hist->module->op);
       free(hist->params);
+      free(hist->blend_params);
       free(history->data);
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
@@ -832,6 +836,7 @@ void dt_dev_read_history(dt_develop_t *dev)
           hist->module->legacy_params(hist->module, sqlite3_column_blob(stmt, 4), labs(modversion), hist->params, labs(hist->module->version())))
       {
         free(hist->params);
+        free(hist->blend_params);
         fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
         const char *fname = dev->image->filename + strlen(dev->image->filename);
         while(fname > dev->image->filename && *fname != '/') fname --;
@@ -952,6 +957,12 @@ int
 dt_dev_is_current_image (dt_develop_t *dev, int imgid)
 {
   return (dev->image && dev->image->id==imgid)?1:0;
+}
+
+void
+dt_dev_invalidate_from_gui (dt_develop_t *dev)
+{
+  dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -24,7 +24,7 @@
 #include "control/jobs.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -62,6 +62,13 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 6) dt_control_flip_images(2);
   else if(i == 7) dt_control_merge_hdr();
   dt_control_queue_draw_all();
+}
+
+static void key_accel_callback(GtkAccelGroup *accel_group,
+                               GObject *acceleratable, guint keyval,
+                               GdkModifierType modifier, gpointer data)
+{
+  button_clicked(NULL, data);
 }
 
 int
@@ -108,11 +115,13 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox2 = GTK_BOX(gtk_hbox_new(TRUE, 5));
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees ccw");
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
+  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees cw");
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)5);
@@ -131,5 +140,26 @@ gui_cleanup (dt_lib_module_t *self)
 {
   // free(self->data);
   // self->data = NULL;
+}
+
+void init_key_accels()
+{
+  gtk_accel_map_add_entry(
+      "<Darktable>/lighttable/plugins/image/remove from collection",
+      GDK_Delete, 0);
+  gtk_accel_map_add_entry(
+      "<Darktable>/lighttable/plugins/image/delete from disk",
+      0, 0);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/image/remove from collection",
+      g_cclosure_new(G_CALLBACK(key_accel_callback), (gpointer)0, NULL));
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/image/delete from disk",
+      g_cclosure_new(G_CALLBACK(key_accel_callback), (gpointer)1, NULL));
+  dtgtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees cw");
+  dtgtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees ccw");
 }
 

@@ -1,5 +1,8 @@
 /*
     This file is part of darktable,
+    copyright (c) 2011 Rostyslav Pidgornyi
+
+    and the initial plugin `stuck pixels' was
     copyright (c) 2011 bruce guenter
 
     darktable is free software: you can redistribute it and/or modify
@@ -15,6 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -28,61 +32,74 @@
 
 DT_MODULE(1)
 
-typedef struct dt_iop_stuckpixels_params_t
+typedef struct dt_iop_hotpixels_params_t
 {
   float strength;
+  float threshold;
   gboolean markfixed;
+  gboolean permissive;
 }
-dt_iop_stuckpixels_params_t;
+dt_iop_hotpixels_params_t;
 
-typedef struct dt_iop_stuckpixels_gui_data_t
+typedef struct dt_iop_hotpixels_gui_data_t
 {
+  GtkDarktableSlider *threshold;
   GtkDarktableSlider *strength;
   GtkToggleButton *markfixed;
+  GtkToggleButton *permissive;
   GtkLabel *message;
 }
-dt_iop_stuckpixels_gui_data_t;
+dt_iop_hotpixels_gui_data_t;
 
-typedef struct dt_iop_stuckpixels_data_t
+typedef struct dt_iop_hotpixels_data_t
 {
   uint32_t filters;
   float threshold;
+  float multiplier;
+  gboolean permissive;
   gboolean markfixed;
 }
-dt_iop_stuckpixels_data_t;
+dt_iop_hotpixels_data_t;
 
 const char *name()
 {
-  return _("stuck pixels");
+  return _("hot pixels");
 }
 
 int
 groups ()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_CORRECT;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/hotpixels/threshold");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/hotpixels/strength");
+}
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return sizeof(float);
 }
 
-/* Detect stuck sensor pixels based on the 4 surrounding sites. Pixels
- * having 3 or 4 surrounding pixels that are more than a threshold
- * smaller are considered "stuck", and are replaced by the maximum of
- * the smaller pixels. The test for 3 or 4 smaller pixels allows for
+/* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
+ * having 3 or 4 (depending on permissive setting) surrounding pixels that 
+ * than value*multiplier are considered "hot", and are replaced by the maximum of
+ * the neighbour pixels. The permissive variant allows for
  * correcting pairs of hot pixels in adjacent sites. Replacement using
  * the maximum produces fewer artifacts when inadvertently replacing
- * non-stuck pixels. */
+ * non-hot pixels. */
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_stuckpixels_gui_data_t *g = (dt_iop_stuckpixels_gui_data_t *)self->gui_data;
-  const dt_iop_stuckpixels_data_t *data = (dt_iop_stuckpixels_data_t *)piece->data;
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
   const float threshold = data->threshold;
+  const float multiplier = data->multiplier;
   const int width = roi_out->width;
   const int widthx2 = width*2;
   const gboolean markfixed = data->markfixed;
+  const int min_neighbours = data->permissive ? 3 : 4;
 
   // The loop should output only a few pixels, so just copy everything first
   memcpy(o, i, roi_out->width*roi_out->height*sizeof(float));
@@ -97,8 +114,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = (float*)o + width*row+2;
     for (int col=2; col<width-1; col++, in++, out++)
     {
-      float mid=*in-threshold;
-      if (mid > 0)
+      float mid= *in * multiplier;
+      if (*in > threshold)
       {
         int count=0;
         float maxin=0.0;
@@ -115,7 +132,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         TESTONE(+2);
         TESTONE(+widthx2);
 #undef TESTONE
-        if (count >= 3)
+        if (count >= min_neighbours)
         {
           *out = maxin;
           fixed++;
@@ -145,19 +162,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void init(dt_iop_module_t *module)
 {
   module->data = NULL;
-  module->params = malloc(sizeof(dt_iop_stuckpixels_params_t));
-  module->default_params = malloc(sizeof(dt_iop_stuckpixels_params_t));
+  module->params = malloc(sizeof(dt_iop_hotpixels_params_t));
+  module->default_params = malloc(sizeof(dt_iop_hotpixels_params_t));
   module->default_enabled = 0;
-  module->priority = 160;
-  module->params_size = sizeof(dt_iop_stuckpixels_params_t);
+  module->priority = 66; // module order created by iop_dependencies.py, do not edit!
+  module->params_size = sizeof(dt_iop_hotpixels_params_t);
   module->gui_data = NULL;
-  const dt_iop_stuckpixels_params_t tmp =
+  const dt_iop_hotpixels_params_t tmp =
   {
-    0.5, FALSE
+    0.5, 0.01, FALSE, FALSE
   };
 
-  memcpy(module->params, &tmp, sizeof(dt_iop_stuckpixels_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_stuckpixels_params_t));
+  memcpy(module->params, &tmp, sizeof(dt_iop_hotpixels_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_hotpixels_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -172,10 +189,12 @@ void cleanup(dt_iop_module_t *module)
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_stuckpixels_params_t *p = (dt_iop_stuckpixels_params_t *)params;
-  dt_iop_stuckpixels_data_t *d = (dt_iop_stuckpixels_data_t *)piece->data;
+  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
+  dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;
   d->filters = dt_image_flipped_filter(self->dev->image);
-  d->threshold = 1.0/(p->strength+1.0);
+  d->multiplier = p->strength/2.0;
+  d->threshold = p->threshold;
+  d->permissive = p->permissive;
   d->markfixed = p->markfixed && (pipe->type != DT_DEV_PIXELPIPE_EXPORT);
   if (!d->filters || pipe->type == DT_DEV_PIXELPIPE_PREVIEW || p->strength == 0.0)
     piece->enabled = 0;
@@ -183,7 +202,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_stuckpixels_data_t));
+  piece->data = malloc(sizeof(dt_iop_hotpixels_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -196,9 +215,19 @@ static void
 strength_callback(GtkRange *range, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_stuckpixels_gui_data_t *g = (dt_iop_stuckpixels_gui_data_t *)self->gui_data;
-  dt_iop_stuckpixels_params_t *p = (dt_iop_stuckpixels_params_t *)self->params;
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
   p->strength = dtgtk_slider_get_value(g->strength);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+threshold_callback(GtkRange *range, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
+  p->threshold = dtgtk_slider_get_value(g->threshold);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -206,36 +235,62 @@ static void
 markfixed_callback(GtkRange *range, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  dt_iop_stuckpixels_gui_data_t *g = (dt_iop_stuckpixels_gui_data_t *)self->gui_data;
-  dt_iop_stuckpixels_params_t *p = (dt_iop_stuckpixels_params_t *)self->params;
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
   p->markfixed = gtk_toggle_button_get_active(g->markfixed);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+permissive_callback(GtkRange *range, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
+  p->permissive = gtk_toggle_button_get_active(g->permissive);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_update    (dt_iop_module_t *self)
 {
-  dt_iop_stuckpixels_gui_data_t *g = (dt_iop_stuckpixels_gui_data_t *)self->gui_data;
-  dt_iop_stuckpixels_params_t *p = (dt_iop_stuckpixels_params_t *)self->params;
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
+  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
   dtgtk_slider_set_value(g->strength, p->strength);
+  dtgtk_slider_set_value(g->threshold, p->threshold);
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);
+  gtk_toggle_button_set_active(g->permissive, p->permissive);
 }
 
 void gui_init     (dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_stuckpixels_gui_data_t));
-  dt_iop_stuckpixels_gui_data_t *g = (dt_iop_stuckpixels_gui_data_t*)self->gui_data;
-  dt_iop_stuckpixels_params_t *p = (dt_iop_stuckpixels_params_t*)self->params;
+  self->gui_data = malloc(sizeof(dt_iop_hotpixels_gui_data_t));
+  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t*)self->gui_data;
+  dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t*)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
-  g->strength = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 10.0, 0.01, p->strength, 4));
+  g->threshold = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0, 0.005, p->threshold, 4));
+  dtgtk_slider_set_label(g->threshold,_("threshold"));
+  g_object_set(G_OBJECT(g->threshold), "tooltip-text", _("lower threshold for hot pixel"), NULL);
+  dtgtk_slider_set_format_type(DTGTK_SLIDER(g->threshold),DARKTABLE_SLIDER_FORMAT_FLOAT);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT (g->threshold), "value-changed", G_CALLBACK (threshold_callback), self);
+  dtgtk_slider_set_accel(g->threshold,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/hot pixels/threshold");
+
+  g->strength = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.0, 0.01, p->strength, 4));
   dtgtk_slider_set_label(g->strength,_("strength"));
-  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of stuck pixel correction threshold"), NULL);
+  g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of hot pixel correction"), NULL);
   dtgtk_slider_set_format_type(DTGTK_SLIDER(g->strength),DARKTABLE_SLIDER_FORMAT_FLOAT);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
+  dtgtk_slider_set_accel(g->strength,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/hot pixels/strength");
+
+  g->permissive  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("detect by 3 neighbours")));
+  gtk_toggle_button_set_active(g->permissive, p->permissive);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->permissive), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->permissive), "toggled", G_CALLBACK(permissive_callback), self);
 
   GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
 

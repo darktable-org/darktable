@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-
+    copyright (c) 2011 Henrik Andersson.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -49,6 +49,28 @@ DT_MODULE(1)
 #define DT_LIBRARY_MAX_ZOOM 13
 
 
+static void star_key_accel_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data);
+static void zoom_key_accel_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data);
+static void go_up_key_accel_callback(GtkAccelGroup *accel_group,
+                                     GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, gpointer data);
+static void go_down_key_accel_callback(GtkAccelGroup *accel_group,
+                                       GObject *acceleratable, guint keyval,
+                                       GdkModifierType modifier, gpointer data);
+static void
+go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data);
+static void
+go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data);
+
+
 /**
  * this organises the whole library:
  * previously imported film rolls..
@@ -57,7 +79,7 @@ typedef struct dt_library_t
 {
   // tmp mouse vars:
   float select_offset_x, select_offset_y;
-  int32_t last_selected_id;
+  int32_t last_selected_idx, selection_origin_idx;
   int button;
   uint32_t modifiers;
   uint32_t center, pan;
@@ -66,7 +88,19 @@ typedef struct dt_library_t
   dt_view_image_over_t image_over;
   int full_preview;
   int32_t full_preview_id;
-  int32_t stars_registered;
+
+  /* prepared and reusable statements */
+  struct {
+    /* main query statment, should be update on listener signal of collection */
+    sqlite3_stmt *main_query;
+    /* select imgid from selected_images */
+    sqlite3_stmt *select_imgid_in_selection;
+    /* delete from selected_images where imgid != ?1 */
+    sqlite3_stmt *delete_except_arg;
+  } statements;
+
+  // Closures list for accelerators
+  GSList *closures;
 }
 dt_library_t;
 
@@ -75,12 +109,33 @@ const char *name(dt_view_t *self)
   return _("lighttable");
 }
 
+static void _view_lighttable_collection_listener_callback(void *user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  /* check if we can get a query from collection */
+  const gchar *query=dt_collection_get_query (darktable.collection);
+  if(!query)
+    return;
+
+  /* if we have a statment lets clean it */
+  if(lib->statements.main_query)
+    sqlite3_finalize(lib->statements.main_query);
+
+  /* prepare a new main query statement for collection */
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &lib->statements.main_query, NULL);
+}
+
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_library_t));
   dt_library_t *lib = (dt_library_t *)self->data;
+  memset(self->data,0,sizeof(dt_library_t));
+
   lib->select_offset_x = lib->select_offset_y = 0.5f;
-  lib->last_selected_id = -1;
+  lib->last_selected_idx = -1;
+  lib->selection_origin_idx = -1;
   lib->first_visible_zoomable = lib->first_visible_filemanager = 0;
   lib->button = 0;
   lib->modifiers = 0;
@@ -89,6 +144,148 @@ void init(dt_view_t *self)
   lib->zoom_y = 0.0f;
   lib->full_preview=0;
   lib->full_preview_id=-1;
+  lib->closures = NULL;
+
+  /* setup collection listener and initialize main_query statement */
+  dt_collection_listener_register(_view_lighttable_collection_listener_callback, self);
+  _view_lighttable_collection_listener_callback(self);
+
+  /* initialize reusable sql statements */
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &lib->statements.delete_except_arg, NULL);
+  
+
+  // Initializing accelerators
+  gtk_accel_map_add_entry("<Darktable>/lighttable/rating/desert", GDK_0, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/rating/1", GDK_1, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/rating/2", GDK_2, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/rating/3", GDK_3, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/rating/4", GDK_4, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/rating/5", GDK_5, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/rating/reject", GDK_r,
+                          0);
+
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/desert",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/1",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/2",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/3",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/4",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/5",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/reject",
+                                 NULL);
+
+  gtk_accel_map_add_entry("<Darktable>/lighttable/zoom/max", GDK_1,
+                          GDK_MOD1_MASK);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/zoom/in", GDK_2,
+                          GDK_MOD1_MASK);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/zoom/out", GDK_3,
+                          GDK_MOD1_MASK);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/zoom/min", GDK_4,
+                          GDK_MOD1_MASK);
+
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/zoom/max",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/zoom/in",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/zoom/out",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/zoom/min",
+                                 NULL);
+
+  gtk_accel_map_add_entry("<Darktable>/lighttable/navigate/up",
+                          GDK_g, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/navigate/down",
+                          GDK_g, GDK_SHIFT_MASK);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/navigate/page up",
+                          GDK_Page_Up, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/navigate/page down",
+                          GDK_Page_Down, 0);
+
+
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/navigate/up",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/navigate/down",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/navigate/page up",
+                                 NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/navigate/page down",
+                                 NULL);
+
+  gtk_accel_map_add_entry("<Darktable>/lighttable/color/red", GDK_F1, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/color/yellow", GDK_F2, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/color/green", GDK_F3, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/color/blue", GDK_F4, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/color/purple", GDK_F5, 0);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/red",
+      NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/yellow",
+      NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/green",
+      NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/blue",
+      NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/purple",
+      NULL);
+
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/up",
+                          GDK_Up, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/down",
+                          GDK_Down, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/left",
+                          GDK_Left, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/right",
+                          GDK_Right, 0);
+  gtk_accel_map_add_entry("<Darktable>/lighttable/scroll/center",
+                          GDK_apostrophe, 0);
+
+  // Leaving the closure argument null just adds these to the accel lists
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/scroll/up", NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/scroll/down", NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/scroll/left", NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/scroll/right", NULL);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/scroll/center", NULL);
+
+  gtk_accel_map_add_entry("<Darktable>/lighttable/preview",
+                          GDK_z, 0);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/preview", NULL);
+
 }
 
 
@@ -97,6 +294,34 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
+/**
+ * \brief A helper function to convert grid coordinates to an absolute index
+ *
+ * \param[in] row The row
+ * \param[in] col The column
+ * \param[in] stride The stride (number of columns per row)
+ * \param[in] offset The zero-based index of the top-left image (aka the count of images above the viewport, minus 1)
+ * \return The absolute, zero-based index of the specified grid location
+ */
+static int
+grid_to_index (int row, int col, int stride, int offset)
+{
+  return row * stride + col + offset;
+}
+
+/**
+ * \brief Checks if a number is between two other numbers (inclusive)
+ *
+ * \param[in] left One inclusive limit of the range
+ * \param[in] value The value to test for inclusivity
+ * \param[in] right The other inclusive limit of the range
+ * \return 1 if value lies on or between left and right, 0 otherwise
+ */
+static int
+inc_between (int left, int value, int right)
+{
+  return (left <= value && value <= right) || (right <= value && value <= left);
+}
 
 static void
 expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
@@ -106,6 +331,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(darktable.gui->center_tooltip == 1)
     darktable.gui->center_tooltip = 2;
 
+  // grid stride
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
   lib->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
@@ -115,20 +341,11 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   else cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
 
-  // zoom to one case:
-  static int oldzoom = -1;
-  static int firstsel = -1;
-
   if(lib->first_visible_zoomable >= 0)
   {
     lib->offset = lib->first_visible_zoomable;
   }
   lib->first_visible_zoomable = -1;
-
-  if(iir == 1 && oldzoom != 1 && firstsel >= 0)
-    lib->offset = firstsel;
-  oldzoom = iir;
-  firstsel = -1;
 
   if(lib->track >  2) lib->offset += iir;
   if(lib->track < -2) lib->offset -= iir;
@@ -145,14 +362,15 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   const int seli = pointerx / (float)wd;
   const int selj = pointery / (float)ht;
+  const int selidx = grid_to_index(selj, seli, iir, offset);
 
   const int img_pointerx = iir == 1 ? pointerx : fmodf(pointerx, wd);
   const int img_pointery = iir == 1 ? pointery : fmodf(pointery, ht);
 
   const int max_rows = 1 + (int)((height)/ht + .5);
   const int max_cols = iir;
-  sqlite3_stmt *stmt = NULL;
-  int id, last_seli = 1<<30, last_selj = 1<<30;
+
+  int id, curidx;
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   /* get the count of current collection */
@@ -194,9 +412,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     cairo_stroke(cr);
   }
 
-  /* get the collection query */
-  const gchar *query=dt_collection_get_query (darktable.collection);
-  if(!query)
+  /* do we have a main query collection statement */
+  if(!lib->statements.main_query)
     return;
 
   if(offset < 0) lib->offset = offset = 0;
@@ -206,18 +423,45 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   int32_t imgids_num = 0;
   int32_t imgids[count];
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_rows*iir);
-  sqlite3_stmt *stmt_del_sel;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt_del_sel, NULL);
+  if(clicked1)
+  {
+    // If clicked and no modifiers, reset the shift-select state
+    if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0)
+    {
+      lib->last_selected_idx = -1;
+      lib->selection_origin_idx = -1;
+    }
+
+    // If clicked with control modifier, set new selection origin
+    if((lib->modifiers & GDK_CONTROL_MASK))
+    {
+      lib->selection_origin_idx = -1;
+    }
+
+    // if there is no selection origin, set the currently selected cell as the selection origin
+    if(lib->selection_origin_idx == -1)
+    {
+      lib->selection_origin_idx = selidx;
+    }
+  }
+
+  /* let's reset and reuse the main_query statement */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+  DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
+ 
+  /* setup offset and row for the main query */
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset);
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, max_rows*iir);
+ 
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
     {
-      if(sqlite3_step(stmt) == SQLITE_ROW)
+      curidx = grid_to_index(row, col, iir, offset);
+
+      if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
-        id = sqlite3_column_int(stmt, 0);
+        id = sqlite3_column_int(lib->statements.main_query, 0);
         dt_image_t *image = dt_image_cache_get(id, 'r');
         if (iir == 1 && row)
         {
@@ -227,7 +471,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         // set mouse over id
         if(seli == col && selj == row)
         {
-          firstsel = lib->offset + selj*iir + seli;
           mouse_over_id = id;
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
@@ -236,24 +479,36 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         {
           if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
           {
-            // clear selected if no modifier
-            DT_DEBUG_SQLITE3_BIND_INT(stmt_del_sel, 1, id);
-            sqlite3_step(stmt_del_sel);
-            sqlite3_reset(stmt_del_sel);
-            sqlite3_clear_bindings(stmt_del_sel);
+            /* clear selection if no modifier is being held */
+
+	    /* clear and reset statment */
+	    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
+	    DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
+	    
+	    /* reuse statement */
+	    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
+            sqlite3_step(lib->statements.delete_except_arg);
           }
-          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_id)
+          // Step 1: If this is the clicked cell, toggle it
+          if(curidx == selidx)
           {
-            last_seli = col;
-            last_selj = row;
-          }
-          if((last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= last_seli && row >= last_selj &&
-                                      col <= seli && row <= selj) && (col != last_seli || row != last_selj))) ||
-              (seli == col && selj == row))
-          {
-            // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
             dt_view_toggle_selection(id);
-            lib->last_selected_id = id;
+          }
+          // Step 2: If shift is being held, and we're somewhere between the old selection index and the new one, we may be toggled
+          // Step 2: However, if control is being held, we skip this logic (so ctrl+shift+click is identical to ctrl+click)
+          if((lib->modifiers & GDK_CONTROL_MASK) == 0 && (lib->modifiers & GDK_SHIFT_MASK) &&
+             lib->selection_origin_idx > -1 && inc_between(lib->last_selected_idx, curidx, selidx))
+          {
+            if(inc_between(lib->selection_origin_idx, curidx, selidx))
+            {
+              // We're in the selected zone; set selection bit to true
+              dt_view_set_selection(id, 1);
+            }
+            else
+            {
+              // Outside of the selected zone; set selection bit to false
+              dt_view_set_selection(id, 0);
+            }
           }
         }
         cairo_save(cr);
@@ -267,22 +522,30 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     }
     cairo_translate(cr, -max_cols*wd, ht);
   }
-failure:
-  sqlite3_finalize(stmt_del_sel);
+  // End of loop; do post-loop update
+  if (clicked1) lib->last_selected_idx = selidx;
+
 #if 1
-  sqlite3_reset(stmt);
-  // not actually needed...
-  //sqlite3_clear_bindings(stmt);
+  /*
+   * FIXME: Is this really a good place to do this ? 
+   *        seems better to do this in paralell and
+   *        not on every expose event of lighttable...
+   */
+
+  /* clear and reset main query */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+  DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
+
+  /* setup offest and row for prefetch */
   const int prefetchrows = .5*max_rows+1;
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset + max_rows*iir);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, prefetchrows*iir);
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset + max_rows*iir);
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, prefetchrows*iir);
 
   // prefetch jobs in inverse order: supersede previous jobs: most important last
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    // prefetch
-    imgids[imgids_num++] = sqlite3_column_int(stmt, 0);
-  }
+  while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+    imgids[imgids_num++] = sqlite3_column_int(lib->statements.main_query, 0);
+ 
+  /* lets prefetch images thumbs */
   while(imgids_num > 0)
   {
     imgids_num --;
@@ -297,7 +560,8 @@ failure:
     }
   }
 #endif
-  sqlite3_finalize(stmt);
+
+failure:
 
   oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
@@ -306,7 +570,7 @@ failure:
   if(darktable.gui->center_tooltip == 2) // not set in this round
   {
     darktable.gui->center_tooltip = 0;
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkWidget *widget = darktable.gui->widgets.center;
     g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
   }
 }
@@ -345,8 +609,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     zoom_y = lib->select_offset_y - /* (zoom == 1 ? 2. : 1.)*/pointery;
   }
 
-  const gchar *query = dt_collection_get_query (darktable.collection);
-  if(!query || query[0] == '\0') return;
+  if(!lib->statements.main_query) 
+    return;
 
   if     (track == 0);
   else if(track >  1)  zoom_y += ht;
@@ -407,7 +671,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   if(!pan && zoom != 1) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
   // set scrollbar positions, clamp zoom positions
-  sqlite3_stmt *stmt = NULL;
   int count = dt_collection_get_count (darktable.collection);
   if(count == 0)
   {
@@ -465,11 +728,9 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
 
   dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
-  sqlite3_stmt *stmt_del_sel;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid != ?1", -1, &stmt_del_sel, NULL);
+
   for(int row = 0; row < max_rows; row++)
   {
     if(offset < 0)
@@ -478,13 +739,18 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
       offset += DT_LIBRARY_MAX_ZOOM;
       continue;
     }
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
+
+    /* clear and reset main query */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+    DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
+    
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset);
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, max_cols);
     for(int col = 0; col < max_cols; col++)
     {
-      if(sqlite3_step(stmt) == SQLITE_ROW)
+      if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
-        id = sqlite3_column_int(stmt, 0);
+        id = sqlite3_column_int(lib->statements.main_query, 0);
         dt_image_t *image = dt_image_cache_get(id, 'r');
 
         // set mouse over id
@@ -498,18 +764,22 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         {
           if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
           {
-            // clear selected if no modifier
-            DT_DEBUG_SQLITE3_BIND_INT(stmt_del_sel, 1, id);
-            sqlite3_step(stmt_del_sel);
-            sqlite3_reset(stmt_del_sel);
-            sqlite3_clear_bindings(stmt_del_sel);
+	    /* clear selection except id */
+
+	    /* clear and resest statement */
+	    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
+	    DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg); 
+
+            /* reuse statment */
+            DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
+            sqlite3_step(lib->statements.delete_except_arg);
           }
           // FIXME: whatever comes first assumtion is broken!
           // if((lib->modifiers & GDK_SHIFT_MASK) && (last_seli == (1<<30)) &&
           //    (image->id == lib->last_selected_id || image->id == mouse_over_id)) { last_seli = col; last_selj = row; }
           // if(last_seli < (1<<30) && ((lib->modifiers & GDK_SHIFT_MASK) && (col >= MIN(last_seli,seli) && row >= MIN(last_selj,selj) &&
           //         col <= MAX(last_seli,seli) && row <= MAX(last_selj,selj)) && (col != last_seli || row != last_selj)) ||
-          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_id)
+          if((lib->modifiers & GDK_SHIFT_MASK) && id == lib->last_selected_idx)
           {
             last_seli = col;
             last_selj = row;
@@ -520,7 +790,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
           {
             // insert all in range if shift, or only the one the mouse is over for ctrl or plain click.
             dt_view_toggle_selection(id);
-            lib->last_selected_id = id;
+            lib->last_selected_idx = id;
           }
         }
         cairo_save(cr);
@@ -534,12 +804,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     }
     cairo_translate(cr, -max_cols*wd, ht);
     offset += DT_LIBRARY_MAX_ZOOM;
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
   }
 failure:
-  sqlite3_finalize(stmt);
-  sqlite3_finalize(stmt_del_sel);
 
   oldpan = pan;
   lib->zoom_x = zoom_x;
@@ -587,7 +853,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 }
 
 static void
-go_up_key_accel_callback(void *data)
+go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                         guint keyval, GdkModifierType modifier, gpointer data)
 {
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -596,7 +863,8 @@ go_up_key_accel_callback(void *data)
 }
 
 static void
-go_down_key_accel_callback(void *data)
+go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier, gpointer data)
 {
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -605,9 +873,40 @@ go_down_key_accel_callback(void *data)
 }
 
 static void
-zoom_key_accel_callback(void *data)
+go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data)
 {
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  const int scroll_by_rows = 4; /* This should be the number of visible rows. */
+  const int offset_delta = scroll_by_rows * iir;
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->offset = MAX(lib->offset - offset_delta, 0);
+  dt_control_queue_draw_all();
+}
+
+static void
+go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data)
+{
+  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  const int scroll_by_rows = 4; /* This should be the number of visible rows. */
+  const int offset_delta = scroll_by_rows * iir;
+  int count = dt_collection_get_count (darktable.collection);
+  dt_view_t *self = (dt_view_t *)data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->offset = MIN(lib->offset + offset_delta, count);
+  dt_control_queue_draw_all();
+}
+
+
+static void
+zoom_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                        guint keyval, GdkModifierType modifier, gpointer data)
+{
+  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   switch((long int)data)
   {
@@ -632,7 +931,8 @@ zoom_key_accel_callback(void *data)
 }
 
 static void
-star_key_accel_callback(void *data)
+star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                        guint keyval, GdkModifierType modifier, gpointer data)
 {
   long int num = (long int)data;
   switch (num)
@@ -689,20 +989,177 @@ star_key_accel_callback(void *data)
       break;
   }
 }
+static void connect_closures(dt_view_t *self)
+{
+  GClosure *closure;
+  dt_library_t *lib = (dt_library_t*)self->data;
 
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_DESERT, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/desert",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_1, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/1",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_2, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/2",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_3, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/3",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_4, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/4",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_5, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/5",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_REJECT, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/rating/reject",
+                                 closure);
+
+
+  closure = g_cclosure_new(
+      G_CALLBACK(zoom_key_accel_callback),
+      (gpointer)1, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/zoom/max",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(zoom_key_accel_callback),
+      (gpointer)2, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/zoom/in",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(zoom_key_accel_callback),
+      (gpointer)3, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/zoom/out",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(zoom_key_accel_callback),
+      (gpointer)4, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/zoom/min",
+                                 closure);
+
+  closure = g_cclosure_new(
+      G_CALLBACK(go_up_key_accel_callback),
+      (gpointer)self, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/navigate/up",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(go_down_key_accel_callback),
+      (gpointer)self, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/navigate/down",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(go_pgup_key_accel_callback),
+      (gpointer)self, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/navigate/page up",
+                                 closure);
+  closure = g_cclosure_new(
+      G_CALLBACK(go_pgdown_key_accel_callback),
+      (gpointer)self, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
+                                 "<Darktable>/lighttable/navigate/page down",
+                                 closure);
+
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)0, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/red",
+      closure);
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)1, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/yellow",
+      closure);
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)2, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/green",
+      closure);
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)3, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/blue",
+      closure);
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)4, NULL);
+  lib->closures = g_slist_prepend(lib->closures, closure);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/color/purple",
+      closure);
+}
 
 void enter(dt_view_t *self)
 {
+  // Attach accelerator group
+  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                             darktable.control->accels_lighttable);
+
+  // Connecting the closures
+  connect_closures(self);
+
   // add expanders
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
-  GtkBox *box_left = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
+  GtkBox *box_left = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
   GList *modules = g_list_last(darktable.lib->plugins);
 
   // Adjust gui
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
+  GtkWidget *widget = darktable.gui->widgets.import_eventbox;
   gtk_widget_set_visible(widget, TRUE);
 
-  gtk_widget_set_visible(glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), FALSE);
+  gtk_widget_set_visible(darktable.gui->
+                         widgets.modulegroups_eventbox, FALSE);
 
   while(modules)
   {
@@ -746,26 +1203,6 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
-  dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
-  dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
-  dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
-  dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
-  dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
-  dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
-  dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
-  dt_library_t *lib = (dt_library_t *)self->data;
-  lib->stars_registered = 1;
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_0, zoom_key_accel_callback, (void *)0);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel_callback, (void *)1);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel_callback, (void *)2);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel_callback, (void *)3);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_4, zoom_key_accel_callback, (void *)4);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_5, zoom_key_accel_callback, (void *)5);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_Delete, zoom_key_accel_callback, (void *)6);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_BackSpace, star_key_accel_callback, (void *)666);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_g, go_up_key_accel_callback, (void *)self);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK|GDK_SHIFT_MASK, GDK_G, go_down_key_accel_callback, (void *)self);
-  dt_colorlabels_register_key_accels();
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -775,13 +1212,21 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
-  dt_gui_key_accel_unregister(star_key_accel_callback);
-  dt_colorlabels_unregister_key_accels();
-  dt_library_t *lib = (dt_library_t *)self->data;
-  lib->stars_registered = 0;
-  dt_gui_key_accel_unregister(zoom_key_accel_callback);
-  dt_gui_key_accel_unregister(go_up_key_accel_callback);
-  dt_gui_key_accel_unregister(go_down_key_accel_callback);
+  GSList *c = ((dt_library_t*)self->data)->closures;
+
+  // Removing keyboard accelerators
+  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                                darktable.control->accels_lighttable);
+
+  // Disconnecting accelerator closures
+  while(c)
+  {
+    dt_accel_group_disconnect(darktable.control->accels_darkroom, c->data);
+    c = g_slist_next(c);
+  }
+  g_slist_free(((dt_library_t*)self->data)->closures);
+  ((dt_library_t*)self->data)->closures = NULL;
+
   GList *it = darktable.lib->plugins;
   while(it)
   {
@@ -790,9 +1235,9 @@ void leave(dt_view_t *self)
       module->gui_cleanup(module);
     it = g_list_next(it);
   }
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
-  box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left"));
+  box = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
 }
 
@@ -810,25 +1255,11 @@ void reset(dt_view_t *self)
 
 void mouse_enter(dt_view_t *self)
 {
-  dt_library_t *lib = (dt_library_t *)self->data;
-  if(!lib->stars_registered)
-  {
-    dt_gui_key_accel_register(0, GDK_0, star_key_accel_callback, (void *)DT_VIEW_DESERT);
-    dt_gui_key_accel_register(0, GDK_1, star_key_accel_callback, (void *)DT_VIEW_STAR_1);
-    dt_gui_key_accel_register(0, GDK_2, star_key_accel_callback, (void *)DT_VIEW_STAR_2);
-    dt_gui_key_accel_register(0, GDK_3, star_key_accel_callback, (void *)DT_VIEW_STAR_3);
-    dt_gui_key_accel_register(0, GDK_4, star_key_accel_callback, (void *)DT_VIEW_STAR_4);
-    dt_gui_key_accel_register(0, GDK_5, star_key_accel_callback, (void *)DT_VIEW_STAR_5);
-    dt_gui_key_accel_register(0, GDK_Delete, star_key_accel_callback, (void *)DT_VIEW_REJECT);
-    lib->stars_registered = 1;
-  }
 }
 
 void mouse_leave(dt_view_t *self)
 {
-  dt_gui_key_accel_unregister(star_key_accel_callback);
   dt_library_t *lib = (dt_library_t *)self->data;
-  lib->stars_registered = 0;
   if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
   {
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
@@ -902,91 +1333,110 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   return 1;
 }
 
-int key_released(dt_view_t *self, uint16_t which)
+int key_released(dt_view_t *self, guint key, guint state)
 {
+  dt_control_accels_t *accels = &darktable.control->accels;
   dt_library_t *lib = (dt_library_t *)self->data;
-  switch (which)
+
+  if(!darktable.control->key_accelerators_on)
+    return 0;
+
+  if(key == accels->lighttable_preview.accel_key
+     && state == accels->lighttable_preview.accel_mods)
   {
-    case KEYCODE_z:
-    {
-      lib->full_preview_id = -1;
-      GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-      if(lib->full_preview & 1) gtk_widget_show(widget);
-      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-      if(lib->full_preview & 2)gtk_widget_show(widget);
-      widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
-      if(lib->full_preview & 4)gtk_widget_show(widget);
-      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
-      if(lib->full_preview & 8)gtk_widget_show(widget);
-      lib->full_preview = 0;
-    }
-    break;
+    lib->full_preview_id = -1;
+    GtkWidget *widget = darktable.gui->widgets.left;
+    if(lib->full_preview & 1) gtk_widget_show(widget);
+    widget = darktable.gui->widgets.right;
+    if(lib->full_preview & 2)gtk_widget_show(widget);
+    widget = darktable.gui->widgets.bottom;
+    if(lib->full_preview & 4)gtk_widget_show(widget);
+    widget = darktable.gui->widgets.top;
+    if(lib->full_preview & 8)gtk_widget_show(widget);
+    lib->full_preview = 0;
   }
+
   return 1;
 }
 
-int key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
-  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  switch (which)
-  {
-    case KEYCODE_z:
-    {
-      int32_t mouse_over_id;
-      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-      if(!lib->full_preview && mouse_over_id != -1 )
-      {
-        // encode panel visibility into full_preview
-        lib->full_preview = 0;
-        lib->full_preview_id = mouse_over_id;
-        // let's hide some gui components
-        GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 0;
-        gtk_widget_hide(widget);
-        widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 1;
-        gtk_widget_hide(widget);
-        widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 2;
-        gtk_widget_hide(widget);
-        widget = glade_xml_get_widget (darktable.gui->main_window, "top");
-        lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 3;
-        gtk_widget_hide(widget);
-        //dt_dev_invalidate(darktable.develop);
-      }
-      return 0;
+  dt_control_accels_t *accels = &darktable.control->accels;
 
+  if(!darktable.control->key_accelerators_on)
+    return 0;
+
+  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+
+  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+
+  if(key == accels->lighttable_preview.accel_key
+     && state == accels->lighttable_preview.accel_mods)
+  {
+    int32_t mouse_over_id;
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id)
+    if(!lib->full_preview && mouse_over_id != -1 )
+    {
+      // encode panel visibility into full_preview
+      lib->full_preview = 0;
+      lib->full_preview_id = mouse_over_id;
+      // let's hide some gui components
+      GtkWidget *widget = darktable.gui->widgets.left;
+      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 0;
+      gtk_widget_hide(widget);
+      widget = darktable.gui->widgets.right;
+      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 1;
+      gtk_widget_hide(widget);
+      widget = darktable.gui->widgets.bottom;
+      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 2;
+      gtk_widget_hide(widget);
+      widget = darktable.gui->widgets.top;
+      lib->full_preview |= (gtk_widget_get_visible(widget)&1) << 3;
+      gtk_widget_hide(widget);
+      //dt_dev_invalidate(darktable.develop);
     }
-    break;
-    case KEYCODE_Left:
-    case KEYCODE_a:
-      if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
-      else lib->track = -1;
-      break;
-    case KEYCODE_Right:
-    case KEYCODE_e:
-      if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
-      else lib->track = 1;
-      break;
-    case KEYCODE_Up:
-    case KEYCODE_comma:
-      lib->track = -DT_LIBRARY_MAX_ZOOM;
-      break;
-    case KEYCODE_Down:
-    case KEYCODE_o:
-      lib->track = DT_LIBRARY_MAX_ZOOM;
-      break;
-    case KEYCODE_apostrophe:
-      lib->center = 1;
-      break;
-    default:
-      return 0;
+    return 0;
   }
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
-  return 1;
+
+  if(key == accels->lighttable_left.accel_key
+     && state == accels->lighttable_left.accel_mods)
+  {
+    if(layout == 1 && zoom == 1) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else lib->track = -1;
+    return 1;
+  }
+
+  if(key == accels->lighttable_right.accel_key
+     && state == accels->lighttable_right.accel_mods)
+  {
+    if(layout == 1 && zoom == 1) lib->track = DT_LIBRARY_MAX_ZOOM;
+    else lib->track = 1;
+    return 1;
+  }
+
+  if(key == accels->lighttable_up.accel_key
+     && state == accels->lighttable_up.accel_mods)
+  {
+    lib->track = -DT_LIBRARY_MAX_ZOOM;
+    return 1;
+  }
+
+  if(key == accels->lighttable_down.accel_key
+     && state == accels->lighttable_down.accel_mods)
+  {
+    lib->track = DT_LIBRARY_MAX_ZOOM;
+    return 1;
+  }
+
+  if(key == accels->lighttable_center.accel_key
+     && state == accels->lighttable_center.accel_mods)
+  {
+    lib->center = 1;
+    return 1;
+  }
+
+  return 0;
 }
 
 void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
@@ -1008,7 +1458,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 void scrolled(dt_view_t *view, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)view->data;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1 && state == 0)
   {

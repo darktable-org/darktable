@@ -20,7 +20,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 #include <assert.h>
 #include <string.h>
 
@@ -70,7 +69,20 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     /* now bind symbols */
     success = TRUE;
     d = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
+
+    if (d == NULL) {
+      *ocl = NULL;
+      return FALSE;
+    }
+
     d->symbols = (dt_dlopencl_symbols_t *)malloc(sizeof(dt_dlopencl_symbols_t));
+
+    if (d->symbols == NULL) {
+      free(d);
+      *ocl = NULL;
+      return FALSE;
+    }
+
     memset(d->symbols, 0, sizeof(dt_dlopencl_symbols_t));
     d->library = module->library;
     
@@ -109,6 +121,11 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     if (!success) dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
     d->have_opencl = success;
     *ocl = success ? d : NULL;
+  }
+
+  if (success == FALSE) {
+    free(d->symbols);
+    free(d);
   }
 
   return success;

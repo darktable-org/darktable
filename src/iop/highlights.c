@@ -86,6 +86,12 @@ groups ()
 }
 
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
+}
 
 static const float xyz_rgb[3][3] =    /* XYZ from RGB */
 {
@@ -335,8 +341,8 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // only on for non-hdr raw images:
-  if(module->dev->image->filters && module->dev->image->bpp != sizeof(float))
+  // only on for raw images:
+  if(module->dev->image->flags & DT_IMAGE_RAW)
     module->default_enabled = 1;
   else
     module->default_enabled = 0;
@@ -354,7 +360,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = malloc(sizeof(dt_iop_highlights_params_t));
   module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-  module->priority = 256;
+  module->priority = 200; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;
@@ -399,6 +405,9 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->blendL,_("blend L"));
   dtgtk_slider_set_label(g->blendC,_("blend C"));
   dtgtk_slider_set_label(g->blendh,_("blend h"));
+  dtgtk_slider_set_accel(g->blendL,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
+  dtgtk_slider_set_accel(g->blendC,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
+  dtgtk_slider_set_accel(g->blendh,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
   dtgtk_slider_set_default_value(g->blendL, p->blendL);
   dtgtk_slider_set_default_value(g->blendC, p->blendC);
   dtgtk_slider_set_default_value(g->blendh, p->blendh);

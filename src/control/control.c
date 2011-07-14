@@ -46,7 +46,7 @@
 #include <math.h>
 #include <string.h>
 #include <glib/gstdio.h>
-
+#include <gdk/gdkkeysyms.h>
 
 void dt_ctl_settings_default(dt_control_t *c)
 {
@@ -55,8 +55,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
   dt_conf_set_bool ("write_sidecar_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
-  dt_conf_set_float("preview_subsample", .125f);
-  dt_conf_set_int  ("mipmap_cache_thumbnails", 30000);
+  dt_conf_set_float("preview_subsample", 1.f);
+  dt_conf_set_int  ("mipmap_cache_thumbnails", 1000);
   dt_conf_set_int  ("parallel_export", 1);
   dt_conf_set_int  ("cache_memory", 536870912);
   dt_conf_set_int  ("database_cache_quality", 89);
@@ -82,6 +82,7 @@ void dt_ctl_settings_default(dt_control_t *c)
 
   dt_conf_set_int  ("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
   dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
+  dt_conf_set_int  ("ui_last/initial_rating", DT_LIB_FILTER_STAR_1);
 
   // import settings
   dt_conf_set_string ("capture/camera/storage/basedirectory", "$(PICTURES_FOLDER)/Darktable");
@@ -96,6 +97,10 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("plugins/collection/rating",            1);
   dt_conf_set_int  ("plugins/lighttable/collect/num_rules", 0);
 
+  // reasonable thumbnail res:
+  dt_conf_set_int  ("plugins/lighttable/thumbnail_size", 800);
+
+  // should be unused:
   dt_conf_set_float("gamma_linear", .1f);
   dt_conf_set_float("gamma_gamma", .45f);
 }
@@ -153,7 +158,7 @@ int dt_control_load_config(dt_control_t *c)
   int height = dt_conf_get_int("ui_last/window_h");
   gint x = dt_conf_get_int("ui_last/window_x");
   gint y = dt_conf_get_int("ui_last/window_y");
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *widget = darktable.gui->widgets.main_window;
   gtk_window_move(GTK_WINDOW(widget),x,y);
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
@@ -168,7 +173,7 @@ int dt_control_write_config(dt_control_t *c)
   dt_ctl_gui_mode_t gui = dt_conf_get_int("ui_last/view");
   dt_control_save_gui_settings(gui);
 
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *widget = darktable.gui->widgets.main_window;
   gint x, y;
   gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
   dt_conf_set_int ("ui_last/window_x",  x);
@@ -302,6 +307,22 @@ void dt_ctl_get_display_profile(GtkWidget *widget,
 #endif
 }
 
+void dt_control_create_database_schema()
+{
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, focus_distance real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer,blendop_params blob)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tags (id integer primary key, name varchar, icon blob, description varchar, flags integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, primary key(id1, id2))", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer,blendop_params blob)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
+}
+
 void dt_control_init(dt_control_t *s)
 {
   dt_ctl_settings_init(s);
@@ -418,6 +439,7 @@ void dt_control_init(dt_control_t *s)
       // add column for blendops
       sqlite3_exec(darktable.db, "alter table history add column blendop_params blob", NULL, NULL, NULL);
       sqlite3_exec(darktable.db, "alter table style_items add column blendop_params blob", NULL, NULL, NULL);
+      sqlite3_exec(darktable.db, "alter table presets add column blendop_params blob", NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
@@ -428,21 +450,7 @@ void dt_control_init(dt_control_t *s)
     // db not yet there, create it
     sqlite3_finalize(stmt);
 create_tables:
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table settings (settings blob)", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table film_rolls (id integer primary key, datetime_accessed char(20), folder varchar(1024))", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table images (id integer primary key, film_id integer, width int, height int, filename varchar, maker varchar, model varchar, lens varchar, exposure real, aperture real, iso real, focal_length real, focus_distance real, datetime_taken char(20), flags integer, output_width integer, output_height integer, crop real, raw_parameters integer, raw_denoise_threshold real, raw_auto_bright_threshold real, raw_black real, raw_maximum real, caption varchar, description varchar, license varchar, sha1sum char(40), orientation integer)", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table selected_images (imgid integer)", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table history (imgid integer, num integer, module integer, operation varchar(256), op_params blob, enabled integer,blendop_params blob)", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tags (id integer primary key, name varchar, icon blob, description varchar, flags integer)", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagxtag (id1 integer, id2 integer, count integer, primary key(id1, id2))", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table tagged_images (imgid integer, tagid integer, primary key(imgid, tagid))", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table style_items (styleid integer,num integer,module integer,operation varchar(256),op_params blob,enabled integer,blendop_params blob)", NULL, NULL, NULL);
-
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table color_labels (imgid integer, color integer)", NULL, NULL, NULL);
-
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, "create table meta_data (id integer,key integer,value varchar)", NULL, NULL, NULL);
-
+    dt_control_create_database_schema();
     DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into settings (settings) values (?1)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t), SQLITE_STATIC);
     sqlite3_step(stmt);
@@ -454,12 +462,64 @@ create_tables:
 
 void dt_control_key_accelerators_on(struct dt_control_t *s)
 {
-  s->key_accelerators_on = 1;
+  guint state = darktable.control->key_accelerators_saved;
+  if(!s->key_accelerators_on)
+  {
+    s->key_accelerators_on = 1;
+
+    if(state & ACCELS_GLOBAL)
+      gtk_window_add_accel_group(
+          GTK_WINDOW(darktable.gui->widgets.main_window),
+          darktable.control->accels_global);
+    if(state & ACCELS_LIGHTTABLE)
+      gtk_window_add_accel_group(
+          GTK_WINDOW(darktable.gui->widgets.main_window),
+          darktable.control->accels_lighttable);
+    if(state & ACCELS_DARKROOM)
+      gtk_window_add_accel_group(
+          GTK_WINDOW(darktable.gui->widgets.main_window),
+          darktable.control->accels_darkroom);
+    if(state & ACCELS_CAPTURE)
+      gtk_window_add_accel_group(
+          GTK_WINDOW(darktable.gui->widgets.main_window),
+          darktable.control->accels_capture);
+    if(state & ACCELS_FILMSTRIP)
+      gtk_window_add_accel_group(
+          GTK_WINDOW(darktable.gui->widgets.main_window),
+          darktable.control->accels_filmstrip);
+  }
+}
+
+static void state_from_accels(gpointer data, gpointer state)
+{
+  guint* s = (guint*)state;
+  if(data == (gpointer)darktable.control->accels_global)
+    *s |= ACCELS_GLOBAL;
+  else if(data == (gpointer)darktable.control->accels_lighttable)
+    *s |= ACCELS_LIGHTTABLE;
+  else if(data == (gpointer)darktable.control->accels_darkroom)
+    *s |= ACCELS_DARKROOM;
+  else if(data == (gpointer)darktable.control->accels_capture)
+    *s |= ACCELS_CAPTURE;
+  else if(data == (gpointer)darktable.control->accels_filmstrip)
+    *s |= ACCELS_FILMSTRIP;
+
+  gtk_window_remove_accel_group(
+      GTK_WINDOW(darktable.gui->widgets.main_window),
+      (GtkAccelGroup*)data);
 }
 
 void dt_control_key_accelerators_off(struct dt_control_t *s)
 {
+  GSList *g = gtk_accel_groups_from_object(
+      G_OBJECT(darktable.gui->widgets.main_window));
+  guint state = 0;
+
+  // Setting the apropriate bits for currently active accel groups
+  g_slist_foreach(g, state_from_accels, &state);
+
   s->key_accelerators_on = 0;
+  s->key_accelerators_saved = state;
 }
 
 
@@ -470,7 +530,7 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *widget = darktable.gui->widgets.main_window;
   GdkCursor* cursor = gdk_cursor_new(curs);
   gdk_window_set_cursor(widget->window, cursor);
   gdk_cursor_destroy(cursor);
@@ -825,7 +885,7 @@ void *dt_control_expose(void *voidptr)
   int width, height, pointerx, pointery;
   if(!darktable.gui->pixmap) return NULL;
   gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *widget = darktable.gui->widgets.center;
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
 
   //create a gtk-independant surface to draw on
@@ -999,7 +1059,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
   darktable.gui->center_tooltip = 0;
-  GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  GtkWidget *widget = darktable.gui->widgets.center;
   g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
 
   char buf[512];
@@ -1009,7 +1069,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   if(error) return;
 
   dt_control_restore_gui_settings(mode);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "view_label");
+  widget = darktable.gui->widgets.view_label;
   if(oldmode != DT_MODE_NONE) g_object_set(G_OBJECT(widget), "tooltip-text", buf, (char *)NULL);
   snprintf(buf, 512, _("<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"), dt_view_manager_name(darktable.view_manager));
   gtk_label_set_label(GTK_LABEL(widget), buf);
@@ -1104,7 +1164,7 @@ void dt_control_gui_queue_draw()
   // if(time - darktable.control->last_expose_time < 0.1f) return;
   if(dt_control_running())
   {
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkWidget *widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
     // darktable.control->last_expose_time = time;
   }
@@ -1118,7 +1178,7 @@ void dt_control_queue_draw_all()
   {
     int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
     if(needlock) gdk_threads_enter();
-    GtkWidget *widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    GtkWidget *widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
     // darktable.control->last_expose_time = time;
     if(needlock) gdk_threads_leave();
@@ -1143,62 +1203,62 @@ void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
   int8_t bit;
   GtkWidget *widget;
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_layout_combobox");
+  widget = darktable.gui->widgets.lighttable_layout_combobox;
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("plugins/lighttable/layout"));
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "lighttable_zoom_spinbutton");
+  widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("plugins/lighttable/images_in_row"));
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "image_filter");
+  widget = darktable.gui->widgets.image_filter;
   dt_lib_filter_t filter = dt_conf_get_int("ui_last/combo_filter");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)filter);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "image_sort");
+  widget = darktable.gui->widgets.image_sort;
   dt_lib_sort_t sort = dt_conf_get_int("ui_last/combo_sort");
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (int)sort);
 
   bit = dt_conf_get_int("ui_last/panel_left");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  widget = darktable.gui->widgets.left;
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
   bit = dt_conf_get_int("ui_last/panel_right");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  widget = darktable.gui->widgets.right;
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
   bit = dt_conf_get_int("ui_last/panel_top");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+  widget = darktable.gui->widgets.top;
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
   bit = dt_conf_get_int("ui_last/panel_bottom");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+  widget = darktable.gui->widgets.bottom;
   if(bit & (1<<mode)) gtk_widget_show(widget);
   else gtk_widget_hide(widget);
 
   bit = dt_conf_get_int("ui_last/expander_navigation");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   bit = dt_conf_get_int("ui_last/expander_import");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "import_expander");
+  widget = darktable.gui->widgets.import_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   bit = dt_conf_get_int("ui_last/expander_snapshots");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_expander");
+  widget = darktable.gui->widgets.snapshots_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   bit = dt_conf_get_int("ui_last/expander_history");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
+  widget = darktable.gui->widgets.history_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   bit = dt_conf_get_int("ui_last/expander_histogram");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 
   bit = dt_conf_get_int("ui_last/expander_metadata");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
+  widget = darktable.gui->widgets.metadata_expander;
   gtk_expander_set_expanded(GTK_EXPANDER(widget), (bit & (1<<mode)) != 0);
 }
 
@@ -1208,173 +1268,132 @@ void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
   GtkWidget *widget;
 
   bit = dt_conf_get_int("ui_last/panel_left");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "left");
+  widget = darktable.gui->widgets.left;
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_left", bit);
 
   bit = dt_conf_get_int("ui_last/panel_right");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "right");
+  widget = darktable.gui->widgets.right;
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_right", bit);
 
   bit = dt_conf_get_int("ui_last/panel_bottom");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
+  widget = darktable.gui->widgets.bottom;
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_bottom", bit);
 
   bit = dt_conf_get_int("ui_last/panel_top");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "top");
+  widget = darktable.gui->widgets.top;
   if(GTK_WIDGET_VISIBLE(widget)) bit |=   1<<mode;
   else                           bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/panel_top", bit);
 
   bit = dt_conf_get_int("ui_last/expander_navigation");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_navigation", bit);
 
   bit = dt_conf_get_int("ui_last/expander_import");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "import_expander");
+  widget = darktable.gui->widgets.import_expander;
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_import", bit);
 
   bit = dt_conf_get_int("ui_last/expander_snapshots");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_expander");
+  widget = darktable.gui->widgets.snapshots_expander;
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_snapshots", bit);
 
   bit = dt_conf_get_int("ui_last/expander_history");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "history_expander");
+  widget = darktable.gui->widgets.history_expander;
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_history", bit);
 
   bit = dt_conf_get_int("ui_last/expander_histogram");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_histogram", bit);
 
   bit = dt_conf_get_int("ui_last/expander_metadata");
-  widget = glade_xml_get_widget (darktable.gui->main_window, "metadata_expander");
+  widget = darktable.gui->widgets.metadata_expander;
   if(gtk_expander_get_expanded(GTK_EXPANDER(widget))) bit |= 1<<mode;
   else bit &= ~(1<<mode);
   dt_conf_set_int("ui_last/expander_metadata", bit);
 }
 
-int dt_control_key_pressed_override(uint16_t which)
+int dt_control_key_pressed_override(guint key, guint state)
 {
-  int fullscreen, visible;
+  int visible;
   GtkWidget *widget;
+  dt_control_accels_t* accels = &darktable.control->accels;
+
   /* check if key accelerators are enabled*/
   if (darktable.control->key_accelerators_on != 1) return 0;
 
-  switch (which)
+  if(key == accels->global_sideborders.accel_key
+     && state == accels->global_sideborders.accel_mods)
   {
-    case KEYCODE_F7:
-      dt_gui_contrast_decrease ();
-      break;
-    case KEYCODE_F8:
-      dt_gui_contrast_increase ();
-      break;
+    widget = darktable.gui->widgets.left;
+    visible = GTK_WIDGET_VISIBLE(widget);
+    if(visible) gtk_widget_hide(widget);
+    else gtk_widget_show(widget);
 
-    case KEYCODE_F11:
-      widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-      fullscreen = dt_conf_get_bool("ui_last/fullscreen");
-      if(fullscreen) gtk_window_unfullscreen(GTK_WINDOW(widget));
-      else           gtk_window_fullscreen  (GTK_WINDOW(widget));
-      fullscreen ^= 1;
-      dt_conf_set_bool("ui_last/fullscreen", fullscreen);
-      dt_dev_invalidate(darktable.develop);
-      break;
-    case KEYCODE_Escape:
-    case KEYCODE_Caps:
-      widget = glade_xml_get_widget (darktable.gui->main_window, "main_window");
-      gtk_window_unfullscreen(GTK_WINDOW(widget));
-      fullscreen = 0;
-      dt_conf_set_bool("ui_last/fullscreen", fullscreen);
-      dt_dev_invalidate(darktable.develop);
-      break;
-    case KEYCODE_Tab:
-      widget = glade_xml_get_widget (darktable.gui->main_window, "left");
-      visible = GTK_WIDGET_VISIBLE(widget);
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
+    widget = darktable.gui->widgets.right;
+    if(visible) gtk_widget_hide(widget);
+    else gtk_widget_show(widget);
 
-      widget = glade_xml_get_widget (darktable.gui->main_window, "right");
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
+    dt_dev_invalidate(darktable.develop);
 
-      /*widget = glade_xml_get_widget (darktable.gui->main_window, "bottom");
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);
-
-      widget = glade_xml_get_widget (darktable.gui->main_window, "top");
-      if(visible) gtk_widget_hide(widget);
-      else gtk_widget_show(widget);*/
-      dt_dev_invalidate(darktable.develop);
-      break;
-    default:
-      return 0;
-      break;
+    widget = darktable.gui->widgets.center;
+    gtk_widget_queue_draw(widget);
+    widget = darktable.gui->widgets.navigation;
+    gtk_widget_queue_draw(widget);
+    return 1;
   }
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
-  gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
-  gtk_widget_queue_draw(widget);
-  return 1;
+  return 0;
 }
 
-int dt_control_key_pressed(uint16_t which)
+int dt_control_key_pressed(guint key, guint state)
 {
-  // this line is here to find the right key code on different platforms (mac).
-  // printf("key code pressed: %d\n", which);
+  int needRedraw;
   GtkWidget *widget;
-  int needRedraw=0;
-  switch (which)
-  {
-    case KEYCODE_period:
-      dt_ctl_switch_mode();
-      needRedraw=1;
-      break;
-    default:
-      // propagate to view modules.
-      needRedraw = dt_view_manager_key_pressed(darktable.view_manager, which);
-      break;
-  }
+
+  needRedraw = dt_view_manager_key_pressed(darktable.view_manager, key,
+                                               state);
   if( needRedraw )
   {
-    widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+    widget = darktable.gui->widgets.center;
     gtk_widget_queue_draw(widget);
-    widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+    widget = darktable.gui->widgets.navigation;
     gtk_widget_queue_draw(widget);
   }
   return 1;
 }
 
-int dt_control_key_released(uint16_t which)
+int dt_control_key_released(guint key, guint state)
 {
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
   GtkWidget *widget;
-  switch (which)
+  switch (key)
   {
     default:
       // propagate to view modules.
-      dt_view_manager_key_released(darktable.view_manager, which);
+      dt_view_manager_key_released(darktable.view_manager, key, state);
       break;
   }
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "center");
+  widget = darktable.gui->widgets.center;
   gtk_widget_queue_draw(widget);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation");
+  widget = darktable.gui->widgets.navigation;
   gtk_widget_queue_draw(widget);
   return 1;
 }

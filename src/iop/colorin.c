@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,11 +27,11 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
-#include "libraw/libraw.h"
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
 #include "common/opencl.h"
 #include "dtgtk/resetlabel.h"
+#include "external/adobe_coeff.c"
 
 DT_MODULE(1)
 
@@ -272,10 +273,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 {
   // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-#error "gegl version needs some more care!"
-#else
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
   const int num_threads = dt_get_num_threads();
@@ -300,21 +297,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!strcmp(p->iccprofile, "cmatrix"))
   {
     // color matrix
-    int ret;
     dt_image_full_path(self->dev->image->id, filename, 1024);
-    libraw_data_t *raw = libraw_init(0);
-    ret = libraw_open_file(raw, filename);
-    if(!ret)
-    {
-      float cmat[3][4];
-      for(int k=0; k<4; k++) for(int i=0; i<3; i++)
-        {
-          // d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
-          cmat[i][k] = raw->color.rgb_cam[i][k];
-        }
-      d->input = dt_colorspaces_create_cmatrix_profile(cmat);
-    }
-    libraw_close(raw);
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+    float cam_xyz[12];
+    dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+    d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
   else if(!strcmp(p->iccprofile, "sRGB"))
   {
@@ -379,7 +367,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
   }
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -453,7 +440,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 300;
+  module->priority = 333; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
 }
 
@@ -551,9 +538,12 @@ void gui_init(struct dt_iop_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
+	char *lang = getenv("LANG");
+	if (!lang) lang = "en_US";
+
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
-        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
+        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, lang, lang+3, name, 1024);
         g_strlcpy(prof->name, name, sizeof(prof->name));
 
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));

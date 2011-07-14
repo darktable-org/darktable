@@ -88,6 +88,11 @@ groups ()
 {
   return IOP_GROUP_EFFECT;
 }
+void init_key_accels()
+{
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick primary color");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick secondary color");
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -108,7 +113,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     int index = k*ch;
     float h,s,l;
-    rgb2hsl(in[index+0],in[index+1],in[index+2],&h,&s,&l);
+    rgb2hsl(&in[index],&h,&s,&l);
     lhigh=fmax(lhigh,l);
     llow=fmin(llow,l);
   }
@@ -126,7 +131,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       double ra,la;
       float mixrgb[3];
       float h,s,l;
-      rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+      rgb2hsl(in,&h,&s,&l);
       if(l < data->balance-compress || l > data->balance+compress)
       {
         h=l<data->balance?data->shadow_hue:data->highlight_hue;
@@ -134,7 +139,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         ra=l<data->balance?CLIP((fabs(-data->balance+compress+l)*2.0)):CLIP((fabs(-data->balance-compress+l)*2.0));
         la=(1.0-ra);
 
-        hsl2rgb(&mixrgb[0],&mixrgb[1],&mixrgb[2],h,s,l);
+        hsl2rgb(mixrgb,h,s,l);
 
         out[0]=CLIP(in[0]*la + mixrgb[0]*ra);
         out[1]=CLIP(in[1]*la + mixrgb[1]*ra);
@@ -198,7 +203,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
     sslider=g->gslider4;
   }
 
-  hsl2rgb(&color[0],&color[1],&color[2],hue,saturation,0.5);
+  hsl2rgb(color,hue,saturation,0.5);
 
   GdkColor c;
   c.red=color[0]*65535.0;
@@ -239,7 +244,7 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
     preview=GTK_WIDGET(g->colorpick2);
   }
 
-  hsl2rgb(&color[0],&color[1],&color[2],hue,saturation,0.5);
+  hsl2rgb(color,hue,saturation,0.5);
 
   GdkColor c;
   c.red=color[0]*65535.0;
@@ -280,7 +285,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   h=(button==g->colorpick1)?p->shadow_hue:p->highlight_hue;
   s=(button==g->colorpick1)?p->shadow_saturation:p->highlight_saturation;
   l=0.5;
-  hsl2rgb(&color[0],&color[1],&color[2],h,s,l);
+  hsl2rgb(color,h,s,l);
 
   c.red= 65535 * color[0];
   c.green= 65535 * color[1];
@@ -292,9 +297,9 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
     color[0]=c.red/65535.0;
     color[1]=c.green/65535.0;
     color[2]=c.blue/65535.0;
-    rgb2hsl(color[0],color[1],color[2],&h,&s,&l);
+    rgb2hsl(color,&h,&s,&l);
     l=0.5;
-    hsl2rgb(&color[0],&color[1],&color[2],h,s,l);
+    hsl2rgb(color,h,s,l);
 
     dtgtk_gradient_slider_set_value( (button==g->colorpick1)? g->gslider1: g->gslider3 ,h );
     dtgtk_gradient_slider_set_value( (button==g->colorpick1)? g->gslider2: g->gslider4 ,s );
@@ -359,7 +364,7 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_slider_set_value(g->scale2, p->compress);
 
   float color[3];
-  hsl2rgb(&color[0],&color[1],&color[2],p->shadow_hue,p->shadow_saturation,0.5);
+  hsl2rgb(color,p->shadow_hue,p->shadow_saturation,0.5);
 
   GdkColor c;
   c.red=color[0]*65535.0;
@@ -368,7 +373,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&c);
 
-  hsl2rgb(&color[0],&color[1],&color[2],p->highlight_hue,p->highlight_saturation,0.5);
+  hsl2rgb(color,p->highlight_hue,p->highlight_saturation,0.5);
   c.red=color[0]*65535.0;
   c.green=color[1]*65535.0;
   c.blue=color[2]*65535.0;
@@ -382,7 +387,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_enabled = 0;
-  module->priority = 998;
+  module->priority = 911; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
   dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t)
@@ -412,6 +417,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(dtgtk_label_new(_("shadows"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
 
   g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  dtgtk_button_set_accel(g->colorpick1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick primary color");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick1),32,32);
 
   GtkWidget *hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
@@ -471,6 +477,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(dtgtk_label_new(_("highlights"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
 
   g->colorpick2 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
+  dtgtk_button_set_accel(g->colorpick2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick secondary color");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick2),32,32);
 
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));

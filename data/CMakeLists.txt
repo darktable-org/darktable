@@ -23,7 +23,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_B
 #
 # Add files that should go into shared
 #
-set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc darktable.glade)
+set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc)
 install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL})
 
 #
@@ -52,6 +52,8 @@ if(USE_GCONF_BACKEND)
     install (CODE "set(ENV{GCONF_CONFIG_SOURCE} ${DT_GCONF_SCHEMA_DIR})
         execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET COMMAND gconftool-2 --makefile-install-rule darktable.schemas)")
     install (CODE "message(\"-- Installing: gconf schemas to '${DT_GCONF_SCHEMA_DIR}'\")")
+    install (CODE "execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET COMMAND killall -HUP gconfd-2)")
+    install (CODE "message(\"-- Installing: restarting gconfd-2\")")
   else()
     install(FILES darktable.schemas DESTINATION /etc/gconf/schemas)
   endif(NOT DONT_INSTALL_GCONF_SCHEMAS)

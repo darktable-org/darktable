@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +29,6 @@
 #include "gui/presets.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -79,9 +79,11 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
 }
 
 static void
-key_accel_callback(void *d)
+key_accel_callback(GtkAccelGroup *accel_group,
+                   GObject *acceleratable, guint keyval,
+                   GdkModifierType modifier, gpointer data)
 {
-  export_button_clicked(NULL, d);
+  export_button_clicked(NULL, (void*)data);
 }
 
 static void
@@ -499,9 +501,12 @@ gui_init (dt_lib_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
+	char *lang = getenv("LANG");
+	if (!lang) lang = "en_US";
+
         dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
         char name[1024];
-        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
+        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, lang, lang+3, name, 1024);
         g_strlcpy(prof->name, name, sizeof(prof->name));
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
@@ -569,13 +574,11 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)0);
 
   self->gui_reset(self);
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, key_accel_callback, NULL);
 }
 
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_gui_key_accel_unregister(key_accel_callback);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
   if(old) gtk_container_remove(d->format_box, old);
@@ -748,6 +751,17 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   if(ssize) res += smod->set_params(smod, sdata, ssize);
   if(fsize) res += fmod->set_params(fmod, fdata, fsize);
   return res;
+}
+
+void init_key_accels()
+{
+  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/export/export selected images",
+                          GDK_e, GDK_CONTROL_MASK);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_lighttable,
+      "<Darktable>/lighttable/plugins/export/export selected images",
+      g_cclosure_new(G_CALLBACK(key_accel_callback), NULL, NULL));
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

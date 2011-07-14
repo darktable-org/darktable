@@ -249,6 +249,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       outp[1] *= outp[0] / inp[0];
       outp[2] *= outp[0] / inp[0];
     }
+    else
+    {
+      outp[1] *= outp[0] / 0.01f;
+      outp[2] *= outp[0] / 0.01f;
+    }
   }
 
   /* thread-safe redraw */
@@ -308,7 +313,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
-  module->priority = 680;
+  module->priority = 555; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
   dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t)

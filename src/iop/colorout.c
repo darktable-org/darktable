@@ -1,6 +1,7 @@
 /*
 		This file is part of darktable,
 		copyright (c) 2009--2010 johannes hanika.
+		copyright (c) 2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <gdk/gdkkeysyms.h>
 #include "iop/colorout.h"
 #include "develop/develop.h"
 #include "control/control.h"
@@ -32,6 +34,8 @@
 #include "dtgtk/resetlabel.h"
 
 DT_MODULE(2)
+
+static gchar *_get_profile_from_pos(GList *profiles, int pos);
 
 const char
 *name()
@@ -45,6 +49,35 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+static void key_softproof_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+{
+  dt_iop_module_t* self = (dt_iop_module_t*)data;
+  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+
+  /* toggle softproofing on/off */
+  g->softproofing = !g->softproofing;
+  if(g->softproofing)
+  {
+    int pos = gtk_combo_box_get_active(g->cbox5);
+    gchar *filename = _get_profile_from_pos(g->profiles, pos);
+    if (filename)
+    {
+      if (g->softproofprofile)
+        g_free(g->softproofprofile);
+      g->softproofprofile = g_strdup(filename);
+    }
+  }
+
+
+  /// FIXME: this is certanly the wrong way to do this...
+  p->seq++;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_draw_all();
+}
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
@@ -353,7 +386,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
   gchar *outprofile=NULL;
   int outintent = 0;
   dt_iop_colorout_gui_data_t *g=NULL;
@@ -408,6 +441,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if (d->softproofing)
     d->softproof =  _create_profile(g->softproofprofile);
 
+  /*
+   * Setup transform flags
+   */
+  uint32_t transformFlags = 0;
+
+  /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
+  /* softproof flag and black point compensation */
+  transformFlags |= (d->softproofing ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
+      
+
+
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
   if (d->softproofing || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) || 
           dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
@@ -418,8 +462,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->xform[t] = cmsCreateProofingTransform(
                       d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT,
                       d->softproof, outintent,
-                      INTENT_ABSOLUTE_COLORIMETRIC,
-                      d->softproofing?cmsFLAGS_SOFTPROOFING:0);
+                      INTENT_RELATIVE_COLORIMETRIC,
+                      transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
@@ -434,10 +478,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->cmatrix[0] = -0.666f;
       piece->process_cl_ready = 0;
       for (int t=0; t<num_threads; t++)
+	
         d->xform[t] = cmsCreateProofingTransform(
                         d->Lab,TYPE_Lab_FLT, d->output, TYPE_RGB_FLT,
                         d->softproof, outintent,
-                        INTENT_ABSOLUTE_COLORIMETRIC, d->softproofing?cmsFLAGS_SOFTPROOFING:0);
+                        INTENT_RELATIVE_COLORIMETRIC,
+			transformFlags);
     }
   }
 
@@ -523,7 +569,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 900;
+  module->priority = 777; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t)
   {"sRGB", "X profile", DT_INTENT_PERCEPTUAL
@@ -559,37 +605,6 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_stroke(cr);
   }
-}
-
-int  key_pressed(struct dt_iop_module_t *self, uint16_t which)
-{
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
-  /* toggle softproofing on/off */
-  if (which == KEYCODE_Space)
-  {
-    g->softproofing = !g->softproofing;
-    if(g->softproofing)
-    {
-      int pos = gtk_combo_box_get_active(g->cbox5);
-      gchar *filename = _get_profile_from_pos(g->profiles, pos);
-      if (filename)
-      {
-        if (g->softproofprofile)
-          g_free(g->softproofprofile);
-        g->softproofprofile = g_strdup(filename);
-      }
-    }
-
-
-    /// FIXME: this is certanly the wrong way to do this...
-    p->seq++;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    dt_control_queue_draw_all();
-    return TRUE;
-  }
-
-  return FALSE;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -644,9 +659,12 @@ void gui_init(struct dt_iop_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
+	char *lang = getenv("LANG");
+	if (!lang) lang = "en_US";
+
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
-        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
+        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, lang, lang+3, name, 1024);
         g_strlcpy(prof->name, name, sizeof(prof->name));
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
@@ -762,6 +780,15 @@ void gui_init(struct dt_iop_module_t *self)
                     (gpointer)self);
 
   // pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+  // Connecting the accelerator
+  g->softproof_callback = g_cclosure_new(G_CALLBACK(key_softproof_callback),
+                                         (gpointer)self, NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/plugins/colorout/toggle softproofing",
+      g->softproof_callback);
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -772,8 +799,22 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->profiles->data);
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
   }
+  dt_accel_group_disconnect(darktable.control->accels_darkroom,
+                             ((dt_iop_colorout_gui_data_t*)(self->gui_data))->
+                             softproof_callback);
   free(self->gui_data);
   self->gui_data = NULL;
+}
+
+void init_key_accels()
+{
+  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/colorout/toggle softproofing",
+                          GDK_s, 0);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/plugins/colorout/toggle softproofing",
+      NULL);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

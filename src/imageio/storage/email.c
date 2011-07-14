@@ -28,7 +28,6 @@
 #include "dtgtk/paint.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <glade/glade.h>
 
 DT_MODULE(1)
 

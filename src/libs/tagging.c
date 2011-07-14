@@ -22,7 +22,6 @@
 #include "control/conf.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
@@ -266,7 +265,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   if( count > 0 && dt_conf_get_bool("plugins/lighttable/tagging/ask_before_delete_tag") )
   {
     GtkWidget *dialog;
-    GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+    GtkWidget *win = darktable.gui->widgets.main_window;
     const gchar *tagname=dt_tag_get_name(tagid);
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,

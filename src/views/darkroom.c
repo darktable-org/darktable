@@ -35,10 +35,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
+
+static void film_strip_key_accel(GtkAccelGroup *accel_group,
+                                 GObject *acceleratable,
+                                 guint keyval, GdkModifierType modifier,
+                                 gpointer data);
+
+static void zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data);
+
+static void export_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable, guint keyval,
+                                      GdkModifierType modifier);
+
+static void skip_f_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable,
+                                      guint keyval, GdkModifierType modifier,
+                                      gpointer data);
+static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable,
+                                      guint keyval, GdkModifierType modifier,
+                                      gpointer data);
 
 const char
 *name(dt_view_t *self)
@@ -53,6 +74,59 @@ init(dt_view_t *self)
   self->data = malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);
 
+  // Film strip shortcuts
+  gtk_accel_map_add_entry("<Darktable>/darkroom/toggle film strip",
+                          GDK_f, GDK_CONTROL_MASK);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/toggle film strip",
+      NULL);
+
+  // Zoom shortcuts
+  gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/close",
+                          GDK_1, GDK_MOD1_MASK);
+  gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/fill",
+                          GDK_2, GDK_MOD1_MASK);
+  gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/fit",
+                          GDK_3, GDK_MOD1_MASK);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/zoom/close",
+      NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/zoom/fill",
+      NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/zoom/fit",
+      NULL);
+
+  // enable shortcut to export with current export settings:
+  gtk_accel_map_add_entry("<Darktable>/darkroom/export",
+                          GDK_e, GDK_CONTROL_MASK);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/export",
+      NULL);
+
+
+  // Shortcut to skip images
+  gtk_accel_map_add_entry("<Darktable>/darkroom/image forward",
+                          GDK_space, 0);
+  gtk_accel_map_add_entry("<Darktable>/darkroom/image back",
+                          GDK_BackSpace, 0);
+
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/image forward",
+      NULL);
+  dt_accel_group_connect_by_path(
+      darktable.control->accels_darkroom,
+      "<Darktable>/darkroom/image back",
+      NULL);
 }
 
 
@@ -381,7 +455,7 @@ select_this_image(const int imgid)
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
-  // stare last active group
+  // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
   // store last active plugin:
   if(darktable.develop->gui_module)
@@ -391,13 +465,13 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   g_assert(dev->gui_attached);
   // tag image as changed
   // TODO: only tag the image when there was a real change.
+  // TODO: this applies especially for the expensive bits:
+  //       write xmp (disk) / re-create mip map
   guint tagid = 0;
   dt_tag_new("darktable|changed",&tagid);
   dt_tag_attach(tagid, dev->image->id);
   // commit image ops to db
   dt_dev_write_history(dev);
-  // write .xmp file
-  dt_image_write_sidecar_file(dev->image->id);
 
   // commit updated mipmaps to db
   // TODO: bg process?
@@ -406,6 +480,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   if(dev->image && dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
 
+  // writes the .xmp and the database:
   dt_image_cache_flush(dev->image);
 
   dev->image = image;
@@ -575,7 +650,9 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
 }
 
 static void
-zoom_key_accel(void *data)
+zoom_key_accel(GtkAccelGroup *accel_group,
+               GObject *acceleratable, guint keyval,
+               GdkModifierType modifier, gpointer data)
 {
   dt_develop_t *dev = darktable.develop;
   int zoom, closeup;
@@ -611,20 +688,124 @@ zoom_key_accel(void *data)
 }
 
 static void
-film_strip_key_accel(void *data)
+film_strip_key_accel(GtkAccelGroup *accel_group,
+                     GObject *acceleratable, guint keyval,
+                     GdkModifierType modifier, gpointer data)
 {
-  dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated, data);
+  dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated,
+                            (void*)data);
   dt_control_queue_draw_all();
 }
 
 static void
-export_key_accel_callback(void *d)
+export_key_accel_callback(GtkAccelGroup *accel_group,
+                          GObject *acceleratable, guint keyval,
+                          GdkModifierType modifier)
 {
   dt_control_export();
 }
 
+static void skip_f_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable, guint keyval,
+                                      GdkModifierType modifier, gpointer data)
+{
+  dt_dev_jump_image((dt_develop_t*)data, 1);
+}
+
+static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
+                                      GObject *acceleratable,
+                                      guint keyval, GdkModifierType modifier,
+                                      gpointer data)
+{
+  dt_dev_jump_image((dt_develop_t*)data, -1);
+}
+
+
+static void show_module_callback(GtkAccelGroup *accel_group,
+                                 GObject *acceleratable,
+                                 guint keyval, GdkModifierType modifier,
+                                 gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+
+  // Showing the module, if it isn't already visible
+  if(!dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))
+  {
+    dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), 1);
+    gtk_widget_queue_draw(module->showhide);
+  }
+
+  dt_gui_iop_modulegroups_switch(module->groups());
+  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
+  dt_iop_request_focus(module);
+}
+
+static void connect_closures(dt_view_t *self)
+{
+  GClosure *closure;
+  dt_develop_t *dev = (dt_develop_t*)self->data;
+
+  // Film strip shortcuts
+  closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
+                           (gpointer)self, NULL);
+  dev->closures = g_slist_prepend(dev->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/toggle film strip",
+                                 closure);
+
+  // Zoom shortcuts
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)1, NULL);
+  dev->closures = g_slist_prepend(dev->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/zoom/close",
+                                 closure);
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)2, NULL);
+  dev->closures = g_slist_prepend(dev->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/zoom/fill",
+                                 closure);
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)3, NULL);
+  dev->closures = g_slist_prepend(dev->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/zoom/fit",
+                                 closure);
+
+  // enable shortcut to export with current export settings:
+  closure = g_cclosure_new(G_CALLBACK(export_key_accel_callback), NULL, NULL);
+  dev->closures = g_slist_prepend(dev->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/export",
+                                 closure);
+
+
+  // Shortcut to skip images
+  closure = g_cclosure_new(G_CALLBACK(skip_f_key_accel_callback),
+                           (gpointer)self->data, NULL);
+  dev->closures = g_slist_prepend(dev->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/image forward",
+                                 closure);
+  closure = g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback),
+                           (gpointer)self->data, NULL);
+  dev->closures = g_slist_prepend(dev->closures, closure);
+  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                 "<Darktable>/darkroom/image back",
+                                 closure);
+
+}
+
 void enter(dt_view_t *self)
 {
+  char accelpath[256];
+
+  // Attaching accelerator group
+  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                             darktable.control->accels_darkroom);
+
+  // Connecting the closures
+  connect_closures(self);
+
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
@@ -641,30 +822,31 @@ void enter(dt_view_t *self)
 
   // adjust gui:
   GtkWidget *widget;
-  gtk_widget_set_visible (glade_xml_get_widget (darktable.gui->main_window, "modulegroups_eventbox"), TRUE);
+  gtk_widget_set_visible (darktable.gui->
+                          widgets.modulegroups_eventbox, TRUE);
 
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_eventbox");
+  widget = darktable.gui->widgets.snapshots_eventbox;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "history_eventbox");
+  widget = darktable.gui->widgets.history_eventbox;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
+  widget = darktable.gui->widgets.bottom_darkroom_box;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  widget = darktable.gui->widgets.bottom_lighttable_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
+  widget = darktable.gui->widgets.plugins_vbox_left;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
+  widget = darktable.gui->widgets.import_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, TRUE);
 
   // get top level vbox containing all expanders, plugins_vbox:
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
-  GtkTable *module_list = GTK_TABLE(glade_xml_get_widget (darktable.gui->main_window, "module_list"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
+  GtkTable *module_list = GTK_TABLE(darktable.gui->widgets.module_list);
   gtk_table_set_row_spacings(module_list,2);
   gtk_table_set_col_spacings(module_list,2);
   GList *modules = g_list_last(dev->iop);
@@ -677,8 +859,16 @@ void enter(dt_view_t *self)
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+    module->show_closure = NULL;
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
+      // Connecting the (optional) module show accelerator
+      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show", module->op);
+      module->show_closure = g_cclosure_new(G_CALLBACK(show_module_callback),
+                                                       module, NULL);
+      dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                     accelpath, module->show_closure);
+
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
       char filename[1024], datadir[1024];
       dt_get_datadir(datadir, 1024);
@@ -763,13 +953,6 @@ void enter(dt_view_t *self)
     dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
     dt_view_film_strip_prefetch();
   }
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_f, film_strip_key_accel, self);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_1, zoom_key_accel, (void *)1);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_2, zoom_key_accel, (void *)2);
-  dt_gui_key_accel_register(GDK_MOD1_MASK, GDK_3, zoom_key_accel, (void *)3);
-
-  // enable shortcut to export with current export settings:
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_e, export_key_accel_callback, NULL);
 
   // switch on groups as they where last time:
   dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
@@ -805,6 +988,21 @@ dt_dev_remove_child(GtkWidget *widget, gpointer data)
 
 void leave(dt_view_t *self)
 {
+  GSList *c = ((dt_develop_t*)self->data)->closures;
+
+  // Detaching the accelerator group
+  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
+                                darktable.control->accels_darkroom);
+
+  // Disconnecting and deleting the closures
+  while(c)
+  {
+    dt_accel_group_disconnect(darktable.control->accels_darkroom, c->data);
+    c = g_slist_next(c);
+  }
+  g_slist_free(((dt_develop_t*)self->data)->closures);
+  ((dt_develop_t*)self->data)->closures = NULL;
+
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
 
@@ -816,12 +1014,9 @@ void leave(dt_view_t *self)
 
   if(dt_conf_get_bool("plugins/filmstrip/on"))
     dt_view_film_strip_close(darktable.view_manager);
-  dt_gui_key_accel_unregister(film_strip_key_accel);
-  dt_gui_key_accel_unregister(zoom_key_accel);
-  dt_gui_key_accel_unregister(export_key_accel_callback);
 
   GList *childs = gtk_container_get_children (
-                    GTK_CONTAINER (glade_xml_get_widget (darktable.gui->main_window, "bottom_left_toolbox")));
+                    GTK_CONTAINER (darktable.gui->widgets.bottom_left_toolbox));
   while(childs)
   {
     gtk_widget_destroy ( GTK_WIDGET (childs->data));
@@ -829,21 +1024,21 @@ void leave(dt_view_t *self)
   }
 
   GtkWidget *widget;
-  widget = glade_xml_get_widget (darktable.gui->main_window, "navigation_expander");
+  widget = darktable.gui->widgets.navigation_expander;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "histogram_expander");
+  widget = darktable.gui->widgets.histogram_expander;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "snapshots_eventbox");
+  widget = darktable.gui->widgets.snapshots_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "history_eventbox");
+  widget = darktable.gui->widgets.history_eventbox;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_darkroom_box");
+  widget = darktable.gui->widgets.bottom_darkroom_box;
   gtk_widget_set_visible(widget, FALSE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "bottom_lighttable_box");
+  widget = darktable.gui->widgets.bottom_lighttable_box;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox_left");
+  widget = darktable.gui->widgets.plugins_vbox_left;
   gtk_widget_set_visible(widget, TRUE);
-  widget = glade_xml_get_widget (darktable.gui->main_window, "module_list_eventbox");
+  widget = darktable.gui->widgets.module_list_eventbox;
   gtk_widget_set_visible(widget, FALSE);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -865,7 +1060,7 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_lock(&dev->history_mutex);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
-  GtkBox *box = GTK_BOX(glade_xml_get_widget (darktable.gui->main_window, "plugins_vbox"));
+  GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
   while(dev->history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
@@ -883,8 +1078,13 @@ void leave(dt_view_t *self)
     snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
 
+    // disconnect the show accelerator
+    if(module->show_closure)
+      dt_accel_group_disconnect(darktable.control->accels_darkroom,
+                                module->show_closure);
+
     module->gui_cleanup(module);
-    module->cleanup(module);
+    dt_iop_cleanup_module(module) ;
     free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
@@ -986,6 +1186,11 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
   dt_develop_t *dev = darktable.develop;
+  const int32_t width_i  = self->width;
+  const int32_t height_i = self->height;
+  if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
+  if(height_i > DT_IMAGE_WINDOW_SIZE) y += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+
   int handled = 0;
   if(dev->gui_module && dev->gui_module->button_released) handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
@@ -1063,6 +1268,11 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+  const int32_t width_i  = self->width;
+  const int32_t height_i = self->height;
+  if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
+  if(height_i > DT_IMAGE_WINDOW_SIZE) y += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+
   int handled = 0;
   if(dev->gui_module && dev->gui_module->scrolled) handled = dev->gui_module->scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
@@ -1141,22 +1351,9 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 }
 
 
-int key_pressed(dt_view_t *self, uint16_t which)
+int key_pressed(dt_view_t *self, guint key, guint state)
 {
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-  int handled = 0;
-  if(dev->gui_module && dev->gui_module->key_pressed) handled = dev->gui_module->key_pressed(dev->gui_module, which);
-  if(handled) return handled;
-  switch(which)
-  {
-    case 65:
-      dt_dev_jump_image(dev, 1);
-      return 1;
-    case 22:
-      dt_dev_jump_image(dev, -1);
-      return 1;
-  }
-  return 0;
+  return 1;
 }
 
 

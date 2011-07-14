@@ -662,8 +662,6 @@ dt_colorspaces_create_output_profile(const int imgid)
 cmsHPROFILE
 dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4])
 {
-  cmsCIExyY D65;
-  float x[3], y[3];
   float mat[3][3];
   // sRGB D65, the linear part:
   const float rgb_to_xyz[3][3] =
@@ -678,6 +676,24 @@ dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4])
       mat[c][j] = 0;
       for(int k=0; k<3; k++) mat[c][j] += rgb_to_xyz[c][k]*cmatrix[k][j];
     }
+  return dt_colorspaces_create_xyzmatrix_profile(mat);
+}
+
+cmsHPROFILE
+dt_colorspaces_create_xyzimatrix_profile(float mat[3][3])
+{
+  // mat: xyz -> cam
+  float imat[3][3];
+  mat3inv ((float *)imat, (float *)mat);
+  return dt_colorspaces_create_xyzmatrix_profile(imat);
+}
+
+cmsHPROFILE
+dt_colorspaces_create_xyzmatrix_profile(float mat[3][3])
+{
+  // mat: cam -> xyz
+  cmsCIExyY D65;
+  float x[3], y[3];
   for(int k=0; k<3; k++)
   {
     const float norm = mat[0][k] + mat[1][k] + mat[2][k];
@@ -772,49 +788,54 @@ dt_colorspaces_get_makermodel_split(char *makermodel, const int size, char **mod
   (*modelo)++;
 }
 
-void rgb2hsl(float r,float g,float b,float *h,float *s,float *l)
+void rgb2hsl(const float rgb[3],float *h,float *s,float *l)
 {
+  const float r=rgb[0], g=rgb[1], b=rgb[2];
   float pmax=fmax(r,fmax(g,b));
   float pmin=fmin(r,fmin(g,b));
   float delta=(pmax-pmin);
 
-  *h=*s=*l=0;
-  *l=(pmin+pmax)/2.0;
+  float hv=0,sv=0,lv=(pmin+pmax)/2.0;
 
   if(pmax!=pmin)
   {
-    *s=*l<0.5?delta/(pmax+pmin):delta/(2.0-pmax-pmin);
+    sv=lv<0.5?delta/(pmax+pmin):delta/(2.0-pmax-pmin);
 
-    if(pmax==r) *h=(g-b)/delta;
-    if(pmax==g) *h=2.0+(b-r)/delta;
-    if(pmax==b) *h=4.0+(r-g)/delta;
-    *h/=6.0;
-    if(*h<0.0) *h+=1.0;
-    else if(*h>1.0) *h-=1.0;
+    if(pmax==r) hv=(g-b)/delta;
+    else if(pmax==g) hv=2.0+(b-r)/delta;
+    else if(pmax==b) hv=4.0+(r-g)/delta;
+    hv/=6.0;
+    if(hv<0.0) hv+=1.0;
+    else if(hv>1.0) hv-=1.0;
   }
+  *h=hv;
+  *s=sv;
+  *l=lv;
 }
 
-void hue2rgb(float m1,float m2,float hue,float *channel)
+static inline float hue2rgb(float m1,float m2,float hue)
 {
   if(hue<0.0) hue+=1.0;
   else if(hue>1.0) hue-=1.0;
 
-  if( (6.0*hue) < 1.0) *channel=(m1+(m2-m1)*hue*6.0);
-  else if((2.0*hue) < 1.0) *channel=m2;
-  else if((3.0*hue) < 2.0) *channel=(m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
-  else *channel=m1;
+  if( hue < 1.0/6.0) return (m1+(m2-m1)*hue*6.0);
+  else if(hue < 1.0/2.0) return m2;
+  else if(hue < 2.0/3.0) return (m1+(m2-m1)*((2.0/3.0)-hue)*6.0);
+  else return m1;
 }
 
-void hsl2rgb(float *r,float *g,float *b,float h,float s,float l)
+void hsl2rgb(float rgb[3],float h,float s,float l)
 {
   float m1,m2;
-  *r=*g=*b=l;
-  if( s==0) return;
+  if( s==0) {
+    rgb[0]=rgb[1]=rgb[2]=l;
+    return;
+  }
   m2=l<0.5?l*(1.0+s):l+s-l*s;
   m1=(2.0*l-m2);
-  hue2rgb(m1,m2,h +(1.0/3.0), r);
-  hue2rgb(m1,m2,h, g);
-  hue2rgb(m1,m2,h - (1.0/3.0), b);
+  rgb[0] = hue2rgb(m1,m2,h + (1.0/3.0));
+  rgb[1] = hue2rgb(m1,m2,h);
+  rgb[2] = hue2rgb(m1,m2,h - (1.0/3.0));
 
 }
 

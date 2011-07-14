@@ -43,6 +43,8 @@ dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
 {
+  GClosure *softproof_callback;
+
   GtkVBox *vbox1, *vbox2;
   GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
   GList *profiles;

@@ -5,14 +5,14 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DI
 set(MODULES tonecurve gamma temperature colorcorrection exposure 
 	colorin colorout clipping sharpen monochrome basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain bilateral
-	profile_gamma 
+	profile_gamma colorcontrast
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
-	cacorrect overexposed bloom soften clahe equalizer highpass)
+	cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans)
 
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colortransfer stuckpixels lowlight spots rawdenoise borders)
+set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -49,11 +49,13 @@ add_library(demosaic MODULE "demosaic.c")
 add_library(atrous MODULE "atrous.c")
 add_library(cacorrect MODULE "cacorrect.c")
 add_library(overexposed MODULE "overexposed.c")
-add_library(stuckpixels MODULE "stuckpixels.c")
+add_library(hotpixels MODULE "hotpixels.c")
 add_library(lowlight MODULE "lowlight.c")
 add_library(spots MODULE "spots.c")
 add_library(rawdenoise MODULE "rawdenoise.c")
 add_library(borders MODULE "borders.c")
+add_library(nlmeans MODULE "nlmeans.c")
+add_library(colorcontrast MODULE "colorcontrast.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")

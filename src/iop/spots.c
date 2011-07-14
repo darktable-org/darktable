@@ -70,6 +70,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+operation_tags_filter ()
+{
+  return IOP_TAG_DISTORT;
+}
+
 // FIXME: doesn't work if source is outside of ROI
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -119,8 +125,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  // we are pretty late in the pipe:
-  module->priority = 321; // TODO!
+  module->priority = 266; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:

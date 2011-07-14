@@ -68,12 +68,12 @@
 						<row>
 							<entry>user manual</entry>
 							<entry></entry>
-							<entry>04/03/11</entry>
+							<entry>02/06/11</entry>
 						</row>
 						<row>
 							<entry>Darktable</entry>
-							<entry>darktable 0.8+91~g88c692c</entry>
-							<entry>04/03/11</entry>
+							<entry>darktable 0.8+550~gd1cdadd</entry>
+							<entry>02/06/11</entry>
 						</row>
 					</tbody>
 				</tgroup></informaltable> 
@@ -86,4 +86,5 @@
 &chapter_overview;
 &chapter_lighttable;
 &chapter_darkroom;
+&addendum;
 </book>

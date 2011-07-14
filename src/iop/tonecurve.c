@@ -105,8 +105,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
       else
       {
-        out[1] = in[1];
-        out[2] = in[2];
+        out[1] = in[1] * out[0]/0.01f;
+        out[2] = in[2] * out[0]/0.01f;
       }
     }
   }
@@ -202,7 +202,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 700;
+  module->priority = 577; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t)

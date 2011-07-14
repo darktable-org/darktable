@@ -74,7 +74,7 @@ exposure (read_only image2d_t in, write_only image2d_t out, const float black, c
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel = (pixel - black)*scale;
+  pixel = fmax((float4)0.0,(pixel - black)*scale);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -254,6 +254,11 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
   {
     pixel.y *= L/pixel.x;
     pixel.z *= L/pixel.x;
+  }
+  else
+  {
+    pixel.y *= L/0.01f;
+    pixel.z *= L/0.01f;
   }
   pixel.x = L;
   write_imagef (out, (int2)(x, y), pixel);

@@ -17,7 +17,6 @@
 */
 
 #include <string.h>
-#include <glade/glade.h>
 #include "common/darktable.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -30,7 +29,7 @@ GStaticMutex _gui_background_mutex = G_STATIC_MUTEX_INIT;
 
 void dt_gui_background_jobs_init()
 {
-  GtkWidget *w = glade_xml_get_widget( darktable.gui->main_window, "jobs_content_box" );
+  GtkWidget *w = darktable.gui->widgets.jobs_content_box;
   GtkWidget *label =  dtgtk_label_new (_("background jobs"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start( GTK_BOX( w ), label, TRUE, TRUE, 0);
@@ -106,7 +105,7 @@ const dt_gui_job_t *dt_gui_background_jobs_new(dt_gui_job_type_t type, const gch
     gtk_box_pack_start( GTK_BOX( vbox ), gtk_progress_bar_new( ), TRUE, FALSE, 2);
 
   /* If the backgrounds jobs are hidden lets show it... */
-  GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "jobs_content_box" );
+  GtkWidget *w = darktable.gui->widgets.jobs_content_box;
   GtkWidget *jobbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (w)),1);
   gtk_box_pack_start (GTK_BOX (jobbox), j->widget, TRUE, FALSE, 1);
   gtk_box_reorder_child ( GTK_BOX (jobbox), j->widget, 1);
@@ -123,7 +122,7 @@ void dt_gui_background_jobs_destroy(const dt_gui_job_t *j)
   int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
   if(needlock) gdk_threads_enter();
   // remove widget if not already removed from jobcontainer...
-  GtkWidget *w = glade_xml_get_widget (darktable.gui->main_window, "jobs_content_box");
+  GtkWidget *w = darktable.gui->widgets.jobs_content_box;
   GtkWidget *jobbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (w)),1);
 
   if (j->widget && GTK_IS_WIDGET(j->widget))
@@ -162,7 +161,7 @@ void dt_gui_background_jobs_set_progress(const dt_gui_job_t *j,double progress)
   if( progress >= 1.0 )
   {
     // job is finished free and destroy the widget..
-    GtkWidget *w = glade_xml_get_widget( darktable.gui->main_window, "jobs_content_box" );
+    GtkWidget *w = darktable.gui->widgets.jobs_content_box;
     GtkWidget *jobbox = g_list_nth_data (gtk_container_get_children (GTK_CONTAINER (w)),1);
     if (j->widget && GTK_IS_WIDGET(j->widget))
     {
