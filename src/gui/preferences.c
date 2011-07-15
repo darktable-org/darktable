@@ -122,7 +122,7 @@ static void init_tab_accels(GtkWidget *book)
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("accelerator"), renderer,
+      _("shortcut"), renderer,
       "text", TRANS_COLUMN,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
