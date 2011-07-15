@@ -47,6 +47,8 @@ static void delete_matching_accels(gpointer path, gpointer key_event);
 static gint _strcmp(gconstpointer a, gconstpointer b);
 static void import_export(GtkButton *button, gpointer data);
 static void restore_defaults(GtkButton *button, gpointer data);
+static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+                         gpointer data);
 
 // Signal handlers
 static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
@@ -116,8 +118,12 @@ static void init_tab_accels(GtkWidget *book)
 
   // Building the accelerator tree
   gtk_accel_map_foreach((gpointer)model, tree_insert_accel);
+
+  // Seting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(
       GTK_TREE_SORTABLE(model), TRANS_COLUMN, GTK_SORT_ASCENDING);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), TRANS_COLUMN,
+                                  compare_rows, NULL, NULL);
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
@@ -754,6 +760,29 @@ static gboolean prefix_search(GtkTreeModel *model, gint column,
     row_data++;
   }
   return FALSE;
+}
+
+// Custom sort function for TreeModel entries
+static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+                         gpointer data)
+{
+  gchar *a_text;
+  gchar *b_text;
+
+  // First prioritize branch nodes over leaves
+  if(gtk_tree_model_iter_has_child(model, a)
+    && !gtk_tree_model_iter_has_child(model, b))
+    return -1;
+
+  if(gtk_tree_model_iter_has_child(model, b)
+    && !gtk_tree_model_iter_has_child(model, a))
+    return 1;
+
+  // Otherwise just return alphabetical order
+  gtk_tree_model_get(model, a, TRANS_COLUMN, &a_text, -1);
+  gtk_tree_model_get(model, b, TRANS_COLUMN, &b_text, -1);
+  return strcmp(a_text, b_text);
+
 }
 
 #undef ACCEL_COLUMN
