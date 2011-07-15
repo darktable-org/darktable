@@ -54,6 +54,8 @@ static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
                                gpointer data);
+static gboolean prefix_search(GtkTreeModel *model, gint column,
+                              const gchar *key, GtkTreeIter *iter, gpointer d);
 
 
 
@@ -146,6 +148,12 @@ static void init_tab_accels(GtkWidget *book)
   // A keypress may remap an accel or delete one
   g_signal_connect(G_OBJECT(tree), "key-press-event",
                    G_CALLBACK(tree_key_press), (gpointer)model);
+
+  // Setting up the search functionality
+  gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), TRANS_COLUMN);
+  gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(tree), prefix_search,
+                                      NULL, NULL);
+  gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
 
   // Attaching the model to the treeview
   gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(model));
@@ -730,6 +738,22 @@ static void restore_defaults(GtkButton *button, gpointer data)
     g_file_delete(g_file_new_for_path(path), NULL, NULL);
   }
   gtk_widget_destroy(message);
+}
+
+static gboolean prefix_search(GtkTreeModel *model, gint column,
+                              const gchar *key, GtkTreeIter *iter, gpointer d)
+{
+  gchar *row_data;
+
+  gtk_tree_model_get(model, iter, TRANS_COLUMN, &row_data, -1);
+  while(*key != '\0')
+  {
+    if(*row_data != *key)
+      return TRUE;
+    key++;
+    row_data++;
+  }
+  return FALSE;
 }
 
 #undef ACCEL_COLUMN
