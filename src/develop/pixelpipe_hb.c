@@ -430,7 +430,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     }
     // Lab color picking for sample points
     if(dev->gui_attached && pipe == dev->preview_pipe &&
-       !strcmp(module->op, "colorout") && module->request_color_pick &&
+       !strcmp(module->op, "colorout") &&
        darktable.lib->proxy.colorpicker.live_samples)
     {
       dt_colorpicker_sample_t *sample = NULL;
@@ -752,7 +752,6 @@ post_process_collect_info:
     if(dev->gui_attached
        && pipe == dev->preview_pipe
        && (strcmp(module->op, "colorout") == 0) // only colorout provides meaningful RGB data
-       && module->request_color_pick
        && darktable.lib->proxy.colorpicker.live_samples) // samples to pick
     {
       dt_colorpicker_sample_t *sample = NULL;
