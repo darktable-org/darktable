@@ -28,6 +28,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/tristatebutton.h"
 #include "dtgtk/slider.h"
+// #include "dtgtk/tristatebutton.h" //FIXME
 
 #include <strings.h>
 #include <assert.h>
@@ -470,7 +471,7 @@ void dt_iop_load_modules_so()
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Adding the optional show accelerator to the table (blank)
-      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show",
+      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show plugin",
                (module->op));
       gtk_accel_map_add_entry(accelpath, 0, 0);
       dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
@@ -702,14 +703,14 @@ dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer u
       dt_ui_container_focus_widget(darktable.gui->ui, k, module->topwidget);
 
     /* we need to redraw because iop might have post expose */
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   }
   else
   {
     if(module->dev->gui_module == module)
     {
       dt_iop_request_focus(NULL);
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
     }
     gtk_widget_hide(content);
   }

@@ -49,6 +49,9 @@
 #include <sys/param.h>
 #include <unistd.h>
 
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
+#include <malloc.h>
+#endif
 #ifdef __APPLE__
 #include <sys/malloc.h>
 #endif

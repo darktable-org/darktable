@@ -155,7 +155,7 @@ static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gch
   gtk_widget_show_all(j->widget);
   gtk_widget_show(d->jobbox);
   
-  if(i_own_lock) dt_control_gdk_lock();
+  if(i_own_lock) dt_control_gdk_unlock();
   return key;
 }
 
