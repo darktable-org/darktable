@@ -183,14 +183,18 @@ lookup(read_only image2d_t lut, const float x)
 
 /* kernel for the basecurve plugin. */
 kernel void
-basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
+basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel.x = lookup(table, pixel.x);
-  pixel.y = lookup(table, pixel.y);
-  pixel.z = lookup(table, pixel.z);
+  // use lut or cubic extrapolation:
+  if(pixel.x < 1.0f) pixel.x = lookup(table, pixel.x);
+  else               pixel.x = a[3] * pixel.x*pixel.x*pixel.x + a[2] * pixel.x*pixel.x + a[1] * pixel.x + a[0];
+  if(pixel.y < 1.0f) pixel.y = lookup(table, pixel.y);
+  else               pixel.y = a[3] * pixel.y*pixel.y*pixel.y + a[2] * pixel.y*pixel.y + a[1] * pixel.y + a[0];
+  if(pixel.x < 1.0f) pixel.z = lookup(table, pixel.z);
+  else               pixel.z = a[3] * pixel.z*pixel.z*pixel.z + a[2] * pixel.z*pixel.z + a[1] * pixel.z + a[0];
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -256,11 +260,13 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  const float L = lookup(table, pixel.x/100.0f);
-  if(pixel.x > 0.01f)
+  const float L_in = pixel.x/100.0f;
+  // use lut or cubic extrapolation:
+  const float L = (L_in < 1.0f) ? lookup(table, L_in) : (a[3] * L_in*L_in*L_in + a[2] * L_in*L_in + a[1] * L_in + a[0]);
+  if(L_in > 0.01f)
   {
-    pixel.y *= L/pixel.x;
-    pixel.z *= L/pixel.x;
+    pixel.y *= L/L_in;
+    pixel.z *= L/L_in;
   }
   else
   {

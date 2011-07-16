@@ -169,14 +169,18 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
 
   cl_mem dev_m = NULL;
+  cl_mem dev_coeffs = NULL;
   cl_int err = -999;
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   dev_m = dt_opencl_copy_host_to_device(d->table, 256, 256, devid, sizeof(float));
   if (dev_m == NULL) goto error;
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*4, devid, d->cubic_coeffs);
+  if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 3, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_basecurve, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
@@ -184,6 +188,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 error:
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
   dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
