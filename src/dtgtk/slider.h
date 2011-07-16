@@ -66,17 +66,15 @@ typedef struct _GtkDarktableSlider
   darktable_slider_format_type_t fmt_type;
 } GtkDarktableSlider;
 
-typedef void  (* ValueChanged)  (GtkRange *,gpointer user_data);
 
 typedef struct _GtkDarktableSliderClass
 {
   GtkEventBoxClass parent_class;
-  ValueChanged *value_changed;
 } GtkDarktableSliderClass;
 
 enum
 {
-  VALUE_CHANGED,
+  SLIDER_VALUE_CHANGED,
   SLIDER_LAST_SIGNAL
 };
 

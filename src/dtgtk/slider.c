@@ -104,7 +104,7 @@ static void _slider_class_init (GtkDarktableSliderClass *klass)
   widget_class->enter_notify_event = _slider_enter_notify_event;
   widget_class->leave_notify_event = _slider_enter_notify_event;
   //object_class->destroy = _slider_destroy;
-  _signals[VALUE_CHANGED] = g_signal_new(
+  _signals[SLIDER_VALUE_CHANGED] = g_signal_new(
                               "value-changed",
                               G_TYPE_OBJECT, G_SIGNAL_RUN_LAST,
                               0,NULL,NULL,

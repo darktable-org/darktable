@@ -6,7 +6,7 @@
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-_lib_lighttable_zoom_changed 
+
     darktable is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -134,14 +134,14 @@ static void _lib_lighttable_zoom_changed (GtkAdjustment *adjustment, gpointer us
 {
   const int i = gtk_adjustment_get_value(adjustment);
   dt_conf_set_int("plugins/lighttable/images_in_row", i);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_data)
 {
   const int i = gtk_combo_box_get_active(widget);
   dt_conf_set_int("plugins/lighttable/layout", i);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 #define DT_LIBRARY_MAX_ZOOM 13

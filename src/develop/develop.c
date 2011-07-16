@@ -420,7 +420,7 @@ restart:
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
   dev->image_dirty = 0;
 
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
   dt_control_log_busy_leave();
 }
 
@@ -702,7 +702,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
 
     /* redraw */
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   }
 }
 
@@ -765,7 +765,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   darktable.gui->reset = 0;
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 void dt_dev_write_history(dt_develop_t *dev)
@@ -1033,7 +1033,7 @@ void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
 {
   dev->proxy.snapshot.filename = filename;
   dev->proxy.snapshot.request = TRUE;
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 void dt_dev_invalidate_from_gui (dt_develop_t *dev)
