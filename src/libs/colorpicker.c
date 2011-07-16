@@ -125,6 +125,7 @@ static void _picker_button_toggled (GtkToggleButton *button, gpointer p)
   {
     dt_iop_request_focus(module);
     module->request_color_pick = gtk_toggle_button_get_active(button);
+    dt_dev_invalidate_from_gui(darktable.develop);
   }
   else
   {

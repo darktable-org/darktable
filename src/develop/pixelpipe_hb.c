@@ -861,9 +861,45 @@ post_process_collect_info:
     if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
       uint8_t *pixel = (uint8_t *)*output;
+      float box[4];
+      // Constraining the area if the colorpicker is active in area mode
+      if(dev->gui_module
+         && !strcmp(dev->gui_module->op, "colorout")
+         && dev->gui_module->request_color_pick)
+      {
+        if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
+        {
+          for(int k=0; k<4; k+=2)
+            box[k] = MIN(roi_out->width,
+                         MAX(0, dev->gui_module->color_picker_box[k]
+                             * roi_out->width));
+          for(int k=1; k<4; k+=2)
+            box[k] = MIN(roi_out->height-1,
+                         MAX(0, module->color_picker_box[k]
+                             * roi_out->height));
+        }
+        else
+        {
+          for(int k=0; k<4; k+=2)
+            box[k] = MIN(roi_out->width,
+                         MAX(0, dev->gui_module->color_picker_point[0]
+                             * roi_out->width));
+          for(int k=1; k<4; k+=2)
+            box[k] = MIN(roi_out->height-1,
+                         MAX(0, module->color_picker_point[1]
+                             * roi_out->height));
+        }
+
+      }
+      else
+      {
+        box[0] = box[1] = 0;
+        box[2] = roi_out->width;
+        box[3] = roi_out->height;
+      }
       dev->histogram_max = 0;
       memset(dev->histogram, 0, sizeof(float)*4*64);
-      for(int j=0; j<roi_out->height; j+=4) for(int i=0; i<roi_out->width; i+=4)
+      for(int j=box[1]; j<=box[3]; j+=4) for(int i=box[0]; i<=box[2]; i+=4)
       {
         uint8_t rgb[3];
         for(int k=0; k<3; k++)
