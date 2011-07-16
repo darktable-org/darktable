@@ -791,16 +791,18 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* lets zero mem */
   memset(gui,0,sizeof(dt_gui_gtk_t));
 
+  if (!g_thread_supported ()) g_thread_init(NULL);
+  gdk_threads_init();
+  gdk_threads_enter();
+
+  gtk_init (&argc, &argv);
+
   GtkWidget *widget;
   gui->ui = dt_ui_initialize(argc,argv);
   gui->pixmap = NULL;
   gui->center_tooltip = 0;
   gui->presets_popup_menu = NULL;
-  if (!g_thread_supported ()) g_thread_init(NULL);
-  gdk_threads_init();
-  gdk_threads_enter();
-  gtk_init (&argc, &argv);
-
+  
   if(g_file_test(path, G_FILE_TEST_EXISTS)) gtk_rc_parse (path);
   else
   {
@@ -1201,98 +1203,9 @@ void init_main_table(GtkWidget *container)
   _ui_init_panel_right(darktable.gui->ui, container);
 }
 
-#if 0 // TO BE REMOVED
-void init_top_controls(GtkWidget *container)
-{
-  GtkWidget *widget;
-
-  // Adding the alignment
-  widget = gtk_alignment_new(.5, 1, 0, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  // Adding the hbox
-  container = widget;
-
-  widget = gtk_hbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_show(widget);
-
-  container = widget;
-
-  // Adding the filter controls
-  widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_show(widget);
-  init_filter_box(widget);
-
-  // Adding the right toolbox
-  // Currently empty, replaces "top_right_toolbox" in the gladefile
-  widget = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, FALSE, 0);
-  gtk_widget_show(widget);
-}
-#endif
-
-#if 0
-void init_colorpicker(GtkWidget *container)
-{
-  GtkWidget* widget;
-
-  // Creating the picker button
-  widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
-                                  CPF_STYLE_FLAT);
-  darktable.gui->widgets.colorpicker_button = widget;
-  g_signal_connect(G_OBJECT(widget), "toggled",
-                   G_CALLBACK(colorpicker_toggled), NULL);
-
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  // Creating the colorpicker stat selection box
-  widget = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("mean"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("min"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("max"));
-  darktable.gui->widgets.colorpicker_stat_combobox = widget;
-
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
-                           dt_conf_get_int("ui_last/colorpicker_mode"));
-  g_signal_connect(G_OBJECT(widget), "changed",
-                   G_CALLBACK(colorpicker_mean_changed), NULL);
-
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  // Creating the colorpicker model selection box
-  widget = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rgb"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Lab"));
-  darktable.gui->widgets.colorpicker_model_combobox = widget;
-
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
-                           dt_conf_get_int("ui_last/colorpicker_model"));
-  g_signal_connect(G_OBJECT(widget), "changed",
-                   G_CALLBACK(colorpicker_model_changed), NULL);
-
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_widget_show(widget);
-
-  // Creating the colorpicker output label
-  widget = gtk_label_new(_("(---)"));
-  gtk_widget_show(widget);
-
-  darktable.gui->widgets.colorpicker_output_label = widget;
-  gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-}
-#endif
-
-
 /*
  * NEW UI API
  */
-
-
 dt_ui_t *dt_ui_initialize(int argc, char **argv)
 {
   dt_ui_t *ui=g_malloc(sizeof(dt_ui_t));
