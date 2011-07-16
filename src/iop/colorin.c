@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
     copyright (c) 2011 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
@@ -188,8 +188,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *const buf_out = out + ch*k;
       float cam[3], XYZ[3], Lab[3];
       // memcpy(cam, buf_in, sizeof(float)*3);
-      // TODO: avoid calling this for linear profiles? doesn't seem to impact performance much.
-      for(int i=0; i<3; i++) cam[i] = lerp_lut(d->lut[i], buf_in[i]);
+      // avoid calling this for linear profiles (marked with negative entries), assures unbounded
+      // color management without extrapolation.
+      for(int i=0; i<3; i++) cam[i] = (d->lut[i][0] >= 0.0f) ? lerp_lut(d->lut[i], buf_in[i]) : buf_in[i];
 
       if(map_blues)
       {

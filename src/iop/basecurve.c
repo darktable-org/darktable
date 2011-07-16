@@ -118,6 +118,7 @@ typedef struct dt_iop_basecurve_data_t
 {
   dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
   float table[0x10000];        // precomputed look-up table for tone curve
+  float cubic_coeffs[4];       // cubic spline approximation for extrapolation
 }
 dt_iop_basecurve_data_t;
 
@@ -201,9 +202,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
-    outp[0] = d->table[CLAMP((int)(inp[0]*0x10000ul), 0, 0xffff)];
-    outp[1] = d->table[CLAMP((int)(inp[1]*0x10000ul), 0, 0xffff)];
-    outp[2] = d->table[CLAMP((int)(inp[2]*0x10000ul), 0, 0xffff)];
+    for(int i=0;i<3;i++)
+    {
+      // use base curve for values < 1, else use cubic extrapolation.
+      if(inp[i] < 1.0f) outp[i] = d->table[CLAMP((int)(inp[i]*0x10000ul), 0, 0xffff)];
+      else              outp[i] = dt_iop_eval_cubic(d->cubic_coeffs, inp[i]);
+    }
   }
 }
 
@@ -212,11 +216,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
-#ifdef HAVE_GEGL
-  for(int k=0; k<6; k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
-  gegl_node_set(piece->input, "curve", d->curve, NULL);
-#else
-  // printf("committing params:\n");
   for(int k=0; k<6; k++)
   {
     // printf("tmp.tonecurve_x[%d] = %f;\n", k, p->tonecurve_x[k]);
@@ -224,7 +223,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   }
   dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
-#endif
+
+  // now the extrapolation stuff:
+  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+  dt_iop_estimate_cubic(x, y, d->cubic_coeffs);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

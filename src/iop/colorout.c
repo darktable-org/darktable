@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2009--2010 johannes hanika.
+		copyright (c) 2009--2011 johannes hanika.
 		copyright (c) 2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
@@ -293,8 +293,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         rgb[i] = 0.0f;
         for(int j=0; j<3; j++) rgb[i] += d->cmatrix[3*i+j]*XYZ[j];
       }
-      for(int i=0; i<3; i++) out[i] = lerp_lut(d->lut[i], rgb[i]);
-      // for(int i=0;i<3;i++) out[i] = rgb[i];
+      for(int i=0; i<3; i++) out[i] = (d->lut[i][0] >= 0.0f) ? lerp_lut(d->lut[i], rgb[i]) : rgb[i];
     }
   }
   else
