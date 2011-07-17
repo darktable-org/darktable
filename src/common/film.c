@@ -103,7 +103,7 @@ dt_film_open2 (dt_film_t *film)
 
     sqlite3_finalize (stmt);
     dt_film_set_query (film->id);
-    dt_control_queue_redraw ();
+    dt_control_queue_redraw_center ();
     dt_view_manager_reset (darktable.view_manager);
     return 0;
   }
@@ -135,7 +135,7 @@ int dt_film_open(const int32_t id)
   sqlite3_finalize(stmt);
   // TODO: prefetch to cache using image_open
   dt_film_set_query(id);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
   dt_view_manager_reset(darktable.view_manager);
   return 0;
 }
@@ -418,7 +418,7 @@ void dt_film_import1(dt_film_t *film)
       dt_pthread_mutex_lock(&film->images_mutex);
       darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
       dt_pthread_mutex_unlock(&film->images_mutex);
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
     } // else not an image.
   }
 }

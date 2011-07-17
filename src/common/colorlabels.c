@@ -155,7 +155,7 @@ void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
   }
   // synch to dttags:
   dt_image_synch_xmp(selected);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 //FIXME: XMP uses Red, Green, ... while we use red, green, ... What should this function return?

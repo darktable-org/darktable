@@ -174,7 +174,7 @@ static void _camera_property_value_changed(const dt_camera_t *camera,const char 
       }
       while( gtk_tree_model_iter_next(model,&iter) == TRUE);
   }
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 /** Invoked when accesibility of a property is changed. */
@@ -243,7 +243,7 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void _osd_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void _property_choice_callback(GtkMenuItem *item, gpointer user_data)

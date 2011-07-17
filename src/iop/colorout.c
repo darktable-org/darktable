@@ -76,7 +76,7 @@ static void key_softproof_callback(GtkAccelGroup *accel_group,
   /// FIXME: this is certanly the wrong way to do this...
   p->seq++;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 int
