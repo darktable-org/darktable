@@ -295,7 +295,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       }
       for(int i=0; i<3; i++) out[i] = (d->lut[i][0] >= 0.0f) ?
         ((rgb[i] < 1.0f) ? lerp_lut(d->lut[i], rgb[i])
-        : (d->cubic_coeffs[i][3] * rgb[i]*rgb[i]*rgb[i] + d->cubic_coeffs[i][2] * rgb[i]*rgb[i] + d->cubic_coeffs[i][1] * rgb[i] + d->cubic_coeffs[i][0]))
+        : dt_iop_eval_exp(d->unbounded_coeffs[i], rgb[i]))
         : rgb[i];
     }
   }
@@ -488,7 +488,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
 
   // now try to initialize unbounded mode:
-  // we do a cubic extrapolation for input values above 1.0f.
+  // we do extrapolation for input values above 1.0f.
   // unfortunately we can only do this if we got the computation
   // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
   for(int k=0;k<3;k++)
@@ -501,7 +501,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
                           lerp_lut(d->lut[k], x[1]),
                           lerp_lut(d->lut[k], x[2]),
                           lerp_lut(d->lut[k], x[3])};
-      dt_iop_estimate_cubic(x, y, d->cubic_coeffs[k]);
+      dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
     }
   }
 

@@ -118,7 +118,7 @@ typedef struct dt_iop_basecurve_data_t
 {
   dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
   float table[0x10000];        // precomputed look-up table for tone curve
-  float cubic_coeffs[4];       // cubic spline approximation for extrapolation
+  float unbounded_coeffs[2];   // approximation for extrapolation
 }
 dt_iop_basecurve_data_t;
 
@@ -175,7 +175,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   dev_m = dt_opencl_copy_host_to_device(d->table, 256, 256, devid, sizeof(float));
   if (dev_m == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*4, devid, d->cubic_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*2, devid, d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -209,9 +209,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *outp = out + ch*k;
     for(int i=0;i<3;i++)
     {
-      // use base curve for values < 1, else use cubic extrapolation.
+      // use base curve for values < 1, else use extrapolation.
       if(inp[i] < 1.0f) outp[i] = d->table[CLAMP((int)(inp[i]*0x10000ul), 0, 0xffff)];
-      else              outp[i] = dt_iop_eval_cubic(d->cubic_coeffs, inp[i]);
+      else              outp[i] = dt_iop_eval_exp(d->unbounded_coeffs, inp[i]);
     }
   }
 }
@@ -235,7 +235,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
                       d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
-  dt_iop_estimate_cubic(x, y, d->cubic_coeffs);
+  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

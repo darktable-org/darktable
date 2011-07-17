@@ -68,7 +68,7 @@ typedef struct dt_iop_colorin_data_t
   cmsHTRANSFORM *xform;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
-  float cubic_coeffs[3][4];       // cubic spline approximation for extrapolation of shaper curves
+  float unbounded_coeffs[3][2];       // approximation for extrapolation of shaper curves
 }
 dt_iop_colorin_data_t;
 

@@ -51,7 +51,7 @@ typedef struct dt_iop_tonecurve_data_t
 {
   dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
   float table[0x10000];        // precomputed look-up table for tone curve
-  float cubic_coeffs[4];       // cubic spline approximation for extrapolation
+  float unbounded_coeffs[2];   // approximation for extrapolation
 }
 dt_iop_tonecurve_data_t;
 

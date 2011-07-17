@@ -63,7 +63,7 @@ typedef struct dt_iop_colorout_data_t
   cmsHPROFILE output;
   cmsHPROFILE Lab;
   cmsHTRANSFORM *xform;
-  float cubic_coeffs[3][4];       // cubic spline approximation for extrapolation of shaper curves
+  float unbounded_coeffs[3][2];       // for extrapolation of shaper curves
 }
 dt_iop_colorout_data_t;
 

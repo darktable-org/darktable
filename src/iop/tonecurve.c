@@ -68,7 +68,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   dev_m = dt_opencl_copy_host_to_device(d->table, 256, 256, devid, sizeof(float));
   if (dev_m == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*4, devid, d->cubic_coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*2, devid, d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_tonecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_tonecurve, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -98,13 +98,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float *in = ((float *)i) + k*ch*roi_out->width;
     float *out = ((float *)o) + k*ch*roi_out->width;
-    const float *const a = d->cubic_coeffs;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
       // in Lab: correct compressed Luminance for saturation:
       const float L_in = in[0]/100.0f;
       out[0] = (L_in < 1.0f) ? d->table[CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
-        (a[3] * L_in*L_in*L_in + a[2] * L_in*L_in + a[1] * L_in + a[0]);
+        dt_iop_eval_exp(d->unbounded_coeffs, L_in);
         
       if(in[0] > 0.01f)
       {
@@ -167,7 +166,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
                       d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
                       d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
-  dt_iop_estimate_cubic(x, y, d->cubic_coeffs);
+  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

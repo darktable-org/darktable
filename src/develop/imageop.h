@@ -295,6 +295,44 @@ static inline float dt_iop_eval_cubic(const float *const a, const float x)
   const float x4[4] = {x*x*x, x*x, x, 1.0f};
   return a[3]*x4[3] + a[2]*x4[2] + a[1]*x4[1] + a[0]*x4[0];
 }
-                           
+
+/** estimates an exponential form f(x) = a*x^g from a few (num) points (x, y).
+ *  the largest point should be (1.0, y) to really get good data. */
+static inline void dt_iop_estimate_exp(const float *const x, const float *const y, const int num, float *coeff)
+{
+  // first find normalization constant a:
+  float xm = 0.0f, ym = 1.0f;
+  for(int k=0;k<num;k++)
+  {
+    if(x[k] > xm)
+    {
+      xm = x[k];
+      ym = y[k];
+    }
+  }
+  const float a = ym;
+
+  // y = a*x^g => g = log(y/a)/log(x);
+  float g = 0.0f;
+  int cnt = 0;
+  for(int k=0;k<num;k++)
+  {
+    if(x[k] < 0.999f)
+    {
+      g += logf(y[k]/a)/logf(x[k]);
+      cnt ++;
+    }
+  }
+  g *= 1.0f/cnt;
+  coeff[0] = a;
+  coeff[1] = g;
+}
+
+/** evaluates the exp fit. */
+static inline float dt_iop_eval_exp(const float *const coeff, const float x)
+{
+  return coeff[0] * powf(x, coeff[1]);
+}
+
 
 #endif
