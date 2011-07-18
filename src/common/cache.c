@@ -277,6 +277,7 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
     cache->table[k].lru         = -1;
     cache->table[k].mru         = -1;
   }
+  cache->lru = cache->mru = -1;
 }
 
 void
@@ -391,8 +392,9 @@ lru_insert(dt_cache_t        *cache,
     bucket->lru = cache->mru;
     cache->table[cache->mru].mru = idx;
     cache->mru = idx;
+    // be consistent if cache was empty before:
+    if(cache->lru == -1) cache->lru = idx;
   }
-
 }
 
 void
@@ -411,6 +413,26 @@ lru_insert_locked(dt_cache_t        *cache,
   dt_cache_lock(&cache->lru_lock);
   lru_insert(cache, bucket);
   dt_cache_unlock(&cache->lru_lock);
+}
+
+// does a consistency check of the lru list.
+// returns how many entries it finds.
+// hangs infinitely if the list has cycles.
+int32_t
+lru_check_consistency(dt_cache_t *cache)
+{
+  dt_cache_lock(&cache->lru_lock);
+  int32_t curr = cache->lru;
+  int32_t cnt = 1;
+  while(curr >= 0 && curr != cache->mru)
+  {
+    int32_t next = cache->table[curr].mru;
+    assert(cache->table[next].lru == curr);
+    curr = next;
+    cnt++;
+  }
+  dt_cache_unlock(&cache->lru_lock);
+  return cnt;
 }
 
 void

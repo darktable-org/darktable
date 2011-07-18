@@ -55,6 +55,14 @@ int main(int argc, char *arg[])
   fprintf(stderr, "\n");
   fprintf(stderr, "[passed] inserting 100000 entries concurrently\n");
 
+  const int size = dt_cache_size(&cache);
+  const int lru_cnt = lru_check_consistency(&cache);
+  fprintf(stderr, "lru list contains %d/%d entries\n", lru_cnt, size);
+  assert(size == lru_cnt);
+  fprintf(stderr, "[passed] cache lru consistency after insertions\n");
+
+  // TODO: also hammer removals.
+
   dt_cache_cleanup(&cache);
   exit(0);
 }

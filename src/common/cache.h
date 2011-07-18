@@ -32,7 +32,7 @@ typedef struct dt_cache_t
   struct dt_cache_segment_t *segments;
   struct dt_cache_bucket_t  *table;
 
-  uint32_t lru, mru;
+  int32_t lru, mru;
   int cache_mask;
   int optimize_cacheline;
   int cost;
