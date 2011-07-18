@@ -354,18 +354,40 @@ void dt_film_import1(dt_film_t *film)
   /* we got ourself a list of images, lets sort and start import */
   images = g_list_sort(images,(GCompareFunc)_film_filename_cmp);
 
+  /* lets create a list of */
 
-  /* let's import images */
+  /* let's start import of images */
   gchar message[512] = {0};
   double fraction = 0;
   uint32_t total = g_list_length(images); 
   g_snprintf(message, 512, ngettext("importing %d image","importing %d images", total), total);
   const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+
+  /* loop thru the images and import to current film roll */
+  dt_film_t *cfr = film;
   GList *image = g_list_first(images);
   do {
-    
+    gchar *cdn = g_path_get_dirname((const gchar *)image->data);
+   
+    /* check if we need to initialize a new filmroll */
+    if(!cfr || g_strcmp0(cfr->dirname, cdn) != 0)
+    {
+      /* cleanup previously imported filmroll*/
+      if(cfr && cfr!=film) 
+      {
+	dt_film_cleanup(cfr);
+	g_free(cfr);
+	cfr = NULL;
+      }
+
+      /* initialize and create a new film to import to */
+      cfr = g_malloc(sizeof(dt_film_t));
+      dt_film_init(cfr);
+      dt_film_new(cfr, cdn);
+    }
+
     /* import image */
-    if(dt_image_import(film->id, (const gchar *)image->data, FALSE))
+    if(dt_image_import(cfr->id, (const gchar *)image->data, FALSE))
       dt_control_queue_redraw_center();
 
     fraction+=1.0/total;
