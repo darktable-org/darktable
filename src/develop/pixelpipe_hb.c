@@ -804,6 +804,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->opencl_enabled = dt_opencl_update_enabled(); // update enabled flag from preferences
   pipe->devid = dt_opencl_lock_device(-1);
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
+  dt_opencl_events_reset(pipe->devid);
   dt_iop_roi_t roi = (dt_iop_roi_t)
   {
     x, y, width, height, scale
@@ -817,34 +818,45 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);
 
-  // in case of fatal opencl errors (not recoverable ones) we disable opencl and
-  // start all over again
+  // re-entry point: in case of fatal OpenCL errors we start all over again with OpenCL disabled
 restart:
   // image max is normalized before
   for(int k=0; k<3; k++) pipe->processed_maximum[k] = 1.0f; // dev->image->maximum;
   void *buf = NULL;
   void *cl_mem_out = NULL;
   int out_bpp;
-  if (dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos))
+  // run pixelpipe recursively and get error status
+  int err = dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos);
+  // check error status of OpenCL queue
+  int oclerr = (dt_opencl_events_flush(pipe->devid, 0) != CL_COMPLETE);
+
+  // OpenCL errors can come in two ways: pipe->opencl_error is TRUE or oclerr is TRUE
+  // if we have OpenCL errors ....
+  if (oclerr || (err && pipe->opencl_error))
   {
-    if (pipe->opencl_error)
-    {
-      if (cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
-      // dt_opencl_disable();
-      // dt_control_log("Warning: OpenCL was found to be unreliable on this system and is therefore disabled!");
-      dt_pthread_mutex_lock(&pipe->busy_mutex);
-      pipe->opencl_enabled = 0;
-      pipe->opencl_error = 0;
-      dt_dev_pixelpipe_flush_caches(pipe);
-      dt_dev_pixelpipe_change(pipe, dev);
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      goto restart;
-    }
+    // we might need to free an invalid OpenCL memory object
+    if (cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
+    // dt_opencl_disable();
+    // dt_control_log("Warning: OpenCL was found to be unreliable on this system and is therefore disabled!");
+    dt_pthread_mutex_lock(&pipe->busy_mutex);
+    pipe->opencl_enabled = 0; // disable OpenCL for this pipe
+    pipe->opencl_error = 0;
+    dt_dev_pixelpipe_flush_caches(pipe);
+    dt_dev_pixelpipe_change(pipe, dev);
+    dt_pthread_mutex_unlock(&pipe->busy_mutex);
+    goto restart;  // (as said before)
+  }
+
+  // ... and in case of other errors ...
+  if (err)
+  {
     pipe->processing = 0;
     dt_opencl_unlock_device(pipe->devid);
     pipe->devid = -1;
     return 1;
   }
+
+  // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
   pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(dev->image->id, &roi, pipe, 0);
   pipe->backbuf = buf;

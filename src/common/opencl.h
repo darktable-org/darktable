@@ -24,6 +24,8 @@
 
 #define DT_OPENCL_MAX_PROGRAMS 256
 #define DT_OPENCL_MAX_KERNELS 512
+#define DT_OPENCL_EVENTLISTSIZE 128
+#define DT_OPENCL_EVENTNAMELENGTH 64
 
 #ifdef HAVE_OPENCL
 
@@ -47,10 +49,17 @@ typedef struct dt_opencl_device_t
   cl_command_queue cmd_queue;
   size_t max_image_width;
   size_t max_image_height;
+  cl_ulong max_mem_alloc;
+  cl_ulong max_global_mem;
+  cl_ulong used_global_mem;
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
   cl_kernel  kernel [DT_OPENCL_MAX_KERNELS];
   int program_used[DT_OPENCL_MAX_PROGRAMS];
   int kernel_used [DT_OPENCL_MAX_KERNELS];
+  cl_event *eventlist;
+  char *eventnames;
+  int numevents;
+  int maxevents;
 }
 dt_opencl_device_t;
 
@@ -76,7 +85,10 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[]);
 void dt_opencl_cleanup(dt_opencl_t *cl);
 
 /** cleans up command queue. */
-void dt_opencl_finish(const int devid);
+int dt_opencl_finish(const int devid);
+
+/** enqueues a synchronization point. */
+int dt_opencl_enqueue_barrier(const int devid);
 
 /** locks a device for your thread's exclusive use. blocks if it's busy. pass -1 to let dt chose a device.
  *  always use the devid returned, in case you didn't get your request! */
@@ -121,6 +133,10 @@ int dt_opencl_update_enabled(void);
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width, const int height, const int bpp);
 
+int dt_opencl_read_host_from_device(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+
+int dt_opencl_write_host_to_device(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+
 void* dt_opencl_copy_host_to_device(const int devid, void *host, const int width, const int height, const int bpp);
 
 void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host);
@@ -129,10 +145,29 @@ int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t
 
 void* dt_opencl_alloc_device(const int devid, const int width, const int height, const int bpp);
 
+void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, void *host);
+
 void dt_opencl_release_mem_object(void *mem);
 
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height);
+
+/** get next free slot in eventlist and manage size of eventlist */
+cl_event *dt_opencl_events_get_slot(const int devid, const char *tag);
+
+/** reset eventlist to empty state */
+void dt_opencl_events_reset(const int devid);
+
+/** Wait for events in eventlist to terminate -> this is a blocking synchronization point
+    Does not flush eventlist */
+void dt_opencl_events_wait_for(const int devid);
+
+/** Wait for events in eventlist to terminate, check for return status of events and
+    report summary success info (CL_COMPLETE or last error code) */
+cl_int dt_opencl_events_flush(const int devid, const int retain);
+
+/** display OpenCL profiling information. If summary is not 0, try to generate summarized info for kernels */
+void dt_opencl_events_profiling(const int devid, int summary);
 
 #else
 #include <stdlib.h>
@@ -149,6 +184,14 @@ static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_conf_set_bool("opencl", FALSE);
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}
+static inline int dt_opencl_finish(const int devid)
+{
+  return -1;
+}
+static inline int dt_opencl_enqueue_barrier(const int devid)
+{
+  return -1;
+}
 static inline int dt_opencl_lock_device(const int dev)
 {
   return -1;
@@ -193,6 +236,17 @@ static inline int dt_opencl_update_enabled(void)
   return 0;
 }
 static inline void dt_opencl_release_mem_object(void *mem) {}
+static inline void *dt_opencl_events_get_slot(const int devid, const char *tag)
+{
+  return NULL;
+}
+static inline void dt_opencl_events_reset(const int devid) {}
+static void dt_opencl_events_wait_for(const int devid) {}
+static inline int dt_opencl_events_flush(const int devid, const int retain)
+{
+  return -1;
+}
+void dt_opencl_events_profiling(const int devid, int summary) {}
 #endif
 
 
