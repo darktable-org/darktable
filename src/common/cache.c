@@ -22,6 +22,8 @@
 #include <inttypes.h>
 #include <assert.h>
 
+#include "common/cache.h"
+
 // this implements a concurrent LRU cache using
 // a chunked-lock doubly linked list
 // and a hopscotch hashmap, source following the paper and
@@ -41,8 +43,8 @@ typedef struct dt_cache_bucket_t
   int16_t  next_delta;
   int16_t  read;   // number of readers
   int16_t  write;  // number of writers (0 or 1)
-  uint32_t lru;    // for garbage collection: lru list
-  uint32_t mru;
+  int32_t  lru;    // for garbage collection: lru list
+  int32_t  mru;
   int32_t  cost;   // cost associated with this entry (such as byte size)
   uint32_t hash;
   uint32_t key;
@@ -79,7 +81,7 @@ nearest_power_of_two(const uint32_t value)
 {
   uint32_t rc = 1;
   while(rc < value) rc <<= 1;
-  return rc
+  return rc;
 }
 
 static uint32_t
@@ -141,7 +143,7 @@ add_key_to_begining_of_list(dt_cache_bucket_t *const keys_bucket,
   free_bucket->data = data;
   free_bucket->key  = key;
   free_bucket->hash = hash;
-  free_bucke->cost  = cost;
+  free_bucket->cost = cost;
 
   if(keys_bucket->first_delta == 0)
   {
@@ -173,7 +175,7 @@ add_key_to_end_of_list(dt_cache_bucket_t *const keys_bucket,
   free_bucket->data = data;
   free_bucket->key  = key;
   free_bucket->hash	= hash;
-  free_bucke->cost  = cost;
+  free_bucket->cost = cost;
   free_bucket->next_delta = DT_CACHE_NULL_DELTA;
 
   if(last_bucket == NULL)
@@ -243,7 +245,7 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
 {
   const uint32_t adj_num_threads = nearest_power_of_two(num_threads);
   cache->cache_mask = cache_line_size / sizeof(dt_cache_bucket_t) - 1;
-  cache->is_cacheline_alignment = optimize_cacheline;
+  cache->optimize_cacheline = 1;
   cache->segment_mask = adj_num_threads - 1;
   cache->segment_shift = calc_div_shift(nearest_power_of_two(num_threads/adj_num_threads)-1);
   const uint32_t adj_init_cap = nearest_power_of_two(capacity);
@@ -253,8 +255,6 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
 
   cache->segments = (dt_cache_segment_t *)dt_alloc_align(64, (cache->segment_mask + 1) * sizeof(dt_cache_segment_t));
   cache->table    = (dt_cache_bucket_t  *)dt_alloc_align(64, num_buckets * sizeof(dt_cache_bucket_t));
-
-  cache->optimize_cacheline = 1;
 
   cache->cost = 0;
   cache->cost_quota = cost_quota;
@@ -274,8 +274,8 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
     cache->table[k].data        = DT_CACHE_EMPTY_DATA;
     cache->table[k].read        = 0;
     cache->table[k].write       = 0;
-    cache->table[k].lru         = 0;
-    cache->table[k].mru         = 0;
+    cache->table[k].lru         = -1;
+    cache->table[k].mru         = -1;
   }
 }
 
@@ -354,38 +354,63 @@ dt_cache_percent_keys_in_cache_line(const dt_cache_t *const cache)
 }
 #endif
 
+// rip out at entry from the lru list.
+// must already hold the lock!
 void
-lru_rip_out(dt_cache_t        *cache,
-            dt_cache_bucket_t *bucket)
+lru_remove(dt_cache_t        *cache,
+           dt_cache_bucket_t *bucket)
 {
-  // must already hold the lock!
+  if(bucket->mru >= 0 && bucket->lru >= 0)
+  {
+    if(bucket->lru == -1) cache->lru   = bucket->mru;
+    else cache->table[bucket->lru].mru = bucket->mru;
+    if(bucket->mru == -1) cache->mru   = bucket->lru;
+    else cache->table[bucket->mru].lru = bucket->lru;
+  }
+  // mark as not in the list:
+  bucket->mru = bucket->lru = -1;
 }
 
+// insert an entry, must already hold the lock! 
 void
-lru_move_to_front(dt_cache_t        *cache,
-                  dt_cache_bucket_t *bucket)
+lru_insert(dt_cache_t        *cache,
+           dt_cache_bucket_t *bucket)
 {
-  // TODO: use the segment locks for better scalability!
-  // TODO: would need to roll back changes in proximity after all (up to) three locks have been obtained.
-  dt_cache_lock(cache->lru_lock);
+  // could use the segment locks for better scalability.
+  // would need to roll back changes in proximity after all (up to) three locks have been obtained.
   const int idx = bucket - cache->table;
 
+  // only if it's not in front already:
   if(cache->mru != idx)
   {
-    // rip out bucket from lru list (TODO: make function)
-    if(bucket->lru == 0) cache->lru     = bucket->mru;
-    else cache->table[bucket->lru]->mru = bucket->mru;
-    if(bucket->mru == 0) cache->mru     = bucket->lru;
-    else cache->table[bucket->mru]->lru = bucket->lru;
+    // rip out bucket from lru list, if it's still in there:
+    lru_remove(cache, bucket);
 
     // re-attach to most recently used end:
-    bucket->mru = 0;
+    bucket->mru = -1;
     bucket->lru = cache->mru;
     cache->table[cache->mru].mru = idx;
     cache->mru = idx;
   }
 
-  dt_cache_unlock(cache->lru_lock);
+}
+
+void
+lru_remove_locked(dt_cache_t        *cache,
+                  dt_cache_bucket_t *bucket)
+{
+  dt_cache_lock(&cache->lru_lock);
+  lru_remove(cache, bucket);
+  dt_cache_unlock(&cache->lru_lock);
+}
+
+void
+lru_insert_locked(dt_cache_t        *cache,
+                  dt_cache_bucket_t *bucket)
+{
+  dt_cache_lock(&cache->lru_lock);
+  lru_insert(cache, bucket);
+  dt_cache_unlock(&cache->lru_lock);
 }
 
 void
@@ -422,13 +447,15 @@ dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data, const int32_t co
     {
       void *rc = compare_bucket->data;
       dt_cache_unlock(&segment->lock);
+      // move this to the  most recently used slot, too:
+      lru_insert_locked(cache, compare_bucket);
       return rc;
     }
     last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
 
-  if(cache->is_cacheline_alignment)
+  if(cache->optimize_cacheline)
   {
     dt_cache_bucket_t *free_bucket = start_bucket;
     dt_cache_bucket_t *start_cacheline_bucket = get_start_cacheline_bucket(cache, start_bucket);
@@ -439,6 +466,7 @@ dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data, const int32_t co
       {
         add_key_to_begining_of_list(start_bucket, free_bucket, hash, key, cost, data);
         dt_cache_unlock(&segment->lock);
+        lru_insert_locked(cache, free_bucket);
         return DT_CACHE_EMPTY_DATA;
       }
       ++free_bucket;
@@ -460,6 +488,7 @@ dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data, const int32_t co
     {
       add_key_to_end_of_list(start_bucket, free_max_bucket, hash, key, cost, data, last_bucket);
       dt_cache_unlock(&segment->lock);
+      lru_insert_locked(cache, free_max_bucket);
       return DT_CACHE_EMPTY_DATA;
     }
     ++free_max_bucket;
@@ -476,6 +505,7 @@ dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data, const int32_t co
     {
       add_key_to_end_of_list(start_bucket, free_min_bucket, hash, key, cost, data, last_bucket);
       dt_cache_unlock(&segment->lock);
+      lru_insert_locked(cache, free_min_bucket);
       return DT_CACHE_EMPTY_DATA;
     }
     --free_min_bucket;
@@ -510,9 +540,11 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
     {
       void *rc = curr_bucket->data;
       remove_key(segment, start_bucket, curr_bucket, last_bucket, hash);
-      if(cache->is_cacheline_alignment)
+      if(cache->optimize_cacheline)
         optimize_cacheline_use(cache, segment, curr_bucket);
       dt_cache_unlock(&segment->lock);
+      // put back into unused part of the cache: remove from lru list.
+      lru_remove_locked(cache, curr_bucket);
       return rc;
     }
     last_bucket = curr_bucket;

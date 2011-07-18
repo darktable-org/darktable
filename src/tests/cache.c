@@ -22,10 +22,14 @@
 
 // unit test for the concurrent hopscotch hashmap and the LRU cache built on top of it.
 #include "common/cache.h"
+#include "common/cache.c"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#ifdef _OPENMP
+#  include <omp.h>
+#endif
 
 int main(int argc, char *arg[])
 {
@@ -33,7 +37,7 @@ int main(int argc, char *arg[])
   dt_cache_init(&cache, 110000, 16, 64, 20);
 
 #ifdef _OPENMP
-#  pragma omp parallel for default(none) schedule(guided) shared(cache, stderr)
+#  pragma omp parallel for default(none) schedule(guided) shared(cache, stderr) num_threads(16)
 #endif
   for(int k=0;k<100000;k++)
   {
@@ -49,6 +53,7 @@ int main(int argc, char *arg[])
     assert (val2 == k);
   }
   fprintf(stderr, "\n");
+  fprintf(stderr, "[passed] inserting 100000 entries concurrently\n");
 
   dt_cache_cleanup(&cache);
   exit(0);

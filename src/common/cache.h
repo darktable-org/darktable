@@ -19,6 +19,7 @@
 #ifndef DT_COMMON_CACHE_H
 #define DT_COMMON_CACHE_H
 
+#include <inttypes.h>
 
 struct dt_cache_segment_t;
 struct dt_cache_bucket_t;
@@ -33,7 +34,7 @@ typedef struct dt_cache_t
 
   uint32_t lru, mru;
   int cache_mask;
-  int is_cacheline_alignment;
+  int optimize_cacheline;
   int cost;
   int cost_quota;
   // one fat lru lock, no use locking segments and possibly rolling back changes.
