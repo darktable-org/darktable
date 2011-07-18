@@ -12,6 +12,16 @@
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline">news</div>
 
       <div class="listtext">
+    	<img src="images/sun2.jpg" class="img" alt="dreggn"><h1>darktable book draft v0.6 available</h1>
+      <em>(2011-07-12)</em> we released draft 0.6 of the book <em>darktable</em>.
+ this is meant to be a comprehensive guide to the use of darktable for 
+the most common development workflows. this is a book for beginners who 
+do not want just to know how to develop an image, but looking for more
+information on digital photography and how it applies to darktable. 
+check out the <a href="http://api.ge.tt/0/2OZkBP1/2/blob/download">pdf</a> or <a href="http://api.ge.tt/0/2OZkBP1/1/blob/download">packaged</a> version and send your comments and feedback to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-users">darktable user list</a>.
+      </div>
+
+      <div class="listtext">
     	<img src="images/bay.jpg" class="img" alt="dreggn" /><h1>released 0.9</h1>
       <em>(2011-06-01)</em> we <a href="http://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.tar.gz/download">released version 0.9</a>, with many new features:
       <ul>

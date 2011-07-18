@@ -262,7 +262,7 @@ extern "C"
     module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_enabled = 1;
-  module->priority = 155; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 177; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_tonemapping_params_t);
     module->gui_data = NULL;
   }

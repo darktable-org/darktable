@@ -621,7 +621,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         else if (weight <= 0.0)
           weight = 0.0;
         else
-          weight=0.5 - cos( M_PI*weight )/2.0;
+          weight=0.5 - cosf( M_PI*weight )/2.0;
       }
 
       // Let's apply weighted effect on brightness and desaturation
@@ -646,10 +646,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[2]=col2;
     }
   }
-
-  /* lets blend if used */
-  dt_develop_blend_process (self, piece, ivoid, ovoid, roi_in, roi_out);
-
 }
 
 static void

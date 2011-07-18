@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# import graphviz (python-graph python-graphviz)
+# import graphviz (python-pygraph python-pygraphviz)
 import sys
 sys.path.append('..')
 sys.path.append('/usr/lib/graphviz/python/')
@@ -69,11 +69,14 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'profile_gamma'))
   
   # handle highlights correctly:
+  # we want highlights as early as possible, to avoid
+  # pink highlights in plugins (happens only before highlight clipping)
   gr.add_edge(('highlights', 'demosaic'))
-  gr.add_edge(('highlights', 'exposure'))
+  gr.add_edge(('exposure', 'highlights'))
   gr.add_edge(('graduatednd', 'highlights'))
   gr.add_edge(('basecurve', 'highlights'))
   gr.add_edge(('lens', 'highlights'))
+  gr.add_edge(('tonemap', 'highlights'))
   
   # this evil hack for nikon crap profiles needs to come
   # as late as possible before the input profile:
@@ -292,9 +295,10 @@ for n in sorted_nodes:
   if not os.path.isfile(filename):
     filename="../src/iop/%s.cc"%n
   if not os.path.isfile(filename):
+    print "could not find file `%s', maybe you're not running inside tools/?"%filename
     continue
   replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
-  priority -= 1000.0/(length-1)
+  priority -= 1000.0/(length-1.0)
 
 # beauty-print the sorted pipe as pdf:
 gr2 = digraph()

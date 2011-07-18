@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2009--2010 johannes hanika.
+		copyright (c) 2009--2011 johannes hanika.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -283,5 +283,56 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
 
 void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);
+
+/** takes four points (x,y) in two arrays and fills the cubic coefficients a, such that y = [X] * a, where
+  * [X] is the matrix containing all x^3 x^2 x^1 x^0 lines for all four x. */
+void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a);
+
+/** evaluates the cubic fit, i.e. returns y = a^t [x^3 x^2 x^1 1] */
+static inline float dt_iop_eval_cubic(const float *const a, const float x)
+{
+  // could be sse4.1 _mm_dot_ps
+  const float x4[4] = {x*x*x, x*x, x, 1.0f};
+  return a[3]*x4[3] + a[2]*x4[2] + a[1]*x4[1] + a[0]*x4[0];
+}
+
+/** estimates an exponential form f(x) = a*x^g from a few (num) points (x, y).
+ *  the largest point should be (1.0, y) to really get good data. */
+static inline void dt_iop_estimate_exp(const float *const x, const float *const y, const int num, float *coeff)
+{
+  // first find normalization constant a:
+  float xm = 0.0f, ym = 1.0f;
+  for(int k=0;k<num;k++)
+  {
+    if(x[k] > xm)
+    {
+      xm = x[k];
+      ym = y[k];
+    }
+  }
+  const float a = ym;
+
+  // y = a*x^g => g = log(y/a)/log(x);
+  float g = 0.0f;
+  int cnt = 0;
+  for(int k=0;k<num;k++)
+  {
+    if(x[k] < 0.999f)
+    {
+      g += logf(y[k]/a)/logf(x[k]);
+      cnt ++;
+    }
+  }
+  g *= 1.0f/cnt;
+  coeff[0] = a;
+  coeff[1] = g;
+}
+
+/** evaluates the exp fit. */
+static inline float dt_iop_eval_exp(const float *const coeff, const float x)
+{
+  return coeff[0] * powf(x, coeff[1]);
+}
+
 
 #endif
