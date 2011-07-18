@@ -419,6 +419,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   g_free(text);
   entry_key_press (NULL, NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
+  dt_control_queue_redraw_center();
 }
 
 static void
