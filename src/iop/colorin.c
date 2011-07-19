@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
     copyright (c) 2011 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
@@ -169,7 +169,7 @@ error:
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const float *const mat = d->cmatrix;
   float *in  = (float *)i;
   float *out = (float *)o;
@@ -180,7 +180,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
 #endif
     for(int k=0; k<roi_out->width*roi_out->height; k++)
     {
@@ -188,8 +188,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *const buf_out = out + ch*k;
       float cam[3], XYZ[3], Lab[3];
       // memcpy(cam, buf_in, sizeof(float)*3);
-      // TODO: avoid calling this for linear profiles? doesn't seem to impact performance much.
-      for(int i=0; i<3; i++) cam[i] = lerp_lut(d->lut[i], buf_in[i]);
+      // avoid calling this for linear profiles (marked with negative entries), assures unbounded
+      // color management without extrapolation.
+      for(int i=0; i<3; i++) cam[i] = (d->lut[i][0] >= 0.0f) ?
+        ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
+        : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
+        : buf_in[i];
 
       if(map_blues)
       {
@@ -271,7 +275,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
@@ -283,6 +286,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->xform[t] = NULL;
     }
   d->cmatrix[0] = -666.0f;
+  d->lut[0][0] = -1.0f;
+  d->lut[1][0] = -1.0f;
+  d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
   char datadir[1024];
   char filename[1024];
@@ -366,14 +372,28 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
     }
   }
-  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  
+  // now try to initialize unbounded mode:
+  // we do a extrapolation for input values above 1.0f.
+  // unfortunately we can only do this if we got the computation
+  // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
+  for(int k=0;k<3;k++)
+  {
+    // omit luts marked as linear (negative as marker)
+    if(d->lut[k][0] >= 0.0f)
+    {
+      const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+      const float y[4] = {lerp_lut(d->lut[k], x[0]),
+                          lerp_lut(d->lut[k], x[1]),
+                          lerp_lut(d->lut[k], x[2]),
+                          lerp_lut(d->lut[k], x[3])};
+      dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
+    }
+  }
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-#else
   piece->data = malloc(sizeof(dt_iop_colorin_data_t));
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
@@ -381,7 +401,6 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   for(int t=0; t<dt_get_num_threads(); t++) d->xform[t] = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

@@ -262,7 +262,7 @@ void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int
 
     /* redraw pipe */
     dt_dev_invalidate(darktable.develop);
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   }
 }
 

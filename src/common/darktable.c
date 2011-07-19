@@ -105,6 +105,8 @@ the console and post the backtrace log to mailing list with information about yo
     )
 #endif
 
+
+
 static 
 void dt_check_cpu(int argc,char **argv) 
 {
@@ -142,6 +144,23 @@ darktable will now close down.\n\n%s"),message);
     
     exit(11);
   }
+}
+
+/*  TODO: make this case insensitive */
+gboolean dt_supported_image(const gchar *filename)
+{
+  gboolean supported = FALSE;
+  char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
+  char *ext = g_strrstr(filename,".");
+  if(!ext) return FALSE;
+  for(char **i=extensions; *i!=NULL; i++)
+    if(!g_ascii_strncasecmp(ext+1, *i,strlen(*i)))
+    {
+      supported = TRUE;
+      break;
+    }
+  g_strfreev(extensions);
+  return supported;
 }
 
 static void strip_semicolons_from_keymap(const char* path)

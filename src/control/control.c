@@ -1055,7 +1055,12 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   char buf[512];
   snprintf(buf, 512, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
 
+  gboolean i_own_lock = dt_control_gdk_lock(); 
+
   int error = dt_view_manager_switch(darktable.view_manager, mode);
+
+  if(i_own_lock) dt_control_gdk_unlock();
+
   if(error) return;
 
   dt_control_restore_gui_settings(mode);

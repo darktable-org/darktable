@@ -192,6 +192,9 @@ static inline void dt_get_times(dt_times_t *t)
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...);
 
+/** \brief check if file is a supported image */
+gboolean dt_supported_image(const gchar *filename);
+
 static inline int dt_get_num_threads()
 {
 #ifdef _OPENMP

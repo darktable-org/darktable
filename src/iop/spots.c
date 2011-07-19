@@ -313,7 +313,7 @@ int mouse_moved(dt_iop_module_t *self, double x, double y, int which)
     g->selected = selected;
     g->hoover_c = hoover_c;
   }
-  if(g->dragging >= 0 || g->selected != old_sel) dt_control_queue_redraw();
+  if(g->dragging >= 0 || g->selected != old_sel) dt_control_queue_redraw_center();
   return 1;
 }
 

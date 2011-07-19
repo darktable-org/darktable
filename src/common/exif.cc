@@ -265,6 +265,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
     }
 
+    // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
+    // http://dev.exiv2.org/issues/779
+    if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");
+
     img->exif_inited = 1;
     img->dirty = 1;
     return 0;

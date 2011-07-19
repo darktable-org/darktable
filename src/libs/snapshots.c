@@ -190,7 +190,7 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, int which,
 
       d->vp_xpointer = xp;
       d->vp_ypointer = yp;
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
     }
     /* do the dragging !? */
     else if (which==1 && 
@@ -202,7 +202,7 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, int which,
       d->dragging = TRUE;
       d->vp_ypointer = yp;
       d->vp_xpointer = xp;
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
     }
     return 1;
   } 
@@ -229,7 +229,7 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, int which)
 
      /* is mouse over control or in draggin state?, lets redraw */
      //    if(d->dragging || (xp > d->vp_xpointer-xpt && xp < d->vp_xpointer+xpt))
-       dt_control_queue_redraw();
+       dt_control_queue_redraw_center();
 
      return 1;
    } 
@@ -246,7 +246,7 @@ void gui_reset(dt_lib_module_t *self)
   for(int k=0;k<d->size;k++)
     gtk_widget_hide(d->snapshot[k].button);
 
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -391,7 +391,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
     {
       cairo_surface_destroy(d->snapshot_image);
       d->snapshot_image = NULL;
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
     }
   }
   else if(gtk_toggle_button_get_active(widget))
@@ -423,7 +423,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
     dt_dev_invalidate(darktable.develop);
     d->snapshot_image = cairo_image_surface_create_from_png(s->filename);
    
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   
   }
 
