@@ -190,11 +190,11 @@ basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   // use lut or extrapolation:
   if(pixel.x < 1.0f) pixel.x = lookup(table, pixel.x);
-  else               pixel.x = a[0] * powf(pixel.x, a[1]);
+  else               pixel.x = a[0] * pow(pixel.x, a[1]);
   if(pixel.y < 1.0f) pixel.y = lookup(table, pixel.y);
-  else               pixel.y = a[0] * powf(pixel.y, a[1]);
+  else               pixel.y = a[0] * pow(pixel.y, a[1]);
   if(pixel.x < 1.0f) pixel.z = lookup(table, pixel.z);
-  else               pixel.z = a[0] * powf(pixel.z, a[1]);
+  else               pixel.z = a[0] * pow(pixel.z, a[1]);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -254,7 +254,7 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
 
 /* kernel for the tonecurve plugin. */
 kernel void
-tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
+tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -262,7 +262,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float L_in = pixel.x/100.0f;
   // use lut or extrapolation:
-  const float L = (L_in < 1.0f) ? lookup(table, L_in) : (a[0] * powf(L_in, a[1]));
+  const float L = (L_in < 1.0f) ? lookup(table, L_in) : (a[0] * pow(L_in, a[1]));
   if(L_in > 0.01f)
   {
     pixel.y *= L/L_in;
