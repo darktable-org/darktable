@@ -863,7 +863,7 @@ void enter(dt_view_t *self)
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Connecting the (optional) module show accelerator
-      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show", module->op);
+      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show plugin", module->op);
       module->show_closure = g_cclosure_new(G_CALLBACK(show_module_callback),
                                                        module, NULL);
       dt_accel_group_connect_by_path(darktable.control->accels_darkroom,

@@ -112,13 +112,13 @@ dt_colorspaces_get_matrix_from_profile (cmsHPROFILE prof, float *matrix, float *
 
   if(input)
   {
-    // pass on tonecurves, in case lutsize > 0:
-    for(int k=0; k<lutsize; k++)
-    {
-      lutr[k] = cmsEvalToneCurveFloat(red_curve,   k/(lutsize-1.0f));
-      lutg[k] = cmsEvalToneCurveFloat(green_curve, k/(lutsize-1.0f));
-      lutb[k] = cmsEvalToneCurveFloat(blue_curve,  k/(lutsize-1.0f));
-    }
+    // mark as linear, if they are:
+    if(cmsIsToneCurveLinear(red_curve))   lutr[0] = -1.0f;
+    else for(int k=0; k<lutsize; k++)     lutr[k] = cmsEvalToneCurveFloat(red_curve,   k/(lutsize-1.0f));
+    if(cmsIsToneCurveLinear(green_curve)) lutg[0] = -1.0f;
+    else for(int k=0; k<lutsize; k++)     lutg[k] = cmsEvalToneCurveFloat(green_curve, k/(lutsize-1.0f));
+    if(cmsIsToneCurveLinear(blue_curve))  lutb[0] = -1.0f;
+    else for(int k=0; k<lutsize; k++)     lutb[k] = cmsEvalToneCurveFloat(blue_curve,  k/(lutsize-1.0f));
   }
   else
   {
@@ -138,12 +138,12 @@ dt_colorspaces_get_matrix_from_profile (cmsHPROFILE prof, float *matrix, float *
       return 4;
     }
     // pass on tonecurves, in case lutsize > 0:
-    for(int k=0; k<lutsize; k++)
-    {
-      lutr[k] = cmsEvalToneCurveFloat(rev_red,   k/(lutsize-1.0f));
-      lutg[k] = cmsEvalToneCurveFloat(rev_green, k/(lutsize-1.0f));
-      lutb[k] = cmsEvalToneCurveFloat(rev_blue,  k/(lutsize-1.0f));
-    }
+    if(cmsIsToneCurveLinear(red_curve))   lutr[0] = -1.0f;
+    else for(int k=0; k<lutsize; k++)     lutr[k] = cmsEvalToneCurveFloat(rev_red,   k/(lutsize-1.0f));
+    if(cmsIsToneCurveLinear(green_curve)) lutg[0] = -1.0f;
+    else for(int k=0; k<lutsize; k++)     lutg[k] = cmsEvalToneCurveFloat(rev_green, k/(lutsize-1.0f));
+    if(cmsIsToneCurveLinear(blue_curve))  lutb[0] = -1.0f;
+    else for(int k=0; k<lutsize; k++)     lutb[k] = cmsEvalToneCurveFloat(rev_blue,  k/(lutsize-1.0f));
     cmsFreeToneCurve(rev_red);
     cmsFreeToneCurve(rev_green);
     cmsFreeToneCurve(rev_blue);

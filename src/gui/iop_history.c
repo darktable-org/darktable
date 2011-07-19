@@ -36,7 +36,14 @@ history_compress_clicked (GtkWidget *widget, gpointer user_data)
   dt_dev_write_history(darktable.develop);
   sqlite3_stmt *stmt;
 
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "create temporary table temp_history as select * from history as a where imgid = ?1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  // dreggn, need this for some reason with newer sqlite3:
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from temp_history", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into temp_history select * from history as a where imgid = ?1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -47,7 +54,9 @@ history_compress_clicked (GtkWidget *widget, gpointer user_data)
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "insert into history select imgid,rowid-1,module,operation,op_params,enabled,blendop_params from temp_history", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from temp_history", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table temp_history", NULL, NULL, NULL);
+  // fails anyways:
+  // DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table temp_history", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "end", NULL, NULL, NULL);
   dt_dev_reload_history_items(darktable.develop);
 }
 

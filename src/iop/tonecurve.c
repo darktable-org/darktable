@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,22 +61,30 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
   cl_mem dev_m = NULL;
+  cl_mem dev_coeffs = NULL;
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if (dev_m == NULL) goto error;
+
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
+  if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 3, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_tonecurve, sizes);
+
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_coeffs);
   return TRUE;
 
 error:
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
   dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -96,8 +104,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
       // in Lab: correct compressed Luminance for saturation:
-      const int t = CLAMP((int)(in[0]/100.0*0xfffful), 0, 0xffff);
-      out[0] = d->table[t];
+      const float L_in = in[0]/100.0f;
+      out[0] = (L_in < 1.0f) ? d->table[CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
+        dt_iop_eval_exp(d->unbounded_coeffs, L_in);
+        
       if(in[0] > 0.01f)
       {
         out[1] = in[1] * out[0]/in[0];
@@ -148,18 +158,18 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
-#ifdef HAVE_GEGL
-  for(int k=0; k<6; k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
-  gegl_node_set(piece->input, "curve", d->curve, NULL);
-#else
   for(int k=0; k<6; k++)
     dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
   for(int k=0; k<0x10000; k++) d->table[k] *= 100.0f;
-  // for(int k=0;k<0x10000;k++)
-  // // d->table[k] = (uint16_t)(0xffff*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k));
-  // d->table[k] = 100.0*dt_draw_curve_calc_value(d->curve, (1.0/0x10000)*k);
-#endif
+
+  // now the extrapolation stuff:
+  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

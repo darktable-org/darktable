@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ exposure (read_only image2d_t in, write_only image2d_t out, const float black, c
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel = fmax((float4)0.0,(pixel - black)*scale);
+  pixel = (pixel - black)*scale;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -169,21 +169,32 @@ highlights (read_only image2d_t in, write_only image2d_t out, const int mode, co
 float
 lookup(read_only image2d_t lut, const float x)
 {
-  int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
-  int2 p = (int2)((xi & 0xff), (xi >> 8));
-  return read_imagef(lut, sampleri, p).x;
+  // in case the tone curve is marked as linear, return the fast
+  // path to linear unbounded (does not clip x at 1)
+  const float f = read_imagef(lut, sampleri, 0).x;
+  if(f >= 0.0f)
+  {
+    const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+    const int2 p = (int2)((xi & 0xff), (xi >> 8));
+    return read_imagef(lut, sampleri, p).x;
+  }
+  else return x;
 }
 
 /* kernel for the basecurve plugin. */
 kernel void
-basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
+basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel.x = lookup(table, pixel.x);
-  pixel.y = lookup(table, pixel.y);
-  pixel.z = lookup(table, pixel.z);
+  // use lut or extrapolation:
+  if(pixel.x < 1.0f) pixel.x = lookup(table, pixel.x);
+  else               pixel.x = a[0] * pow(pixel.x, a[1]);
+  if(pixel.y < 1.0f) pixel.y = lookup(table, pixel.y);
+  else               pixel.y = a[0] * pow(pixel.y, a[1]);
+  if(pixel.x < 1.0f) pixel.z = lookup(table, pixel.z);
+  else               pixel.z = a[0] * pow(pixel.z, a[1]);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -243,17 +254,19 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
 
 /* kernel for the tonecurve plugin. */
 kernel void
-tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
+tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  const float L = lookup(table, pixel.x/100.0f);
-  if(pixel.x > 0.01f)
+  const float L_in = pixel.x/100.0f;
+  // use lut or extrapolation:
+  const float L = (L_in < 1.0f) ? lookup(table, L_in) : (a[0] * pow(L_in, a[1]));
+  if(L_in > 0.01f)
   {
-    pixel.y *= L/pixel.x;
-    pixel.z *= L/pixel.x;
+    pixel.y *= L/L_in;
+    pixel.z *= L/L_in;
   }
   else
   {

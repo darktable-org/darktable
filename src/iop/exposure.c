@@ -104,7 +104,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + ch*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
       for(int i=0; i<3; i++)
-        out[i] = fmaxf(0.0f, (in[i]-black)*scale);
+        out[i] = (in[i]-black)*scale;
   }
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
@@ -145,7 +145,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 177; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 200; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t)

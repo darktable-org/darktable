@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
+#include "libs/lib.h"
 #include "preferences_gen.h"
 
 // Values for the accelerators treeview
@@ -46,6 +47,8 @@ static void delete_matching_accels(gpointer path, gpointer key_event);
 static gint _strcmp(gconstpointer a, gconstpointer b);
 static void import_export(GtkButton *button, gpointer data);
 static void restore_defaults(GtkButton *button, gpointer data);
+static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+                         gpointer data);
 
 // Signal handlers
 static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
@@ -53,6 +56,8 @@ static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
                                gpointer data);
+static gboolean prefix_search(GtkTreeModel *model, gint column,
+                              const gchar *key, GtkTreeIter *iter, gpointer d);
 
 
 
@@ -60,11 +65,11 @@ void dt_gui_preferences_show()
 {
   GtkWidget *win = darktable.gui->widgets.main_window;
   GtkWidget *dialog = gtk_dialog_new_with_buttons(
-                        _("darktable preferences"), GTK_WINDOW (win),
-                        GTK_DIALOG_MODAL,
-                        _("close"),
-                        GTK_RESPONSE_ACCEPT,
-                        NULL);
+      _("darktable preferences"), GTK_WINDOW (win),
+      GTK_DIALOG_MODAL,
+      _("close"),
+      GTK_RESPONSE_ACCEPT,
+      NULL);
   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
   gtk_window_resize(GTK_WINDOW(dialog), 600, 300);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
@@ -113,13 +118,17 @@ static void init_tab_accels(GtkWidget *book)
 
   // Building the accelerator tree
   gtk_accel_map_foreach((gpointer)model, tree_insert_accel);
+
+  // Seting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(
       GTK_TREE_SORTABLE(model), TRANS_COLUMN, GTK_SORT_ASCENDING);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), TRANS_COLUMN,
+                                  compare_rows, NULL, NULL);
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      _("accelerator"), renderer,
+      _("shortcut"), renderer,
       "text", TRANS_COLUMN,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
@@ -145,6 +154,12 @@ static void init_tab_accels(GtkWidget *book)
   // A keypress may remap an accel or delete one
   g_signal_connect(G_OBJECT(tree), "key-press-event",
                    G_CALLBACK(tree_key_press), (gpointer)model);
+
+  // Setting up the search functionality
+  gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), TRANS_COLUMN);
+  gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(tree), prefix_search,
+                                      NULL, NULL);
+  gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
 
   // Attaching the model to the treeview
   gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(model));
@@ -198,7 +213,7 @@ static void tree_insert_accel(gpointer data, const gchar *accel_path,
 
   /* lets recurse path */
   tree_insert_rec((GtkTreeStore*)data, NULL, lap, accel_key,
-                    accel_mods, changed);
+                  accel_mods, changed);
 }
 
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
@@ -207,6 +222,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
 {
   const gchar *translation = NULL;
   GList *iops = darktable.iop;
+  GList *libs = darktable.lib->plugins;
 
   int i;
   gboolean found = FALSE;
@@ -241,8 +257,8 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, parent, i);
       gtk_tree_model_get(GTK_TREE_MODEL(model), &iter,
-			 ACCEL_COLUMN, &val_str,
-			 -1);
+                         ACCEL_COLUMN, &val_str,
+                         -1);
       
       /* do we match current sibiling */
       if (!strcmp(val_str, node)) found = TRUE;
@@ -260,30 +276,43 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
       gchar *opname;
       while(iops)
       {
-	opname = ((dt_iop_module_so_t*)iops->data)->op;
-	
-	/* if iop module found, lets get translated name */
-	if (!strcmp(opname, node))
-	{
-	  translation = ((dt_iop_module_so_t*)iops->data)->name();
-	  break;
-	}
+        opname = ((dt_iop_module_so_t*)iops->data)->op;
 
-	iops = g_list_next(iops);
+        /* if iop module found, lets get translated name */
+        if (!strcmp(opname, node))
+        {
+          translation = ((dt_iop_module_so_t*)iops->data)->name();
+          break;
+        }
+
+        iops = g_list_next(iops);
       }
+
+      /* Check for libs as well */
       
-      /* not an iop, do a translation..
-	 TODO: Does this actually work ????
-       */
+      while(libs)
+      {
+        opname = ((dt_lib_module_t*)libs->data)->plugin_name;
+
+        if(!strcmp(opname, node))
+        {
+          translation = ((dt_lib_module_t*)libs->data)->name();
+          break;
+        }
+
+        libs = g_list_next(libs);
+      }
+
+      /* not an iop or lib, do a translation.. */
       if(!translation)
-	translation = _(node);
+        translation = _(node);
       
       gtk_tree_store_append(model, &iter, parent);
       gtk_tree_store_set(model, &iter,
-			 ACCEL_COLUMN, node,
-			 BINDING_COLUMN, "",
-			 TRANS_COLUMN, translation,
-			 -1);
+                         ACCEL_COLUMN, node,
+                         BINDING_COLUMN, "",
+                         TRANS_COLUMN, translation,
+                         -1);
     }
 
     /* recurse further down the path */
@@ -533,7 +562,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
     }
     // Change the accel map entry
     if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, event->keyval,
-                                   event->state & KEY_STATE_MASK, TRUE))
+                                  event->state & KEY_STATE_MASK, TRUE))
     {
       // If it succeeded delete any conflicting accelerators
 
@@ -583,7 +612,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
     // If nothing is selected, or branch node selected, just return
     if(!gtk_tree_selection_get_selected(selection, &model, &iter)
-       || gtk_tree_model_iter_has_child(model, &iter))
+      || gtk_tree_model_iter_has_child(model, &iter))
       return FALSE;
 
     // Otherwise, construct the proper accelerator path and delete its entry
@@ -715,6 +744,45 @@ static void restore_defaults(GtkButton *button, gpointer data)
     g_file_delete(g_file_new_for_path(path), NULL, NULL);
   }
   gtk_widget_destroy(message);
+}
+
+static gboolean prefix_search(GtkTreeModel *model, gint column,
+                              const gchar *key, GtkTreeIter *iter, gpointer d)
+{
+  gchar *row_data;
+
+  gtk_tree_model_get(model, iter, TRANS_COLUMN, &row_data, -1);
+  while(*key != '\0')
+  {
+    if(*row_data != *key)
+      return TRUE;
+    key++;
+    row_data++;
+  }
+  return FALSE;
+}
+
+// Custom sort function for TreeModel entries
+static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+                         gpointer data)
+{
+  gchar *a_text;
+  gchar *b_text;
+
+  // First prioritize branch nodes over leaves
+  if(gtk_tree_model_iter_has_child(model, a)
+    && !gtk_tree_model_iter_has_child(model, b))
+    return -1;
+
+  if(gtk_tree_model_iter_has_child(model, b)
+    && !gtk_tree_model_iter_has_child(model, a))
+    return 1;
+
+  // Otherwise just return alphabetical order
+  gtk_tree_model_get(model, a, TRANS_COLUMN, &a_text, -1);
+  gtk_tree_model_get(model, b, TRANS_COLUMN, &b_text, -1);
+  return strcmp(a_text, b_text);
+
 }
 
 #undef ACCEL_COLUMN
