@@ -19,6 +19,7 @@
 #ifndef COLORPICKER_H
 #define COLORPICKER_H
 
+#include <inttypes.h>
 #include <gtk/gtk.h>
 
 #define DT_COLORPICKER_SIZE_POINT 0
@@ -41,7 +42,7 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *add_sample_button;
   GtkWidget *display_samples_check_box;
 
-  float history_rgb[5][3];
+  uint8_t history_rgb[5][3];
   float history_lab[5][3];
 
 } dt_lib_colorpicker_t;
@@ -56,9 +57,9 @@ typedef struct dt_colorpicker_sample_t
   int size;
 
   /** The actual picked colors */
-  float picked_color_rgb_mean[3];
-  float picked_color_rgb_min[3];
-  float picked_color_rgb_max[3];
+  uint8_t picked_color_rgb_mean[3];
+  uint8_t picked_color_rgb_min[3];
+  uint8_t picked_color_rgb_max[3];
 
   float picked_color_lab_mean[3];
   float picked_color_lab_min[3];

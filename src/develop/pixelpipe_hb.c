@@ -751,7 +751,7 @@ post_process_collect_info:
     // Picking RGB for the live samples
     if(dev->gui_attached
        && pipe == dev->preview_pipe
-       && (strcmp(module->op, "colorout") == 0) // only colorout provides meaningful RGB data
+       && (strcmp(module->op, "gamma") == 0) // only colorout provides meaningful RGB data
        && darktable.lib->proxy.colorpicker.live_samples) // samples to pick
     {
       dt_colorpicker_sample_t *sample = NULL;
@@ -761,18 +761,24 @@ post_process_collect_info:
       {
         sample = samples->data;
 
-        float *pixel = (float*)*output;
+        uint8_t *pixel = (uint8_t*)*output;
 
-        for(int k=0; k<3; k++) sample->picked_color_rgb_min[k] =  666.0f;
-        for(int k=0; k<3; k++) sample->picked_color_rgb_max[k] = -666.0f;
+        for(int k=0; k<3; k++) sample->picked_color_rgb_min[k] =  255;
+        for(int k=0; k<3; k++) sample->picked_color_rgb_max[k] = 0;
         int box[4];
         int point[2];
         float rgb[3];
         for(int k=0; k<3; k++) rgb[k] = 0.0f;
-        for(int k=0; k<4; k+=2) box[k] = MIN(roi_out->width -1, MAX(0, sample->box[k]*roi_out->width));
-        for(int k=1; k<4; k+=2) box[k] = MIN(roi_out->height-1, MAX(0, sample->box[k]*roi_out->height));
-        point[0] = MIN(roi_out->width -1, MAX(0, sample->point[0] * roi_out->width));
-        point[1] = MIN(roi_out->height -1, MAX(0, sample->point[1] * roi_out->height));
+        for(int k=0; k<4; k+=2)
+          box[k] = MIN(roi_out->width -1,
+                       MAX(0, sample->box[k]*roi_out->width));
+        for(int k=1; k<4; k+=2)
+          box[k] = MIN(roi_out->height-1,
+                       MAX(0, sample->box[k]*roi_out->height));
+        point[0] = MIN(roi_out->width -1,
+                       MAX(0, sample->point[0] * roi_out->width));
+        point[1] = MIN(roi_out->height -1,
+                       MAX(0, sample->point[1] * roi_out->height));
         const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
         if(sample->size == DT_COLORPICKER_SIZE_BOX)
         {
@@ -780,9 +786,13 @@ post_process_collect_info:
           {
             for(int k=0; k<3; k++)
             {
-              sample->picked_color_rgb_min[k] = fminf(sample->picked_color_rgb_min[k], pixel[4*(roi_out->width*j + i) + k]);
-              sample->picked_color_rgb_max[k] = fmaxf(sample->picked_color_rgb_max[k], pixel[4*(roi_out->width*j + i) + k]);
-              rgb[k] += w*pixel[4*(roi_out->width*j + i) + k];
+              sample->picked_color_rgb_min[k] =
+                  MIN(sample->picked_color_rgb_min[k],
+                      pixel[4*(roi_out->width*j + i) + 2-k]);
+              sample->picked_color_rgb_max[k] =
+                  MAX(sample->picked_color_rgb_max[k],
+                      pixel[4*(roi_out->width*j + i) + 2-k]);
+              rgb[k] += w*pixel[4*(roi_out->width*j + i) + 2-k];
             }
           }
           for(int k=0; k<3; k++) sample->picked_color_rgb_mean[k] = rgb[k];
@@ -793,7 +803,7 @@ post_process_collect_info:
             sample->picked_color_rgb_mean[i]
                 = sample->picked_color_rgb_min[i]
                   = sample->picked_color_rgb_max[i]
-                    = pixel[4*(roi_out->width*point[1] + point[0]) + i];
+                    = pixel[4*(roi_out->width*point[1] + point[0]) + 2-i];
         }
 
         samples = g_slist_next(samples);
@@ -802,22 +812,38 @@ post_process_collect_info:
     //Picking RGB for primary colorpicker output
     if(dev->gui_attached
        && pipe == dev->preview_pipe
-       && (strcmp(module->op, "colorout") == 0) // only colorout provides meaningful RGB data
-       && module->request_color_pick
+       && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
+       && dev->gui_module
+       && !strcmp(dev->gui_module->op, "colorout")
+       && dev->gui_module->request_color_pick
        && darktable.lib->proxy.colorpicker.picked_color_mean) // colorpicker module active
     {
-      float *pixel = (float*)*output;
+      uint8_t *pixel = (uint8_t*)*output;
 
-      for(int k=0; k<3; k++) darktable.lib->proxy.colorpicker.picked_color_min[k] =  666.0f;
-      for(int k=0; k<3; k++) darktable.lib->proxy.colorpicker.picked_color_max[k] = -666.0f;
+      for(int k=0; k<3; k++)
+        darktable.lib->proxy.colorpicker.picked_color_min[k] =  255;
+      for(int k=0; k<3; k++)
+        darktable.lib->proxy.colorpicker.picked_color_max[k] = 0;
       int box[4];
       int point[2];
       float rgb[3];
       for(int k=0; k<3; k++) rgb[k] = 0.0f;
-      for(int k=0; k<4; k+=2) box[k] = MIN(roi_out->width -1, MAX(0, module->color_picker_box[k]*roi_out->width));
-      for(int k=1; k<4; k+=2) box[k] = MIN(roi_out->height-1, MAX(0, module->color_picker_box[k]*roi_out->height));
-      point[0] = MIN(roi_out->width -1, MAX(0, module->color_picker_point[0] * roi_out->width));
-      point[1] = MIN(roi_out->height -1, MAX(0, module->color_picker_point[1] * roi_out->height));
+      for(int k=0; k<4; k+=2)
+        box[k] =
+            MIN(roi_out->width -1,
+                MAX(0, dev->gui_module->color_picker_box[k]
+                    * roi_out->width));
+      for(int k=1; k<4; k+=2)
+        box[k] =
+            MIN(roi_out->height-1,
+                MAX(0, dev->gui_module->color_picker_box[k]
+                    * roi_out->height));
+      point[0] = MIN(roi_out->width -1,
+                     MAX(0, dev->gui_module->color_picker_point[0]
+                         * roi_out->width));
+      point[1] = MIN(roi_out->height -1,
+                     MAX(0, dev->gui_module->color_picker_point[1]
+                         * roi_out->height));
       const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
       if(darktable.lib->proxy.colorpicker.size)
       {
@@ -825,12 +851,17 @@ post_process_collect_info:
         {
           for(int k=0; k<3; k++)
           {
-            darktable.lib->proxy.colorpicker.picked_color_min[k] = fminf(darktable.lib->proxy.colorpicker.picked_color_min[k], pixel[4*(roi_out->width*j + i) + k]);
-            darktable.lib->proxy.colorpicker.picked_color_max[k] = fmaxf(darktable.lib->proxy.colorpicker.picked_color_max[k], pixel[4*(roi_out->width*j + i) + k]);
-            rgb[k] += w*pixel[4*(roi_out->width*j + i) + k];
+            darktable.lib->proxy.colorpicker.picked_color_min[k] =
+                MIN(darktable.lib->proxy.colorpicker.picked_color_min[2-k],
+                    pixel[4*(roi_out->width*j + i) + 2-k]);
+            darktable.lib->proxy.colorpicker.picked_color_max[k] =
+                MAX(darktable.lib->proxy.colorpicker.picked_color_max[k],
+                    pixel[4*(roi_out->width*j + i) + 2-k]);
+            rgb[k] += w*pixel[4*(roi_out->width*j + i) + 2-k];
           }
         }
-        for(int k=0; k<3; k++) darktable.lib->proxy.colorpicker.picked_color_mean[k] = rgb[k];
+        for(int k=0; k<3; k++)
+          darktable.lib->proxy.colorpicker.picked_color_mean[k] = rgb[k];
       }
       else
       {
@@ -838,7 +869,7 @@ post_process_collect_info:
           darktable.lib->proxy.colorpicker.picked_color_mean[i]
               = darktable.lib->proxy.colorpicker.picked_color_min[i]
                 = darktable.lib->proxy.colorpicker.picked_color_max[i]
-                  = pixel[4*(roi_out->width*point[1] + point[0]) + i];
+                  = pixel[4*(roi_out->width*point[1] + point[0]) + 2-i];
       }
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       

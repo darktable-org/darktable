@@ -77,7 +77,8 @@ static void _update_picker_output(dt_lib_module_t *self)
     // always adjust picked color:
     int m = dt_conf_get_int("ui_last/colorpicker_mode");
     float fallback_col[] = {0,0,0};
-    float *rgb = fallback_col;
+    uint8_t fallback_rgb[] = {0,0,0};
+    uint8_t *rgb = fallback_rgb;
     float *lab = fallback_col;
     switch(m)
     {
@@ -97,8 +98,7 @@ static void _update_picker_output(dt_lib_module_t *self)
     switch(input_color)
     {
     case 0: // rgb
-      snprintf(colstring, 512, "(%d, %d, %d)", (int)(255 * rgb[0]),
-               (int)(255 * rgb[1]), (int)(255 * rgb[2]));
+      snprintf(colstring, 512, "(%d, %d, %d)", rgb[0], rgb[1], rgb[2]);
       break;
     case 1: // Lab
       snprintf(colstring, 512, "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
@@ -107,9 +107,9 @@ static void _update_picker_output(dt_lib_module_t *self)
     gtk_label_set_label(GTK_LABEL(data->output_label), colstring);
 
     // Setting the button color
-    c.red = rgb[0] * 65535;
-    c.green = rgb[1] * 65535;
-    c.blue = rgb[2] * 65535;
+    c.red = rgb[0] * 65535 / 255;
+    c.green = rgb[1] * 65535 / 255;
+    c.blue = rgb[2] * 65535 / 255;
     gtk_widget_modify_bg(data->output_button, GTK_STATE_INSENSITIVE, &c);
   }
 }
@@ -176,9 +176,9 @@ static gboolean _history_button_enter(GtkWidget *widget, GdkEvent *event,
   {
     // Then set RGB
     snprintf(text, 512, "(%d, %d, %d)",
-             (int)(255 * data->history_rgb[n][0]),
-             (int)(255 * data->history_rgb[n][1]),
-             (int)(255 * data->history_rgb[n][2]));
+             data->history_rgb[n][0],
+             data->history_rgb[n][1],
+             data->history_rgb[n][2]);
   }
   else
   {
@@ -224,7 +224,8 @@ static void _history_button_clicked(GtkButton *button, gpointer self)
   // Saving the current picker data
   m = dt_conf_get_int("ui_last/colorpicker_mode");
   float fallback_col[] = {0,0,0};
-  float *rgb = fallback_col;
+  uint8_t fallback_rgb[] = {0,0,0};
+  uint8_t *rgb = fallback_rgb;
   float *lab = fallback_col;
   switch(m)
   {
@@ -247,9 +248,9 @@ static void _history_button_clicked(GtkButton *button, gpointer self)
   for(i = 0; i < 3; i++)
     data->history_lab[n][i] = lab[i];
 
-  c.red = rgb[0] * 65535;
-  c.green = rgb[1] * 65535;
-  c.blue = rgb[2] * 65535;
+  c.red = rgb[0] * 65535 / 255;
+  c.green = rgb[1] * 65535 / 255;
+  c.blue = rgb[2] * 65535 / 255;
   gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_NORMAL, &c);
   gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &c);
   gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_ACTIVE, &c);
@@ -261,7 +262,8 @@ static void _history_button_clicked(GtkButton *button, gpointer self)
 static void _update_samples_output(dt_lib_module_t *self)
 {
   float fallback[] = {0., 0., 0.};
-  float *rgb = fallback;
+  uint8_t fallback_rgb[] = {0,0,0};
+  uint8_t *rgb = fallback_rgb;
   float *lab = fallback;
   char text[1024];
   GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -294,9 +296,9 @@ static void _update_samples_output(dt_lib_module_t *self)
     }
 
     // Setting the output button
-    c.red = rgb[0] * 65535;
-    c.green = rgb[1] * 65535;
-    c.blue = rgb[2] * 65535;
+    c.red = rgb[0] * 65535 / 255;
+    c.green = rgb[1] * 65535 / 255;
+    c.blue = rgb[2] * 65535 / 255;
     gtk_widget_modify_bg(sample->output_button, GTK_STATE_NORMAL, &c);
     gtk_widget_modify_bg(sample->output_button, GTK_STATE_PRELIGHT, &c);
     gtk_widget_modify_bg(sample->output_button, GTK_STATE_ACTIVE, &c);
@@ -306,10 +308,7 @@ static void _update_samples_output(dt_lib_module_t *self)
     {
     case 0:
       // RGB
-      snprintf(text, 1024, "(%d, %d, %d)",
-               (int)(rgb[0] * 255),
-               (int)(rgb[1] * 255),
-               (int)(rgb[2] * 255));
+      snprintf(text, 1024, "(%d, %d, %d)", rgb[0], rgb[1], rgb[2]);
       break;
 
     case 1:
@@ -490,11 +489,13 @@ void gui_init(dt_lib_module_t *self)
       dt_conf_get_int("ui_last/colorpicker_display_samples");
   darktable.lib->proxy.colorpicker.live_samples = NULL;
   darktable.lib->proxy.colorpicker.picked_color_mean =
-      (float*)malloc(sizeof(float) * 3);
+      (uint8_t*)malloc(sizeof(uint8_t) * 3);
   darktable.lib->proxy.colorpicker.picked_color_min =
-      (float*)malloc(sizeof(float) * 3);
+      (uint8_t*)malloc(sizeof(uint8_t) * 3);
   darktable.lib->proxy.colorpicker.picked_color_max =
-      (float*)malloc(sizeof(float) * 3);
+      (uint8_t*)malloc(sizeof(uint8_t) * 3);
+  for(i = 0; i < 3; i++)
+    darktable.lib->proxy.colorpicker.picked_color_mean[i] = 0;
   darktable.lib->proxy.colorpicker.update_panel =  _update_picker_output;
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
 
