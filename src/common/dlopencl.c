@@ -61,7 +61,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 
   if (module == NULL)
   {
-     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library %s\n", library);
+     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library '%s'\n", library);
      *ocl = NULL;
      return FALSE;
   } else

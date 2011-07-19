@@ -50,7 +50,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   // look for explicit definition of opencl_runtime library in preferences
   const char *library = dt_conf_get_string("opencl_runtime");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] trying to load opencl library: %s\n", library && strlen(library) != 0 ? library : "<system default>");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] trying to load opencl library: '%s'\n", library && strlen(library) != 0 ? library : "<system default>");
 
   // dynamically load opencl runtime
   if(!dt_dlopencl_init(library, &cl->dlocl))
@@ -60,7 +60,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     }
     else
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library %s found on your system and loaded\n", cl->dlocl->library);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n", cl->dlocl->library);
     }
 
   cl_int err;
@@ -671,6 +671,13 @@ int dt_opencl_update_enabled(void)
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");    
   }
   return darktable.opencl->enabled;
+}
+
+/** get global memory of device */
+cl_ulong dt_opencl_get_max_global_mem(const int devid)
+{
+  if(!darktable.opencl->inited) return 0;
+  return darktable.opencl->dev[devid].max_global_mem;
 }
 
 
