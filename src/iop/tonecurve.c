@@ -66,15 +66,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  dev_m = dt_opencl_copy_host_to_device(d->table, 256, 256, devid, sizeof(float));
+  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if (dev_m == NULL) goto error;
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*2, devid, d->unbounded_coeffs);
+
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
   if (dev_coeffs == NULL) goto error;
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_tonecurve, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_tonecurve, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_tonecurve, 2, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_tonecurve, 3, sizeof(cl_mem), (void *)&dev_coeffs);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_tonecurve, sizes);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 3, sizeof(cl_mem), (void *)&dev_coeffs);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_tonecurve, sizes);
+
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_coeffs);
@@ -230,13 +232,13 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)malloc(sizeof(dt_iop_tonecurve_global_data_t));
   module->data = gd;
-  gd->kernel_tonecurve = dt_opencl_create_kernel(darktable.opencl, program, "tonecurve");
+  gd->kernel_tonecurve = dt_opencl_create_kernel(program, "tonecurve");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_tonecurve);
+  dt_opencl_free_kernel(gd->kernel_tonecurve);
   free(module->data);
   module->data = NULL;
 }

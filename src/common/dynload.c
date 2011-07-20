@@ -17,12 +17,24 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef __APPLE__
 #include <sys/malloc.h>
 #endif
 
 #include "common/dynload.h"
+
+
+static char *_strdup(const char *str)
+{
+  const int len = strlen(str)+1;
+  char *ptr = malloc(len);
+  if(ptr == NULL) return NULL;
+  strncpy(ptr, str, len);
+  return ptr;
+}
+
 
 /* check if gmodules is supported on this platform */
 int dt_gmodule_supported(void)
@@ -38,9 +50,16 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 {
   dt_gmodule_t *module = NULL;
   GModule *gmodule;
-  char *name;
+  const char *name;
 
-  name = g_module_build_path(NULL, library);
+  if (strchr(library, '/') == NULL)
+  {
+    name = g_module_build_path(NULL, library);
+  }
+  else
+  {
+    name = library;
+  }
 
   gmodule = g_module_open(name, G_MODULE_BIND_LAZY);
 
@@ -48,7 +67,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
   {
     module = (dt_gmodule_t *)malloc(sizeof(dt_gmodule_t));
     module->gmodule = gmodule;
-    module->library = g_module_name(gmodule);
+    module->library = _strdup(name);
   }
 
   return module;
