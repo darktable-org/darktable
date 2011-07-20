@@ -838,13 +838,6 @@ set_params(dt_imageio_module_format_t *self, void *params, int size)
   return 0;
 }
 
-int dimension(dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
-{
-  *width=4000;
-  *height=4000;
-  return 1;
-}
-
 int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
 {
   if( strcmp(format->mime(NULL) ,"image/jpeg") ==  0 ) return 1;
