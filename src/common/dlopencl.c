@@ -111,6 +111,8 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     success = success && dt_gmodule_symbol(module, "clEnqueueReadImage", (void (**)(void))&d->symbols->dt_clEnqueueReadImage);
     success = success && dt_gmodule_symbol(module, "clEnqueueWriteImage", (void (**)(void))&d->symbols->dt_clEnqueueWriteImage);
     success = success && dt_gmodule_symbol(module, "clEnqueueCopyImage", (void (**)(void))&d->symbols->dt_clEnqueueCopyImage);
+    success = success && dt_gmodule_symbol(module, "clEnqueueCopyImageToBuffer", (void (**)(void))&d->symbols->dt_clEnqueueCopyImageToBuffer);
+    success = success && dt_gmodule_symbol(module, "clEnqueueCopyBufferToImage", (void (**)(void))&d->symbols->dt_clEnqueueCopyBufferToImage);
     success = success && dt_gmodule_symbol(module, "clFinish", (void (**)(void))&d->symbols->dt_clFinish);
     success = success && dt_gmodule_symbol(module, "clEnqueueReadBuffer", (void (**)(void))&d->symbols->dt_clEnqueueReadBuffer);
     success = success && dt_gmodule_symbol(module, "clReleaseMemObject", (void (**)(void))&d->symbols->dt_clReleaseMemObject);
