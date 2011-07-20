@@ -127,7 +127,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->data;
-  cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL;
+  cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
   cl_int err = -999;
   const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
@@ -141,6 +141,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if (dev_g == NULL) goto error;
   dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if (dev_b == NULL) goto error;
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2*3, (float *)d->unbounded_coeffs);
+  if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 2, sizeof(cl_mem), (void *)&dev_m);
@@ -148,12 +150,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 4, sizeof(cl_mem), (void *)&dev_g);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 5, sizeof(cl_mem), (void *)&dev_b);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 6, sizeof(cl_int), (void *)&map_blues);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 7, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorin, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
+  dt_opencl_release_mem_object(dev_coeffs);
   return TRUE;
 
 error:
@@ -161,6 +165,7 @@ error:
   if (dev_r != NULL) dt_opencl_release_mem_object(dev_r);
   if (dev_g != NULL) dt_opencl_release_mem_object(dev_g);
   if (dev_b != NULL) dt_opencl_release_mem_object(dev_b);
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorin] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -389,6 +394,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
                           lerp_lut(d->lut[k], x[3])};
       dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
     }
+    else d->unbounded_coeffs[k][0] = -1.0f;
   }
 }
 
