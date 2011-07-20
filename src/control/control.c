@@ -149,6 +149,14 @@ static void dt_control_sanitize_database()
   }
   sqlite3_finalize(stmt);
   sqlite3_finalize(innerstmt);
+
+  // temporary stuff for some ops, need this for some reason with newer sqlite3:
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table color_labels_temp (imgid integer primary key)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table tmp_selection (imgid integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temporary table temp_history as select * from history", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from temp_history", NULL, NULL, NULL);
 }
 
 int dt_control_load_config(dt_control_t *c)

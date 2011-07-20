@@ -60,13 +60,11 @@ button_clicked(GtkWidget *widget, gpointer user_data)
       DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
       break;
     case 2: // invert
-      DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table tmp_selection (imgid integer)", NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_EXEC(darktable.db, "insert into tmp_selection select imgid from selected_images", NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images", NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_EXEC(darktable.db, fullq, NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from selected_images where imgid in (select imgid from tmp_selection)", NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from tmp_selection", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table tmp_selection", NULL, NULL, NULL);
       break;
     case 4: // untouched
       dt_collection_set_filter_flags (collection, (dt_collection_get_filter_flags(collection)|COLLECTION_FILTER_UNALTERED));
