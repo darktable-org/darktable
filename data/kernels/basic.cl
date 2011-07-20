@@ -263,10 +263,10 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t
   const float L_in = pixel.x/100.0f;
   // use lut or extrapolation:
   const float L = (L_in < 1.0f) ? lookup(table, L_in) : (a[0] * pow(L_in, a[1]));
-  if(L_in > 0.01f)
+  if(pixel.x > 0.01f)
   {
-    pixel.y *= L/L_in;
-    pixel.z *= L/L_in;
+    pixel.y *= L/pixel.x;
+    pixel.z *= L/pixel.x;
   }
   else
   {

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -111,7 +111,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     size_t infoint;
     size_t infointtab[1024];
     cl_bool image_support = 0;
-    //size_t image_width = 0, image_height = 0;
 
     // test 1GB mem and image support:
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
