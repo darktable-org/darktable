@@ -65,11 +65,11 @@ button_clicked(GtkWidget *widget, gpointer user_data)
       DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
       break;
     case 2: // invert
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into tmp_selection select imgid from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into memory.tmp_selection select imgid from selected_images", NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images where imgid in (select imgid from tmp_selection)", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from tmp_selection", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images where imgid in (select imgid from memory.tmp_selection)", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.tmp_selection", NULL, NULL, NULL);
       break;
     case 4: // untouched
       dt_collection_set_filter_flags (collection, (dt_collection_get_filter_flags(collection)|COLLECTION_FILTER_UNALTERED));
@@ -79,12 +79,11 @@ button_clicked(GtkWidget *widget, gpointer user_data)
       DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
       break;
     default: // case 3: same film roll
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create temp table tmp_selection (imgid integer)", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into tmp_selection select imgid from selected_images", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create temp table memory.tmp_selection (imgid integer)", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into memory.tmp_selection select imgid from selected_images", NULL, NULL, NULL);
       DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into selected_images select id from images where film_id in (select film_id from images as a join tmp_selection as b on a.id = b.imgid)", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from tmp_selection", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "drop table tmp_selection", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into selected_images select id from images where film_id in (select film_id from images as a join memory.tmp_selection as b on a.id = b.imgid)", NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.tmp_selection", NULL, NULL, NULL);
       break;
   }
 
