@@ -51,45 +51,45 @@ typedef enum dt_iop_gaussian_order_t
 }
 dt_iop_gaussian_order_t;
 
-typedef struct dt_iop_gaussian_params_t
+typedef struct dt_iop_lowpass_params_t
 {
   dt_iop_gaussian_order_t order;
   float radius;
   float contrast;
   float saturation;
 }
-dt_iop_gaussian_params_t;
+dt_iop_lowpass_params_t;
 
-typedef struct dt_iop_gaussian_gui_data_t
+typedef struct dt_iop_lowpass_gui_data_t
 {
   GtkVBox   *vbox1,  *vbox2, vbox3;
   GtkWidget  *label1,*label2, label3;		     // radius, contrast, saturation
   GtkDarktableSlider *scale1,*scale2,*scale3;       // radius, contrast, saturation
   GtkComboBox        *order;			    // order of gaussian
 }
-dt_iop_gaussian_gui_data_t;
+dt_iop_lowpass_gui_data_t;
 
-typedef struct dt_iop_gaussian_data_t
+typedef struct dt_iop_lowpass_data_t
 {
   dt_iop_gaussian_order_t order;
   float radius;
   float contrast;
   float saturation;
 }
-dt_iop_gaussian_data_t;
+dt_iop_lowpass_data_t;
 
-typedef struct dt_iop_gaussian_global_data_t
+typedef struct dt_iop_lowpass_global_data_t
 {
   int kernel_gaussian_column;
   int kernel_gaussian_row;
-  int kernel_gaussian_mix;
+  int kernel_lowpass_mix;
 }
-dt_iop_gaussian_global_data_t;
+dt_iop_lowpass_global_data_t;
 
 
 const char *name()
 {
-  return _("gaussian blur");
+  return _("lowpass");
 }
 
 int flags()
@@ -163,8 +163,8 @@ void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, floa
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_gaussian_data_t *d = (dt_iop_gaussian_data_t *)piece->data;
-  dt_iop_gaussian_global_data_t *gd = (dt_iop_gaussian_global_data_t *)self->data;
+  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
+  dt_iop_lowpass_global_data_t *gd = (dt_iop_lowpass_global_data_t *)self->data;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
@@ -242,11 +242,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   sizes[0] = width;
   sizes[1] = height;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_mix, 0, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_mix, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_mix, 2, sizeof(float), (void *)&contrast);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_mix, 3, sizeof(float), (void *)&saturation);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_gaussian_mix, sizes);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 2, sizeof(float), (void *)&contrast);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 3, sizeof(float), (void *)&saturation);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
   clReleaseMemObject(dev_temp);
@@ -254,7 +254,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 error:
   if (dev_temp != NULL) dt_opencl_release_mem_object(dev_temp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_gaussian] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_lowpass] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
@@ -263,7 +263,7 @@ error:
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_gaussian_data_t *data = (dt_iop_gaussian_data_t *)piece->data;
+  dt_iop_lowpass_data_t *data = (dt_iop_lowpass_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
@@ -439,7 +439,7 @@ radius_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
   p->radius= dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -449,7 +449,7 @@ contrast_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
   p->contrast = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -459,30 +459,32 @@ saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
   p->saturation = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+#if 0 // gaussian order not user selectable
 static void
 order_changed (GtkComboBox *combo, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
   p->order = gtk_combo_box_get_active(combo);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
+#endif
 
 void 
 commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)p1;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)p1;
 #ifdef HAVE_GEGL
-  fprintf(stderr, "[gaussian] TODO: implement gegl version!\n");
+  fprintf(stderr, "[lowpass] TODO: implement gegl version!\n");
   // pull in new params to gegl
 #else
-  dt_iop_gaussian_data_t *d = (dt_iop_gaussian_data_t *)piece->data;
+  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
   d->order = p->order;
   d->radius = p->radius;
   d->contrast = p->contrast;
@@ -496,8 +498,8 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_gaussian_data_t));
-  memset(piece->data,0,sizeof(dt_iop_gaussian_data_t));
+  piece->data = malloc(sizeof(dt_iop_lowpass_data_t));
+  memset(piece->data,0,sizeof(dt_iop_lowpass_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -516,38 +518,38 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
-  dt_iop_gaussian_gui_data_t *g = (dt_iop_gaussian_gui_data_t *)self->gui_data;
-  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)module->params;
+  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)module->params;
   dtgtk_slider_set_value(g->scale1, p->radius);
   dtgtk_slider_set_value(g->scale2, p->contrast);
   dtgtk_slider_set_value(g->scale3, p->saturation);
-  gtk_combo_box_set_active(g->order, p->order);
+  //gtk_combo_box_set_active(g->order, p->order);
 }
 
 void init(dt_iop_module_t *module)
 {
-  module->params = malloc(sizeof(dt_iop_gaussian_params_t));
-  module->default_params = malloc(sizeof(dt_iop_gaussian_params_t));
+  module->params = malloc(sizeof(dt_iop_lowpass_params_t));
+  module->default_params = malloc(sizeof(dt_iop_lowpass_params_t));
   module->default_enabled = 0;
-  module->priority = 714;
-  module->params_size = sizeof(dt_iop_gaussian_params_t);
+  module->priority = 687;
+  module->params_size = sizeof(dt_iop_lowpass_params_t);
   module->gui_data = NULL;
-  dt_iop_gaussian_params_t tmp = (dt_iop_gaussian_params_t)
+  dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t)
   {
     0, 25, 1, 1
   };
-  memcpy(module->params, &tmp, sizeof(dt_iop_gaussian_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_gaussian_params_t));
+  memcpy(module->params, &tmp, sizeof(dt_iop_lowpass_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_lowpass_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 6; // gaussian.cl, from programs.conf
-  dt_iop_gaussian_global_data_t *gd = (dt_iop_gaussian_global_data_t *)malloc(sizeof(dt_iop_gaussian_global_data_t));
+  dt_iop_lowpass_global_data_t *gd = (dt_iop_lowpass_global_data_t *)malloc(sizeof(dt_iop_lowpass_global_data_t));
   module->data = gd;
   gd->kernel_gaussian_column = dt_opencl_create_kernel(program, "gaussian_column");
   gd->kernel_gaussian_row = dt_opencl_create_kernel(program, "gaussian_row");
-  gd->kernel_gaussian_mix = dt_opencl_create_kernel(program, "gaussian_mix");
+  gd->kernel_lowpass_mix = dt_opencl_create_kernel(program, "lowpass_mix");
 }
 
 
@@ -561,10 +563,10 @@ void cleanup(dt_iop_module_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_gaussian_global_data_t *gd = (dt_iop_gaussian_global_data_t *)module->data;
+  dt_iop_lowpass_global_data_t *gd = (dt_iop_lowpass_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_gaussian_column);
   dt_opencl_free_kernel(gd->kernel_gaussian_row);
-  dt_opencl_free_kernel(gd->kernel_gaussian_mix);
+  dt_opencl_free_kernel(gd->kernel_lowpass_mix);
   free(module->data);
   module->data = NULL;
 }
@@ -572,12 +574,13 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_gaussian_gui_data_t));
-  dt_iop_gaussian_gui_data_t *g = (dt_iop_gaussian_gui_data_t *)self->gui_data;
-  dt_iop_gaussian_params_t *p = (dt_iop_gaussian_params_t *)self->params;
+  self->gui_data = malloc(sizeof(dt_iop_lowpass_gui_data_t));
+  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
 
   self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
+#if 0 // gaussian is order not user selectable here, as it does not make much sense for a lowpass filter
   GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
   GtkWidget *label = dtgtk_reset_label_new(_("filter order"), self, &p->order, sizeof(float));
@@ -588,6 +591,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->order, _("2nd order"));
   gtk_object_set(GTK_OBJECT(g->order), "tooltip-text", _("filter order of gaussian blur"), (char *)NULL);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
+#endif
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 200.0, 0.1, p->radius, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-1.0, 1.0, 0.01, p->contrast, 2));
@@ -600,9 +604,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radius of gaussian blur filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of gaussian blur filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the color saturation of gaussian blur filter"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("the radius of gaussian blur"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("the contrast of lowpass filter"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("the color saturation of lowpass filter"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);
@@ -610,8 +614,10 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (contrast_callback), self);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (saturation_callback), self);
+#if 0 // gaussian order not user selectable
   g_signal_connect (G_OBJECT (g->order), "changed",
                     G_CALLBACK (order_changed), self);
+#endif
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

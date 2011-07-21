@@ -146,7 +146,7 @@ gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, uns
 
 
 kernel void 
-gaussian_mix(read_only image2d_t in, write_only image2d_t out, const float contrast, const float saturation)
+lowpass_mix(read_only image2d_t in, write_only image2d_t out, const float contrast, const float saturation)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
