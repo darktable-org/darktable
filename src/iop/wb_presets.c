@@ -1023,6 +1023,27 @@ const wb_data wb_preset[] =
   { "Canon", "EOS Kiss Digital F", Fluorescent, 0, { 1.889648, 1, 2.133789, 0 } },
   { "Canon", "EOS Kiss Digital F", Flash, 0,	{ 2.541830, 1, 1.769099, 0 } },
 
+  { "Canon", "EOS 1100D", Daylight, 0,		{ 2.2559, 1, 1.4844, 0 } },
+  { "Canon", "EOS 1100D", Shade, 0,		{ 2.6455, 1, 1.2725, 0 } },
+  { "Canon", "EOS 1100D", Cloudy, 0,		{ 2.4443, 1, 1.3652, 0 } },
+  { "Canon", "EOS 1100D", Tungsten, 0,		{ 1.5654, 1, 2.2402, 0 } },
+  { "Canon", "EOS 1100D", WhiteFluorescent, 0,	{ 1.9541, 1, 2.0732, 0 } },
+  { "Canon", "EOS 1100D", Flash, 0,		{ 2.5283, 1, 1.3584, 0 } },
+
+  { "Canon", "EOS DIGITAL REBEL T3", Daylight, 0,	{ 2.2559, 1, 1.4844, 0 } },
+  { "Canon", "EOS DIGITAL REBEL T3", Shade, 0,		{ 2.6455, 1, 1.2725, 0 } },
+  { "Canon", "EOS DIGITAL REBEL T3", Cloudy, 0,		{ 2.4443, 1, 1.3652, 0 } },
+  { "Canon", "EOS DIGITAL REBEL T3", Tungsten, 0,	{ 1.5654, 1, 2.2402, 0 } },
+  { "Canon", "EOS DIGITAL REBEL T3", WhiteFluorescent, 0, { 1.9541, 1, 2.0732, 0 } },
+  { "Canon", "EOS DIGITAL REBEL T3", Flash, 0,		{ 2.5283, 1, 1.3584, 0 } },
+
+  { "Canon", "EOS Kiss Digital X50", Daylight, 0,	{ 2.2559, 1, 1.4844, 0 } },
+  { "Canon", "EOS Kiss Digital X50", Shade, 0,		{ 2.6455, 1, 1.2725, 0 } },
+  { "Canon", "EOS Kiss Digital X50", Cloudy, 0,		{ 2.4443, 1, 1.3652, 0 } },
+  { "Canon", "EOS Kiss Digital X50", Tungsten, 0,	{ 1.5654, 1, 2.2402, 0 } },
+  { "Canon", "EOS Kiss Digital X50", WhiteFluorescent, 0, { 1.9541, 1, 2.0732, 0 } },
+  { "Canon", "EOS Kiss Digital X50", Flash, 0,		{ 2.5283, 1, 1.3584, 0 } },
+
   // Firmware Version 1.1.6
   { "Canon", "EOS-1Ds Mark II", Daylight, 0,	{ 1.992188, 1, 1.503906, 0 } },
   { "Canon", "EOS-1Ds Mark II", Shade, 0,	{ 2.300781, 1, 1.243164, 0 } },
