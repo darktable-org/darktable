@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,7 +63,6 @@ void dt_colorlabels_toggle_label_selection (const int color)
 {
   sqlite3_stmt *stmt;
   // store away all previously unlabeled images in selection:
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temp table color_labels_temp (imgid integer primary key)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into color_labels_temp select a.imgid from selected_images as a join color_labels as b on a.imgid = b.imgid where b.color = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, color);
   sqlite3_step(stmt);
@@ -83,7 +82,6 @@ void dt_colorlabels_toggle_label_selection (const int color)
 
   // clean up
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from color_labels_temp", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "drop table color_labels_temp", NULL, NULL, NULL);
 }
 
 void dt_colorlabels_toggle_label (const int imgid, const int color)

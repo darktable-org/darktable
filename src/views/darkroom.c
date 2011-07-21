@@ -473,9 +473,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   // commit image ops to db
   dt_dev_write_history(dev);
 
-  // commit updated mipmaps to db
-  // TODO: bg process?
-  dt_dev_process_to_mip(dev);
+  // be sure light table will update the thumbnail
+  if(dev->image) dev->image->force_reimport = 1;
   // release full buffer
   if(dev->image && dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
@@ -1052,8 +1051,8 @@ void leave(dt_view_t *self)
   // write .xmp file
   dt_image_write_sidecar_file(dev->image->id);
 
-  // commit updated mipmaps to db
-  dt_dev_process_to_mip(dev);
+  // be sure light table will regenerate the thumbnail:
+  if(dev->image) dev->image->force_reimport = 1;
 
   // clear gui.
   dev->gui_leaving = 1;
