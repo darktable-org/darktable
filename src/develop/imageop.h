@@ -137,6 +137,8 @@ typedef struct dt_iop_module_t
   int32_t request_color_pick;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
+  /** single point to pick if in point mode */
+  float color_picker_point[2];
   /** place to store the picked color. */
   float picked_color[3], picked_color_min[3], picked_color_max[3];
   /** reference for dlopened libs. */
@@ -284,6 +286,8 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
 void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);
 
+dt_iop_module_t *get_colorout_module();
+
 /** takes four points (x,y) in two arrays and fills the cubic coefficients a, such that y = [X] * a, where
   * [X] is the matrix containing all x^3 x^2 x^1 x^0 lines for all four x. */
 void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a);
@@ -333,6 +337,5 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 {
   return coeff[0] * powf(x, coeff[1]);
 }
-
 
 #endif

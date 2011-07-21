@@ -228,6 +228,8 @@ void gui_update(struct dt_iop_module_t *self)
   self->request_color_pick = 0;
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
+  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
+
 
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;

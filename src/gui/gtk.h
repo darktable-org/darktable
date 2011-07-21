@@ -29,14 +29,6 @@
 
 typedef struct dt_gui_widgets_t
 {
-  // Colorpicker widgets
-#if 0 // TODO: create a module out of this
-  GtkWidget *bottom_darkroom_box;
-  GtkWidget *colorpicker_button;
-  GtkWidget *colorpicker_stat_combobox;
-  GtkWidget *colorpicker_model_combobox;
-  GtkWidget *colorpicker_output_label;
-#endif
 
   // Borders
   GtkWidget *left_border;
@@ -66,9 +58,6 @@ typedef struct dt_gui_gtk_t
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
-  float picked_color_output_cs[3];
-  float picked_color_output_cs_min[3];
-  float picked_color_output_cs_max[3];
 }
 dt_gui_gtk_t;
 
@@ -85,6 +74,7 @@ void dt_accel_group_connect_by_path(GtkAccelGroup *accel_group,
                                     GClosure *closure);
 void dt_accel_group_disconnect(GtkAccelGroup *accel_group,
                                GClosure *closure);
+
 
 
 /*

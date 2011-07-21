@@ -285,6 +285,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   }
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
+  module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
   g_strlcpy(module->op, so->op, 20);
 
@@ -1299,6 +1300,18 @@ void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb)
   rgb[0] = yuv[0]                + 1.140*yuv[2];
   rgb[1] = yuv[0] - 0.394*yuv[1] - 0.581*yuv[2];
   rgb[2] = yuv[0] + 2.028*yuv[1];
+}
+
+dt_iop_module_t *get_colorout_module()
+{
+  GList *modules = darktable.develop->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    if(!strcmp(module->op, "colorout")) return module;
+    modules = g_list_next(modules);
+  }
+  return NULL;
 }
 
 static inline void

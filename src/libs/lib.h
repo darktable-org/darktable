@@ -24,12 +24,33 @@
 #include <gtk/gtk.h>
 
 struct dt_lib_module_t;
+struct dt_colorpicker_sample_t;
 
 /** struct responsible for all library related shared routines and plugins. */
 typedef struct dt_lib_t
 {
   GList *plugins;
   struct dt_lib_module_t *gui_module;
+
+  /** Proxy functions for communication with views */
+  struct
+  {
+    /** Colorpicker plugin hooks */
+    struct
+    {
+      struct dt_lib_module_t *module;
+      uint8_t *picked_color_mean;
+      uint8_t *picked_color_min;
+      uint8_t *picked_color_max;
+      GSList *live_samples;
+      struct dt_colorpicker_sample_t *selected_sample;
+      int size;
+      int display_samples;
+      void (*update_panel)(struct dt_lib_module_t *self);
+      void (*update_samples)(struct dt_lib_module_t *self);
+    } colorpicker;
+
+  } proxy;
 }
 dt_lib_t;
 
