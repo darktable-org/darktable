@@ -251,8 +251,6 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
            "and cross.count > 0",
            keyword);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into tagquery2 select distinct tagid, name, "
                         "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
@@ -272,11 +270,8 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   }
 
   sqlite3_finalize(stmt);
-
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from tagquery1", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from tagquery2", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "drop table tagquery1", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "drop table tagquery2", NULL, NULL, NULL);
 
   return count;
 }

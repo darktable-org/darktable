@@ -98,7 +98,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     size_t origin[] = {0, 0, 0};
     size_t region[] = {roi_in->width, roi_in->height, 1};
-    err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if (err != CL_SUCCESS) goto error;
     return TRUE;
   }
@@ -106,13 +106,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
   nL *= nL; nC *= nC;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 2, sizeof(int32_t), (void *)&P);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 3, sizeof(int32_t), (void *)&K);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 4, sizeof(float), (void *)&nL);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_nlmeans, 5, sizeof(float), (void *)&nC);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_nlmeans, sizes);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 2, sizeof(int32_t), (void *)&P);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 3, sizeof(int32_t), (void *)&K);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 4, sizeof(float), (void *)&nL);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 5, sizeof(float), (void *)&nC);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans, sizes);
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 
@@ -388,13 +388,13 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 5; // nlmeans.cl, from programs.conf
   dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)malloc(sizeof(dt_iop_nlmeans_global_data_t));
   module->data = gd;
-  gd->kernel_nlmeans = dt_opencl_create_kernel(darktable.opencl, program, "nlmeans");
+  gd->kernel_nlmeans = dt_opencl_create_kernel(program, "nlmeans");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_nlmeans);
+  dt_opencl_free_kernel(gd->kernel_nlmeans);
   free(module->data);
   module->data = NULL;
 }
