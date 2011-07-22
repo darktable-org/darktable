@@ -35,28 +35,30 @@ typedef struct dt_iop_colorout_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   char displayprofile[DT_IOP_COLOR_ICC_LEN];
+
   dt_iop_color_intent_t intent;
   dt_iop_color_intent_t displayintent;
-  unsigned char seq;		/// FIXME: Ugly hack to change hash of param to force softproof processing
+
+  char softproof_enabled;
+  char softproofprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t softproofintent; /// NOTE: Not used for now but reserved for future use
 }
 dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
 {
   GClosure *softproof_callback;
-
+  gboolean softproof_enabled;
   GtkVBox *vbox1, *vbox2;
   GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
   GList *profiles;
 
-  gboolean softproofing;
-  gchar *softproofprofile;
 }
 dt_iop_colorout_gui_data_t;
 
 typedef struct dt_iop_colorout_data_t
 {
-  gboolean softproofing;
+  gboolean softproof_enabled;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
   cmsHPROFILE softproof;
