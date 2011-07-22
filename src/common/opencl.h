@@ -24,8 +24,9 @@
 
 #define DT_OPENCL_MAX_PROGRAMS 256
 #define DT_OPENCL_MAX_KERNELS 512
-#define DT_OPENCL_EVENTLISTSIZE 128
+#define DT_OPENCL_EVENTLISTSIZE 256
 #define DT_OPENCL_EVENTNAMELENGTH 64
+#define DT_OPENCL_MAX_EVENTS 256
 
 #ifdef HAVE_OPENCL
 
@@ -36,6 +37,19 @@
 #include "common/dtpthread.h"
 #include "common/dlopencl.h"
 #include "control/conf.h"
+
+
+/**
+ * Accounting information used for OpenCL events.
+ */
+typedef struct dt_opencl_eventtag_t
+{
+  cl_int retval;
+  cl_ulong timelapsed;
+  char tag[DT_OPENCL_EVENTNAMELENGTH];
+}
+dt_opencl_eventtag_t;
+
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -57,9 +71,11 @@ typedef struct dt_opencl_device_t
   int program_used[DT_OPENCL_MAX_PROGRAMS];
   int kernel_used [DT_OPENCL_MAX_KERNELS];
   cl_event *eventlist;
-  char *eventnames;
+  dt_opencl_eventtag_t *eventtags;
   int numevents;
+  int eventsconsolidated;
   int maxevents;
+  cl_int summary;
 }
 dt_opencl_device_t;
 
@@ -173,10 +189,10 @@ void dt_opencl_events_wait_for(const int devid);
 
 /** Wait for events in eventlist to terminate, check for return status of events and
     report summary success info (CL_COMPLETE or last error code) */
-cl_int dt_opencl_events_flush(const int devid, const int retain);
+cl_int dt_opencl_events_flush(const int devid, const int reset);
 
 /** display OpenCL profiling information. If summary is not 0, try to generate summarized info for kernels */
-void dt_opencl_events_profiling(const int devid, int summary);
+void dt_opencl_events_profiling(const int devid, const int aggregated);
 
 #else
 #include <stdlib.h>
@@ -255,11 +271,11 @@ static inline void *dt_opencl_events_get_slot(const int devid, const char *tag)
 }
 static inline void dt_opencl_events_reset(const int devid) {}
 static void dt_opencl_events_wait_for(const int devid) {}
-static inline int dt_opencl_events_flush(const int devid, const int retain)
+static inline int dt_opencl_events_flush(const int devid, const int reset)
 {
   return -1;
 }
-void dt_opencl_events_profiling(const int devid, int summary) {}
+void dt_opencl_events_profiling(const int devid, const int aggregated) {}
 #endif
 
 
