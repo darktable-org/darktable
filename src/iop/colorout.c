@@ -33,7 +33,7 @@
 #include "common/opencl.h"
 #include "dtgtk/resetlabel.h"
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 static gchar *_get_profile_from_pos(GList *profiles, int pos);
 
@@ -59,37 +59,41 @@ static void key_softproof_callback(GtkAccelGroup *accel_group,
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
 
   /* toggle softproofing on/off */
-  g->softproofing = !g->softproofing;
-  if(g->softproofing)
+  g->softproof_enabled = p->softproof_enabled = !p->softproof_enabled;
+  if(p->softproof_enabled)
   {
     int pos = gtk_combo_box_get_active(g->cbox5);
     gchar *filename = _get_profile_from_pos(g->profiles, pos);
     if (filename)
-    {
-      if (g->softproofprofile)
-        g_free(g->softproofprofile);
-      g->softproofprofile = g_strdup(filename);
-    }
+      g_strlcpy(p->softproofprofile, filename, sizeof(p->softproofprofile));
   }
 
-
-  /// FIXME: this is certanly the wrong way to do this...
-  p->seq++;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   dt_control_queue_draw_all();
 }
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
-{
-  if(old_version == 1 && new_version == 2)
+{ 
+  /*  if(old_version == 1 && new_version == 2)
   {
     dt_iop_colorout_params_t *o = (dt_iop_colorout_params_t *)old_params;
     dt_iop_colorout_params_t *n = (dt_iop_colorout_params_t *)new_params;
     memcpy(n,o,sizeof(dt_iop_colorout_params_t));
     n->seq = 0;
     return 0;
+    }*/
+  if(old_version == 2 && new_version == 3)
+  {
+    dt_iop_colorout_params_t *o = (dt_iop_colorout_params_t *)old_params;
+    dt_iop_colorout_params_t *n = (dt_iop_colorout_params_t *)new_params;
+    memcpy(n,o,sizeof(dt_iop_colorout_params_t));
+    n->softproof_enabled = 0;
+    n->softproofintent = 0;
+    g_strlcpy(n->softproofprofile,"sRGB",sizeof(n->softproofprofile));
+    return 0;
   }
+
   return 1;
 }
 
@@ -171,20 +175,15 @@ softproof_profile_changed (GtkComboBox *widget, gpointer user_data)
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   int pos = gtk_combo_box_get_active(widget);
-
   gchar *filename = _get_profile_from_pos(g->profiles, pos);
   if (filename)
   {
-    if (g->softproofprofile)
-      g_free(g->softproofprofile);
-    g->softproofprofile = g_strdup(filename);
-    if(g->softproofing)
-    {
-      p->seq++;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-    }
+    g_strlcpy(p->softproofprofile, filename, sizeof(p->softproofprofile));
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
     return;
   }
+
+  fprintf(stderr, "[colorout] softprofile %s seems to have disappeared!\n", p->softproofprofile);
 }
 
 static void
@@ -391,23 +390,22 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
   gchar *outprofile=NULL;
   int outintent = 0;
-  dt_iop_colorout_gui_data_t *g=NULL;
-
-  /* check if we should enable softproofing */
-  if ((g=(dt_iop_colorout_gui_data_t *)self->gui_data) && g->softproofing && g->softproofprofile )
-    d->softproofing = TRUE;
-  else
-    d->softproofing = FALSE;
-
+   
   /* cleanup profiles */
   if (d->output)
     dt_colorspaces_cleanup_profile(d->output);
   d->output = NULL;
 
-  if (d->softproof)
+  if (d->softproof_enabled)
     dt_colorspaces_cleanup_profile(d->softproof);
   d->softproof = NULL;
 
+  d->softproof_enabled = p->softproof_enabled;
+  if(self->dev->gui_attached)
+  {
+    dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+    g->softproof_enabled = p->softproof_enabled;
+  }
   const int num_threads = dt_get_num_threads();
   for (int t=0; t<num_threads; t++)
     if (d->xform[t])
@@ -443,8 +441,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->output = _create_profile(outprofile);
 
   /* creating softproof profile if softproof is enabled */
-  if (d->softproofing)
-    d->softproof =  _create_profile(g->softproofprofile);
+  if (d->softproof_enabled)
+    d->softproof =  _create_profile(p->softproofprofile);
 
   /*
    * Setup transform flags
@@ -453,12 +451,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
   /* TODO: the use of bpc should be userconfigurable either from module or preference pane */
   /* softproof flag and black point compensation */
-  transformFlags |= (d->softproofing ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
+  transformFlags |= (d->softproof_enabled ? cmsFLAGS_SOFTPROOFING|cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
       
 
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
-  if (d->softproofing || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) || 
+  if (d->softproof_enabled || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) || 
           dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     d->cmatrix[0] = -0.666f;
@@ -478,7 +476,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if (d->output)
       dt_colorspaces_cleanup_profile(d->output);
     d->output = dt_colorspaces_create_srgb_profile();
-    if (d->softproofing || dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
+    if (d->softproof_enabled || dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       d->cmatrix[0] = -0.666f;
       piece->process_cl_ready = 0;
@@ -557,8 +555,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)module->params;
   gtk_combo_box_set_active(g->cbox1, (int)p->intent);
   gtk_combo_box_set_active(g->cbox4, (int)p->displayintent);
-  gtk_combo_box_set_active(g->cbox5, 0);
-  int iccfound = 0, displayfound = 0;
+
+  int iccfound = 0, displayfound = 0, softprooffound = 0;
   GList *prof = g->profiles;
   while(prof)
   {
@@ -573,13 +571,21 @@ void gui_update(struct dt_iop_module_t *self)
       gtk_combo_box_set_active(g->cbox3, pp->pos);
       displayfound = 1;
     }
-    if(iccfound && displayfound) break;
+    if(!strcmp(pp->filename, p->softproofprofile))
+    {
+      gtk_combo_box_set_active(g->cbox5, pp->pos);
+      softprooffound = 1;
+    }
+
+    if(iccfound && displayfound && softprooffound) break;
     prof = g_list_next(prof);
   }
   if(!iccfound)     gtk_combo_box_set_active(g->cbox2, 0);
   if(!displayfound) gtk_combo_box_set_active(g->cbox3, 0);
+  if(!softprooffound) gtk_combo_box_set_active(g->cbox5, 0);
   if(!iccfound)     fprintf(stderr, "[colorout] could not find requested profile `%s'!\n", p->iccprofile);
   if(!displayfound) fprintf(stderr, "[colorout] could not find requested display profile `%s'!\n", p->displayprofile);
+  if(!softprooffound) fprintf(stderr, "[colorout] could not find requested softproof profile `%s'!\n", p->softproofprofile);
 }
 
 void init(dt_iop_module_t *module)
@@ -591,7 +597,8 @@ void init(dt_iop_module_t *module)
   module->priority = 777; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t)
-  {"sRGB", "X profile", DT_INTENT_PERCEPTUAL
+    {"sRGB", "X profile", DT_INTENT_PERCEPTUAL, DT_INTENT_PERCEPTUAL,
+     0, "sRGB",  DT_INTENT_PERCEPTUAL
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
@@ -608,7 +615,7 @@ void cleanup(dt_iop_module_t *module)
 void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  if(g->softproofing)
+  if(g->softproof_enabled)
   {
     gchar *label=_("SoftProof");
     cairo_set_source_rgba(cr,0.5,0.5,0.5,0.5);
