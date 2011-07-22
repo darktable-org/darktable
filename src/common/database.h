@@ -22,7 +22,7 @@
 #include <glib.h>
 
 /** allocates and initializes database */
-struct dt_database_t *dt_database_init();
+struct dt_database_t *dt_database_init(char *alternative);
 /** closes down database and frees memory */
 void dt_database_destroy(const struct dt_database_t *);
 /** get handle for current thread */
