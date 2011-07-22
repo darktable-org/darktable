@@ -163,6 +163,8 @@ void compute_gauss_params(const float sigma, dt_iop_gaussian_order_t order, floa
 
 
 #ifdef HAVE_OPENCL
+/* TODO: gaussian_row is extremely inefficient due to cache misses.
+         Should be replaced by transpose -> gaussian_column -> transpose */
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
