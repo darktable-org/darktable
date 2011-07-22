@@ -321,50 +321,14 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   width -= 2*inset;
   height -= 2*inset;
 
-#if 0
-  // draw shadow around
-  float alpha = 1.0f;
-  for(int k=0; k<inset; k++)
-  {
-    cairo_rectangle(cr, -k, -k, width + 2*k, height + 2*k);
-    cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-    alpha *= 0.6f;
-    cairo_fill(cr);
-  }
-#else
   cairo_set_line_width(cr, 1.0);
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
-#endif
 
   cairo_set_source_rgb (cr, .3, .3, .3);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
-
-  if(c->mouse_y > 0 || c->dragging)
-  {
-    float oldx1, oldy1;
-    oldx1 = p->levels_x[c->selected];
-    oldy1 = p->levels_y[c->selected];
-
-    if(c->selected == 0) dt_draw_curve_set_point(c->minmax_curve, 1, p->levels_x[1], fmaxf(c->selected_min, p->levels_y[1]));
-    if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->levels_x[1], fminf(c->selected_min, fmaxf(0.0, p->levels_y[1] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
-    if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->levels_x[4], fmaxf(c->selected_min, fminf(1.0, p->levels_y[4] + DT_GUI_CURVE_INFL*(c->selected_min - oldy1))));
-    if(c->selected == 5) dt_draw_curve_set_point(c->minmax_curve, 4, p->levels_x[4], fminf(c->selected_min, p->levels_y[4]));
-    dt_draw_curve_set_point(c->minmax_curve, c->selected, oldx1, c->selected_min);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_levels_RES, c->draw_min_xs, c->draw_min_ys);
-
-    if(c->selected == 0) dt_draw_curve_set_point(c->minmax_curve, 1, p->levels_x[1], fmaxf(c->selected_max, p->levels_y[1]));
-    if(c->selected == 2) dt_draw_curve_set_point(c->minmax_curve, 1, p->levels_x[1], fminf(c->selected_max, fmaxf(0.0, p->levels_y[1] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
-    if(c->selected == 3) dt_draw_curve_set_point(c->minmax_curve, 4, p->levels_x[4], fmaxf(c->selected_max, fminf(1.0, p->levels_y[4] + DT_GUI_CURVE_INFL*(c->selected_max - oldy1))));
-    if(c->selected == 5) dt_draw_curve_set_point(c->minmax_curve, 4, p->levels_x[4], fminf(c->selected_max, p->levels_y[4]));
-    dt_draw_curve_set_point  (c->minmax_curve, c->selected, oldx1, c->selected_max);
-    dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_levels_RES, c->draw_max_xs, c->draw_max_ys);
-
-  }
-  for(int k=0; k<6; k++) dt_draw_curve_set_point(c->minmax_curve, k, p->levels_x[k], p->levels_y[k]);
-  dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_levels_RES, c->draw_xs, c->draw_ys);
 
   // draw grid
   cairo_set_line_width(cr, .4);
@@ -386,11 +350,9 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
     else               cairo_stroke(cr);
   }
 
-  // draw selected cursor
-  cairo_set_line_width(cr, 1.);
   cairo_translate(cr, 0, height);
 
-  // draw lum h istogram in background
+  // draw lum histogram in background
   dt_develop_t *dev = darktable.develop;
   float *hist, hist_max;
   hist = dev->histogram_pre;
@@ -404,36 +366,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
     cairo_restore(cr);
   }
 
-  if(c->mouse_y > 0 || c->dragging)
-  {
-    // draw min/max, if selected
-    cairo_set_source_rgba(cr, .6, .6, .6, .5);
-    cairo_move_to(cr, 0, - height*c->draw_min_ys[0]);
-    for(int k=1; k<DT_IOP_levels_RES; k++)   cairo_line_to(cr, k*width/(DT_IOP_levels_RES-1.0), - height*c->draw_min_ys[k]);
-    cairo_line_to(cr, width, - height*c->draw_min_ys[DT_IOP_levels_RES-1]);
-    cairo_line_to(cr, width, - height*c->draw_max_ys[DT_IOP_levels_RES-1]);
-    for(int k=DT_IOP_levels_RES-2; k>=0; k--) cairo_line_to(cr, k*width/(DT_IOP_levels_RES-1.0), - height*c->draw_max_ys[k]);
-    cairo_close_path(cr);
-    cairo_fill(cr);
-    // draw mouse focus circle
-    cairo_set_source_rgb(cr, .9, .9, .9);
-    const float pos = MAX(0, (DT_IOP_levels_RES-1) * c->mouse_x/(float)width - 1);
-    int k = (int)pos;
-    const float f = k - pos;
-    if(k >= DT_IOP_levels_RES-1) k = DT_IOP_levels_RES - 2;
-    float ht = -height*(f*c->draw_ys[k] + (1-f)*c->draw_ys[k+1]);
-    cairo_arc(cr, c->mouse_x, ht, 4, 0, 2.*M_PI);
-    cairo_stroke(cr);
-  }
-
-  // draw curve
-  cairo_set_line_width(cr, 2.);
-  cairo_set_source_rgb(cr, .9, .9, .9);
-  // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
-  cairo_move_to(cr, 0, -height*c->draw_ys[0]);
-  for(int k=1; k<DT_IOP_levels_RES; k++) cairo_line_to(cr, k*width/(DT_IOP_levels_RES-1.0), - height*c->draw_ys[k]);
-  cairo_stroke(cr);
-
+  // Cleaning up
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
   cairo_set_source_surface (cr_pixmap, cst, 0, 0);
