@@ -103,6 +103,11 @@ dt_database_t *dt_database_init(char *alternative)
     return NULL;
   }
 
+  /* attach a memory database to db connection for use with temporary tables
+     used during instance life time, which is discarded on exit.
+  */
+  sqlite3_exec(db->main_handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
+  
   return db;
 }
 

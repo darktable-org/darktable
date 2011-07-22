@@ -243,7 +243,7 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   sqlite3_stmt *stmt;
   char query[1024];
   snprintf(query, 1024,
-           "insert into tagquery1 select related.id, related.name, cross.count from ( "
+           "insert into memory.tagquery1 select related.id, related.name, cross.count from ( "
            "select * from tags join tagxtag on tags.id = tagxtag.id1 or tags.id = tagxtag.id2 "
            "where name like '%%%s%%') as cross join tags as related "
            "where (id2 = related.id or id1 = related.id) "
@@ -251,14 +251,12 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
            "and cross.count > 0",
            keyword);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create temp table tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create temp table tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into tagquery2 select distinct tagid, name, "
-                        "(select sum(count) from tagquery1 as b where b.tagid=a.tagid) from tagquery1 as a",
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into memory.tagquery2 select distinct tagid, name, "
+                        "(select sum(count) from memory.tagquery1 as b where b.tagid=a.tagid) from memory.tagquery1 as a",
                         NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "update tagquery2 set count = count + 100 - length(name)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select tagid, name from tagquery2 order by count desc, length(name)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "update memory.tagquery2 set count = count + 100 - length(name)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select tagid, name from memory.tagquery2 order by count desc, length(name)", -1, &stmt, NULL);
 
   // Create result
   uint32_t count=0;
@@ -272,11 +270,8 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   }
 
   sqlite3_finalize(stmt);
-
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from tagquery1", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from tagquery2", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "drop table tagquery1", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "drop table tagquery2", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.tagquery1", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.tagquery2", NULL, NULL, NULL);
 
   return count;
 }

@@ -492,7 +492,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       float new_falloff = 100.0 * delta_y / max;
       dtgtk_slider_set_value(g->falloff_scale, new_falloff);
     }
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
     return 1;
 
   }
@@ -509,7 +509,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     if(old_grab != grab) dt_control_change_cursor(GDK_LEFT_PTR);
   }
   old_grab = grab;
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -621,7 +621,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         else if (weight <= 0.0)
           weight = 0.0;
         else
-          weight=0.5 - cos( M_PI*weight )/2.0;
+          weight=0.5 - cosf( M_PI*weight )/2.0;
       }
 
       // Let's apply weighted effect on brightness and desaturation
@@ -646,10 +646,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[2]=col2;
     }
   }
-
-  /* lets blend if used */
-  dt_develop_blend_process (self, piece, ivoid, ovoid, roi_in, roi_out);
-
 }
 
 static void

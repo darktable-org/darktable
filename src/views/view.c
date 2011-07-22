@@ -1166,4 +1166,10 @@ void dt_view_film_strip_prefetch()
   }
 }
 
+void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,GtkWidget *tool)
+{
+  if (vm->proxy.view_toolbox.module)
+    vm->proxy.view_toolbox.add(vm->proxy.view_toolbox.module,tool);
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

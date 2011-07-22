@@ -868,7 +868,7 @@ go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = 0;
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -878,7 +878,7 @@ go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = 0x1fffffff;
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -892,7 +892,7 @@ go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = MAX(lib->offset - offset_delta, 0);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -907,7 +907,7 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->offset = MIN(lib->offset + offset_delta, count);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -962,7 +962,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
         dt_image_cache_flush(image);
         dt_image_cache_release(image, 'r');
       }
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
       break;
     }
     default:
@@ -1092,7 +1092,7 @@ static void connect_closures(dt_view_t *self)
 
 static void _lighttable_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
 {
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 void enter(dt_view_t *self)
@@ -1157,7 +1157,7 @@ void mouse_leave(dt_view_t *self)
   if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
   {
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
   }
 }
 

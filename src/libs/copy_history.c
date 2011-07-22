@@ -135,7 +135,7 @@ static void
 delete_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   dt_history_delete_on_selection ();
-  dt_control_queue_redraw ();
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -162,7 +162,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   }
 
   /* redraw */
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 void

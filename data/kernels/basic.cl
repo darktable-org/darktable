@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ exposure (read_only image2d_t in, write_only image2d_t out, const float black, c
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel = fmax((float4)0.0,(pixel - black)*scale);
+  pixel = (pixel - black)*scale;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -167,23 +167,34 @@ highlights (read_only image2d_t in, write_only image2d_t out, const int mode, co
 }
 
 float
-lookup(read_only image2d_t lut, const float x)
+lookup_unbounded(read_only image2d_t lut, const float x, constant float *a)
 {
-  int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
-  int2 p = (int2)((xi & 0xff), (xi >> 8));
-  return read_imagef(lut, sampleri, p).x;
+  // in case the tone curve is marked as linear, return the fast
+  // path to linear unbounded (does not clip x at 1)
+  if(a[0] >= 0.0f)
+  {
+    if(x < 1.0f)
+    {
+      const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+      const int2 p = (int2)((xi & 0xff), (xi >> 8));
+      return read_imagef(lut, sampleri, p).x;
+    }
+    else return a[0] * native_powr(x, a[1]);
+  }
+  else return x;
 }
 
 /* kernel for the basecurve plugin. */
 kernel void
-basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
+basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel.x = lookup(table, pixel.x);
-  pixel.y = lookup(table, pixel.y);
-  pixel.z = lookup(table, pixel.z);
+  // use lut or extrapolation:
+  pixel.x = lookup_unbounded(table, pixel.x, a);
+  pixel.y = lookup_unbounded(table, pixel.y, a);
+  pixel.z = lookup_unbounded(table, pixel.z, a);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -203,7 +214,9 @@ XYZ_to_Lab(float *xyz, float *lab)
 /* kernel for the plugin colorin */
 kernel void
 colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
-         read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb, const int map_blues)
+         read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+         const int map_blues,
+         constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -211,9 +224,9 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], XYZ[3], Lab[3];
-  cam[0] = lookup(lutr, pixel.x);
-  cam[1] = lookup(lutg, pixel.y);
-  cam[2] = lookup(lutb, pixel.z);
+  cam[0] = lookup_unbounded(lutr, pixel.x, a);
+  cam[1] = lookup_unbounded(lutg, pixel.y, a+2);
+  cam[2] = lookup_unbounded(lutb, pixel.z, a+4);
 
   if(map_blues)
   {
@@ -222,7 +235,7 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
     const float zz = cam[2]/YY;
     // lower amount and higher bound_z make the effect smaller.
     // the effect is weakened the darker input values are, saturating at bound_Y
-    const float bound_z = 0.5f, bound_Y = 0.5f;
+    const float bound_z = 0.5f, bound_Y = 0.8f;
     const float amount = 0.11f;
     if (zz > bound_z)
     {
@@ -243,13 +256,15 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
 
 /* kernel for the tonecurve plugin. */
 kernel void
-tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
+tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  const float L = lookup(table, pixel.x/100.0f);
+  const float L_in = pixel.x/100.0f;
+  // use lut or extrapolation:
+  const float L = lookup_unbounded(table, L_in, a);
   if(pixel.x > 0.01f)
   {
     pixel.y *= L/pixel.x;
@@ -352,7 +367,8 @@ Lab_to_XYZ(float *Lab, float *XYZ)
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
 colorout (read_only image2d_t in, write_only image2d_t out, constant float *mat, 
-          read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb)
+          read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+          constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -365,9 +381,9 @@ colorout (read_only image2d_t in, write_only image2d_t out, constant float *mat,
     rgb[i] = 0.0f;
     for(int j=0;j<3;j++) rgb[i] += mat[3*i+j]*XYZ[j];
   }
-  pixel.x = lookup(lutr, rgb[0]);
-  pixel.y = lookup(lutg, rgb[1]);
-  pixel.z = lookup(lutb, rgb[2]);
+  pixel.x = lookup_unbounded(lutr, rgb[0], a);
+  pixel.y = lookup_unbounded(lutg, rgb[1], a+2);
+  pixel.z = lookup_unbounded(lutb, rgb[2], a+4);
   write_imagef (out, (int2)(x, y), pixel);
 }
 

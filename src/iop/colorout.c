@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2009--2010 johannes hanika.
+		copyright (c) 2009--2011 johannes hanika.
 		copyright (c) 2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
@@ -76,7 +76,7 @@ static void key_softproof_callback(GtkAccelGroup *accel_group,
   /// FIXME: this is certanly the wrong way to do this...
   p->seq++;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 int
@@ -99,14 +99,14 @@ init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)malloc(sizeof(dt_iop_colorout_global_data_t));
   module->data = gd;
-  gd->kernel_colorout = dt_opencl_create_kernel(darktable.opencl, program, "colorout");
+  gd->kernel_colorout = dt_opencl_create_kernel(program, "colorout");
 }
 
 void
 cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_colorout);
+  dt_opencl_free_kernel(gd->kernel_colorout);
   free(module->data);
   module->data = NULL;
 }
@@ -227,32 +227,36 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
-  cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL;
+  cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
 
-  dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*9, devid, d->cmatrix);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*9, d->cmatrix);
   if (dev_m == NULL) goto error;
-  dev_r = dt_opencl_copy_host_to_device(d->lut[0], 256, 256, devid, sizeof(float));
+  dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
   if (dev_r == NULL) goto error;
-  dev_g = dt_opencl_copy_host_to_device(d->lut[1], 256, 256, devid, sizeof(float));
+  dev_g = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
   if (dev_g == NULL) goto error;
-  dev_b = dt_opencl_copy_host_to_device(d->lut[2], 256, 256, devid, sizeof(float));
+  dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if (dev_g == NULL) goto error;
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 2, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 3, sizeof(cl_mem), (void *)&dev_r);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 4, sizeof(cl_mem), (void *)&dev_g);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorout, 5, sizeof(cl_mem), (void *)&dev_b);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_colorout, sizes);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2*3, (float *)d->unbounded_coeffs);
+  if (dev_coeffs == NULL) goto error;
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 3, sizeof(cl_mem), (void *)&dev_r);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 4, sizeof(cl_mem), (void *)&dev_g);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 5, sizeof(cl_mem), (void *)&dev_b);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 6, sizeof(cl_mem), (void *)&dev_coeffs);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorout, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
+  dt_opencl_release_mem_object(dev_coeffs);
   return TRUE;
 
 error:
@@ -260,6 +264,7 @@ error:
   if (dev_r != NULL) dt_opencl_release_mem_object(dev_r);
   if (dev_g != NULL) dt_opencl_release_mem_object(dev_g);
   if (dev_b != NULL) dt_opencl_release_mem_object(dev_b);
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorout] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -268,7 +273,7 @@ error:
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
@@ -277,7 +282,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   {
     //fprintf(stderr,"Using cmatrix codepath\n");
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, d, i, o)
+    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, i, o)
 #endif
     for (int k=0; k<roi_out->width*roi_out->height; k++)
     {
@@ -293,8 +298,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         rgb[i] = 0.0f;
         for(int j=0; j<3; j++) rgb[i] += d->cmatrix[3*i+j]*XYZ[j];
       }
-      for(int i=0; i<3; i++) out[i] = lerp_lut(d->lut[i], rgb[i]);
-      // for(int i=0;i<3;i++) out[i] = rgb[i];
+      for(int i=0; i<3; i++) out[i] = (d->lut[i][0] >= 0.0f) ?
+        ((rgb[i] < 1.0f) ? lerp_lut(d->lut[i], rgb[i])
+        : dt_iop_eval_exp(d->unbounded_coeffs[i], rgb[i]))
+        : rgb[i];
     }
   }
   else
@@ -377,12 +384,7 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-#error "gegl version needs some more care!"
-#else
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
@@ -414,6 +416,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->xform[t] = NULL;
     }
   d->cmatrix[0] = -0.666f;
+  d->lut[0][0] = -1.0f;
+  d->lut[1][0] = -1.0f;
+  d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
 
   /* if we are exporting then check and set usage of override profile */
@@ -487,12 +492,28 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     }
   }
 
+  // now try to initialize unbounded mode:
+  // we do extrapolation for input values above 1.0f.
+  // unfortunately we can only do this if we got the computation
+  // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
+  for(int k=0;k<3;k++)
+  {
+    // omit luts marked as linear (negative as marker)
+    if(d->lut[k][0] >= 0.0f)
+    {
+      const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+      const float y[4] = {lerp_lut(d->lut[k], x[0]),
+                          lerp_lut(d->lut[k], x[1]),
+                          lerp_lut(d->lut[k], x[2]),
+                          lerp_lut(d->lut[k], x[3])};
+      dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
+    }
+    else d->unbounded_coeffs[k][0] = -1.0f;
+  }
 
   //fprintf(stderr, " Output profile %s, softproof %s%s%s\n", outprofile, d->softproofing?"enabled ":"disabled",d->softproofing?"using profile ":"",d->softproofing?g->softproofprofile:"");
 
-#endif
   g_free(overprofile);
-  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -517,7 +538,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // clean up everything again.
   // (void)gegl_node_remove_child(pipe->gegl, piece->input);
 #else
-  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   dt_colorspaces_cleanup_profile(d->Lab);
@@ -527,7 +547,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
   free(d->xform);
   free(piece->data);
-  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 #endif
 }
 
@@ -609,7 +628,6 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
   memset(self->gui_data,0,sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
@@ -779,7 +797,6 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (softproof_profile_changed),
                     (gpointer)self);
 
-  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   // Connecting the accelerator
   g->softproof_callback = g_cclosure_new(G_CALLBACK(key_softproof_callback),

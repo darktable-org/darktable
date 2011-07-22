@@ -2,8 +2,14 @@
 
 PATH=`dirname $_`:$PATH
 
-# get dbfile from gconf
-dbfile=$(gconftool-2 --get /apps/darktable/database)
+if [ -f ~/.config/darktable/darktablerc ]
+then
+  # get dbfile from darktablerc
+  dbfile=$(cat ~/.config/darktable/darktablerc | grep -E "^database=" | cut -f2 -d'=')
+else
+  # get dbfile from gconf
+  dbfile=$(gconftool-2 --get /apps/darktable/database)
+fi
 # if it doesn't contain an absolute path, prepend the std dir
 echo $dbfile | grep '^/' > /dev/null || dbfile=~/.config/darktable/$dbfile
 # if commandline switch is given, override:

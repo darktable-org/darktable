@@ -128,40 +128,40 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
 
-  dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*wd, mat);
   if (dev_m == NULL) goto error;
 
   /* invert image */
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_out);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_invert, sizes);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_out);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_invert, sizes);
   if(err != CL_SUCCESS) goto error;
 
   if(rad != 0)
   {
     /* horizontal blur */
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 0, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_hblur, 3, sizeof(int), (void *)&wdh);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_hblur, sizes);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 3, sizeof(int), (void *)&wdh);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_hblur, sizes);
     if(err != CL_SUCCESS) goto error;
 
     /* vertical blur */
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_vblur, 3, sizeof(int), (void *)&wdh);
-    err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_vblur, sizes);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 3, sizeof(int), (void *)&wdh);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_vblur, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
   /* mixing out and in -> out */
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_highpass_mix, 3, sizeof(float), (void *)&contrast_scale);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_highpass_mix, sizes);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 2, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 3, sizeof(float), (void *)&contrast_scale);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
   clReleaseMemObject(dev_m);
@@ -365,10 +365,10 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 4; // highpass.cl, from programs.conf
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)malloc(sizeof(dt_iop_highpass_global_data_t));
   module->data = gd;
-  gd->kernel_highpass_invert = dt_opencl_create_kernel(darktable.opencl, program, "highpass_invert");
-  gd->kernel_highpass_hblur = dt_opencl_create_kernel(darktable.opencl, program, "highpass_hblur");
-  gd->kernel_highpass_vblur = dt_opencl_create_kernel(darktable.opencl, program, "highpass_vblur");
-  gd->kernel_highpass_mix = dt_opencl_create_kernel(darktable.opencl, program, "highpass_mix");
+  gd->kernel_highpass_invert = dt_opencl_create_kernel(program, "highpass_invert");
+  gd->kernel_highpass_hblur = dt_opencl_create_kernel(program, "highpass_hblur");
+  gd->kernel_highpass_vblur = dt_opencl_create_kernel(program, "highpass_vblur");
+  gd->kernel_highpass_mix = dt_opencl_create_kernel(program, "highpass_mix");
 }
 
 
@@ -383,10 +383,10 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass_invert);
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass_hblur);
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass_vblur);
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_highpass_mix);
+  dt_opencl_free_kernel(gd->kernel_highpass_invert);
+  dt_opencl_free_kernel(gd->kernel_highpass_hblur);
+  dt_opencl_free_kernel(gd->kernel_highpass_vblur);
+  dt_opencl_free_kernel(gd->kernel_highpass_mix);
   free(module->data);
   module->data = NULL;
 }

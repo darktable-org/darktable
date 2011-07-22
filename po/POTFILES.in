@@ -87,6 +87,7 @@ src/libs/camera.c
 src/libs/capture.c
 src/libs/collect.c
 src/libs/collect.h
+src/libs/colorpicker.c
 src/libs/copy_history.c
 src/libs/export.c
 src/libs/file_manager.c

@@ -96,7 +96,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     size_t origin[] = {0, 0, 0};
     size_t region[] = {roi_in->width, roi_in->height, 1};
-    err = dt_opencl_enqueue_copy_image(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, origin, origin, region, 0, NULL, NULL);
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if (err != CL_SUCCESS) goto error;
     return TRUE;
   }
@@ -109,15 +109,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   for(int l=-rad; l<=rad; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
   for(int l=-rad; l<=rad; l++) m[l] /= weight;
   size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*wd, devid, mat);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*wd, mat);
   if (dev_m == NULL) goto error;
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 2, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 3, sizeof(int), (void *)&rad);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 4, sizeof(float), (void *)&d->amount);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_sharpen, 5, sizeof(float), (void *)&d->threshold);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_sharpen, sizes);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen, 3, sizeof(int), (void *)&rad);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen, 4, sizeof(float), (void *)&d->amount);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen, 5, sizeof(float), (void *)&d->threshold);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
   return TRUE;
@@ -341,7 +341,7 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)malloc(sizeof(dt_iop_sharpen_global_data_t));
   module->data = gd;
-  gd->kernel_sharpen = dt_opencl_create_kernel(darktable.opencl, program, "sharpen");
+  gd->kernel_sharpen = dt_opencl_create_kernel(program, "sharpen");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -355,7 +355,7 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_sharpen);
+  dt_opencl_free_kernel(gd->kernel_sharpen);
   free(module->data);
   module->data = NULL;
 }

@@ -20,6 +20,7 @@
 
 #include "common/image.h"
 #include <inttypes.h>
+#include <gui/gtk.h>
 #include <gmodule.h>
 #include <cairo.h>
 #include <sqlite3.h>
@@ -128,6 +129,22 @@ typedef struct dt_view_manager_t
     sqlite3_stmt *get_color;
 
   } statements;
+
+
+  /*
+   * Proxy
+   */
+  struct {
+
+    /* view toolbox proxy object */
+    struct {
+      struct dt_lib_module_t *module;
+      void (*add)(struct dt_lib_module_t *,GtkWidget *);
+    } view_toolbox;
+
+  } proxy;
+
+
 }
 dt_view_manager_t;
 
@@ -155,6 +172,9 @@ int dt_view_manager_key_released     (dt_view_manager_t *vm, guint key, guint st
 void dt_view_manager_configure       (dt_view_manager_t *vm, int width, int height);
 void dt_view_manager_scrolled        (dt_view_manager_t *vm, double x, double y, int up, int state);
 void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up);
+
+/** add widget to the current view toolbox */
+void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,GtkWidget *tool);
 
 /** load module to view managers list, if still space. return slot number on success. */
 int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod);
