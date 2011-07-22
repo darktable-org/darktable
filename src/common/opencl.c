@@ -757,7 +757,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   }
 
   // check if currently highest event slot was actually consumed. If not use it again
-  if (*numevents > 0 && !memcmp(*eventlist+*numevents-1, zeroevent, sizeof(cl_event)))
+  if (*numevents > 0 && !memcmp((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event)))
   {
     if (tag != NULL)
     {
@@ -767,7 +767,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     {
       (*eventtags)[*numevents-1].tag[0]='\0';
     }
-    return *eventlist+*numevents-1;
+    return (*eventlist)+*numevents-1;
   }
 
   // if no more space left in eventlist: grow buffer		
@@ -782,7 +782,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
       free(neweventtags);
       return NULL;
     }
-    memset(*eventtags, 0, newevents*sizeof(dt_opencl_eventtag_t));
+    memset(neweventtags, 0, newevents*sizeof(dt_opencl_eventtag_t));
     memcpy(neweventlist, *eventlist, *maxevents*sizeof(cl_event));
     memcpy(neweventtags, *eventtags, *maxevents*sizeof(dt_opencl_eventtag_t));	
     free(*eventlist);
@@ -794,7 +794,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
 
   // init next event slot and return it
   (*numevents)++;
-  memcpy(*eventlist + *numevents-1, zeroevent, sizeof(cl_event));
+  memcpy((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event));
   if (tag != NULL)
   {
     strncpy((*eventtags)[*numevents-1].tag, tag, DT_OPENCL_EVENTNAMELENGTH);
@@ -803,7 +803,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   {
     (*eventtags)[*numevents-1].tag[0]='\0';
   }
-  return *eventlist+*numevents-1;
+  return (*eventlist)+*numevents-1;
 }
 
 
@@ -851,7 +851,7 @@ void dt_opencl_events_wait_for(const int devid)
   if (*eventlist==NULL || *numevents==0) return; // nothing to do
 
   // check if last event slot was acutally used and correct numevents if needed	
-  if (!memcmp(*eventlist+*numevents-1, zeroevent, sizeof(cl_event))) (*numevents)--;
+  if (!memcmp((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event))) (*numevents)--;
 
   if (*numevents == *eventsconsolidated) return; // nothing to do
 
@@ -860,7 +860,7 @@ void dt_opencl_events_wait_for(const int devid)
   // now wait for all remaining events to terminate
   // Risk: might never return in case of OpenCL blocks or endless loops
   // TODO: run clWaitForEvents in separate thread and implement watchdog timer
-  (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated, *eventlist+*eventsconsolidated);
+  (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated, (*eventlist)+*eventsconsolidated);
 
   return;
 }
