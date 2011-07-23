@@ -221,7 +221,7 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  float b = fmaxf(0.0f, black);
+  float b = black;
   if (p->black == b) return;
 
   p->black = b;
