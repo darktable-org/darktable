@@ -30,31 +30,60 @@
 
 #ifdef HAVE_OPENCL
 int
-default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp)
+default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
 {
+  cl_int err = -999;
+  cl_mem input = NULL;
+  cl_mem output = NULL;
+
+  int devid = piece->pipe->devid;
+  int out_bpp = self->output_bpp(self, piece->pipe, piece);
+  
+  input = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, in_bpp);
+  if(input == NULL) goto error;
+
+  output = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, out_bpp);
+  if(output == NULL) goto error;
+
+  err = dt_opencl_write_host_to_device(devid, ivoid, input, roi_in->width, roi_in->height, in_bpp);
+  if(err != CL_SUCCESS) goto error;
+
+  if(!self->process_cl(self, piece, input, output, roi_in, roi_out)) goto error;
+
+  err = dt_opencl_read_host_from_device(devid, ovoid, output, roi_out->width, roi_out->height, out_bpp);
+  if(err != CL_SUCCESS) goto error;
+
+  if(input != NULL) dt_opencl_release_mem_object(input);
+  if(output != NULL) dt_opencl_release_mem_object(output);
+  return TRUE;
+
+error:
+  if(input != NULL) dt_opencl_release_mem_object(input);
+  if(output != NULL) dt_opencl_release_mem_object(output);
+  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_opencl] couldn't run module '%s' in tiling mode: %d\n", self->op, err);
   return FALSE;
 }
 
 void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
 {
-  if (factor) *factor = 2.0f;
-  if (overhead) *overhead = 0;
-  if (overlap) *overlap = 0;
+  *factor = 2.0f;
+  *overhead = 0;
+  *overlap = 0;
   return;
 }
 
 #else
 int
-default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp)
+default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp)
 {
   return FALSE;
 }
 
 void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
 {
-  if (factor) *factor = 2.0f;
-  if (overhead) *overhead = 0;
-  if (overlap) *overlap = 0;
+  *factor = 2.0f;
+  *overhead = 0;
+  *overlap = 0;
   return;
 }
 #endif

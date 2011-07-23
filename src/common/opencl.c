@@ -620,7 +620,7 @@ void* dt_opencl_alloc_device(const int devid, const int width, const int height,
 }
 
 
-void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, void *host)
+void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, const int pitch, void *host)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
@@ -646,7 +646,7 @@ void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
                                 CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
                                 &fmt,
-                                width, height, 0,
+                                width, height, pitch,
                                 host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;

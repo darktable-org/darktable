@@ -163,7 +163,7 @@ int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t
 
 void* dt_opencl_alloc_device(const int devid, const int width, const int height, const int bpp);
 
-void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, void *host);
+void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, const int pitch, void *host);
 
 int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl_mem dst_buffer, size_t *origin, size_t *region, size_t offset);
 
