@@ -23,34 +23,27 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define DT_IOP_levels_RES 64
-
 typedef struct dt_iop_levels_params_t
 {
-  float levels_x[6], levels_y[6];
+  float levels[3];
   int levels_preset;
 }
 dt_iop_levels_params_t;
 
 typedef struct dt_iop_levels_gui_data_t
 {
-  dt_draw_curve_t *minmax_curve;        // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkLabel *label;
   double mouse_x, mouse_y;
-  int selected, dragging, x_move;
-  double selected_offset, selected_y, selected_min, selected_max;
-  float draw_xs[DT_IOP_levels_RES], draw_ys[DT_IOP_levels_RES];
-  float draw_min_xs[DT_IOP_levels_RES], draw_min_ys[DT_IOP_levels_RES];
-  float draw_max_xs[DT_IOP_levels_RES], draw_max_ys[DT_IOP_levels_RES];
+  int dragging, handle_move;
 }
 dt_iop_levels_gui_data_t;
 
 typedef struct dt_iop_levels_data_t
 {
-  dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
-  float table[0x10000];        // precomputed look-up table for tone curve
+  float levels[3];
+  float table[0x10000];        // precomputed look-up table for levels adjust
   float unbounded_coeffs[2];   // approximation for extrapolation
 }
 dt_iop_levels_data_t;

@@ -91,10 +91,38 @@ error:
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
+//  const int ch = piece->colors;
+//  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)(piece->data);
+//#ifdef _OPENMP
+//  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+//#endif
+//  for(int k=0; k<roi_out->height; k++)
+//  {
+//    float *in = ((float *)i) + k*ch*roi_out->width;
+//    float *out = ((float *)o) + k*ch*roi_out->width;
+//    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+//    {
+//      // in Lab: correct compressed Luminance for saturation:
+//      const float L_in = in[0]/100.0f;
+//      out[0] = (L_in < 1.0f) ? d->table[CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
+//        dt_iop_eval_exp(d->unbounded_coeffs, L_in);
+        
+//      if(in[0] > 0.01f)
+//      {
+//        out[1] = in[1] * out[0]/in[0];
+//        out[2] = in[2] * out[0]/in[0];
+//      }
+//      else
+//      {
+//        out[1] = in[1] * out[0]/0.01f;
+//        out[2] = in[2] * out[0]/0.01f;
+//      }
+//    }
+//  }
   const int ch = piece->colors;
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)(piece->data);
+  dt_iop_levels_data_t *d = (dt_iop_levels_data_t*)(piece->data);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
@@ -102,23 +130,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + k*ch*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
-      // in Lab: correct compressed Luminance for saturation:
-      const float L_in = in[0]/100.0f;
-      out[0] = (L_in < 1.0f) ? d->table[CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
-        dt_iop_eval_exp(d->unbounded_coeffs, L_in);
-        
-      if(in[0] > 0.01f)
-      {
-        out[1] = in[1] * out[0]/in[0];
-        out[2] = in[2] * out[0]/in[0];
-      }
-      else
-      {
-        out[1] = in[1] * out[0]/0.01f;
-        out[2] = in[2] * out[0]/0.01f;
-      }
+      for(int i = 0; i < ch; i++)
+        out[i] = in[i];
+
+      if(in[0] < d->levels[0] * 100)
+        out[0] = 0;
+      if(in[0] > d->levels[2] * 100)
+        out[0] = 100;
     }
   }
+
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -126,77 +147,48 @@ void init_presets (dt_iop_module_so_t *self)
   dt_iop_levels_params_t p;
   p.levels_preset = 0;
 
-  float linear[6] = {0.0, 0.08, 0.4, 0.6, 0.92, 1.0};
-  for(int k=0; k<6; k++) p.levels_x[k] = linear[k];
-  for(int k=0; k<6; k++) p.levels_y[k] = linear[k];
-  dt_gui_presets_add_generic(_("linear"), self->op, &p, sizeof(p), 1);
-
-  for(int k=0; k<6; k++) p.levels_x[k] = linear[k];
-  for(int k=0; k<6; k++) p.levels_y[k] = linear[k];
-  p.levels_y[1] -= 0.03;
-  p.levels_y[4] += 0.03;
-  p.levels_y[2] -= 0.03;
-  p.levels_y[3] += 0.03;
-  for(int k=1; k<5; k++) p.levels_y[k] = powf(p.levels_y[k], 2.2f);
-  for(int k=1; k<5; k++) p.levels_x[k] = powf(p.levels_x[k], 2.2f);
-  dt_gui_presets_add_generic(_("med contrast"), self->op, &p, sizeof(p), 1);
-
-  for(int k=0; k<6; k++) p.levels_x[k] = linear[k];
-  for(int k=0; k<6; k++) p.levels_y[k] = linear[k];
-  p.levels_y[1] -= 0.06;
-  p.levels_y[4] += 0.06;
-  p.levels_y[2] -= 0.10;
-  p.levels_y[3] += 0.10;
-  for(int k=1; k<5; k++) p.levels_y[k] = powf(p.levels_y[k], 2.2f);
-  for(int k=1; k<5; k++) p.levels_x[k] = powf(p.levels_x[k], 2.2f);
-  dt_gui_presets_add_generic(_("high contrast"), self->op, &p, sizeof(p), 1);
+  p.levels[0] = 0;
+  p.levels[1] = 0.5;
+  p.levels[2] = 1;
+  dt_gui_presets_add_generic(_("unmodified"), self->op, &p, sizeof(p), 1);
 }
 
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1,
+                    dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // pull in new params to gegl
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)(piece->data);
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
-  for(int k=0; k<6; k++)
-    dt_draw_curve_set_point(d->curve, k, p->levels_x[k], p->levels_y[k]);
-  dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
-  for(int k=0; k<0x10000; k++) d->table[k] *= 100.0f;
+//  // pull in new params to gegl
+//  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)(piece->data);
+//  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
+//  for(int k=0; k<6; k++)
+//    dt_draw_curve_set_point(d->curve, k, p->levels_x[k], p->levels_y[k]);
+//  dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
+//  for(int k=0; k<0x10000; k++) d->table[k] *= 100.0f;
 
-  // now the extrapolation stuff:
-  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
-  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
-                      d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
-                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
-                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
-  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
+//  // now the extrapolation stuff:
+//  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+//  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
+//                      d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
+//                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
+//                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+//  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
+  dt_iop_levels_data_t *d = (dt_iop_levels_data_t*)(piece->data);
+  dt_iop_levels_params_t *p = (dt_iop_levels_params_t*)p1;
+  for(int i = 0; i < 3; i++)
+    d->levels[i] = p->levels[i];
 }
 
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the gegl pipeline
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)malloc(sizeof(dt_iop_levels_data_t));
-  dt_iop_levels_params_t *default_params = (dt_iop_levels_params_t *)self->default_params;
+  dt_iop_levels_data_t *d =
+      (dt_iop_levels_data_t *)malloc(sizeof(dt_iop_levels_data_t));
   piece->data = (void *)d;
-  d->curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
-  for(int k=0; k<6; k++) (void)dt_draw_curve_add_point(d->curve, default_params->levels_x[k], default_params->levels_y[k]);
-#ifdef HAVE_GEGL
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve, NULL);
-#else
-  for(int k=0; k<0x10000; k++) d->table[k] = 100.0f*k/0x10000; // identity
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-#ifdef HAVE_GEGL
-  // dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)(piece->data);
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // (void)gegl_node_remove_child(pipe->gegl, d->node);
-  // (void)gegl_node_remove_child(pipe->gegl, piece->output);
-#endif
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)(piece->data);
-  dt_draw_curve_destroy(d->curve);
   free(piece->data);
 }
 
@@ -216,10 +208,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_levels_params_t tmp = (dt_iop_levels_params_t)
   {
-    {
-      0.0, 0.08, 0.4, 0.6, 0.92, 1.0
-    },
-    {0.0, 0.08, 0.4, 0.6, 0.92, 1.0},
+    {0, 0.5, 1},
     0
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_levels_params_t));
@@ -254,15 +243,9 @@ void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_levels_gui_data_t));
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CUBIC_SPLINE);
-  for(int k=0; k<6; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->levels_x[k], p->levels_y[k]);
   c->mouse_x = c->mouse_y = -1.0;
-  c->selected = -1;
-  c->selected_offset = c->selected_y = c->selected_min = c->selected_max = 0.0;
   c->dragging = 0;
-  c->x_move = -1;
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
@@ -287,8 +270,6 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
-  dt_draw_curve_destroy(c->minmax_curve);
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -299,6 +280,8 @@ static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   c->mouse_x = c->mouse_y = -1.0;
+  if(!c->dragging)
+    c->handle_move = -1;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -308,7 +291,6 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
-  for(int k=0; k<6; k++) dt_draw_curve_set_point(c->minmax_curve, k, p->levels_x[k], p->levels_y[k]);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -335,19 +317,36 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
+  // Drawing the vertical line indicators
+  cairo_set_line_width(cr, 2.);
+
+  for(int k = 0; k < 3; k++)
+  {
+    if(k == c->handle_move)
+      cairo_set_source_rgb(cr, 1, 1, 1);
+    else
+      cairo_set_source_rgb(cr, .7, .7, .7);
+
+    cairo_move_to(cr, width*p->levels[k], height);
+    cairo_rel_line_to(cr, 0, -height);
+    cairo_stroke(cr);
+  }
+
   // draw x positions
   cairo_set_line_width(cr, 1.);
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   const float arrw = 7.0f;
-  for(int k=1; k<5; k++)
+  for(int k=0; k<3; k++)
   {
-    cairo_move_to(cr, width*p->levels_x[k], height+inset-1);
+    cairo_move_to(cr, width*p->levels[k], height+inset-1);
     cairo_rel_line_to(cr, -arrw*.5f, 0);
     cairo_rel_line_to(cr, arrw*.5f, -arrw);
     cairo_rel_line_to(cr, arrw*.5f, arrw);
     cairo_close_path(cr);
-    if(c->x_move == k) cairo_fill(cr);
-    else               cairo_stroke(cr);
+    if(c->handle_move == k)
+      cairo_fill(cr);
+    else
+      cairo_stroke(cr);
   }
 
   cairo_translate(cr, 0, height);
@@ -383,88 +382,46 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
-  if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width);
+  if(!c->dragging)
+    c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
 
   if(c->dragging)
   {
-    if(c->x_move >= 0)
+    if(c->handle_move >= 0)
     {
-      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
-      if(c->x_move > 0 && c->x_move < 6-1)
+      if(c->handle_move >= 0 && c->handle_move < 3)
       {
-        const float minx = p->levels_x[c->x_move-1] + 0.001f;
-        const float maxx = p->levels_x[c->x_move+1] - 0.001f;
-        p->levels_x[c->x_move] = fminf(maxx, fmaxf(minx, mx));
+        const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
+
+        float min_x = 0;
+        float max_x = 1;
+
+        if(c->handle_move > 0)
+          min_x = fmaxf(0, p->levels[c->handle_move - 1] + 0.01);
+        if(c->handle_move < 2)
+          max_x = fminf(1, p->levels[c->handle_move + 1] - 0.01);
+
+        p->levels[c->handle_move] =
+            fminf(max_x, fmaxf(min_x, mx));
       }
-    }
-    else
-    {
-      float f = c->selected_y - (c->mouse_y-c->selected_offset)/height;
-      f = fmaxf(c->selected_min, fminf(c->selected_max, f));
-      if(c->selected == 0) p->levels_y[1] = fmaxf(f, p->levels_y[1]);
-      if(c->selected == 2) p->levels_y[1] = fminf(f, fmaxf(0.0, p->levels_y[1] + DT_GUI_CURVE_INFL*(f - p->levels_y[2])));
-      if(c->selected == 3) p->levels_y[4] = fmaxf(f, fminf(1.0, p->levels_y[4] + DT_GUI_CURVE_INFL*(f - p->levels_y[3])));
-      if(c->selected == 5) p->levels_y[4] = fminf(f, p->levels_y[4]);
-      p->levels_y[c->selected] = f;
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
   else
   {
-    if(event->y > height)
+    c->handle_move = 0;
+    const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
+    float dist = fabsf(p->levels[0] - mx);
+    for(int k=1; k<3; k++)
     {
-      c->x_move = 1;
-      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
-      float dist = fabsf(p->levels_x[1] - mx);
-      for(int k=2; k<5; k++)
+      float d2 = fabsf(p->levels[k] - mx);
+      if(d2 < dist)
       {
-        float d2 = fabsf(p->levels_x[k] - mx);
-        if(d2 < dist)
-        {
-          c->x_move = k;
-          dist = d2;
-        }
+        c->handle_move = k;
+        dist = d2;
       }
     }
-    else
-    {
-      c->x_move = -1;
-    }
-    float pos = (event->x - inset)/width;
-    float min = 100.0;
-    int nearest = 0;
-    for(int k=0; k<6; k++)
-    {
-      float dist = (pos - p->levels_x[k]);
-      dist *= dist;
-      if(dist < min)
-      {
-        min = dist;
-        nearest = k;
-      }
-    }
-    c->selected = nearest;
-    c->selected_y = p->levels_y[c->selected];
-    c->selected_offset = c->mouse_y;
-    const float f = 0.8f;
-    if(c->selected == 0)
-    {
-      c->selected_min = 0.0f;
-      c->selected_max = 0.2f;
-    }
-    else if(c->selected == 5)
-    {
-      c->selected_min = 0.8f;
-      c->selected_max = 1.0f;
-    }
-    else
-    {
-      c->selected_min = fmaxf(c->selected_y - 0.2f, (1.-f)*c->selected_y + f*p->levels_y[c->selected-1]);
-      c->selected_max = fminf(c->selected_y + 0.2f, (1.-f)*c->selected_y + f*p->levels_y[c->selected+1]);
-    }
-    if(c->selected == 1) c->selected_max *= 0.7;
-    if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
   }
   gtk_widget_queue_draw(widget);
 
