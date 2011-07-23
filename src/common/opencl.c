@@ -668,11 +668,13 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
 
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height)
+int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes)
 {
   if(!darktable.opencl->inited) return FALSE;
 
-  return (darktable.opencl->dev[devid].max_image_width >= width && darktable.opencl->dev[devid].max_image_height >= height);
+  if(darktable.opencl->dev[devid].max_image_width < width || darktable.opencl->dev[devid].max_image_height < height) return FALSE;
+
+  return darktable.opencl->dev[devid].max_global_mem >= bytes + DT_OPENCL_MEMORY_HEADROOM;
 }
 
 

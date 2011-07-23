@@ -28,6 +28,8 @@
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_EVENTS 256
 
+#define DT_OPENCL_MEMORY_HEADROOM (256*1024*1024)
+
 #ifdef HAVE_OPENCL
 
 // #pragma GCC diagnostic push
@@ -172,7 +174,7 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size);
 void dt_opencl_release_mem_object(void *mem);
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height);
+int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes);
 
 /** get global memory of device */
 cl_ulong dt_opencl_get_max_global_mem(const int devid);
@@ -257,6 +259,10 @@ static inline int dt_opencl_is_enabled(void)
 }
 static inline void dt_opencl_disable(void) {}
 static inline int dt_opencl_update_enabled(void)
+{
+  return 0;
+}
+static int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes)
 {
   return 0;
 }
