@@ -463,13 +463,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   else
     dt_conf_set_string("plugins/darkroom/active", "");
   g_assert(dev->gui_attached);
-  // tag image as changed
-  // TODO: only tag the image when there was a real change.
-  // TODO: this applies especially for the expensive bits:
-  //       write xmp (disk) / re-create mip map
-  guint tagid = 0;
-  dt_tag_new("darktable|changed",&tagid);
-  dt_tag_attach(tagid, dev->image->id);
+
   // commit image ops to db
   dt_dev_write_history(dev);
 
