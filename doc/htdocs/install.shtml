@@ -77,6 +77,14 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
       </ul>
     	</div>
     	<div class="listtext">
+    	<img src="images/foehr.jpg" alt="release" class="img" /><h1>opensuse packages</h1>
+      <ul>
+        <li>there are repositories</li>
+        <li><a href="http://download.opensuse.org/repositories/home:/toganm:/photography/openSUSE_11.4">for nightly builds</a></li>
+        <li><a href="http://download.opensuse.org/repositories/graphics/openSUSE_11.4">or more conservative packages</a></li>
+      </ul>
+    	</div>
+    	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
         <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.tar.gz/download">0.9 source .gz</a></li>
@@ -94,13 +102,7 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
     	<div class="listtext">
     	<img src="images/sun.jpg" alt="release" class="img" /><h1>funtoo/gentoo linux</h1>
       <ul>
-        <li>unfortunately darktable is not in portage, so you have to:</li>
-        <li>download (for example) this <a href="darktable-9999.ebuild">ebuild for the git version</a></li>
-        <li>create a local portage overlay, if you don't have one already:</li>
-        <li># echo 'PORTDIR_OVERLAY="${PORTDIR_OVERLAY} /usr/local/portage"' &gt;&gt; /etc/make.conf</li> 
-        <li># mkdir -p /usr/local/portage/media-gfx/darktable/</li>
-        <li># cp darktable-*.ebuild /usr/local/portage/media-gfx/darktable/</li>
-        <li># ebuild /usr/local/portage/media-gfx/darktable/darktable-*.ebuild digest</li>
+        <li>darktable is in portage!</li>
         <li># emerge darktable</li>
         <li>$ darktable</li>
       </ul>
@@ -128,12 +130,57 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
     	<div class="listtext">
     	<a name="git"><img src="images/fire.jpg" alt="svn" class="img" /></a><h1>git version</h1>
       <ul>
-        <li>git clone git://darktable.git.sf.net/gitroot/darktable/darktable or<br/>
-            git pull</li>
-        <li>$ ./build.sh</li>
-        <li>or manually: mkdir ./build; cd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DDT_GCONF_SCHEMA_DIR="xml:readwrite:${HOME}/.gconf" ..; make; sudo make install</li> 
-        <li>where the gconf part is only needed for non-root installs with local schemas in your home.</li>
+      </ul>
+        <em>cloning for the first time</em>
+      <ul>
+        <li>open a terminal and type:</li>
+        <li>$ cd</li>
+        <li>$ git clone git://darktable.git.sf.net/gitroot/darktable/darktable</li>
+        <li>the files are stored in $HOME/darktable</li>
+
+      </ul>
+        <em>updating existing git-files</em>
+      <ul>
+        <li>open a terminal and type:</li>
+        <li>$ cd $HOME/darktable</li>
+        <li>$ git pull</li>
+
+      </ul>
+        <em>building with build.sh</em>
+      <ul>
+        <li>open a terminal and type:</li>
+        <li>cd $HOME/darktable</li>
+        <li>./build.sh</li>
+        <li>the files get prepared to be installed in /opt. If you want to install
+        at another place (e.g. /usr for OpenSuse), you have to type:</li>
+        <li>./build.sh /usr</li>
+
+      </ul>
+        <em>building manually</em>
+      <ul>
+        <li>open a terminal and type:</li>
+        <li>$ mkdir $HOME/darktable/build</li>
+        <li>$ cd $HOME/darktable/build</li>
+        <li>$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+        -DDT_GCONF_SCHEMA_DIR="xml:readwrite:${HOME}/.gconf"</li>
+        <li>where the gconf part is only needed for non-root installs with local
+        schemas in your home.</li>
+
+      </ul>
+        <em>make and install</em>
+      <ul>
+        <li>open a terminal and type:</li>
+        <li>$ cd $HOME/darktable/build</li>
+        <li>$ make</li>
+        <li>$ sudo make install</li>
+
+      </ul>
+        <em>starting the program</em>
+      <ul>
+        <li>open a terminal and type:</li>
         <li>$ darktable</li>
+        <li>or</li>
+        <li>$ darktable-faster</li>
         <li>let's rock!</li>
       </ul>
     	</div>
