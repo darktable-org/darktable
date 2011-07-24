@@ -11,43 +11,76 @@
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/2.png" alt="2" width="142px" /></span><div class="headline">features</div>
     	<div class="starterText">
-      these are some of the current features, and a coarse preview of the roadmap for future releases.
+      these are some of the current features, and a coarse overview over the current darktable image operation plugins. You can find a more detailed description of every single item in our <a href="documentation.shtml">online documentation</a>.
     	</div>
     	<div class="listtext">
-    	<img src="images/gold.jpg" alt="done" class="img" /><h1>current features</h1>
+    	<img src="images/gold.jpg" alt="done" class="img" /><h1>general</h1>
       <ul>
-        <li>fully non-destructive editing.</li>
-        <li>core functions operate on 4x32-bit floating point pixel buffers, enabling SSE instructions for speedups.</li>
-        <li>if available, gpu acceleration via opencl is done.</li>
-        <li>modular, extensible image operations (plug-in interface).</li>
-        <li>flexible data base queries, search by tags, simple tagging by related tags.</li>
-        <li>image rating (stars) and color labels, filtering and sorting within the base query.</li>
-        <li>import a variety of standard, raw, and high dynamic range image formats (e.g. jpg, cr2, hdr, pfm, .. ).</li>
-        <li>zero-latency user interface through multi-level software caches.</li>
-        <li>fullscreen, zoomable user interface.</li>
-        <li>34 color-managed image operations in L*a*b* and profiled rgb: rotate/crop, color correction, input/output/display color profile management, edge-avoiding wavelet domain editing (e.g. edge-aware denoise, ringing-free sharpen), exposure controls, flexible color zone mapper (e.g. make all colors except red monochrome, imitate polarizing filter, etc.), lens defect correction (lensfun), color filter based monochrome conversion, unsharp mask sharpen, white balancing, tone curve, and base curve, and many more.</li>
-        <li>built-in icc profile support: srgb, adobe rgb, xyz, and linear rgb.</li>
-        <li>export to low dynamic range (jpg, png, tiff), 16-bit (ppm, tiff), or linear high dynamic range (pfm, exr).</li>
-        <li>exif data read and written using libexiv2.</li>
-        <li>xmp sidecar files.</li>
-        <li>automatic image re-import when an image is written (inotify).</li>
-        <li>runs on gnu linux/gnome and mac osx/macports.</li>
-        <li>translations available in catalan, czech, german, spanish, finnish, french, gaelic, italian, japanese, dutch, polish, russian, albanian,
-            swedish, and thai.</li>
-        <li>powerful, modular export system, supporting picasa webalbum, flickr upload, disk storage, 1:1 copy, and email.</li>
-        <li>tethered shooting.</li>
-        <li>artistic image postprocessing: velvia, split toning, channel mixer, vignetting, tone mapping, and grain simulation.</li>
+        <li>fully <b>non-destructive</b> editing.</li>
+        <li>All darktable core functions operate on <b>4x32-bit floating point pixel buffers</b>, enabling SSE instructions for speedups. It offers GPU acceleration via <b>OpenCL</b> (runtime detection and enabling) and has <b>built-in ICC profile</b> support: sRGB, Adobe RGB, XYZ and linear RGB.</li>
+        <li>A <i>collect</i> plugin allows you to execute <b>flexible database queries</b>, search your images by tags, image rating (stars), color labels and many more. <b>Filtering and sorting</b> your collections within the base query or simple tagging by related tags are useful tools in your every-day photo workflow.</li>
+        <li>import a variety of standard, raw and high dynamic range image formats (e.g. jpg, cr2, hdr, pfm, .. ).</li>
+        <li>darktable has a zero-latency <b>fullscreen, zoomable user interface</b> through multi-level software caches and runs on GNU Linux/Gnome and mac OSX/macports.</li>
+		<li>tethered shooting.</li>
+        <li>darktable currently comes with <b>15 translations:</b> albanian, catalan, czech, dutch, finnish, french, gaelic, german, italian, japanese, polish, russian, spanish, swedish and thai.</li>
+        <li>The <b>powerful export system</b> supports picasa webalbum, flickr upload, disk storage, 1:1 copy, email attachments and can generate a simple html-based web gallery. darktable allows you to export to low dynamic range (jpg, png, tiff), 16-bit (ppm, tiff), or linear high dynamic range (pfm, exr) images.</li>
+        <li>darktable uses both <b>xmp sidecar</b> files as well as its <b>fast database</b> for saving metadata and processing settings. All Exif data is read and written using libexiv2.</li>
+	</ul>
+        
+<img src="images/moon.jpg" alt="todo" class="img" /><h1>plugins</h1>        
+        currently darktable serves 38 image operation plugins in L*a*b* and profiled rgb. Some of them can be used as <b>blending operators</b> offering blend functionality that works on the incoming image information and the output of the current module.
+			<ul>
+			<li><b>basic image operations:</b>
+				<ul>
+					<li>base curve: Darktable comes with general enhanced basecurve presets for several models that is per automatic applied to raw images for better colors and contrast.</li>
+					<li>highlight reconstruction: This module tries to reconstruct color information that is usually clipped because of the information being not complete in all channels.</li>
+					<li>exposure controls: Tweak the image exposure either by using the sliders in the plugin or dragging the histogram around.</li>
+					<li>tone mapping: This module allows to recreate some contrast for HDR images. </li>
+					<li>demosaic</li>
+					<li>white balance: A module offering three ways to set the white balance. You can set tint, temperature in and temperature out or you define the value of each channel. The module offers predefined white balance settings as well.</li>
+					<li>input/output/display color profile management</li>
+				</ul></li>
+			<li><b>color image operations:</b>
+				<ul>
+					<li>overexposed: This module is a useful feature that displays pixel outside dynamic range.</li>
+					<li>velvia: The velvia module enhances the saturation in the image; it increases saturation on lower saturated pixels more than on high saturated pixels.</li>
+					<li>channel mixer: This module is a powerful tool to manage channels. As entry, it manipulates red, green and blue channels. As output, it uses red, green, blue or gray or hue, saturation, lightness.</li>
+					<li>color contrast</li>
+					<li>color correction: This module can be used to modify the global saturation or to give a tint.</li>
+					<li>color zones: This module allows to selectively modify the colors in your image. It is highly versatile and allow every transformation possible in the LCh colorspace.</li>
+				</ul></li>
+			<li><b>correction plugins:</b>
+				<ul>
+					<li>sharpen: This is an standard UnSharp Mask tool for sharpen the details of an image. </li>
+					<li>tone curve: This module is a classical tool in digital photography. You can change the lightness by dragging the line up or down.</li>
+					<li>zone system: This module changes the lightness of your image. It is based on the Ansel Adams system. It allows to modify the lightness of a zone taking into account the effect on the adjacent zones. It divides the lightness in an user-defined number of zones. </li>
+					<li>equalizer: This versatile module can be used to achieve a variety of effects, such as: bloom, denoising, and local contrast enhancement. It works in the wavelet domain, and parameters can be tuned for each frequency band separately.</li>
+					<li>denoising (extra slow)</li>
+					<li>crop and rotate: This module is used to crop, rotate and correct perspective of your image. It also includes many helpful guidelines that assist you using the tools (e.g. rule of thirds or golden ratio). </li>
+					<li>lens correction: lens defect correction using lensfun.</li>
+					<li>spot removal: Spot removal allows you to correct a zone in your image by using another zone as model.</li>
+					<li>chromatic aberrations: This module automatically detects and corrects chromatic aberrations.</li>
+					<li>raw denoise: Raw denoise allows you to perfom denoising on pre-demosaic data. It is ported from <i>dcraw</i>.</li>
+					<li>hot pixels: This module allows you to visualize and correct stuck and hot pixels.</li>
+				</ul></li>
+			<li><b>effects/artistic image postprocessing:</b>
+				<ul>
+					<li>framing: This module allows you to add an artistic frame around an image. </li>
+					<li>split toning: Original splittoning method creates a two color linear toning effect where the shadows and highlights are represented by two different colors. Darktable splittoning module is more complex and offers more parameters to tweak the result.</li>
+					<li>vignetting: This module is an artistic feature which creates vignetting (modification of the brightness/saturation at the borders).</li>
+					<li>watermark: The watermark module provides a way to render an vector-based overlay onto your image. Watermarks are standard SVG documents and can be designed using Inkscape. The SVG processor of Darktable also substitutes strings within the SVG document which gives the oppurtunity to include image dependent information in the watermark such as aperture, exposure time and other metadata.</li>
+					<li>soften: This module is an artistic feature that creates the Orton effect also commonly known as softening the image. Michael Orton achieved such result on slide film by using 2 exposures of the same scene: one well exposed and one overexposed; then he used a technique to blend those into a final image where the overexposed image was blurred.</li>
+					<li>grain: This module is an artistic feature which simulates the grain of a film.</li>
+					<li>highpass: This module acts as highpass filter.</li>
+					<li>fill light: This module allows the local modification of the exposition based on pixel lightness.</li>
+					<li>monochrome: This module is a quick way to convert image in black and white. You can simulate a color filter in order to modify you conversion. The filter can be changed in size and color center.</li>
+					<li>lowlight vision: Low light module allows to simulate human lowlight vision, thus providing ability to make lowlight pictures look closer to reality. It can also be used to perform a day to night conversion.</li>
+					<li>bloom: This module boost highlights and softly blooms them over the image.</li>
+					<li>graduated density: This module aims at simulating a neutral density filter, in order to correct exposure and color in a progressive manner.</li>
+				</ul></li>
       </ul>
     	</div>
-    	<div class="listtext">
-    	<img src="images/moon.jpg" alt="todo" class="img" /><h1>scheduled features</h1>
-      <ul>
-        <li>image auto-rating to simplify processing of large sessions</li>
-        <li>get rid of libglade</li>
-        <li>printing interface</li>
-        <li>...?</li>
-      </ul>
-    	</div>
+    
     </div> <!-- page -->
     <!--#include virtual="footer.html" -->
   </body>
