@@ -128,7 +128,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     }
 
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &(cl->dev[dev].max_global_mem), NULL);
-    if(cl->dev[dev].max_global_mem < 1000000000ul)
+    if(cl->dev[dev].max_global_mem < 256*1024*1024)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to insufficient global memory (%luMB).\n", k, infostr, cl->dev[dev].max_global_mem/1024/1024);
       continue;
