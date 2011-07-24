@@ -39,7 +39,7 @@
 static int
 _in_positive_list(const char* op)
 {
-  static const char *positive_list[] = { "basecurve", "colorin", "colorout" };
+  static const char *positive_list[] = { "basecurve", "tonecurve", "colorin", "colorout", "exposure", "sharpen", "highpass", "lowpass", "highlights" };
 
   const int listlength = sizeof(positive_list)/sizeof(char *);
   int found = 0;
@@ -63,8 +63,8 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   cl_mem input = NULL;
   cl_mem output = NULL;
   float factor;
-  size_t overhead;
-  size_t overlap;
+  unsigned overhead;
+  unsigned overlap;
 
   if(!_in_positive_list(self->op))
   {
