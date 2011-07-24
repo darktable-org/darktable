@@ -41,7 +41,7 @@ _in_positive_list(const char* op)
 {
   static const char *positive_list[] = { "basecurve", "colorin", "colorout" };
 
-  const char listlength = sizeof(positive_list);
+  const int listlength = sizeof(positive_list)/sizeof(char *);
   int found = 0;
 
   for(int k=0; k<listlength; k++)
@@ -98,7 +98,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     height = floorf(height * sqrt(scale));
   }
 
-  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling module '%s' with dimensions %d x %d\n", self->op, width, height);
+  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling module '%s' with dimensions %d x %d and overlap %d\n", self->op, width, height, overlap);
 
   /* calculate effective tile size */
   const int tile_wd = width - 2*overlap;
