@@ -495,16 +495,16 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         module->tiling_callback(module, piece, &roi_in, roi_out, &factor, &overhead, &overlap);
         memory = ceilf(factor * roi_in.width * roi_in.height * in_bpp + overhead);
 
-        fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, memory %d, width %d, height %d, bpp %d\n", (double)factor, overhead, memory, roi_in.width, roi_in.height, bpp);
+        // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, memory %d, width %d, height %d, bpp %d\n", (double)factor, overhead, memory, roi_in.width, roi_in.height, bpp);
 
         // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
-        fprintf(stderr, "[opencl_pixelpipe 1] for module '%s'\n", module->op);
+        // fprintf(stderr, "[opencl_pixelpipe 1] module '%s'\n", module->op);
 
         if(dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height, memory))
         {
           /* try to directly process whole image with opencl */
 
-          fprintf(stderr, "[opencl_pixelpipe 2] for module '%s' running directly with process_cl\n", module->op);
+          // fprintf(stderr, "[opencl_pixelpipe 2] module '%s' running directly with process_cl\n", module->op);
 
           /* input is not on gpu memory? copy it there */
           if (cl_mem_input == NULL)
@@ -543,7 +543,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         {
           /* try to process image with opencl via tiling */
 
-          fprintf(stderr, "[opencl_pixelpipe 3] for module '%s' tiling with process_tiling_cl\n", module->op);
+          // fprintf(stderr, "[opencl_pixelpipe 3] module '%s' tiling with process_tiling_cl\n", module->op);
 
           if (cl_mem_input != NULL)
           {
@@ -589,9 +589,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         else
         {
           /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
-          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module %s. fall back to cpu module\n", module->op);
+          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module '%s'. fall back to cpu path\n", module->op);
 
-          fprintf(stderr, "[opencl_pixelpipe 4] for module '%s' running on cpu\n", module->op);
+          // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
 
           /* we might need to free unused output buffer */
           if (*cl_mem_output != NULL)
