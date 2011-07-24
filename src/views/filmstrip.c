@@ -311,6 +311,10 @@ copy_history_key_accel_callback(GtkAccelGroup *accel_group,
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   if(mouse_over_id <= 0) return;
   strip->history_copy_imgid = mouse_over_id;
+
+  /* check if images is currently loaded in darkroom */
+  if (dt_dev_is_current_image(darktable.develop, mouse_over_id))
+    dt_dev_write_history(darktable.develop);
 }
 
 static void
