@@ -475,87 +475,77 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     if (dt_opencl_is_inited())
     {
       int success_opencl = TRUE;
-      int valid_input_on_gpu = FALSE;
+
+      /* if input is on gpu memory only, remember this fact to later take appropriate action */
+      int valid_input_on_gpu_only = (cl_mem_input != NULL);
       
       /* general remark: in case of opencl errors within modules of out-of-memory on GPU, we always transparently
          fall back to the respective cpu module and continue in pixelpipe. If we encounter fatal errors, we set 
          pipe->opencl_error, return with value 1, and leave appropriate action to the calling function */
 
       /* try to run opencl module after checking some pre-requisites */
-      if(pipe->opencl_enabled && module->process_cl && piece->process_cl_ready  && 
-         dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height) && 
-         dt_opencl_image_fits_device(pipe->devid, roi_out->width, roi_out->height))
+      if(pipe->opencl_enabled && module->process_cl && piece->process_cl_ready)
       {
-        // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+        float factor;
+        unsigned overhead;
+        unsigned overlap; // not used
+        size_t memory;
 
-        // if input is on the gpu only, remember this fact to later take appropriate action,
-        // else, if input is not on the gpu, copy it there.
-        if(cl_mem_input != NULL)
+        /* get memory requirement of module */
+        module->tiling_callback(module, piece, &roi_in, roi_out, &factor, &overhead, &overlap);
+        memory = ceilf(factor * roi_in.width * roi_in.height * in_bpp + overhead);
+
+        // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, memory %d, width %d, height %d, bpp %d\n", (double)factor, overhead, memory, roi_in.width, roi_in.height, bpp);
+
+        // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+        // fprintf(stderr, "[opencl_pixelpipe 1] module '%s'\n", module->op);
+
+        if(dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height, memory))
         {
-          /* remember that we found a valid input buffer on gpu */
-          valid_input_on_gpu = TRUE;
-        }
-        else
-        {
-          cl_mem_input = dt_opencl_copy_host_to_device(pipe->devid, input, roi_in.width, roi_in.height, in_bpp);
+          /* try to directly process whole image with opencl */
+
+          // fprintf(stderr, "[opencl_pixelpipe 2] module '%s' running directly with process_cl\n", module->op);
+
+          /* input is not on gpu memory? copy it there */
           if (cl_mem_input == NULL)
           {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n", module->op);
-            success_opencl = FALSE;
+            cl_mem_input = dt_opencl_copy_host_to_device(pipe->devid, input, roi_in.width, roi_in.height, in_bpp);
+            if (cl_mem_input == NULL)
+            {
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n", module->op);
+              success_opencl = FALSE;
+            }
           }
-        }
 
-        /* try to allocate GPU memory for output */
-        if (success_opencl)
-        {
-          *cl_mem_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
-          if (*cl_mem_output == NULL)
+          /* try to allocate GPU memory for output */
+          if (success_opencl)
           {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't allocate output buffer for module %s\n", module->op);
-            success_opencl = FALSE;
+            *cl_mem_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
+            if (*cl_mem_output == NULL)
+            {
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't allocate output buffer for module %s\n", module->op);
+              success_opencl = FALSE;
+            }
           }
-        }
 
-        // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+          // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
 
-        /* now process opencl module; modules should emit meaningful messages in case of error */
-        if (success_opencl)
-          success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+          /* now process opencl module; modules should emit meaningful messages in case of error */
+          if (success_opencl)
+            success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
 
-        /* next process blending */
-        if (success_opencl)
-          success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
-
-        // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
-
-        /* Finally check, if we were successful */
-        if (success_opencl)
-        {
-          /* Nice, everything went fine */
-          
-          /* input was anyhow only on GPU? Let's invalidate CPU input buffer then */
-          if (valid_input_on_gpu) dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
-
-          /* we can now release cl_mem_input */
-          dt_opencl_release_mem_object(cl_mem_input);
-          // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
-          // so we're not just yet invalidating the (empty) output cache line.
+          /* process blending */
+          if (success_opencl)
+            success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
         }
         else
         {
-          /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
-          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module %s. fall back to cpu module\n", module->op);
+          /* try to process image with opencl via tiling */
 
-          /* we might need to free unused output buffer */
-          if (*cl_mem_output != NULL)
-          {
-            dt_opencl_release_mem_object(*cl_mem_output);
-            *cl_mem_output = NULL;
-          }
-          
-          /* first check where we found input buffer before we started */
-          if (valid_input_on_gpu)
+          // fprintf(stderr, "[opencl_pixelpipe 3] module '%s' tiling with process_tiling_cl\n", module->op);
+
+          if (cl_mem_input != NULL)
           {
             cl_int err;
 
@@ -571,6 +561,63 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
               return 1;
             }
             dt_opencl_release_mem_object(cl_mem_input);
+            cl_mem_input = NULL;
+            valid_input_on_gpu_only = FALSE;
+          }
+
+          /* now process opencl tiling module; modules should emit meaningful messages in case of error */
+          if (success_opencl)
+            success_opencl = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+          /* process blending on cpu (anyhow fast enough) */
+          if (success_opencl)
+            dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+        }
+        
+        // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
+
+        /* finally check, if we were successful */
+        if (success_opencl)
+        {
+          /* Nice, everything went fine */
+        
+          /* we can now release cl_mem_input */
+          if (cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
+          // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
+          // so we're not just yet invalidating the (empty) output cache line.
+        }
+        else
+        {
+          /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
+          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module '%s'. fall back to cpu path\n", module->op);
+
+          // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
+
+          /* we might need to free unused output buffer */
+          if (*cl_mem_output != NULL)
+          {
+            dt_opencl_release_mem_object(*cl_mem_output);
+            *cl_mem_output = NULL;
+          }
+          
+          /* check where our input buffer is located */
+          if (cl_mem_input != NULL)
+          {
+            cl_int err;
+
+            /* copy back to CPU buffer, then clean no longer needed buffer */
+            err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
+            if (err != CL_SUCCESS)
+            {
+              /* fatal opencl error */
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (a)] fatal opencl error while copying back to cpu buffer: %d\n", err);
+              dt_opencl_release_mem_object(cl_mem_input);
+              pipe->opencl_error = 1;
+              dt_pthread_mutex_unlock(&pipe->busy_mutex);
+              return 1;
+            }
+            dt_opencl_release_mem_object(cl_mem_input);
+            valid_input_on_gpu_only = FALSE;
           }
 
           /* process module on cpu */
@@ -604,6 +651,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             return 1;
           }
           dt_opencl_release_mem_object(cl_mem_input);
+          valid_input_on_gpu_only = FALSE;
         }
 
         /* process module on cpu */
@@ -611,6 +659,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
       }
+
+      /* input is still only on GPU? Let's invalidate CPU input buffer then */
+      if (valid_input_on_gpu_only) dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
     }
     else
     {

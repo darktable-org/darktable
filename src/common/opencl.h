@@ -28,6 +28,8 @@
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_EVENTS 256
 
+#define DT_OPENCL_MEMORY_HEADROOM (256*1024*1024)
+
 #ifdef HAVE_OPENCL
 
 // #pragma GCC diagnostic push
@@ -151,9 +153,19 @@ int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, con
 
 int dt_opencl_read_host_from_device(const int devid, void *host, void *device, const int width, const int height, const int bpp);
 
+int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+
+int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking);
+
 int dt_opencl_write_host_to_device(const int devid, void *host, void *device, const int width, const int height, const int bpp);
 
+int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+
+int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking);
+
 void* dt_opencl_copy_host_to_device(const int devid, void *host, const int width, const int height, const int bpp);
+
+void* dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const int width, const int height, const int bpp, const int rowpitch);
 
 void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host);
 
@@ -161,7 +173,7 @@ int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t
 
 void* dt_opencl_alloc_device(const int devid, const int width, const int height, const int bpp);
 
-void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, void *host);
+void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, const int rowpitch, void *host);
 
 int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl_mem dst_buffer, size_t *origin, size_t *region, size_t offset);
 
@@ -172,7 +184,7 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size);
 void dt_opencl_release_mem_object(void *mem);
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height);
+int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes);
 
 /** get global memory of device */
 cl_ulong dt_opencl_get_max_global_mem(const int devid);
@@ -257,6 +269,10 @@ static inline int dt_opencl_is_enabled(void)
 }
 static inline void dt_opencl_disable(void) {}
 static inline int dt_opencl_update_enabled(void)
+{
+  return 0;
+}
+static int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes)
 {
   return 0;
 }

@@ -264,7 +264,18 @@ error:
 }
 #endif
 
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+{
+  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
 
+  const float radius = fmax(0.1f, d->radius);
+  const float sigma = radius * roi_in->scale / piece ->iscale;
+
+  *factor = 3;
+  *overhead = 0;
+  *overlap = 4*sigma;
+  return;
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
