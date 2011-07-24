@@ -114,6 +114,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   /* sanity check: don't run wild on too many tiles */
   if(tiles_x * tiles_y > DT_TILING_MAXTILES) return FALSE;
 
+  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling module '%s' for full size image %d x %d\n", self->op, roi_in->width, roi_in->height);
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling module '%s' with %d x %d tiles\n", self->op, tiles_x, tiles_y);
 
   /* iterate over tiles */
@@ -140,16 +141,18 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     {
       origin[0] += overlap;
       region[0] -= overlap;
+      ooffs += overlap*out_bpp;
     }
     if(ty > 0)
     {
       origin[1] += overlap;
       region[1] -= overlap;
+      ooffs += overlap*opitch;
     }
 
     if(region[0] <= 0 || region[1] <= 0) continue;
 
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d\n", tx, ty, wd, ht);
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
 
     /* This is a first implementation. It has significant overhead in generating and releasing
        OpenCL image object and additionally might lead to GPU memory fragmentation.
