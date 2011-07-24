@@ -487,8 +487,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       if(pipe->opencl_enabled && module->process_cl && piece->process_cl_ready)
       {
         float factor;
-        size_t overhead;
-        size_t overlap; // not used
+        unsigned overhead;
+        unsigned overlap; // not used
         size_t memory;
 
         /* get memory requirement of module */
