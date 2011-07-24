@@ -50,7 +50,7 @@ static void zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable,
 
 static void export_key_accel_callback(GtkAccelGroup *accel_group,
                                       GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier);
+                                      GdkModifierType modifier,gpointer data);
 
 static void skip_f_key_accel_callback(GtkAccelGroup *accel_group,
                                       GObject *acceleratable,
@@ -699,8 +699,12 @@ film_strip_key_accel(GtkAccelGroup *accel_group,
 static void
 export_key_accel_callback(GtkAccelGroup *accel_group,
                           GObject *acceleratable, guint keyval,
-                          GdkModifierType modifier)
+                          GdkModifierType modifier, gpointer data)
 {
+  /* write history before exporting */
+  dt_dev_write_history((dt_develop_t *)data);
+
+  /* export current image */
   dt_control_export();
 }
 
@@ -771,7 +775,8 @@ static void connect_closures(dt_view_t *self)
                                  closure);
 
   // enable shortcut to export with current export settings:
-  closure = g_cclosure_new(G_CALLBACK(export_key_accel_callback), NULL, NULL);
+  closure = g_cclosure_new(G_CALLBACK(export_key_accel_callback), 
+			   (gpointer)self->data, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
   dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
                                  "<Darktable>/darkroom/export",
