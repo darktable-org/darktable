@@ -481,28 +481,51 @@ int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, con
   return dt_opencl_read_host_from_device(devid, host, device, width, height, bpp);
 }
 
-
 int dt_opencl_read_host_from_device(const int devid, void *host, void *device, const int width, const int height, const int bpp)
 {
-  if(!darktable.opencl->inited) return -1;
-  size_t origin[] = {0, 0, 0};
-  size_t region[] = {width, height, 1};
-  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Read Image (from device to host)]");
-  // blocking.
-  return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadImage)(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, eventp);
+  return dt_opencl_read_host_from_device_rowpitch(devid, host, device, width, height, bpp*width);
 }
 
+int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch)
+{
+  if(!darktable.opencl->inited) return -1;
+  const size_t origin[] = {0, 0, 0};
+  const size_t region[] = {width, height, 1};
+  // blocking.
+  return dt_opencl_read_host_from_device_raw(devid, host, device, origin, region, rowpitch, CL_TRUE);
+}
+
+int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking)
+{
+  if(!darktable.opencl->inited) return -1;
+
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Read Image (from device to host)]");
+
+  return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadImage)(darktable.opencl->dev[devid].cmd_queue, device, blocking, origin, region, rowpitch, 0, host, 0, NULL, eventp);
+}
 
 int dt_opencl_write_host_to_device(const int devid, void *host, void *device, const int width, const int height, const int bpp)
 {
-  if(!darktable.opencl->inited) return -1;
-  size_t origin[] = {0, 0, 0};
-  size_t region[] = {width, height, 1};
-  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Write Image (from host to device)]");
-  // blocking.
-  return (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteImage)(darktable.opencl->dev[devid].cmd_queue, device, CL_TRUE, origin, region, region[0]*bpp, 0, host, 0, NULL, eventp);
+  return dt_opencl_write_host_to_device_rowpitch(devid, host, device, width, height, width*bpp);
 }
 
+int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch)
+{
+  if(!darktable.opencl->inited) return -1;
+  const size_t origin[] = {0, 0, 0};
+  const size_t region[] = {width, height, 1};
+  // blocking.
+  return dt_opencl_write_host_to_device_raw(devid, host, device, origin, region, rowpitch, CL_TRUE);
+}
+
+int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking)
+{
+  if(!darktable.opencl->inited) return -1;
+
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Write Image (from host to device)]");
+
+  return (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteImage)(darktable.opencl->dev[devid].cmd_queue, device, blocking, origin, region, rowpitch, 0, host, 0, NULL, eventp);
+}
 
 int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region)
 {
@@ -548,6 +571,11 @@ void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, vo
 
 void* dt_opencl_copy_host_to_device(const int devid, void *host, const int width, const int height, const int bpp)
 {
+  return dt_opencl_copy_host_to_device_rowpitch(devid, host, width, height, bpp, 0);
+}
+
+void* dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const int width, const int height, const int bpp, const int rowpitch)
+{
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
   cl_image_format fmt;
@@ -573,7 +601,7 @@ void* dt_opencl_copy_host_to_device(const int devid, void *host, const int width
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
                                 CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                 &fmt,
-                                width, height, 0,
+                                width, height, rowpitch,
                                 host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %d\n", devid, err);
   return dev;
@@ -620,7 +648,7 @@ void* dt_opencl_alloc_device(const int devid, const int width, const int height,
 }
 
 
-void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, const int pitch, void *host)
+void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, const int rowpitch, void *host)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
@@ -646,7 +674,7 @@ void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D) (darktable.opencl->dev[devid].context,
                                 CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR),
                                 &fmt,
-                                width, height, pitch,
+                                width, height, rowpitch,
                                 host, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid, err);
   return dev;
