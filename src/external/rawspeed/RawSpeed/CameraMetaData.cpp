@@ -24,6 +24,9 @@
 
 namespace RawSpeed {
 
+CameraMetaData::CameraMetaData() {
+}
+
 CameraMetaData::CameraMetaData(char *docname) {
   ctxt = xmlNewParserCtxt();
   if (ctxt == NULL) {
