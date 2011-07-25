@@ -580,7 +580,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 
   // fprintf(stderr, "[image_reimport] loading `%s' to fill mip %d!\n", filename, mip);
 
-  int altered = 0;//(img->raw_params.user_flip != -1) && img->force_reimport;
+  int altered = img->force_reimport;//(img->raw_params.user_flip != -1) && img->force_reimport;
   img->force_reimport = 0;
   if(dt_image_altered(img)) altered = 1;
 
