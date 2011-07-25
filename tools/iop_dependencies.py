@@ -86,7 +86,7 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'basecurve'))
   gr.add_edge(('profile_gamma', 'lens'))
   
-  # these need Lab (between color in/out):
+  # these need Lab (between color in/out): 
   gr.add_edge(('colorout', 'bloom'))
   gr.add_edge(('colorout', 'nlmeans'))
   gr.add_edge(('colorout', 'colortransfer'))
@@ -103,6 +103,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'grain'))
   gr.add_edge(('colorout', 'anlfyeni'))
   gr.add_edge(('colorout', 'colorcontrast'))
+  gr.add_edge(('colorout', 'colorize'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -120,6 +121,7 @@ def add_edges(gr):
   gr.add_edge(('anlfyeni', 'colorin'))
   gr.add_edge(('highpass', 'colorin'))
   gr.add_edge(('colorcontrast', 'colorin'))
+  gr.add_edge(('colorize', 'colorin'))
   
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
@@ -224,6 +226,9 @@ def add_edges(gr):
   gr.add_edge(('anlfyeni', 'colortransfer'))
   gr.add_edge(('lowlight', 'colortransfer'))
   gr.add_edge(('bloom', 'colortransfer'))
+  
+  # colorize first in Lab pipe
+  gr.add_edge(('colortransfer', 'colorize'))
 
   # levels come after tone curve
   gr.add_edge(('levels', 'tonecurve'))
@@ -249,6 +254,7 @@ gr.add_nodes([
 'clipping',
 'colorcorrection',
 'colorin',
+'colorize',
 'colorout',
 'colortransfer',
 'colorzones',
