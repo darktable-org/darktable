@@ -20,6 +20,7 @@
 #include <stdlib.h>
 double drand48(void);
 void srand48(long int);
+#include <sys/time.h>
 #include <unistd.h>
 #include <inttypes.h>
 #include "common/darktable.h"
@@ -40,12 +41,17 @@ int width, height;
 uint32_t random_state;
 int use_random;
 float *pixels;
+uint32_t scramble = 0;
 
 int init(int argc, char *arg[])
 {
   const SDL_VideoInfo* info = NULL;
   int bpp = 0;
   int flags = 0;
+
+  struct timeval time;
+  gettimeofday(&time, NULL);
+  scramble = time.tv_sec + time.tv_usec;
 
   if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
   {
@@ -113,6 +119,10 @@ int init(int argc, char *arg[])
   gluOrtho2D(0, 1, 1, 0);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  return 1;
 }
 
 static void
@@ -148,10 +158,15 @@ pump_events()
 static void
 update(const int frame)
 {
+  // copy over the buffer, so we can blend smoothly.
+  glReadBuffer (GL_FRONT);
+  glDrawBuffer (GL_BACK);
+  glCopyPixels (0, 0, width, height, GL_COLOR);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_FLOAT, pixels);
-  if(frame < 10)
+  if(frame < 18)
   {
-    glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
   }
   else
@@ -168,6 +183,7 @@ update(const int frame)
   glTexCoord2d(1.0f, 1.0f);
   glVertex2f(1.0f, 1.0f);
   glEnd();
+  // display the back buffer
   SDL_GL_SwapBuffers();
 }
 
@@ -185,12 +201,14 @@ write_image (dt_imageio_module_data_t *data, const char *filename, const void *i
   float *out = pixels + (offy * width  + offx )* 4;
   const float *rd = in;
   memset(pixels, 0, 4*sizeof(float)*width*height);
+  const float alpha = 0.2f;
+  for(int i=3;i<4*width*height;i+=4) pixels[i] = 0.2f;
   for(int j=0; j<MIN(data->height, height); j++)
   {
     for(int i=0; i<MIN(data->width, width); i++)
     {
       for(int c=0; c<3; c++) out[4*i+c] = rd[4*i+c];
-      out[4*i+3] = .5f;
+      out[4*i+3] = alpha;
     }
     out += 4*width;
     rd  += 4*data->width;
@@ -206,7 +224,7 @@ uint32_t next_random()
   i = ((i & 0x0f0f0f0f) <<  4) | ((i & 0xf0f0f0f0) >> 4);
   i = ((i & 0x33333333) <<  2) | ((i & 0xcccccccc) >> 2);
   i = ((i & 0x55555555) <<  1) | ((i & 0xaaaaaaaa) >> 1);
-  return i;
+  return i ^ scramble;
 }
 
 static int
@@ -280,12 +298,17 @@ int main(int argc, char *arg[])
     pump_events();
     if(!running) break;
     if(process_next_image()) break;
-    for(int k=0; k<=10; k++)
+    for(int k=0; k<=18; k++)
     {
       update(k);
-      usleep(30000);
+      usleep(10000);
     }
-    usleep(3000000);
+    for(int k=0;k<100;k++)
+    {
+      pump_events();
+      if(!running) break;
+      usleep(35000);
+    }
   }
   if(oldprofile) {
     dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
