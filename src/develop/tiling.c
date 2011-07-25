@@ -39,7 +39,7 @@
 static int
 _in_positive_list(const char* op)
 {
-  static const char *positive_list[] = { "basecurve", "tonecurve", "colorin", "colorout", "exposure", "sharpen", "highpass", "lowpass", "highlights" };
+  static const char *positive_list[] = { "basecurve", "tonecurve", "colorin", "colorout", "exposure", "sharpen", "highpass", "lowpass", "highlights", "atrous" };
 
   const int listlength = sizeof(positive_list)/sizeof(char *);
   int found = 0;
