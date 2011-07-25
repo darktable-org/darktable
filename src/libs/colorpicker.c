@@ -342,7 +342,8 @@ static gboolean _live_sample_enter(GtkWidget *widget, GdkEvent *event,
 {
   darktable.lib->proxy.colorpicker.selected_sample =
       (dt_colorpicker_sample_t*)sample;
-  dt_dev_invalidate_from_gui(darktable.develop);
+  if(darktable.lib->proxy.colorpicker.display_samples)
+    dt_dev_invalidate_from_gui(darktable.develop);
 
   return FALSE;
 }
@@ -351,7 +352,8 @@ static gboolean _live_sample_leave(GtkWidget *widget, GdkEvent *event,
                                    gpointer data)
 {
   darktable.lib->proxy.colorpicker.selected_sample = NULL;
-  dt_dev_invalidate_from_gui(darktable.develop);
+  if(darktable.lib->proxy.colorpicker.display_samples)
+    dt_dev_invalidate_from_gui(darktable.develop);
 
   return FALSE;
 }
