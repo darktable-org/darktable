@@ -32,6 +32,7 @@ namespace RawSpeed {
 class CameraMetaData
 {
 public:
+  CameraMetaData();
   CameraMetaData(char *docname);
   virtual ~CameraMetaData(void);
   xmlDocPtr doc;

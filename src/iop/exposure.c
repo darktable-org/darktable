@@ -145,7 +145,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 200; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 195; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t)
@@ -221,7 +221,7 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  float b = fmaxf(0.0f, black);
+  float b = black;
   if (p->black == b) return;
 
   p->black = b;

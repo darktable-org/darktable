@@ -134,7 +134,7 @@
       <Color x="1" y="1">BLUE</Color>
     </CFA>
     <Crop x="22" y="18" width="4290" height="2856"/>
-    <Sensor black="1020" white="16000"/>
+    <Sensor black="1020" white="14500"/>
     <Aliases>
 		<Alias>Canon EOS DIGITAL REBEL XSi</Alias>
 		<Alias>Canon EOS Kiss Digital X2</Alias>
@@ -1136,6 +1136,16 @@
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="55" white="4095"/>
   </Camera>
+  <Camera make="OLYMPUS IMAGING CORP." model="E-P3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-26" height="0"/>
+    <Sensor black="0" white="4095"/>
+  </Camera>
   <Camera make="OLYMPUS IMAGING CORP." model="XZ-1">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -1325,6 +1335,22 @@
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
     </CFA>
     <Crop x="0" y="0" width="-74" height="0"/>
+    <Sensor black="150" white="4096"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-G3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
+      <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-154" height="0"/>
+    <Sensor black="150" white="4096"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-GF3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-72" height="0"/>
     <Sensor black="150" white="4096"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-GH2">
