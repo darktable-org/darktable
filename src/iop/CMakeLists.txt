@@ -12,11 +12,12 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer)
+set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer lowpass)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
 add_library(highpass MODULE "highpass.c")
+add_library(lowpass MODULE "lowpass.c")
 add_library(tonemap MODULE "tonemap.cc")
 add_library(tonecurve MODULE "tonecurve.c")
 add_library(gamma MODULE "gamma.c")

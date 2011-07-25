@@ -22,6 +22,7 @@
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "develop/blend.h"
+#include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "gui/iop_modulegroups.h"
 #include "gui/presets.h"
@@ -227,6 +228,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "operation_tags",         (gpointer)&(module->operation_tags)))         module->operation_tags = _default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter",  (gpointer)&(module->operation_tags_filter)))  module->operation_tags_filter = _default_operation_tags_filter;
   if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = _default_output_bpp;
+  if(!g_module_symbol(module->module, "tiling_callback",        (gpointer)&(module->tiling_callback)))        module->tiling_callback = default_tiling_callback;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
@@ -252,6 +254,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "process",                (gpointer)&(module->process)))                goto error;
   if(!darktable.opencl->inited ||
       !g_module_symbol(module->module, "process_cl",             (gpointer)&(module->process_cl)))             module->process_cl = NULL;
+  if(!g_module_symbol(module->module, "process_tiling_cl",      (gpointer)&(module->process_tiling_cl)))      module->process_tiling_cl = darktable.opencl->inited ? default_process_tiling_cl : NULL;
   if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
   if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;
   if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
@@ -297,6 +300,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->operation_tags  = so->operation_tags;
   module->operation_tags_filter  = so->operation_tags_filter;
   module->output_bpp  = so->output_bpp;
+  module->tiling_callback = so->tiling_callback;
   module->gui_update  = so->gui_update;
   module->gui_init    = so->gui_init;
   module->gui_cleanup = so->gui_cleanup;
@@ -317,6 +321,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->cleanup_pipe    = so->cleanup_pipe;
   module->process         = so->process;
   module->process_cl      = so->process_cl;
+  module->process_tiling_cl = so->process_tiling_cl;
   module->modify_roi_in   = so->modify_roi_in;
   module->modify_roi_out  = so->modify_roi_out;
   module->legacy_params   = so->legacy_params;
