@@ -278,8 +278,9 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
     wd = img->width;
     ht = img->height;
     const float scale = fminf(darktable.thumbnail_size/(float)img->width, darktable.thumbnail_size/(float)img->height);
-    wd *= scale;
-    ht *= scale;
+    // actually we need to be a bit conservative, because of NaN etc out of the bounding box:
+    wd = wd*scale - 1;
+    ht = ht*scale - 1;
   }
   else if((int)mip < (int)DT_IMAGE_FULL)
   {
