@@ -104,7 +104,7 @@ RawImage OrfDecoder::decodeRaw() {
  */
 
 void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
-  int nbits, sign, low, high, i, wo0, n, nw0, wo1, nw1;
+  int nbits, sign, low, high, i, left0, up, nw0, left1, nw1;
   int acarry0[3], acarry1[3], pred, diff;
 
   uchar8* data = mRaw->getData();
@@ -119,7 +119,8 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         break;
       bittable[i] = high;
   }
-  wo0 = nw0 = wo1 = nw1 = 0;
+  left0 = nw0 = left1 = nw1 = 0;
+
   s.skipBytes(7);
   BitPumpMSB bits(&s);
 
@@ -152,30 +153,32 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         if (y < 2 && x < 2)  
           pred = 0;
         else if (y < 2) 
-          pred = wo0;
+          pred = left0;
         else { 
           pred = dest[-pitch+((int)x)];
           nw0 = pred;
         }
         dest[x] = pred + ((diff << 2) | low);
         // Set predictor
-        wo0 = dest[x];
+        left0 = dest[x];
       } else {
-        n  = dest[-pitch+((int)x)];
-        if (((wo0 < nw0) & (nw0 < n)) | ((n < nw0) & (nw0 < wo0))) {
-          if (abs(wo0 - nw0) > 32 || abs(n - nw0) > 32)
-            pred = wo0 + n - nw0;
+        up  = dest[-pitch+((int)x)];
+        int leftMinusNw = left0 - nw0;
+        int upMinusNw = up - nw0;
+        // Check if sign is different, and one is not zero
+        if (((leftMinusNw) ^ (upMinusNw)) < 0 && (upMinusNw * leftMinusNw)) {
+          if (abs(leftMinusNw) > 32 || abs(upMinusNw) > 32)
+            pred = left0 + upMinusNw;
           else 
-            pred = (wo0 + n) >> 1;
+            pred = (left0 + up) >> 1;
         } else 
-          pred = abs(wo0 - nw0) > abs(n - nw0) ? wo0 : n;
+          pred = abs(leftMinusNw) > abs(upMinusNw) ? left0 : up;
 
         dest[x] = pred + ((diff << 2) | low);
         // Set predictors
-        wo0 = dest[x];
-        nw0 = n;
+        left0 = dest[x];
+        nw0 = up;
       }
-//      _ASSERTE(0 == dest[x] >> 12) ;
       
       // ODD PIXELS
       x += 1;
@@ -202,31 +205,34 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         if (y < 2 && x < 2)  
           pred = 0;
         else if (y < 2) 
-          pred = wo1;
+          pred = left1;
         else { 
           pred = dest[-pitch+((int)x)];
           nw1 = pred;
         }
         dest[x] = pred + ((diff << 2) | low);
         // Set predictor
-        wo1 = dest[x];
+        left1 = dest[x];
       } else {
-        n  = dest[-pitch+((int)x)];
-        if (((wo1 < nw1) & (nw1 < n)) | ((n < nw1) & (nw1 < wo1))) {
-          if (abs(wo1 - nw1) > 32 || abs(n - nw1) > 32)
-            pred = wo1 + n - nw1;
+        up  = dest[-pitch+((int)x)];
+        int leftMinusNw = left1 - nw1;
+        int upMinusNw = up - nw1;
+
+        // Check if sign is different, and one is not zero
+        if (((leftMinusNw) ^ (upMinusNw)) < 0 && (upMinusNw * leftMinusNw)) {
+          if (abs(leftMinusNw) > 32 || abs(upMinusNw) > 32)
+            pred = left1 + upMinusNw;
           else 
-            pred = (wo1 + n) >> 1;
+            pred = (left1 + up) >> 1;
         } else 
-          pred = abs(wo1 - nw1) > abs(n - nw1) ? wo1 : n;
+          pred = abs(leftMinusNw) > abs(upMinusNw) ? left1 : up;
 
         dest[x] = pred + ((diff << 2) | low);
 
         // Set predictors
-        wo1 = dest[x];
-        nw1 = n;
+        left1 = dest[x];
+        nw1 = up;
       }
-//      _ASSERTE(0 == dest[x] >> 12) ;
     }
   }
 }
