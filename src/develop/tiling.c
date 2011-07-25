@@ -55,7 +55,9 @@ _in_positive_list(const char* op)
   return found;
 }
 
-
+/* if a module does not implement process_tiling_cl() by itself, this function is called instead.
+   default_process_tiling_cl() is able to handle standard cases where pixels change their values
+   but not their places. */
 int
 default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
 {
@@ -68,14 +70,19 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
   if(!_in_positive_list(self->op))
   {
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] module '%s' skipped!\n", self->op);
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling for module '%s' not supported.\n", self->op);
     return FALSE;
   }
 
+  //fprintf(stderr, "roi_in: {%d, %d, %d, %d, %5.3f} roi_out: {%d, %d, %d, %d, %5.3f} in module '%s'\n",
+  //      roi_in->x, roi_in->y, roi_in->width, roi_in->height, (double)roi_in->scale,
+  //      roi_out->x, roi_out->y, roi_out->width, roi_out->height, (double)roi_out->scale, self->op);
   /* We only care for the most simple cases ATM. Delegate other stuff to CPU path. */
-  if(roi_in->width != roi_out->width || roi_in->height != roi_out->height ||
-     roi_in->x != roi_out->x || roi_in->y != roi_out->y || roi_in->scale != roi_out->scale ||
-     roi_in->x + roi_in->y != 0) return FALSE;
+  if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
+  {
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] can not handle requested roi's. tiling for module '%s' not possible.\n", self->op);
+    return FALSE;
+  }
 
   const int devid = piece->pipe->devid;
   const int out_bpp = self->output_bpp(self, piece->pipe, piece);
@@ -88,8 +95,8 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   /* calculate optimal size of tiles */
   const size_t available = darktable.opencl->dev[devid].max_global_mem - DT_OPENCL_MEMORY_HEADROOM;
   const size_t singlebuffer = min(((float)(available - overhead)) / factor, darktable.opencl->dev[devid].max_mem_alloc);
-  int width = min(max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
-  int height = min(max(roi_in->height, roi_out->height), darktable.opencl->dev[devid].max_image_height);
+  int width = min(roi_out->width, darktable.opencl->dev[devid].max_image_width);
+  int height = min(roi_out->height, darktable.opencl->dev[devid].max_image_height);
 
   if (width*height*max(in_bpp, out_bpp) > singlebuffer)
   {
@@ -98,31 +105,37 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     height = floorf(height * sqrt(scale));
   }
 
-  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling module '%s' with dimensions %d x %d and overlap %d\n", self->op, width, height, overlap);
-
   /* calculate effective tile size */
   const int tile_wd = width - 2*overlap;
   const int tile_ht = height - 2*overlap;
 
   /* make sure we have a reasonably effective tile size, else return FALSE and leave it to CPU path */
-  if(2*tile_wd < width || 2*tile_ht < height) return FALSE;
+  if(2*tile_wd < width || 2*tile_ht < height)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] aborted tiling for module '%s'. too small effective tiles: %d x %d.\n", self->op, tile_wd, tile_ht);
+    return FALSE;
+  }
 
   /* calculate number of tiles */
-  const int tiles_x = width < roi_in->width ? ceilf(roi_in->width /(float)tile_wd) : 1;
-  const int tiles_y = height < roi_in->height ? ceilf(roi_in->height/(float)tile_ht) : 1;
+  const int tiles_x = width < roi_out->width ? ceilf(roi_out->width /(float)tile_wd) : 1;
+  const int tiles_y = height < roi_out->height ? ceilf(roi_out->height/(float)tile_ht) : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > DT_TILING_MAXTILES) return FALSE;
+  if(tiles_x * tiles_y > DT_TILING_MAXTILES)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] aborted tiling for module '%s'. too many tiles: %d.\n", self->op, tiles_x * tiles_y);
+    return FALSE;
+  }
 
-  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling module '%s' for full size image %d x %d\n", self->op, roi_in->width, roi_in->height);
-  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling module '%s' with %d x %d tiles\n", self->op, tiles_x, tiles_y);
+  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] use tiling on module '%s' for image with full size %d x %d\n", self->op, roi_out->width, roi_out->height);
+  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] (%d x %d) tiles with max dimensions %d x %d and overlap %d\n", tiles_x, tiles_y, width, height, overlap);
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
     for(int ty=0; ty<tiles_y; ty++)  
   {
-    size_t wd = tx * tile_wd + width > roi_in->width  ? roi_in->width - tx * tile_wd : width;
-    size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height- ty * tile_ht : height;
+    size_t wd = tx * tile_wd + width > roi_out->width  ? roi_out->width - tx * tile_wd : width;
+    size_t ht = ty * tile_ht + height > roi_out->height ? roi_out->height- ty * tile_ht : height;
 
     /* origin and region of effective part of tile, which we want to store later */
     size_t origin[] = { 0, 0, 0 };
@@ -183,10 +196,15 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 error:
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
-  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_opencl] couldn't run module '%s' in tiling mode: %d\n", self->op, err);
+  dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_opencl] couldn't run process_cl() for module '%s' in tiling mode: %d\n", self->op, err);
   return FALSE;
 }
 
+/* If a module does not implement tiling_callback() by itself, this function is called instead.
+   Default is an image size factor of 2 (i.e. input + output buffer needed), no overhead (1),
+   and no overlap between tiles. Simple pixel to pixel modules (take tonecurve as an example)
+   can happily live with that.
+   (1) Small overhead like look-up-tables in tonecurve can be ignored safely. */
 void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
 {
   *factor = 2.0f;
