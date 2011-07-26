@@ -338,7 +338,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
         else
           cairo_set_source_rgb(cri, 0, 0, .8);
         cairo_rectangle(cri, box[0]*wd + 1.0/zoom_scale, box[1]*ht,
-                        (box[2] - box[0])*wd - 2./zoom_scale,
+                        (box[2] - box[0])*wd - 3./zoom_scale,
                         (box[3] - box[1])*ht - 2./zoom_scale);
         cairo_stroke(cri);
       }
@@ -403,7 +403,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
       cairo_translate(cri, 1.0/zoom_scale, 1.0/zoom_scale);
       cairo_set_source_rgb(cri, .8, .8, .8);
       cairo_rectangle(cri, box[0]*wd + 1.0/zoom_scale, box[1]*ht,
-                      (box[2] - box[0])*wd - 2./zoom_scale,
+                      (box[2] - box[0])*wd - 3./zoom_scale,
                       (box[3] - box[1])*ht - 2./zoom_scale);
       cairo_stroke(cri);
     }

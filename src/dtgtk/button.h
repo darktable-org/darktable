@@ -53,5 +53,8 @@ GtkWidget* dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFu
 void dtgtk_button_set_accel(GtkDarktableButton *button, GtkAccelGroup *accel_group, const gchar *accel_path);
 /** register the slider shortcuts, can be called before the slider is created */
 void dtgtk_button_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path);
+void dtgtk_button_set_paint(GtkDarktableButton *button,
+                            DTGTKCairoPaintIconFunc paint,
+                            gint paintflags);
 G_END_DECLS
 #endif

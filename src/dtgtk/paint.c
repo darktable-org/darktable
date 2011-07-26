@@ -591,3 +591,24 @@ void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
   cairo_stroke(cr);
 
 }
+
+void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
+                            gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.)-(s/2.), y+(h/2.)-(s/2.));
+  cairo_scale(cr, s, s);
+
+  // Adding the lock body
+  cairo_rectangle(cr, 0.25, 0.5, .5, .45);
+  cairo_fill(cr);
+
+  // Adding the lock shank
+  cairo_set_line_width(cr, 0.2);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+  cairo_translate(cr, .5, .5);
+  cairo_scale(cr, .2, .4);
+  cairo_arc(cr, 0, 0, 1, M_PI, 0);
+  cairo_stroke(cr);
+
+}

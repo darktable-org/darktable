@@ -160,105 +160,6 @@ static void _size_changed(GtkComboBox *widget, gpointer p)
   _update_picker_output(p);
 }
 
-static gboolean _history_button_enter(GtkWidget *widget, GdkEvent *event,
-                                      gpointer self)
-{
-  unsigned int n;
-  char text[512];
-  dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
-
-  // First figuring out which button we're dealing with
-  for(n = 0; data->history_button[n] != widget && n < 4; n++);
-
-  data->history_button_hovered = data->history_button[n];
-
-  if(dt_conf_get_int("ui_last/colorpicker_model") == 0)
-  {
-    // Then set RGB
-    snprintf(text, 512, "(%d, %d, %d)",
-             data->history_rgb[n][0],
-             data->history_rgb[n][1],
-             data->history_rgb[n][2]);
-  }
-  else
-  {
-    // ...or Lab
-    snprintf(text, 512, "(%.03f, %.03f, %.03f)",
-             data->history_lab[n][0],
-             data->history_lab[n][1],
-             data->history_lab[n][2]);
-
-  }
-
-  gtk_label_set_text(GTK_LABEL(data->history_label), text);
-
-  return FALSE;
-}
-
-static gboolean _history_button_leave(GtkWidget *widget, GdkEvent *event,
-                                      gpointer self)
-{
-  dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
-
-  // Clearing the history display labels
-  gtk_label_set_text(GTK_LABEL(data->history_label), "");
-
-  data->history_button_hovered = NULL;
-
-  return FALSE;
-}
-
-static void _history_button_clicked(GtkButton *button, gpointer self)
-{
-
-  unsigned int n;
-  unsigned int i;
-  int m;
-  GdkColor c;
-  dt_iop_module_t *module = get_colorout_module();
-  dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
-
-  // First figuring out which button we're dealing with
-  for(n = 0; data->history_button[n] != GTK_WIDGET(button) && n < 4; n++);
-
-  // Saving the current picker data
-  m = dt_conf_get_int("ui_last/colorpicker_mode");
-  float fallback_col[] = {0,0,0};
-  uint8_t fallback_rgb[] = {0,0,0};
-  uint8_t *rgb = fallback_rgb;
-  float *lab = fallback_col;
-  switch(m)
-  {
-    case 0: // mean
-      rgb = darktable.lib->proxy.colorpicker.picked_color_mean;
-      lab = module->picked_color;
-      break;
-    case 1: //min
-      rgb = darktable.lib->proxy.colorpicker.picked_color_min;
-      lab = module->picked_color_min;
-      break;
-    default:
-      rgb = darktable.lib->proxy.colorpicker.picked_color_max;
-      lab = module->picked_color_max;
-      break;
-  }
-
-  for(i = 0; i < 3; i++)
-    data->history_rgb[n][i] = rgb[i];
-  for(i = 0; i < 3; i++)
-    data->history_lab[n][i] = lab[i];
-
-  c.red = rgb[0] * 65535 / 255;
-  c.green = rgb[1] * 65535 / 255;
-  c.blue = rgb[2] * 65535 / 255;
-  gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_NORMAL, &c);
-  gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &c);
-  gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_ACTIVE, &c);
-
-  if(data->history_button_hovered)
-    _history_button_enter(data->history_button_hovered, NULL, self);
-}
-
 static void _update_samples_output(dt_lib_module_t *self)
 {
   float fallback[] = {0., 0., 0.};
@@ -342,7 +243,8 @@ static gboolean _live_sample_enter(GtkWidget *widget, GdkEvent *event,
 {
   darktable.lib->proxy.colorpicker.selected_sample =
       (dt_colorpicker_sample_t*)sample;
-  dt_dev_invalidate_from_gui(darktable.develop);
+  if(darktable.lib->proxy.colorpicker.display_samples)
+    dt_dev_invalidate_from_gui(darktable.develop);
 
   return FALSE;
 }
@@ -351,7 +253,8 @@ static gboolean _live_sample_leave(GtkWidget *widget, GdkEvent *event,
                                    gpointer data)
 {
   darktable.lib->proxy.colorpicker.selected_sample = NULL;
-  dt_dev_invalidate_from_gui(darktable.develop);
+  if(darktable.lib->proxy.colorpicker.display_samples)
+    dt_dev_invalidate_from_gui(darktable.develop);
 
   return FALSE;
 }
@@ -370,6 +273,19 @@ static void _remove_sample(GtkButton *widget, gpointer data)
   dt_dev_invalidate_from_gui(darktable.develop);
 }
 
+
+static gboolean _sample_lock_toggle(GtkWidget *widget, GdkEvent *event,
+                                    gpointer data)
+{
+  dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t*)data;
+  sample->locked = !sample->locked;
+  dtgtk_button_set_paint(DTGTK_BUTTON(sample->output_button),
+                         sample->locked ? dtgtk_cairo_paint_lock : NULL,
+                         CPF_STYLE_BOX);
+
+  return FALSE;
+}
+
 static void _add_sample(GtkButton *widget, gpointer self)
 {
   dt_lib_colorpicker_t *data = ((dt_lib_module_t*)self)->data;
@@ -386,10 +302,12 @@ static void _add_sample(GtkButton *widget, gpointer self)
                      TRUE, TRUE, 0);
 
   sample->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
-  //gtk_widget_set_sensitive(sample->output_button, FALSE);
   gtk_widget_set_size_request(sample->output_button, 40, -1);
   gtk_widget_set_events(sample->output_button,
                         GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_set_tooltip_text(sample->output_button,
+                              _("hover to highlight sample on canvas, "
+                                "click to lock sample"));
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_button,
                      FALSE, FALSE, 0);
 
@@ -397,6 +315,8 @@ static void _add_sample(GtkButton *widget, gpointer self)
                    G_CALLBACK(_live_sample_enter), sample);
   g_signal_connect(G_OBJECT(sample->output_button), "leave-notify-event",
                    G_CALLBACK(_live_sample_leave), sample);
+  g_signal_connect(G_OBJECT(sample->output_button), "button-press-event",
+                   G_CALLBACK(_sample_lock_toggle), sample);
 
   sample->output_label = gtk_label_new("");
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label,
@@ -441,6 +361,8 @@ static void _add_sample(GtkButton *widget, gpointer self)
     sample->picked_color_rgb_min[i] =
         darktable.lib->proxy.colorpicker.picked_color_min[i];
 
+  sample->locked = 0;
+
   // Updating the display
   _update_samples_output((dt_lib_module_t*)self);
 }
@@ -454,22 +376,24 @@ static void _display_samples_changed(GtkToggleButton *button, gpointer data)
   dt_dev_invalidate_from_gui(darktable.develop);
 }
 
+static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
+{
+  dt_conf_set_int("ui_last/colorpicker_restrict_histogram",
+                  gtk_toggle_button_get_active(button));
+  darktable.lib->proxy.colorpicker.restrict_histogram =
+      gtk_toggle_button_get_active(button);
+  dt_dev_invalidate_from_gui(darktable.develop);
+}
 
 void gui_init(dt_lib_module_t *self)
 {
   unsigned int i;
-  unsigned int j;
-
-  GdkColor c;
 
   GtkWidget *container = gtk_vbox_new(FALSE, 5);
   GtkWidget *output_row = gtk_hbox_new(FALSE, 2);
   GtkWidget *output_options = gtk_vbox_new(FALSE, 5);
   GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 2);
-  GtkWidget *history_label = dtgtk_label_new(_("static history"),
-                                             DARKTABLE_LABEL_TAB
-                                             | DARKTABLE_LABEL_ALIGN_RIGHT);
-  GtkWidget *history_buttons_row = gtk_hbox_new(FALSE, 2);
+  GtkWidget *restrict_button;
   GtkWidget *samples_label = dtgtk_label_new(_("live samples"),
                                              DARKTABLE_LABEL_TAB
                                              | DARKTABLE_LABEL_ALIGN_RIGHT);
@@ -573,47 +497,17 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label,
                      FALSE, FALSE, 0);
 
-  // Adding the history
-  gtk_box_pack_start(GTK_BOX(container), history_label, TRUE, TRUE, 0);
+  restrict_button = gtk_check_button_new_with_label(
+      _("restrict histogram to selection"));
+  gtk_toggle_button_set_active(
+      GTK_TOGGLE_BUTTON(restrict_button),
+      dt_conf_get_int("ui_last/colorpicker_restrict_histogram"));
+  darktable.lib->proxy.colorpicker.restrict_histogram =
+      dt_conf_get_int("ui_last/colorpicker_restrict_histogram");
+  gtk_box_pack_start(GTK_BOX(container), restrict_button, TRUE, TRUE, 0);
 
-  // First the buttons
-  c.red = 0;
-  c.green = 0;
-  c.blue = 0;
-
-  for(i = 0; i < 5; i++)
-  {
-    data->history_button[i] = dtgtk_button_new(NULL, CPF_STYLE_BOX);
-    gtk_widget_set_size_request(data->history_button[i], -1, 40);
-    gtk_widget_set_tooltip_text(data->history_button[i],
-                                _("click to save a color in this slot"));
-    gtk_box_pack_start(GTK_BOX(history_buttons_row), data->history_button[i],
-                       TRUE, TRUE, 0);
-
-    // Initializing each slot in the history to black
-    for(j = 0; j < 3; j++)
-      data->history_rgb[i][j] = 0;
-    for(j = 0; j < 3; j++)
-      data->history_lab[i][j] = 0;
-
-    gtk_widget_modify_bg(data->history_button[i], GTK_STATE_NORMAL, &c);
-    gtk_widget_modify_bg(data->history_button[i], GTK_STATE_PRELIGHT, &c);
-    gtk_widget_modify_bg(data->history_button[i], GTK_STATE_ACTIVE, &c);
-
-    gtk_widget_set_events(data->history_button[i],
-                          GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-    g_signal_connect(G_OBJECT(data->history_button[i]), "enter-notify-event",
-                     G_CALLBACK(_history_button_enter), (gpointer)self);
-    g_signal_connect(G_OBJECT(data->history_button[i]), "leave-notify-event",
-                     G_CALLBACK(_history_button_leave), (gpointer)self);
-    g_signal_connect(G_OBJECT(data->history_button[i]), "clicked",
-                     G_CALLBACK(_history_button_clicked), (gpointer)self);
-  }
-  gtk_box_pack_start(GTK_BOX(container), history_buttons_row,
-                     TRUE, TRUE, 0);
-
-  data->history_label = gtk_label_new("");
-  gtk_box_pack_start(GTK_BOX(container), data->history_label, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(restrict_button), "toggled",
+                   G_CALLBACK(_restrict_histogram_changed), NULL);
 
   // Adding the live samples section
   gtk_box_pack_start(GTK_BOX(container), samples_label, TRUE, TRUE, 0);
@@ -720,9 +614,6 @@ void gui_reset(dt_lib_module_t *self)
             = module->picked_color_max[i]
               = 0;
   }
-
-  for(i = 0; i < 5; i++)
-    _history_button_clicked(GTK_BUTTON(data->history_button[i]), self);
 
   _update_picker_output(self);
 

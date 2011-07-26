@@ -440,6 +440,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       {
         sample = samples->data;
 
+        if(sample->locked)
+        {
+          samples = g_slist_next(samples);
+          continue;
+        }
+
         for(int k=0; k<3; k++) sample->picked_color_lab_min[k] =  666.0f;
         for(int k=0; k<3; k++) sample->picked_color_lab_max[k] = -666.0f;
         int box[4];
@@ -761,6 +767,12 @@ post_process_collect_info:
       {
         sample = samples->data;
 
+        if(sample->locked)
+        {
+          samples = g_slist_next(samples);
+          continue;
+        }
+
         uint8_t *pixel = (uint8_t*)*output;
 
         for(int k=0; k<3; k++) sample->picked_color_rgb_min[k] =  255;
@@ -895,7 +907,8 @@ post_process_collect_info:
       // Constraining the area if the colorpicker is active in area mode
       if(dev->gui_module
          && !strcmp(dev->gui_module->op, "colorout")
-         && dev->gui_module->request_color_pick)
+         && dev->gui_module->request_color_pick
+         && darktable.lib->proxy.colorpicker.restrict_histogram)
       {
         if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
         {

@@ -91,4 +91,7 @@ void dtgtk_cairo_paint_andnot(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 void dtgtk_cairo_paint_dropdown(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint bracket capture */
 void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint lock icon */
+void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
+                            gint flags);
 #endif
