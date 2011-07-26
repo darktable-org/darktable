@@ -879,7 +879,7 @@ restart:
   // run pixelpipe recursively and get error status
   int err = dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos);
   // check error status of OpenCL queue
-  int oclerr = (dt_opencl_events_flush(pipe->devid, 1) != CL_COMPLETE);
+  int oclerr = (dt_opencl_events_flush(pipe->devid, 1) != 0);
 
   // OpenCL errors can come in two ways: pipe->opencl_error is TRUE or oclerr is TRUE
   // if we have OpenCL errors ....
