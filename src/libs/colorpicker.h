@@ -33,9 +33,6 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *statistic_selector;
   GtkWidget *size_selector;
   GtkWidget *picker_button;
-  GtkWidget *history_button[5];
-  GtkWidget *history_label;
-  GtkWidget *history_button_hovered;
   GtkWidget *samples_container;
   GtkWidget *samples_mode_selector;
   GtkWidget *samples_statistic_selector;
@@ -55,6 +52,7 @@ typedef struct dt_colorpicker_sample_t
   float point[2];
   float box[4];
   int size;
+  int locked;
 
   /** The actual picked colors */
   uint8_t picked_color_rgb_mean[3];
