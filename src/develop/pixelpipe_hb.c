@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -881,7 +881,7 @@ restart:
   // run pixelpipe recursively and get error status
   int err = dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos);
   // check error status of OpenCL queue
-  int oclerr = (dt_opencl_events_flush(pipe->devid, 1) != CL_COMPLETE);
+  int oclerr = (dt_opencl_events_flush(pipe->devid, 1) != 0);
 
   // OpenCL errors can come in two ways: pipe->opencl_error is TRUE or oclerr is TRUE
   // if we have OpenCL errors ....
@@ -900,12 +900,13 @@ restart:
     goto restart;  // (as said before)
   }
 
+  // release resources:
+  dt_opencl_unlock_device(pipe->devid);
+  pipe->devid = -1;
   // ... and in case of other errors ...
   if (err)
   {
     pipe->processing = 0;
-    dt_opencl_unlock_device(pipe->devid);
-    pipe->devid = -1;
     return 1;
   }
 
@@ -919,8 +920,6 @@ restart:
 
   // printf("pixelpipe homebrew process end\n");
   pipe->processing = 0;
-  dt_opencl_unlock_device(pipe->devid);
-  pipe->devid = -1;
   return 0;
 }
 

@@ -245,7 +245,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 int dt_opencl_finish(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return -1;
+  if(!cl->inited || devid < 0) return -1;
 
   cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
 
@@ -259,7 +259,7 @@ int dt_opencl_finish(const int devid)
 int dt_opencl_enqueue_barrier(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return -1;
+  if(!cl->inited || devid < 0) return -1;
   return (cl->dlocl->symbols->dt_clEnqueueBarrier)(cl->dev[devid].cmd_queue);
 }
 
@@ -275,9 +275,10 @@ int dt_opencl_lock_device(const int _dev)
     const int try_dev = (dev + i) % cl->num_devs;
     if(!dt_pthread_mutex_trylock(&cl->dev[try_dev].lock)) return try_dev;
   }
-  // no free GPU :( lock the requested one, after blocking.
-  dt_pthread_mutex_lock(&cl->dev[dev].lock);
-  return dev;
+  // no free GPU :(
+  // use CPU processing, if no free device:
+  if(!dt_pthread_mutex_trylock(&cl->dev[dev].lock)) return dev;
+  return -1;
 }
 
 void dt_opencl_unlock_device(const int dev)
@@ -445,14 +446,14 @@ void dt_opencl_free_kernel(const int kernel)
 int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return -1;
+  if(!cl->inited || dev < 0) return -1;
   return (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t)*3, sizes, NULL);
 }
 
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return -1;
+  if(!cl->inited || dev < 0) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   return (cl->dlocl->symbols->dt_clSetKernelArg)(cl->dev[dev].kernel[kernel], num, size, arg);
 }
@@ -460,7 +461,7 @@ int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, con
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return -1;
+  if(!cl->inited || dev < 0) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
   int err;
   char buf[256];
@@ -488,7 +489,7 @@ int dt_opencl_read_host_from_device(const int devid, void *host, void *device, c
 
 int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch)
 {
-  if(!darktable.opencl->inited) return -1;
+  if(!darktable.opencl->inited || devid < 0) return -1;
   const size_t origin[] = {0, 0, 0};
   const size_t region[] = {width, height, 1};
   // blocking.
@@ -511,7 +512,7 @@ int dt_opencl_write_host_to_device(const int devid, void *host, void *device, co
 
 int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch)
 {
-  if(!darktable.opencl->inited) return -1;
+  if(!darktable.opencl->inited || devid < 0) return -1;
   const size_t origin[] = {0, 0, 0};
   const size_t region[] = {width, height, 1};
   // blocking.
@@ -529,7 +530,7 @@ int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device
 
 int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region)
 {
-  if(!darktable.opencl->inited) return -1;
+  if(!darktable.opencl->inited || devid < 0) return -1;
   cl_int err;
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image (on device)]");
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst, region, 0, NULL, eventp);
@@ -559,7 +560,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
 
 void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host)
 {
-  if(!darktable.opencl->inited) return NULL;
+  if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer) (darktable.opencl->dev[devid].context,
                                CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
@@ -576,7 +577,7 @@ void* dt_opencl_copy_host_to_device(const int devid, void *host, const int width
 
 void* dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const int width, const int height, const int bpp, const int rowpitch)
 {
-  if(!darktable.opencl->inited) return NULL;
+  if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
   cl_image_format fmt;
   // guess pixel format from bytes per pixel
@@ -617,7 +618,7 @@ void dt_opencl_release_mem_object(void *mem)
 
 void* dt_opencl_alloc_device(const int devid, const int width, const int height, const int bpp)
 {
-  if(!darktable.opencl->inited) return NULL;
+  if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
   cl_image_format fmt;
   // guess pixel format from bytes per pixel
@@ -650,7 +651,7 @@ void* dt_opencl_alloc_device(const int devid, const int width, const int height,
 
 void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, const int rowpitch, void *host)
 {
-  if(!darktable.opencl->inited) return NULL;
+  if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
   cl_image_format fmt;
   // guess pixel format from bytes per pixel
@@ -698,7 +699,7 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
 {
-  if(!darktable.opencl->inited) return FALSE;
+  if(!darktable.opencl->inited || devid < 0) return FALSE;
 
   size_t singlebuffer = width * height * bpp;
   size_t total = factor * singlebuffer + overhead;
@@ -756,7 +757,7 @@ int dt_opencl_update_enabled(void)
 /** get global memory of device */
 cl_ulong dt_opencl_get_max_global_mem(const int devid)
 {
-  if(!darktable.opencl->inited) return 0;
+  if(!darktable.opencl->inited || devid < 0) return 0;
   return darktable.opencl->dev[devid].max_global_mem;
 }
 
@@ -767,7 +768,7 @@ cl_ulong dt_opencl_get_max_global_mem(const int devid)
 cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return NULL;
+  if(!cl->inited || devid < 0) return NULL;
 
   static const cl_event zeroevent[1];   // implicitly initialized to zero
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -848,7 +849,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
 void dt_opencl_events_reset(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return;
+  if(!cl->inited || devid < 0) return;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
@@ -878,7 +879,7 @@ void dt_opencl_events_reset(const int devid)
 void dt_opencl_events_wait_for(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return;
+  if(!cl->inited || devid < 0) return;
 
   static const cl_event zeroevent[1];   // implicitly initialized to zero
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -912,7 +913,7 @@ and release events for re-use by OpenCL driver. */
 cl_int dt_opencl_events_flush(const int devid, const int reset)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return FALSE;
+  if(!cl->inited || devid < 0) return FALSE;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
@@ -969,7 +970,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
     dt_opencl_events_reset(devid);
   }
 
-  return result;
+  return result == CL_COMPLETE ? 0 : result;
 }
 
 
@@ -977,7 +978,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
 void dt_opencl_events_profiling(const int devid, const int aggregated)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited) return;
+  if(!cl->inited || devid < 0) return;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);

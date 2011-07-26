@@ -25,6 +25,7 @@
 #include "common/history.h"
 #include "common/debug.h"
 #include "common/utility.h"
+#include "common/tags.h"
 
 
 void dt_history_delete_on_image(int32_t imgid)
@@ -55,6 +56,10 @@ void dt_history_delete_on_image(int32_t imgid)
 
   dt_image_cache_release (img, 'r');
 
+  /* remove darktable|changed tag */
+  guint tagid = 0;
+  dt_tag_new("darktable|changed",&tagid);
+  dt_tag_detach(tagid, imgid);
 }
 
 void

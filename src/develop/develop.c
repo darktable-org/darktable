@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/tags.h"
 #include "common/debug.h"
 #include "gui/gtk.h"
 
@@ -778,6 +779,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 void dt_dev_write_history(dt_develop_t *dev)
 {
   sqlite3_stmt *stmt;
+  gboolean changed = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image->id);
   sqlite3_step(stmt);
@@ -788,7 +790,17 @@ void dt_dev_write_history(dt_develop_t *dev)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(dev->image, hist, i);
     history = g_list_next(history);
+    changed = TRUE;
   }
+  
+  /* attach / detach changed tag reflecting actual change */
+  guint tagid = 0;
+  dt_tag_new("darktable|changed",&tagid); 
+  if(changed)
+    dt_tag_attach(tagid, dev->image->id);
+  else
+    dt_tag_detach(tagid, dev->image->id);
+
 }
 
 void dt_dev_read_history(dt_develop_t *dev)

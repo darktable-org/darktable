@@ -17,6 +17,7 @@ src/control/jobs/image_jobs.c
 src/develop/develop.c
 src/develop/imageop.c
 src/dtgtk/resetlabel.c
+src/dtgtk/slider.c
 src/gui/background_jobs.c
 src/gui/camera_import_dialog.c
 src/gui/devices.c
@@ -70,6 +71,7 @@ src/iop/hotpixels.c
 src/iop/lens.c
 src/iop/localc.c
 src/iop/lowlight.c
+src/iop/lowpass.c
 src/iop/monochrome.c
 src/iop/nlmeans.c
 src/iop/overexposed.c

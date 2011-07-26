@@ -1,9 +1,9 @@
 #!/bin/sh
 # Finding all the module names
-modules=`git grep 'add_library( *[a-zA-Z0-9]\+ *MODULE *[^)]\+' | \
+modules=`grep -r 'add_library( *[a-zA-Z0-9]\+ *MODULE *[^)]\+' $1 | \
 sed 's/[^:]*:[^a]*add_library( *\([^ ]\+\).*/\1/p' | sort | uniq`
 
-words=`git grep '\"<Darktable>' $1 | \
+words=`grep -r '\"<Darktable>' $1 | \
 sed 's/[^"]*"\([^"]\+\)"[^"]*/\1/' | tr '/' '\n' | \
 sort | uniq`
 

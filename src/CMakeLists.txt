@@ -66,6 +66,7 @@ set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw)
 
 # initial compiler flags
@@ -200,7 +201,6 @@ if(OPENEXR_FOUND)
 endif(OPENEXR_FOUND)
 
 if(USE_OPENCL)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
   add_definitions("-DHAVE_OPENCL")
 endif(USE_OPENCL)
 

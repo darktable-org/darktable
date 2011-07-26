@@ -278,8 +278,9 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
     wd = img->width;
     ht = img->height;
     const float scale = fminf(darktable.thumbnail_size/(float)img->width, darktable.thumbnail_size/(float)img->height);
-    wd *= scale;
-    ht *= scale;
+    // actually we need to be a bit conservative, because of NaN etc out of the bounding box:
+    wd = wd*scale - 1;
+    ht = ht*scale - 1;
   }
   else if((int)mip < (int)DT_IMAGE_FULL)
   {
@@ -580,7 +581,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 
   // fprintf(stderr, "[image_reimport] loading `%s' to fill mip %d!\n", filename, mip);
 
-  int altered = 0;//(img->raw_params.user_flip != -1) && img->force_reimport;
+  int altered = img->force_reimport;
   img->force_reimport = 0;
   if(dt_image_altered(img)) altered = 1;
 
