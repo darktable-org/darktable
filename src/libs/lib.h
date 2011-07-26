@@ -46,6 +46,7 @@ typedef struct dt_lib_t
       struct dt_colorpicker_sample_t *selected_sample;
       int size;
       int display_samples;
+      int restrict_histogram;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);
     } colorpicker;

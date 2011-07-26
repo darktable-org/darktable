@@ -456,6 +456,14 @@ static void _display_samples_changed(GtkToggleButton *button, gpointer data)
   dt_dev_invalidate_from_gui(darktable.develop);
 }
 
+static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
+{
+  dt_conf_set_int("ui_last/colorpicker_restrict_histogram",
+                  gtk_toggle_button_get_active(button));
+  darktable.lib->proxy.colorpicker.restrict_histogram =
+      gtk_toggle_button_get_active(button);
+  dt_dev_invalidate_from_gui(darktable.develop);
+}
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -468,6 +476,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *output_row = gtk_hbox_new(FALSE, 2);
   GtkWidget *output_options = gtk_vbox_new(FALSE, 5);
   GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 2);
+  GtkWidget *restrict_button;
   GtkWidget *history_label = dtgtk_label_new(_("static history"),
                                              DARKTABLE_LABEL_TAB
                                              | DARKTABLE_LABEL_ALIGN_RIGHT);
@@ -574,6 +583,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(data->output_label, 80, -1);
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label,
                      FALSE, FALSE, 0);
+
+  restrict_button = gtk_check_button_new_with_label(
+      _("restrict histogram to selection"));
+  gtk_toggle_button_set_active(
+      GTK_TOGGLE_BUTTON(restrict_button),
+      dt_conf_get_int("ui_last/colorpicker_restrict_histogram"));
+  darktable.lib->proxy.colorpicker.restrict_histogram =
+      dt_conf_get_int("ui_last/colorpicker_restrict_histogram");
+  gtk_box_pack_start(GTK_BOX(container), restrict_button, TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(restrict_button), "toggled",
+                   G_CALLBACK(_restrict_histogram_changed), NULL);
 
   // Adding the history
   gtk_box_pack_start(GTK_BOX(container), history_label, TRUE, TRUE, 0);
