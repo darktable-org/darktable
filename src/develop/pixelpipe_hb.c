@@ -895,7 +895,8 @@ post_process_collect_info:
       // Constraining the area if the colorpicker is active in area mode
       if(dev->gui_module
          && !strcmp(dev->gui_module->op, "colorout")
-         && dev->gui_module->request_color_pick)
+         && dev->gui_module->request_color_pick
+         && darktable.lib->proxy.colorpicker.restrict_histogram)
       {
         if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
         {
