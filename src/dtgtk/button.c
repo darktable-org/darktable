@@ -202,4 +202,13 @@ void dtgtk_button_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path
   gtk_accel_map_add_entry(accel_path, 0, 0);
   dt_accel_group_connect_by_path(accel_group, accel_path,NULL);
 }
+
+void dtgtk_button_set_paint(GtkDarktableButton *button,
+                            DTGTKCairoPaintIconFunc paint,
+                            gint paintflags)
+{
+  button->icon = paint;
+  button->icon_flags = paintflags;
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
