@@ -34,6 +34,8 @@
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
 
+#define max(a,b) ((a) > (b) ? (a) : (b))
+
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
   int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*width*height, 2);
@@ -489,18 +491,18 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         float factor;
         unsigned overhead;
         unsigned overlap; // not used
-        size_t memory;
+        //size_t memory;
 
         /* get memory requirement of module */
         module->tiling_callback(module, piece, &roi_in, roi_out, &factor, &overhead, &overlap);
-        memory = ceilf(factor * roi_in.width * roi_in.height * in_bpp + overhead);
+        //memory = ceilf(factor * roi_in.width * roi_in.height * in_bpp + overhead);
 
         // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, memory %d, width %d, height %d, bpp %d\n", (double)factor, overhead, memory, roi_in.width, roi_in.height, bpp);
 
         // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
         // fprintf(stderr, "[opencl_pixelpipe 1] module '%s'\n", module->op);
 
-        if(dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height, memory))
+        if(dt_opencl_image_fits_device(pipe->devid, max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), max(in_bpp, bpp), factor, overhead))
         {
           /* try to directly process whole image with opencl */
 

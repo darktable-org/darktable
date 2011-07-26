@@ -696,13 +696,20 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
 
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes)
+int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
 {
   if(!darktable.opencl->inited) return FALSE;
 
+  size_t singlebuffer = width * height * bpp;
+  size_t total = factor * singlebuffer + overhead;
+
   if(darktable.opencl->dev[devid].max_image_width < width || darktable.opencl->dev[devid].max_image_height < height) return FALSE;
 
-  return darktable.opencl->dev[devid].max_global_mem >= bytes + DT_OPENCL_MEMORY_HEADROOM;
+  if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
+
+  if(darktable.opencl->dev[devid].max_global_mem < total + DT_OPENCL_MEMORY_HEADROOM) return FALSE;
+
+  return TRUE;
 }
 
 

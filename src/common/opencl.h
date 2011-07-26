@@ -184,7 +184,7 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size);
 void dt_opencl_release_mem_object(void *mem);
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes);
+int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead);
 
 /** get global memory of device */
 cl_ulong dt_opencl_get_max_global_mem(const int devid);
@@ -272,7 +272,7 @@ static inline int dt_opencl_update_enabled(void)
 {
   return 0;
 }
-static int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes)
+static int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
 {
   return 0;
 }
