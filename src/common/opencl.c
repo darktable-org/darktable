@@ -963,7 +963,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
     dt_opencl_events_reset(devid);
   }
 
-  return result;
+  return result == CL_COMPLETE ? 0 : result;
 }
 
 

@@ -272,10 +272,10 @@ static inline int dt_opencl_update_enabled(void)
 {
   return 0;
 }
-// static int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes)
-// {
-//   return 0;
-// }
+static inline int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes)
+{
+  return 0;
+}
 static inline int dt_opencl_get_max_global_mem(const int devid)
 {
   return 0;
@@ -286,12 +286,12 @@ static inline void *dt_opencl_events_get_slot(const int devid, const char *tag)
   return NULL;
 }
 static inline void dt_opencl_events_reset(const int devid) {}
-// static void dt_opencl_events_wait_for(const int devid) {}
+static inline void dt_opencl_events_wait_for(const int devid) {}
 static inline int dt_opencl_events_flush(const int devid, const int reset)
 {
   return -1;
 }
-void dt_opencl_events_profiling(const int devid, const int aggregated) {}
+static inline void dt_opencl_events_profiling(const int devid, const int aggregated) {}
 #endif
 
 
