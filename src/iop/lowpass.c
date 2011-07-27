@@ -570,14 +570,14 @@ void init_global(dt_iop_module_so_t *module)
 
 void init_presets (dt_iop_module_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("local contrast mask"), self->op, &(dt_iop_lowpass_params_t)
   {
     0, 50.0f, -1.0f, 0.0f
   }, sizeof(dt_iop_lowpass_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void cleanup(dt_iop_module_t *module)

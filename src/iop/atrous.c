@@ -408,12 +408,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples (g->sample, d, roi_in, piece);
-<<<<<<< HEAD
     dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
-=======
     // tries to acquire gdk lock and this prone to deadlock:
     // dt_control_queue_draw(GTK_WIDGET(g->area));
->>>>>>> origin/master
   }
 
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
