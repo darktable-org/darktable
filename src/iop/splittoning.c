@@ -274,6 +274,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
 
   GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select tone color")));
+  gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(darktable.gui->widgets.main_window));
   g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
                     G_CALLBACK (colorpick_button_callback), csd);
   g_signal_connect (G_OBJECT (csd->cancel_button), "clicked",

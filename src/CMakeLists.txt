@@ -46,6 +46,7 @@ FILE(GLOB SOURCE_FILES
   "develop/imageop.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
+  "develop/tiling.c"
   "dtgtk/*.c" 
   "gui/contrast.c"  
   "gui/gtk.c"  
@@ -61,6 +62,7 @@ set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw)
 
 # initial compiler flags
@@ -195,7 +197,6 @@ if(OPENEXR_FOUND)
 endif(OPENEXR_FOUND)
 
 if(USE_OPENCL)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
   add_definitions("-DHAVE_OPENCL")
 endif(USE_OPENCL)
 

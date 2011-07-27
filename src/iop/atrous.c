@@ -408,7 +408,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples (g->sample, d, roi_in, piece);
+<<<<<<< HEAD
     dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
+=======
+    // tries to acquire gdk lock and this prone to deadlock:
+    // dt_control_queue_draw(GTK_WIDGET(g->area));
+>>>>>>> origin/master
   }
 
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
@@ -428,6 +433,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   // Try to estimate free memory on GPU: maximum global mem minus two full buffers (in + out) with current image dimensions
   // This can only be valid if there are no other applications consuming GPU memory, but there is no way for us to tell :(
   unsigned int max_free_mem_mb = (dt_opencl_get_max_global_mem(devid) - 2*roi_out->width*roi_out->height*4*sizeof(float)) >> 20;
+
   //dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] maximum free memory %dMB on device %d\n", max_free_mem_mb, devid);
 
   // pure heuristic limits
@@ -461,8 +467,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
 
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
-  const int width = roi_out->width, height = roi_out->height;
-  const int tile_wd = sizes[0] - 2*max_filter_radius, tile_ht = sizes[1] - 2*max_filter_radius;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const int tile_wd = sizes[0] - 2*max_filter_radius;
+  const int tile_ht = sizes[1] - 2*max_filter_radius;
   const int tiles_x = (need_tiles && (sizes[0] != width)) ? ceilf(width /(float)tile_wd) : 1;
   const int tiles_y = (need_tiles && (sizes[1] != height)) ? ceilf(height/(float)tile_ht) : 1;
 
@@ -476,7 +484,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     // intermediate GPU buffer
     detail_buffer = (float *)dt_alloc_align(64, 4*sizeof(float)*sizes[0]*sizes[1]*(max_scale-1));
     mdev_detail[0] = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4*sizeof(float));
-    if (detail_buffer == NULL || mdev_detail[0] == 0) goto error;
+    if (detail_buffer == NULL || mdev_detail[0] == NULL) goto error;
     dev_detail = mdev_detail[0];
   }
   else
@@ -497,11 +505,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     for(int ty=0; ty<tiles_y; ty++)
     {
       size_t orig0[3] = {0, 0, 0};
-      size_t origin[3] = {0, 0, 0};
+      size_t origin[3];
       origin[0] = tx*tile_wd + sizes[0] > width ? width - sizes[0] : tx*tile_wd;
       origin[1] = ty*tile_ht + sizes[1] > height ? height - sizes[1] : ty*tile_ht;
-      //size_t wd = origin[0] + sizes[0] > width  ? width  - origin[0] : sizes[0];
-      //size_t ht = origin[1] + sizes[1] > height ? height - origin[1] : sizes[1];
+      origin[2] = 0;
       size_t region[3] = {sizes[0], sizes[1], 1};
 
 
@@ -511,25 +518,23 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       {
         err = dt_opencl_enqueue_copy_image(devid, _dev_in, dev_in, origin, orig0, region);
         if(err != CL_SUCCESS) goto error;
+        dt_opencl_finish(devid);
       }
-
-      err = dt_opencl_finish(devid);
-      if(err != CL_SUCCESS) goto error;
 
       if(tx > 0)
       {
         origin[0] += max_filter_radius;
         orig0[0] += max_filter_radius;
-        region[0] = region[0] > max_filter_radius ? region[0] - max_filter_radius : 0;
+        region[0] -= max_filter_radius;
       }
       if(ty > 0)
       {
         origin[1] += max_filter_radius;
         orig0[1] += max_filter_radius;
-        region[1] = region[1] > max_filter_radius ? region[1] - max_filter_radius : 0;
+        region[1] -= max_filter_radius;
       }
 
-      if(region[0] == 0 || region[1] == 0) continue;
+      if(region[0] <= 0 || region[1] <= 0) continue;  // this should never happen
 
       for(int s=0; s<max_scale; s++)
       {
@@ -571,6 +576,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       // now synthesize again:
       for(int scale=max_scale-1; scale>=0; scale--)
       {
+        //printf("synthesize scale %d of %d with sizes %d x %d\n", scale, max_scale, sizes[0], sizes[1]);
+
         if(lowmem && scale!=max_scale-1)
         {
           err = dt_opencl_write_host_to_device(devid, detail_buffer+4*sizeof(float)*sizes[0]*sizes[1]*scale, dev_detail, sizes[0], sizes[1], 4*sizeof(float));
@@ -582,7 +589,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
           dev_detail = mdev_detail[scale];
         }
 
-        //printf("synthesize scale %d of %d with sizes %d x %d\n", scale, max_scale, sizes[0], sizes[1]);
         if(scale & 1)
         {
           dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
@@ -619,13 +625,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
         err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, orig0, orig0, region);
         if(err != CL_SUCCESS) goto error;
       }
-      // clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
-      err = dt_opencl_finish(devid);
-      if(err != CL_SUCCESS) goto error;
+      dt_opencl_finish(devid);
     }
 
   // free device mem
-  if (detail_buffer) free(detail_buffer);
+  if (detail_buffer != NULL) free(detail_buffer);
   if (mdev_in != NULL) dt_opencl_release_mem_object(mdev_in);
   if (mdev_out != NULL) dt_opencl_release_mem_object(mdev_out);
   for(int k=0; k<max_scale; k++)
@@ -633,7 +637,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   return TRUE;
 
 error:
-  if (detail_buffer) free(detail_buffer);
+  if (detail_buffer != NULL) free(detail_buffer);
   if (mdev_in != NULL) dt_opencl_release_mem_object(mdev_in);
   if (mdev_out != NULL) dt_opencl_release_mem_object(mdev_out);
   for(int k=0; k<max_scale; k++)
@@ -642,6 +646,21 @@ error:
   return FALSE;
 }
 #endif
+
+void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+{
+  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  float thrs [MAX_NUM_SCALES][4];
+  float boost[MAX_NUM_SCALES][4];
+  float sharp[MAX_NUM_SCALES];
+  const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+  const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
+
+  *factor = 2 + max_scale;
+  *overhead = 0;
+  *overlap = max_filter_radius;
+  return;
+}
 
 void init(dt_iop_module_t *module)
 {
