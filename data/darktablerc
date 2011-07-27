@@ -13,6 +13,7 @@ ask_before_remove=true
 ask_before_delete=true
 preview_subsample=0.2
 config_version=0
+opencl_memory_requirement=768
 plugins/capture/jobcode=capture
 plugins/capture/storage/basedirectory=$(PICTURES_FOLDER)/darktable
 plugins/capture/storage/subpath=$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)

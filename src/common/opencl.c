@@ -27,6 +27,8 @@
 #include "common/dlopencl.h"
 #include "control/conf.h"
 
+#define max(a,b) ((a) > (b) ? (a) : (b))
+
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
   dt_pthread_mutex_init(&cl->lock, NULL);
@@ -39,6 +41,13 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   // Will remain disabled if initialization fails.
   const int prefs = dt_conf_get_bool("opencl");
   dt_conf_set_bool("opencl", FALSE);
+
+  // user selectable parameter defines minimum requirement on GPU memory
+  // default is 768MB
+  // values below 256 will be (re)set to 256
+  const int opencl_memory_requirement = max(256, dt_conf_get_int("opencl_memory_requirement"));
+  dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
+
 
   for(int k=0; k<argc; k++) if(!strcmp(argv[k], "--disable-opencl"))
     {
@@ -115,7 +124,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     size_t infointtab[1024];
     cl_bool image_support = 0;
 
-    // test 1GB mem and image support:
+    // test GPU memory and image support:
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &(cl->dev[dev].max_image_height), NULL);
@@ -128,7 +137,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     }
 
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &(cl->dev[dev].max_global_mem), NULL);
-    if(cl->dev[dev].max_global_mem < 256*1024*1024)
+    if(cl->dev[dev].max_global_mem < opencl_memory_requirement*1024*1024)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to insufficient global memory (%luMB).\n", k, infostr, cl->dev[dev].max_global_mem/1024/1024);
       continue;
