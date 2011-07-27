@@ -289,7 +289,7 @@ static inline void dt_opencl_events_reset(const int devid) {}
 static inline void dt_opencl_events_wait_for(const int devid) {}
 static inline int dt_opencl_events_flush(const int devid, const int reset)
 {
-  return -1;
+  return 0;
 }
 static inline void dt_opencl_events_profiling(const int devid, const int aggregated) {}
 #endif
