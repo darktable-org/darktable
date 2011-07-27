@@ -551,7 +551,7 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl
 {
   if(!darktable.opencl->inited) return -1;
   cl_int err;
-  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image (on device)]");
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image to Buffer (on device)]");
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)(darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin, region, offset, 0, NULL, eventp);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image: %d\n", err);
   return err;
@@ -561,7 +561,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
 {
   if(!darktable.opencl->inited) return -1;
   cl_int err;
-  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image (on device)]");
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Image (on device)]");
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)(darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset, origin, region, 0, NULL, eventp);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer: %d\n", err);
   return err;
