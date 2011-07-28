@@ -420,8 +420,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int devid = piece->pipe->devid;
   cl_int err = -999;
+  cl_mem dev_tmp = NULL;
   cl_mem dev_detail[max_scale];
   for(int k=0; k<max_scale; k++) dev_detail[k] = NULL;
+
+  /* allocate space for a temporary buffer. we don't want to use dev_in in the buffer ping-pong below, as we
+     need to keep it for blendops */
+  dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4*sizeof(float));
+  if (dev_tmp == NULL) goto error;
 
   /* allocate space to store detail information. Requires a number of additional buffers, each with full image size */
   for(int k=0; k<max_scale; k++)
@@ -431,22 +437,27 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
 
   size_t sizes[] = { roi_out->width, roi_out->height, 1};
+  size_t origin[] = { 0, 0, 0};
+  size_t region[] = { roi_out->width, roi_out->height, 1};
 
+  // copy original input from dev_in -> dev_out as starting point
+  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  if(err != CL_SUCCESS) goto error;
 
-  /* decompose image into detail scales and coarse (the latter is left in dev_in or dev_out) */
+  /* decompose image into detail scales and coarse (the latter is left in dev_tmp or dev_out) */
   for(int s=0; s<max_scale; s++)
   {
     const int scale = s;
 
     if(s & 1)
     {
-      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
     }
     else
     {
-      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_tmp);
     }
     dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
@@ -461,13 +472,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     if(scale & 1)
     {
-      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
     }
     else
     {
-      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_tmp);
     }
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
@@ -484,11 +495,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
   }
 
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k=0; k<max_scale; k++)
     if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
   return TRUE;
 
 error:
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k=0; k<max_scale; k++)
     if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
@@ -505,7 +518,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
 
-  *factor = 2 + max_scale;
+  *factor = 2 + 1 + max_scale;
   *overhead = 0;
   *overlap = max_filter_radius;
   return;
