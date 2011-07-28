@@ -197,9 +197,23 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1,
   {
     for(i = 0; i < 3; i++)
       d->quadratic_coeffs[i] = 0;
+    for(i = 0; i < 2; i++)
+      d->unbounded_coeffs[i] = 0;
     return;
   }
 
+  // Multiplying to yield the coefficients
+  for(i = 0; i < 3; i++)
+    d->quadratic_coeffs[i] = 0;
+
+  for(i = 0; i < 3; i++)
+    for(j = 0; j < 3; j++)
+      d->quadratic_coeffs[i] += x_inv[(3 * i) + j] * (0.5 * j);
+
+  printf("(%f,%f,%f) -> (%f,%f,%f)\n",
+         p->levels[0], p->levels[1], p->levels[2],
+         d->quadratic_coeffs[0], d->quadratic_coeffs[1],
+         d->quadratic_coeffs[2]);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
