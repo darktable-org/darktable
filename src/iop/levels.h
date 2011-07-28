@@ -42,9 +42,9 @@ dt_iop_levels_gui_data_t;
 
 typedef struct dt_iop_levels_data_t
 {
-  float levels[3];
-  float table[0x10000];        // precomputed look-up table for levels adjust
-  float unbounded_coeffs[2];   // approximation for extrapolation
+  float thresh[2];
+  float quadratic_coeffs[3];
+  float unbounded_coeffs[2];
 }
 dt_iop_levels_data_t;
 

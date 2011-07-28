@@ -27,6 +27,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "common/colorspaces.h"
 #include "common/opencl.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET 5
@@ -53,41 +54,41 @@ flags ()
 }
 
 
-#ifdef HAVE_OPENCL
-int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
-  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
-  cl_mem dev_m = NULL;
-  cl_mem dev_coeffs = NULL;
-  cl_int err = -999;
+//#ifdef HAVE_OPENCL
+//int
+//process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+//{
+//  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
+//  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
+//  cl_mem dev_m = NULL;
+//  cl_mem dev_coeffs = NULL;
+//  cl_int err = -999;
 
-  const int devid = piece->pipe->devid;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
-  if (dev_m == NULL) goto error;
+//  const int devid = piece->pipe->devid;
+//  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+//  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+//  if (dev_m == NULL) goto error;
 
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
-  if (dev_coeffs == NULL) goto error;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 3, sizeof(cl_mem), (void *)&dev_coeffs);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_levels, sizes);
+//  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
+//  if (dev_coeffs == NULL) goto error;
+//  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), (void *)&dev_in);
+//  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), (void *)&dev_out);
+//  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(cl_mem), (void *)&dev_m);
+//  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 3, sizeof(cl_mem), (void *)&dev_coeffs);
+//  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_levels, sizes);
 
-  if(err != CL_SUCCESS) goto error;
-  dt_opencl_release_mem_object(dev_m);
-  dt_opencl_release_mem_object(dev_coeffs);
-  return TRUE;
+//  if(err != CL_SUCCESS) goto error;
+//  dt_opencl_release_mem_object(dev_m);
+//  dt_opencl_release_mem_object(dev_coeffs);
+//  return TRUE;
 
-error:
-  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %d\n", err);
-  return FALSE;
-}
-#endif
+//error:
+//  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+//  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+//  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %d\n", err);
+//  return FALSE;
+//}
+//#endif
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -133,9 +134,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int i = 0; i < ch; i++)
         out[i] = in[i];
 
-      if(in[0] < d->levels[0] * 100)
+      if(in[0] < d->thresh[0] * 100)
         out[0] = 0;
-      if(in[0] > d->levels[2] * 100)
+      if(in[0] > d->thresh[1] * 100)
         out[0] = 100;
     }
   }
@@ -171,10 +172,34 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1,
 //                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
 //                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
 //  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
+  int i;
+  int j;
+
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t*)(piece->data);
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t*)p1;
-  for(int i = 0; i < 3; i++)
-    d->levels[i] = p->levels[i];
+
+  // First committing the upper and lower thresholds
+  d->thresh[0] = p->levels[0];
+  d->thresh[1] = p->levels[2];
+
+  // Then calculating the quadratic curve within the bounds
+  float x[9];
+  float x_inv[9];
+  for(i = 0; i < 3; i++)
+    x[3 * i] = p->levels[i] * p->levels[i];
+  for(i = 0; i < 3; i++)
+    x[(3 * i) + 1] = p->levels[i];
+  for(i = 0; i < 3; i++)
+    x[(3 * i) + 2] = 1;
+
+  // Calculating the inverse
+  if(mat3inv(x_inv, x))
+  {
+    for(i = 0; i < 3; i++)
+      d->quadratic_coeffs[i] = 0;
+    return;
+  }
+
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
