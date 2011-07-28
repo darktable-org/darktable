@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -522,7 +522,11 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   dt_dev_write_history(dev);
 
   // be sure light table will update the thumbnail
-  if(dev->image) dev->image->force_reimport = 1;
+  if(dev->image)
+  {
+    dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
+    dev->image->force_reimport = 1;
+  }
   // release full buffer
   if(dev->image && dev->image->pixels)
     dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
@@ -995,11 +999,13 @@ void leave(dt_view_t *self)
   dt_tag_attach(tagid, dev->image->id);
   // commit image ops to db
   dt_dev_write_history(dev);
-  // write .xmp file
-  dt_image_write_sidecar_file(dev->image->id);
 
   // be sure light table will regenerate the thumbnail:
-  if(dev->image) dev->image->force_reimport = 1;
+  if(dev->image)
+  {
+    dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
+    dev->image->force_reimport = 1;
+  }
 
   // clear gui.
   dev->gui_leaving = 1;
