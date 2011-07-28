@@ -741,10 +741,10 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    // Picking RGB for the live samples
+    // Picking RGB for the live samples and converting to Lab
     if(dev->gui_attached
        && pipe == dev->preview_pipe
-       && (strcmp(module->op, "gamma") == 0) // only colorout provides meaningful RGB data
+       && (strcmp(module->op, "gamma") == 0)
        && darktable.lib->proxy.colorpicker.live_samples) // samples to pick
     {
       dt_colorpicker_sample_t *sample = NULL;
@@ -803,6 +803,58 @@ post_process_collect_info:
                 = sample->picked_color_rgb_min[i]
                   = sample->picked_color_rgb_max[i]
                     = pixel[4*(roi_out->width*point[1] + point[0]) + 2-i];
+        }
+
+        // Converting the RGB values to Lab
+
+        GList *nodes = pipe->nodes;
+        cmsHPROFILE out_profile = NULL;
+        while(nodes)
+        {
+          dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t*)nodes->data;
+          if(!strcmp(piece->module->op, "colorout"))
+          {
+            out_profile = ((dt_iop_colorout_data_t*)piece->data)->output;
+            break;
+          }
+          nodes = g_list_next(nodes);
+        }
+        if(out_profile)
+        {
+          cmsHPROFILE Lab = dt_colorspaces_create_lab_profile();
+
+          cmsHTRANSFORM xform = cmsCreateTransform(out_profile, TYPE_RGB_FLT,
+                                                  Lab, TYPE_Lab_FLT,
+                                                  INTENT_PERCEPTUAL, 0);
+
+
+          // Preparing the data for transformation
+          float rgb_data[9];
+          for(int i = 0; i < 3; i++)
+          {
+            rgb_data[i] =
+                sample->picked_color_rgb_mean[i] / 255.0;
+            rgb_data[i + 3] =
+                sample->picked_color_rgb_min[i] / 255.0;
+            rgb_data[i + 6] =
+                sample->picked_color_rgb_max[i] / 255.0;
+          }
+
+          float Lab_data[9];
+          cmsDoTransform(xform, rgb_data, Lab_data, 3);
+
+          for(int i = 0; i < 3; i++)
+          {
+            sample->picked_color_lab_mean[i] =
+                Lab_data[i];
+            sample->picked_color_lab_min[i] =
+                Lab_data[i + 3];
+            sample->picked_color_lab_max[i] =
+                Lab_data[i + 6];
+          }
+
+          cmsDeleteTransform(xform);
+          dt_colorspaces_cleanup_profile(Lab);
         }
 
         samples = g_slist_next(samples);
@@ -887,7 +939,40 @@ post_process_collect_info:
       }
       if(out_profile)
       {
-        (void)out_profile;
+        cmsHPROFILE Lab = dt_colorspaces_create_lab_profile();
+
+        cmsHTRANSFORM xform = cmsCreateTransform(out_profile, TYPE_RGB_FLT,
+                                                Lab, TYPE_Lab_FLT,
+                                                INTENT_PERCEPTUAL, 0);
+
+
+        // Preparing the data for transformation
+        float rgb_data[9];
+        for(int i = 0; i < 3; i++)
+        {
+          rgb_data[i] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_mean[i] / 255.0;
+          rgb_data[i + 3] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_min[i] / 255.0;
+          rgb_data[i + 6] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_max[i] / 255.0;
+        }
+
+        float Lab_data[9];
+        cmsDoTransform(xform, rgb_data, Lab_data, 3);
+
+        for(int i = 0; i < 3; i++)
+        {
+          darktable.lib->proxy.colorpicker.picked_color_lab_mean[i] =
+              Lab_data[i];
+          darktable.lib->proxy.colorpicker.picked_color_lab_min[i] =
+              Lab_data[i + 3];
+          darktable.lib->proxy.colorpicker.picked_color_lab_max[i] =
+              Lab_data[i + 6];
+        }
+
+        cmsDeleteTransform(xform);
+        dt_colorspaces_cleanup_profile(Lab);
       }
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
