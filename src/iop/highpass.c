@@ -95,6 +95,25 @@ void init_key_accels()
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highpass/sharpness");
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highpass/contrast boost");
 }
+
+
+void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+{
+  dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
+
+  int rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
+  const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
+  
+  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
+  const int wdh = ceilf(3.0f * sigma);
+
+  *factor = 2;
+  *overhead = 0;
+  *overlap = wdh;
+  return;
+}
+
+
 #ifdef HAVE_OPENCL
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "common/opencl.h"
 #include "libs/lib.h"
 #include "libs/colorpicker.h"
+#include "iop/colorout.h"
 
 #include <assert.h>
 #include <string.h>
@@ -428,71 +429,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    // Lab color picking for sample points
-    if(dev->gui_attached && pipe == dev->preview_pipe &&
-       !strcmp(module->op, "colorout") &&
-       darktable.lib->proxy.colorpicker.live_samples)
-    {
-      dt_colorpicker_sample_t *sample = NULL;
-      GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
-
-      while(samples)
-      {
-        sample = samples->data;
-
-        if(sample->locked)
-        {
-          samples = g_slist_next(samples);
-          continue;
-        }
-
-        for(int k=0; k<3; k++) sample->picked_color_lab_min[k] =  666.0f;
-        for(int k=0; k<3; k++) sample->picked_color_lab_max[k] = -666.0f;
-        int box[4];
-        int point[2];
-        float Lab[3], *in = (float *)input;
-        for(int k=0; k<3; k++) Lab[k] = 0.0f;
-
-        // Initializing bounds of colorpicker box
-        for(int k=0; k<4; k+=2) box[k] = MIN(roi_in.width -1, MAX(0, sample->box[k]*roi_in.width));
-        for(int k=1; k<4; k+=2) box[k] = MIN(roi_in.height-1, MAX(0, sample->box[k]*roi_in.height));
-
-        // Initializing bounds of colorpicker point
-        point[0] = MIN(roi_in.width - 1, MAX(0, sample->point[0] * roi_in.width));
-        point[1] = MIN(roi_in.height - 1, MAX(0, sample->point[1] * roi_in.height));
-
-        if(sample->size == DT_COLORPICKER_SIZE_BOX)
-        {
-          const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-          for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
-          {
-            const float L = in[4*(roi_in.width*j + i) + 0];
-            const float a = in[4*(roi_in.width*j + i) + 1];
-            const float b = in[4*(roi_in.width*j + i) + 2];
-            Lab[0] += w*L;
-            Lab[1] += w*a;
-            Lab[2] += w*b;
-            sample->picked_color_lab_min[0] = fminf(sample->picked_color_lab_min[0], L);
-            sample->picked_color_lab_min[1] = fminf(sample->picked_color_lab_min[1], a);
-            sample->picked_color_lab_min[2] = fminf(sample->picked_color_lab_min[2], b);
-            sample->picked_color_lab_max[0] = fmaxf(sample->picked_color_lab_max[0], L);
-            sample->picked_color_lab_max[1] = fmaxf(sample->picked_color_lab_max[1], a);
-            sample->picked_color_lab_max[2] = fmaxf(sample->picked_color_lab_max[2], b);
-            for(int k=0; k<3; k++) sample->picked_color_lab_mean[k] = Lab[k];
-          }
-        }
-        else
-        {
-          for(int i = 0; i < 3; i++)
-            sample->picked_color_lab_mean[i]
-                = sample->picked_color_lab_min[i]
-                  = sample->picked_color_lab_max[i]
-                    = in[4*(roi_in.width*point[1] + point[0]) + i];
-        }
-
-        samples = g_slist_next(samples);
-      }
-    }
 
     // Lab color picking for module
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
@@ -564,87 +500,77 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     if (dt_opencl_is_inited())
     {
       int success_opencl = TRUE;
-      int valid_input_on_gpu = FALSE;
+
+      /* if input is on gpu memory only, remember this fact to later take appropriate action */
+      int valid_input_on_gpu_only = (cl_mem_input != NULL);
       
       /* general remark: in case of opencl errors within modules of out-of-memory on GPU, we always transparently
          fall back to the respective cpu module and continue in pixelpipe. If we encounter fatal errors, we set 
          pipe->opencl_error, return with value 1, and leave appropriate action to the calling function */
 
       /* try to run opencl module after checking some pre-requisites */
-      if(pipe->opencl_enabled && module->process_cl && piece->process_cl_ready  && 
-         dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height) && 
-         dt_opencl_image_fits_device(pipe->devid, roi_out->width, roi_out->height))
+      if(pipe->opencl_enabled && module->process_cl && piece->process_cl_ready)
       {
-        // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+        float factor;
+        unsigned overhead;
+        unsigned overlap; // not used
+        size_t memory;
 
-        // if input is on the gpu only, remember this fact to later take appropriate action,
-        // else, if input is not on the gpu, copy it there.
-        if(cl_mem_input != NULL)
+        /* get memory requirement of module */
+        module->tiling_callback(module, piece, &roi_in, roi_out, &factor, &overhead, &overlap);
+        memory = ceilf(factor * roi_in.width * roi_in.height * in_bpp + overhead);
+
+        // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, memory %d, width %d, height %d, bpp %d\n", (double)factor, overhead, memory, roi_in.width, roi_in.height, bpp);
+
+        // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+        // fprintf(stderr, "[opencl_pixelpipe 1] module '%s'\n", module->op);
+
+        if(dt_opencl_image_fits_device(pipe->devid, roi_in.width, roi_in.height, memory))
         {
-          /* remember that we found a valid input buffer on gpu */
-          valid_input_on_gpu = TRUE;
-        }
-        else
-        {
-          cl_mem_input = dt_opencl_copy_host_to_device(pipe->devid, input, roi_in.width, roi_in.height, in_bpp);
+          /* try to directly process whole image with opencl */
+
+          // fprintf(stderr, "[opencl_pixelpipe 2] module '%s' running directly with process_cl\n", module->op);
+
+          /* input is not on gpu memory? copy it there */
           if (cl_mem_input == NULL)
           {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n", module->op);
-            success_opencl = FALSE;
+            cl_mem_input = dt_opencl_copy_host_to_device(pipe->devid, input, roi_in.width, roi_in.height, in_bpp);
+            if (cl_mem_input == NULL)
+            {
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n", module->op);
+              success_opencl = FALSE;
+            }
           }
-        }
 
-        /* try to allocate GPU memory for output */
-        if (success_opencl)
-        {
-          *cl_mem_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
-          if (*cl_mem_output == NULL)
+          /* try to allocate GPU memory for output */
+          if (success_opencl)
           {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't allocate output buffer for module %s\n", module->op);
-            success_opencl = FALSE;
+            *cl_mem_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
+            if (*cl_mem_output == NULL)
+            {
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't allocate output buffer for module %s\n", module->op);
+              success_opencl = FALSE;
+            }
           }
-        }
 
-        // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+          // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
 
-        /* now process opencl module; modules should emit meaningful messages in case of error */
-        if (success_opencl)
-          success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+          /* now process opencl module; modules should emit meaningful messages in case of error */
+          if (success_opencl)
+            success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
 
 
-        /* next process blending */
-        if (success_opencl)
-          success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
-
-        // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
-
-        /* Finally check, if we were successful */
-        if (success_opencl)
-        {
-          /* Nice, everything went fine */
-          
-          /* input was anyhow only on GPU? Let's invalidate CPU input buffer then */
-          if (valid_input_on_gpu) dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
-
-          /* we can now release cl_mem_input */
-          dt_opencl_release_mem_object(cl_mem_input);
-          // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
-          // so we're not just yet invalidating the (empty) output cache line.
+          /* process blending */
+          if (success_opencl)
+            success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
         }
         else
         {
-          /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
-          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module %s. fall back to cpu module\n", module->op);
+          /* try to process image with opencl via tiling */
 
-          /* we might need to free unused output buffer */
-          if (*cl_mem_output != NULL)
-          {
-            dt_opencl_release_mem_object(*cl_mem_output);
-            *cl_mem_output = NULL;
-          }
-          
-          /* first check where we found input buffer before we started */
-          if (valid_input_on_gpu)
+          // fprintf(stderr, "[opencl_pixelpipe 3] module '%s' tiling with process_tiling_cl\n", module->op);
+
+          if (cl_mem_input != NULL)
           {
             cl_int err;
 
@@ -660,6 +586,63 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
               return 1;
             }
             dt_opencl_release_mem_object(cl_mem_input);
+            cl_mem_input = NULL;
+            valid_input_on_gpu_only = FALSE;
+          }
+
+          /* now process opencl tiling module; modules should emit meaningful messages in case of error */
+          if (success_opencl)
+            success_opencl = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+
+          /* process blending on cpu (anyhow fast enough) */
+          if (success_opencl)
+            dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+        }
+        
+        // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
+
+        /* finally check, if we were successful */
+        if (success_opencl)
+        {
+          /* Nice, everything went fine */
+        
+          /* we can now release cl_mem_input */
+          if (cl_mem_input) dt_opencl_release_mem_object(cl_mem_input);
+          // we speculate on the next plug-in to possibly copy back cl_mem_output to output,
+          // so we're not just yet invalidating the (empty) output cache line.
+        }
+        else
+        {
+          /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
+          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] failed to run module '%s'. fall back to cpu path\n", module->op);
+
+          // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
+
+          /* we might need to free unused output buffer */
+          if (*cl_mem_output != NULL)
+          {
+            dt_opencl_release_mem_object(*cl_mem_output);
+            *cl_mem_output = NULL;
+          }
+          
+          /* check where our input buffer is located */
+          if (cl_mem_input != NULL)
+          {
+            cl_int err;
+
+            /* copy back to CPU buffer, then clean no longer needed buffer */
+            err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height, in_bpp);
+            if (err != CL_SUCCESS)
+            {
+              /* fatal opencl error */
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (a)] fatal opencl error while copying back to cpu buffer: %d\n", err);
+              dt_opencl_release_mem_object(cl_mem_input);
+              pipe->opencl_error = 1;
+              dt_pthread_mutex_unlock(&pipe->busy_mutex);
+              return 1;
+            }
+            dt_opencl_release_mem_object(cl_mem_input);
+            valid_input_on_gpu_only = FALSE;
           }
 
           /* process module on cpu */
@@ -693,6 +676,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             return 1;
           }
           dt_opencl_release_mem_object(cl_mem_input);
+          valid_input_on_gpu_only = FALSE;
         }
 
         /* process module on cpu */
@@ -700,6 +684,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
       }
+
+      /* input is still only on GPU? Let's invalidate CPU input buffer then */
+      if (valid_input_on_gpu_only) dt_dev_pixelpipe_cache_invalidate(&(pipe->cache), input);
     }
     else
     {
@@ -754,10 +741,10 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    // Picking RGB for the live samples
+    // Picking RGB for the live samples and converting to Lab
     if(dev->gui_attached
        && pipe == dev->preview_pipe
-       && (strcmp(module->op, "gamma") == 0) // only colorout provides meaningful RGB data
+       && (strcmp(module->op, "gamma") == 0)
        && darktable.lib->proxy.colorpicker.live_samples) // samples to pick
     {
       dt_colorpicker_sample_t *sample = NULL;
@@ -818,24 +805,76 @@ post_process_collect_info:
                     = pixel[4*(roi_out->width*point[1] + point[0]) + 2-i];
         }
 
+        // Converting the RGB values to Lab
+
+        GList *nodes = pipe->nodes;
+        cmsHPROFILE out_profile = NULL;
+        while(nodes)
+        {
+          dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t*)nodes->data;
+          if(!strcmp(piece->module->op, "colorout"))
+          {
+            out_profile = ((dt_iop_colorout_data_t*)piece->data)->output;
+            break;
+          }
+          nodes = g_list_next(nodes);
+        }
+        if(out_profile)
+        {
+          cmsHPROFILE Lab = dt_colorspaces_create_lab_profile();
+
+          cmsHTRANSFORM xform = cmsCreateTransform(out_profile, TYPE_RGB_FLT,
+                                                  Lab, TYPE_Lab_FLT,
+                                                  INTENT_PERCEPTUAL, 0);
+
+
+          // Preparing the data for transformation
+          float rgb_data[9];
+          for(int i = 0; i < 3; i++)
+          {
+            rgb_data[i] =
+                sample->picked_color_rgb_mean[i] / 255.0;
+            rgb_data[i + 3] =
+                sample->picked_color_rgb_min[i] / 255.0;
+            rgb_data[i + 6] =
+                sample->picked_color_rgb_max[i] / 255.0;
+          }
+
+          float Lab_data[9];
+          cmsDoTransform(xform, rgb_data, Lab_data, 3);
+
+          for(int i = 0; i < 3; i++)
+          {
+            sample->picked_color_lab_mean[i] =
+                Lab_data[i];
+            sample->picked_color_lab_min[i] =
+                Lab_data[i + 3];
+            sample->picked_color_lab_max[i] =
+                Lab_data[i + 6];
+          }
+
+          cmsDeleteTransform(xform);
+          dt_colorspaces_cleanup_profile(Lab);
+        }
+
         samples = g_slist_next(samples);
       }
     }
-    //Picking RGB for primary colorpicker output
+    //Picking RGB for primary colorpicker output and converting to Lab
     if(dev->gui_attached
        && pipe == dev->preview_pipe
        && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
        && dev->gui_module
        && !strcmp(dev->gui_module->op, "colorout")
        && dev->gui_module->request_color_pick
-       && darktable.lib->proxy.colorpicker.picked_color_mean) // colorpicker module active
+       && darktable.lib->proxy.colorpicker.picked_color_rgb_mean) // colorpicker module active
     {
       uint8_t *pixel = (uint8_t*)*output;
 
       for(int k=0; k<3; k++)
-        darktable.lib->proxy.colorpicker.picked_color_min[k] =  255;
+        darktable.lib->proxy.colorpicker.picked_color_rgb_min[k] =  255;
       for(int k=0; k<3; k++)
-        darktable.lib->proxy.colorpicker.picked_color_max[k] = 0;
+        darktable.lib->proxy.colorpicker.picked_color_rgb_max[k] = 0;
       int box[4];
       int point[2];
       float rgb[3];
@@ -863,26 +902,79 @@ post_process_collect_info:
         {
           for(int k=0; k<3; k++)
           {
-            darktable.lib->proxy.colorpicker.picked_color_min[k] =
-                MIN(darktable.lib->proxy.colorpicker.picked_color_min[2-k],
+            darktable.lib->proxy.colorpicker.picked_color_rgb_min[k] =
+                MIN(darktable.lib->proxy.colorpicker.picked_color_rgb_min[2-k],
                     pixel[4*(roi_out->width*j + i) + 2-k]);
-            darktable.lib->proxy.colorpicker.picked_color_max[k] =
-                MAX(darktable.lib->proxy.colorpicker.picked_color_max[k],
+            darktable.lib->proxy.colorpicker.picked_color_rgb_max[k] =
+                MAX(darktable.lib->proxy.colorpicker.picked_color_rgb_max[k],
                     pixel[4*(roi_out->width*j + i) + 2-k]);
             rgb[k] += w*pixel[4*(roi_out->width*j + i) + 2-k];
           }
         }
         for(int k=0; k<3; k++)
-          darktable.lib->proxy.colorpicker.picked_color_mean[k] = rgb[k];
+          darktable.lib->proxy.colorpicker.picked_color_rgb_mean[k] = rgb[k];
       }
       else
       {
         for(int i = 0; i < 3; i++)
-          darktable.lib->proxy.colorpicker.picked_color_mean[i]
-              = darktable.lib->proxy.colorpicker.picked_color_min[i]
-                = darktable.lib->proxy.colorpicker.picked_color_max[i]
+          darktable.lib->proxy.colorpicker.picked_color_rgb_mean[i]
+              = darktable.lib->proxy.colorpicker.picked_color_rgb_min[i]
+                = darktable.lib->proxy.colorpicker.picked_color_rgb_max[i]
                   = pixel[4*(roi_out->width*point[1] + point[0]) + 2-i];
       }
+
+      // Converting the RGB values to Lab
+
+      GList *nodes = pipe->nodes;
+      cmsHPROFILE out_profile = NULL;
+      while(nodes)
+      {
+        dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t*)nodes->data;
+        if(!strcmp(piece->module->op, "colorout"))
+        {
+          out_profile = ((dt_iop_colorout_data_t*)piece->data)->output;
+          break;
+        }
+        nodes = g_list_next(nodes);
+      }
+      if(out_profile)
+      {
+        cmsHPROFILE Lab = dt_colorspaces_create_lab_profile();
+
+        cmsHTRANSFORM xform = cmsCreateTransform(out_profile, TYPE_RGB_FLT,
+                                                Lab, TYPE_Lab_FLT,
+                                                INTENT_PERCEPTUAL, 0);
+
+
+        // Preparing the data for transformation
+        float rgb_data[9];
+        for(int i = 0; i < 3; i++)
+        {
+          rgb_data[i] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_mean[i] / 255.0;
+          rgb_data[i + 3] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_min[i] / 255.0;
+          rgb_data[i + 6] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_max[i] / 255.0;
+        }
+
+        float Lab_data[9];
+        cmsDoTransform(xform, rgb_data, Lab_data, 3);
+
+        for(int i = 0; i < 3; i++)
+        {
+          darktable.lib->proxy.colorpicker.picked_color_lab_mean[i] =
+              Lab_data[i];
+          darktable.lib->proxy.colorpicker.picked_color_lab_min[i] =
+              Lab_data[i + 3];
+          darktable.lib->proxy.colorpicker.picked_color_lab_max[i] =
+              Lab_data[i + 6];
+        }
+
+        cmsDeleteTransform(xform);
+        dt_colorspaces_cleanup_profile(Lab);
+      }
+
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       
       gboolean i_own_lock = dt_control_gdk_lock();
@@ -1068,7 +1160,7 @@ restart:
   // run pixelpipe recursively and get error status
   int err = dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos);
   // check error status of OpenCL queue
-  int oclerr = (dt_opencl_events_flush(pipe->devid, 0) != CL_COMPLETE);
+  int oclerr = (dt_opencl_events_flush(pipe->devid, 1) != 0);
 
   // OpenCL errors can come in two ways: pipe->opencl_error is TRUE or oclerr is TRUE
   // if we have OpenCL errors ....
@@ -1087,12 +1179,13 @@ restart:
     goto restart;  // (as said before)
   }
 
+  // release resources:
+  dt_opencl_unlock_device(pipe->devid);
+  pipe->devid = -1;
   // ... and in case of other errors ...
   if (err)
   {
     pipe->processing = 0;
-    dt_opencl_unlock_device(pipe->devid);
-    pipe->devid = -1;
     return 1;
   }
 
@@ -1106,8 +1199,6 @@ restart:
 
   // printf("pixelpipe homebrew process end\n");
   pipe->processing = 0;
-  dt_opencl_unlock_device(pipe->devid);
-  pipe->devid = -1;
   return 0;
 }
 

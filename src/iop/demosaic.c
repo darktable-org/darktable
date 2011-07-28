@@ -62,6 +62,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_ppg_redblue;
   int kernel_zoom_half_size;
   int kernel_downsample;
+  int kernel_border_interpolate;
 }
 dt_iop_demosaic_global_data_t;
 
@@ -680,6 +681,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       if(err != CL_SUCCESS) goto error;
       dev_in = dev_green_eq;
     }
+
     if(data->median_thrs > 0.0f)
     {
       const int one = 1;
@@ -711,6 +713,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_ppg_redblue, sizes);
     if(err != CL_SUCCESS) goto error;
+
+    // manage borders
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 2, sizeof(uint32_t), (void*)&roi_out->width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 3, sizeof(uint32_t), (void*)&roi_out->height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 4, sizeof(uint32_t), (void*)&data->filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
+    if(err != CL_SUCCESS) goto error;
+
   }
   else if(roi_out->scale > .5f)
   {
@@ -760,6 +772,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_tmp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 2, sizeof(uint32_t), (void*)&data->filters);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_ppg_redblue, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    // manage borders
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 2, sizeof(uint32_t), (void*)&roi_in->width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 3, sizeof(uint32_t), (void*)&roi_in->height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 4, sizeof(uint32_t), (void*)&data->filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
 
     // scale temp buffer to output buffer
@@ -845,13 +866,14 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 0; // from programs.conf
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)malloc(sizeof(dt_iop_demosaic_global_data_t));
   module->data = gd;
-  gd->kernel_zoom_half_size   = dt_opencl_create_kernel(program, "clip_and_zoom_demosaic_half_size");
-  gd->kernel_ppg_green        = dt_opencl_create_kernel(program, "ppg_demosaic_green");
-  gd->kernel_green_eq         = dt_opencl_create_kernel(program, "green_equilibration");
-  gd->kernel_pre_median       = dt_opencl_create_kernel(program, "pre_median");
-  gd->kernel_ppg_green_median = dt_opencl_create_kernel(program, "ppg_demosaic_green_median");
-  gd->kernel_ppg_redblue      = dt_opencl_create_kernel(program, "ppg_demosaic_redblue");
-  gd->kernel_downsample       = dt_opencl_create_kernel(program, "clip_and_zoom");
+  gd->kernel_zoom_half_size     = dt_opencl_create_kernel(program, "clip_and_zoom_demosaic_half_size");
+  gd->kernel_ppg_green          = dt_opencl_create_kernel(program, "ppg_demosaic_green");
+  gd->kernel_green_eq           = dt_opencl_create_kernel(program, "green_equilibration");
+  gd->kernel_pre_median         = dt_opencl_create_kernel(program, "pre_median");
+  gd->kernel_ppg_green_median   = dt_opencl_create_kernel(program, "ppg_demosaic_green_median");
+  gd->kernel_ppg_redblue        = dt_opencl_create_kernel(program, "ppg_demosaic_redblue");
+  gd->kernel_downsample         = dt_opencl_create_kernel(program, "clip_and_zoom");
+  gd->kernel_border_interpolate = dt_opencl_create_kernel(program, "border_interpolate");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -872,6 +894,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_ppg_green_median);
   dt_opencl_free_kernel(gd->kernel_ppg_redblue);
   dt_opencl_free_kernel(gd->kernel_downsample);
+  dt_opencl_free_kernel(gd->kernel_border_interpolate);
   free(module->data);
   module->data = NULL;
 }

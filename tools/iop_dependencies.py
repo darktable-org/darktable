@@ -102,6 +102,8 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'sharpen'))
   gr.add_edge(('colorout', 'grain'))
   gr.add_edge(('colorout', 'anlfyeni'))
+  gr.add_edge(('colorout', 'lowpass'))
+  gr.add_edge(('colorout', 'highpass'))
   gr.add_edge(('colorout', 'colorcontrast'))
   gr.add_edge(('colorout', 'colorize'))
   gr.add_edge(('bloom', 'colorin'))
@@ -119,6 +121,7 @@ def add_edges(gr):
   gr.add_edge(('sharpen', 'colorin'))
   gr.add_edge(('grain', 'colorin'))
   gr.add_edge(('anlfyeni', 'colorin'))
+  gr.add_edge(('lowpass', 'colorin'))
   gr.add_edge(('highpass', 'colorin'))
   gr.add_edge(('colorcontrast', 'colorin'))
   gr.add_edge(('colorize', 'colorin'))
@@ -150,6 +153,7 @@ def add_edges(gr):
   gr.add_edge(('atrous', 'nlmeans'))
   gr.add_edge(('sharpen', 'nlmeans'))
   gr.add_edge(('anlfyeni', 'nlmeans'))
+  gr.add_edge(('lowpass', 'nlmeans'))
   gr.add_edge(('highpass', 'nlmeans'))
   gr.add_edge(('zonesystem', 'nlmeans'))
   gr.add_edge(('tonecurve', 'nlmeans'))
@@ -222,6 +226,7 @@ def add_edges(gr):
   gr.add_edge(('zonesystem', 'colortransfer'))
   gr.add_edge(('colorcorrection', 'colortransfer'))
   gr.add_edge(('relight', 'colortransfer'))
+  gr.add_edge(('lowpass', 'colortransfer'))
   gr.add_edge(('highpass', 'colortransfer'))
   gr.add_edge(('anlfyeni', 'colortransfer'))
   gr.add_edge(('lowlight', 'colortransfer'))
@@ -232,6 +237,8 @@ def add_edges(gr):
 
   # levels come after tone curve
   gr.add_edge(('levels', 'tonecurve'))
+  # want to do highpass filtering after lowpass:
+  gr.add_edge(('highpass', 'lowpass'))
 
   # deprecated:
   gr.add_edge(('colorout', 'bilateral'))
@@ -267,6 +274,7 @@ gr.add_nodes([
 'grain',
 'highlights',
 'highpass',
+'lowpass',
 'hotpixels',
 'lens',
 'levels',
