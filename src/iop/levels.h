@@ -37,14 +37,16 @@ typedef struct dt_iop_levels_gui_data_t
   GtkLabel *label;
   double mouse_x, mouse_y;
   int dragging, handle_move;
+  float drag_start_percentage;
 }
 dt_iop_levels_gui_data_t;
 
 typedef struct dt_iop_levels_data_t
 {
-  float thresh[2];
-  float quadratic_coeffs[3];
-  float unbounded_coeffs[2];
+  float in_low;
+  float in_high;
+  float in_inv_gamma;
+  float lut[0x10000];
 }
 dt_iop_levels_data_t;
 

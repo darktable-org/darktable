@@ -131,13 +131,38 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + k*ch*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
-      for(int i = 0; i < ch; i++)
-        out[i] = in[i];
+      float L_in = in[0] / 100.0;
 
-      if(in[0] < d->thresh[0] * 100)
+      if(L_in <= d->in_low)
+      {
+        // Anything below the lower threshold just clips to zero
         out[0] = 0;
-      if(in[0] > d->thresh[1] * 100)
-        out[0] = 100;
+      }
+      else if(L_in >= d->in_high)
+      {
+        float percentage = (L_in - d->in_low) / (d->in_high - d->in_low);
+        out[0] = 100.0 * pow(percentage, d->in_inv_gamma);
+      }
+      else
+      {
+        // Within the expected input range we can use the lookup table
+        float percentage = (L_in - d->in_low) / (d->in_high - d->in_low);
+        //out[0] = 100.0 * pow(percentage, d->in_inv_gamma);
+        out[0] = d->lut[CLAMP((int)(percentage * 0xfffful), 0, 0xffff)];
+      }
+
+      // Preserving contrast
+      if(in[0] > 0.01f)
+      {
+        out[1] = in[1] * out[0]/in[0];
+        out[2] = in[2] * out[0]/in[0];
+      }
+      else
+      {
+        out[1] = in[1] * out[0]/0.01f;
+        out[2] = in[2] * out[0]/0.01f;
+      }
+
     }
   }
 
@@ -157,63 +182,22 @@ void init_presets (dt_iop_module_so_t *self)
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1,
                     dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-//  // pull in new params to gegl
-//  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)(piece->data);
-//  dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
-//  for(int k=0; k<6; k++)
-//    dt_draw_curve_set_point(d->curve, k, p->levels_x[k], p->levels_y[k]);
-//  dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
-//  for(int k=0; k<0x10000; k++) d->table[k] *= 100.0f;
-
-//  // now the extrapolation stuff:
-//  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
-//  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
-//                      d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
-//                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
-//                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
-//  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
-  int i;
-  int j;
-
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t*)(piece->data);
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t*)p1;
 
-  // First committing the upper and lower thresholds
-  d->thresh[0] = p->levels[0];
-  d->thresh[1] = p->levels[2];
+  // Building the lut for values in the [0,1] range
+  d->in_low = p->levels[0];
+  d->in_high = p->levels[2];
+  float delta = (p->levels[2] - p->levels[0]) / 2.;
+  float mid = p->levels[0] + delta;
+  float tmp = (p->levels[1] - mid) / delta;
+  d->in_inv_gamma = pow(10, tmp);
 
-  // Then calculating the quadratic curve within the bounds
-  float x[9];
-  float x_inv[9];
-  for(i = 0; i < 3; i++)
-    x[3 * i] = p->levels[i] * p->levels[i];
-  for(i = 0; i < 3; i++)
-    x[(3 * i) + 1] = p->levels[i];
-  for(i = 0; i < 3; i++)
-    x[(3 * i) + 2] = 1;
-
-  // Calculating the inverse
-  if(mat3inv(x_inv, x))
+  for(unsigned int i = 0; i < 0x10000; i++)
   {
-    for(i = 0; i < 3; i++)
-      d->quadratic_coeffs[i] = 0;
-    for(i = 0; i < 2; i++)
-      d->unbounded_coeffs[i] = 0;
-    return;
+    float percentage = (float)i / (float)0xfffful;
+    d->lut[i] = 100.0 * pow(percentage, d->in_inv_gamma);
   }
-
-  // Multiplying to yield the coefficients
-  for(i = 0; i < 3; i++)
-    d->quadratic_coeffs[i] = 0;
-
-  for(i = 0; i < 3; i++)
-    for(j = 0; j < 3; j++)
-      d->quadratic_coeffs[i] += x_inv[(3 * i) + j] * (0.5 * j);
-
-  printf("(%f,%f,%f) -> (%f,%f,%f)\n",
-         p->levels[0], p->levels[1], p->levels[2],
-         d->quadratic_coeffs[0], d->quadratic_coeffs[1],
-         d->quadratic_coeffs[2]);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
@@ -422,28 +406,33 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
   if(!c->dragging)
+  {
     c->mouse_x = CLAMP(event->x - inset, 0, width);
+    c->drag_start_percentage = (p->levels[1] - p->levels[0])
+                               / (p->levels[2] - p->levels[0]);
+  }
   c->mouse_y = CLAMP(event->y - inset, 0, height);
 
   if(c->dragging)
   {
-    if(c->handle_move >= 0)
+    if(c->handle_move >= 0 && c->handle_move < 3)
     {
-      if(c->handle_move >= 0 && c->handle_move < 3)
-      {
-        const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
+      const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
 
-        float min_x = 0;
-        float max_x = 1;
+      float min_x = 0;
+      float max_x = 1;
 
-        if(c->handle_move > 0)
-          min_x = fmaxf(0, p->levels[c->handle_move - 1] + 0.01);
-        if(c->handle_move < 2)
-          max_x = fminf(1, p->levels[c->handle_move + 1] - 0.01);
+      if(c->handle_move > 0)
+        min_x = fmaxf(0, p->levels[c->handle_move - 1] + 0.01);
+      if(c->handle_move < 2)
+        max_x = fminf(1, p->levels[c->handle_move + 1] - 0.01);
 
-        p->levels[c->handle_move] =
-            fminf(max_x, fmaxf(min_x, mx));
-      }
+      p->levels[c->handle_move] =
+          fminf(max_x, fmaxf(min_x, mx));
+
+      if(c->handle_move != 1)
+        p->levels[1] = p->levels[0] + (c->drag_start_percentage
+                       * (p->levels[2] - p->levels[0]));
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
