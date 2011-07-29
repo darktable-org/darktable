@@ -93,6 +93,12 @@ groups ()
 }
 
 int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);

@@ -48,6 +48,12 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
 void init_key_accels()
 {
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/exposure/black");

@@ -121,7 +121,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 static __m128

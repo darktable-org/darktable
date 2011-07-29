@@ -33,28 +33,6 @@
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
 #ifdef HAVE_OPENCL
-
-/* this is a temporary hack, so that we can test the code without having all
-   modules already adapted. Will finaly go away */
-static int
-_in_positive_list(const char* op)
-{
-  static const char *positive_list[] = { "basecurve", "tonecurve", "colorin", "colorout", "exposure", "sharpen", "highpass", "lowpass", "highlights", "atrous" };
-
-  const int listlength = sizeof(positive_list)/sizeof(char *);
-  int found = 0;
-
-  for(int k=0; k<listlength; k++)
-  {
-    if(!strcmp(op, positive_list[k]))
-    {
-      found = 1;
-      break;
-    }
-  }
-  return found;
-}
-
 /* if a module does not implement process_tiling_cl() by itself, this function is called instead.
    default_process_tiling_cl() is able to handle standard cases where pixels change their values
    but not their places. */
@@ -68,15 +46,11 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   unsigned overhead;
   unsigned overlap;
 
-  if(!_in_positive_list(self->op))
-  {
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tiling for module '%s' not supported.\n", self->op);
-    return FALSE;
-  }
-
   //fprintf(stderr, "roi_in: {%d, %d, %d, %d, %5.3f} roi_out: {%d, %d, %d, %d, %5.3f} in module '%s'\n",
   //      roi_in->x, roi_in->y, roi_in->width, roi_in->height, (double)roi_in->scale,
   //      roi_out->x, roi_out->y, roi_out->width, roi_out->height, (double)roi_out->scale, self->op);
+
+
   /* We only care for the most simple cases ATM. Delegate other stuff to CPU path. */
   if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
   {

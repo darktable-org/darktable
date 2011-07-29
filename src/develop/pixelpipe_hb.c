@@ -544,9 +544,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           if (success_opencl)
             success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
         }
-        else
+        else if(module->flags() & IOP_FLAGS_ALLOW_TILING)
         {
-          /* image is too big -> try to process image with opencl via tiling */
+          /* image is too big for direct opencl processing -> try to process image via tiling */
 
           // fprintf(stderr, "[opencl_pixelpipe 3] module '%s' tiling with process_tiling_cl\n", module->op);
 
@@ -579,6 +579,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           if (success_opencl)
             dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
         }
+        else
+        {
+          /* image is too big for direct opencl and tiling is not allowed -> no opencl processing for this module */
+          success_opencl = FALSE;
+        }
+
         
         // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
 

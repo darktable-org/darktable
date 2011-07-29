@@ -49,6 +49,13 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+
 static void key_softproof_callback(GtkAccelGroup *accel_group,
                                    GObject *acceleratable,
                                    guint keyval, GdkModifierType modifier,

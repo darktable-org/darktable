@@ -54,6 +54,13 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+
 void
 init_global(dt_iop_module_so_t *module)
 {
