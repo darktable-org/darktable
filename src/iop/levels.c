@@ -422,17 +422,37 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
       float min_x = 0;
       float max_x = 1;
 
-      if(c->handle_move > 0)
-        min_x = fmaxf(0, p->levels[c->handle_move - 1] + 0.01);
-      if(c->handle_move < 2)
-        max_x = fminf(1, p->levels[c->handle_move + 1] - 0.01);
+      // Determining the minimum and maximum bounds for the drag handles
+      switch(c->handle_move)
+      {
+      case 0:
+        max_x = fminf(p->levels[2] - (0.05 / c->drag_start_percentage),
+                      1);
+        max_x = fminf((p->levels[2] * (1 - c->drag_start_percentage) - 0.05)
+                      / (1 - c->drag_start_percentage),
+                      max_x);
+        break;
+
+      case 1:
+        min_x = p->levels[0] + 0.05;
+        max_x = p->levels[2] - 0.05;
+        break;
+
+      case 2:
+        min_x = fmaxf((0.05 / c->drag_start_percentage) + p->levels[0],
+                      0);
+        min_x = fmaxf((p->levels[0] * (1 - c->drag_start_percentage) + 0.05)
+                      / (1 - c->drag_start_percentage),
+                      min_x);
+        break;
+      }
 
       p->levels[c->handle_move] =
           fminf(max_x, fmaxf(min_x, mx));
 
       if(c->handle_move != 1)
         p->levels[1] = p->levels[0] + (c->drag_start_percentage
-                       * (p->levels[2] - p->levels[0]));
+                                       * (p->levels[2] - p->levels[0]));
     }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
