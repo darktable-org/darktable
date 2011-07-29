@@ -111,6 +111,9 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     size_t wd = tx * tile_wd + width > roi_out->width  ? roi_out->width - tx * tile_wd : width;
     size_t ht = ty * tile_ht + height > roi_out->height ? roi_out->height- ty * tile_ht : height;
 
+    /* not needed to process (end)tiles that are smaller than overlap */
+    if(wd <= overlap || ht <= overlap) continue;
+
     /* origin and region of effective part of tile, which we want to store later */
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { wd, ht, 1 };
@@ -136,8 +139,6 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
       region[1] -= overlap;
       ooffs += overlap*opitch;
     }
-
-    if(region[0] <= 0 || region[1] <= 0) continue;
 
     dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
 
