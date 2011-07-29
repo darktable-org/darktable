@@ -23,6 +23,7 @@
 
 #include "common/camera_control.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "views/view.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
@@ -295,7 +296,9 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   {
     // Backup is enabled, let's initialize a backup job of imported image...
     char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
-    dt_variables_expand( t->vp, base, FALSE );
+    char *fixed_base=dt_util_fix_path(base);
+    dt_variables_expand( t->vp, fixed_base, FALSE );
+    g_free(base);
     const char *sdpart=dt_variables_get_result(t->vp);
     if( sdpart )
     {
@@ -313,6 +316,9 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   t->vp->filename=filename;
 
+  gchar* fixed_path = dt_util_fix_path(t->path);
+  g_free(t->path);
+  t->path = fixed_path;
   dt_variables_expand( t->vp, t->path, FALSE );
   const gchar *storage=dt_variables_get_result(t->vp);
 
@@ -353,6 +359,9 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
 
   dt_film_init(t->film);
 
+  gchar* fixed_path = dt_util_fix_path(t->path);
+  g_free(t->path);
+  t->path = fixed_path;
   dt_variables_expand( t->vp, t->path, FALSE );
   sprintf(t->film->dirname,"%s",dt_variables_get_result(t->vp));
 

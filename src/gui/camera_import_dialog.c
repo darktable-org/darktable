@@ -26,6 +26,7 @@
 #include "common/exif.h"
 #include "common/variables.h"
 #include "common/camera_control.h"
+#include "common/utility.h"
 #include "dtgtk/button.h"
 #include "dtgtk/label.h"
 #include "gui/camera_import_dialog.h"
@@ -167,7 +168,9 @@ _update_example(_camera_import_dialog_t *dialog)
 {
   // create path/filename and execute a expand..
   gchar *path=g_build_path(G_DIR_SEPARATOR_S,dialog->settings.basedirectory->value,dialog->settings.subdirectory->value,"/",(char *)NULL);
-  dt_variables_expand( dialog->vp, path, FALSE);
+  gchar *fixed_path=dt_util_fix_path(path);
+  dt_variables_expand( dialog->vp, fixed_path, FALSE);
+
   gchar *ep=g_strdup(dt_variables_get_result(dialog->vp));
   dt_variables_expand( dialog->vp, dialog->settings.namepattern->value, TRUE);
   gchar *ef=g_strdup(dt_variables_get_result(dialog->vp));
@@ -178,6 +181,7 @@ _update_example(_camera_import_dialog_t *dialog)
   gtk_label_set_text(GTK_LABEL(dialog->settings.example),str);
   // Clenaup
   g_free(path);
+  g_free(fixed_path);
   g_free(ep);
   g_free(ef);
   g_free(str);

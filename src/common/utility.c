@@ -16,6 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* getpwnam_r availibility check */
+#if defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
+#include <pwd.h>
+#include <sys/types.h>
+#endif
+
 #include "utility.h"
 
 guint dt_util_str_occurence(const gchar *haystack,const gchar *needle)
@@ -105,6 +111,91 @@ gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigne
     g_free(strings);
 
   return result;
+}
+
+gchar* dt_util_get_home_dir(const gchar* user)
+{
+  if (user == NULL || g_strcmp0(user, g_get_user_name()) == 0) {
+    const char* home_dir = g_getenv("HOME");
+    return g_strdup((home_dir != NULL) ? home_dir : g_get_home_dir());
+  }
+
+#if defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
+  /* if the given username is not the same as the current one, we try
+   * to retreive the pw dir from the password file entry */
+  struct passwd pwd;
+  struct passwd* result;
+#ifdef _SC_GETPW_R_SIZE_MAX
+  int bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+  if (bufsize < 0) {
+    bufsize = 4096;
+  }
+#else
+  int bufsize = 4096;
+#endif
+
+  gchar* buffer = g_malloc0(sizeof(gchar) * bufsize);
+  if (buffer == NULL) {
+    return NULL;
+  }
+
+  getpwnam_r(user, &pwd, buffer, bufsize, &result);
+  if (result == NULL) {
+    g_free(buffer);
+    return NULL;
+  }
+
+  gchar* dir = g_strdup(pwd.pw_dir);
+  g_free(buffer);
+
+  return dir;
+#else
+  return NULL;
+#endif
+}
+
+gchar* dt_util_fix_path(const gchar* path)
+{
+  if (path == NULL || strlen(path) == 0) {
+    return NULL;
+  }
+
+  gchar* rpath = NULL;
+
+  /* check if path has a prepended tilde */
+  if (path[0] == '~') {
+    int len    = strlen(path);
+    char* user = NULL;
+    int off    = 1;
+
+    /* if the character after the tilde is not a slash we parse
+     * the path until the next slash to extend this part with the
+     * home directory of the specified user
+     *
+     * e.g.: ~foo will be evaluated as the home directory of the
+     * user foo */
+
+    if (len > 1 && path[1] != '/') {
+      while (path[off] != '\0' && path[off] != '/') {
+        ++off;
+      }
+
+      user = g_strndup(path + 1, off - 1);
+    }
+
+    gchar* home_path = dt_util_get_home_dir(user);
+    g_free(user);
+
+    if (home_path == NULL) {
+      return g_strdup(path);
+    }
+
+    rpath = g_build_filename(home_path, path + off, NULL);
+  } else {
+    rpath = g_strdup(path);
+  }
+
+  return rpath;
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

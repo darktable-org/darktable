@@ -38,6 +38,7 @@
 #include "common/darktable.h"
 #include "common/camera_control.h"
 #include "common/variables.h"
+#include "common/utility.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "capture.h"
@@ -176,6 +177,9 @@ const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const ch
 
   cv->vp->filename = filename;
 
+  gchar* fixed_path=dt_util_fix_path(cv->path);
+  g_free(cv->path);
+  cv->path=fixed_path;
   dt_variables_expand( cv->vp, cv->path, FALSE );
   const gchar *storage=dt_variables_get_result(cv->vp);
 
@@ -245,7 +249,10 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name)
     dt_variables_reset_sequence (cv->vp);
 
     // Construct the directory for filmroll...
-    cv->path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory, (char *)NULL);
+    gchar* path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory, (char *)NULL);
+    cv->path = dt_util_fix_path(path);
+    g_free(path);
+
     dt_variables_expand( cv->vp, cv->path, FALSE );
     sprintf(cv->film->dirname,"%s",dt_variables_get_result(cv->vp));
 
