@@ -83,7 +83,4 @@ int dt_colorspaces_find_profile(char *filename, const int filename_len, const ch
 void rgb2hsl(const float rgb[3],float *h,float *s,float *l);
 void hsl2rgb(float rgb[3],float h,float s,float l);
 
-/** Inverts a 3x3 matrix */
-int mat3inv (float * const dst, const float *const src);
-
 #endif
