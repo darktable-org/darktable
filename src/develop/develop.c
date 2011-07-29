@@ -91,7 +91,9 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->preview_input_changed = 0;
 
   dev->pipe = dev->preview_pipe = NULL;
-  dev->histogram = dev->histogram_pre = NULL;
+  dev->histogram
+      = dev->histogram_pre_tonecurve
+        = dev->histogram_pre_levels = NULL;
 
   if(dev->gui_attached)
   {
@@ -101,11 +103,14 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->preview_pipe);
 
     dev->histogram = (float *)malloc(sizeof(float)*4*256);
-    dev->histogram_pre = (float *)malloc(sizeof(float)*4*256);
+    dev->histogram_pre_tonecurve = (float *)malloc(sizeof(float)*4*256);
+    dev->histogram_pre_levels = (float*)malloc(sizeof(float) * 4 * 256);
     memset(dev->histogram, 0, sizeof(float)*256*4);
-    memset(dev->histogram_pre, 0, sizeof(float)*256*4);
+    memset(dev->histogram_pre_tonecurve, 0, sizeof(float)*256*4);
+    memset(dev->histogram_pre_levels, 0, sizeof(float)*256*4);
     dev->histogram_max = -1;
-    dev->histogram_pre_max = -1;
+    dev->histogram_pre_tonecurve_max = -1;
+    dev->histogram_pre_levels_max = -1;
 
 #if 0 // this prints out a correction curve, to better understand the tonecurve.
     dt_dev_set_gamma_array(dev, 0.04045, 0.41, dt_dev_default_gamma);
@@ -179,7 +184,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
   free(dev->histogram);
-  free(dev->histogram_pre);
+  free(dev->histogram_pre_tonecurve);
+  free(dev->histogram_pre_levels);
 }
 
 void dt_dev_process_image(dt_develop_t *dev)

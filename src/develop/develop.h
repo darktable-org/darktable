@@ -77,8 +77,8 @@ typedef struct dt_develop_t
   GList *iop;
 
   // histogram for display.
-  float *histogram, *histogram_pre;
-  float histogram_max, histogram_pre_max;
+  float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
+  float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
   uint8_t gamma[0x100];
 
   // list of closures for the keyboard accelerators

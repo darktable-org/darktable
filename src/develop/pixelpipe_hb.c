@@ -397,7 +397,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %lX\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, (long int)*output);
 
-    // tonecurve histogram (collect luminance only):
+    // tonecurve/levels histogram (collect luminance only):
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
     {
@@ -407,16 +407,30 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0 || strcmp(module->op, "levels") == 0))
     {
       float *pixel = (float *)input;
-      dev->histogram_pre_max = 0;
-      memset (dev->histogram_pre, 0, sizeof(float)*4*64);
+      float *histogram_pre = NULL;
+      float *histogram_pre_max = NULL;
+
+      if(!strcmp(module->op, "tonecurve"))
+      {
+        histogram_pre = dev->histogram_pre_tonecurve;
+        histogram_pre_max = &(dev->histogram_pre_tonecurve_max);
+      }
+      else
+      {
+        histogram_pre = dev->histogram_pre_levels;
+        histogram_pre_max = &(dev->histogram_pre_levels_max);
+      }
+
+      *histogram_pre_max = 0;
+      memset (histogram_pre, 0, sizeof(float)*4*64);
       for(int j=0; j<roi_in.height; j+=4) for(int i=0; i<roi_in.width; i+=4)
         {
           uint8_t L = CLAMP(63/100.0*(pixel[4*j*roi_in.width+4*i]), 0, 63);
-          dev->histogram_pre[4*L+3] ++;
+          histogram_pre[4*L+3] ++;
         }
       // don't count <= 0 pixels
-      for(int k=3; k<4*64; k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
-      for(int k=19; k<4*64; k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
+      for(int k=3; k<4*64; k+=4) histogram_pre[k] = logf(1.0 +histogram_pre[k]);
+      for(int k=19; k<4*64; k+=4) *histogram_pre_max = *histogram_pre_max > histogram_pre[k] ? *histogram_pre_max : histogram_pre[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       dt_control_queue_redraw_widget(module->widget);
     }
