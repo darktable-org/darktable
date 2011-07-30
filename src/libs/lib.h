@@ -39,9 +39,12 @@ typedef struct dt_lib_t
     struct
     {
       struct dt_lib_module_t *module;
-      uint8_t *picked_color_mean;
-      uint8_t *picked_color_min;
-      uint8_t *picked_color_max;
+      uint8_t *picked_color_rgb_mean;
+      uint8_t *picked_color_rgb_min;
+      uint8_t *picked_color_rgb_max;
+      float *picked_color_lab_mean;
+      float *picked_color_lab_min;
+      float *picked_color_lab_max;
       GSList *live_samples;
       struct dt_colorpicker_sample_t *selected_sample;
       int size;

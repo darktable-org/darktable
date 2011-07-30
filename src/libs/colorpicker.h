@@ -39,9 +39,6 @@ typedef struct dt_lib_colorpicker_t
   GtkWidget *add_sample_button;
   GtkWidget *display_samples_check_box;
 
-  uint8_t history_rgb[5][3];
-  float history_lab[5][3];
-
 } dt_lib_colorpicker_t;
 
 /** The struct for live color picker samples */
