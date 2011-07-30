@@ -459,6 +459,26 @@ int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes)
   return (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t)*3, sizes, NULL);
 }
 
+int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize, unsigned long *localmemsize)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || dev < 0) return -1;
+  cl_ulong lmemsize;
+  cl_int err;
+
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &lmemsize, NULL);
+  if(err != CL_SUCCESS) return err;
+
+  *localmemsize = lmemsize;
+
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), workgroupsize, NULL);
+  if(err != CL_SUCCESS) return err;
+
+  return dt_opencl_get_max_work_item_sizes(dev, sizes);
+}
+
+
+
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg)
 {
   dt_opencl_t *cl = darktable.opencl;
@@ -469,6 +489,12 @@ int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, con
 
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes)
 {
+  return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
+}
+
+
+int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes, const size_t *local)
+{
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || dev < 0) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
@@ -477,14 +503,10 @@ int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *s
   buf[0]='\0';
   (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel], CL_KERNEL_FUNCTION_NAME, 256, buf, NULL);
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
-  // const size_t local[2] = {16, 16};
-  // let the driver choose:
-  const size_t *local = NULL;
   err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel], 2, NULL, sizes, local, 0, NULL, eventp);
   // if (err == CL_SUCCESS) err = dt_opencl_finish(dev);
   return err;
 }
-
 
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width, const int height, const int bpp)
 {
