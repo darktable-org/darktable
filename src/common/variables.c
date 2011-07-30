@@ -233,6 +233,11 @@ void dt_variables_params_destroy(dt_variables_params_t *params)
   g_free(params);
 }
 
+void dt_variables_set_time(dt_variables_params_t *params, time_t time)
+{
+  params->data->time = time;
+}
+
 const gchar *dt_variables_get_result(dt_variables_params_t *params)
 {
   return params->data->result;
