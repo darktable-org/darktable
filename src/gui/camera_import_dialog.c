@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _XOPEN_SOURCE // for strptime
+
+#include <time.h>
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -539,6 +542,20 @@ static gboolean _dialog_close(GtkWidget *window, GdkEvent  *event,gpointer   use
   return FALSE;
 }
 
+static time_t parse_date_time(const char* date_time_text)
+{
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+
+  const char* end = NULL;
+  if((end = strptime(date_time_text, "%Y-%m-%dT%T", &t)) && *end == 0)
+    return mktime(&t);
+  if((end = strptime(date_time_text, "%Y-%m-%d", &t)) && *end == 0)
+    return mktime(&t);
+
+  return 0;
+}
+
 void _camera_import_dialog_run(_camera_import_dialog_t *data)
 {
   gtk_widget_show_all(data->dialog);
@@ -600,6 +617,10 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
       data->params->subdirectory = data->settings.subdirectory->value;
       data->params->filenamepattern = data->settings.namepattern->value;
 
+      data->params->time_override = 0;
+      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)))
+        data->params->time_override = parse_date_time(gtk_entry_get_text(GTK_ENTRY(data->settings.general.date_entry)));
+
       if( data->params->jobcode == NULL || strlen(data->params->jobcode) <=0 )
         data->params->jobcode = dt_conf_get_string("plugins/capture/camera/import/jobcode");
 
@@ -620,6 +641,13 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
       else if( data->params->filenamepattern == NULL || strlen( data->params->filenamepattern ) <= 0 )
       {
         GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the filenamepattern settings before importing"));
+        g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
+        gtk_dialog_run (GTK_DIALOG (dialog));
+        all_good=FALSE;
+      }
+      else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)) && data->params->time_override == 0)
+      {
+        GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please use YYYY-MM-DD format for date override"));
         g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
         gtk_dialog_run (GTK_DIALOG (dialog));
         all_good=FALSE;

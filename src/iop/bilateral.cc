@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ extern "C"
 
   const char *name()
   {
-    return _("denoise");
+    return _("denoise (bilateral filter)");
   }
 
   int
@@ -81,8 +81,9 @@ extern "C"
 
   int flags()
   {
-    return IOP_FLAGS_DEPRECATED;
+    return IOP_FLAGS_ALLOW_TILING;
   }
+
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
     dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
@@ -281,13 +282,26 @@ extern "C"
     dtgtk_slider_set_value(g->scale5, p->sigma[4]);
   }
 
+  void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+  {
+    dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
+    float sigma[5];
+    sigma[0] = data->sigma[0] * roi_in->scale / piece->iscale;
+    sigma[1] = data->sigma[1] * roi_in->scale / piece->iscale;
+    const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
+    *factor = 2 + 5;
+    *overhead = 0;
+    *overlap = rad;
+    return;
+  }
+
   void init(dt_iop_module_t *module)
   {
     // module->data = malloc(sizeof(dt_iop_bilateral_data_t));
     module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_enabled = 0;
-  module->priority = 755; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 326; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_bilateral_params_t);
     module->gui_data = NULL;
     dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t)
