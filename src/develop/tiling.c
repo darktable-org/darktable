@@ -32,6 +32,8 @@
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
+#define ALIGNMENT 4	/* this defines the alignment of opencl image width. can have strong effects on processing speed */
+
 #ifdef HAVE_OPENCL
 /* if a module does not implement process_tiling_cl() by itself, this function is called instead.
    default_process_tiling_cl() is able to handle standard cases where pixels change their values
@@ -79,6 +81,9 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     height = floorf(height * sqrt(scale));
   }
 
+  /* properly align image width to a multiple of ALIGNMENT. don't do this for tiles of full image width */
+  if(width < roi_out->width) width = (width / ALIGNMENT) * ALIGNMENT;
+
   /* calculate effective tile size */
   const int tile_wd = width - 2*overlap;
   const int tile_ht = height - 2*overlap;
@@ -114,6 +119,11 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     /* no need to process (end)tiles that are smaller than overlap */
     if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
 
+    /* processing speed of opencl can be dramatically dependent on width of image buffers. make sure also
+       end-tiles are nicely aligned by making them wider if needed */
+    size_t walign = (tx > 0 && wd % ALIGNMENT != 0) ? ALIGNMENT - wd % ALIGNMENT : 0;
+    wd += walign;
+
     /* origin and region of effective part of tile, which we want to store later */
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { wd, ht, 1 };
@@ -123,8 +133,8 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     dt_iop_roi_t oroi = { 0, 0, wd, ht, roi_out->scale };
 
     /* offsets of tile into ivoid and ovoid */
-    size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd)*in_bpp;
-    size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd)*out_bpp;
+    size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd - walign)*in_bpp;
+    size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd - walign)*out_bpp;
 
     /* correct tile for overlap */
     if(tx > 0)
@@ -140,7 +150,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
       ooffs += overlap*opitch;
     }
 
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd-walign, ty*tile_ht);
 
     /* This is a first implementation. It has significant overhead in generating and releasing
        OpenCL image object and additionally might lead to GPU memory fragmentation.
@@ -174,6 +184,13 @@ error:
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_opencl] couldn't run process_cl() for module '%s' in tiling mode: %d\n", self->op, err);
   return FALSE;
 }
+#else
+int
+default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp)
+{
+  return FALSE;
+}
+#endif
 
 /* If a module does not implement tiling_callback() by itself, this function is called instead.
    Default is an image size factor of 2 (i.e. input + output buffer needed), no overhead (1),
@@ -188,19 +205,4 @@ void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixel
   return;
 }
 
-#else
-int
-default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp)
-{
-  return FALSE;
-}
-
-void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
-{
-  *factor = 2.0f;
-  *overhead = 0;
-  *overlap = 0;
-  return;
-}
-#endif
 
