@@ -226,6 +226,7 @@ def add_edges(gr):
 
   # deprecated:
   gr.add_edge(('colorin', 'bilateral'))
+  gr.add_edge(('bilateral', 'demosaic'))
   gr.add_edge(('colorout', 'equalizer'))
   gr.add_edge(('equalizer', 'colorin'))
 
