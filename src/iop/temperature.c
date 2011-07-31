@@ -95,7 +95,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_ALLOW_TILING;
+  return 0;
 }
 
 int
