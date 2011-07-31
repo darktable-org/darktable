@@ -41,19 +41,16 @@ def add_edges(gr):
   # these work on mosaic data:
   gr.add_edge(('demosaic', 'rawspeed'))
   gr.add_edge(('demosaic', 'temperature'))
-  gr.add_edge(('demosaic', 'stuckpixels'))
   gr.add_edge(('demosaic', 'hotpixels'))
   gr.add_edge(('demosaic', 'rawdenoise'))
   gr.add_edge(('demosaic', 'cacorrect'))
   
   # cacorrect works better on denoised data:
-  gr.add_edge(('cacorrect', 'stuckpixels'))
   gr.add_edge(('cacorrect', 'hotpixels'))
   gr.add_edge(('cacorrect', 'rawdenoise'))
   
   # all these need white balanced input:
   gr.add_edge(('rawdenoise', 'temperature'))
-  gr.add_edge(('stuckpixels', 'temperature'))
   gr.add_edge(('hotpixels', 'temperature'))
   gr.add_edge(('cacorrect', 'temperature'))
   
@@ -228,8 +225,7 @@ def add_edges(gr):
   gr.add_edge(('highpass', 'lowpass'))
 
   # deprecated:
-  gr.add_edge(('colorout', 'bilateral'))
-  gr.add_edge(('bilateral', 'colorin'))
+  gr.add_edge(('colorin', 'bilateral'))
   gr.add_edge(('colorout', 'equalizer'))
   gr.add_edge(('equalizer', 'colorin'))
 
@@ -274,7 +270,6 @@ gr.add_nodes([
 'soften',
 'splittoning',
 'spots',
-'stuckpixels',
 'temperature',
 'tonecurve',
 'tonemap',
