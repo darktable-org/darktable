@@ -1128,10 +1128,27 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 static gboolean
 area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  // set active point
-  if(event->button == 1)
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    // reset current curve
+    dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
+    dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    reset_mix(self);
+    for(int k=0; k<BANDS; k++)
+    {
+        p->x[c->channel][k] = d->x[c->channel][k];
+        p->y[c->channel][k] = d->y[c->channel][k];
+        p->x[c->channel2][k] = d->x[c->channel2][k];
+        p->y[c->channel2][k] = d->y[c->channel2][k];
+    }
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(self->widget);
+  }
+  else if(event->button == 1)
+  {
+    // set active point
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     const int inset = INSET;
