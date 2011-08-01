@@ -65,7 +65,7 @@ static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *
 // Slider entry events
 static gboolean _slider_entry_key_event(GtkWidget *widget,GdkEventKey *event, gpointer data);
 
-static guint _signals[SLIDER_LAST_SIGNAL] = { 0 };
+static guint _slider_signals[SLIDER_LAST_SIGNAL] = { 0 };
 static char accel_name_builder[1024];
 
 void _slider_get_value_area(GtkWidget *widget,GdkRectangle *rect)
@@ -104,9 +104,9 @@ static void _slider_class_init (GtkDarktableSliderClass *klass)
   widget_class->enter_notify_event = _slider_enter_notify_event;
   widget_class->leave_notify_event = _slider_enter_notify_event;
   //object_class->destroy = _slider_destroy;
-  _signals[SLIDER_VALUE_CHANGED] = g_signal_new(
+  _slider_signals[SLIDER_VALUE_CHANGED] = g_signal_new(
                               "value-changed",
-                              G_TYPE_OBJECT, G_SIGNAL_RUN_LAST,
+                              G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
                               0,NULL,NULL,
                               g_cclosure_marshal_VOID__VOID,
                               GTK_TYPE_NONE,0);
