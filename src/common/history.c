@@ -59,10 +59,6 @@ void dt_history_delete_on_image(int32_t imgid)
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style%",imgid);
 
-  /* remove darktable|changed tag */
-  guint tagid = 0;
-  dt_tag_new("darktable|changed",&tagid);
-  dt_tag_detach(tagid, imgid);
 }
 
 void
