@@ -74,14 +74,27 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   int width = min(roi_out->width, darktable.opencl->dev[devid].max_image_width);
   int height = min(roi_out->height, darktable.opencl->dev[devid].max_image_height);
 
-  if (width*height*max(in_bpp, out_bpp) > singlebuffer)
+  /* shrink tile size in case it would exceed singlebuffer size */
+  if(width*height*max(in_bpp, out_bpp) > singlebuffer)
   {
     const float scale = (float)singlebuffer/(width*height*max(in_bpp, out_bpp));
-    width = floorf(width * sqrt(scale));
-    height = floorf(height * sqrt(scale));
+
+    if(width == roi_out->width)           /* don't touch width if tile spans whole image width ... */
+    { 
+      height = floorf(height * scale);
+    }
+    else if(height == roi_out->height)    /* ... else, don't touch height if tile spans whole image height ... */
+    {
+      width = floorf(width * scale);
+    }
+    else                                  /* ... else, shrink width and height proportionally. */
+    {
+      width = floorf(width * sqrt(scale));
+      height = floorf(height * sqrt(scale));
+    }
   }
 
-  /* properly align image width to a multiple of ALIGNMENT. don't do this for tiles of full image width */
+  /* properly align tile width to a multiple of ALIGNMENT. don't do this for tiles of full image width */
   if(width < roi_out->width) width = (width / ALIGNMENT) * ALIGNMENT;
 
   /* calculate effective tile size */
@@ -108,6 +121,16 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] use tiling on module '%s' for image with full size %d x %d\n", self->op, roi_out->width, roi_out->height);
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] (%d x %d) tiles with max dimensions %d x %d and overlap %d\n", tiles_x, tiles_y, width, height, overlap);
+
+  /* get opencl input and output buffers, to be re-used for all tiles.
+     For "end-tiles" these buffers will only be partly filled; the acutally used part
+     is then correctly reflected in iroi and oroi which we give to the respective
+     process_cl(). However, opencl kernels may not simply read beyond limits given by width and height
+     as they can no longer rely on CLK_ADDRESS_CLAMP_TO_EDGE to give reasonable results! */
+  input = dt_opencl_alloc_device(devid, width, height, in_bpp);
+  if(input == NULL) goto error;
+  output = dt_opencl_alloc_device(devid, width, height, out_bpp);
+  if(output == NULL) goto error;
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
@@ -136,12 +159,23 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd - walign)*in_bpp;
     size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd - walign)*out_bpp;
 
-    /* correct tile for overlap */
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd-walign, ty*tile_ht);
+
+
+    /* non-blocking memory transfer: host input buffer -> opencl/device tile */
+    err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, CL_FALSE);
+    if(err != CL_SUCCESS) goto error;
+
+    /* call process_cl of module */
+    if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
+
+    /* correct origin and region of tile for overlap.
+       makes sure that we only copy back the "good" part. */
     if(tx > 0)
     {
-      origin[0] += overlap;
-      region[0] -= overlap;
-      ooffs += overlap*out_bpp;
+      origin[0] += (overlap+walign);
+      region[0] -= (overlap+walign);
+      ooffs += (overlap+walign)*out_bpp;
     }
     if(ty > 0)
     {
@@ -150,29 +184,13 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
       ooffs += overlap*opitch;
     }
 
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd-walign, ty*tile_ht);
-
-    /* This is a first implementation. It has significant overhead in generating and releasing
-       OpenCL image object and additionally might lead to GPU memory fragmentation.
-       TODO: check alternative route with a permanent input/output buffer */
-    input = dt_opencl_copy_host_to_device_rowpitch(devid, (char *)ivoid + ioffs, wd, ht, in_bpp, ipitch);
-    if(input == NULL) goto error;
-
-    output = dt_opencl_alloc_device(devid, wd, ht, out_bpp);
-    if(output == NULL) goto error;
-
-    if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
-
-    dt_opencl_finish(devid);
-
-    err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_TRUE);
+    /* non-blocking memory transfer: opencl/device tile -> host output buffer */
+    err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_FALSE);
     if(err != CL_SUCCESS) goto error;
-
-    dt_opencl_release_mem_object(input);
-    input = NULL;
-    dt_opencl_release_mem_object(output);
-    output = NULL;
   }
+
+  /* block until opencl queue has finished */
+  dt_opencl_finish(devid);
 
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);

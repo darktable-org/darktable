@@ -39,7 +39,7 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, constant float 
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int maxx = get_global_size(0);
+  const int maxx = get_global_size(0) - 1;
   const int wd = 2*rad+1;
   
   float sum = 0.0f;
@@ -67,7 +67,7 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, constant float 
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int maxy = get_global_size(1);
+  const int maxy = get_global_size(1) - 1;
   const int wd = 2*rad+1;
   
   float sum = 0.0f;

@@ -19,6 +19,8 @@
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
 
+#define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+
 float4
 weight(const float4 c1, const float4 c2, const float sharpen)
 {
@@ -35,6 +37,8 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int maxx = get_global_size(0) - 1;
+  const int maxy = get_global_size(1) - 1;
   const int mult = 1<<scale;
 
   const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
@@ -44,7 +48,13 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
   float4 wgt = (float4)(0.0f);
   for(int j=0;j<5;j++) for(int i=0;i<5;i++)
   {
-    float4 px = read_imagef(in, sampleri, (float2)(x+mult*(i - 2), y+mult*(j - 2)));
+    int xx = x + mult*(i - 2);
+    int yy = y + mult*(j - 2);
+    /* clamp to region */
+    xx = ICLAMP(xx, 0, maxx);
+    yy = ICLAMP(yy, 0, maxy);
+
+    float4 px = read_imagef(in, sampleri, (int2)(xx, yy));
     const float4 w = filter[i]*filter[j]*weight(pixel, px, sharpen);
     sum += w*px;
     wgt += w;
