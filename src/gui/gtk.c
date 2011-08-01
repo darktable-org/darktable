@@ -1390,10 +1390,10 @@ static void _detach_panel_callback(GtkButton *button, gpointer data)
                        panel);
 
   GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gint width, height;
+  gint width = dt_conf_get_int("panel_width");
+  gint height;
   gtk_window_get_size(GTK_WINDOW(darktable.gui->ui->main_window),
                       NULL, &height);
-  gtk_window_get_size(GTK_WINDOW(window), &width, NULL);
   gtk_window_resize(GTK_WINDOW(window), width, height);
   gtk_container_add(GTK_CONTAINER(window), panel);
   gtk_widget_show(window);
