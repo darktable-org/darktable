@@ -96,6 +96,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'monochrome'))
   gr.add_edge(('colorout', 'zonesystem'))
   gr.add_edge(('colorout', 'tonecurve'))
+  gr.add_edge(('colorout', 'levels'))
   gr.add_edge(('colorout', 'relight'))
   gr.add_edge(('colorout', 'colorcorrection'))
   gr.add_edge(('colorout', 'sharpen'))
@@ -114,6 +115,7 @@ def add_edges(gr):
   gr.add_edge(('monochrome', 'colorin'))
   gr.add_edge(('zonesystem', 'colorin'))
   gr.add_edge(('tonecurve', 'colorin'))
+  gr.add_edge(('levels', 'colorin'))
   gr.add_edge(('relight', 'colorin'))
   gr.add_edge(('colorcorrection', 'colorin'))
   gr.add_edge(('sharpen', 'colorin'))
@@ -136,11 +138,13 @@ def add_edges(gr):
   # want to change contrast in monochrome images:
   gr.add_edge(('zonesystem', 'monochrome'))
   gr.add_edge(('tonecurve', 'monochrome'))
+  gr.add_edge(('levels', 'monochrome'))
   gr.add_edge(('relight', 'monochrome'))
   
   # want to splittone evenly, even when changing contrast:
   gr.add_edge(('colorcorrection', 'zonesystem'))
   gr.add_edge(('colorcorrection', 'tonecurve'))
+  gr.add_edge(('colorcorrection', 'levels'))
   gr.add_edge(('colorcorrection', 'relight'))
   # want to split-tone monochrome images:
   gr.add_edge(('colorcorrection', 'monochrome'))
@@ -153,6 +157,7 @@ def add_edges(gr):
   gr.add_edge(('highpass', 'nlmeans'))
   gr.add_edge(('zonesystem', 'nlmeans'))
   gr.add_edge(('tonecurve', 'nlmeans'))
+  gr.add_edge(('levels', 'nlmeans'))
   gr.add_edge(('relight', 'nlmeans'))
   gr.add_edge(('colorzones', 'nlmeans'))
   
@@ -216,6 +221,7 @@ def add_edges(gr):
   gr.add_edge(('atrous', 'colortransfer'))
   gr.add_edge(('colorzones', 'colortransfer'))
   gr.add_edge(('tonecurve', 'colortransfer'))
+  gr.add_edge(('levels', 'colortransfer'))
   gr.add_edge(('monochrome', 'colortransfer'))
   gr.add_edge(('zonesystem', 'colortransfer'))
   gr.add_edge(('colorcorrection', 'colortransfer'))
@@ -229,6 +235,8 @@ def add_edges(gr):
   # colorize first in Lab pipe
   gr.add_edge(('colortransfer', 'colorize'))
 
+  # levels come after tone curve
+  gr.add_edge(('levels', 'tonecurve'))
   # want to do highpass filtering after lowpass:
   gr.add_edge(('highpass', 'lowpass'))
 
@@ -269,6 +277,7 @@ gr.add_nodes([
 'lowpass',
 'hotpixels',
 'lens',
+'levels',
 'lowlight',
 'monochrome',
 'nlmeans',

@@ -7,7 +7,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma colorcontrast
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
-	cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans)
+  cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels)
 
 
 
@@ -57,6 +57,7 @@ add_library(rawdenoise MODULE "rawdenoise.c")
 add_library(borders MODULE "borders.c")
 add_library(nlmeans MODULE "nlmeans.c")
 add_library(colorcontrast MODULE "colorcontrast.c")
+add_library(levels MODULE "levels.c")
 add_library(colorize MODULE "colorize.c")
 
 if(RSVG2_FOUND)
