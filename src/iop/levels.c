@@ -210,7 +210,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   gtk_drawing_area_size(c->area, 258, 150);
-  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("abscissa: input, ordinate: output \nworks on L channel"), (char *)NULL);
+  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("drag handles to set black, grey, and white points.  operates on L channel."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
