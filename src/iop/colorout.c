@@ -49,6 +49,13 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+
 static void key_softproof_callback(GtkAccelGroup *accel_group,
                                    GObject *acceleratable,
                                    guint keyval, GdkModifierType modifier,
@@ -516,26 +523,19 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-#else
   piece->data = malloc(sizeof(dt_iop_colorout_data_t));
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
+  d->softproof_enabled = 0;
   d->softproof = d->output = NULL;
   d->xform = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
   for(int t=0; t<dt_get_num_threads(); t++)
     d->xform[t] = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  // (void)gegl_node_remove_child(pipe->gegl, piece->input);
-#else
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   dt_colorspaces_cleanup_profile(d->Lab);
@@ -545,7 +545,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
   free(d->xform);
   free(piece->data);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -617,14 +616,14 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   if(g->softproof_enabled)
   {
-    gchar *label=_("SoftProof");
+    gchar *label=_("soft proof");
     cairo_set_source_rgba(cr,0.5,0.5,0.5,0.5);
     cairo_text_extents_t te;
     cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, 20);
     cairo_text_extents (cr, label, &te);
     cairo_move_to (cr, te.height*2, height-(te.height*2));
-    cairo_text_path (cr, _("SoftProof"));
+    cairo_text_path (cr, _("soft proof"));
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 0.7);

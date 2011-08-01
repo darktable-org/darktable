@@ -121,7 +121,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 static __m128
@@ -395,8 +395,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 }
 
 #ifdef HAVE_OPENCL
+
+/* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */
 int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem _dev_in, cl_mem _dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs [MAX_NUM_SCALES][4];
@@ -418,227 +420,90 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int devid = piece->pipe->devid;
   cl_int err = -999;
-  cl_mem mdev_in = NULL;
-  cl_mem mdev_out = NULL;
-  cl_mem dev_detail = NULL;
-  cl_mem mdev_detail[max_scale];
-  float *detail_buffer = NULL;
-  int lowmem = 0;
+  cl_mem dev_tmp = NULL;
+  cl_mem dev_detail[max_scale];
+  for(int k=0; k<max_scale; k++) dev_detail[k] = NULL;
 
-  for(int k=0; k<max_scale; k++) mdev_detail[k] = NULL;
+  /* allocate space for a temporary buffer. we don't want to use dev_in in the buffer ping-pong below, as we
+     need to keep it for blendops */
+  dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4*sizeof(float));
+  if (dev_tmp == NULL) goto error;
 
-  // Try to estimate free memory on GPU: maximum global mem minus two full buffers (in + out) with current image dimensions
-  // This can only be valid if there are no other applications consuming GPU memory, but there is no way for us to tell :(
-  unsigned int max_free_mem_mb = (dt_opencl_get_max_global_mem(devid) - 2*roi_out->width*roi_out->height*4*sizeof(float)) >> 20;
-
-  //dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] maximum free memory %dMB on device %d\n", max_free_mem_mb, devid);
-
-  // pure heuristic limits
-  if(max_free_mem_mb < 300) goto error;  // no chance -> give back to pixelpipe and hope for the CPU path to take over
-  if(max_free_mem_mb < 500) lowmem = 1;  // tight but managable with serious penalty on memory transfers
-
-  size_t sizes[3];
-  // err = dt_opencl_get_max_work_item_sizes(devid, sizes);
-  // if(err != CL_SUCCESS) fprintf(stderr, "could not get max size! %d\n", err);
-  // use WINDOW_SIZE instead of max threads (in, out, 7 detail = 232 MB GPU mem)
-  sizes[0] = min(roi_out->width, DT_IMAGE_WINDOW_SIZE);
-  sizes[1] = min(roi_out->height, DT_IMAGE_WINDOW_SIZE);
-  sizes[2] = 1;
-
-  // allocate device memory, if needed. else use input from pipe directly.
-  const int need_tiles = roi_in->width > sizes[0] || roi_out->height > sizes[1];
-  cl_mem dev_in = _dev_in, dev_out = _dev_out;
-  if(need_tiles)
-  {
-    mdev_in  = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4*sizeof(float));
-    if (mdev_in == NULL) goto error;
-    mdev_out = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4*sizeof(float));
-    if (mdev_out == NULL) goto error;
-    dev_in = mdev_in;
-    dev_out = mdev_out;
-  }
-  else
-  {
-    sizes[0] = roi_in->width;
-    sizes[1] = roi_in->height;
-  }
-
-  const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
-  const int width = roi_out->width;
-  const int height = roi_out->height;
-  const int tile_wd = sizes[0] - 2*max_filter_radius;
-  const int tile_ht = sizes[1] - 2*max_filter_radius;
-  const int tiles_x = (need_tiles && (sizes[0] != width)) ? ceilf(width /(float)tile_wd) : 1;
-  const int tiles_y = (need_tiles && (sizes[1] != height)) ? ceilf(height/(float)tile_ht) : 1;
-
-  //printf("\natrous run for %d x % d image with %d x %d tiles\n", roi_out->width, roi_out->height, tiles_x, tiles_y);
-
-
-  // details for local contrast enhancement:
-  if(lowmem)
-  {
-    // GPU memory is tight -> allocate storage buffer for detail in core memory and use only small
-    // intermediate GPU buffer
-    detail_buffer = (float *)dt_alloc_align(64, 4*sizeof(float)*sizes[0]*sizes[1]*(max_scale-1));
-    mdev_detail[0] = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4*sizeof(float));
-    if (detail_buffer == NULL || mdev_detail[0] == NULL) goto error;
-    dev_detail = mdev_detail[0];
-  }
-  else
-  {
-    // hopefully enough GPU memory
-    for(int k=0; k<max_scale; k++)
-    {
-      mdev_detail[k] = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4*sizeof(float));
-      if (mdev_detail[k] == NULL) goto error;
-    }
-  }
-
-
-  // FIXME: boundary handling inside tiles!
-  // FIXME: tiles > 1x1 => infinite loop (dim: 7x1024)
-  // for all tiles:
-  for(int tx=0; tx<tiles_x; tx++)
-    for(int ty=0; ty<tiles_y; ty++)
-    {
-      size_t orig0[3] = {0, 0, 0};
-      size_t origin[3];
-      origin[0] = tx*tile_wd + sizes[0] > width ? width - sizes[0] : tx*tile_wd;
-      origin[1] = ty*tile_ht + sizes[1] > height ? height - sizes[1] : ty*tile_ht;
-      origin[2] = 0;
-      size_t region[3] = {sizes[0], sizes[1], 1};
-
-
-      // printf("tile extents (%d, %d): %zd %zd -- %zd %zd\n", tx, ty, origin[0], origin[1], region[0], region[1]);
-
-      if(need_tiles)
-      {
-        err = dt_opencl_enqueue_copy_image(devid, _dev_in, dev_in, origin, orig0, region);
-        if(err != CL_SUCCESS) goto error;
-        dt_opencl_finish(devid);
-      }
-
-      if(tx > 0)
-      {
-        origin[0] += max_filter_radius;
-        orig0[0] += max_filter_radius;
-        region[0] -= max_filter_radius;
-      }
-      if(ty > 0)
-      {
-        origin[1] += max_filter_radius;
-        orig0[1] += max_filter_radius;
-        region[1] -= max_filter_radius;
-      }
-
-      if(region[0] <= 0 || region[1] <= 0) continue;  // this should never happen
-
-      for(int s=0; s<max_scale; s++)
-      {
-        const int scale = s;
-        //printf("decompose scale %d of %d with sizes %d x %d\n", s, max_scale, sizes[0], sizes[1]);
-
-        if(!lowmem)
-        {
-          dev_detail = mdev_detail[s];
-        }
-
-
-        if(s & 1)
-        {
-          dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
-          dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_in);
-        }
-        else
-        {
-          dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
-          dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
-        }
-        dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 4, sizeof(float), (void *)&sharp[s]);
-
-        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
-        if(err != CL_SUCCESS) goto error;
-        dt_opencl_finish(devid);
-
-        if(lowmem && s!=max_scale-1)
-        {
-          err = dt_opencl_read_host_from_device(devid, detail_buffer+4*sizeof(float)*sizes[0]*sizes[1]*s, dev_detail, sizes[0], sizes[1], 4*sizeof(float));
-          if(err != CL_SUCCESS) goto error;
-        }
-
-      }
-
-      // now synthesize again:
-      for(int scale=max_scale-1; scale>=0; scale--)
-      {
-        //printf("synthesize scale %d of %d with sizes %d x %d\n", scale, max_scale, sizes[0], sizes[1]);
-
-        if(lowmem && scale!=max_scale-1)
-        {
-          err = dt_opencl_write_host_to_device(devid, detail_buffer+4*sizeof(float)*sizes[0]*sizes[1]*scale, dev_detail, sizes[0], sizes[1], 4*sizeof(float));
-          if(err != CL_SUCCESS) goto error;
-        }
-        
-        if(!lowmem)
-        {
-          dev_detail = mdev_detail[scale];
-        }
-
-        if(scale & 1)
-        {
-          dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
-          dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_in);
-        }
-        else
-        {
-          dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_in);
-          dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
-        }
-
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  3, sizeof(float), (void *)&thrs[scale][0]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  4, sizeof(float), (void *)&thrs[scale][1]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][2]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][3]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&boost[scale][0]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&boost[scale][1]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][2]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][3]);
-
-        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
-        if(err != CL_SUCCESS) goto error;
-        dt_opencl_finish(devid);
-      }
-
-      if(need_tiles)
-      {
-        err = dt_opencl_enqueue_copy_image(devid, dev_in, _dev_out, orig0, origin, region);
-        if(err != CL_SUCCESS) goto error;
-      }
-      else
-      {
-        err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, orig0, orig0, region);
-        if(err != CL_SUCCESS) goto error;
-      }
-      dt_opencl_finish(devid);
-    }
-
-  // free device mem
-  if (detail_buffer != NULL) free(detail_buffer);
-  if (mdev_in != NULL) dt_opencl_release_mem_object(mdev_in);
-  if (mdev_out != NULL) dt_opencl_release_mem_object(mdev_out);
+  /* allocate space to store detail information. Requires a number of additional buffers, each with full image size */
   for(int k=0; k<max_scale; k++)
-    if (mdev_detail[k] != NULL) dt_opencl_release_mem_object(mdev_detail[k]);
+  {
+    dev_detail[k] = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4*sizeof(float));
+    if (dev_detail[k] == NULL) goto error;
+  }
+
+  size_t sizes[] = { roi_out->width, roi_out->height, 1};
+  size_t origin[] = { 0, 0, 0};
+  size_t region[] = { roi_out->width, roi_out->height, 1};
+
+  // copy original input from dev_in -> dev_out as starting point
+  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  if(err != CL_SUCCESS) goto error;
+
+  /* decompose image into detail scales and coarse (the latter is left in dev_tmp or dev_out) */
+  for(int s=0; s<max_scale; s++)
+  {
+    const int scale = s;
+
+    if(s & 1)
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
+    }
+    else
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    }
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 4, sizeof(float), (void *)&sharp[s]);
+
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  /* now synthesize again */
+  for(int scale=max_scale-1; scale>=0; scale--)
+  {
+    if(scale & 1)
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
+    }
+    else
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    }
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  3, sizeof(float), (void *)&thrs[scale][0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  4, sizeof(float), (void *)&thrs[scale][1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][2]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][3]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&boost[scale][0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&boost[scale][1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][2]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][3]);
+
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  for(int k=0; k<max_scale; k++)
+    if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
   return TRUE;
 
 error:
-  if (detail_buffer != NULL) free(detail_buffer);
-  if (mdev_in != NULL) dt_opencl_release_mem_object(mdev_in);
-  if (mdev_out != NULL) dt_opencl_release_mem_object(mdev_out);
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k=0; k<max_scale; k++)
-    if (mdev_detail[k] != NULL) dt_opencl_release_mem_object(mdev_detail[k]);
+    if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -653,7 +518,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
 
-  *factor = 2 + max_scale;
+  *factor = 2 + 1 + max_scale;
   *overhead = 0;
   *overlap = max_filter_radius;
   return;

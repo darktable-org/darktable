@@ -27,6 +27,8 @@
 #include "common/dlopencl.h"
 #include "control/conf.h"
 
+#define max(a,b) ((a) > (b) ? (a) : (b))
+
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
   dt_pthread_mutex_init(&cl->lock, NULL);
@@ -39,6 +41,13 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   // Will remain disabled if initialization fails.
   const int prefs = dt_conf_get_bool("opencl");
   dt_conf_set_bool("opencl", FALSE);
+
+  // user selectable parameter defines minimum requirement on GPU memory
+  // default is 768MB
+  // values below 256 will be (re)set to 256
+  const int opencl_memory_requirement = max(256, dt_conf_get_int("opencl_memory_requirement"));
+  dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
+
 
   for(int k=0; k<argc; k++) if(!strcmp(argv[k], "--disable-opencl"))
     {
@@ -115,7 +124,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     size_t infointtab[1024];
     cl_bool image_support = 0;
 
-    // test 1GB mem and image support:
+    // test GPU memory and image support:
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &(cl->dev[dev].max_image_height), NULL);
@@ -128,7 +137,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     }
 
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &(cl->dev[dev].max_global_mem), NULL);
-    if(cl->dev[dev].max_global_mem < 256*1024*1024)
+    if(cl->dev[dev].max_global_mem < opencl_memory_requirement*1024*1024)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to insufficient global memory (%luMB).\n", k, infostr, cl->dev[dev].max_global_mem/1024/1024);
       continue;
@@ -450,6 +459,26 @@ int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes)
   return (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t)*3, sizes, NULL);
 }
 
+int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize, unsigned long *localmemsize)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || dev < 0) return -1;
+  cl_ulong lmemsize;
+  cl_int err;
+
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &lmemsize, NULL);
+  if(err != CL_SUCCESS) return err;
+
+  *localmemsize = lmemsize;
+
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(cl->dev[dev].devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), workgroupsize, NULL);
+  if(err != CL_SUCCESS) return err;
+
+  return dt_opencl_get_max_work_item_sizes(dev, sizes);
+}
+
+
+
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg)
 {
   dt_opencl_t *cl = darktable.opencl;
@@ -460,6 +489,12 @@ int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, con
 
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes)
 {
+  return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
+}
+
+
+int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes, const size_t *local)
+{
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || dev < 0) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
@@ -468,14 +503,10 @@ int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *s
   buf[0]='\0';
   (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel], CL_KERNEL_FUNCTION_NAME, 256, buf, NULL);
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
-  // const size_t local[2] = {16, 16};
-  // let the driver choose:
-  const size_t *local = NULL;
   err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel], 2, NULL, sizes, local, 0, NULL, eventp);
   // if (err == CL_SUCCESS) err = dt_opencl_finish(dev);
   return err;
 }
-
 
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width, const int height, const int bpp)
 {
@@ -542,7 +573,7 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl
 {
   if(!darktable.opencl->inited) return -1;
   cl_int err;
-  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image (on device)]");
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image to Buffer (on device)]");
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)(darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin, region, offset, 0, NULL, eventp);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image: %d\n", err);
   return err;
@@ -552,7 +583,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
 {
   if(!darktable.opencl->inited) return -1;
   cl_int err;
-  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image (on device)]");
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Image (on device)]");
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)(darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset, origin, region, 0, NULL, eventp);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer: %d\n", err);
   return err;
@@ -697,13 +728,20 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
 
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const size_t bytes)
+int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
 {
   if(!darktable.opencl->inited || devid < 0) return FALSE;
 
+  size_t singlebuffer = width * height * bpp;
+  size_t total = factor * singlebuffer + overhead;
+
   if(darktable.opencl->dev[devid].max_image_width < width || darktable.opencl->dev[devid].max_image_height < height) return FALSE;
 
-  return darktable.opencl->dev[devid].max_global_mem >= bytes + DT_OPENCL_MEMORY_HEADROOM;
+  if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
+
+  if(darktable.opencl->dev[devid].max_global_mem < total + DT_OPENCL_MEMORY_HEADROOM) return FALSE;
+
+  return TRUE;
 }
 
 

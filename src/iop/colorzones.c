@@ -108,8 +108,8 @@ groups ()
 static float
 lookup(const float *lut, const float i)
 {
-  const int bin0 = MIN(0xffff, MAX(0, DT_IOP_COLORZONES_LUT_RES *  i));
-  const int bin1 = MIN(0xffff, MAX(0, DT_IOP_COLORZONES_LUT_RES *  i + 1));
+  const int bin0 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i)));
+  const int bin1 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i) + 1));
   const float f = DT_IOP_COLORZONES_LUT_RES * i - bin0;
   return lut[bin1]*f + lut[bin0]*(1.-f);
 }

@@ -140,7 +140,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>activate OpenCL support (experimental)</short>
-        <long>if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. expect random crashes.</long>
+        <long>if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to forum darktable-devel at sourceforge.net</long>
       </locale>
     </schema>
 
@@ -154,6 +154,19 @@
       <locale name="C">
         <short>system library with opencl runtime</short>
         <long>opencl runtime library is normally detected automatically by darktable. if your opencl runtime is at an unusual place and cannot be detected, enter the full pathname here. leave empty for default behavior.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/opencl_memory_requirement</key>
+      <applyto>/apps/darktable/opencl_memory_requirement</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>768</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>minmum amount of GPU memory (MB) required to activate opencl</short>
+        <long>opencl will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 256 will be treated as 256.</long>
       </locale>
     </schema>
 

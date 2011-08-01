@@ -99,6 +99,13 @@ groups ()
 {
   return IOP_GROUP_BASIC;
 }
+
+int
+flags ()
+{
+  return 0;
+}
+
 void init_key_accels()
 {
   dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/demosaic/edge threshold");
@@ -843,6 +850,15 @@ error:
   return FALSE;
 }
 #endif
+
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+{
+  *factor = 3.25f; // in + out + tmp + green_eq (1/4 full)
+  *overhead = 0;
+  *overlap = 5; // take care of border handling
+  return;
+}
+
 
 void init(dt_iop_module_t *module)
 {

@@ -91,7 +91,7 @@ static void _lib_import_from_camera_callback(GtkButton *button,gpointer data)
     /* initialize a import job and put it on queue.... */
     gchar *path = g_build_path(G_DIR_SEPARATOR_S,params->basedirectory,params->subdirectory,(char *)NULL);
     dt_job_t j;
-    dt_camera_import_job_init(&j,params->jobcode,path,params->filenamepattern,params->result,params->camera);
+    dt_camera_import_job_init(&j,params->jobcode,path,params->filenamepattern,params->result,params->camera,params->time_override);
     dt_control_add_job(darktable.control, &j);
     g_free(path);
   }

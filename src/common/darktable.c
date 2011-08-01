@@ -410,6 +410,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
     darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
   }
+  else darktable.gui = NULL;
 
   darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
@@ -539,24 +540,34 @@ int dt_init(int argc, char *argv[], const int init_gui)
 void dt_cleanup()
 {
   dt_ctl_switch_mode_to(DT_MODE_NONE);
+  const int init_gui = (darktable.gui != NULL);
 
-  dt_control_write_config(darktable.control);
-  dt_control_shutdown(darktable.control);
+  if(init_gui)
+  {
+    dt_control_write_config(darktable.control);
+    dt_control_shutdown(darktable.control);
 
-  dt_lib_cleanup(darktable.lib);
-  free(darktable.lib);
+    dt_lib_cleanup(darktable.lib);
+    free(darktable.lib);
+  }
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
-  dt_imageio_cleanup(darktable.imageio);
-  free(darktable.imageio);
-  dt_gui_gtk_cleanup(darktable.gui);
-  free(darktable.gui);
+  if(init_gui)
+  {
+    dt_imageio_cleanup(darktable.imageio);
+    free(darktable.imageio);
+    dt_gui_gtk_cleanup(darktable.gui);
+    free(darktable.gui);
+  }
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
   free(darktable.mipmap_cache);
-  dt_control_cleanup(darktable.control);
-  free(darktable.control);
+  if(init_gui)
+  {
+    dt_control_cleanup(darktable.control);
+    free(darktable.control);
+  }
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
   dt_points_cleanup(darktable.points);

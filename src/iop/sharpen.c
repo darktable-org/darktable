@@ -57,7 +57,9 @@ dt_iop_sharpen_data_t;
 
 typedef struct dt_iop_sharpen_global_data_t
 {
-  int kernel_sharpen;
+  int kernel_sharpen_hblur;
+  int kernel_sharpen_vblur;
+  int kernel_sharpen_mix;
 }
 dt_iop_sharpen_global_data_t;
 
@@ -77,9 +79,10 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+#if 0
 #ifdef HAVE_OPENCL
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -128,6 +131,80 @@ error:
   return FALSE;
 }
 #endif
+#endif
+
+
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_sharpen_data_t *d = (dt_iop_sharpen_data_t *)piece->data;
+  dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)self->data;
+  cl_mem dev_m = NULL;
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
+  const int wd = 2*rad+1;
+  float mat[wd];
+
+  if(rad == 0)
+  {
+    size_t origin[] = {0, 0, 0};
+    size_t region[] = {roi_in->width, roi_in->height, 1};
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if (err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+
+  // init gaussian kernel
+
+  float *m = mat + rad;
+  const float sigma2 = (1.0f/(2.5*2.5))*(d->radius*roi_in->scale/piece->iscale)*(d->radius*roi_in->scale/piece->iscale);
+  float weight = 0.0f;
+  for(int l=-rad; l<=rad; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma2));
+  for(int l=-rad; l<=rad; l++) m[l] /= weight;
+
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*wd, mat);
+  if (dev_m == NULL) goto error;
+
+  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+
+  /* horizontal blur */
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_hblur, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_hblur, 3, sizeof(int), (void *)&rad);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen_hblur, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  /* vertical blur */
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_vblur, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_vblur, 3, sizeof(int), (void *)&rad);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen_vblur, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  /* mixing out and in -> out */
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 2, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 3, sizeof(float), (void *)&d->amount);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 4, sizeof(float), (void *)&d->threshold);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen_mix, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  if (dev_m != NULL) clReleaseMemObject(dev_m);
+  return TRUE;
+
+error:
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_sharpen] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
 
 void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
 {
@@ -139,6 +216,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   *overlap = rad;
   return;
 }
+
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -349,10 +427,12 @@ void init(dt_iop_module_t *module)
 
 void init_global(dt_iop_module_so_t *module)
 {
-  const int program = 2; // basic.cl, from programs.conf
+  const int program = 7; // sharpen.cl, from programs.conf
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)malloc(sizeof(dt_iop_sharpen_global_data_t));
   module->data = gd;
-  gd->kernel_sharpen = dt_opencl_create_kernel(program, "sharpen");
+  gd->kernel_sharpen_hblur = dt_opencl_create_kernel(program, "sharpen_hblur");
+  gd->kernel_sharpen_vblur = dt_opencl_create_kernel(program, "sharpen_vblur");
+  gd->kernel_sharpen_mix = dt_opencl_create_kernel(program, "sharpen_mix");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -366,7 +446,9 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_sharpen_global_data_t *gd = (dt_iop_sharpen_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_sharpen);
+  dt_opencl_free_kernel(gd->kernel_sharpen_hblur);
+  dt_opencl_free_kernel(gd->kernel_sharpen_vblur);
+  dt_opencl_free_kernel(gd->kernel_sharpen_mix);
   free(module->data);
   module->data = NULL;
 }

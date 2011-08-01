@@ -55,7 +55,7 @@ dt_iop_nlmeans_global_data_t;
 
 const char *name()
 {
-  return _("denoising (extra slow)");
+  return _("denoise (non-local means)");
 }
 
 int
