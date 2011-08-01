@@ -83,7 +83,7 @@ init(dt_view_t *self)
       NULL);
 
   // Zoom shortcuts
-  gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/close",
+  gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/close-up",
                           GDK_1, GDK_MOD1_MASK);
   gtk_accel_map_add_entry("<Darktable>/darkroom/zoom/fill",
                           GDK_2, GDK_MOD1_MASK);
@@ -92,7 +92,7 @@ init(dt_view_t *self)
 
   dt_accel_group_connect_by_path(
       darktable.control->accels_darkroom,
-      "<Darktable>/darkroom/zoom/close",
+      "<Darktable>/darkroom/zoom/close-up",
       NULL);
   dt_accel_group_connect_by_path(
       darktable.control->accels_darkroom,
@@ -759,7 +759,7 @@ static void connect_closures(dt_view_t *self)
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)1, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);
   dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                 "<Darktable>/darkroom/zoom/close",
+                                 "<Darktable>/darkroom/zoom/close-up",
                                  closure);
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)2, NULL);
   dev->closures = g_slist_prepend(dev->closures, closure);

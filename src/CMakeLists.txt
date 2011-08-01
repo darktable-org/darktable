@@ -62,6 +62,16 @@ FILE(GLOB SOURCE_FILES
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
+# Files that could conceivable contain accelerator definitions
+FILE(GLOB ACCEL_SOURCES
+  "create_accel_strings.sh"
+  "develop/imageop.c"
+  "gui/gtk.c"
+  "iop/*.c"
+  "libs/*.c"
+  "views/*.c"
+)
+
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
@@ -273,6 +283,7 @@ SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPER
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_accel_strings.sh ${CMAKE_CURRENT_SOURCE_DIR} > ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h
+    DEPENDS ${ACCEL_SOURCES}
 )
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h PROPERTIES GENERATED 1)
 
