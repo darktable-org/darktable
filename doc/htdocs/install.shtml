@@ -87,8 +87,8 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
     	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
-        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.tar.gz/download">0.9 source .gz</a></li>
-        <li>$ tar xvjf darktable-0.9.tar.gz &amp;&amp; cd darktable-0.9</li>
+        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.1.tar.gz/download">0.9.1 source .gz</a></li>
+        <li>$ tar xvjf darktable-0.9.1.tar.gz &amp;&amp; cd darktable-0.9.1</li>
         <li>then either do</li>
         <li>$ ./build.sh</li>
         <li>or, manually:</li>
