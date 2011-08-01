@@ -56,6 +56,9 @@
 #define DT_UI_PANEL_MODULE_SPACING 10
 
 typedef struct dt_ui_t {
+  /* primary table */
+  GtkWidget *main_table;
+
   /* container widgets */
   GtkWidget *containers[DT_UI_CONTAINER_SIZE];
 
@@ -89,6 +92,10 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container);
 static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container);
 /* generic callback for redraw widget signals */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
+
+/* Callbacks for detaching the panels */
+static void _detach_panel_callback(GtkButton *button, gpointer panel);
+static void _attach_panel_callback(GtkButton *button, gpointer panel);
 
 /*
  * OLD UI API
@@ -1000,6 +1007,7 @@ void init_main_table(GtkWidget *container)
 
   // Creating the table
   widget = gtk_table_new(2, 5, FALSE);
+  darktable.gui->ui->main_table = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_widget_show(widget);
 
@@ -1240,6 +1248,14 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   ui->containers[DT_UI_CONTAINER_PANEL_LEFT_TOP] = _ui_init_panel_container_top(container);
   ui->containers[DT_UI_CONTAINER_PANEL_LEFT_CENTER] = _ui_init_panel_container_center(container, FALSE);
   ui->containers[DT_UI_CONTAINER_PANEL_LEFT_BOTTOM] = _ui_init_panel_container_bottom(container);
+
+  /* Add a detach button */
+  widget = gtk_button_new_with_label(_("detach"));
+  gtk_box_pack_end(GTK_BOX(container), widget, FALSE, TRUE, 0);
+
+  uintptr_t p = DT_UI_PANEL_LEFT;
+  g_signal_connect(G_OBJECT(widget), "clicked",
+                   G_CALLBACK(_detach_panel_callback), (gpointer)p);
   
   /* lets show all widgets */
   gtk_widget_show_all(ui->panels[DT_UI_PANEL_LEFT]);  
@@ -1270,6 +1286,14 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_TOP] = _ui_init_panel_container_top(container);
   ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_CENTER] = _ui_init_panel_container_center(container, TRUE);
   ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM] = _ui_init_panel_container_bottom(container);
+
+  /* add detach button */
+  widget = gtk_button_new_with_label(_("detach"));
+  gtk_box_pack_end(GTK_BOX(container), widget, FALSE, TRUE, 0);
+
+  uintptr_t p = DT_UI_PANEL_RIGHT;
+  g_signal_connect(G_OBJECT(widget), "clicked",
+                   G_CALLBACK(_detach_panel_callback), (gpointer)p);
 
   /* lets show all widgets */
   gtk_widget_show_all(ui->panels[DT_UI_PANEL_RIGHT]);
@@ -1352,5 +1376,83 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
   gboolean i_own_lock = dt_control_gdk_lock();
   gtk_widget_queue_draw(widget);
   if(i_own_lock) dt_control_gdk_unlock();
+
+}
+
+static void _detach_panel_callback(GtkButton *button, gpointer data)
+{
+  uintptr_t p = (uintptr_t)data;
+  GtkWidget *panel = darktable.gui->ui->panels[p];
+
+  g_object_ref(panel);
+
+  gtk_container_remove(GTK_CONTAINER(darktable.gui->ui->main_table),
+                       panel);
+
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gint width, height;
+  gtk_window_get_size(GTK_WINDOW(darktable.gui->ui->main_window),
+                      NULL, &height);
+  gtk_window_get_size(GTK_WINDOW(window), &width, NULL);
+  gtk_window_resize(GTK_WINDOW(window), width, height);
+  gtk_container_add(GTK_CONTAINER(window), panel);
+  gtk_widget_show(window);
+
+  g_object_unref(panel);
+
+  // Switching the button label and callback
+  gtk_button_set_label(button, _("re-attach"));
+  g_signal_handlers_disconnect_by_func(G_OBJECT(button),
+                                       G_CALLBACK(_detach_panel_callback),
+                                       data);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(_attach_panel_callback), data);
+
+}
+
+static void _attach_panel_callback(GtkButton *button, gpointer data)
+{
+  gint top = 0, bottom = 0, right = 0, left = 0;
+  uintptr_t p = (uintptr_t)data;
+  GtkWidget *panel = darktable.gui->ui->panels[p];
+  GtkWidget *container = darktable.gui->ui->main_table;
+  GtkWidget *window = gtk_widget_get_parent(panel);
+
+  // Figuring out where to place the panel in the main table
+  if(p == DT_UI_PANEL_LEFT)
+  {
+    left = 1;
+    right = 2;
+    top = 1;
+    bottom = 2;
+  }
+  else if(p == DT_UI_PANEL_RIGHT)
+  {
+    left = 3;
+    right = 4;
+    top = 1;
+    bottom = 2;
+  }
+  else
+    return;
+
+
+  // Attaching the panel
+  g_object_ref(panel);
+  gtk_container_remove(GTK_CONTAINER(window), panel);
+  gtk_widget_destroy(window);
+
+  gtk_table_attach(GTK_TABLE(container), panel, left, right, top, bottom,
+                   GTK_SHRINK, GTK_SHRINK | GTK_EXPAND | GTK_FILL, 0, 0);
+  gtk_widget_show(panel);
+  g_object_unref(panel);
+
+  // Switching the button label and callback
+  gtk_button_set_label(button, _("detach"));
+  g_signal_handlers_disconnect_by_func(G_OBJECT(button),
+                                       G_CALLBACK(_attach_panel_callback),
+                                       data);
+  g_signal_connect(G_OBJECT(button), "clicked",
+                   G_CALLBACK(_detach_panel_callback), data);
 
 }
