@@ -489,11 +489,8 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
     return;
   gtk_widget_draw(GTK_WIDGET(g->gslider2),NULL);
 
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
-  {
-    p->hue = dtgtk_gradient_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+  p->hue = dtgtk_gradient_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -502,11 +499,8 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
-  {
-    p->saturation = dtgtk_gradient_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+  p->saturation = dtgtk_gradient_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 

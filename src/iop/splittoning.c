@@ -216,7 +216,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   gtk_widget_draw(GTK_WIDGET(sslider),NULL);
 
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -254,7 +254,7 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // Update color preview
 
   if(self->dt->gui->reset) return;
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
