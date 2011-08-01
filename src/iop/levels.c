@@ -53,73 +53,8 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-
-//#ifdef HAVE_OPENCL
-//int
-//process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-//{
-//  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
-//  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
-//  cl_mem dev_m = NULL;
-//  cl_mem dev_coeffs = NULL;
-//  cl_int err = -999;
-
-//  const int devid = piece->pipe->devid;
-//  size_t sizes[] = {roi_in->width, roi_in->height, 1};
-//  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
-//  if (dev_m == NULL) goto error;
-
-//  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
-//  if (dev_coeffs == NULL) goto error;
-//  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), (void *)&dev_in);
-//  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), (void *)&dev_out);
-//  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(cl_mem), (void *)&dev_m);
-//  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 3, sizeof(cl_mem), (void *)&dev_coeffs);
-//  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_levels, sizes);
-
-//  if(err != CL_SUCCESS) goto error;
-//  dt_opencl_release_mem_object(dev_m);
-//  dt_opencl_release_mem_object(dev_coeffs);
-//  return TRUE;
-
-//error:
-//  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-//  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
-//  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %d\n", err);
-//  return FALSE;
-//}
-//#endif
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-//  const int ch = piece->colors;
-//  dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)(piece->data);
-//#ifdef _OPENMP
-//  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
-//#endif
-//  for(int k=0; k<roi_out->height; k++)
-//  {
-//    float *in = ((float *)i) + k*ch*roi_out->width;
-//    float *out = ((float *)o) + k*ch*roi_out->width;
-//    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
-//    {
-//      // in Lab: correct compressed Luminance for saturation:
-//      const float L_in = in[0]/100.0f;
-//      out[0] = (L_in < 1.0f) ? d->table[CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
-//        dt_iop_eval_exp(d->unbounded_coeffs, L_in);
-        
-//      if(in[0] > 0.01f)
-//      {
-//        out[1] = in[1] * out[0]/in[0];
-//        out[2] = in[2] * out[0]/in[0];
-//      }
-//      else
-//      {
-//        out[1] = in[1] * out[0]/0.01f;
-//        out[2] = in[2] * out[0]/0.01f;
-//      }
-//    }
-//  }
   const int ch = piece->colors;
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t*)(piece->data);
 #ifdef _OPENMP
@@ -338,7 +273,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  dt_draw_grid(cr, 4, 0, 0, width, height);
+  dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
 
   // Drawing the vertical line indicators
   cairo_set_line_width(cr, 2.);
@@ -357,10 +292,24 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
 
   // draw x positions
   cairo_set_line_width(cr, 1.);
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   const float arrw = 7.0f;
   for(int k=0; k<3; k++)
   {
+    switch(k)
+    {
+    case 0:
+      cairo_set_source_rgb(cr, 0, 0, 0);
+      break;
+
+    case 1:
+      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+      break;
+
+    default:
+      cairo_set_source_rgb(cr, 1, 1, 1);
+      break;
+    }
+
     cairo_move_to(cr, width*p->levels[k], height+inset-1);
     cairo_rel_line_to(cr, -arrw*.5f, 0);
     cairo_rel_line_to(cr, arrw*.5f, -arrw);
