@@ -72,12 +72,6 @@ typedef struct _GtkDarktableSliderClass
   GtkEventBoxClass parent_class;
 } GtkDarktableSliderClass;
 
-enum
-{
-  SLIDER_VALUE_CHANGED,
-  SLIDER_LAST_SIGNAL
-};
-
 
 GType dtgtk_slider_get_type (void);
 
