@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -243,6 +244,13 @@ int position()
   return 510;
 }
 
+void init_key_accels()
+{
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/metadata/clear");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/metadata/apply");
+}
+
+
 void gui_init(dt_lib_module_t *self)
 {
   GtkBox *hbox;
@@ -332,12 +340,14 @@ void gui_init(dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("clear"));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/metadata/clear");
   g_object_set(G_OBJECT(button), "tooltip-text", _("remove metadata from selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (clear_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("apply"));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/metadata/apply");
   g_object_set(G_OBJECT(button), "tooltip-text", _("write metadata for selected images"), (char *)NULL);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (apply_button_clicked), (gpointer)self);
