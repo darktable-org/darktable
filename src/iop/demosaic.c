@@ -103,7 +103,7 @@ groups ()
 int
 flags ()
 {
-  return 0;
+  return IOP_FLAGS_ALLOW_TILING;
 }
 
 void init_key_accels()
@@ -856,8 +856,8 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   tiling->factor = 3.25f; // in + out + tmp + green_eq (1/4 full)
   tiling->overhead = 0;
   tiling->overlap = 5; // take care of border handling
-  tiling->xalign = 2;
-  tiling->yalign = 2;
+  tiling->xalign = 2; // Bayer pattern
+  tiling->yalign = 2; // Bayer pattern
   return;
 }
 
