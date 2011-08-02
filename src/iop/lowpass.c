@@ -219,15 +219,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   cl_mem dev_temp1 = NULL;
   cl_mem dev_temp2 = NULL;
-  cl_mem dev_temp3 = NULL;
 
   // get intermediate vector buffers with read-write access
   dev_temp1 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp1 == NULL) goto error;
   dev_temp2 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp2 == NULL) goto error;
-  dev_temp3 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
-  if(dev_temp3 == NULL) goto error;
 
 
   // compute gaussian parameters
@@ -262,7 +259,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   sizes[1] = bheight;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp3);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(size_t), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(size_t), (void *)&height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(size_t), (void *)&blocksize);
@@ -271,12 +268,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
 
-  // second blur step: column by column of transposed image with dev_temp3 -> dev_temp1 (!! height <-> width !!)
+  // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
   sizes[0] = height;
   sizes[1] = 1;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp3);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(size_t), (void *)&height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(size_t), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
@@ -291,12 +288,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
 
-  // transpose back dev_temp1 -> dev_temp2
+  // transpose back dev_temp2 -> dev_temp1
   sizes[0] = bheight;
   sizes[1] = bwidth;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(size_t), (void *)&height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(size_t), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(size_t), (void *)&blocksize);
@@ -305,12 +302,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
 
-  // final mixing step dev_temp2 -> dev_temp3
+  // final mixing step dev_temp1 -> dev_temp2
   sizes[0] = width;
   sizes[1] = height;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_temp3);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_temp2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 2, sizeof(size_t), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 3, sizeof(size_t), (void *)&height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 4, sizeof(float), (void *)&contrast);
@@ -318,19 +315,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  // copy result of full gaussian blur from dev_temp3 -> dev_out
-  err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp3, dev_out, 0, origin, region);
+  // copy result of full gaussian blur from dev_temp2 -> dev_out
+  err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp1, dev_out, 0, origin, region);
   if(err != CL_SUCCESS) goto error;
 
   if (dev_temp1 != NULL) clReleaseMemObject(dev_temp1);
   if (dev_temp2 != NULL) clReleaseMemObject(dev_temp2);
-  if (dev_temp3 != NULL) clReleaseMemObject(dev_temp3);
   return TRUE;
 
 error:
   if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
   if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
-  if (dev_temp3 != NULL) dt_opencl_release_mem_object(dev_temp3);
   dt_print(DT_DEBUG_OPENCL, "[opencl_lowpass] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -343,7 +338,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
 
-  tiling->factor = 5; // in + out + 3*temp
+  tiling->factor = 4; // in + out + 2*temp
   tiling->overhead = 0;
   tiling->overlap = 4*sigma;
   tiling->xalign = 1;
