@@ -32,7 +32,51 @@
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
-#define ALIGNMENT 4	/* this defines the alignment of opencl image width. can have strong effects on processing speed */
+
+/* this defines an additional alignment requirement for opencl image width. 
+   It can have strong effects on processing speed. Reasonable values are a 
+   power of 2. set to 1 for no effect. */
+#define ALIGNMENT 4
+
+
+/* greatest common divisor */
+static unsigned
+_gcd(unsigned a, unsigned b)
+{
+  unsigned t;
+  while(b != 0)
+  {
+    t = b;
+    b = a % b;
+    a = t;
+  }
+  return a;
+}
+
+/* least common multiple */
+static unsigned
+_lcm(unsigned a, unsigned b)
+{
+  return (((unsigned long)a * b) / _gcd(a, b));
+}
+
+/* check if n is a prime number */
+static int
+_isprime(unsigned n)
+{
+  if(!(n % 2)) return FALSE;
+
+  unsigned limit = sqrt(n) + 1;
+
+  for(int i=3; i<=limit; i+=2)
+  {
+    if(!(n % i)) return FALSE;
+  }
+  return TRUE;
+}
+
+
+
 
 #ifdef HAVE_OPENCL
 /* if a module does not implement process_tiling_cl() by itself, this function is called instead.
@@ -62,14 +106,10 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
 
-    /* get tiling requirements of module */
+  /* get tiling requirements of module */
   dt_develop_tiling_t tiling = { 0 };
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
-  const unsigned int overlap = tiling.overlap;
-  //const unsigned int xalign = tiling.xalign;
-  //const unsigned int yalign = tiling.yalign;
 
-  assert(xalign != 0 && yalign != 0);
 
   /* calculate optimal size of tiles */
   const size_t available = darktable.opencl->dev[devid].max_global_mem - DT_OPENCL_MEMORY_HEADROOM;
@@ -97,8 +137,32 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     }
   }
 
-  /* properly align tile width to a multiple of ALIGNMENT. don't do this for tiles of full image width */
-  if(width < roi_out->width) width = (width / ALIGNMENT) * ALIGNMENT;
+
+
+  /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
+     Modules will report alignment requirements via xalign and yalign within tiling_callback().
+     Typical use case is demosaic where Bayer pattern requires alignment to a multiple of 2 in x and y
+     direction. Additional alignment requirements are set via definition of ALIGNMENT.
+     We guarantee alignment by selecting image width/height and overlap accordingly. For a tile width/height
+     that is identical to image width/height no special alignment is done. */
+
+  /* for simplicity reasons we use only one alignment that fits to x and y requirements at the same time */
+  const unsigned int xyalign = _lcm(tiling.xalign, tiling.yalign);
+
+  /* determing alignment requirement for tile width/height.
+     in case of tile width also align according to definition of ALIGNMENT */
+  const unsigned int walign = _lcm(xyalign, ALIGNMENT);
+  const unsigned int halign = xyalign;
+
+  assert(xyalign != 0 && walign != 0 && halign != 0);
+
+  /* properly align tile width and height by making them smaller if needed */
+  if(width < roi_out->width) width = (width / walign) * walign;
+  if(height < roi_out->height) height = (height / halign) * halign;
+
+  /* also make sure that overlap follows alignment rules by making it wider when needed */
+  const int overlap = tiling.overlap != 0 ? (tiling.overlap / xyalign + 1) * xyalign : 0;
+
 
   /* calculate effective tile size */
   const int tile_wd = width - 2*overlap;
@@ -111,6 +175,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     return FALSE;
   }
 
+
   /* calculate number of tiles */
   const int tiles_x = width < roi_out->width ? ceilf(roi_out->width /(float)tile_wd) : 1;
   const int tiles_y = height < roi_out->height ? ceilf(roi_out->height/(float)tile_ht) : 1;
@@ -122,18 +187,20 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     return FALSE;
   }
 
+
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] use tiling on module '%s' for image with full size %d x %d\n", self->op, roi_out->width, roi_out->height);
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] (%d x %d) tiles with max dimensions %d x %d and overlap %d\n", tiles_x, tiles_y, width, height, overlap);
 
   /* get opencl input and output buffers, to be re-used for all tiles.
      For "end-tiles" these buffers will only be partly filled; the acutally used part
      is then correctly reflected in iroi and oroi which we give to the respective
-     process_cl(). However, opencl kernels may not simply read beyond limits given by width and height
+     process_cl(). Attention! opencl kernels may not simply read beyond limits (given by width and height)
      as they can no longer rely on CLK_ADDRESS_CLAMP_TO_EDGE to give reasonable results! */
   input = dt_opencl_alloc_device(devid, width, height, in_bpp);
   if(input == NULL) goto error;
   output = dt_opencl_alloc_device(devid, width, height, out_bpp);
   if(output == NULL) goto error;
+
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
@@ -145,10 +212,15 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     /* no need to process (end)tiles that are smaller than overlap */
     if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
 
-    /* processing speed of opencl can be dramatically dependent on width of image buffers. make sure also
-       end-tiles are nicely aligned by making them wider if needed */
-    size_t walign = (tx > 0 && wd % ALIGNMENT != 0) ? ALIGNMENT - wd % ALIGNMENT : 0;
-    wd += walign;
+    /* take care that end-tiles do not have a prime tile width as this can cause dramatic slow-down
+       with some opencl implementations. Within certain limits we do an x-adjustment in this case, 
+       respecting the requirements set in xyalign. */
+    int xadjust = 0;
+    if(tx > 0 && wd != width)
+    { 
+      while(xadjust <= 3*xyalign && _isprime(wd + xadjust)) xadjust += xyalign;
+    }
+    wd += xadjust;
 
     /* origin and region of effective part of tile, which we want to store later */
     size_t origin[] = { 0, 0, 0 };
@@ -159,10 +231,10 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     dt_iop_roi_t oroi = { 0, 0, wd, ht, roi_out->scale };
 
     /* offsets of tile into ivoid and ovoid */
-    size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd - walign)*in_bpp;
-    size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd - walign)*out_bpp;
+    size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd - xadjust)*in_bpp;
+    size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd - xadjust)*out_bpp;
 
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd-walign, ty*tile_ht);
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd-xadjust, ty*tile_ht);
 
 
     /* non-blocking memory transfer: host input buffer -> opencl/device tile */
@@ -176,9 +248,9 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
        makes sure that we only copy back the "good" part. */
     if(tx > 0)
     {
-      origin[0] += (overlap+walign);
-      region[0] -= (overlap+walign);
-      ooffs += (overlap+walign)*out_bpp;
+      origin[0] += (overlap+xadjust);
+      region[0] -= (overlap+xadjust);
+      ooffs += (overlap+xadjust)*out_bpp;
     }
     if(ty > 0)
     {
