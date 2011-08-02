@@ -27,6 +27,7 @@
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "common/opencl.h"
 #include "dtgtk/slider.h"
@@ -97,7 +98,7 @@ void init_key_accels()
 }
 
 
-void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
 
@@ -107,9 +108,11 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
-  *factor = 2;
-  *overhead = 0;
-  *overlap = wdh;
+  tiling->factor = 2;
+  tiling->overhead = 0;
+  tiling->overlap = wdh;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
   return;
 }
 

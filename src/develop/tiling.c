@@ -44,9 +44,6 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   cl_int err = -999;
   cl_mem input = NULL;
   cl_mem output = NULL;
-  float factor;
-  unsigned overhead;
-  unsigned overlap;
 
   //fprintf(stderr, "roi_in: {%d, %d, %d, %d, %5.3f} roi_out: {%d, %d, %d, %d, %5.3f} in module '%s'\n",
   //      roi_in->x, roi_in->y, roi_in->width, roi_in->height, (double)roi_in->scale,
@@ -64,13 +61,19 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   const int out_bpp = self->output_bpp(self, piece->pipe, piece);
   const int ipitch = roi_in->width * in_bpp;
   const int opitch = roi_out->width * out_bpp;
-  
-  /* get memory requirements of module */
-  self->tiling_callback(self, piece, roi_in, roi_out, &factor, &overhead, &overlap);
+
+    /* get tiling requirements of module */
+  dt_develop_tiling_t tiling = { 0 };
+  self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
+  const unsigned int overlap = tiling.overlap;
+  //const unsigned int xalign = tiling.xalign;
+  //const unsigned int yalign = tiling.yalign;
+
+  assert(xalign != 0 && yalign != 0);
 
   /* calculate optimal size of tiles */
   const size_t available = darktable.opencl->dev[devid].max_global_mem - DT_OPENCL_MEMORY_HEADROOM;
-  const size_t singlebuffer = min(((float)(available - overhead)) / factor, darktable.opencl->dev[devid].max_mem_alloc);
+  const size_t singlebuffer = min(((float)(available - tiling.overhead)) / tiling.factor, darktable.opencl->dev[devid].max_mem_alloc);
   int width = min(roi_out->width, darktable.opencl->dev[devid].max_image_width);
   int height = min(roi_out->height, darktable.opencl->dev[devid].max_image_height);
 
@@ -212,14 +215,17 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
 /* If a module does not implement tiling_callback() by itself, this function is called instead.
    Default is an image size factor of 2 (i.e. input + output buffer needed), no overhead (1),
-   and no overlap between tiles. Simple pixel to pixel modules (take tonecurve as an example)
-   can happily live with that.
+   no overlap between tiles, and an pixel alignment of 1 in x and y direction, i.e. no special
+   alignment required. Simple pixel to pixel modules (take tonecurve as an example) can happily
+   live with that.
    (1) Small overhead like look-up-tables in tonecurve can be ignored safely. */
-void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  *factor = 2.0f;
-  *overhead = 0;
-  *overlap = 0;
+  tiling->factor = 2.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
   return;
 }
 

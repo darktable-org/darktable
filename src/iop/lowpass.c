@@ -27,6 +27,7 @@
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
@@ -335,16 +336,18 @@ error:
 }
 #endif
 
-void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
   dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
 
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
 
-  *factor = 5; // in + out + 3*temp
-  *overhead = 0;
-  *overlap = 4*sigma;
+  tiling->factor = 5; // in + out + 3*temp
+  tiling->overhead = 0;
+  tiling->overlap = 4*sigma;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
   return;
 }
 

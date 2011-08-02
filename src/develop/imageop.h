@@ -30,6 +30,7 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 struct dt_iop_roi_t;
 struct dt_develop_blend_params_t;
+struct dt_develop_tiling_t;
 
 #define	IOP_GROUP_BASIC    1
 #define	IOP_GROUP_COLOR    2
@@ -92,7 +93,7 @@ typedef struct dt_iop_module_so_t
   int (*operation_tags_filter)  (); 
 
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap);
+  void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
@@ -191,7 +192,7 @@ typedef struct dt_iop_module_t
   /** how many bytes per pixel in the output. */
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** report back info for tiling: memory usage and overlap. Memory usage: factor * intput_size + overhead */
-  void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap);
+  void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */

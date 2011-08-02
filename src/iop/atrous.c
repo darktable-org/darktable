@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "common/opencl.h"
 #include "common/debug.h"
 #include "control/conf.h"
@@ -509,7 +510,7 @@ error:
 }
 #endif
 
-void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs [MAX_NUM_SCALES][4];
@@ -518,9 +519,11 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
 
-  *factor = 2 + 1 + max_scale;
-  *overhead = 0;
-  *overlap = max_filter_radius;
+  tiling->factor = 2 + 1 + max_scale;
+  tiling->overhead = 0;
+  tiling->overlap = max_filter_radius;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
   return;
 }
 

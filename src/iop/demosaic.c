@@ -23,7 +23,7 @@
 #include "common/darktable.h"
 #include "control/control.h"
 #include "develop/develop.h"
-#include "develop/imageop.h"
+#include "develop/tiling.h"
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
@@ -851,11 +851,13 @@ error:
 }
 #endif
 
-void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  *factor = 3.25f; // in + out + tmp + green_eq (1/4 full)
-  *overhead = 0;
-  *overlap = 5; // take care of border handling
+  tiling->factor = 3.25f; // in + out + tmp + green_eq (1/4 full)
+  tiling->overhead = 0;
+  tiling->overlap = 5; // take care of border handling
+  tiling->xalign = 2;
+  tiling->yalign = 2;
   return;
 }
 

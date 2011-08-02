@@ -25,6 +25,7 @@
 #include "common/darktable.h"
 #include "iop/temperature.h"
 #include "develop/develop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
@@ -260,6 +261,16 @@ error:
   return FALSE;
 }
 #endif
+
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.0f; // in + out
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 2; // Bayer pattern
+  tiling->yalign = 2; // Bayer pattern
+  return;
+}
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
