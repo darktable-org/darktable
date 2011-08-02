@@ -159,17 +159,6 @@
       <em>also see the manpage for more details</em>
     	</div>
 
-
-      <div class="text">
-    	<h1>speed hack</h1>
-      <ul>
-        <li> $ cp ~/.config/darktable/library.db /dev/shm</li>
-        <li> $ darktable --library /dev/shm/library.db</li>
-        <li> $ cp /dev/shm/.darktabledb ~/</li>
-        <li> :)</li>
-      </ul>
-    	</div>
-
     </div> <!-- page -->
     <!--#include virtual="footer.html" -->
   </body>

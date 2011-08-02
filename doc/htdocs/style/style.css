@@ -1,7 +1,7 @@
-a:link    { font-weight:bold; font-style:normal; color:white;   text-decoration:none; }
-a:visited { font-weight:bold; font-style:normal; color:white;   text-decoration:none; }
-a:focus   { font-weight:bold; font-style:normal; color:white;   text-decoration:underline; }
-a:hover   { font-weight:bold; font-style:normal; color:#6a6868; text-decoration:none; }
+a:link    { font-weight:bold; font-style:normal; color:#555566;   text-decoration:none; }
+a:visited { font-weight:bold; font-style:normal; color:#555566;   text-decoration:none; }
+a:focus   { font-weight:bold; font-style:normal; color:#555566;   text-decoration:underline; }
+a:hover   { font-weight:bold; font-style:normal; color:white; text-decoration:none; }
 
 body{
   background-image:url("darktablebg.png"); 

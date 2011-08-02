@@ -56,7 +56,10 @@ def add_edges(gr):
   
   # and of course rawspeed needs to give us the pixels first:
   gr.add_edge(('temperature', 'rawspeed'))
-  
+
+  # inversion should be really early in the pipe
+  gr.add_edge(('temperature', 'invert'))
+
   # these need to be in camera color space (input rgb):
   gr.add_edge(('colorin', 'exposure'))
   gr.add_edge(('colorin', 'highlights'))
@@ -257,9 +260,10 @@ gr.add_nodes([
 'grain',
 'highlights',
 'highpass',
-'lowpass',
+'invert',
 'hotpixels',
 'lens',
+'lowpass',
 'lowlight',
 'monochrome',
 'nlmeans',
