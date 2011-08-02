@@ -1143,8 +1143,6 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
     reset_mix(self);
     for(int k=0; k<BANDS; k++)
     {
-        p->x[c->channel][k] = d->x[c->channel][k];
-        p->y[c->channel][k] = d->y[c->channel][k];
         p->x[c->channel2][k] = d->x[c->channel2][k];
         p->y[c->channel2][k] = d->y[c->channel2][k];
     }
