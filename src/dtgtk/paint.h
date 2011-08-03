@@ -94,4 +94,11 @@ void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
 /** paint lock icon */
 void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
                             gint flags);
+/** paint detach panel icon */
+void dtgtk_cairo_paint_detach_panel(cairo_t *cr, gint x, gint y, gint w, gint h,
+                                    gint flags);
+/** paint attach panel icon */
+void dtgtk_cairo_paint_attach_panel(cairo_t *cr, gint x, gint y, gint w, gint h,
+                                    gint flags);
+
 #endif

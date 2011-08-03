@@ -1431,8 +1431,10 @@ static void _init_panel_header(dt_panel_t *panel)
   gtk_box_pack_start(GTK_BOX(container), panel->header_surface, TRUE, TRUE, 0);
 
   // Attachment button
-  GtkWidget *button = gtk_button_new_with_label(_("detach"));
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_detach_panel,
+                                       CPF_STYLE_FLAT);
   gtk_box_pack_start(GTK_BOX(container), button, FALSE, TRUE, 0);
+  gtk_widget_set_size_request(button, 20, -1);
 
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(_detach_panel_callback), panel);
@@ -1484,15 +1486,16 @@ static void _detach_panel_callback(GtkButton *button, gpointer data)
   gtk_window_set_keep_above(GTK_WINDOW(panel->window), TRUE);
   gtk_window_set_skip_taskbar_hint(GTK_WINDOW(panel->window), TRUE);
   gtk_window_set_skip_pager_hint(GTK_WINDOW(panel->window), TRUE);
-  gtk_window_resize(GTK_WINDOW(panel->window), width, height);
+  gtk_window_resize(GTK_WINDOW(panel->window), width, 400);
   gtk_window_move(GTK_WINDOW(panel->window), x, y);
 
   // Attaching window signals
   g_signal_connect(G_OBJECT(panel->window), "expose-event",
                    G_CALLBACK(_panel_window_expose_callback), panel);
 
-  // Switching the button label and callback
-  gtk_button_set_label(button, _("re-attach"));
+  // Switching the button icon and callback
+  dtgtk_button_set_paint(DTGTK_BUTTON(button), dtgtk_cairo_paint_attach_panel,
+                         CPF_STYLE_FLAT);
   g_signal_handlers_disconnect_by_func(G_OBJECT(button),
                                        G_CALLBACK(_detach_panel_callback),
                                        data);
@@ -1524,7 +1527,8 @@ static void _attach_panel_callback(GtkButton *button, gpointer data)
   g_object_unref(panel->container);
 
   // Switching the button label and callback
-  gtk_button_set_label(button, _("detach"));
+  dtgtk_button_set_paint(DTGTK_BUTTON(button), dtgtk_cairo_paint_detach_panel,
+                         CPF_STYLE_FLAT);
   g_signal_handlers_disconnect_by_func(G_OBJECT(button),
                                        G_CALLBACK(_attach_panel_callback),
                                        data);
@@ -1591,10 +1595,7 @@ static gboolean _panel_header_expose_event(GtkWidget *widget,
   cairo_paint(cr);
 
   // Drawing the horizontal lines
-  cairo_set_source_rgb(cr,
-                       style->fg[GTK_STATE_NORMAL].red/65535.0,
-                       style->fg[GTK_STATE_NORMAL].green/65535.0,
-                       style->fg[GTK_STATE_NORMAL].blue/65535.0);
+  cairo_set_source_rgb(cr, .6, .6, .6);
   cairo_set_line_width(cr, 2);
 
   for(int i = 1; i <= 3; i++)
