@@ -161,7 +161,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   if(height < roi_out->height) height = (height / halign) * halign;
 
   /* also make sure that overlap follows alignment rules by making it wider when needed */
-  const int overlap = tiling.overlap != 0 ? (tiling.overlap / xyalign + 1) * xyalign : 0;
+  const int overlap = tiling.overlap % xyalign != 0 ? (tiling.overlap / xyalign + 1) * xyalign : tiling.overlap;
 
 
   /* calculate effective tile size */
