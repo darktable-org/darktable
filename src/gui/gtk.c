@@ -112,6 +112,9 @@ static gboolean _panel_window_expose_callback(GtkWidget *widget,
 static gboolean _panel_header_click_event(GtkWidget *widget,
                                           GdkEventButton *event,
                                           gpointer data);
+static gboolean _panel_header_expose_event(GtkWidget *widget,
+                                           GdkEventExpose *event,
+                                           gpointer data);
 
 /*
  * OLD UI API
@@ -1422,6 +1425,8 @@ static void _init_panel_header(dt_panel_t *panel)
                         GDK_BUTTON_PRESS_MASK | GDK_EXPOSURE_MASK);
   g_signal_connect(G_OBJECT(panel->header_surface), "button-press-event",
                    G_CALLBACK(_panel_header_click_event), panel);
+  g_signal_connect(G_OBJECT(panel->header_surface), "expose-event",
+                   G_CALLBACK(_panel_header_expose_event), panel);
 
   gtk_box_pack_start(GTK_BOX(container), panel->header_surface, TRUE, TRUE, 0);
 
@@ -1479,7 +1484,7 @@ static void _detach_panel_callback(GtkButton *button, gpointer data)
   gtk_window_set_keep_above(GTK_WINDOW(panel->window), TRUE);
   gtk_window_set_skip_taskbar_hint(GTK_WINDOW(panel->window), TRUE);
   gtk_window_set_skip_pager_hint(GTK_WINDOW(panel->window), TRUE);
-  gtk_window_resize(GTK_WINDOW(panel->window), width, 100);
+  gtk_window_resize(GTK_WINDOW(panel->window), width, height);
   gtk_window_move(GTK_WINDOW(panel->window), x, y);
 
   // Attaching window signals
@@ -1562,4 +1567,49 @@ static gboolean _panel_header_click_event(GtkWidget *widget,
                                event->x_root, event->y_root, event->time);
 
   return FALSE;
+}
+
+static gboolean _panel_header_expose_event(GtkWidget *widget,
+                                           GdkEventExpose *event,
+                                           gpointer data)
+{
+  dt_panel_t *panel = (dt_panel_t*)data;
+  if(!panel->window) return FALSE;
+  if(!dt_control_running()) return TRUE;
+
+  float width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                    width, height);
+  cairo_t *cr = cairo_create(cst);
+  GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
+
+  // Clearing the background
+  cairo_set_source_rgb (cr,
+                        style->bg[GTK_STATE_NORMAL].red/65535.0,
+                        style->bg[GTK_STATE_NORMAL].green/65535.0,
+                        style->bg[GTK_STATE_NORMAL].blue/65535.0);
+  cairo_paint(cr);
+
+  // Drawing the horizontal lines
+  cairo_set_source_rgb(cr,
+                       style->fg[GTK_STATE_NORMAL].red/65535.0,
+                       style->fg[GTK_STATE_NORMAL].green/65535.0,
+                       style->fg[GTK_STATE_NORMAL].blue/65535.0);
+  cairo_set_line_width(cr, 2);
+
+  for(int i = 1; i <= 3; i++)
+  {
+    cairo_move_to(cr, 3, (height / 4.0) * i);
+    cairo_rel_line_to(cr, width - 6, 0);
+    cairo_stroke(cr);
+  }
+
+  // Drawing back to the surface
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+  return TRUE;
 }
