@@ -475,6 +475,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 
+    dt_develop_tiling_t tiling = { 0 };
+
+    /* get tiling requirement of module */
+    module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
+
+    assert(tiling.factor > 0.0f && tiling.factor < 100.0f);      
+
 #ifdef HAVE_OPENCL
     /* do we have opencl at all? did user tell us to use it? did we get a resource? */
     if (dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)
@@ -493,12 +500,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       /* try to enter opencl path after checking some module specific pre-requisites */
       if(module->process_cl && piece->process_cl_ready)
       {
-        dt_develop_tiling_t tiling = { 0 };
-
-        /* get tiling requirement of module */
-        module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
-
-        assert(tiling.factor > 0.0f && tiling.factor < 100.0f);      
 
         // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, width %d, height %d, bpp %d\n", (double)tiling.factor, tiling.overhead, roi_in.width, roi_in.height, bpp);
 
@@ -634,8 +635,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             valid_input_on_gpu_only = FALSE;
           }
 
-          /* process module on cpu */
-          module->process(module, piece, input, *output, &roi_in, roi_out);
+          /* process module on cpu. use tiling if needed and possible. */
+          if(module->flags() & IOP_FLAGS_ALLOW_TILING && 
+                !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
+                max(in_bpp, bpp), tiling.factor, tiling.overhead))
+            module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+          else
+            module->process(module, piece, input, *output, &roi_in, roi_out);
+
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
         }
@@ -668,8 +675,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           valid_input_on_gpu_only = FALSE;
         }
 
-        /* process module on cpu */
-        module->process(module, piece, input, *output, &roi_in, roi_out);
+        /* process module on cpu. use tiling if needed and possible. */
+        if(module->flags() & IOP_FLAGS_ALLOW_TILING && 
+              !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
+              max(in_bpp, bpp), tiling.factor, tiling.overhead))
+          module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+        else
+          module->process(module, piece, input, *output, &roi_in, roi_out);
+
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
       }
@@ -681,14 +694,26 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     {
       /* opencl is not inited or not enabled or we got no resource/device -> everything runs on cpu */
 
-      /* process module on cpu */
-      module->process(module, piece, input, *output, &roi_in, roi_out);
+      /* process module on cpu. use tiling if needed and possible. */
+      if(module->flags() & IOP_FLAGS_ALLOW_TILING && 
+            !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
+            max(in_bpp, bpp), tiling.factor, tiling.overhead))
+        module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+      else
+        module->process(module, piece, input, *output, &roi_in, roi_out);
+
       /* process blending */
       dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
     } 
 #else
-    /* process module on cpu */
-    module->process(module, piece, input, *output, &roi_in, roi_out);
+    /* process module on cpu. use tiling if needed and possible. */
+    if(module->flags() & IOP_FLAGS_ALLOW_TILING && 
+          !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
+          max(in_bpp, bpp), tiling.factor, tiling.overhead))
+      module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+    else
+      module->process(module, piece, input, *output, &roi_in, roi_out);
+
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
 #endif

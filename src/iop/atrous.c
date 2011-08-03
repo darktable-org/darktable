@@ -401,6 +401,16 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   free(tmp2);
 }
 
+
+
+/* for the time being we use our own tiling, until global tiling is fully functional */
+void
+process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
+{
+  self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
+}
+
+
 #ifdef HAVE_OPENCL
 
 /* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */

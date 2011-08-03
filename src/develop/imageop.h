@@ -120,6 +120,7 @@ typedef struct dt_iop_module_so_t
   int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
 
   void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process_tiling)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
   int  (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   int  (*process_tiling_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
 }
@@ -233,6 +234,8 @@ typedef struct dt_iop_module_t
     * scaled to the same size width*height and contain a max of 3 floats. other color
     * formats may be filled by this callback, if the pipeline can handle it. */
   void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  /** a tiling variant of process(). */
+  void (*process_tiling)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
   /** the opencl equivalent of process(). */
   int (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** a tiling variant of process_cl(). */

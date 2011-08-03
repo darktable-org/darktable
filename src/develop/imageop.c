@@ -252,6 +252,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "init_pipe",              (gpointer)&(module->init_pipe)))              goto error;
   if(!g_module_symbol(module->module, "cleanup_pipe",           (gpointer)&(module->cleanup_pipe)))           goto error;
   if(!g_module_symbol(module->module, "process",                (gpointer)&(module->process)))                goto error;
+  if(!g_module_symbol(module->module, "process_tiling",         (gpointer)&(module->process_tiling)))         module->process_tiling = default_process_tiling;
   if(!darktable.opencl->inited ||
       !g_module_symbol(module->module, "process_cl",             (gpointer)&(module->process_cl)))             module->process_cl = NULL;
   if(!g_module_symbol(module->module, "process_tiling_cl",      (gpointer)&(module->process_tiling_cl)))      module->process_tiling_cl = darktable.opencl->inited ? default_process_tiling_cl : NULL;
@@ -320,6 +321,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->init_pipe       = so->init_pipe;
   module->cleanup_pipe    = so->cleanup_pipe;
   module->process         = so->process;
+  module->process_tiling  = so->process_tiling;
   module->process_cl      = so->process_cl;
   module->process_tiling_cl = so->process_tiling_cl;
   module->modify_roi_in   = so->modify_roi_in;

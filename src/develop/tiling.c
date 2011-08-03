@@ -31,6 +31,8 @@
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
+#define CLAMPI(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+
 
 
 /* this defines an additional alignment requirement for opencl image width. 
@@ -73,6 +75,16 @@ _isprime(unsigned n)
     if(!(n % i)) return FALSE;
   }
   return TRUE;
+}
+
+
+
+void
+default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
+{
+  fprintf(stderr, "entering default_process_tiling for module %s\n", self->op);
+//fallback:
+  self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
 
@@ -285,6 +297,8 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 }
 #endif
 
+
+
 /* If a module does not implement tiling_callback() by itself, this function is called instead.
    Default is an image size factor of 2 (i.e. input + output buffer needed), no overhead (1),
    no overlap between tiles, and an pixel alignment of 1 in x and y direction, i.e. no special
@@ -301,4 +315,25 @@ void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixel
   return;
 }
 
+int 
+dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
+{
+  static int host_memory_limit = -1;
+
+  /* first time run */
+  if(host_memory_limit < 0)
+  {
+    host_memory_limit = dt_conf_get_int("host_memory_limit");
+
+    /* don't let the user play games with us */
+    if(host_memory_limit != 0) host_memory_limit = CLAMPI(host_memory_limit, 500, 50000);
+    dt_conf_set_int("host_memory_limit", host_memory_limit);
+  }
+
+  size_t requirement = width * height * bpp * factor + overhead;
+
+  if(host_memory_limit == 0 || requirement <= (size_t)host_memory_limit * 1024 * 1024) return TRUE;
+
+  return FALSE;
+}
 
