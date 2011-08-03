@@ -78,15 +78,189 @@ _isprime(unsigned n)
 }
 
 
-
+/* if a module does not implement process_tiling() by itself, this function is called instead.
+   default_process_tiling() is able to handle standard cases where pixels change their values
+   but not their places.
+   in case of problems this function falls back to function process() of the respective module
+   and hopes for the best :) */
 void
 default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
 {
-  fprintf(stderr, "entering default_process_tiling for module %s\n", self->op);
-//fallback:
-  self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
-}
+  void *input = NULL;
+  void *output = NULL;
 
+  /* We only care for the most simple cases ATM. Else try to process the standard way, i.e. in one chunk. */
+  if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
+  {
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] cannot handle requested roi's. fall back to standard method for module '%s'\n", self->op);
+    goto fallback;
+  }
+
+  const int out_bpp = self->output_bpp(self, piece->pipe, piece);
+  const int ipitch = roi_in->width * in_bpp;
+  const int opitch = roi_out->width * out_bpp;
+
+  /* get tiling requirements of module */
+  dt_develop_tiling_t tiling = { 0 };
+  self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
+
+
+  /* calculate optimal size of tiles */
+  long available = dt_conf_get_int("host_memory_limit")*1024*1024;
+  assert(available >= 500*1024*1024);
+  /* correct for size of ivoid and ovoid which are needed on top of tiling */
+  available -= roi_out->width * roi_out->height * (in_bpp + out_bpp) + tiling.overhead;
+
+  const long singlebuffer = (float)available / tiling.factor;
+
+  if(singlebuffer < 0)
+  {
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. not enough free memory: %ld\n", self->op, available);
+    goto fallback;
+  }
+
+  int width = roi_out->width;
+  int height = roi_out->height;
+
+  /* shrink tile size in case it would exceed singlebuffer size */
+  if(width*height*max(in_bpp, out_bpp) > singlebuffer)
+  {
+    const float scale = (float)singlebuffer/(width*height*max(in_bpp, out_bpp));
+
+    /* TODO: can we make this more efficient to minimize total overlap between tiles? */
+    width = floorf(width * sqrt(scale));  
+    height = floorf(height * sqrt(scale));
+  }
+
+
+  /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
+     Modules will report alignment requirements via xalign and yalign within tiling_callback().
+     Typical use case is demosaic where Bayer pattern requires alignment to a multiple of 2 in x and y
+     direction.
+     We guarantee alignment by selecting image width/height and overlap accordingly. For a tile width/height
+     that is identical to image width/height no special alignment is needed. */
+
+  const unsigned int xyalign = _lcm(tiling.xalign, tiling.yalign);
+
+  assert(xyalign != 0);
+
+  /* properly align tile width and height by making them smaller if needed */
+  if(width < roi_out->width) width = (width / xyalign) * xyalign;
+  if(height < roi_out->height) height = (height / xyalign) * xyalign;
+
+  /* also make sure that overlap follows alignment rules by making it wider when needed */
+  const int overlap = tiling.overlap % xyalign != 0 ? (tiling.overlap / xyalign + 1) * xyalign : tiling.overlap;
+
+  /* calculate effective tile size */
+  const int tile_wd = width - 2*overlap;
+  const int tile_ht = height - 2*overlap;
+
+  /* make sure we have a reasonably effective tile size */
+  if(2*tile_wd < width || 2*tile_ht < height)
+  {
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. too small effective tiles: %d x %d.\n", self->op, tile_wd, tile_ht);
+    goto fallback;
+  }
+
+
+  /* calculate number of tiles */
+  const int tiles_x = width < roi_out->width ? ceilf(roi_out->width /(float)tile_wd) : 1;
+  const int tiles_y = height < roi_out->height ? ceilf(roi_out->height/(float)tile_ht) : 1;
+
+  /* sanity check: don't run wild on too many tiles */
+  if(tiles_x * tiles_y > DT_TILING_MAXTILES)
+  {
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. too many tiles: %d x %d.\n", self->op, tiles_x, tiles_y);
+    goto fallback;
+  }
+
+
+  dt_print(DT_DEBUG_DEV, "[default_process_tiling] use tiling on module '%s' for image with full size %d x %d\n", self->op, roi_out->width, roi_out->height);
+  dt_print(DT_DEBUG_DEV, "[default_process_tiling] (%d x %d) tiles with max dimensions %d x %d and overlap %d\n", tiles_x, tiles_y, width, height, overlap);
+
+  /* reserve input and output buffers for tiles */
+  input = dt_alloc_align(64, width*height*in_bpp);
+  if(input == NULL)
+  {
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] could not alloc input buffer for module '%s'\n", self->op);
+    goto fallback;
+  }
+  output = dt_alloc_align(64, width*height*out_bpp);
+  if(output == NULL)
+  {
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] could not alloc output buffer for module '%s'\n", self->op);
+    goto fallback;
+  }
+
+
+  /* iterate over tiles */
+  for(int tx=0; tx<tiles_x; tx++)
+    for(int ty=0; ty<tiles_y; ty++)  
+  {
+    size_t wd = tx * tile_wd + width > roi_out->width  ? roi_out->width - tx * tile_wd : width;
+    size_t ht = ty * tile_ht + height > roi_out->height ? roi_out->height- ty * tile_ht : height;
+
+    /* no need to process end-tiles that are smaller than overlap */
+    if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
+
+    /* origin and region of effective part of tile, which we want to store later */
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { wd, ht, 1 };
+
+    /* roi_in and roi_out for process_cl on subbuffer */
+    dt_iop_roi_t iroi = { 0, 0, wd, ht, roi_in->scale };
+    dt_iop_roi_t oroi = { 0, 0, wd, ht, roi_out->scale };
+
+    /* offsets of tile into ivoid and ovoid */
+    size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd)*in_bpp;
+    size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd)*out_bpp;
+
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
+
+    /* prepare input tile buffer */
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(input,width,ivoid,ioffs,wd,ht) schedule(static)
+#endif
+    for(int j=0; j<ht; j++)
+      memcpy((char *)input+j*wd*in_bpp, (char *)ivoid+ioffs+j*ipitch, wd*in_bpp);
+
+    /* call process() of module */
+    self->process(self, piece, input, output, &iroi, &oroi);
+
+    /* correct origin and region of tile for overlap.
+       make sure that we only copy back the "good" part. */
+    if(tx > 0)
+    {
+      origin[0] += overlap;
+      region[0] -= overlap;
+      ooffs += overlap*out_bpp;
+    }
+    if(ty > 0)
+    {
+      origin[1] += overlap;
+      region[1] -= overlap;
+      ooffs += overlap*opitch;
+    }
+
+    /* copy "good" part of tile to output buffer */
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(ovoid,ooffs,output,width,origin,region,wd) schedule(static)
+#endif
+    for(int j=0; j<region[1]; j++)
+      memcpy((char *)ovoid+ooffs+j*opitch, (char *)output+((j+origin[1])*wd+origin[0])*out_bpp, region[0]*out_bpp);
+  }
+
+  if(input != NULL) free(input);
+  if(output != NULL) free(output);
+  return;
+
+fallback:
+  if(input != NULL) free(input);
+  if(output != NULL) free(output);
+  dt_print(DT_DEBUG_DEV, "[default_process_tiling] fall back to standard processing of module '%s'\n", self->op);
+  self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
+  return;
+}
 
 
 
@@ -330,9 +504,9 @@ dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const 
     dt_conf_set_int("host_memory_limit", host_memory_limit);
   }
 
-  size_t requirement = width * height * bpp * factor + overhead;
+  unsigned long requirement = width * height * bpp * factor + overhead;
 
-  if(host_memory_limit == 0 || requirement <= (size_t)host_memory_limit * 1024 * 1024) return TRUE;
+  if(host_memory_limit == 0 || requirement <= (unsigned long)host_memory_limit * 1024 * 1024) return TRUE;
 
   return FALSE;
 }
