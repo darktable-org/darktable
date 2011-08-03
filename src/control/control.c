@@ -1285,17 +1285,22 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
 {
   if(mode==DT_MODE_NONE) return;
-
   int8_t bit;
 
   bit = dt_conf_get_int("ui_last/panel_header");
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
 
-  bit = dt_conf_get_int("ui_last/panel_left");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (bit&(1<<mode)) ? TRUE : FALSE);
+  if(!dt_conf_get_int("ui_last/left_panel_detached"))
+  {
+    bit = dt_conf_get_int("ui_last/panel_left");
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (bit&(1<<mode)) ? TRUE : FALSE);
+  }
 
-  bit = dt_conf_get_int("ui_last/panel_right");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (bit&(1<<mode)) ? TRUE : FALSE);
+  if(!dt_conf_get_int("ui_last/right_panel_detached"))
+  {
+    bit = dt_conf_get_int("ui_last/panel_right");
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (bit&(1<<mode)) ? TRUE : FALSE);
+  }
 
   bit = dt_conf_get_int("ui_last/panel_top");
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (bit&(1<<mode)) ? TRUE : FALSE);

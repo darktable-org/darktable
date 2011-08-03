@@ -57,7 +57,7 @@
 
 typedef struct dt_panel_t
 {
-  GtkWidget *container, *header_surface, *footer_surface, *window;
+  GtkWidget *container, *header_surface, *footer_surface, *window, *border;
   char name[256];
   int number;
   gint top, bottom, right, left;
@@ -1025,6 +1025,11 @@ void init_widgets()
 
   // Showing everything
   gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+
+  if(darktable.gui->ui->panels[DT_UI_PANEL_LEFT].window)
+    gtk_widget_hide(darktable.gui->widgets.left_border);
+  if(darktable.gui->ui->panels[DT_UI_PANEL_RIGHT].window)
+    gtk_widget_hide(darktable.gui->widgets.right_border);
 }
 
 void init_main_table(GtkWidget *container)
@@ -1410,7 +1415,18 @@ static void _init_panel_header(dt_panel_t *panel)
   for(int i = 0; i < DT_UI_PANEL_SIZE; i++)
     if(panel == &darktable.gui->ui->panels[i])
       panel->number = i;
-  strcpy(panel->name, panel->number == DT_UI_PANEL_LEFT ? "left" : "right");
+  switch(panel->number)
+  {
+  case DT_UI_PANEL_LEFT:
+    strcpy(panel->name, "left");
+    panel->border = darktable.gui->widgets.left_border;
+    break;
+
+  case DT_UI_PANEL_RIGHT:
+    strcpy(panel->name, "right");
+    panel->border = darktable.gui->widgets.right_border;
+    break;
+  }
 
   gtk_container_child_get(GTK_CONTAINER(darktable.gui->ui->main_table),
                           panel->container,
@@ -1529,6 +1545,9 @@ static void _detach_panel_callback(GtkButton *button, gpointer data)
   // Showing the footer
   gtk_widget_show(panel->footer_surface);
 
+  // Hiding the border
+  gtk_widget_hide(panel->border);
+
 }
 
 static void _attach_panel_callback(GtkButton *button, gpointer data)
@@ -1564,6 +1583,9 @@ static void _attach_panel_callback(GtkButton *button, gpointer data)
 
   // Hiding the footer
   gtk_widget_hide(panel->footer_surface);
+
+  // Showing the border
+  gtk_widget_show(panel->border);
 
 }
 
