@@ -57,7 +57,7 @@
 
 typedef struct dt_panel_t
 {
-  GtkWidget *container, *header_surface, *window;
+  GtkWidget *container, *header_surface, *footer_surface, *window;
   char name[256];
   int number;
   gint top, bottom, right, left;
@@ -115,6 +115,13 @@ static gboolean _panel_header_click_event(GtkWidget *widget,
 static gboolean _panel_header_expose_event(GtkWidget *widget,
                                            GdkEventExpose *event,
                                            gpointer data);
+static gboolean _panel_footer_click_event(GtkWidget *widget,
+                                          GdkEventButton *event,
+                                          gpointer data);
+static gboolean _panel_footer_expose_event(GtkWidget *widget,
+                                          GdkEventExpose *event,
+                                          gpointer data);
+
 
 /*
  * OLD UI API
@@ -1272,6 +1279,8 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   
   /* lets show all widgets */
   gtk_widget_show_all(ui->panels[DT_UI_PANEL_LEFT].container);
+  if(!ui->panels[DT_UI_PANEL_LEFT].window)
+    gtk_widget_hide(ui->panels[DT_UI_PANEL_LEFT].footer_surface);
 }
 
 static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
@@ -1306,6 +1315,8 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
 
   /* lets show all widgets */
   gtk_widget_show_all(ui->panels[DT_UI_PANEL_RIGHT].container);
+  if(!ui->panels[DT_UI_PANEL_RIGHT].window)
+    gtk_widget_hide(ui->panels[DT_UI_PANEL_RIGHT].footer_surface);
 }
 
 static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
@@ -1439,6 +1450,18 @@ static void _init_panel_header(dt_panel_t *panel)
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(_detach_panel_callback), panel);
 
+  // Adding the footer widget
+  panel->footer_surface = gtk_drawing_area_new();
+  gtk_widget_set_size_request(panel->footer_surface, -1, 16);
+  gtk_widget_set_events(panel->footer_surface,
+                        GDK_BUTTON_PRESS_MASK | GDK_EXPOSURE_MASK);
+  g_signal_connect(G_OBJECT(panel->footer_surface), "button-press-event",
+                   G_CALLBACK(_panel_footer_click_event), panel);
+  g_signal_connect(G_OBJECT(panel->footer_surface), "expose-event",
+                   G_CALLBACK(_panel_footer_expose_event), panel);
+
+  gtk_box_pack_end(GTK_BOX(vbox), panel->footer_surface, FALSE, TRUE, 0);
+
   // Checking for attachment, and detaching if necessary
   char key[256];
   snprintf(key, 256, "ui_last/%s_panel_detached", panel->name);
@@ -1464,6 +1487,7 @@ static void _detach_panel_callback(GtkButton *button, gpointer data)
   snprintf(key, 256, "ui_last/%s_panel_w", panel->name);
   width = dt_conf_get_int(key);
   snprintf(key, 256, "ui_last/%s_panel_h", panel->name);
+  height = dt_conf_get_int(key);
 
   // Re-parenting the panel
   g_object_ref(panel->container);
@@ -1486,7 +1510,7 @@ static void _detach_panel_callback(GtkButton *button, gpointer data)
   gtk_window_set_keep_above(GTK_WINDOW(panel->window), TRUE);
   gtk_window_set_skip_taskbar_hint(GTK_WINDOW(panel->window), TRUE);
   gtk_window_set_skip_pager_hint(GTK_WINDOW(panel->window), TRUE);
-  gtk_window_resize(GTK_WINDOW(panel->window), width, 400);
+  gtk_window_resize(GTK_WINDOW(panel->window), width, height);
   gtk_window_move(GTK_WINDOW(panel->window), x, y);
 
   // Attaching window signals
@@ -1501,6 +1525,9 @@ static void _detach_panel_callback(GtkButton *button, gpointer data)
                                        data);
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(_attach_panel_callback), data);
+
+  // Showing the footer
+  gtk_widget_show(panel->footer_surface);
 
 }
 
@@ -1534,6 +1561,9 @@ static void _attach_panel_callback(GtkButton *button, gpointer data)
                                        data);
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(_detach_panel_callback), data);
+
+  // Hiding the footer
+  gtk_widget_hide(panel->footer_surface);
 
 }
 
@@ -1612,5 +1642,68 @@ static gboolean _panel_header_expose_event(GtkWidget *widget,
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);
   cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+static gboolean _panel_footer_click_event(GtkWidget *widget,
+                                          GdkEventButton *event,
+                                          gpointer data)
+{
+  dt_panel_t *panel = (dt_panel_t*)data;
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(widget, &alloc);
+
+  if(panel->window
+     && event->button == 1
+     && event->x >= alloc.width - alloc.height)
+    gtk_window_begin_resize_drag(GTK_WINDOW(panel->window),
+                                 GDK_WINDOW_EDGE_SOUTH_EAST,
+                                 event->button,
+                                 event->x_root, event->y_root,
+                                 event->time);
+
+  return FALSE;
+}
+
+static gboolean _panel_footer_expose_event(GtkWidget *widget,
+                                          GdkEventExpose *event,
+                                          gpointer data)
+{
+  dt_panel_t *panel = (dt_panel_t*)data;
+  if(!panel->window) return FALSE;
+  if(!dt_control_running()) return TRUE;
+
+  float width = widget->allocation.width, height = widget->allocation.height;
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                    width, height);
+  cairo_t *cr = cairo_create(cst);
+  GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
+
+  // Clearing the background
+  cairo_set_source_rgb (cr,
+                        style->bg[GTK_STATE_NORMAL].red/65535.0,
+                        style->bg[GTK_STATE_NORMAL].green/65535.0,
+                        style->bg[GTK_STATE_NORMAL].blue/65535.0);
+  cairo_paint(cr);
+
+  // Drawing the diagonal lines
+  cairo_set_source_rgb(cr, .6, .6, .6);
+  cairo_set_line_width(cr, 2);
+
+  for(int i = 4; i <= 16; i+= 4)
+  {
+    cairo_move_to(cr, width, height - i);
+    cairo_line_to(cr, width - i, height);
+    cairo_stroke(cr);
+  }
+
+  // Drawing back to the surface
+  cairo_destroy(cr);
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_paint(cr_pixmap);
+  cairo_destroy(cr_pixmap);
+  cairo_surface_destroy(cst);
+
   return TRUE;
 }
