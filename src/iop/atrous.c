@@ -320,6 +320,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   detail = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full*max_scale);
   tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
   buf2   = tmp;
+  if(!detail || !tmp || !buf1)
+  {
+    fprintf(stderr, "[atrous] failed to allocate buffers!\n");
+    return;
+  }
 
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
   const int width = roi_out->width, height = roi_out->height;
@@ -1138,8 +1143,6 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
     reset_mix(self);
     for(int k=0; k<BANDS; k++)
     {
-        p->x[c->channel][k] = d->x[c->channel][k];
-        p->y[c->channel][k] = d->y[c->channel][k];
         p->x[c->channel2][k] = d->x[c->channel2][k];
         p->y[c->channel2][k] = d->y[c->channel2][k];
     }
