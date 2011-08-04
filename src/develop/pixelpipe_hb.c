@@ -475,6 +475,9 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 
+    fprintf(stderr, "module: %s, bpc: %d, colors: %d, pm0: %f, pm1: %f, pm2: %f\n", module->op, piece->bpc, piece->colors,
+               (double)piece->processed_maximum[0], (double)piece->processed_maximum[1], (double)piece->processed_maximum[2]);
+
     dt_develop_tiling_t tiling = { 0 };
 
     /* get tiling requirement of module */
