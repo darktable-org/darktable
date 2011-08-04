@@ -42,12 +42,12 @@ int main(int argc, char *arg[])
   for(int k=0;k<100000;k++)
   {
     void *data = (void *)(long int)k;
-    const int size = dt_cache_size(&cache);
+    const int size = 0;//dt_cache_size(&cache);
     const int con1 = dt_cache_contains(&cache, k);
     const int val1 = (int)(long int)dt_cache_put(&cache, k, data, 1);
     const int val2 = (int)(long int)dt_cache_put(&cache, k, data, 1);
     const int con2 = dt_cache_contains(&cache, k);
-    fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
+    // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
     assert (con1 == 0);
     assert (con2 == 1);
     assert (val2 == k);
@@ -56,12 +56,25 @@ int main(int argc, char *arg[])
   fprintf(stderr, "[passed] inserting 100000 entries concurrently\n");
 
   const int size = dt_cache_size(&cache);
-  const int lru_cnt = lru_check_consistency(&cache);
-  fprintf(stderr, "lru list contains %d/%d entries\n", lru_cnt, size);
+  const int lru_cnt   = lru_check_consistency(&cache);
+  const int lru_cnt_r = lru_check_consistency_reverse(&cache);
+  // fprintf(stderr, "lru list contains %d|%d/%d entries\n", lru_cnt, lru_cnt_r, size);
   assert(size == lru_cnt);
   fprintf(stderr, "[passed] cache lru consistency after insertions\n");
 
-  // TODO: also hammer removals.
+  // also hammer removals.
+#ifdef _OPENMP
+#  pragma omp parallel for default(none) schedule(guided) shared(cache, stderr) num_threads(16)
+#endif
+  for(int k=0;k<100000;k+=5)
+  {
+    dt_cache_remove(&cache, k);
+  }
+  const int size2 = dt_cache_size(&cache);
+  const int lru_cnt2 = lru_check_consistency(&cache);
+  assert(size2 == lru_cnt2);
+  assert(size2 == 100000-100000/5);
+  fprintf(stderr, "[passed] cache lru consistency after removals, have %d entries left.\n", size2);
 
   dt_cache_cleanup(&cache);
   exit(0);

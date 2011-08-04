@@ -274,8 +274,8 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
     cache->table[k].data        = DT_CACHE_EMPTY_DATA;
     cache->table[k].read        = 0;
     cache->table[k].write       = 0;
-    cache->table[k].lru         = -1;
-    cache->table[k].mru         = -1;
+    cache->table[k].lru         = -2;
+    cache->table[k].mru         = -2;
   }
   cache->lru = cache->mru = -1;
 }
@@ -361,7 +361,7 @@ void
 lru_remove(dt_cache_t        *cache,
            dt_cache_bucket_t *bucket)
 {
-  if(bucket->mru >= 0 && bucket->lru >= 0)
+  if(bucket->mru >= -1 && bucket->lru >= -1)
   {
     if(bucket->lru == -1) cache->lru   = bucket->mru;
     else cache->table[bucket->lru].mru = bucket->mru;
@@ -369,7 +369,7 @@ lru_remove(dt_cache_t        *cache,
     else cache->table[bucket->mru].lru = bucket->lru;
   }
   // mark as not in the list:
-  bucket->mru = bucket->lru = -1;
+  bucket->mru = bucket->lru = -2;
 }
 
 // insert an entry, must already hold the lock! 
@@ -428,6 +428,22 @@ lru_check_consistency(dt_cache_t *cache)
   {
     int32_t next = cache->table[curr].mru;
     assert(cache->table[next].lru == curr);
+    curr = next;
+    cnt++;
+  }
+  dt_cache_unlock(&cache->lru_lock);
+  return cnt;
+}
+int32_t
+lru_check_consistency_reverse(dt_cache_t *cache)
+{
+  dt_cache_lock(&cache->lru_lock);
+  int32_t curr = cache->mru;
+  int32_t cnt = 1;
+  while(curr >= 0 && curr != cache->lru)
+  {
+    int32_t next = cache->table[curr].lru;
+    assert(cache->table[next].mru == curr);
     curr = next;
     cnt++;
   }
@@ -549,7 +565,7 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   dt_cache_bucket_t *last_bucket = NULL;
   dt_cache_bucket_t *curr_bucket = start_bucket;
   int16_t next_delta = curr_bucket->first_delta;
-  while(1);
+  while(1)
   {
     if(next_delta == DT_CACHE_NULL_DELTA)
     {
@@ -558,7 +574,7 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
     }
     curr_bucket += next_delta;
 
-    if( hash == curr_bucket->hash && key == curr_bucket->key)
+    if(hash == curr_bucket->hash && key == curr_bucket->key)
     {
       void *rc = curr_bucket->data;
       remove_key(segment, start_bucket, curr_bucket, last_bucket, hash);
