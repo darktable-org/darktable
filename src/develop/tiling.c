@@ -38,7 +38,7 @@
 /* this defines an additional alignment requirement for opencl image width. 
    It can have strong effects on processing speed. Reasonable values are a 
    power of 2. set to 1 for no effect. */
-#define ALIGNMENT 4
+#define CL_ALIGNMENT 4
 
 
 /* greatest common divisor */
@@ -104,6 +104,12 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   dt_develop_tiling_t tiling = { 0 };
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
+  /* tiling really does not make sense in these cases */
+  if(tiling.factor < 2.5f && tiling.overhead < 0.5f * roi_out->width * roi_out->height * max(in_bpp, out_bpp))
+  {
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] don't use tiling for module '%s'. no real memory saving could be reached\n", self->op);
+    goto fallback;
+  }
 
   /* calculate optimal size of tiles */
   long available = dt_conf_get_int("host_memory_limit")*1024*1024;
@@ -193,7 +199,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
     goto fallback;
   }
 
-  /* store process_maximum to be re-used and aggregated */
+  /* store processed_maximum to be re-used and aggregated */
   float processed_maximum_saved[3];
   float processed_maximum_new[3] = { 1.0f };
   for(int k=0; k<3; k++)
@@ -232,14 +238,14 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
     for(int j=0; j<ht; j++)
       memcpy((char *)input+j*wd*in_bpp, (char *)ivoid+ioffs+j*ipitch, wd*in_bpp);
 
-    /* take original process_maximum as starting point */
+    /* take original processed_maximum as starting point */
     for(int k=0; k<3; k++)
       piece->processed_maximum[k] = processed_maximum_saved[k];
 
     /* call process() of module */
     self->process(self, piece, input, output, &iroi, &oroi);
 
-    /* aggregate resulting process_maximum */
+    /* aggregate resulting processed_maximum */
     /* TODO: check if there really can be differences between tiles and take
              appropriate action (calculate minimum, maximum, average, ...?) */
     for(int k=0; k<3; k++)
@@ -272,7 +278,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
       memcpy((char *)ovoid+ooffs+j*opitch, (char *)output+((j+origin[1])*wd+origin[0])*out_bpp, region[0]*out_bpp);
   }
 
-  /* copy back final process_maximum */
+  /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
     piece->processed_maximum[k] = processed_maximum_new[k];
 
@@ -354,7 +360,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
      Modules will report alignment requirements via xalign and yalign within tiling_callback().
      Typical use case is demosaic where Bayer pattern requires alignment to a multiple of 2 in x and y
-     direction. Additional alignment requirements are set via definition of ALIGNMENT.
+     direction. Additional alignment requirements are set via definition of CL_ALIGNMENT.
      We guarantee alignment by selecting image width/height and overlap accordingly. For a tile width/height
      that is identical to image width/height no special alignment is done. */
 
@@ -362,8 +368,8 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   const unsigned int xyalign = _lcm(tiling.xalign, tiling.yalign);
 
   /* determing alignment requirement for tile width/height.
-     in case of tile width also align according to definition of ALIGNMENT */
-  const unsigned int walign = _lcm(xyalign, ALIGNMENT);
+     in case of tile width also align according to definition of CL_ALIGNMENT */
+  const unsigned int walign = _lcm(xyalign, CL_ALIGNMENT);
   const unsigned int halign = xyalign;
 
   assert(xyalign != 0 && walign != 0 && halign != 0);
@@ -404,7 +410,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] (%d x %d) tiles with max dimensions %d x %d and overlap %d\n", tiles_x, tiles_y, width, height, overlap);
 
 
-  /* store process_maximum to be re-used and aggregated */
+  /* store processed_maximum to be re-used and aggregated */
   float processed_maximum_saved[3];
   float processed_maximum_new[3] = { 1.0f };
   for(int k=0; k<3; k++)
@@ -465,14 +471,14 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, CL_FALSE);
     if(err != CL_SUCCESS) goto error;
 
-    /* take original process_maximum as starting point */
+    /* take original processed_maximum as starting point */
     for(int k=0; k<3; k++)
       piece->processed_maximum[k] = processed_maximum_saved[k];
 
     /* call process_cl of module */
     if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
 
-    /* aggregate resulting process_maximum */
+    /* aggregate resulting processed_maximum */
     /* TODO: check if there really can be differences between tiles and take
              appropriate action (calculate minimum, maximum, average, ...?) */
     for(int k=0; k<3; k++)
@@ -505,7 +511,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   /* block until opencl queue has finished */
   dt_opencl_finish(devid);
 
-  /* copy back final process_maximum */
+  /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
     piece->processed_maximum[k] = processed_maximum_new[k];
 
@@ -514,7 +520,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   return TRUE;
 
 error:
-  /* copy back stored processed maximum */
+  /* copy back stored processed_maximum */
   for(int k=0; k<3; k++)
     piece->processed_maximum[k] = processed_maximum_saved[k];
   if(input != NULL) dt_opencl_release_mem_object(input);
