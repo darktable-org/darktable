@@ -181,13 +181,15 @@ def add_edges(gr):
   
   # borders should not change shape/color:
   gr.add_edge(('borders', 'colorout'))
-  gr.add_edge(('borders', 'watermark'))
   gr.add_edge(('borders', 'vignette'))
   gr.add_edge(('borders', 'splittoning'))
   gr.add_edge(('borders', 'velvia'))
   gr.add_edge(('borders', 'soften'))
   gr.add_edge(('borders', 'clahe'))
   gr.add_edge(('borders', 'channelmixer'))
+
+  # but watermark can be drawn on top of borders
+  gr.add_edge(('watermark', 'borders'))
   
   # want to sharpen after geometric transformations:
   gr.add_edge(('sharpen', 'clipping'))
