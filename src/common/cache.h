@@ -48,10 +48,19 @@ void dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_
 void dt_cache_cleanup(dt_cache_t *cache);
 
 
+// TODO: need generic key (wider than uint32_t)
+
 // should only ever need to call these (porcelain)
+// requests a cache entry, blocks until available.
+// locks the cache line for reading.
+const void* dt_cache_read_get    (dt_cache_t *cache, const uint32_t key);
+void        dt_cache_read_release(dt_cache_t *cache, const uint32_t key);
+// augments an already acquired read lock to a write lock. blocks until
+// all readers have released the image.
+void* dt_cache_write_get    (dt_cache_t *cache, const uint32_t key);
+void  dt_cache_write_release(dt_cache_t *cache, const uint32_t key);
 
-
-// plumbing:
+// plumbing: these don't care about locking at all.
 void*   dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data, const int32_t cost);
 int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key);
 void*   dt_cache_remove(dt_cache_t *cache, const uint32_t key);

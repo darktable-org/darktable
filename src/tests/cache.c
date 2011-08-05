@@ -76,6 +76,8 @@ int main(int argc, char *arg[])
   assert(size2 == 100000-100000/5);
   fprintf(stderr, "[passed] cache lru consistency after removals, have %d entries left.\n", size2);
 
+  // TODO: implement and test automatic garbage collection.
+
   dt_cache_cleanup(&cache);
   exit(0);
 }

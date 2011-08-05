@@ -89,10 +89,17 @@ typedef struct dt_image_raw_parameters_t
            med_passes : 4, four_color_rgb : 1,
            highlight : 4,
            fill0 : 9; // 24 bits
+  // TODO:
+  // unsigned legacy : 24;
   int8_t user_flip; // +8 = 32 bits.
 }
 dt_image_raw_parameters_t;
 
+// TODO: clean up image struct!
+// TODO: remove all cache related stuff and locks
+// TODO: add color labels and such as cachable
+// TODO: remove all image buffers. these should be accessed
+// TODO: via dt_mipmap_cache_*
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
 {
