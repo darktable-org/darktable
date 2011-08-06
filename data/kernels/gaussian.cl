@@ -68,15 +68,18 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
   float4 yn = (float4)0.0f;
   float4 ya = (float4)0.0f;
 
+  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
+
   // forward filter
-  xp = in[x]; // 0*width+x
+  xp = clamp(in[x], Labmin, Labmax); // 0*width+x
   yb = xp * coefp;
   yp = yb;
 
  
   for(int y=0; y<height; y++)
   {
-    xc = in[x + y * width];
+    xc = clamp(in[x + y * width], Labmin, Labmax);
     yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
 
     xp = xc;
@@ -88,7 +91,7 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
   }
 
   // backward filter
-  xn = in[x + (height-1)*width];
+  xn = clamp(in[x + (height-1)*width], Labmin, Labmax);
   xa = xn;
   yn = xn * coefn;
   ya = yn;
@@ -96,7 +99,7 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
 
   for(int y=height-1; y>-1; y--)
   {
-    xc = in[x + y * width];
+    xc = clamp(in[x + y * width], Labmin, Labmax);
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
     xa = xn; 

@@ -39,10 +39,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-#define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
-#define CLAMP_RANGE(x,y,z) (CLAMP(x,y,z))
+#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
@@ -354,6 +351,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
+  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
   const float radius = fmax(0.1f, data->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
@@ -381,9 +380,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k < 4; k++)
+    for(int k=0; k<4; k++)
     {
-      xp[k] = in[i*ch+k];
+      xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
     }
@@ -392,9 +391,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k < 4; k++)
+      for(int k=0; k<4; k++)
       {
-        xc[k] = in[offset+k];
+        xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
         temp[offset+k] = yc[k];
@@ -406,9 +405,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k < 4; k++)
+    for(int k=0; k<4; k++)
     {
-      xn[k] = in[((roi_out->height - 1) * roi_out->width + i)*ch+k];
+      xn[k] = CLAMPF(in[((roi_out->height - 1) * roi_out->width + i)*ch+k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
       yn[k] = xn[k] * coefn;
       ya[k] = yn[k];
@@ -418,9 +417,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k < 4; k++)
+      for(int k=0; k<4; k++)
       {      
-        xc[k] = in[offset+k];
+        xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
 
         yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
@@ -451,9 +450,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k < 4; k++)
+    for(int k=0; k<4; k++)
     {
-      xp[k] = temp[j*roi_out->width*ch+k];
+      xp[k] = CLAMPF(temp[j*roi_out->width*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
     }
@@ -462,9 +461,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k < 4; k++)
+      for(int k=0; k<4; k++)
       {
-        xc[k] = temp[offset+k];
+        xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
         out[offset+k] = yc[k];
@@ -476,9 +475,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k < 4; k++)
+    for(int k=0; k<4; k++)
     {
-      xn[k] = temp[((j + 1)*roi_out->width - 1)*ch + k];
+      xn[k] = CLAMPF(temp[((j + 1)*roi_out->width - 1)*ch + k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
       yn[k] = xn[k] * coefn;
       ya[k] = yn[k];
@@ -488,9 +487,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k < 4; k++)
+      for(int k=0; k<4; k++)
       {      
-        xc[k] = temp[offset+k];
+        xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
 
         yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
@@ -512,9 +511,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    out[k*ch+0] = CLAMP(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), 0.0f, 100.0f);
-    out[k*ch+1] = CLAMP(out[k*ch+1]*data->saturation, -128.0f, 128.0f);
-    out[k*ch+2] = CLAMP(out[k*ch+2]*data->saturation, -128.0f, 128.0f);
+    out[k*ch+0] = CLAMPF(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), Labmin[0], Labmax[0]);
+    out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labmin[1], Labmax[1]);
+    out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labmin[2], Labmax[2]);
+    out[k*ch+3] = CLAMPF(out[k*ch+3], Labmin[3], Labmax[3]);
   }
 }
 
