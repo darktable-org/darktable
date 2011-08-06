@@ -29,6 +29,7 @@ dt_image_cache_t;
 
 void dt_image_cache_init   (dt_image_cache_t *cache);
 void dt_image_cache_cleanup(dt_image_cache_t *cache);
+void dt_image_cache_print  (dt_image_cache_t *cache);
 
 // blocks until it gets the image struct with this id for reading.
 // also does the sql query if the image is not in cache atm.

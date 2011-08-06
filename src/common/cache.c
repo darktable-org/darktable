@@ -530,6 +530,7 @@ dt_cache_read_get(
   int32_t cost = 1;
   if(cache->allocate)
     data = cache->allocate(cache->allocate_data, key, &cost);
+  add_cost(cache, cost);
 
   if(cache->optimize_cacheline)
   {
@@ -592,14 +593,15 @@ dt_cache_read_get(
   // TODO: trigger a garbage collection to free some more room!
 
   if(cache->cleanup)
-    data = cache->cleanup(cache->cleanup_data, key);
+    cache->cleanup(cache->cleanup_data, key, data);
+  add_cost(cache, -cost);
   fprintf(stderr, "[cache] failed to find a free spot for new data!\n");
   exit(1);
   return DT_CACHE_EMPTY_DATA;
 }
 
 
-void*
+void
 dt_cache_remove(dt_cache_t *cache, const uint32_t key)
 {
   const uint32_t hash = key;
@@ -615,7 +617,7 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
     if(next_delta == DT_CACHE_NULL_DELTA)
     {
       dt_cache_unlock(&segment->lock);
-      return DT_CACHE_EMPTY_DATA;
+      return;
     }
     curr_bucket += next_delta;
 
@@ -624,29 +626,40 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
       assert(curr_bucket->read  == 0);
       assert(curr_bucket->write == 0);
       void *rc = curr_bucket->data;
+      const int32_t cost = curr_bucket->cost;
       remove_key(segment, start_bucket, curr_bucket, last_bucket, hash);
       if(cache->optimize_cacheline)
         optimize_cacheline_use(cache, segment, curr_bucket);
       dt_cache_unlock(&segment->lock);
       // put back into unused part of the cache: remove from lru list.
       lru_remove_locked(cache, curr_bucket);
-      return rc;
+      // clean up the user data
+      if(cache->cleanup)
+        cache->cleanup(cache->cleanup_data, key, rc);
+      // keep track of cost
+      add_cost(cache, -cost);
+      return;
     }
     last_bucket = curr_bucket;
     next_delta = curr_bucket->next_delta;
   }
-  return DT_CACHE_EMPTY_DATA;
+  return;
 }
 
 void
 dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
+  assert(fill_ratio <= 1.0f);
   // while still too full:
   while(cache->cost > fill_ratio * cache->cost_quota)
   {
-    // TODO: lru remove
-    // TODO: cache_remove
-    // TODO: call cleanup callback
+    // get least recently used bucket
+    dt_cache_lock(&cache->lru_lock);
+    dt_cache_bucket_t *bucket = cache->table + cache->lru;
+    const uint32_t key = bucket->key;
+    dt_cache_unlock(&cache->lru_lock);
+    // remove it. takes care of lru, cost, user cleanup, and hashtable
+    dt_cache_remove(cache, key);
   }
 }
 

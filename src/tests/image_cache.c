@@ -16,9 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void dt_image_cache_init   (dt_image_cache_t *cache);
-void dt_image_cache_cleanup(dt_image_cache_t *cache);
-
+void dt_image_cache_init   (dt_image_cache_t *cache)
+{
+}
+void dt_image_cache_cleanup(dt_image_cache_t *cache)
+{
+}
+void dt_image_cache_print  (dt_image_cache_t *cache)
+{
+}
 
 void*
 dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)

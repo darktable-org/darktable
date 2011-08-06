@@ -28,8 +28,14 @@ typedef struct dt_mipmap_cache_t
   // TODO: implement our own garbage collection to free large buffers first!
   // TODO: need clever hashing img->mip (not just id..?)
   // TODO: say folder id + img filename hash
-  dt_cache_t cache;
+  dt_cache_t *cache;
 }
 dt_mipmap_cache_t;
+
+void dt_mipmap_cache_init   (dt_image_cache_t *cache);
+void dt_mipmap_cache_cleanup(dt_image_cache_t *cache);
+void dt_mipmap_cache_print  (dt_image_cache_t *cache);
+
+
 
 #endif

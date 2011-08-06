@@ -42,7 +42,7 @@ typedef struct dt_cache_t
 
   // callback functions for cache misses/garbage collection
   void* (*allocate)(void *data, const uint32_t key, int32_t *cost);
-  void* (*cleanup) (void *data, const uint32_t key);
+  void* (*cleanup) (void *data, const uint32_t key, void *payload);
   void *allocate_data;
   void *cleanup_data;
 }
@@ -64,7 +64,7 @@ dt_cache_set_allocate_callback(
 static inline void
 dt_cache_set_cleanup_callback(
     dt_cache_t *cache,
-    void* (*cleanup)(void*, const uint32_t),
+    void* (*cleanup)(void*, const uint32_t, void*),
     void *cleanup_data)
 {
   cache->cleanup = cleanup;
@@ -81,7 +81,7 @@ void  dt_cache_write_release(dt_cache_t *cache, const uint32_t key);
 // will only contain valid data if it was there before.
 void*   dt_cache_read_get(dt_cache_t *cache, const uint32_t key);
 int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key);
-void*   dt_cache_remove(dt_cache_t *cache, const uint32_t key);
+void    dt_cache_remove(dt_cache_t *cache, const uint32_t key);
 // removes from the end of the lru list, until the fill ratio
 // of the hashtable goes below the given parameter, in terms
 // of the user defined cost measure.
