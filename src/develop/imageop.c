@@ -1046,7 +1046,10 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
           num++;
         }
       // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
-      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      if(num == 0.0f)
+        col = _mm_load_ps(in + 4*(MIN(px, roi_in->width) + in_stride*MIN(py, roi_in->height)));
+      else
+        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       // memcpy(outc, &col, 4*sizeof(float));
       _mm_stream_ps(outc, col);
       outc += 4;
