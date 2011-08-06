@@ -82,16 +82,14 @@ _isprime(unsigned n)
 
 /* if a module does not implement process_tiling() by itself, this function is called instead.
    default_process_tiling() is able to handle standard cases where pixels change their values
-   but not their places.
-   in case of problems this function falls back to function process() of the respective module
-   and hopes for the best :) */
+   but not their places. */
 void
 default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
 {
   void *input = NULL;
   void *output = NULL;
 
-  /* We only care for the most simple cases ATM. Else try to process the standard way, i.e. in one chunk. */
+  /* we only care for the most simple cases ATM. else try to process the standard way, i.e. in one chunk. let's hope for the best... */
   if(memcmp(roi_in, roi_out, sizeof(struct dt_iop_roi_t)))
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling] cannot handle requested roi's. fall back to standard method for module '%s'\n", self->op);
@@ -106,7 +104,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   dt_develop_tiling_t tiling = { 0 };
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
-  /* tiling really does not make sense in these cases */
+  /* tiling really does not make sense in these cases. standard process() is not better or worse than we are */
   if(tiling.factor < 2.5f && tiling.overhead < 0.5f * roi_out->width * roi_out->height * max(in_bpp, out_bpp))
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling] don't use tiling for module '%s'. no real memory saving could be reached\n", self->op);
@@ -119,14 +117,10 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
   available -= roi_out->width * roi_out->height * (in_bpp + out_bpp) + tiling.overhead;
 
-  const long singlebuffer = (float)available / tiling.factor;
-
-  /* stop if we can not get a minimum buffer of 1000 x 1000 with 16 bpp */
-  if(singlebuffer < 16000000)
-  {
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. not enough available memory: %dMB\n", self->op, available > 0 ? available/1024/1024 : 0);
-    goto fallback;
-  }
+  /* we violate the above calculation if that's the only reasonable way to get tiling running.
+     so let's offer a reasonable sized singlebuffer in any case. better this way than giving
+     up tiling and let the module's standard process() take whatever huge amount of memory it wants. */
+  const long singlebuffer = max((float)available / tiling.factor, 64*1024*1024);
 
   int width = roi_out->width;
   int height = roi_out->height;
@@ -141,6 +135,17 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
     height = floorf(height * sqrt(scale));
   }
 
+  /* make sure we have a reasonably effective tile size */
+  if(3*tiling.overlap > width || 3*tiling.overlap > height)
+  {
+    /* really hopeless */
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. too small effective tiles\n", self->op);
+    goto error;
+  }
+
+  /* we might want to grow dimensions a bit */
+  width = max(4*tiling.overlap, width);
+  height = max(4*tiling.overlap, height);
 
   /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
      Modules will report alignment requirements via xalign and yalign within tiling_callback().
@@ -164,13 +169,6 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   const int tile_wd = width - 2*overlap;
   const int tile_ht = height - 2*overlap;
 
-  /* make sure we have a reasonably effective tile size */
-  if(2*tile_wd < width || 2*tile_ht < height)
-  {
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. too small effective tiles: %d x %d.\n", self->op, tile_wd, tile_ht);
-    goto fallback;
-  }
-
 
   /* calculate number of tiles */
   const int tiles_x = width < roi_out->width ? ceilf(roi_out->width /(float)tile_wd) : 1;
@@ -179,8 +177,8 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   /* sanity check: don't run wild on too many tiles */
   if(tiles_x * tiles_y > DT_TILING_MAXTILES)
   {
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. too many tiles: %d x %d.\n", self->op, tiles_x, tiles_y);
-    goto fallback;
+    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. too many tiles: %d x %d\n", self->op, tiles_x, tiles_y);
+    goto error;
   }
 
 
@@ -192,13 +190,13 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   if(input == NULL)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling] could not alloc input buffer for module '%s'\n", self->op);
-    goto fallback;
+    goto error;
   }
   output = dt_alloc_align(64, width*height*out_bpp);
   if(output == NULL)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling] could not alloc output buffer for module '%s'\n", self->op);
-    goto fallback;
+    goto error;
   }
 
   /* store processed_maximum to be re-used and aggregated */
@@ -207,7 +205,6 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   for(int k=0; k<3; k++)
     processed_maximum_saved[k] = piece->processed_maximum[k];
 
-  /* no "goto fallback" after this point */
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
@@ -288,12 +285,20 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   if(output != NULL) free(output);
   return;
 
+error:
+  if(input != NULL) free(input);
+  if(output != NULL) free(output);
+  dt_print(DT_DEBUG_DEV, "[default_process_tiling] tiling failed for module '%s'\n", self->op);
+  /* TODO: give a warning message to user */
+  return;
+
 fallback:
   if(input != NULL) free(input);
   if(output != NULL) free(output);
-  dt_print(DT_DEBUG_DEV, "[default_process_tiling] fall back to standard processing of module '%s'\n", self->op);
+  dt_print(DT_DEBUG_DEV, "[default_process_tiling] fall back to standard processing for module '%s'\n", self->op);
   self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
   return;
+
 }
 
 
