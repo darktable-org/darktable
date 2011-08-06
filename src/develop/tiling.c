@@ -62,6 +62,7 @@ _lcm(unsigned a, unsigned b)
   return (((unsigned long)a * b) / _gcd(a, b));
 }
 
+#ifdef HAVE_OPENCL  // only used in opencl-path
 /* check if n is a prime number */
 static int
 _isprime(unsigned n)
@@ -76,6 +77,7 @@ _isprime(unsigned n)
   }
   return TRUE;
 }
+#endif
 
 
 /* if a module does not implement process_tiling() by itself, this function is called instead.
