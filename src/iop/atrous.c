@@ -34,6 +34,8 @@
 #define INSET 5
 #define INFL .3f
 
+#define GLOBAL_TILING		// undef to use atrous-specific tiling instead (only for non-opencl)
+
 DT_MODULE(1)
 
 #define BANDS 6
@@ -275,8 +277,93 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
   return i;
 }
 
+#ifdef GLOBAL_TILING
+/* just process the supplied image buffer, upstream default_process_tiling() does the rest */
 void
-process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  float thrs [MAX_NUM_SCALES][4];
+  float boost[MAX_NUM_SCALES][4];
+  float sharp[MAX_NUM_SCALES];
+  const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+
+  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  {
+    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    g->num_samples = get_samples (g->sample, d, roi_in, piece);
+    // tries to acquire gdk lock and this prone to deadlock:
+    // dt_control_queue_draw(GTK_WIDGET(g->area));
+  }
+
+  float *detail[MAX_NUM_SCALES] = { NULL };
+  float *tmp = NULL;
+  float *buf2 = NULL;
+  float *buf1 = NULL;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  tmp = (float *)dt_alloc_align(64, sizeof(float)*4*width*height);
+  if(tmp == NULL)
+  {
+    fprintf(stderr, "[atrous] failed to allocate coarse buffer!\n");
+    goto error;
+  }
+
+  for(int k=0; k<max_scale; k++)
+  {
+    detail[k] = (float *)dt_alloc_align(64, sizeof(float)*4*width*height);
+    if(detail[k] == NULL)
+    {
+      fprintf(stderr, "[atrous] failed to allocate one of the detail buffers!\n");
+      goto error;
+    }
+  }
+
+  buf1 = (float *)i;
+  buf2 = tmp;
+
+  for(int scale=0; scale<max_scale; scale++)
+  {
+    eaw_decompose (buf2, buf1, detail[scale], scale, sharp[scale], width, height);
+    if(scale == 0) buf1 = (float *)o;  // now switch to (float *)o for buffer ping-pong between buf1 and buf2
+    float *buf3 = buf2;
+    buf2 = buf1;
+    buf1 = buf3;
+  }
+
+  for(int scale=max_scale-1; scale>=0; scale--)
+  {
+    eaw_synthesize (buf2, buf1, detail[scale], thrs[scale], boost[scale], width, height);
+    float *buf3 = buf2;
+    buf2 = buf1;
+    buf1 = buf3;
+  }
+  /* due to symmetric processing, output will be left in (float *)o */
+ 
+  for(int k=0; k<max_scale; k++) free(detail[k]);
+  free(tmp);
+  return;
+
+error:
+  for(int k=0; k<max_scale; k++) if(detail[k] != NULL) free(detail[k]);
+  if(tmp != NULL) free(tmp);
+  return;
+}
+#else
+/* if we don't use global tiling, we will in all cases use our own tiling approach, even if tiling is not requested explicitely */
+void
+process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  return self->process_tiling(self, piece, i, o, roi_in, roi_out, 4*sizeof(float));
+}
+#endif
+
+#ifndef GLOBAL_TILING
+/* this defines atrous' own tiling routine (non-opencl) */
+void
+process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs [MAX_NUM_SCALES][4];
@@ -400,19 +487,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   free(tmp);
   free(tmp2);
 }
-
-
-
-/* for the time being we use our own tiling, until global tiling is fully functional */
-void
-process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
-{
-  self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
-}
+#endif
 
 
 #ifdef HAVE_OPENCL
-
 /* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -432,7 +510,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
 
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
-  // global scale is roi scale and pipe input prescale
 
   const int devid = piece->pipe->devid;
   cl_int err = -999;
