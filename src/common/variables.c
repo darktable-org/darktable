@@ -130,7 +130,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
                ) == 6
        )
     {
-      exif_tm.tm_year--;
+      exif_tm.tm_year-=1900;
       exif_tm.tm_mon--;
       have_exif_tm = TRUE;
     }
@@ -143,7 +143,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_min);
   else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_sec);
 
-  else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_year:tim->tm_year)+1);
+  else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			sprintf(value,"%.4d", (have_exif_tm?exif_tm.tm_year:tim->tm_year)+1900);
   else if( g_strcmp0(variable,"$(EXIF_MONTH)") == 0 && (got_value=TRUE)  )  		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mon:tim->tm_mon)+1);
   else if( g_strcmp0(variable,"$(EXIF_DAY)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mday:tim->tm_mday));
   else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_hour:tim->tm_hour));
