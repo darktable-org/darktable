@@ -49,9 +49,8 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
-
 
 #ifdef HAVE_OPENCL
 int
@@ -211,7 +210,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 586; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 574; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t)
@@ -393,8 +392,8 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   // draw lum h istogram in background
   dt_develop_t *dev = darktable.develop;
   float *hist, hist_max;
-  hist = dev->histogram_pre;
-  hist_max = dev->histogram_pre_max;
+  hist = dev->histogram_pre_tonecurve;
+  hist_max = dev->histogram_pre_tonecurve_max;
   if(hist_max > 0)
   {
     cairo_save(cr);

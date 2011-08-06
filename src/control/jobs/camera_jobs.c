@@ -253,12 +253,14 @@ int32_t dt_camera_import_backup_job_run(dt_job_t *job)
 }
 
 
-void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera)
+void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera, time_t time_override)
 {
   dt_control_job_init(job, "import selected images from camera");
   job->execute = &dt_camera_import_job_run;
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
   dt_variables_params_init(&t->vp);
+  if(time_override != 0)
+    dt_variables_set_time(t->vp, time_override);
   t->fraction=0;
   t->images=g_list_copy(images);
   t->camera=camera;

@@ -58,6 +58,16 @@ FILE(GLOB SOURCE_FILES
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
+# Files that could conceivable contain accelerator definitions
+FILE(GLOB ACCEL_SOURCES
+  "create_accel_strings.sh"
+  "develop/imageop.c"
+  "gui/gtk.c"
+  "iop/*.c"
+  "libs/*.c"
+  "views/*.c"
+)
+
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
@@ -122,51 +132,61 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsv
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-find_package(Gettext)
-if(Gettext_FOUND)
-  include_directories(${Gettext_INCLUDE_DIRS})
-  list(APPEND LIBS ${Gettext_LIBRARIES})
-  add_definitions("-DUSE_GETTEXT")
-  message(STATUS "Internationalization: Enabled")
-else()
-  message(STATUS "Internationalization: Disabled (libintl not found)")
-endif()
+if(USE_NLS)
+  find_package(Gettext)
+  if(Gettext_FOUND)
+    include_directories(${Gettext_INCLUDE_DIRS})
+    list(APPEND LIBS ${Gettext_LIBRARIES})
+    add_definitions("-DUSE_GETTEXT")
+    message(STATUS "Internationalization: Enabled")
+  else()
+    message(STATUS "Internationalization: Disabled (libintl not found)")
+  endif()
+endif(USE_NLS)
 
-find_package(FLICKCURL)
-if(FLICKCURL_FOUND)
-  include_directories(${FLICKCURL_INCLUDE_DIRS})
-  list(APPEND LIBS ${FLICKCURL_LIBRARIES})
-  add_definitions(${FLICKCURL_DEFINITIONS})
-endif(FLICKCURL_FOUND)
+if(USE_FLICKR)
+  find_package(FLICKCURL)
+  if(FLICKCURL_FOUND)
+    include_directories(${FLICKCURL_INCLUDE_DIRS})
+    list(APPEND LIBS ${FLICKCURL_LIBRARIES})
+    add_definitions(${FLICKCURL_DEFINITIONS})
+  endif(FLICKCURL_FOUND)
+endif(USE_FLICKR)
 
 #
 # Detect compile of optional pwstorage backends
 #
+if(USE_KWALLET) 
 find_package(DBUSGLIB)
-if(DBUSGLIB_FOUND)
-  list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
-  include_directories(${DBUSGLIB_INCLUDE_DIRS})
-  list(APPEND LIBS ${DBUSGLIB_LIBRARIES})
-  add_definitions("-DHAVE_KWALLET")
-endif(DBUSGLIB_FOUND)
+  if(DBUSGLIB_FOUND)
+    list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
+    include_directories(${DBUSGLIB_INCLUDE_DIRS})
+    list(APPEND LIBS ${DBUSGLIB_LIBRARIES})
+    add_definitions("-DHAVE_KWALLET")
+  endif(DBUSGLIB_FOUND)
+endif(USE_KWALLET)
 
-find_package(GnomeKeyring)
-if(GNOMEKEYRING_FOUND)
-  set(SOURCES ${SOURCES} "common/pwstorage/backend_gkeyring.c")
-  include_directories(${GnomeKeyring_INCLUDE_DIRS})
-  list(APPEND LIBS ${GnomeKeyring_LIBRARIES})
-  add_definitions("-DHAVE_GKEYRING")
-endif(GNOMEKEYRING_FOUND)
+if(USE_GNOME_KEYRING)
+  find_package(GnomeKeyring)
+  if(GNOMEKEYRING_FOUND)
+    set(SOURCES ${SOURCES} "common/pwstorage/backend_gkeyring.c")
+    include_directories(${GnomeKeyring_INCLUDE_DIRS})
+    list(APPEND LIBS ${GnomeKeyring_LIBRARIES})
+    add_definitions("-DHAVE_GKEYRING")
+  endif(GNOMEKEYRING_FOUND)
+endif(USE_GNOME_KEYRING)
 
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
 
 # build opengl slideshow viewer?
-find_package(SDL)
-find_package(OpenGL)
-if(SDL_FOUND AND OPENGL_FOUND)
-  add_subdirectory(dtview)
-endif(SDL_FOUND AND OPENGL_FOUND)
+if(BUILD_SLIDESHOW) 
+  find_package(SDL)
+  find_package(OpenGL)
+  if(SDL_FOUND AND OPENGL_FOUND)
+    add_subdirectory(dtview)
+  endif(SDL_FOUND AND OPENGL_FOUND)
+endif(BUILD_SLIDESHOW)
 
 # needed for the file manager
 if(APRIL_FOOLS)
@@ -259,6 +279,7 @@ SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPER
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_accel_strings.sh ${CMAKE_CURRENT_SOURCE_DIR} > ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h
+    DEPENDS ${ACCEL_SOURCES}
 )
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h PROPERTIES GENERATED 1)
 

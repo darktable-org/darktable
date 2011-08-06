@@ -43,7 +43,12 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
 static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButton *event);
 static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event);
 
-//static guint _signals[GRADIENT_SLIDER_LAST_SIGNAL] = { 0 };
+enum {
+  VALUE_CHANGED,
+  LAST_SIGNAL
+};
+
+static guint _signals[LAST_SIGNAL] = { 0 };
 
 /*static gboolean _gradient_slider_postponed_value_change(gpointer data) {
   gdk_threads_enter();
@@ -132,12 +137,12 @@ static void _gradient_slider_class_init (GtkDarktableGradientSliderClass *klass)
   widget_class->button_release_event = _gradient_slider_button_release;
   widget_class->motion_notify_event = _gradient_slider_motion_notify;
 
-  /*_signals[GRADIENT_SLIDER_VALUE_CHANGED] = g_signal_new(
+  _signals[VALUE_CHANGED] = g_signal_new(
    "value-changed",
-    G_TYPE_OBJECT, G_SIGNAL_RUN_LAST,
+   G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST,
    0,NULL,NULL,
     g_cclosure_marshal_VOID__VOID,
-   GTK_TYPE_NONE,0);*/
+   GTK_TYPE_NONE,0);
 }
 
 static void _gradient_slider_init(GtkDarktableGradientSlider *slider)

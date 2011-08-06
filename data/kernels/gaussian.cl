@@ -25,9 +25,34 @@ const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
    is needed to have read-write access to some buffers which openCL does not offer for image object. */
 
 
+kernel void 
+gaussian_transpose(global float4 *in, global float4 *out, unsigned int width, unsigned int height, 
+                      unsigned int blocksize, local float4 *buffer)
+{
+  unsigned int x = get_global_id(0);
+  unsigned int y = get_global_id(1);
+
+  if((x < width) && (y < height))
+  {
+    unsigned int iindex = y * width + x;
+    buffer[get_local_id(1)*(blocksize+1)+get_local_id(0)] = in[iindex];
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  x = get_group_id(1) * blocksize + get_local_id(0);
+  y = get_group_id(0) * blocksize + get_local_id(1);
+
+  if((x < height) && (y < width))
+  {
+    unsigned int oindex = y * height + x;
+    out[oindex] = buffer[get_local_id(0)*(blocksize+1)+get_local_id(1)];
+  }
+}
+
 
 kernel void 
-gaussian_column(read_only image2d_t in, global float4 *out, unsigned int width, unsigned int height,
+gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
                   const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                   const float coefp, const float coefn)
 {
@@ -44,14 +69,14 @@ gaussian_column(read_only image2d_t in, global float4 *out, unsigned int width, 
   float4 ya = (float4)0.0f;
 
   // forward filter
-  xp = read_imagef(in, sampleri, (int2)(x, 0));
+  xp = in[x]; // 0*width+x
   yb = xp * coefp;
   yp = yb;
 
  
   for(int y=0; y<height; y++)
   {
-    xc = read_imagef(in, sampleri, (int2)(x, y));
+    xc = in[x + y * width];
     yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
 
     xp = xc;
@@ -63,7 +88,7 @@ gaussian_column(read_only image2d_t in, global float4 *out, unsigned int width, 
   }
 
   // backward filter
-  xn = read_imagef(in, sampleri, (int2)(x, height-1));
+  xn = in[x + (height-1)*width];
   xa = xn;
   yn = xn * coefn;
   ya = yn;
@@ -71,7 +96,7 @@ gaussian_column(read_only image2d_t in, global float4 *out, unsigned int width, 
 
   for(int y=height-1; y>-1; y--)
   {
-    xc = read_imagef(in, sampleri, (int2)(x, y));
+    xc = in[x + y * width];
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
     xa = xn; 
@@ -85,9 +110,9 @@ gaussian_column(read_only image2d_t in, global float4 *out, unsigned int width, 
 }
 
 
-
+#if 0
 kernel void 
-gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, unsigned int height,
+gaussian_row(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
                 const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
                 const float coefp, const float coefn)
 {
@@ -104,14 +129,14 @@ gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, uns
   float4 ya = (float4)0.0f;
 
   // forward filter
-  xp = read_imagef(in, sampleri, (int2)(0, y));
+  xp = in[y*width]; // 0 + y*width
   yb = xp * coefp;
   yp = yb;
 
  
   for(int x=0; x<width; x++)
   {
-    xc = read_imagef(in, sampleri, (int2)(x, y));
+    xc = in[x + y*width];
     yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
 
     xp = xc;
@@ -123,7 +148,7 @@ gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, uns
   }
 
   // backward filter
-  xn = read_imagef(in, sampleri, (int2)(width-1, y));
+  xn = in[width-1 + y*width];
   xa = xn;
   yn = xn * coefn;
   ya = yn;
@@ -131,7 +156,7 @@ gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, uns
 
   for(int x=width-1; x>-1; x--)
   {
-    xc = read_imagef(in, sampleri, (int2)(x, y));
+    xc = in[x + y*width];
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
     xa = xn; 
@@ -143,24 +168,26 @@ gaussian_row(read_only image2d_t in, global float4 *out, unsigned int width, uns
 
   }
 }
-
+#endif
 
 kernel void 
-lowpass_mix(read_only image2d_t in, write_only image2d_t out, const float contrast, const float saturation)
+lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned int height, const float contrast, const float saturation)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 i = in[x + y*width];
   float4 o;
 
-  const float4 min = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
-  const float4 max = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
+  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
 
   o.x = i.x*contrast + 50.0f * (1.0f - contrast);
   o.y = i.y*saturation;
   o.z = i.z*saturation;
+  o.w = i.w;
 
-  write_imagef(out, (int2)(x, y), clamp(o, min, max));
+  out[x + y*width] = clamp(o, Labmin, Labmax);
 }
+
 

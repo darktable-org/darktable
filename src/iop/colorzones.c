@@ -108,8 +108,8 @@ groups ()
 static float
 lookup(const float *lut, const float i)
 {
-  const int bin0 = MIN(0xffff, MAX(0, DT_IOP_COLORZONES_LUT_RES *  i));
-  const int bin1 = MIN(0xffff, MAX(0, DT_IOP_COLORZONES_LUT_RES *  i + 1));
+  const int bin0 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i)));
+  const int bin1 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i) + 1));
   const float f = DT_IOP_COLORZONES_LUT_RES * i - bin0;
   return lut[bin1]*f + lut[bin0]*(1.-f);
 }
@@ -234,7 +234,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 499; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 489; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;

@@ -140,6 +140,13 @@ groups ()
 }
 
 
+int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+
 void init_presets (dt_iop_module_so_t *self)
 {
   // transform presets above to db entries.
@@ -280,7 +287,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 239; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 212; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t)
@@ -419,8 +426,8 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   // draw lum h istogram in background
   dt_develop_t *dev = darktable.develop;
   float *hist, hist_max;
-  hist = dev->histogram_pre;
-  hist_max = dev->histogram_pre_max;
+  hist = dev->histogram_pre_tonecurve;
+  hist_max = dev->histogram_pre_tonecurve_max;
   if(hist_max > 0)
   {
     cairo_save(cr);

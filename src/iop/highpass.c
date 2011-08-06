@@ -81,7 +81,7 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int
@@ -368,7 +368,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_highpass_params_t));
   module->default_params = malloc(sizeof(dt_iop_highpass_params_t));
   module->default_enabled = 0;
-  module->priority = 695; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 723; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_highpass_params_t);
   module->gui_data = NULL;
   dt_iop_highpass_params_t tmp = (dt_iop_highpass_params_t)

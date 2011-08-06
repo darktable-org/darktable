@@ -93,6 +93,12 @@ groups ()
 }
 
 int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);
@@ -364,7 +370,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 43; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 21; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
@@ -430,7 +436,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
-  for(int k=0; k<3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(5.0, p->coeffs[k]));
+  for(int k=0; k<3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0, p->coeffs[k]));
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
@@ -449,12 +455,12 @@ void gui_init (struct dt_iop_module_t *self)
 
   GtkBox *vbox = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
 
-  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 5.0, .001,1.0,3));
+  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 8.0, .001,1.0,3));
   g->scale_k     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0));
   g->scale_k_out = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0));
-  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[0],3));
-  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[1],3));
-  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[2],3));
+  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, .001,p->coeffs[0],3));
+  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, .001,p->coeffs[1],3));
+  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, .001,p->coeffs[2],3));
   dtgtk_slider_set_label(g->scale_tint,_("tint"));
   dtgtk_slider_set_label(g->scale_k,_("temperature in"));
   dtgtk_slider_set_unit(g->scale_k,"K");

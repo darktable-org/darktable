@@ -277,12 +277,15 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   while(!feof(f))
   {
     read = fscanf(f, "%[^\n]\n", line);
-    char *c = line;
-    while(*c != '=' && c < line + strlen(line)) c++;
-    if(*c == '=')
+    if(read > 0)
     {
-      *c = '\0';
-      dt_conf_set_string(line, c+1);
+      char *c = line;
+      while(*c != '=' && c < line + strlen(line)) c++;
+      if(*c == '=')
+	{
+	  *c = '\0';
+	  dt_conf_set_string(line, c+1);
+	}
     }
   }
   fclose(f);

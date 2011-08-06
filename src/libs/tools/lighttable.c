@@ -34,8 +34,15 @@ static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_d
 /* zoom spinbutton change callback */
 static void _lib_lighttable_zoom_changed (GtkAdjustment *adjustment, gpointer user_data);
 /* zoom key accel callback */
-static void _lib_lighttable_zoom_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-						    guint keyval, GdkModifierType modifier, gpointer data);
+static void _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                        guint keyval, GdkModifierType modifier, gpointer data);
+static void _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                        guint keyval, GdkModifierType modifier, gpointer data);
+static void _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+						       guint keyval, GdkModifierType modifier, gpointer data);
+static void _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                        guint keyval, GdkModifierType modifier, gpointer data);
+
 
 const char* name()
 {
@@ -103,24 +110,34 @@ void gui_init(dt_lib_module_t *self)
 void init_key_accels(dt_lib_module_t *self)
 {
   /* setup key accelerators */
-  GClosure *closure = g_cclosure_new(
-			   G_CALLBACK(_lib_lighttable_zoom_key_accel_callback),
-			   self, NULL);
+
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
                                  "<Darktable>/lighttable/zoom/max",
-                                 closure);
+                                 g_cclosure_new(
+						G_CALLBACK(_lib_lighttable_key_accel_zoom_max_callback),
+						self, NULL)
+				 );
   
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
                                  "<Darktable>/lighttable/zoom/in",
-                                 closure);
+				 g_cclosure_new(
+                                                G_CALLBACK(_lib_lighttable_key_accel_zoom_in_callback),
+                                                self, NULL)
+				 );
   
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
                                  "<Darktable>/lighttable/zoom/out",
-                                 closure);
+				 g_cclosure_new(
+                                                G_CALLBACK(_lib_lighttable_key_accel_zoom_out_callback),
+                                                self, NULL)
+                                 );
   
   dt_accel_group_connect_by_path(darktable.control->accels_lighttable,
                                  "<Darktable>/lighttable/zoom/min",
-                                 closure);
+				 g_cclosure_new(
+                                                G_CALLBACK(_lib_lighttable_key_accel_zoom_min_callback),
+                                                self, NULL)
+                                 );
 
 }
 
@@ -145,32 +162,45 @@ static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_d
 }
 
 #define DT_LIBRARY_MAX_ZOOM 13
-static void _lib_lighttable_zoom_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-						    guint keyval, GdkModifierType modifier, gpointer data)
+
+
+static void _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+							guint keyval, GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), 1);
+}
 
+static void _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                        guint keyval, GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), DT_LIBRARY_MAX_ZOOM);
+}
+
+static void _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                        guint keyval, GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  switch((long int)data)
-  {
-    case 1:
-      zoom = 1;
-      break;
-    case 2:
-      if(zoom <= 1) zoom = 1;
-      else zoom --;
-      // if(layout == 0) lib->center = 1;                                                                                                                                                                                                                                    
-      break;
-    case 3:
-      if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-      else zoom ++;
-      // if(layout == 0) lib->center = 1;                                                                                                                                                                                                                                    
-      break;
-    case 4:
-      zoom = DT_LIBRARY_MAX_ZOOM;
-      break;
-  }
+  if(zoom <= 1) zoom = 1;
+  else zoom--;
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
+}
+
+static void _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                        guint keyval, GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) 
+    zoom = 2*DT_LIBRARY_MAX_ZOOM;
+  else
+    zoom++;
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
 }
 

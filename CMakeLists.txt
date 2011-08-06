@@ -4,6 +4,11 @@ cmake_policy(VERSION 2.6)
 
 option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
+option(USE_NLS "Build Native Language Support (using gettext)" ON)
+option(USE_FLICKR "Enable Flickr support" ON)
+option(USE_KWALLET "Build kwallet password storage backend" ON)
+option(USE_GNOME_KEYRING "Build gnome-keyring password storage backend" ON)
+option(BUILD_SLIDESHOW "Build the opengl slideshow viewer" ON)
 option(USE_OPENMP "Use openmp threading support." ON)
 option(USE_OPENCL "Use OpenCL support." ON)
 option(USE_DARKTABLE_PROFILING OFF)
@@ -101,6 +106,7 @@ endif(WIN32)
 mark_as_advanced(LIB_INSTALL)
 
 #need to put here do setting LOCALE_DIR variable
+if(USE_NLS)
 find_package(Gettext)
 if(Gettext_FOUND)
 	if(NOT LOCALE_DIR)
@@ -125,6 +131,7 @@ if(Gettext_FOUND)
 		endif()
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
+endif(USE_NLS)
 
 # needed to generate file "create_preferences.sh" accordingly
 if(USE_OPENCL)

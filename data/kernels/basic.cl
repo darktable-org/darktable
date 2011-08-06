@@ -25,6 +25,7 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
+#if 0 // code moved to sharpen.cl
 /* kernel for the sharpen plugin */
 kernel void
 sharpen (read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
@@ -46,6 +47,7 @@ sharpen (read_only image2d_t in, write_only image2d_t out, constant float *m, co
   float amount = sharpen * copysign(max(0.0f, fabs(d) - thrs), d);
   write_imagef (out, (int2)(x, y), (float4)(max(0.0f, pixel.x + amount), pixel.y, pixel.z, 1.0f));
 }
+#endif
 
 kernel void
 whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, constant float *coeffs,
