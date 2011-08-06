@@ -40,7 +40,9 @@
 #include <inttypes.h>
 
 
-#define CLAMPI(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
+#define CLAMP_RANGE(x,y,z) (CLAMP(x,y,z))
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
@@ -344,32 +346,29 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   return;
 }
 
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_lowpass_data_t *data = (dt_iop_lowpass_data_t *)piece->data;
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  const int width = roi_out->width;
-  const int height = roi_out->height;
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
+
 
   const float radius = fmax(0.1f, data->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
 
-
   // as the function name implies
   compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
-  float *temp = dt_alloc_align(64, width*height*ch*sizeof(float));
+  float *temp = malloc(roi_out->width*roi_out->height*ch*sizeof(float));
   if(temp==NULL) return;
 
   // vertical blur column by column
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,out,temp,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+  #pragma omp parallel for default(none) shared(in,out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
 #endif
-  for(int i=0; i<width-1; i++)
+  for(int i=0; i<roi_out->width; i++)
   {
     float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -389,35 +388,35 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       yp[k] = yb[k];
     }
  
-    for(int j=0; j<height-1; j++)
+    for(int j=0; j<roi_out->height; j++)
     {
-      unsigned offset = (i + j * width)*ch;
+      int offset = (i + j * roi_out->width)*ch;
 
       for(int k=0; k < 4; k++)
       {
         xc[k] = in[offset+k];
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
+        temp[offset+k] = yc[k];
+
         xp[k] = xc[k];
         yb[k] = yp[k];
         yp[k] = yc[k];
-
-        temp[offset+k] = yc[k];
       }
     }
 
     // backward filter
     for(int k=0; k < 4; k++)
     {
-      xn[k] = in[((height - 2) * width + i)*ch+k];
+      xn[k] = in[((roi_out->height - 1) * roi_out->width + i)*ch+k];
       xa[k] = xn[k];
       yn[k] = xn[k] * coefn;
       ya[k] = yn[k];
     }
 
-    for(int j=height - 2; j > -1; j--)
+    for(int j=roi_out->height - 1; j > -1; j--)
     {
-      int offset = (i + j * width)*ch;
+      int offset = (i + j * roi_out->width)*ch;
 
       for(int k=0; k < 4; k++)
       {      
@@ -435,12 +434,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 
-
   // horizontal blur line by line
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out,temp,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
+  #pragma omp parallel for default(none) shared(out,temp,roi_out,data,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
 #endif
-  for(int j=0; j<height-1; j++)
+  for(int j=0; j<roi_out->height; j++)
   {
     float xp[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     float yb[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -455,14 +453,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // forward filter
     for(int k=0; k < 4; k++)
     {
-      xp[k] = temp[j*width*ch+k];
+      xp[k] = temp[j*roi_out->width*ch+k];
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
     }
  
-    for(int i=0; i<width-1; i++)
+    for(int i=0; i<roi_out->width; i++)
     {
-      int offset = (i + j * width)*ch;
+      int offset = (i + j * roi_out->width)*ch;
 
       for(int k=0; k < 4; k++)
       {
@@ -480,15 +478,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // backward filter
     for(int k=0; k < 4; k++)
     {
-      xn[k] = temp[((j + 1)*width - 2)*ch + k];
+      xn[k] = temp[((j + 1)*roi_out->width - 1)*ch + k];
       xa[k] = xn[k];
       yn[k] = xn[k] * coefn;
       ya[k] = yn[k];
     }
 
-    for(int i=width-2; i > -1; i--)
+    for(int i=roi_out->width - 1; i > -1; i--)
     {
-      int offset = (i + j * width)*ch;
+      int offset = (i + j * roi_out->width)*ch;
 
       for(int k=0; k < 4; k++)
       {      
@@ -506,18 +504,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 
+
   free(temp);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,out,data) schedule(static)
+  #pragma omp parallel for default(none) shared(out,data,roi_out) schedule(static)
 #endif
-  for(int k=0; k<width*height; k++)
+  for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    out[k*ch+0] = CLAMPI(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), 0.0f, 100.0f);
-    out[k*ch+1] = CLAMPI(out[k*ch+1]*data->saturation, -128.0f, 128.0f);
-    out[k*ch+2] = CLAMPI(out[k*ch+2]*data->saturation, -128.0f, 128.0f);
+    out[k*ch+0] = CLAMP(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), 0.0f, 100.0f);
+    out[k*ch+1] = CLAMP(out[k*ch+1]*data->saturation, -128.0f, 128.0f);
+    out[k*ch+2] = CLAMP(out[k*ch+2]*data->saturation, -128.0f, 128.0f);
   }
-
 }
 
 
