@@ -39,7 +39,12 @@ typedef struct dt_cache_t
   int cost_quota;
   // one fat lru lock, no use locking segments and possibly rolling back changes.
   uint32_t lru_lock;
-  uint32_t cost_lock;
+
+  // callback functions for cache misses/garbage collection
+  void* (*allocate)(void *data, const uint32_t key, int32_t *cost);
+  void* (*cleanup) (void *data, const uint32_t key);
+  void *allocate_data;
+  void *cleanup_data;
 }
 dt_cache_t;	
 
@@ -47,23 +52,39 @@ dt_cache_t;
 void dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, int32_t cache_line_size, int32_t optimize_cacheline);
 void dt_cache_cleanup(dt_cache_t *cache);
 
+static inline void
+dt_cache_set_allocate_callback(
+    dt_cache_t *cache,
+    void* (*allocate)(void*, const uint32_t, int32_t*),
+    void *allocate_data)
+{
+  cache->allocate = allocate;
+  cache->allocate_data = allocate_data;
+}
+static inline void
+dt_cache_set_cleanup_callback(
+    dt_cache_t *cache,
+    void* (*cleanup)(void*, const uint32_t),
+    void *cleanup_data)
+{
+  cache->cleanup = cleanup;
+  cache->cleanup_data = cleanup_data;
+}
 
-// TODO: need generic key (wider than uint32_t)
-
-// should only ever need to call these (porcelain)
-// requests a cache entry, blocks until available.
-// locks the cache line for reading.
-const void* dt_cache_read_get    (dt_cache_t *cache, const uint32_t key);
-void        dt_cache_read_release(dt_cache_t *cache, const uint32_t key);
+void  dt_cache_read_release(dt_cache_t *cache, const uint32_t key);
 // augments an already acquired read lock to a write lock. blocks until
 // all readers have released the image.
 void* dt_cache_write_get    (dt_cache_t *cache, const uint32_t key);
 void  dt_cache_write_release(dt_cache_t *cache, const uint32_t key);
 
-// plumbing: these don't care about locking at all.
-void*   dt_cache_put(dt_cache_t *cache, const uint32_t key, void *data, const int32_t cost);
+// gets you a slot in the cache for the given key, read locked.
+// will only contain valid data if it was there before.
+void*   dt_cache_read_get(dt_cache_t *cache, const uint32_t key);
 int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key);
 void*   dt_cache_remove(dt_cache_t *cache, const uint32_t key);
-void    dt_cache_gc(dt_cache_t *cache);
+// removes from the end of the lru list, until the fill ratio
+// of the hashtable goes below the given parameter, in terms
+// of the user defined cost measure.
+void    dt_cache_gc(dt_cache_t *cache, const float fill_ratio);
 
 #endif

@@ -31,10 +31,17 @@
 #  include <omp.h>
 #endif
 
+void *alloc_dummy(void *data, const uint32_t key, int32_t *cost)
+{
+  *cost = 1; // also the default
+  return (void *)(long int)key;
+}
+
 int main(int argc, char *arg[])
 {
   dt_cache_t cache;
   dt_cache_init(&cache, 110000, 16, 64, 20);
+  dt_cache_set_allocate_callback(&cache, alloc_dummy, NULL);
 
 #ifdef _OPENMP
 #  pragma omp parallel for default(none) schedule(guided) shared(cache, stderr) num_threads(16)
@@ -44,8 +51,10 @@ int main(int argc, char *arg[])
     void *data = (void *)(long int)k;
     const int size = 0;//dt_cache_size(&cache);
     const int con1 = dt_cache_contains(&cache, k);
-    const int val1 = (int)(long int)dt_cache_put(&cache, k, data, 1);
-    const int val2 = (int)(long int)dt_cache_put(&cache, k, data, 1);
+    const int val1 = (int)(long int)dt_cache_read_get(&cache, k);
+    const int val2 = (int)(long int)dt_cache_read_get(&cache, k);
+    dt_cache_read_release(&cache, k);
+    dt_cache_read_release(&cache, k);
     const int con2 = dt_cache_contains(&cache, k);
     // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
     assert (con1 == 0);

@@ -15,29 +15,27 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_IMAGE_CACHE_H
-#define DT_IMAGE_CACHE_H
-
-#include "common/cache.h"
-
-typedef struct dt_image_cache_t
-{
-  // TODO: one fat block of dt_image_t, to assign `dynamic' void* in cache to.
-  dt_cache_t cache;
-}
-dt_image_cache_t;
 
 void dt_image_cache_init   (dt_image_cache_t *cache);
 void dt_image_cache_cleanup(dt_image_cache_t *cache);
 
-// blocks until it gets the image struct with this id for reading.
-// also does the sql query if the image is not in cache atm.
-// if id < 0, a newly wiped image struct shall be returned (for import).
-// this will silently start the garbage collector and free long-unused
-// cachelines to free up space if necessary.
-// if an entry is swapped out like this in the background, this is the latest
-// point where sql and xmp can be synched (unsafe setting).
-const dt_image_t *dt_image_cache_read_get(dt_cache_image_t *cache, const int32_t id);
+
+void*
+dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
+{
+  // TODO: check cost and keep it below 80%!
+  // TODO: *cost = 1; ?
+  // TODO: if key = 0 or -1: insert dummy into sql
+  // TODO: get the image struct from sql.
+  // TODO: grab image * from static pool
+}
+
+const dt_image_t*
+dt_image_cache_read_get(dt_cache_image_t *cache, const int32_t id)
+{
+  return (const dt_image_t *)dt_cache_read_get(&cache->cache, id);
+}
+
 // drops the read lock on an image struct
 void              dt_image_cache_read_release(dt_cache_image_t *cache, const dt_image_t *img);
 // augments the already acquired read lock on an image to write the struct.
@@ -49,4 +47,3 @@ dt_image_t       *dt_image_cache_write_get(dt_cache_image_t *cache, const dt_ima
 // is present, also to xmp sidecar files (safe setting).
 void              dt_image_cache_write_release(dt_cache_image_t *cache, dt_image_t *img);
 
-#endif
