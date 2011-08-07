@@ -709,7 +709,7 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->scale3,_("x offset"));
   dtgtk_slider_set_label(g->scale4,_("y offset"));
   dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/x offset");
-  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/y offset");
+  dtgtk_slider_set_accel(g->scale4,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/y offset");
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
