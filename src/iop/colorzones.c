@@ -234,7 +234,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 489; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 499; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;
@@ -683,10 +683,24 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
 static gboolean
 colorzones_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  if(event->button == 1)
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    // reset current curve
+    dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+    dt_iop_colorzones_params_t *d = (dt_iop_colorzones_params_t *)self->factory_params;
     dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+    for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
+    {
+      p->equalizer_x[c->channel][k] = d->equalizer_x[c->channel][k];
+      p->equalizer_y[c->channel][k] = d->equalizer_y[c->channel][k];
+    }
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(self->widget);
+  }
+  else if(event->button == 1)
+  {
     c->drag_params = *(dt_iop_colorzones_params_t *)self->params;
     const int inset = DT_IOP_COLORZONES_INSET;
     int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;

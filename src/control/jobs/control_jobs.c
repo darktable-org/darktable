@@ -100,7 +100,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       goto error;
     }
     dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
-    filter = img->filters;
+    filter = dt_image_flipped_filter(img);
     if(mip != DT_IMAGE_FULL)
     {
       dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);

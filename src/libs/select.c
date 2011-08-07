@@ -23,6 +23,7 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 #include <gdk/gdkkeysyms.h>
+#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -93,12 +94,6 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void key_accel_callback(GtkAccelGroup *accel_group,
-                               GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, gpointer data)
-{
-  button_clicked(NULL, data);
-}
 
 void
 gui_reset (dt_lib_module_t *self)
@@ -121,11 +116,13 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("select all"));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/select all");
   g_object_set(G_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)0);
 
   button = gtk_button_new_with_label(_("select none"));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/select none");
   g_object_set(G_OBJECT(button), "tooltip-text", _("clear selection (ctrl-shift-a)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)1);
@@ -135,10 +132,12 @@ gui_init (dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("invert selection"));
   g_object_set(G_OBJECT(button), "tooltip-text", _("select unselected images\nin current collection (ctrl-!)"), (char *)NULL);
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/invert selection");
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)2);
 
   button = gtk_button_new_with_label(_("select film roll"));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/select film roll");
   g_object_set(G_OBJECT(button), "tooltip-text", _("select all images which are in the same\nfilm roll as the selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
@@ -147,6 +146,7 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("select untouched"));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/select untouched");
   g_object_set(G_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
@@ -163,26 +163,9 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/select/all",
-                          GDK_a, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/select/none",
-                          GDK_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/select/invert",
-                          GDK_exclam, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_lighttable,
-      "<Darktable>/lighttable/plugins/select/all",
-      g_cclosure_new(G_CALLBACK(key_accel_callback),
-                     (gpointer)0, NULL));
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_lighttable,
-      "<Darktable>/lighttable/plugins/select/none",
-      g_cclosure_new(G_CALLBACK(key_accel_callback),
-                     (gpointer)1, NULL));
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_lighttable,
-      "<Darktable>/lighttable/plugins/select/invert",
-      g_cclosure_new(G_CALLBACK(key_accel_callback),
-                     (gpointer)2, NULL));
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/select all");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/select none");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/invert selection");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/select film roll");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/select/select untouched");
 }
