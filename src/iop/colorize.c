@@ -88,6 +88,8 @@ groups ()
 void init_key_accels()
 {
   dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorize/pick color");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorize/lightness");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorize/source mix");
 }
 
 
@@ -440,12 +442,14 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->scale1,_("lightness"));
   dtgtk_slider_set_unit(g->scale1,"%");
+  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorize/lightness");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->source_lightness_mix, 2));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->scale2,_("source mix"));
   dtgtk_slider_set_unit(g->scale2,"%");
+  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorize/source mix");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 

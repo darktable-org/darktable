@@ -903,6 +903,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     GtkWidget *label = gtk_label_new(_("mode"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
     bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, 100.0, 0));
+    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
+    dtgtk_slider_set_accel(DTGTK_SLIDER(bd->opacity_slider),darktable.control->accels_darkroom,name);
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
@@ -1065,7 +1067,7 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
         }
       // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
       if(num == 0.0f)
-        col = _mm_load_ps(in + 4*(MIN(px, roi_in->width) + in_stride*MIN(py, roi_in->height)));
+        col = _mm_load_ps(in + 4*(CLAMPS(px, 0, roi_in->width-1) + in_stride*CLAMPS(py, 0, roi_in->height-1)));
       else
         col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       // memcpy(outc, &col, 4*sizeof(float));

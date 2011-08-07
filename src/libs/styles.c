@@ -71,6 +71,7 @@ void init_key_accels()
   gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/delete");
   gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/export");
   gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/import");
+  //gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/edit");
 }
 typedef enum _styles_columns_t
 {
@@ -345,7 +346,8 @@ gui_init (dt_lib_module_t *self)
 #if 0
   // TODO: Unfinished stuff
   GtkWidget *widget=gtk_button_new_with_label(_("edit"));
-  also add the shortcut
+  gtk_button_set_accel(GTK_BUTTON(widget),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/edit");
+  also add to the init function
   g_signal_connect (widget, "clicked", G_CALLBACK(edit_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
 #endif

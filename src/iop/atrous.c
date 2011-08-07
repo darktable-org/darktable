@@ -124,6 +124,11 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/atrous/mix");
+}
+
 static __m128
 weight (const float *c1, const float *c2, const float sharpen)
 {
@@ -1282,6 +1287,7 @@ void gui_init (struct dt_iop_module_t *self)
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
   dtgtk_slider_set_label(DTGTK_SLIDER(c->mix), _("mix"));
+  dtgtk_slider_set_accel(DTGTK_SLIDER(c->mix),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/atrous/mix");
   g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);

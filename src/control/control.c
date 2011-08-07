@@ -155,8 +155,6 @@ static void dt_control_sanitize_database()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table memory.tmp_selection (imgid integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table memory.tagquery1 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table memory.tagquery2 (tagid integer, name varchar, count integer)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create table memory.temp_history as select * from history", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.temp_history", NULL, NULL, NULL);
 }
 
 int dt_control_load_config(dt_control_t *c)

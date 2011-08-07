@@ -56,6 +56,11 @@ int position()
   return 800;
 }
 
+void init_key_accels()
+{
+  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorpicker/add sample");
+}
+
 // GUI callbacks
 
 static void _update_picker_output(dt_lib_module_t *self)
@@ -557,6 +562,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_samples_mode_changed), self);
 
   data->add_sample_button = gtk_button_new_from_stock(GTK_STOCK_ADD);
+  gtk_button_set_accel(GTK_BUTTON(data->add_sample_button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorpicker/add sample");
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
   gtk_box_pack_start(GTK_BOX(samples_options_row), data->add_sample_button,
                      FALSE, FALSE, 0);

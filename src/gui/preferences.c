@@ -782,7 +782,7 @@ static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
   // Otherwise just return alphabetical order
   gtk_tree_model_get(model, a, TRANS_COLUMN, &a_text, -1);
   gtk_tree_model_get(model, b, TRANS_COLUMN, &b_text, -1);
-  return strcmp(a_text, b_text);
+  return strcasecmp(a_text, b_text);
 
 }
 
