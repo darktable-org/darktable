@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-13 09:37+0200\n"
-"PO-Revision-Date: 2011-07-13 11:03+0100\n"
+"POT-Creation-Date: 2011-08-07 19:17+0200\n"
+"PO-Revision-Date: 2011-08-07 19:28+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -186,8 +186,8 @@ msgid "activate OpenCL support (experimental)"
 msgstr "aktivera OpenCL stöd. (experimentell)"
 
 #: ../build/src/preferences_gen.h:664
-msgid "if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. expect random crashes."
-msgstr "om OpenCL stöd hittas så används det för att optimera själva behanndlingen av bilden. detta är experimentell implementation så oväntade programstängningar kan uppstå. "
+msgid "if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to forum darktable-devel at sourceforge.net"
+msgstr "om OpenCL stöd hittas så används det för att optimera själva behandlingen av bilden. detta är experimentell implementation så oväntade programstängningar kan uppstå. "
 
 #: ../build/src/preferences_gen.h:669
 msgid "always use lcms2 during export"
@@ -214,290 +214,288 @@ msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - 
 msgstr "lagringsmetod att använda för pwstorage: 0 - ingen, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 
 #: ../build/src/accelstrings_gen.h:2
-#: ../src/gui/gtk.c:1719
-msgid "all"
-msgstr "alla"
+#: ../src/iop/colortransfer.c:651
+msgid "acquire"
+msgstr "hämta"
 
 #: ../build/src/accelstrings_gen.h:3
+#: ../src/iop/clahe.c:346
+#: ../src/iop/sharpen.c:478
+msgid "amount"
+msgstr "mängd"
+
+#: ../build/src/accelstrings_gen.h:4
 #: ../src/iop/clipping.c:842
 msgid "angle"
 msgstr "vinkel"
 
-#: ../build/src/accelstrings_gen.h:4
-msgid "anlfyeni"
-msgstr ""
-
 #: ../build/src/accelstrings_gen.h:5
+#: ../src/iop/colortransfer.c:657
+#: ../src/libs/metadata.c:349
+msgid "apply"
+msgstr "applicera"
+
+#: ../build/src/accelstrings_gen.h:6
 msgid "auto-exposure"
 msgstr "autoexponering"
 
-#: ../build/src/accelstrings_gen.h:6
-#: ../src/iop/lens.c:1389
+#: ../build/src/accelstrings_gen.h:7
+#: ../src/iop/lens.c:1393
 msgid "auto scale"
 msgstr "autoskalning"
 
-#: ../build/src/accelstrings_gen.h:7
-#: ../src/iop/exposure.c:356
+#: ../build/src/accelstrings_gen.h:8
+#: ../src/iop/splittoning.c:549
+msgid "balance"
+msgstr "balans"
+
+#: ../build/src/accelstrings_gen.h:9
+#: ../src/iop/exposure.c:362
 msgid "black"
 msgstr "svärta"
 
-#: ../build/src/accelstrings_gen.h:8
-#: ../src/iop/highlights.c:406
+#: ../build/src/accelstrings_gen.h:10
+#: ../src/iop/highlights.c:411
 msgid "blend C"
 msgstr "blanda C"
 
-#: ../build/src/accelstrings_gen.h:9
-#: ../src/iop/highlights.c:407
+#: ../build/src/accelstrings_gen.h:11
+#: ../src/iop/highlights.c:412
 msgid "blend h"
 msgstr "blanda h"
 
-#: ../build/src/accelstrings_gen.h:10
-#: ../src/iop/highlights.c:405
+#: ../build/src/accelstrings_gen.h:12
+#: ../src/iop/highlights.c:410
 msgid "blend L"
 msgstr "blanda L"
 
-#: ../build/src/accelstrings_gen.h:11
-#: ../src/iop/atrous.c:793
-#: ../src/iop/bloom.c:67
-msgid "bloom"
-msgstr "bloom"
-
-#: ../build/src/accelstrings_gen.h:12
+#: ../build/src/accelstrings_gen.h:13
 #: ../src/common/collection.c:322
-#: ../src/iop/bilateral.cc:333
+#: ../src/iop/bilateral.cc:355
 #: ../src/iop/channelmixer.c:347
 #: ../src/iop/channelmixer.c:370
-#: ../src/iop/temperature.c:464
+#: ../src/iop/temperature.c:475
 #: ../src/libs/collect.c:252
 #: ../src/libs/collect.c:254
 msgid "blue"
 msgstr "blå"
 
-#: ../build/src/accelstrings_gen.h:13
+#: ../build/src/accelstrings_gen.h:14
 #: ../src/iop/lowlight.c:722
 msgid "blue shift"
 msgstr "blåskiftning"
 
-#: ../build/src/accelstrings_gen.h:14
-msgid "borders"
-msgstr "kanter"
-
 #: ../build/src/accelstrings_gen.h:15
-#: ../src/iop/borders.c:365
+#: ../src/iop/colorcontrast.c:256
+msgid "blue vs yellow"
+msgstr "blå mot gul"
+
+#: ../build/src/accelstrings_gen.h:16
+#: ../src/iop/borders.c:366
 msgid "border size"
 msgstr "kantstorlek"
 
-#: ../build/src/accelstrings_gen.h:16
-#: ../src/views/capture.c:92
-msgid "capture"
-msgstr "enheter"
-
 #: ../build/src/accelstrings_gen.h:17
+#: ../src/iop/soften.c:356
+#: ../src/iop/vignette.c:866
+msgid "brightness"
+msgstr "ljushet"
+
+#: ../build/src/accelstrings_gen.h:18
+msgid "camera model"
+msgstr "kamera modell"
+
+#: ../build/src/accelstrings_gen.h:19
+#: ../src/libs/camera.c:459
+msgid "capture image(s)"
+msgstr "fånga bilder"
+
+#: ../build/src/accelstrings_gen.h:20
+msgid "capture view"
+msgstr "tjudring"
+
+#: ../build/src/accelstrings_gen.h:21
 msgid "center"
 msgstr "center"
 
-#: ../build/src/accelstrings_gen.h:18
-msgid "channelmixer"
-msgstr "kanalmixer"
-
-#: ../build/src/accelstrings_gen.h:19
-#: ../src/iop/atrous.c:1279
+#: ../build/src/accelstrings_gen.h:22
+#: ../src/iop/atrous.c:1250
 #: ../src/iop/equalizer.c:344
 #: ../src/iop/nlmeans.c:469
 msgid "chroma"
 msgstr "chroma"
 
-#: ../build/src/accelstrings_gen.h:20
-msgid "clipping"
-msgstr "Beskära"
+#: ../build/src/accelstrings_gen.h:23
+#: ../src/libs/metadata.c:342
+msgid "clear"
+msgstr "rensa"
 
-#: ../build/src/accelstrings_gen.h:21
-#: ../src/gui/preferences.c:65
-msgid "close"
-msgstr "stäng"
+#: ../build/src/accelstrings_gen.h:24
+msgid "close-up"
+msgstr "close-up"
 
-#: ../build/src/accelstrings_gen.h:22
-msgid "coarsness"
+#: ../build/src/accelstrings_gen.h:25
+#: ../src/iop/grain.c:515
+msgid "coarseness"
 msgstr "grovhet"
 
 #. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
 #. add button for color plugins
 #. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../build/src/accelstrings_gen.h:23
+#: ../build/src/accelstrings_gen.h:26
 #: ../src/gui/iop_modulegroups.c:235
 msgid "color"
 msgstr "färg"
 
-#: ../build/src/accelstrings_gen.h:24
-msgid "color "
-msgstr "färg"
-
-#: ../build/src/accelstrings_gen.h:25
-msgid "colorcorrection"
-msgstr "färgkorregering"
-
-#: ../build/src/accelstrings_gen.h:26
-msgid "colorout"
-msgstr "utgåend färg"
-
 #: ../build/src/accelstrings_gen.h:27
+msgid "colorize"
+msgstr "färgning"
+
+#: ../build/src/accelstrings_gen.h:28
 msgid "commit"
 msgstr "applicera"
 
-#: ../build/src/accelstrings_gen.h:28
-#: ../src/iop/graduatednd.c:523
+#: ../build/src/accelstrings_gen.h:29
+#: ../src/iop/splittoning.c:556
+msgid "compress"
+msgstr "komprimera"
+
+#: ../build/src/accelstrings_gen.h:30
+#: ../src/iop/graduatednd.c:538
 msgid "compression"
 msgstr "komprimera"
 
-#: ../build/src/accelstrings_gen.h:29
-#: ../src/iop/highpass.c:406
+#: ../build/src/accelstrings_gen.h:31
+#: ../src/iop/lowpass.c:707
+msgid "contrast"
+msgstr "kontrast"
+
+#: ../build/src/accelstrings_gen.h:32
+#: ../src/iop/highpass.c:425
 msgid "contrast boost"
 msgstr "lyft kontrast"
 
-#: ../build/src/accelstrings_gen.h:30
-#: ../src/imageio/format/copy.c:142
-#: ../src/libs/copy_history.c:204
-msgid "copy"
-msgstr "kopiera"
+#: ../build/src/accelstrings_gen.h:33
+#: ../src/iop/tonemap.cc:296
+msgid "contrast compression"
+msgstr "kontrast komprimering"
 
-#: ../build/src/accelstrings_gen.h:31
-msgid "copy history"
-msgstr "kopiera historik"
+#: ../build/src/accelstrings_gen.h:34
+#: ../src/libs/image.c:106
+msgid "create hdr"
+msgstr "skapa HDR"
 
-#: ../build/src/accelstrings_gen.h:32
-#: ../src/views/darkroom.c:67
-msgid "darkroom"
+#: ../build/src/accelstrings_gen.h:35
+msgid "darkroom view"
 msgstr "mörkerrum"
 
-#: ../build/src/accelstrings_gen.h:33
+#: ../build/src/accelstrings_gen.h:36
 msgid "decrease brightness"
 msgstr "minska ljushet"
 
-#: ../build/src/accelstrings_gen.h:34
+#: ../build/src/accelstrings_gen.h:37
 msgid "decrease contrast"
 msgstr "minska kontrast"
 
-#: ../build/src/accelstrings_gen.h:35
+#: ../build/src/accelstrings_gen.h:38
+#: ../src/libs/image.c:97
+#: ../src/libs/styles.c:349
+#: ../src/libs/tagging.c:430
+msgid "delete"
+msgstr "radera"
+
+#: ../build/src/accelstrings_gen.h:39
 msgid "delete from disk"
 msgstr "radera fysiskt från disk"
 
-#: ../build/src/accelstrings_gen.h:36
-#: ../src/iop/demosaic.c:93
-msgid "demosaic"
-msgstr "demosaic"
-
-#: ../build/src/accelstrings_gen.h:37
-#: ../src/iop/nlmeans.c:58
-msgid "denoising (extra slow)"
-msgstr "reducera brus (extra långsam)"
-
-#: ../build/src/accelstrings_gen.h:38
-#: ../src/iop/graduatednd.c:521
+#: ../build/src/accelstrings_gen.h:40
+#: ../src/iop/graduatednd.c:536
 msgid "density"
 msgstr "densitet"
 
-#: ../build/src/accelstrings_gen.h:39
+#: ../build/src/accelstrings_gen.h:41
 msgid "desert"
 msgstr ""
 
-#: ../build/src/accelstrings_gen.h:40
-#: ../src/libs/copy_history.c:213
+#: ../build/src/accelstrings_gen.h:42
+#: ../src/libs/copy_history.c:192
 msgid "discard"
 msgstr "förkasta"
 
-#: ../build/src/accelstrings_gen.h:41
+#: ../build/src/accelstrings_gen.h:43
 msgid "down"
 msgstr "ner"
 
-#: ../build/src/accelstrings_gen.h:42
-#: ../src/iop/demosaic.c:984
+#: ../build/src/accelstrings_gen.h:44
+#: ../src/libs/image.c:112
+msgid "duplicate"
+msgstr "duplicera"
+
+#: ../build/src/accelstrings_gen.h:45
+#: ../src/iop/demosaic.c:1023
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#. Export Button
-#: ../build/src/accelstrings_gen.h:43
-#: ../src/gui/preferences.c:178
-#: ../src/libs/export.c:562
-#: ../src/libs/styles.c:347
-msgid "export"
-msgstr "exportera"
-
-#: ../build/src/accelstrings_gen.h:44
-msgid "export selected images"
-msgstr "exportera valda bilder"
-
-#. exposure
-#: ../build/src/accelstrings_gen.h:45
-#: ../src/gui/gtk.c:1985
-#: ../src/gui/presets.c:308
-#: ../src/iop/exposure.c:42
-#: ../src/iop/exposure.c:361
-#: ../src/iop/relight.c:301
-msgid "exposure"
-msgstr "exponering"
-
 #: ../build/src/accelstrings_gen.h:46
+msgid "enable plugin"
+msgstr "aktivera plug-in"
+
+#: ../build/src/accelstrings_gen.h:47
+#: ../src/iop/vignette.c:863
+msgid "fall-off strength"
+msgstr "övergångstyrka"
+
+#: ../build/src/accelstrings_gen.h:48
 msgid "fill"
 msgstr "fyll"
 
-#: ../build/src/accelstrings_gen.h:47
-msgid "filmstrip"
+#: ../build/src/accelstrings_gen.h:49
+#: ../src/views/filmstrip.c:88
+msgid "film strip"
 msgstr "filmrulle"
 
-#: ../build/src/accelstrings_gen.h:48
-#: ../src/iop/lens.c:1317
+#: ../build/src/accelstrings_gen.h:50
+#: ../src/iop/lens.c:1320
 msgid "find camera"
 msgstr "sök kamera"
 
-#: ../build/src/accelstrings_gen.h:49
-#: ../src/iop/lens.c:1333
+#: ../build/src/accelstrings_gen.h:51
+#: ../src/iop/lens.c:1337
 msgid "find lens"
 msgstr "sök objektiv"
 
-#: ../build/src/accelstrings_gen.h:50
+#: ../build/src/accelstrings_gen.h:52
 msgid "fit"
 msgstr "passa"
 
-#: ../build/src/accelstrings_gen.h:51
-#: ../src/iop/borders.c:64
-msgid "framing"
-msgstr "inraming"
-
-#: ../build/src/accelstrings_gen.h:52
-#: ../src/iop/profile_gamma.c:184
-msgid "gamma"
-msgstr "gamma"
-
 #: ../build/src/accelstrings_gen.h:53
-msgid "graduatednd"
-msgstr "graderat gråfilter "
+#, fuzzy
+msgid "fusion opacity"
+msgstr "genomskinlighet"
 
 #: ../build/src/accelstrings_gen.h:54
-#: ../src/iop/grain.c:323
-msgid "grain"
-msgstr "brus"
+msgid "gamma exponential part"
+msgstr "gamma exponent"
 
 #: ../build/src/accelstrings_gen.h:55
+msgid "global"
+msgstr "global"
+
+#: ../build/src/accelstrings_gen.h:56
 #: ../src/common/collection.c:321
-#: ../src/iop/bilateral.cc:332
+#: ../src/iop/bilateral.cc:354
 #: ../src/iop/channelmixer.c:346
 #: ../src/iop/channelmixer.c:366
-#: ../src/iop/temperature.c:463
+#: ../src/iop/temperature.c:474
 #: ../src/libs/collect.c:246
 #: ../src/libs/collect.c:248
 msgid "green"
 msgstr "grön"
 
-#. Highlights
-#: ../build/src/accelstrings_gen.h:56
-#: ../src/iop/splittoning.c:477
-msgid "highlights"
-msgstr "högdagrar"
-
 #: ../build/src/accelstrings_gen.h:57
-#: ../src/iop/highpass.c:79
-msgid "highpass"
-msgstr "högpass"
+#: ../src/iop/colorcontrast.c:253
+msgid "green vs magenta"
+msgstr "grön mot magenta"
 
 #: ../build/src/accelstrings_gen.h:58
 #: ../src/gui/gtk.c:1928
@@ -506,88 +504,83 @@ msgid "history"
 msgstr "historik"
 
 #: ../build/src/accelstrings_gen.h:59
-msgid "hotpixels"
-msgstr "heta pixlar"
+#: ../src/iop/vignette.c:870
+msgid "horizontal center"
+msgstr "horizontellt centrum"
 
 #: ../build/src/accelstrings_gen.h:60
-#: ../src/iop/hotpixels.c:66
-msgid "hot pixels"
-msgstr "heta pixlar"
-
-#. Adding the single import button
-#: ../build/src/accelstrings_gen.h:61
-#: ../src/gui/gtk.c:2133
-#: ../src/iop/borders.c:375
-#: ../src/iop/clipping.c:873
-msgid "image"
-msgstr "bild"
-
-#: ../build/src/accelstrings_gen.h:62
 msgid "image back"
 msgstr "föregående bild"
 
-#: ../build/src/accelstrings_gen.h:63
+#: ../build/src/accelstrings_gen.h:61
 msgid "image forward"
 msgstr "nästa bild"
 
-#: ../build/src/accelstrings_gen.h:64
+#: ../build/src/accelstrings_gen.h:62
+msgid "import"
+msgstr "importera"
+
+#: ../build/src/accelstrings_gen.h:63
 msgid "in"
 msgstr "in"
 
-#: ../build/src/accelstrings_gen.h:65
+#: ../build/src/accelstrings_gen.h:64
 msgid "increase brightness"
 msgstr "öka ljushet"
 
-#: ../build/src/accelstrings_gen.h:66
+#: ../build/src/accelstrings_gen.h:65
 msgid "increase contrast"
 msgstr "öka kontrast"
 
+#: ../build/src/accelstrings_gen.h:66
+#: ../src/libs/select.c:129
+msgid "invert selection"
+msgstr "invertera val"
+
 #: ../build/src/accelstrings_gen.h:67
-msgid "interface"
-msgstr "gränsnitt"
-
-#: ../build/src/accelstrings_gen.h:68
-msgid "invert"
-msgstr "invertera"
-
-#: ../build/src/accelstrings_gen.h:69
 #: ../src/iop/clipping.c:852
 msgid "keystone h"
 msgstr "keystone h"
 
-#: ../build/src/accelstrings_gen.h:70
+#: ../build/src/accelstrings_gen.h:68
 #: ../src/iop/clipping.c:860
 msgid "keystone v"
 msgstr "keystone v"
 
-#: ../build/src/accelstrings_gen.h:71
+#: ../build/src/accelstrings_gen.h:69
 msgid "leave fullscreen"
 msgstr "lämna fullskärm"
 
-#: ../build/src/accelstrings_gen.h:72
+#: ../build/src/accelstrings_gen.h:70
 msgid "left"
 msgstr "vänster"
 
-#: ../build/src/accelstrings_gen.h:73
-#: ../src/gui/gtk.c:1990
-#: ../src/gui/presets.c:288
-msgid "lens"
-msgstr "objektiv"
+#: ../build/src/accelstrings_gen.h:71
+msgid "lens model"
+msgstr "objektiv modell"
 
-#: ../build/src/accelstrings_gen.h:74
-#: ../src/views/lighttable.c:109
-msgid "lighttable"
+#: ../build/src/accelstrings_gen.h:72
+msgid "lighttable view"
 msgstr "ljusbord"
 
-#: ../build/src/accelstrings_gen.h:75
+#: ../build/src/accelstrings_gen.h:73
 #: ../src/iop/basecurve.c:50
-#: ../src/iop/profile_gamma.c:181
-#: ../src/iop/tonecurve.c:123
+#: ../src/iop/profile_gamma.c:187
+#: ../src/iop/tonecurve.c:132
 msgid "linear"
 msgstr "linjär"
 
+#: ../build/src/accelstrings_gen.h:74
+#: ../src/iop/profile_gamma.c:186
+msgid "linear part"
+msgstr "linjär del"
+
+#: ../build/src/accelstrings_gen.h:75
+#: ../src/libs/copy_history.c:217
+msgid "load sidecar file"
+msgstr "läs in inställningsfil"
+
 #: ../build/src/accelstrings_gen.h:76
-#, fuzzy
 msgid "localc"
 msgstr "lokal kontrast"
 
@@ -599,31 +592,30 @@ msgid "local contrast 2"
 msgstr "lokal kontrast 2"
 
 #: ../build/src/accelstrings_gen.h:78
-#, fuzzy
 msgid "local_contrast_2"
 msgstr "lokal kontrast 2"
 
 #: ../build/src/accelstrings_gen.h:79
-#, fuzzy
-msgid "lowlight"
-msgstr "halvdager"
+#: ../src/iop/overexposed.c:268
+msgid "lower threshold"
+msgstr "undre tröskel"
 
 #: ../build/src/accelstrings_gen.h:80
-#: ../src/iop/lowlight.c:79
-msgid "lowlight vision"
-msgstr "mörkerseende"
-
-#: ../build/src/accelstrings_gen.h:81
-#: ../src/iop/atrous.c:1277
+#: ../src/iop/atrous.c:1248
 #: ../src/iop/equalizer.c:343
 #: ../src/iop/nlmeans.c:467
 msgid "luma"
 msgstr "luma"
 
-#: ../build/src/accelstrings_gen.h:82
+#: ../build/src/accelstrings_gen.h:81
 #: ../src/gui/gtk.c:2510
 msgid "max"
 msgstr "max"
+
+#: ../build/src/accelstrings_gen.h:82
+#: ../src/iop/velvia.c:254
+msgid "mid-tones bias"
+msgstr "mellanton bias"
 
 #: ../build/src/accelstrings_gen.h:83
 #: ../src/gui/gtk.c:2509
@@ -631,209 +623,268 @@ msgid "min"
 msgstr "min"
 
 #: ../build/src/accelstrings_gen.h:84
+#: ../src/iop/atrous.c:1289
+#: ../src/iop/soften.c:359
+msgid "mix"
+msgstr "blanda"
+
+#: ../build/src/accelstrings_gen.h:85
 msgid "navigate"
 msgstr "navigera"
 
-#: ../build/src/accelstrings_gen.h:85
-#, fuzzy
-msgid "nlmeans"
-msgstr "medel"
-
 #: ../build/src/accelstrings_gen.h:86
-#: ../src/iop/clipping.c:913
-msgid "none"
-msgstr "ingen"
+#: ../src/iop/rawdenoise.c:340
+msgid "noise threshold"
+msgstr "tröskelvärde för brus"
 
 #: ../build/src/accelstrings_gen.h:87
+#: ../src/develop/imageop.c:895
+#: ../src/iop/watermark.c:683
+msgid "opacity"
+msgstr "genomskinlighet"
+
+#: ../build/src/accelstrings_gen.h:88
 msgid "out"
 msgstr "ut"
 
-#: ../build/src/accelstrings_gen.h:88
+#: ../build/src/accelstrings_gen.h:89
 msgid "page down"
 msgstr "sida ned"
 
-#: ../build/src/accelstrings_gen.h:89
+#: ../build/src/accelstrings_gen.h:90
 msgid "page up"
 msgstr "sida up"
 
-#: ../build/src/accelstrings_gen.h:90
-#: ../src/libs/copy_history.c:227
+#: ../build/src/accelstrings_gen.h:91
+#: ../src/libs/copy_history.c:207
 msgid "paste"
 msgstr "klistra in"
 
-#: ../build/src/accelstrings_gen.h:91
-#: ../src/iop/borders.c:403
-#: ../src/iop/colorzones.c:799
+#: ../build/src/accelstrings_gen.h:92
+msgid "pick color"
+msgstr "välj färg"
+
+#: ../build/src/accelstrings_gen.h:93
+#: ../src/iop/borders.c:404
+#: ../src/iop/colorzones.c:813
 msgid "pick gui color from image"
 msgstr "välj gränsnittsfärg från bild"
 
-#: ../build/src/accelstrings_gen.h:92
-msgid "pick primary color"
-msgstr ""
-
-#: ../build/src/accelstrings_gen.h:93
-msgid "pick secondary color"
-msgstr ""
-
 #: ../build/src/accelstrings_gen.h:94
+msgid "pick primary color"
+msgstr "välj primär färg"
+
+#: ../build/src/accelstrings_gen.h:95
+msgid "pick secondary color"
+msgstr "välj sekundär färg"
+
+#: ../build/src/accelstrings_gen.h:96
 msgid "plugins"
 msgstr "fler plug-ins"
 
-#: ../build/src/accelstrings_gen.h:95
+#: ../build/src/accelstrings_gen.h:97
 msgid "preview"
 msgstr "förhandsvisning"
 
-#: ../build/src/accelstrings_gen.h:96
+#: ../build/src/accelstrings_gen.h:98
 #: ../src/common/collection.c:323
 #: ../src/libs/collect.c:258
 #: ../src/libs/collect.c:260
 msgid "purple"
 msgstr "lila"
 
-#: ../build/src/accelstrings_gen.h:97
+#: ../build/src/accelstrings_gen.h:99
 msgid "quit"
 msgstr "avsluta"
 
-#: ../build/src/accelstrings_gen.h:98
+#: ../build/src/accelstrings_gen.h:100
+#: ../src/iop/bilateral.cc:352
+#: ../src/iop/clahe.c:344
+#: ../src/iop/lowpass.c:706
+#: ../src/iop/sharpen.c:474
+msgid "radius"
+msgstr "radie"
+
+#: ../build/src/accelstrings_gen.h:101
 #: ../src/gui/gtk.c:1744
 msgid "rating"
 msgstr "betyg"
 
-#: ../build/src/accelstrings_gen.h:99
+#: ../build/src/accelstrings_gen.h:102
 #: ../src/common/collection.c:319
-#: ../src/iop/bilateral.cc:331
+#: ../src/iop/bilateral.cc:353
 #: ../src/iop/channelmixer.c:345
 #: ../src/iop/channelmixer.c:362
-#: ../src/iop/temperature.c:462
+#: ../src/iop/temperature.c:473
 #: ../src/libs/collect.c:234
 #: ../src/libs/collect.c:236
 msgid "red"
 msgstr "röd"
 
-#: ../build/src/accelstrings_gen.h:100
+#: ../build/src/accelstrings_gen.h:103
 msgid "refresh"
 msgstr "updatera"
 
-#: ../build/src/accelstrings_gen.h:101
+#: ../build/src/accelstrings_gen.h:104
 msgid "reject"
 msgstr "förkastad"
 
-#: ../build/src/accelstrings_gen.h:102
+#: ../build/src/accelstrings_gen.h:105
+#: ../src/libs/image.c:91
+msgid "remove"
+msgstr "ta bort"
+
+#: ../build/src/accelstrings_gen.h:106
 msgid "remove from collection"
 msgstr "ta bort från samling"
 
-#: ../build/src/accelstrings_gen.h:103
+#: ../build/src/accelstrings_gen.h:107
 msgid "reset camera from exif data"
 msgstr "återställ kamera från exif data"
 
-#: ../build/src/accelstrings_gen.h:104
+#: ../build/src/accelstrings_gen.h:108
 msgid "reset distance from exif data"
 msgstr "återställ distans från exif data"
 
-#: ../build/src/accelstrings_gen.h:105
+#: ../build/src/accelstrings_gen.h:109
 msgid "reset lens from exif data"
 msgstr "återställ från exif data"
 
-#: ../build/src/accelstrings_gen.h:106
+#: ../build/src/accelstrings_gen.h:110
 msgid "reset plugin parameters"
 msgstr "återställ parametrar"
 
-#: ../build/src/accelstrings_gen.h:107
+#: ../build/src/accelstrings_gen.h:111
+#: ../src/libs/image.c:135
+msgid "reset rotation"
+msgstr "återställ rotering"
+
+#: ../build/src/accelstrings_gen.h:112
 msgid "right"
 msgstr "höger"
 
-#: ../build/src/accelstrings_gen.h:108
-#: ../src/libs/image.c:119
+#: ../build/src/accelstrings_gen.h:113
+#: ../src/libs/image.c:124
 msgid "rotate selected images 90 degrees ccw"
 msgstr "rotera valda bilder 90 grader motsols"
 
-#: ../build/src/accelstrings_gen.h:109
-#: ../src/libs/image.c:125
+#: ../build/src/accelstrings_gen.h:114
+#: ../src/libs/image.c:130
 msgid "rotate selected images 90 degrees cw"
 msgstr "rotera valda bilder 90 grader medurs"
 
-#: ../build/src/accelstrings_gen.h:110
-#: ../src/iop/graduatednd.c:525
+#: ../build/src/accelstrings_gen.h:115
+#: ../src/iop/graduatednd.c:540
 msgid "rotation"
 msgstr "rotering"
 
-#: ../build/src/accelstrings_gen.h:111
+#: ../build/src/accelstrings_gen.h:116
 #: ../src/iop/channelmixer.c:343
 #: ../src/iop/colorcorrection.c:197
-#: ../src/iop/colorzones.c:793
-#: ../src/iop/colorzones.c:811
-#: ../src/iop/graduatednd.c:512
-#: ../src/iop/soften.c:347
-#: ../src/iop/splittoning.c:432
-#: ../src/iop/splittoning.c:492
-#: ../src/iop/velvia.c:237
-#: ../src/iop/vignette.c:857
+#: ../src/iop/colorzones.c:807
+#: ../src/iop/colorzones.c:825
+#: ../src/iop/graduatednd.c:527
+#: ../src/iop/lowpass.c:708
+#: ../src/iop/soften.c:354
+#: ../src/iop/splittoning.c:436
+#: ../src/iop/splittoning.c:496
+#: ../src/iop/velvia.c:244
+#: ../src/iop/vignette.c:868
 msgid "saturation"
 msgstr "mättnad"
 
-#: ../build/src/accelstrings_gen.h:112
+#: ../build/src/accelstrings_gen.h:117
 #: ../src/iop/anlfyeni.c:295
-#: ../src/iop/lens.c:1381
+#: ../src/iop/lens.c:1385
 #: ../src/iop/localc.c:300
-#: ../src/iop/vignette.c:852
-#: ../src/iop/watermark.c:681
+#: ../src/iop/vignette.c:860
+#: ../src/iop/watermark.c:685
 msgid "scale"
 msgstr "skala"
 
-#: ../build/src/accelstrings_gen.h:113
+#: ../build/src/accelstrings_gen.h:118
 msgid "scroll"
-msgstr ""
+msgstr "scrolla"
 
-#: ../build/src/accelstrings_gen.h:114
+#: ../build/src/accelstrings_gen.h:119
 msgid "scroll back"
-msgstr ""
+msgstr "scrolla bakåt"
 
-#: ../build/src/accelstrings_gen.h:115
+#: ../build/src/accelstrings_gen.h:120
 msgid "scroll forward"
-msgstr ""
+msgstr "scrolla frammåt"
 
-#: ../build/src/accelstrings_gen.h:116
-#: ../src/libs/select.c:32
-msgid "select"
-msgstr "bildurval"
+#: ../build/src/accelstrings_gen.h:121
+#: ../src/libs/select.c:114
+msgid "select all"
+msgstr "välj alla"
 
-#: ../build/src/accelstrings_gen.h:117
+#: ../build/src/accelstrings_gen.h:122
+#: ../src/libs/select.c:135
+msgid "select film roll"
+msgstr "välj filmrulle"
+
+#: ../build/src/accelstrings_gen.h:123
+#: ../src/libs/select.c:120
+msgid "select none"
+msgstr "rensa val"
+
+#: ../build/src/accelstrings_gen.h:124
+#: ../src/libs/select.c:144
+msgid "select untouched"
+msgstr "välj orörda"
+
+#: ../build/src/accelstrings_gen.h:125
 #: ../src/iop/anlfyeni.c:291
 #: ../src/iop/localc.c:296
 msgid "sensitivity"
 msgstr "känslighet"
 
-#: ../build/src/accelstrings_gen.h:118
-#: ../src/iop/atrous.c:1281
-#: ../src/iop/highpass.c:404
+#: ../build/src/accelstrings_gen.h:126
+#: ../src/iop/vignette.c:874
+msgid "shape"
+msgstr "form"
+
+#: ../build/src/accelstrings_gen.h:127
+#: ../src/iop/atrous.c:1252
+#: ../src/iop/highpass.c:423
 msgid "sharpness"
 msgstr "skärpa"
 
-#: ../build/src/accelstrings_gen.h:119
+#: ../build/src/accelstrings_gen.h:128
 msgid "show"
 msgstr "visa"
 
-#: ../build/src/accelstrings_gen.h:120
+#: ../build/src/accelstrings_gen.h:129
+msgid "show plugin"
+msgstr "visa plug-in"
+
+#: ../build/src/accelstrings_gen.h:130
 msgid "show preset menu"
 msgstr "ny förinställning"
 
-#: ../build/src/accelstrings_gen.h:121
+#: ../build/src/accelstrings_gen.h:131
 #: ../src/iop/bloom.c:332
-#: ../src/iop/soften.c:345
-#: ../src/libs/camera.c:561
+#: ../src/iop/soften.c:352
+#: ../src/libs/camera.c:567
 msgid "size"
 msgstr "storlek"
 
-#: ../build/src/accelstrings_gen.h:122
-#: ../src/iop/graduatednd.c:527
+#: ../build/src/accelstrings_gen.h:132
+#: ../src/iop/tonemap.cc:302
+msgid "spatial extent"
+msgstr "rumsbestämd utrsträckning"
+
+#: ../build/src/accelstrings_gen.h:133
+msgid "spation extent"
+msgstr "rumsbestämd utrsträckning"
+
+#: ../build/src/accelstrings_gen.h:134
+#: ../src/iop/graduatednd.c:542
 msgid "split"
 msgstr "delning"
 
-#: ../build/src/accelstrings_gen.h:123
-msgid "splittoning"
-msgstr "delad färgtoning"
-
-#: ../build/src/accelstrings_gen.h:124
+#: ../build/src/accelstrings_gen.h:135
 #: ../src/iop/anlfyeni.c:299
 #: ../src/iop/bloom.c:336
 #: ../src/iop/grain.c:517
@@ -844,73 +895,123 @@ msgstr "styrka"
 
 #. TODO: what about this?
 #. g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
-#: ../build/src/accelstrings_gen.h:125
-#: ../src/iop/borders.c:391
+#: ../build/src/accelstrings_gen.h:136
+#: ../src/iop/borders.c:392
 msgid "swap the aspect ratio"
 msgstr "byt sida för aspekt förhållande (ctrl-x)"
 
-#: ../build/src/accelstrings_gen.h:126
+#: ../build/src/accelstrings_gen.h:137
 msgid "switch view"
 msgstr "byta vy"
 
-#: ../build/src/accelstrings_gen.h:127
-#: ../src/iop/lens.c:1407
+#: ../build/src/accelstrings_gen.h:138
+#: ../src/iop/lens.c:1411
 msgid "tca B"
 msgstr "tca B"
 
-#: ../build/src/accelstrings_gen.h:128
-#: ../src/iop/lens.c:1406
+#: ../build/src/accelstrings_gen.h:139
+#: ../src/iop/lens.c:1410
 msgid "tca R"
 msgstr "tca R"
 
-#: ../build/src/accelstrings_gen.h:129
+#: ../build/src/accelstrings_gen.h:140
+#: ../src/iop/temperature.c:469
+msgid "temperature in"
+msgstr "temperatur in"
+
+#: ../build/src/accelstrings_gen.h:141
+#: ../src/iop/temperature.c:471
+msgid "temperature out"
+msgstr "temperatur ut"
+
+#: ../build/src/accelstrings_gen.h:142
 #: ../src/iop/bloom.c:334
 #: ../src/iop/hotpixels.c:275
-#: ../src/iop/sharpen.c:381
+#: ../src/iop/sharpen.c:482
 msgid "threshold"
 msgstr "tröskel"
 
-#: ../build/src/accelstrings_gen.h:130
+#: ../build/src/accelstrings_gen.h:143
+#: ../src/iop/temperature.c:468
+msgid "tint"
+msgstr "nyans"
+
+#: ../build/src/accelstrings_gen.h:144
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
 
-#: ../build/src/accelstrings_gen.h:131
+#: ../build/src/accelstrings_gen.h:145
 msgid "toggle fullscreen"
 msgstr "växla fullskärm"
 
-#: ../build/src/accelstrings_gen.h:132
+#: ../build/src/accelstrings_gen.h:146
 msgid "toggle side borders"
 msgstr "växla visning av paneler"
 
-#: ../build/src/accelstrings_gen.h:133
+#: ../build/src/accelstrings_gen.h:147
 msgid "toggle softproofing"
 msgstr "växla softproofing"
 
-#: ../build/src/accelstrings_gen.h:134
+#: ../build/src/accelstrings_gen.h:148
 msgid "undo"
 msgstr "ångra"
 
-#: ../build/src/accelstrings_gen.h:135
+#: ../build/src/accelstrings_gen.h:149
 msgid "up"
 msgstr "upp"
 
-#: ../build/src/accelstrings_gen.h:136
-msgid "views"
-msgstr "vyer"
+#: ../build/src/accelstrings_gen.h:150
+#: ../src/iop/overexposed.c:273
+msgid "upper threshold"
+msgstr "övre tröskel"
 
-#: ../build/src/accelstrings_gen.h:137
-#: ../src/iop/watermark.c:89
-msgid "watermark"
-msgstr "vattenstämpel"
+#: ../build/src/accelstrings_gen.h:151
+msgid "useless"
+msgstr "oanvändbar"
 
-#: ../build/src/accelstrings_gen.h:138
+#: ../build/src/accelstrings_gen.h:152
+#: ../src/iop/vignette.c:872
+msgid "vertical center"
+msgstr "vertikalt centrerad"
+
+#: ../build/src/accelstrings_gen.h:153
+#: ../src/iop/velvia.c:249
+msgid "vibrance"
+msgstr "lyster"
+
+#: ../build/src/accelstrings_gen.h:154
+#: ../src/gui/gtk.c:1991
+#: ../src/iop/relight.c:310
+msgid "width"
+msgstr "bredd"
+
+#: ../build/src/accelstrings_gen.h:155
+msgid "width-height ration"
+msgstr "bredd/höjd förhållande"
+
+#: ../build/src/accelstrings_gen.h:156
+#: ../src/libs/copy_history.c:222
+msgid "write sidecar files"
+msgstr "skapa sidofiler med inställningar"
+
+#: ../build/src/accelstrings_gen.h:157
+#: ../src/iop/watermark.c:709
+msgid "x offset"
+msgstr "x offset"
+
+#: ../build/src/accelstrings_gen.h:158
 #: ../src/common/collection.c:320
 #: ../src/libs/collect.c:240
 #: ../src/libs/collect.c:242
 msgid "yellow"
 msgstr "gul"
 
-#: ../build/src/accelstrings_gen.h:139
+#: ../build/src/accelstrings_gen.h:159
+#: ../src/iop/watermark.c:710
+msgid "y offset"
+msgstr "y offset"
+
+#: ../build/src/accelstrings_gen.h:160
 msgid "zoom"
 msgstr "zoom"
 
@@ -921,17 +1022,17 @@ msgstr "zoom"
 msgid "altered"
 msgstr "förändrad"
 
-#: ../src/common/darktable.c:79
+#: ../src/common/darktable.c:82
 msgid "darktable has trapped an illegal instruction which probably means that an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."
 msgstr ""
 "darktable har fångat ett ogiltig instruktionsanrop vilket förmodligen beror på ett felaktigt optimerad kod används för din processor, försök att återskapa problemet när du kör kommandot\n"
 "'gdb darktable' från konsollen och skicka in en backtrace log till mailing listan med information om din CPU och vilket darktable paket du använder."
 
-#: ../src/common/darktable.c:116
+#: ../src/common/darktable.c:119
 msgid "SIMD extensions found: "
 msgstr "SIMD utökningar:"
 
-#: ../src/common/darktable.c:132
+#: ../src/common/darktable.c:135
 #, c-format
 msgid ""
 "darktable is very cpu intensive and uses SSE2 SIMD instructions for heavy calculations. This gives a better user experience but also defines a minimum processor requirement.\n"
@@ -946,44 +1047,44 @@ msgstr ""
 "\n"
 "%s "
 
-#: ../src/common/darktable.c:483
+#: ../src/common/darktable.c:487
 #, c-format
 msgid "found strange path `%s'"
 msgstr "hittade en konstigt sökväg `%s'"
 
-#: ../src/common/darktable.c:511
+#: ../src/common/darktable.c:515
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "fel uppstod vid läsning av katalog '%s'"
 
-#: ../src/common/darktable.c:532
+#: ../src/common/darktable.c:536
 #: ../src/gui/gtk.c:1028
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "`%s' är av okänt format!"
 
-#: ../src/common/darktable.c:544
+#: ../src/common/darktable.c:548
 #: ../src/gui/gtk.c:1013
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/history.c:113
+#: ../src/common/history.c:117
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "du behöver kopiera historik från en bild innan du klistrar in på en annan"
 
-#: ../src/common/history.c:176
-#: ../src/common/history.c:204
+#: ../src/common/history.c:180
+#: ../src/common/history.c:208
 #: ../src/common/styles.c:238
-#: ../src/develop/develop.c:951
+#: ../src/develop/develop.c:963
 #: ../src/gui/styles_dialog.c:323
 msgid "on"
 msgstr "på"
 
-#: ../src/common/history.c:176
-#: ../src/common/history.c:204
+#: ../src/common/history.c:180
+#: ../src/common/history.c:208
 #: ../src/common/styles.c:238
-#: ../src/develop/develop.c:951
+#: ../src/develop/develop.c:963
 #: ../src/gui/styles_dialog.c:323
 msgid "off"
 msgstr "av"
@@ -994,7 +1095,7 @@ msgstr "anonyma bilder"
 
 #. fprintf(stderr, "[image_reimport] could not open %s\n", filename);
 #. dt_image_cleanup(img); // still locked buffers. cache will clean itself after a while.
-#: ../src/common/image.c:575
+#: ../src/common/image.c:576
 #, c-format
 msgid "image `%s' is not available"
 msgstr "bild `%s' är inte tillgänglig"
@@ -1024,17 +1125,17 @@ msgstr "exporterade stilen '%s'"
 msgid "style %s was sucessfully imported"
 msgstr "importerade stilen '%s'"
 
-#: ../src/control/control.c:982
-#: ../src/control/control.c:985
+#: ../src/control/control.c:990
+#: ../src/control/control.c:993
 msgid "working.."
 msgstr "arbetar..."
 
-#: ../src/control/control.c:1066
+#: ../src/control/control.c:1074
 #, c-format
 msgid "switch to %s mode"
 msgstr "byt till %s vy"
 
-#: ../src/control/control.c:1074
+#: ../src/control/control.c:1082
 #, c-format
 msgid "<span color=\"#7f7f7f\"><big><b>%s mode</b></big></span>"
 msgstr "<span color=\"#7f7f7f\"><big><b>%s läge</b></big></span>"
@@ -1051,32 +1152,32 @@ msgid_plural "capturing %d images"
 msgstr[0] "fångar %d bild"
 msgstr[1] "fångar %d bilder"
 
-#: ../src/control/jobs/camera_jobs.c:90
+#: ../src/control/jobs/camera_jobs.c:94
 msgid "please set your camera to manual mode first!"
 msgstr "var god att ställa om kameran till manuellt läge först!"
 
-#: ../src/control/jobs/camera_jobs.c:274
+#: ../src/control/jobs/camera_jobs.c:282
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d importerad som %s"
 
-#: ../src/control/jobs/camera_jobs.c:334
+#: ../src/control/jobs/camera_jobs.c:342
 msgid "starting to import images from camera"
 msgstr "startar importering  av bilder ifrån kamera."
 
-#: ../src/control/jobs/camera_jobs.c:351
+#: ../src/control/jobs/camera_jobs.c:359
 #, c-format
 msgid "failed to create import path `%s', import aborted."
 msgstr "fallerade att skapa sökväg %s för importering, avbryter importering av bilder."
 
-#: ../src/control/jobs/camera_jobs.c:360
+#: ../src/control/jobs/camera_jobs.c:368
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "importerar %d bild från kamera"
 msgstr[1] "importerar %d bilder från kamera"
 
-#: ../src/control/jobs/camera_jobs.c:382
+#: ../src/control/jobs/camera_jobs.c:390
 msgid "failed to create filmroll for camera import, import aborted."
 msgstr "fallerade att skapa filmrulle för importering från kamera, importering av bilder avbryts"
 
@@ -1179,122 +1280,117 @@ msgstr "`%s' är inte tillgänglig"
 msgid "loading image %s"
 msgstr "läser in bild %s"
 
-#: ../src/develop/develop.c:844
+#: ../src/develop/develop.c:856
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' skilljer i version: %d != %d"
 
-#: ../src/develop/imageop.c:371
-#: ../src/develop/imageop.c:390
-#: ../src/develop/imageop.c:831
+#: ../src/develop/imageop.c:376
+#: ../src/develop/imageop.c:395
+#: ../src/develop/imageop.c:841
 #, c-format
 msgid "%s is switched on"
 msgstr "%s är påslagen"
 
-#: ../src/develop/imageop.c:371
-#: ../src/develop/imageop.c:390
-#: ../src/develop/imageop.c:831
+#: ../src/develop/imageop.c:376
+#: ../src/develop/imageop.c:395
+#: ../src/develop/imageop.c:841
 #, c-format
 msgid "%s is switched off"
 msgstr "%s är avslagen"
 
-#: ../src/develop/imageop.c:822
+#: ../src/develop/imageop.c:832
 msgid " (deprecated)"
 msgstr "(utgående)"
 
-#: ../src/develop/imageop.c:854
+#: ../src/develop/imageop.c:864
 #: ../src/libs/lib.c:543
 msgid "reset parameters"
 msgstr "återställ parametrar"
 
-#: ../src/develop/imageop.c:855
+#: ../src/develop/imageop.c:865
 #: ../src/libs/lib.c:551
 msgid "presets"
 msgstr "fördefinierade"
 
 #. hack to indent the drop down box
-#: ../src/develop/imageop.c:879
+#: ../src/develop/imageop.c:889
 msgid "blend"
 msgstr "blanda"
 
-#: ../src/develop/imageop.c:880
+#: ../src/develop/imageop.c:890
 msgid "mode"
 msgstr "läge"
 
-#: ../src/develop/imageop.c:883
-#: ../src/iop/watermark.c:679
-msgid "opacity"
-msgstr "genomskinlighet"
-
-#: ../src/develop/imageop.c:885
+#: ../src/develop/imageop.c:897
 msgid "normal"
 msgstr "normal"
 
-#: ../src/develop/imageop.c:886
+#: ../src/develop/imageop.c:898
 msgid "lighten"
 msgstr "gör ändast ljusare"
 
-#: ../src/develop/imageop.c:887
+#: ../src/develop/imageop.c:899
 msgid "darken"
 msgstr "gör endast mörkare"
 
-#: ../src/develop/imageop.c:888
+#: ../src/develop/imageop.c:900
 msgid "multiply"
 msgstr "multiplicera"
 
-#: ../src/develop/imageop.c:889
+#: ../src/develop/imageop.c:901
 msgid "average"
 msgstr "medel"
 
-#: ../src/develop/imageop.c:890
+#: ../src/develop/imageop.c:902
 msgid "addition"
 msgstr "addition"
 
-#: ../src/develop/imageop.c:891
+#: ../src/develop/imageop.c:903
 msgid "subtract"
 msgstr "substrahera"
 
-#: ../src/develop/imageop.c:892
+#: ../src/develop/imageop.c:904
 msgid "difference"
 msgstr "differens"
 
-#: ../src/develop/imageop.c:893
+#: ../src/develop/imageop.c:905
 msgid "screen"
 msgstr "blek"
 
-#: ../src/develop/imageop.c:894
+#: ../src/develop/imageop.c:906
 msgid "overlay"
 msgstr "överlagring"
 
-#: ../src/develop/imageop.c:895
+#: ../src/develop/imageop.c:907
 msgid "softlight"
 msgstr "mjukt ljus"
 
-#: ../src/develop/imageop.c:896
+#: ../src/develop/imageop.c:908
 msgid "hardlight"
 msgstr "hårt ljus"
 
-#: ../src/develop/imageop.c:897
+#: ../src/develop/imageop.c:909
 msgid "vividlight"
 msgstr "intensivt ljus"
 
-#: ../src/develop/imageop.c:898
+#: ../src/develop/imageop.c:910
 msgid "linearlight"
 msgstr "linjärt ljus"
 
-#: ../src/develop/imageop.c:899
+#: ../src/develop/imageop.c:911
 msgid "pinlight"
 msgstr "snävt ljus"
 
-#: ../src/develop/imageop.c:902
+#: ../src/develop/imageop.c:914
 msgid "enable blending"
 msgstr "aktivera blandning"
 
-#: ../src/develop/imageop.c:903
+#: ../src/develop/imageop.c:915
 msgid "set the opacity of the blending"
 msgstr "justera opacitet av blandningen"
 
-#: ../src/develop/imageop.c:904
+#: ../src/develop/imageop.c:916
 msgid "choose blending mode"
 msgstr "välj blandningstyp"
 
@@ -1302,83 +1398,95 @@ msgstr "välj blandningstyp"
 msgid "double-click to reset"
 msgstr "dubbelklicka för återställning"
 
+#: ../src/dtgtk/slider.c:723
+msgid "increase"
+msgstr "öka"
+
+#: ../src/dtgtk/slider.c:730
+msgid "reduce"
+msgstr "reducera"
+
+#: ../src/dtgtk/slider.c:738
+msgid "reset"
+msgstr "återställ"
+
 #: ../src/gui/background_jobs.c:33
 msgid "background jobs"
 msgstr "bakgrundsjobb"
 
-#: ../src/gui/camera_import_dialog.c:229
+#: ../src/gui/camera_import_dialog.c:232
 msgid "store value as default"
 msgstr "spara värde som standardvärden"
 
-#: ../src/gui/camera_import_dialog.c:236
+#: ../src/gui/camera_import_dialog.c:239
 msgid "reset value to default"
 msgstr "återställ värde till standardvärden"
 
-#: ../src/gui/camera_import_dialog.c:260
+#: ../src/gui/camera_import_dialog.c:263
 msgid "import images from camera"
 msgstr "importera bilder från kamera"
 
-#: ../src/gui/camera_import_dialog.c:260
+#: ../src/gui/camera_import_dialog.c:263
 msgid "cancel"
 msgstr "avbryt"
 
-#: ../src/gui/camera_import_dialog.c:260
+#: ../src/gui/camera_import_dialog.c:263
 msgctxt "camera import"
 msgid "import"
 msgstr "importera"
 
-#: ../src/gui/camera_import_dialog.c:268
+#: ../src/gui/camera_import_dialog.c:271
 msgid "my jobcode"
 msgstr "min jobbkod"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:276
+#: ../src/gui/camera_import_dialog.c:279
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr "var god vänta medans förhandsvisningsbilder hämtas från kameran."
 
 #. jobcode
-#: ../src/gui/camera_import_dialog.c:282
+#: ../src/gui/camera_import_dialog.c:285
 #: ../src/libs/capture.c:104
 msgid "jobcode"
 msgstr "jobbkod"
 
-#: ../src/gui/camera_import_dialog.c:294
+#: ../src/gui/camera_import_dialog.c:297
 msgid "thumbnail"
 msgstr "miniatyr"
 
-#: ../src/gui/camera_import_dialog.c:298
+#: ../src/gui/camera_import_dialog.c:301
 msgid "storage file"
 msgstr "lagringsfil"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:317
+#: ../src/gui/camera_import_dialog.c:320
 msgid "general"
 msgstr "generella"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:320
+#: ../src/gui/camera_import_dialog.c:323
 #: ../src/gui/gtk.c:920
 msgid "ignore jpeg files"
 msgstr "ignorera jpeg bilder"
 
-#: ../src/gui/camera_import_dialog.c:321
+#: ../src/gui/camera_import_dialog.c:324
 #: ../src/gui/gtk.c:921
 msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
 msgstr "importerar inte bilder med filändelse .jpg eller .jpeg. detta är användbart om du har raw+jpeg bilder i katalogerna."
 
-#: ../src/gui/camera_import_dialog.c:326
+#: ../src/gui/camera_import_dialog.c:329
 msgid "delete originals after import"
 msgstr "ta bort orginal efter importering"
 
-#: ../src/gui/camera_import_dialog.c:330
+#: ../src/gui/camera_import_dialog.c:333
 msgid "check this option if you want to delete images on camera after download to computer"
 msgstr "klicka i om du vill radera bilder på kameran efter nedladdning till datorn."
 
-#: ../src/gui/camera_import_dialog.c:334
+#: ../src/gui/camera_import_dialog.c:337
 msgid "override today's date"
 msgstr "överskrida dagens datum"
 
-#: ../src/gui/camera_import_dialog.c:336
+#: ../src/gui/camera_import_dialog.c:339
 msgid ""
 "check this, if you want to override the timestamp used when expanding variables:\n"
 "$(YEAR), $(MONTH), $(DAY),\n"
@@ -1389,61 +1497,61 @@ msgstr ""
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
 #. Storage structure
-#: ../src/gui/camera_import_dialog.c:347
+#: ../src/gui/camera_import_dialog.c:350
 msgid "storage structure"
 msgstr "lagringsstruktur"
 
-#: ../src/gui/camera_import_dialog.c:348
+#: ../src/gui/camera_import_dialog.c:351
 msgid "the following three settings describe the directory structure and file renaming for import storage and images; if you dont know how to use this, keep the default settings."
 msgstr "följande tre inställningar beskriver katalogstrukturen och filnamn för import lagring av bilder, om du är osäker på hur detta fungerar så använd standard inställningarna som skapar en struktur som du ser i exemplet nedan."
 
-#: ../src/gui/camera_import_dialog.c:354
+#: ../src/gui/camera_import_dialog.c:357
 msgid "storage directory"
 msgstr "lagringskatalog"
 
-#: ../src/gui/camera_import_dialog.c:357
+#: ../src/gui/camera_import_dialog.c:360
 msgid "directory structure"
 msgstr "katalogstruktur"
 
-#: ../src/gui/camera_import_dialog.c:361
+#: ../src/gui/camera_import_dialog.c:364
 msgid "filename structure"
 msgstr "filnamnsstruktur"
 
 #. Add example
-#: ../src/gui/camera_import_dialog.c:365
+#: ../src/gui/camera_import_dialog.c:368
 msgid "above settings expands to:"
 msgstr "ovanstående inställningar expanderar till:"
 
 #. External backup
-#: ../src/gui/camera_import_dialog.c:376
+#: ../src/gui/camera_import_dialog.c:379
 msgid "external backup"
 msgstr "extern backup"
 
-#: ../src/gui/camera_import_dialog.c:377
+#: ../src/gui/camera_import_dialog.c:380
 msgid "external backup is an option to automatic do a backup of the imported image(s) to another physical location, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."
 msgstr "extern backup är ett val för automatisk backup av importerade bild(er) till en annan fysisk plats, när den är aktiverad letar den efter specifierad backupkalaog på monterade enheter på din dator... varje katatlog som hittas används som baskatalog i ovanstående lagringsstruktur och när en bild importeras från kameran så replikeras den till funna destinationer."
 
-#: ../src/gui/camera_import_dialog.c:383
+#: ../src/gui/camera_import_dialog.c:386
 msgid "enable backup"
 msgstr "aktivera backup"
 
-#: ../src/gui/camera_import_dialog.c:385
+#: ../src/gui/camera_import_dialog.c:388
 msgid "check this option to enable automatic backup of imported images"
 msgstr "klicka i om du vill aktivera automatisk backup av importerade bilder"
 
-#: ../src/gui/camera_import_dialog.c:387
+#: ../src/gui/camera_import_dialog.c:390
 msgid "warn if no backup destinations are present"
 msgstr "varna om inga backup destinationer finns tillgängliga"
 
-#: ../src/gui/camera_import_dialog.c:389
+#: ../src/gui/camera_import_dialog.c:392
 msgid "check this option to get an interactive warning if no backupdestinations are present"
 msgstr "klicka i om du vill bli interaktivt varnad när ingen backupdestination finns tillgänglig"
 
-#: ../src/gui/camera_import_dialog.c:391
+#: ../src/gui/camera_import_dialog.c:394
 msgid "backup foldername"
 msgstr "backup katalognamn"
 
-#: ../src/gui/camera_import_dialog.c:393
+#: ../src/gui/camera_import_dialog.c:396
 msgid ""
 "this is the name of folder that indicates a backup destination,\n"
 "if such a folder is found in any mounter media it is used as a backup destination."
@@ -1451,30 +1559,34 @@ msgstr ""
 "detta är namnet på en katalog som indikerar en backupdestination,\n"
 "om en sådan katalog är funnen på monterat media så används denna som en backupdestination."
 
-#: ../src/gui/camera_import_dialog.c:409
+#: ../src/gui/camera_import_dialog.c:412
 msgid "images"
 msgstr "bilder"
 
-#: ../src/gui/camera_import_dialog.c:410
+#: ../src/gui/camera_import_dialog.c:413
 msgid "settings"
 msgstr "inställningar"
 
 #. Lets run dialog
-#: ../src/gui/camera_import_dialog.c:567
+#: ../src/gui/camera_import_dialog.c:584
 msgid "select the images from the list below that you want to import into a new filmroll"
 msgstr "markera de bilder i listan nedan som du vill importera till en ny filmrulle"
 
-#: ../src/gui/camera_import_dialog.c:608
+#: ../src/gui/camera_import_dialog.c:629
 msgid "please set the basedirectory settings before importing"
 msgstr "ange en huvudkatalog innan du försöker att importera bilder"
 
-#: ../src/gui/camera_import_dialog.c:615
+#: ../src/gui/camera_import_dialog.c:636
 msgid "please set the subdirectory settings before importing"
 msgstr "ange ett underkatalogsmönster innan du försöker att importera bilder"
 
-#: ../src/gui/camera_import_dialog.c:622
+#: ../src/gui/camera_import_dialog.c:643
 msgid "please set the filenamepattern settings before importing"
 msgstr "ange ett filnamnmönster innan du försöker att importera bilder"
+
+#: ../src/gui/camera_import_dialog.c:650
+msgid "please use YYYY-MM-DD format for date override"
+msgstr "använd YYYY-MM-DD datum format för datumöverskridelse"
 
 #. Add the rescan button
 #: ../src/gui/devices.c:145
@@ -1550,8 +1662,8 @@ msgid "supported images"
 msgstr "supporterade bilder"
 
 #: ../src/gui/gtk.c:994
-#: ../src/libs/copy_history.c:76
-#: ../src/libs/styles.c:240
+#: ../src/libs/copy_history.c:77
+#: ../src/libs/styles.c:247
 msgid "all files"
 msgstr "alla filer"
 
@@ -1571,6 +1683,10 @@ msgstr "<span color=\"#7f7f7f\"><big><b>Ljusbordsvy</b></big></span>"
 #: ../src/gui/gtk.c:1711
 msgid "list"
 msgstr "visa"
+
+#: ../src/gui/gtk.c:1719
+msgid "all"
+msgstr "alla"
 
 #: ../src/gui/gtk.c:1720
 msgid "unstarred"
@@ -1647,9 +1763,18 @@ msgstr "tillverkare"
 #. aperture
 #: ../src/gui/gtk.c:1984
 #: ../src/gui/presets.c:323
-#: ../src/libs/camera.c:501
+#: ../src/libs/camera.c:507
 msgid "aperture"
 msgstr "bländare"
+
+#. exposure
+#: ../src/gui/gtk.c:1985
+#: ../src/gui/presets.c:308
+#: ../src/iop/exposure.c:42
+#: ../src/iop/exposure.c:367
+#: ../src/iop/relight.c:307
+msgid "exposure"
+msgstr "exponering"
 
 #: ../src/gui/gtk.c:1986
 msgid "f-length"
@@ -1662,7 +1787,7 @@ msgstr "distans"
 #. iso
 #: ../src/gui/gtk.c:1988
 #: ../src/gui/presets.c:295
-#: ../src/libs/camera.c:531
+#: ../src/libs/camera.c:537
 msgid "iso"
 msgstr "iso"
 
@@ -1670,10 +1795,10 @@ msgstr "iso"
 msgid "date/time"
 msgstr "datum/tid"
 
-#: ../src/gui/gtk.c:1991
-#: ../src/iop/relight.c:304
-msgid "width"
-msgstr "bredd"
+#: ../src/gui/gtk.c:1990
+#: ../src/gui/presets.c:288
+msgid "lens"
+msgstr "objektiv"
 
 #: ../src/gui/gtk.c:1992
 msgid "height"
@@ -1689,20 +1814,20 @@ msgstr "filmrulle"
 #: ../src/imageio/storage/gallery.c:154
 #: ../src/imageio/storage/picasa.c:767
 #: ../src/libs/collect.h:35
-#: ../src/libs/metadata.c:264
+#: ../src/libs/metadata.c:272
 msgid "title"
 msgstr "titel"
 
 #: ../src/gui/gtk.c:1995
 #: ../src/libs/collect.h:37
-#: ../src/libs/metadata.c:290
+#: ../src/libs/metadata.c:298
 msgid "creator"
 msgstr "skapare"
 
 #: ../src/gui/gtk.c:1996
 #: ../src/imageio/storage/picasa.c:769
 #: ../src/libs/collect.h:39
-#: ../src/libs/metadata.c:316
+#: ../src/libs/metadata.c:324
 msgid "rights"
 msgstr "rättighet"
 
@@ -1723,6 +1848,13 @@ msgstr "avbilder"
 msgctxt "global import"
 msgid "import"
 msgstr "importera"
+
+#. Adding the single import button
+#: ../src/gui/gtk.c:2133
+#: ../src/iop/borders.c:376
+#: ../src/iop/clipping.c:873
+msgid "image"
+msgstr "bild"
 
 #: ../src/gui/gtk.c:2135
 msgid "select one or more images to import"
@@ -1792,33 +1924,33 @@ msgstr ""
 "dra musen för att ändra svärtan,\n"
 "dubbelklicka för att återställa."
 
-#: ../src/gui/iop_history.c:94
+#: ../src/gui/iop_history.c:95
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "applicerar stil `%s' på aktiv bild"
 
-#: ../src/gui/iop_history.c:127
+#: ../src/gui/iop_history.c:128
 msgid "no styles have been created yet"
 msgstr "det finns inga stilar skapade ännu"
 
-#: ../src/gui/iop_history.c:136
+#: ../src/gui/iop_history.c:137
 msgid "compress history stack"
 msgstr "komprimera historikstack"
 
-#: ../src/gui/iop_history.c:137
+#: ../src/gui/iop_history.c:138
 msgid "create a minimal history stack which produces the same image"
 msgstr "skapar en minimal historikstack som producerar samma bildresultat"
 
-#: ../src/gui/iop_history.c:145
+#: ../src/gui/iop_history.c:146
 msgid "create a style from the current history stack"
 msgstr "skapa en stil utifrån nuvarande bild och dess historik"
 
-#: ../src/gui/iop_history.c:151
+#: ../src/gui/iop_history.c:152
 msgid "applies a style selected from popup menu"
 msgstr "applicerar en vald stil från popupmenyn "
 
-#: ../src/gui/iop_history.c:176
-#: ../src/gui/iop_history.c:267
+#: ../src/gui/iop_history.c:177
+#: ../src/gui/iop_history.c:268
 msgid "0 - original"
 msgstr "0 - orginal"
 
@@ -1879,46 +2011,57 @@ msgstr "effekt"
 msgid "effect group"
 msgstr "plugins för hantering av effekter"
 
-#: ../src/gui/preferences.c:63
+#: ../src/gui/preferences.c:68
 msgid "darktable preferences"
 msgstr "darktable inställningar"
 
-#: ../src/gui/preferences.c:112
+#: ../src/gui/preferences.c:70
+msgid "close"
+msgstr "stäng"
+
+#: ../src/gui/preferences.c:117
 msgid "shortcuts"
 msgstr "snabbtangenter"
 
-#: ../src/gui/preferences.c:122
-msgid "accelerator"
+#: ../src/gui/preferences.c:131
+msgid "shortcut"
 msgstr "snabbtangent"
 
-#: ../src/gui/preferences.c:129
+#: ../src/gui/preferences.c:138
 msgid "binding"
 msgstr "bindning"
 
 #. Adding the restore defaults button
-#: ../src/gui/preferences.c:162
+#: ../src/gui/preferences.c:177
 msgid "default"
 msgstr "standard"
 
 #. Adding the import/export buttons
-#: ../src/gui/preferences.c:171
+#: ../src/gui/preferences.c:186
 msgctxt "preferences"
 msgid "import"
 msgstr "importera"
 
-#: ../src/gui/preferences.c:434
+#. Export Button
+#: ../src/gui/preferences.c:193
+#: ../src/libs/export.c:555
+#: ../src/libs/styles.c:356
+msgid "export"
+msgstr "exportera"
+
+#: ../src/gui/preferences.c:463
 msgid "press key combination to remap..."
 msgstr "tryck tangentkombination för bindning..."
 
-#: ../src/gui/preferences.c:619
+#: ../src/gui/preferences.c:648
 msgid "select file to export"
 msgstr "välj fil för att exportera"
 
-#: ../src/gui/preferences.c:646
+#: ../src/gui/preferences.c:675
 msgid "select file to import"
 msgstr "välj fil att importera"
 
-#: ../src/gui/preferences.c:692
+#: ../src/gui/preferences.c:721
 msgid "Are you sure you want to restore the default keybindings?  This will erase any modifications you have made."
 msgstr "är du säker på om du vill återställa standard bindningar för snabbtangenter?"
 
@@ -1997,7 +2140,7 @@ msgstr "högsta bländarsteg"
 
 #. focal length
 #: ../src/gui/presets.c:338
-#: ../src/libs/camera.c:511
+#: ../src/libs/camera.c:517
 msgid "focal length"
 msgstr "brännvidd"
 
@@ -2121,6 +2264,11 @@ msgstr ""
 msgid "clear all labels of selected images"
 msgstr "ta bort alla markeringar från valda bilder"
 
+#: ../src/imageio/format/copy.c:142
+#: ../src/libs/copy_history.c:187
+msgid "copy"
+msgstr "kopiera"
+
 #: ../src/imageio/format/copy.c:150
 msgid ""
 "do a 1:1 copy of the selected files.\n"
@@ -2138,7 +2286,7 @@ msgid "8-bit jpg"
 msgstr "8-bit jpg"
 
 #: ../src/imageio/format/jpeg.c:648
-#: ../src/libs/camera.c:551
+#: ../src/libs/camera.c:557
 msgid "quality"
 msgstr "kvalitet"
 
@@ -2176,7 +2324,7 @@ msgstr "fil på disk"
 #: ../src/imageio/storage/disk.c:131
 #: ../src/imageio/storage/gallery.c:77
 #: ../src/imageio/storage/gallery.c:148
-#: ../src/libs/styles.c:200
+#: ../src/libs/styles.c:207
 msgid "select directory"
 msgstr "välj katalog"
 
@@ -2453,97 +2601,96 @@ msgstr "styrkan av lokal contrast"
 msgid "equalizer"
 msgstr "equalizer"
 
-#: ../src/iop/atrous.c:692
+#: ../src/iop/atrous.c:648
 msgid "enhance coarse"
 msgstr "förbättra ojämnheter"
 
-#: ../src/iop/atrous.c:706
+#: ../src/iop/atrous.c:662
 msgid "sharpen and denoise (strong)"
 msgstr "skärpning och brusreducering  (mycket)"
 
-#: ../src/iop/atrous.c:720
+#: ../src/iop/atrous.c:676
 msgid "sharpen and denoise"
 msgstr "skärpa och brusreducering"
 
-#: ../src/iop/atrous.c:734
+#: ../src/iop/atrous.c:690
 #: ../src/iop/equalizer.c:260
 msgid "sharpen (strong)"
 msgstr "skärpa (mycket)"
 
-#: ../src/iop/atrous.c:748
+#: ../src/iop/atrous.c:704
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "skärpa"
 
-#: ../src/iop/atrous.c:762
-#: ../src/iop/bilateral.cc:73
+#: ../src/iop/atrous.c:718
 #: ../src/iop/equalizer.c:286
 msgid "denoise"
 msgstr "reducera brus"
 
-#: ../src/iop/atrous.c:778
+#: ../src/iop/atrous.c:734
 #: ../src/iop/equalizer.c:296
 msgid "denoise (strong)"
 msgstr "reducera brus (mycket)"
 
-#: ../src/iop/atrous.c:807
+#: ../src/iop/atrous.c:749
+#: ../src/iop/bloom.c:67
+msgid "bloom"
+msgstr "bloom"
+
+#: ../src/iop/atrous.c:763
 msgid "clarity (subtle)"
 msgstr "klarhet"
 
-#: ../src/iop/atrous.c:821
+#: ../src/iop/atrous.c:777
 msgid "clarity"
 msgstr "klarhet"
 
-#: ../src/iop/atrous.c:1069
-#: ../src/iop/atrous.c:1073
+#: ../src/iop/atrous.c:1025
+#: ../src/iop/atrous.c:1029
 msgid "coarse"
 msgstr "ojämnheter"
 
-#: ../src/iop/atrous.c:1075
-#: ../src/iop/atrous.c:1079
+#: ../src/iop/atrous.c:1031
+#: ../src/iop/atrous.c:1035
 msgid "fine"
 msgstr "fin"
 
-#: ../src/iop/atrous.c:1086
+#: ../src/iop/atrous.c:1042
 msgid "contrasty"
 msgstr "kontrast"
 
-#: ../src/iop/atrous.c:1087
-#: ../src/iop/atrous.c:1091
+#: ../src/iop/atrous.c:1043
+#: ../src/iop/atrous.c:1047
 msgid "smooth"
 msgstr "mjuk"
 
-#: ../src/iop/atrous.c:1092
+#: ../src/iop/atrous.c:1048
 msgid "noisy"
 msgstr "brusig"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1095
+#: ../src/iop/atrous.c:1051
 msgid "bold"
 msgstr "kraftig"
 
-#: ../src/iop/atrous.c:1096
+#: ../src/iop/atrous.c:1052
 msgid "dull"
 msgstr "mörk"
 
-#: ../src/iop/atrous.c:1278
+#: ../src/iop/atrous.c:1249
 msgid "change lightness at each feature size"
 msgstr "ändra ljushet på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1280
+#: ../src/iop/atrous.c:1251
 msgid "change color saturation at each feature size"
 msgstr "ändra färgmättnad på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1282
+#: ../src/iop/atrous.c:1253
 msgid "sharpness of edges at each feature size"
 msgstr "skärpa av kanter på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1318
-#: ../src/iop/soften.c:352
-msgid "mix"
-msgstr "blanda"
-
-#: ../src/iop/atrous.c:1319
+#: ../src/iop/atrous.c:1291
 msgid "make effect stronger or weaker"
 msgstr "gör effekten starkare eller svagare"
 
@@ -2595,11 +2742,11 @@ msgstr "fotogenetic (point & shoot)"
 msgid "fotogenetic (EV3)"
 msgstr "fotogenetic (ev3)"
 
-#: ../src/iop/basecurve.c:133
+#: ../src/iop/basecurve.c:134
 msgid "base curve"
 msgstr "baskurva"
 
-#: ../src/iop/basecurve.c:600
+#: ../src/iop/basecurve.c:621
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on RGB channels"
@@ -2607,27 +2754,25 @@ msgstr ""
 "abskissa: ingående, samordna: utgående\n"
 "arbetar på RGB kanaler"
 
-#: ../src/iop/bilateral.cc:325
+#: ../src/iop/bilateral.cc:73
+msgid "denoise (bilateral filter)"
+msgstr "brusreducering (bilateral filter)"
+
+#: ../src/iop/bilateral.cc:347
 msgid "spatial extent of the gaussian"
 msgstr "gaussiska rumslig utrsträckning"
 
-#: ../src/iop/bilateral.cc:326
+#: ../src/iop/bilateral.cc:348
 msgid "how much to blur red"
 msgstr "mängd av oskärp att applicera på röd kanal"
 
-#: ../src/iop/bilateral.cc:327
+#: ../src/iop/bilateral.cc:349
 msgid "how much to blur green"
 msgstr "mängd av oskärp att applicera på grön kanal"
 
-#: ../src/iop/bilateral.cc:328
+#: ../src/iop/bilateral.cc:350
 msgid "how much to blur blue"
 msgstr "mängd av oskärp att applicera på blå kanal"
-
-#: ../src/iop/bilateral.cc:330
-#: ../src/iop/clahe.c:344
-#: ../src/iop/sharpen.c:375
-msgid "radius"
-msgstr "radie"
 
 #: ../src/iop/bloom.c:345
 msgid "the size of bloom"
@@ -2641,6 +2786,10 @@ msgstr "tröskelnivå av ljushet"
 msgid "the strength of bloom"
 msgstr "styrkan av applicerat ljus"
 
+#: ../src/iop/borders.c:64
+msgid "framing"
+msgstr "inraming"
+
 #: ../src/iop/borders.c:180
 msgid "15:10 postcard black"
 msgstr "15:10 vykort svart ram"
@@ -2653,51 +2802,51 @@ msgstr "15:10 vykort vit ram"
 msgid "select frame color"
 msgstr "välj kantfärg"
 
-#: ../src/iop/borders.c:368
+#: ../src/iop/borders.c:369
 msgid "size of the border in percent of the full image"
 msgstr "storlek på kant i procent av hela bilden"
 
-#: ../src/iop/borders.c:371
+#: ../src/iop/borders.c:372
 #: ../src/iop/clipping.c:867
 msgid "aspect"
 msgstr "aspekt"
 
-#: ../src/iop/borders.c:376
+#: ../src/iop/borders.c:377
 #: ../src/iop/clipping.c:874
 msgid "golden cut"
 msgstr "gyllene snitt"
 
-#: ../src/iop/borders.c:377
+#: ../src/iop/borders.c:378
 #: ../src/iop/clipping.c:875
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/borders.c:378
+#: ../src/iop/borders.c:379
 #: ../src/iop/clipping.c:876
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/borders.c:379
+#: ../src/iop/borders.c:380
 #: ../src/iop/clipping.c:877
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:380
+#: ../src/iop/borders.c:381
 #: ../src/iop/clipping.c:878
 msgid "square"
 msgstr "square"
 
-#: ../src/iop/borders.c:381
+#: ../src/iop/borders.c:382
 #: ../src/iop/clipping.c:879
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:382
+#: ../src/iop/borders.c:383
 #: ../src/iop/clipping.c:880
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:385
+#: ../src/iop/borders.c:386
 #: ../src/iop/clipping.c:896
 msgid ""
 "set the aspect ratio (w:h)\n"
@@ -2706,7 +2855,7 @@ msgstr ""
 "ange aspekt förhållande (b:h)\n"
 "tryck ctrl-x för att byta sida"
 
-#: ../src/iop/borders.c:398
+#: ../src/iop/borders.c:399
 msgid "frame color"
 msgstr "kantfärg"
 
@@ -2737,17 +2886,17 @@ msgstr "utgående kanal"
 
 #. adding the labels
 #: ../src/iop/channelmixer.c:342
-#: ../src/iop/colorzones.c:792
-#: ../src/iop/colorzones.c:812
-#: ../src/iop/graduatednd.c:511
-#: ../src/iop/splittoning.c:431
-#: ../src/iop/splittoning.c:491
+#: ../src/iop/colorzones.c:806
+#: ../src/iop/colorzones.c:826
+#: ../src/iop/graduatednd.c:526
+#: ../src/iop/splittoning.c:435
+#: ../src/iop/splittoning.c:495
 msgid "hue"
 msgstr "hue (h)"
 
 #: ../src/iop/channelmixer.c:344
-#: ../src/iop/colorzones.c:794
-#: ../src/iop/colorzones.c:810
+#: ../src/iop/colorzones.c:808
+#: ../src/iop/colorzones.c:824
 msgid "lightness"
 msgstr "ljushet"
 
@@ -2811,11 +2960,6 @@ msgstr "s/v reducering av artefakter"
 msgid "local contrast"
 msgstr "lokal kontrast"
 
-#: ../src/iop/clahe.c:346
-#: ../src/iop/sharpen.c:378
-msgid "amount"
-msgstr "mängd"
-
 #: ../src/iop/clahe.c:355
 msgid "size of features to preserve"
 msgstr "storlek av detaljer att bevara"
@@ -2877,6 +3021,10 @@ msgstr "byt sida för aspekt förhållande (ctrl-x)"
 #: ../src/iop/clipping.c:910
 msgid "guides"
 msgstr "guider"
+
+#: ../src/iop/clipping.c:913
+msgid "none"
+msgstr "ingen"
 
 #: ../src/iop/clipping.c:914
 msgid "grid"
@@ -2948,23 +3096,15 @@ msgid "enable this option to show golden triangles."
 msgstr "klicka i för att visa gyllene trianglar"
 
 #. make sure you put all your translatable strings into _() !
-#: ../src/iop/colorcontrast.c:83
+#: ../src/iop/colorcontrast.c:84
 msgid "color contrast"
 msgstr "färgkontrast"
 
-#: ../src/iop/colorcontrast.c:246
-msgid "green vs magenta"
-msgstr "grön mot magenta"
-
-#: ../src/iop/colorcontrast.c:248
-msgid "blue vs yellow"
-msgstr "blå mot gul"
-
-#: ../src/iop/colorcontrast.c:256
+#: ../src/iop/colorcontrast.c:265
 msgid "steepness of the a* curve in Lab"
 msgstr ""
 
-#: ../src/iop/colorcontrast.c:258
+#: ../src/iop/colorcontrast.c:267
 msgid "steepness of the b* curve in Lab"
 msgstr ""
 
@@ -2984,52 +3124,52 @@ msgstr "set the global saturation"
 msgid "input color profile"
 msgstr "ingående färgprofil"
 
-#: ../src/iop/colorin.c:359
+#: ../src/iop/colorin.c:377
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "osupporterad ingående färgprofil har ersatts med linjär rgb!"
 
-#: ../src/iop/colorin.c:563
-#: ../src/libs/export.c:520
+#: ../src/iop/colorin.c:595
+#: ../src/libs/export.c:513
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/colorin.c:571
+#: ../src/iop/colorin.c:603
 msgid "standard color matrix"
 msgstr "standard färgmatris"
 
-#: ../src/iop/colorin.c:573
+#: ../src/iop/colorin.c:605
 msgid "enhanced color matrix"
 msgstr "förbättrad färgmatris"
 
-#: ../src/iop/colorin.c:575
+#: ../src/iop/colorin.c:607
 msgid "sRGB (e.g. jpg)"
 msgstr "sRGB (tex. jpg)"
 
-#: ../src/iop/colorin.c:577
-#: ../src/iop/colorout.c:733
-#: ../src/iop/colorout.c:734
-#: ../src/iop/colorout.c:735
-#: ../src/libs/export.c:470
+#: ../src/iop/colorin.c:609
+#: ../src/iop/colorout.c:757
+#: ../src/iop/colorout.c:758
+#: ../src/iop/colorout.c:759
+#: ../src/libs/export.c:463
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/iop/colorin.c:579
-#: ../src/iop/colorout.c:721
-#: ../src/iop/colorout.c:722
-#: ../src/iop/colorout.c:723
-#: ../src/libs/export.c:482
+#: ../src/iop/colorin.c:611
+#: ../src/iop/colorout.c:745
+#: ../src/iop/colorout.c:746
+#: ../src/iop/colorout.c:747
+#: ../src/libs/export.c:475
 msgid "linear RGB"
 msgstr "linjär RGB"
 
-#: ../src/iop/colorin.c:581
+#: ../src/iop/colorin.c:613
 msgid "linear infrared BGR"
 msgstr "linear infraröd BGR"
 
-#: ../src/iop/colorin.c:583
+#: ../src/iop/colorin.c:615
 msgid "linear XYZ"
 msgstr "linjär XYZ"
 
-#: ../src/iop/colorin.c:592
+#: ../src/iop/colorin.c:624
 #, c-format
 msgid "icc profiles in %s/color/in or %s/color/in"
 msgstr "ingående icc profil i %s/color/in eller %s/color/in"
@@ -3038,115 +3178,106 @@ msgstr "ingående icc profil i %s/color/in eller %s/color/in"
 msgid "output color profile"
 msgstr "utgående färgprofil"
 
-#: ../src/iop/colorout.c:472
+#: ../src/iop/colorout.c:482
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "osupporterad utgående färgprofil har ersatts med srgb!"
 
-#: ../src/iop/colorout.c:594
-#: ../src/iop/colorout.c:601
-msgid "SoftProof"
-msgstr "SoftProof"
+#: ../src/iop/colorout.c:619
+#: ../src/iop/colorout.c:626
+msgid "soft proof"
+msgstr "soft proof"
 
-#: ../src/iop/colorout.c:685
+#: ../src/iop/colorout.c:709
 msgid "output intent"
 msgstr "utgående avsikt"
 
-#: ../src/iop/colorout.c:686
+#: ../src/iop/colorout.c:710
 msgid "output profile"
 msgstr "utgående profil"
 
-#: ../src/iop/colorout.c:687
+#: ../src/iop/colorout.c:711
 msgid "softproof profile"
 msgstr "softproof profil"
 
-#: ../src/iop/colorout.c:689
+#: ../src/iop/colorout.c:713
 msgid "display intent"
 msgstr "visningsavsikt"
 
-#: ../src/iop/colorout.c:690
+#: ../src/iop/colorout.c:714
 msgid "display profile"
 msgstr "visningsprofil"
 
-#: ../src/iop/colorout.c:697
-#: ../src/iop/colorout.c:702
-#: ../src/libs/export.c:453
+#: ../src/iop/colorout.c:721
+#: ../src/iop/colorout.c:726
+#: ../src/libs/export.c:446
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:698
-#: ../src/iop/colorout.c:703
-#: ../src/libs/export.c:454
+#: ../src/iop/colorout.c:722
+#: ../src/iop/colorout.c:727
+#: ../src/libs/export.c:447
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
-#: ../src/iop/colorout.c:699
-#: ../src/iop/colorout.c:704
-#: ../src/libs/export.c:455
+#: ../src/iop/colorout.c:723
+#: ../src/iop/colorout.c:728
+#: ../src/libs/export.c:448
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
-#: ../src/iop/colorout.c:700
-#: ../src/iop/colorout.c:705
-#: ../src/libs/export.c:456
+#: ../src/iop/colorout.c:724
+#: ../src/iop/colorout.c:729
+#: ../src/libs/export.c:449
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
 
-#: ../src/iop/colorout.c:715
-#: ../src/iop/colorout.c:716
-#: ../src/iop/colorout.c:717
-#: ../src/libs/export.c:531
+#: ../src/iop/colorout.c:739
+#: ../src/iop/colorout.c:740
+#: ../src/iop/colorout.c:741
+#: ../src/libs/export.c:524
 msgid "system display profile"
 msgstr "systemets visningsprofil"
 
-#: ../src/iop/colorout.c:727
-#: ../src/iop/colorout.c:728
-#: ../src/iop/colorout.c:729
-#: ../src/libs/export.c:463
+#: ../src/iop/colorout.c:751
+#: ../src/iop/colorout.c:752
+#: ../src/iop/colorout.c:753
+#: ../src/libs/export.c:456
 msgid "sRGB (web-safe)"
 msgstr "sRGB (webb-säker)"
 
-#: ../src/iop/colorout.c:758
+#: ../src/iop/colorout.c:782
 msgid "rendering intent"
 msgstr "återgivningsavsikt"
 
-#: ../src/iop/colorout.c:759
+#: ../src/iop/colorout.c:783
 #, c-format
 msgid "icc profiles in %s/color/out or %s/color/out"
 msgstr "utgående icc profiler i %s/color/out eller %s/color/out"
 
-#: ../src/iop/colorout.c:761
+#: ../src/iop/colorout.c:785
 #, c-format
 msgid "display icc profiles in %s/color/out or %s/color/out"
 msgstr "visa icc profiler i %s/color/out eller %s/color/out"
 
-#: ../src/iop/colorout.c:763
+#: ../src/iop/colorout.c:787
 #, c-format
 msgid "softproof icc profiles in %s/color/out or %s/color/out"
 msgstr "softproof icc profiler i %s/color/out or %s/color/out"
 
-#: ../src/iop/colortransfer.c:105
+#: ../src/iop/colortransfer.c:106
 msgid "color transfer"
 msgstr "färg överföring"
 
-#: ../src/iop/colortransfer.c:641
+#: ../src/iop/colortransfer.c:647
 msgid "number of clusters to find in image"
 msgstr "antal kluster att hitta i bilder"
 
-#: ../src/iop/colortransfer.c:645
-msgid "acquire"
-msgstr "hämta"
-
-#: ../src/iop/colortransfer.c:646
+#: ../src/iop/colortransfer.c:652
 msgid "analyze this image"
 msgstr "analysera denna bild"
 
-#: ../src/iop/colortransfer.c:650
-#: ../src/libs/metadata.c:340
-msgid "apply"
-msgstr "applicera"
-
-#: ../src/iop/colortransfer.c:651
+#: ../src/iop/colortransfer.c:659
 msgid "apply previously analyzed image look to this image"
 msgstr "applicera föregående analyserad bilds utseende på denna bild"
 
@@ -3170,29 +3301,33 @@ msgstr "polarfilter"
 msgid "natural skin tones"
 msgstr "naturliga hudtoner"
 
-#: ../src/iop/colorzones.c:788
+#: ../src/iop/colorzones.c:802
 msgid "select by"
 msgstr "urval av"
 
+#: ../src/iop/demosaic.c:94
+msgid "demosaic"
+msgstr "demosaic"
+
 #. //////////////////////////
-#: ../src/iop/demosaic.c:973
-#: ../src/iop/highlights.c:387
+#: ../src/iop/demosaic.c:1012
+#: ../src/iop/highlights.c:392
 msgid "method"
 msgstr "metod"
 
-#: ../src/iop/demosaic.c:976
+#: ../src/iop/demosaic.c:1015
 msgid "ppg"
 msgstr "ppg"
 
-#: ../src/iop/demosaic.c:977
+#: ../src/iop/demosaic.c:1016
 msgid "AMaZE"
 msgstr "AMaZE"
 
-#: ../src/iop/demosaic.c:978
+#: ../src/iop/demosaic.c:1017
 msgid "demosaicing raw data method"
 msgstr "demosaicing metod"
 
-#: ../src/iop/demosaic.c:983
+#: ../src/iop/demosaic.c:1022
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -3202,19 +3337,19 @@ msgstr ""
 "värde 0.0 stänger av funktionen.\n"
 "värde 1.0 ignorerar kanter."
 
-#: ../src/iop/demosaic.c:989
+#: ../src/iop/demosaic.c:1028
 msgid "color smoothing"
 msgstr "färguppmjukning"
 
-#: ../src/iop/demosaic.c:994
+#: ../src/iop/demosaic.c:1033
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "antal färkuppmjuknings pass efter demosaic"
 
-#: ../src/iop/demosaic.c:997
+#: ../src/iop/demosaic.c:1036
 msgid "match greens"
 msgstr "matcha grön"
 
-#: ../src/iop/demosaic.c:1000
+#: ../src/iop/demosaic.c:1039
 msgid ""
 "switch on green equilibration before demosaicing.\n"
 "necessary for some mid-range cameras such as the EOS 400D."
@@ -3245,19 +3380,19 @@ msgstr ""
 "och finns endast kvar så att du kan stänga av den\n"
 "och använda den nya equalizern."
 
-#: ../src/iop/exposure.c:355
+#: ../src/iop/exposure.c:361
 msgid "adjust the black level"
 msgstr "justeringen av svart nivå"
 
-#: ../src/iop/exposure.c:360
+#: ../src/iop/exposure.c:366
 msgid "adjust the exposure correction"
 msgstr "justera exponeringskompensation [EV]"
 
-#: ../src/iop/exposure.c:368
+#: ../src/iop/exposure.c:374
 msgid "auto"
 msgstr "automatisk"
 
-#: ../src/iop/exposure.c:371
+#: ../src/iop/exposure.c:377
 msgid "percentage of bright values clipped out"
 msgstr ""
 "procentdel av ljusa värden\n"
@@ -3334,19 +3469,19 @@ msgstr "Brun ND4 (mjuk)"
 msgid "graduated density"
 msgstr "graderat gråfilter "
 
-#: ../src/iop/graduatednd.c:569
+#: ../src/iop/graduatednd.c:584
 msgid "select the hue tone of filter"
 msgstr "välj färgton för ljusa partier"
 
-#: ../src/iop/graduatednd.c:583
+#: ../src/iop/graduatednd.c:598
 msgid "select the saturation of filter"
 msgstr "välj färgmättnad för färgton i mörka partier"
 
-#: ../src/iop/graduatednd.c:590
+#: ../src/iop/graduatednd.c:605
 msgid "the density in EV for the filter"
 msgstr "densitet givet i EV för filtrer"
 
-#: ../src/iop/graduatednd.c:592
+#: ../src/iop/graduatednd.c:607
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
@@ -3355,13 +3490,17 @@ msgstr ""
 "kompremmering av gradering\n"
 "0% = mjuk, 100% = hård"
 
-#: ../src/iop/graduatednd.c:593
+#: ../src/iop/graduatednd.c:608
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "roteringen av filter -180 till 180 grader"
 
-#: ../src/iop/graduatednd.c:594
+#: ../src/iop/graduatednd.c:609
 msgid "offset of filter in angle of rotation"
 msgstr "offset av delningen i vinkelns riktning"
+
+#: ../src/iop/grain.c:323
+msgid "grain"
+msgstr "brus"
 
 #: ../src/iop/grain.c:513
 msgid "the grain size (~iso of the film)"
@@ -3371,45 +3510,49 @@ msgstr "grynstorlek(~iso av filmen)"
 msgid "the strength of applied grain"
 msgstr "styrkan av applicerat brus"
 
-#: ../src/iop/grain.c:515
-msgid "coarseness"
-msgstr "grovhet"
-
 #: ../src/iop/highlights.c:79
 msgid "highlight reconstruction"
 msgstr "återskapa högdagrar"
 
-#: ../src/iop/highlights.c:390
+#: ../src/iop/highlights.c:395
 msgid "clip highlights"
 msgstr "kapa högdagrar"
 
-#: ../src/iop/highlights.c:391
+#: ../src/iop/highlights.c:396
 msgid "reconstruct in LCh"
 msgstr "återskapa i LCh"
 
-#: ../src/iop/highlights.c:392
+#: ../src/iop/highlights.c:397
 msgid "highlight reconstruction method"
 msgstr "metod för återuppbyggnad av högdagrar"
 
-#: ../src/iop/highlights.c:402
+#: ../src/iop/highlights.c:407
 msgid "blend lightness (0 is same as clipping)"
 msgstr "blanda ljushet (0 är lika med kapning)"
 
-#: ../src/iop/highlights.c:403
+#: ../src/iop/highlights.c:408
 msgid "blend colorness (0 is same as clipping)"
 msgstr "blanda färghet (0 är lika med kapning)"
 
-#: ../src/iop/highlights.c:404
+#: ../src/iop/highlights.c:409
 msgid "blend hue (0 is same as clipping)"
 msgstr "blanda hue (0 är lika med kapning)"
 
-#: ../src/iop/highpass.c:413
+#: ../src/iop/highpass.c:79
+msgid "highpass"
+msgstr "högpass"
+
+#: ../src/iop/highpass.c:432
 msgid "the sharpness of highpass filter"
 msgstr "skärpa för högpassfilter"
 
-#: ../src/iop/highpass.c:414
+#: ../src/iop/highpass.c:433
 msgid "the contrast of highpass filter"
 msgstr "kontrast för högpassfilter"
+
+#: ../src/iop/hotpixels.c:66
+msgid "hot pixels"
+msgstr "heta pixlar"
 
 #: ../src/iop/hotpixels.c:156
 #, c-format
@@ -3432,11 +3575,25 @@ msgstr "hittad av 3 grannar"
 msgid "mark fixed pixels"
 msgstr "markera pixlar"
 
+#: ../src/iop/invert.c:37
+msgid "invert"
+msgstr "invertera"
+
+#: ../src/iop/invert.c:163
+msgid ""
+"look at the image. now look back at me.\n"
+"this doesn't work for raw images."
+msgstr ""
+
+#: ../src/iop/invert.c:165
+msgid "look at the image. now look back at me."
+msgstr ""
+
 #: ../src/iop/lens.c:45
 msgid "lens correction"
 msgstr "objektivkorregering"
 
-#: ../src/iop/lens.c:730
+#: ../src/iop/lens.c:732
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -3449,7 +3606,7 @@ msgstr ""
 "montering:\t\t%s\n"
 "beskärningsfaktor:\t%.1f"
 
-#: ../src/iop/lens.c:1024
+#: ../src/iop/lens.c:1026
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -3468,71 +3625,71 @@ msgstr ""
 "typ:\t\t\t\t%s\n"
 "monteringar:\t\t\t%s"
 
-#: ../src/iop/lens.c:1054
+#: ../src/iop/lens.c:1056
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1054
+#: ../src/iop/lens.c:1056
 msgid "focal length (mm)"
 msgstr "brännvidd (mm)"
 
-#: ../src/iop/lens.c:1061
-#: ../src/iop/lens.c:1077
-#: ../src/iop/lens.c:1089
+#: ../src/iop/lens.c:1063
+#: ../src/iop/lens.c:1079
+#: ../src/iop/lens.c:1091
 msgid "reset from exif data"
 msgstr "återställ från exif data"
 
-#: ../src/iop/lens.c:1070
+#: ../src/iop/lens.c:1072
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1070
+#: ../src/iop/lens.c:1072
 msgid "f-number (aperture)"
 msgstr "bländartal"
 
-#: ../src/iop/lens.c:1082
+#: ../src/iop/lens.c:1084
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1082
+#: ../src/iop/lens.c:1084
 msgid "distance to subject"
 msgstr "distans till motivet"
 
 #. target geometry
-#: ../src/iop/lens.c:1361
+#: ../src/iop/lens.c:1365
 msgid "geometry"
 msgstr "geometrisk"
 
-#: ../src/iop/lens.c:1366
+#: ../src/iop/lens.c:1370
 msgid "target geometry"
 msgstr "målgeometri"
 
-#: ../src/iop/lens.c:1367
+#: ../src/iop/lens.c:1371
 msgid "rectilinear"
 msgstr "rätlinjig"
 
-#: ../src/iop/lens.c:1368
+#: ../src/iop/lens.c:1372
 msgid "fish-eye"
 msgstr "fisköga"
 
-#: ../src/iop/lens.c:1369
+#: ../src/iop/lens.c:1373
 msgid "panoramic"
 msgstr "panoramisk"
 
-#: ../src/iop/lens.c:1370
+#: ../src/iop/lens.c:1374
 msgid "equirectangular"
 msgstr "equirectangular"
 
 #. reverse direction
-#: ../src/iop/lens.c:1396
+#: ../src/iop/lens.c:1400
 msgid "reverse"
 msgstr "omvänd"
 
-#: ../src/iop/lens.c:1397
+#: ../src/iop/lens.c:1401
 msgid "apply distortions instead of correcting them"
 msgstr "skapa distortion istället för att rätta till dem"
 
-#: ../src/iop/lens.c:1414
+#: ../src/iop/lens.c:1418
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
@@ -3540,13 +3697,17 @@ msgstr ""
 "överskrid korrigering av tvärgående kromatisk aberration för röd kanal, \n"
 "använd 1.0 som standardvärde "
 
-#: ../src/iop/lens.c:1415
+#: ../src/iop/lens.c:1419
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
 msgstr ""
 "överskrid korrigering av tvärgående kromatisk aberration för blå kanal, \n"
 "använd 1.0 som standardvärde "
+
+#: ../src/iop/lowlight.c:79
+msgid "lowlight vision"
+msgstr "mörkerseende"
 
 #: ../src/iop/lowlight.c:251
 msgid "daylight"
@@ -3608,6 +3769,46 @@ msgstr "nattseende"
 msgid "blueness in shadows"
 msgstr "blåton i skuggor"
 
+#: ../src/iop/lowpass.c:97
+msgid "lowpass"
+msgstr "lågpass"
+
+#: ../src/iop/lowpass.c:654
+msgid "local contrast mask"
+msgstr "lokal kontrastmask"
+
+#: ../src/iop/lowpass.c:693
+msgid "filter order"
+msgstr "filter order"
+
+#: ../src/iop/lowpass.c:696
+msgid "0th order"
+msgstr "0th order"
+
+#: ../src/iop/lowpass.c:697
+msgid "1st order"
+msgstr "1st order"
+
+#: ../src/iop/lowpass.c:698
+msgid "2nd order"
+msgstr "2nd order"
+
+#: ../src/iop/lowpass.c:699
+msgid "filter order of gaussian blur"
+msgstr "filter order för gaussisk oskärpa"
+
+#: ../src/iop/lowpass.c:717
+msgid "the radius of gaussian blur"
+msgstr "radie för gaussisk oskärpa"
+
+#: ../src/iop/lowpass.c:718
+msgid "the contrast of lowpass filter"
+msgstr "kontrast för lågpassfiltret"
+
+#: ../src/iop/lowpass.c:719
+msgid "the color saturation of lowpass filter"
+msgstr "färgmättnad för lågpassfiltret"
+
 #: ../src/iop/monochrome.c:65
 msgid "monochrome"
 msgstr "monokrom"
@@ -3618,6 +3819,10 @@ msgstr ""
 "drag och scrolla med musen\n"
 "för att justera det virtuella\n"
 "färgfiltret"
+
+#: ../src/iop/nlmeans.c:58
+msgid "denoise (non-local means)"
+msgstr "brusreducering (non-local means)"
 
 #: ../src/iop/nlmeans.c:473
 msgid "how much to smooth brightness"
@@ -3631,19 +3836,11 @@ msgstr "mängd att mjuka upp färger"
 msgid "overexposed"
 msgstr "överexponerad"
 
-#: ../src/iop/overexposed.c:261
-msgid "lower threshold"
-msgstr "undre tröskel"
-
-#: ../src/iop/overexposed.c:265
-msgid "upper threshold"
-msgstr "övre tröskel"
-
-#: ../src/iop/overexposed.c:270
+#: ../src/iop/overexposed.c:278
 msgid "threshold of what shall be considered underexposed"
 msgstr "tröskelvärde för underexponerade områden"
 
-#: ../src/iop/overexposed.c:271
+#: ../src/iop/overexposed.c:279
 msgid "threshold of what shall be considered overexposed"
 msgstr "tröskelvärde för överexponerade områden"
 
@@ -3651,21 +3848,17 @@ msgstr "tröskelvärde för överexponerade områden"
 msgid "unbreak input profile"
 msgstr "korrigera ingående profil"
 
-#: ../src/iop/profile_gamma.c:180
-msgid "linear part"
-msgstr "linjär del"
-
-#: ../src/iop/profile_gamma.c:183
+#: ../src/iop/profile_gamma.c:189
 msgid "gamma exponential factor"
 msgstr "gamma exponent faktor"
 
-#: ../src/iop/rawdenoise.c:55
+#: ../src/iop/profile_gamma.c:191
+msgid "gamma"
+msgstr "gamma"
+
+#: ../src/iop/rawdenoise.c:56
 msgid "raw denoise"
 msgstr "raw brusreducering"
-
-#: ../src/iop/rawdenoise.c:335
-msgid "noise threshold"
-msgstr "tröskelvärde för brus"
 
 #: ../src/iop/relight.c:54
 msgid "fill-light 0.25EV with 4 zones"
@@ -3679,37 +3872,37 @@ msgstr "Fyllnadsskugga -0.25EV, 4 zoners påverkan"
 msgid "fill light"
 msgstr "fyllnadsljus"
 
-#: ../src/iop/relight.c:316
+#: ../src/iop/relight.c:324
 msgid "select the center of fill-light"
 msgstr "välj centrum värde för återbelysning"
 
-#: ../src/iop/relight.c:334
+#: ../src/iop/relight.c:342
 msgid "toggle tool for picking median lightness in image"
 msgstr "slå på/av användning av verktygen för val av medel ljushet i bilden"
 
-#: ../src/iop/relight.c:335
+#: ../src/iop/relight.c:343
 msgid "the fill-light in EV"
 msgstr "fyllnadsljuset i EV"
 
-#: ../src/iop/relight.c:337
+#: ../src/iop/relight.c:345
 #, no-c-format
 msgid "width of fill-light area defined in zones"
 msgstr "bredden av påverkan för filtret definerat i zoner"
 
-#: ../src/iop/sharpen.c:67
+#: ../src/iop/sharpen.c:69
 msgctxt "sharpen"
 msgid "sharpen"
 msgstr "skärpa"
 
-#: ../src/iop/sharpen.c:374
+#: ../src/iop/sharpen.c:473
 msgid "spatial extent of the unblurring"
 msgstr "rumslig utsträckning för oskarp mask"
 
-#: ../src/iop/sharpen.c:377
+#: ../src/iop/sharpen.c:477
 msgid "strength of the sharpen"
 msgstr "styrka på skärpningen"
 
-#: ../src/iop/sharpen.c:380
+#: ../src/iop/sharpen.c:481
 msgid "threshold to activate sharpen"
 msgstr "tröskelvärde för aktivering av skärpa"
 
@@ -3717,24 +3910,19 @@ msgstr "tröskelvärde för aktivering av skärpa"
 msgid "soften"
 msgstr "uppmjukning"
 
-#: ../src/iop/soften.c:349
-#: ../src/iop/vignette.c:856
-msgid "brightness"
-msgstr "ljushet"
-
-#: ../src/iop/soften.c:362
+#: ../src/iop/soften.c:373
 msgid "the size of blur"
 msgstr "storleken på uppmjukningen"
 
-#: ../src/iop/soften.c:363
+#: ../src/iop/soften.c:374
 msgid "the saturation of blur"
 msgstr "färgmättnad av uppmjukningen"
 
-#: ../src/iop/soften.c:364
+#: ../src/iop/soften.c:375
 msgid "the brightness of blur"
 msgstr "ljusheten av blommningen"
 
-#: ../src/iop/soften.c:365
+#: ../src/iop/soften.c:376
 msgid "the mix of effect"
 msgstr "effektens mixning"
 
@@ -3742,44 +3930,41 @@ msgstr "effektens mixning"
 msgid "split toning"
 msgstr "delad färgtoning"
 
-#: ../src/iop/splittoning.c:276
+#: ../src/iop/splittoning.c:279
 msgid "select tone color"
 msgstr "välj färgton"
 
 #. Shadows
-#: ../src/iop/splittoning.c:417
+#: ../src/iop/splittoning.c:421
 msgid "shadows"
 msgstr "skuggor"
 
-#: ../src/iop/splittoning.c:464
+#: ../src/iop/splittoning.c:468
 msgid "select the hue tone for shadows"
 msgstr "välj färgton för mörka partier"
 
-#: ../src/iop/splittoning.c:474
+#: ../src/iop/splittoning.c:478
 msgid "select the saturation shadow tone"
 msgstr "välj färgmättnad för färgton i mörka partier"
 
-#: ../src/iop/splittoning.c:525
+#. Highlights
+#: ../src/iop/splittoning.c:481
+msgid "highlights"
+msgstr "högdagrar"
+
+#: ../src/iop/splittoning.c:529
 msgid "select the hue tone for highlights"
 msgstr "välj färgton för ljusa partier"
 
-#: ../src/iop/splittoning.c:535
+#: ../src/iop/splittoning.c:539
 msgid "select the saturation highlights tone"
 msgstr "fälj färgmättnad för färgton i ljus partier"
 
-#: ../src/iop/splittoning.c:545
-msgid "balance"
-msgstr "balans"
-
-#: ../src/iop/splittoning.c:551
-msgid "compress"
-msgstr "komprimera"
-
-#: ../src/iop/splittoning.c:556
+#: ../src/iop/splittoning.c:562
 msgid "the balance of center of splittoning"
 msgstr "balansen av center för delad färgtoning"
 
-#: ../src/iop/splittoning.c:557
+#: ../src/iop/splittoning.c:563
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
@@ -3814,31 +3999,19 @@ msgctxt "modulename"
 msgid "white balance"
 msgstr "vitbalans"
 
-#: ../src/iop/temperature.c:457
-msgid "tint"
-msgstr "nyans"
-
-#: ../src/iop/temperature.c:458
-msgid "temperature in"
-msgstr "temperatur in"
-
-#: ../src/iop/temperature.c:460
-msgid "temperature out"
-msgstr "temperatur ut"
-
-#: ../src/iop/temperature.c:483
+#: ../src/iop/temperature.c:501
 msgid "camera white balance"
 msgstr "vitbalans från kamera"
 
-#: ../src/iop/temperature.c:484
+#: ../src/iop/temperature.c:502
 msgid "spot white balance"
 msgstr "vitbalans i mätningsområde"
 
-#: ../src/iop/temperature.c:485
+#: ../src/iop/temperature.c:503
 msgid "passthrough"
 msgstr "passa vidare"
 
-#: ../src/iop/temperature.c:511
+#: ../src/iop/temperature.c:529
 msgid "fine tune white balance preset"
 msgstr "finjustera förinställd vitbalans"
 
@@ -3846,15 +4019,15 @@ msgstr "finjustera förinställd vitbalans"
 msgid "tone curve"
 msgstr "nyanskurva"
 
-#: ../src/iop/tonecurve.c:133
+#: ../src/iop/tonecurve.c:142
 msgid "med contrast"
 msgstr "medel kontrast"
 
-#: ../src/iop/tonecurve.c:143
+#: ../src/iop/tonecurve.c:152
 msgid "high contrast"
 msgstr "hög kontrast"
 
-#: ../src/iop/tonecurve.c:264
+#: ../src/iop/tonecurve.c:273
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on L channel"
@@ -3866,35 +4039,19 @@ msgstr ""
 msgid "tone mapping"
 msgstr "tonmappning"
 
-#: ../src/iop/tonemap.cc:290
-msgid "contrast compression"
-msgstr "kontrast komprimering"
-
-#: ../src/iop/tonemap.cc:295
-msgid "spatial extent"
-msgstr "rumsbestämd utrsträckning"
-
 #: ../src/iop/velvia.c:68
 msgid "velvia"
 msgstr "velvia"
 
-#: ../src/iop/velvia.c:241
-msgid "vibrance"
-msgstr "lyster"
-
-#: ../src/iop/velvia.c:245
-msgid "mid-tones bias"
-msgstr "mellanton bias"
-
-#: ../src/iop/velvia.c:250
+#: ../src/iop/velvia.c:259
 msgid "the amount of saturation to apply"
 msgstr "mängd av färg att applicera"
 
-#: ../src/iop/velvia.c:251
+#: ../src/iop/velvia.c:260
 msgid "the vibrance amount"
 msgstr "lyster mängd"
 
-#: ../src/iop/velvia.c:252
+#: ../src/iop/velvia.c:261
 msgid "how much to spare highlights and shadows"
 msgstr "färgmängd som ska appliceras på högdagrar och skuggor"
 
@@ -3902,59 +4059,43 @@ msgstr "färgmängd som ska appliceras på högdagrar och skuggor"
 msgid "vignetting"
 msgstr "vinjett"
 
-#: ../src/iop/vignette.c:840
+#: ../src/iop/vignette.c:848
 msgid "automatic ratio"
 msgstr "automatiskt förhållande"
 
-#: ../src/iop/vignette.c:849
+#: ../src/iop/vignette.c:857
 msgid "automatic"
 msgstr "automatisk"
 
-#: ../src/iop/vignette.c:854
-msgid "fall-off strength"
-msgstr "övergångstyrka"
-
-#: ../src/iop/vignette.c:858
-msgid "horizontal center"
-msgstr "horizontellt centrum"
-
-#: ../src/iop/vignette.c:859
-msgid "vertical center"
-msgstr "vertikalt centrerad"
-
-#: ../src/iop/vignette.c:860
-msgid "shape"
-msgstr "form"
-
-#: ../src/iop/vignette.c:861
+#: ../src/iop/vignette.c:876
 msgid "width/height ratio"
 msgstr "bredd/höjd förhållande"
 
-#: ../src/iop/vignette.c:879
+#: ../src/iop/vignette.c:895
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "skalan av vinjettens innre radie, där övergången startar"
 
-#: ../src/iop/vignette.c:880
+#: ../src/iop/vignette.c:896
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "skalan av vinjettens yttre radie, där övergången är fullständig"
 
-#: ../src/iop/vignette.c:881
+#: ../src/iop/vignette.c:897
 msgid "strength of effect on brightness"
 msgstr "styrka av effekten av ljushet"
 
-#: ../src/iop/vignette.c:882
+#: ../src/iop/vignette.c:898
 msgid "strength of effect on saturation"
 msgstr "styrka av effekten på färgmättnad"
 
-#: ../src/iop/vignette.c:883
+#: ../src/iop/vignette.c:899
 msgid "horizontal offset of center of the effect"
 msgstr "horizontell distans från centrum av effekten"
 
-#: ../src/iop/vignette.c:884
+#: ../src/iop/vignette.c:900
 msgid "vertical offset of center of the effect"
 msgstr "vertikal distans från centrum av effekten"
 
-#: ../src/iop/vignette.c:885
+#: ../src/iop/vignette.c:901
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -3966,36 +4107,32 @@ msgstr ""
 "1 circle eller ellipse\n"
 "2 diamant"
 
-#: ../src/iop/vignette.c:886
+#: ../src/iop/vignette.c:902
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "aktivera att förhållandet automatiskt följer bildens storlek"
 
-#: ../src/iop/vignette.c:887
+#: ../src/iop/vignette.c:903
 msgid "width-to-height ratio"
 msgstr "bred-till-höjd förhållande"
 
-#: ../src/iop/watermark.c:661
+#: ../src/iop/watermark.c:89
+msgid "watermark"
+msgstr "vattenstämpel"
+
+#: ../src/iop/watermark.c:665
 msgid "marker"
 msgstr "markering"
 
-#: ../src/iop/watermark.c:662
+#: ../src/iop/watermark.c:666
 msgid "alignment"
 msgstr "orientering"
 
-#: ../src/iop/watermark.c:703
-msgid "x offset"
-msgstr "x offset"
-
-#: ../src/iop/watermark.c:704
-msgid "y offset"
-msgstr "y offset"
-
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:710
+#: ../src/iop/watermark.c:718
 msgid "the opacity of the watermark"
 msgstr "vattenstämpelns opacitet"
 
-#: ../src/iop/watermark.c:711
+#: ../src/iop/watermark.c:719
 msgid "the scale of the watermark"
 msgstr "skalning av vattenstämpel"
 
@@ -4133,72 +4270,68 @@ msgstr ""
 "vänsterklicka på en zone kant för att skapa hantag att justera med\n"
 "högerklicka på ett hantag för att ta bort det"
 
-#: ../src/libs/camera.c:78
+#: ../src/libs/camera.c:79
 msgid "camera settings"
 msgstr "kamerainställningar"
 
-#: ../src/libs/camera.c:123
+#: ../src/libs/camera.c:128
 msgid "toggle view property in center view"
 msgstr "visa inställning i centrervyn"
 
-#: ../src/libs/camera.c:196
+#: ../src/libs/camera.c:201
 msgid "connection with camera lost, exiting tethering mode"
 msgstr "anslutningen med kameran avbruten, avslutar tjudrat läge"
 
-#: ../src/libs/camera.c:339
+#: ../src/libs/camera.c:344
 msgid "battery"
 msgstr "batteri"
 
-#: ../src/libs/camera.c:339
+#: ../src/libs/camera.c:344
 msgid "n/a"
 msgstr "ej tillgänlig"
 
 #. Camera control
-#: ../src/libs/camera.c:410
+#: ../src/libs/camera.c:415
 msgid "camera control"
 msgstr "kamera kontroll"
 
-#: ../src/libs/camera.c:414
+#: ../src/libs/camera.c:419
 msgid "modes"
 msgstr "lägen"
 
-#: ../src/libs/camera.c:415
+#: ../src/libs/camera.c:420
 msgid "timer (s)"
 msgstr "timer (s)"
 
-#: ../src/libs/camera.c:416
+#: ../src/libs/camera.c:421
 msgid "count"
 msgstr "antal"
 
-#: ../src/libs/camera.c:417
+#: ../src/libs/camera.c:422
 msgid "brackets"
 msgstr "stegning"
 
-#: ../src/libs/camera.c:418
+#: ../src/libs/camera.c:423
 msgid "bkt. steps"
 msgstr "steg"
 
-#: ../src/libs/camera.c:454
-msgid "capture image(s)"
-msgstr "fånga bilder"
-
-#: ../src/libs/camera.c:457
+#: ../src/libs/camera.c:463
 msgid "toggle delayed capture mode"
 msgstr "aktivera fördröjd tagning"
 
-#: ../src/libs/camera.c:458
+#: ../src/libs/camera.c:464
 msgid "toggle sequenced capture mode"
 msgstr "aktivera sekvensiell tagning"
 
-#: ../src/libs/camera.c:459
+#: ../src/libs/camera.c:465
 msgid "toggle bracketed capture mode"
 msgstr "växla användning av stegnings läge"
 
-#: ../src/libs/camera.c:460
+#: ../src/libs/camera.c:466
 msgid "the count of seconds before actually doing a capture"
 msgstr "antal sekunders fördröjning innan bilden tas"
 
-#: ../src/libs/camera.c:461
+#: ../src/libs/camera.c:467
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjuction with delayed mode to create stop-motion sequences."
@@ -4206,50 +4339,50 @@ msgstr ""
 "antalet bilder att fånga i en sekvens\n"
 "du kan använda detta tillsammans med fördröjd tagning för att skapa en stop-motion sekvens."
 
-#: ../src/libs/camera.c:462
+#: ../src/libs/camera.c:468
 msgid "the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."
 msgstr "antal steg på vardera sida om center inställning, antal bilder = (steg*2)+1"
 
-#: ../src/libs/camera.c:463
+#: ../src/libs/camera.c:469
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr "antal step för exponeringsstege, oftast är ett steg storlek konfigurerbart i kameran ochbrukar vara 3 steg per EV, med andra ord 3 steg är 1EV exponersingssteg mellan bilderi exponeringsstegen. "
 
-#: ../src/libs/camera.c:477
+#: ../src/libs/camera.c:483
 msgid "properties"
 msgstr "inställningar"
 
-#: ../src/libs/camera.c:481
+#: ../src/libs/camera.c:487
 msgid "program"
 msgstr "program"
 
-#: ../src/libs/camera.c:491
+#: ../src/libs/camera.c:497
 msgid "focus mode"
 msgstr "fokus läge"
 
-#: ../src/libs/camera.c:521
+#: ../src/libs/camera.c:527
 msgid "shutterspeed2"
 msgstr "slutartid"
 
-#: ../src/libs/camera.c:541
+#: ../src/libs/camera.c:547
 msgid "wb"
 msgstr "vb"
 
 #. user specified properties
-#: ../src/libs/camera.c:610
+#: ../src/libs/camera.c:616
 msgid "additional properties"
 msgstr "ytterligare inställningar"
 
-#: ../src/libs/camera.c:614
+#: ../src/libs/camera.c:620
 msgid "label"
 msgstr "etikett"
 
-#: ../src/libs/camera.c:620
+#: ../src/libs/camera.c:626
 msgid "property"
 msgstr "inställning"
 
-#: ../src/libs/camera.c:632
+#: ../src/libs/camera.c:638
 msgid "add user property"
 msgstr "lägg till användarinställning"
 
@@ -4326,33 +4459,33 @@ msgid "colorlabel"
 msgstr "färgmarkeringar"
 
 #: ../src/libs/collect.h:36
-#: ../src/libs/metadata.c:277
+#: ../src/libs/metadata.c:285
 msgid "description"
 msgstr "beskrivning"
 
 #: ../src/libs/collect.h:38
-#: ../src/libs/metadata.c:303
+#: ../src/libs/metadata.c:311
 msgid "publisher"
 msgstr "utgivare"
 
-#: ../src/libs/copy_history.c:43
+#: ../src/libs/copy_history.c:44
 msgid "history stack"
 msgstr "historik"
 
-#: ../src/libs/copy_history.c:61
+#: ../src/libs/copy_history.c:62
 msgid "open sidecar file"
 msgstr "öppna inställnings fil"
 
-#: ../src/libs/copy_history.c:71
+#: ../src/libs/copy_history.c:72
 msgid "xmp sidecar files"
 msgstr "XMP inställningsfil"
 
-#: ../src/libs/copy_history.c:90
+#: ../src/libs/copy_history.c:91
 #, c-format
 msgid "error loading file '%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/libs/copy_history.c:210
+#: ../src/libs/copy_history.c:189
 msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
@@ -4360,7 +4493,7 @@ msgstr ""
 "kopiera historiken från\n"
 "först valda bild (ctrl-c)."
 
-#: ../src/libs/copy_history.c:214
+#: ../src/libs/copy_history.c:194
 msgid ""
 "discard history stack of\n"
 "all selected images"
@@ -4368,19 +4501,19 @@ msgstr ""
 "förkasta ändringar av\n"
 "alla valda bilder"
 
-#: ../src/libs/copy_history.c:221
+#: ../src/libs/copy_history.c:201
 msgid "append"
 msgstr "lägg till"
 
-#: ../src/libs/copy_history.c:222
+#: ../src/libs/copy_history.c:202
 msgid "overwrite"
 msgstr "skriv över"
 
-#: ../src/libs/copy_history.c:223
+#: ../src/libs/copy_history.c:203
 msgid "how to handle existing history"
 msgstr "hur ska nuvarande historik hanteras"
 
-#: ../src/libs/copy_history.c:233
+#: ../src/libs/copy_history.c:209
 msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
@@ -4388,11 +4521,7 @@ msgstr ""
 "klistra in ändringshistoriken på\n"
 "alla valda bilder (ctrl-v)."
 
-#: ../src/libs/copy_history.c:241
-msgid "load sidecar file"
-msgstr "läs in inställningsfil"
-
-#: ../src/libs/copy_history.c:242
+#: ../src/libs/copy_history.c:219
 msgid ""
 "open an xmp sidecar file\n"
 "and apply it to selected images"
@@ -4400,31 +4529,27 @@ msgstr ""
 "öppna en xmp inställningsfil\n"
 "och tillämpa på valda bilder."
 
-#: ../src/libs/copy_history.c:245
-msgid "write sidecar files"
-msgstr "skapa sidofiler med inställningar"
-
-#: ../src/libs/copy_history.c:246
+#: ../src/libs/copy_history.c:224
 msgid "write history stack and tags to xmp sidecar files"
 msgstr "skriv historik och taggar till xmp sidofil"
 
-#: ../src/libs/export.c:66
+#: ../src/libs/export.c:67
 msgid "export selected"
 msgstr "exportera valda bilder"
 
-#: ../src/libs/export.c:386
+#: ../src/libs/export.c:379
 msgid "target storage"
 msgstr "mållagring"
 
-#: ../src/libs/export.c:406
+#: ../src/libs/export.c:399
 msgid "file format"
 msgstr "filformat"
 
-#: ../src/libs/export.c:421
+#: ../src/libs/export.c:414
 msgid "global options"
 msgstr "globala inställningar"
 
-#: ../src/libs/export.c:425
+#: ../src/libs/export.c:418
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -4432,7 +4557,7 @@ msgstr ""
 "maximal bredd,\n"
 "ange 0 för att utesluta skalning"
 
-#: ../src/libs/export.c:427
+#: ../src/libs/export.c:420
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -4448,30 +4573,30 @@ msgstr ""
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #.
-#: ../src/libs/export.c:439
+#: ../src/libs/export.c:432
 msgid "max size"
 msgstr "maximal storlek"
 
-#: ../src/libs/export.c:444
+#: ../src/libs/export.c:437
 msgid "x"
 msgstr "×"
 
-#: ../src/libs/export.c:448
+#: ../src/libs/export.c:441
 msgid "intent"
 msgstr "avsikt"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#: ../src/libs/export.c:452
-#: ../src/libs/export.c:526
+#: ../src/libs/export.c:445
+#: ../src/libs/export.c:519
 msgid "image settings"
 msgstr "bildinställningar"
 
-#: ../src/libs/export.c:553
+#: ../src/libs/export.c:546
 #, c-format
 msgid "output icc profiles in %s/color/out or %s/color/out"
 msgstr "utgående icc profiler i %s/color/out or %s/color/out"
 
-#: ../src/libs/export.c:563
+#: ../src/libs/export.c:557
 msgid "export with current settings (ctrl-e)"
 msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
@@ -4497,45 +4622,23 @@ msgstr ""
 msgid "selected image[s]"
 msgstr "valda bilder"
 
-#: ../src/libs/image.c:90
-msgid "remove"
-msgstr "ta bort"
-
-#: ../src/libs/image.c:91
+#: ../src/libs/image.c:93
 msgid "remove from the collection"
 msgstr "ta bort från samling"
 
-#: ../src/libs/image.c:95
-#: ../src/libs/styles.c:341
-#: ../src/libs/tagging.c:430
-msgid "delete"
-msgstr "radera"
-
-#: ../src/libs/image.c:96
+#: ../src/libs/image.c:99
 msgid "physically delete from disk"
 msgstr "radera fysiskt från disk"
 
-#: ../src/libs/image.c:103
-msgid "create hdr"
-msgstr "skapa HDR"
-
-#: ../src/libs/image.c:106
+#: ../src/libs/image.c:110
 msgid "create a high dynamic range image from selected shots"
 msgstr "skapa en HDR bild från valda bilder"
 
-#: ../src/libs/image.c:108
-msgid "duplicate"
-msgstr "duplicera"
-
-#: ../src/libs/image.c:109
+#: ../src/libs/image.c:114
 msgid "add a duplicate to the collection"
 msgstr "skapa en kopia av valda bilder till aktiv samling"
 
-#: ../src/libs/image.c:130
-msgid "reset rotation"
-msgstr "återställ rotering"
-
-#: ../src/libs/image.c:131
+#: ../src/libs/image.c:137
 msgid "reset rotation to exif data"
 msgstr "återställ rotering till exif data"
 
@@ -4548,80 +4651,76 @@ msgstr "ändra `%s'"
 msgid "deleting preset for obsolete module"
 msgstr "ta bort förinställning för föråldrarde plug-ins"
 
-#: ../src/libs/metadata.c:47
+#: ../src/libs/metadata.c:48
 msgid "metadata editor"
 msgstr "metadata editor"
 
-#: ../src/libs/metadata.c:76
+#: ../src/libs/metadata.c:77
 msgid "<leave unchanged>"
 msgstr "<lämna oförändrad>"
 
-#: ../src/libs/metadata.c:334
-msgid "clear"
-msgstr "rensa"
-
-#: ../src/libs/metadata.c:335
+#: ../src/libs/metadata.c:344
 msgid "remove metadata from selected images"
 msgstr "ta bort metadata från valda bilder"
 
-#: ../src/libs/metadata.c:341
+#: ../src/libs/metadata.c:351
 msgid "write metadata for selected images"
 msgstr "skriv metadata för valda bilder"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:373
+#: ../src/libs/metadata.c:383
 msgid "CC-by"
 msgstr "CC-by"
 
-#: ../src/libs/metadata.c:373
+#: ../src/libs/metadata.c:383
 msgid "Creative Commons Attribution (CC-BY)"
 msgstr "Creative Commons Attribution (CC-BY)"
 
-#: ../src/libs/metadata.c:374
+#: ../src/libs/metadata.c:384
 msgid "CC-by-sa"
 msgstr "CC-by-sa"
 
-#: ../src/libs/metadata.c:374
+#: ../src/libs/metadata.c:384
 msgid "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:375
+#: ../src/libs/metadata.c:385
 msgid "CC-by-nd"
 msgstr "CC-by-nd"
 
-#: ../src/libs/metadata.c:375
+#: ../src/libs/metadata.c:385
 msgid "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:376
+#: ../src/libs/metadata.c:386
 msgid "CC-by-nc"
 msgstr "CC-by-nc"
 
-#: ../src/libs/metadata.c:376
+#: ../src/libs/metadata.c:386
 msgid "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:377
+#: ../src/libs/metadata.c:387
 msgid "CC-by-nc-sa"
 msgstr "CC-by-nc-sa"
 
-#: ../src/libs/metadata.c:377
+#: ../src/libs/metadata.c:387
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:378
+#: ../src/libs/metadata.c:388
 msgid "CC-by-nc-nd"
 msgstr "CC-by-nc-nd"
 
-#: ../src/libs/metadata.c:378
+#: ../src/libs/metadata.c:388
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:379
+#: ../src/libs/metadata.c:389
 msgid "all rights reserved"
 msgstr "med ensamrätt"
 
-#: ../src/libs/metadata.c:379
+#: ../src/libs/metadata.c:389
 msgid "All rights reserved."
 msgstr "Med ensamrätt"
 
@@ -4645,27 +4744,19 @@ msgstr "eller"
 msgid " but not "
 msgstr "förutom"
 
-#: ../src/libs/select.c:121
-msgid "select all"
-msgstr "välj alla"
+#: ../src/libs/select.c:33
+msgid "select"
+msgstr "bildurval"
 
-#: ../src/libs/select.c:122
+#: ../src/libs/select.c:116
 msgid "select all images in current collection (ctrl-a)"
 msgstr "välj samtliga bilder i aktiv samling (ctrl-a)"
 
-#: ../src/libs/select.c:126
-msgid "select none"
-msgstr "rensa val"
-
-#: ../src/libs/select.c:127
+#: ../src/libs/select.c:122
 msgid "clear selection (ctrl-shift-a)"
 msgstr "rensa val av bilder (ctrl-shift-a)"
 
-#: ../src/libs/select.c:134
-msgid "invert selection"
-msgstr "invertera val"
-
-#: ../src/libs/select.c:135
+#: ../src/libs/select.c:130
 msgid ""
 "select unselected images\n"
 "in current collection (ctrl-!)"
@@ -4673,11 +4764,7 @@ msgstr ""
 "välj bilder som inte är valda\n"
 "i nuvarande samling (ctrl-!)"
 
-#: ../src/libs/select.c:139
-msgid "select film roll"
-msgstr "välj filmrulle"
-
-#: ../src/libs/select.c:140
+#: ../src/libs/select.c:137
 msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
@@ -4685,11 +4772,7 @@ msgstr ""
 "välj alla bilder som finns i samma\n"
 "filmrulle som valda bilder"
 
-#: ../src/libs/select.c:147
-msgid "select untouched"
-msgstr "välj orörda"
-
-#: ../src/libs/select.c:148
+#: ../src/libs/select.c:146
 msgid ""
 "select untouched images in\n"
 "current collection"
@@ -4697,19 +4780,19 @@ msgstr ""
 "välj orörda bilder i\n"
 "nuvarande samling."
 
-#: ../src/libs/styles.c:43
+#: ../src/libs/styles.c:44
 msgid "styles"
 msgstr "stilar"
 
-#: ../src/libs/styles.c:222
+#: ../src/libs/styles.c:229
 msgid "select style"
 msgstr "välj stil"
 
-#: ../src/libs/styles.c:235
+#: ../src/libs/styles.c:242
 msgid "darktable style files"
 msgstr "darktable stil filer"
 
-#: ../src/libs/styles.c:309
+#: ../src/libs/styles.c:316
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -4717,38 +4800,38 @@ msgstr ""
 "tillgängliga stilar,\n"
 "dubbelklicka för att applicera"
 
-#: ../src/libs/styles.c:315
+#: ../src/libs/styles.c:322
 msgid "enter style name"
 msgstr "ange namn för stil"
 
-#: ../src/libs/styles.c:328
+#: ../src/libs/styles.c:335
 msgid "create duplicate"
 msgstr "skapa kopia"
 
-#: ../src/libs/styles.c:332
+#: ../src/libs/styles.c:339
 msgid "creates a duplicate of the image before applying style"
 msgstr "skapa en kopia av bilden innan applicering av stil"
 
 #. TODO: Unfinished stuff
-#: ../src/libs/styles.c:336
+#: ../src/libs/styles.c:343
 msgid "edit"
 msgstr "ändra"
 
-#: ../src/libs/styles.c:343
+#: ../src/libs/styles.c:352
 msgid "deletes the selected style in list above"
 msgstr "tar bort markerad stil i listan"
 
-#: ../src/libs/styles.c:348
+#: ../src/libs/styles.c:358
 msgid "export the selected style into a style file"
 msgstr "exportera den valda stilen till en fil"
 
 #. Import Button
-#: ../src/libs/styles.c:352
+#: ../src/libs/styles.c:362
 msgctxt "styles"
 msgid "import"
 msgstr "importera"
 
-#: ../src/libs/styles.c:353
+#: ../src/libs/styles.c:364
 msgid "import style from a style file"
 msgstr "importera stil från en fil"
 
@@ -4827,6 +4910,10 @@ msgstr ""
 msgid "delete selected tag"
 msgstr "ta bort vald tagg"
 
+#: ../src/views/capture.c:92
+msgid "capture"
+msgstr "enheter"
+
 #: ../src/views/capture.c:255
 #, c-format
 msgid "failed to create session path %s."
@@ -4836,6 +4923,10 @@ msgstr "fallerade att skapa sökväg för session %s."
 #, c-format
 msgid "new session initiated '%s'"
 msgstr "ny session skapad '%s'"
+
+#: ../src/views/darkroom.c:67
+msgid "darkroom"
+msgstr "mörkerrum"
 
 #. construct tooltip text into option
 #: ../src/views/darkroom.c:358
@@ -4860,9 +4951,9 @@ msgstr "göm %s"
 msgid "no image selected!"
 msgstr "inga bilder valda!"
 
-#: ../src/views/filmstrip.c:88
-msgid "film strip"
-msgstr "filmrulle"
+#: ../src/views/lighttable.c:109
+msgid "lighttable"
+msgstr "ljusbord"
 
 #: ../src/views/lighttable.c:390
 msgid "this collection is empty."
@@ -4884,18 +4975,54 @@ msgstr "försök att lätta på filter-inställningarna i den övre panelen"
 msgid "or in the collection plugin in the left panel."
 msgstr "eller i pluginen för samlingar i den vänstra panelen."
 
+#~ msgid "channelmixer"
+#~ msgstr "kanalmixer"
+#~ msgid "clipping"
+#~ msgstr "Beskära"
+#~ msgid "coarsness"
+#~ msgstr "grovhet"
+#~ msgid "color "
+#~ msgstr "färg"
+#~ msgid "colorcorrection"
+#~ msgstr "färgkorregering"
+#~ msgid "colorout"
+#~ msgstr "utgåend färg"
+#~ msgid "copy history"
+#~ msgstr "kopiera historik"
+#~ msgid "denoising (extra slow)"
+#~ msgstr "reducera brus (extra långsam)"
+#~ msgid "export selected images"
+#~ msgstr "exportera valda bilder"
+#~ msgid "filmstrip"
+#~ msgstr "filmrulle"
+#~ msgid "graduatednd"
+#~ msgstr "graderat gråfilter "
+#~ msgid "hotpixels"
+#~ msgstr "heta pixlar"
+#~ msgid "interface"
+#~ msgstr "gränsnitt"
+
+#, fuzzy
+#~ msgid "lowlight"
+#~ msgstr "halvdager"
+
+#, fuzzy
+#~ msgid "nlmeans"
+#~ msgstr "medel"
+#~ msgid "splittoning"
+#~ msgstr "delad färgtoning"
+#~ msgid "views"
+#~ msgstr "vyer"
+#~ msgid "accelerator"
+#~ msgstr "snabbtangent"
 #~ msgid "stuck pixels"
 #~ msgstr "fastnade pixlar"
-
 #~ msgid "strength of stuck pixel correction threshold"
 #~ msgstr "styrka på tröskelvärde för korrigering av fastnade pixlar"
-
 #~ msgid "( --- )"
 #~ msgstr "( --- )"
-
 #~ msgid "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
 #~ msgstr "<span color=\"#7f7f7f\"><big><b>darktable</b></big></span>"
-
 #~ msgid ""
 #~ "all\n"
 #~ "unstarred\n"
@@ -4913,7 +5040,6 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "3 stjärnor\n"
 #~ "5 stjärnor\n"
 #~ "rejected"
-
 #~ msgid ""
 #~ "filename\n"
 #~ "time\n"
@@ -4926,7 +5052,6 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "betyg\n"
 #~ "id\n"
 #~ "färgmarkering"
-
 #~ msgid ""
 #~ "mean\n"
 #~ "min\n"
@@ -4935,20 +5060,16 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "medel\n"
 #~ "lägst\n"
 #~ "högst"
-
 #~ msgid ""
 #~ "rgb\n"
 #~ "Lab"
 #~ msgstr ""
 #~ "rgb\n"
 #~ "Lab"
-
 #~ msgid "switch to darkroom mode"
 #~ msgstr "byt till mörkerrumsläge"
-
 #~ msgid "full resolution image buffers to keep in main memory cache"
 #~ msgstr "antal bildbuffer i full upplösning att spara i minnescachen"
-
 #~ msgid ""
 #~ "how many full-resolution floating point buffers of loaded raw images to "
 #~ "keep in main memory at maximum.  set this variable to num_threads + 1 if "
@@ -4959,46 +5080,32 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "huvudminnet som max. sätt detta värde till antal trådar + 1 om du vill ha "
 #~ "multitrådad exportering (sparar en för mörkerrum läge). Varning !, varje "
 #~ "tråd behöver allokera 1GB minne (kräver omstart). "
-
 #~ msgid "pick"
 #~ msgstr "välj bilder"
-
 #~ msgid "alpha"
 #~ msgstr "alfa"
-
 #~ msgid "swap g and b"
 #~ msgstr "byte av grön och blåe"
-
 #~ msgid "local contrast (deprecated)"
 #~ msgstr "lokal kontrast (utgående)"
-
 #~ msgid "din"
 #~ msgstr "din"
-
 #~ msgid "adobe rgb"
 #~ msgstr "adobe rgb"
-
 #~ msgid "linear xyz"
 #~ msgstr "linjär xyz"
-
 #~ msgid "legacy equalizer (deprecated)"
 #~ msgstr "ärvd equalizer (utgående)"
-
 #~ msgid "tca b"
 #~ msgstr "tca b"
-
 #~ msgid "uniformity"
 #~ msgstr "ojämnhet"
-
 #~ msgid "b/s ratio"
 #~ msgstr "l/f ratio"
-
 #~ msgid "fall-off"
 #~ msgstr "övergång"
-
 #~ msgid "uniformity of vignette"
 #~ msgstr "mäng av ojämnheter i vinjetten"
-
 #~ msgid ""
 #~ "brightness/saturation ratio\n"
 #~ "of the result,\n"
@@ -5010,90 +5117,63 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "-1 - applicera endast ljushet\n"
 #~ "0 - 50/50 blandning av ljushet och mättnad\n"
 #~ "1 - applicera endast mättnad"
-
 #~ msgid "inverts effect of saturation..."
 #~ msgstr "inverterar effecten av färgmättnad"
-
 #~ msgid "inverts effect of fall-off, default is dark fall-off..."
 #~ msgstr ""
 #~ "inverterar effekten av övergång, övergång till svart är standardvärde..."
-
 #~ msgid "threads"
 #~ msgstr "trådar"
-
 #~ msgid ""
 #~ "export using this number of threads.\n"
 #~ "beware! each thread will use ~1GB of ram."
 #~ msgstr ""
 #~ "exporterar med detta antal trådar.\n"
 #~ "varning! vardera tråd kommer att allokera ~1GB av minnet."
-
 #~ msgid "devices"
 #~ msgstr "enheter"
-
 #~ msgid "import film roll"
 #~ msgstr "importera filmrulle"
-
 #~ msgid "import single image"
 #~ msgstr "importera en bild"
-
 #~ msgid "library"
 #~ msgstr "bibliotek"
-
 #~ msgid "open"
 #~ msgstr "öppna"
-
 #~ msgid "open selected film roll in light table"
 #~ msgstr "öppna vald filmrulle på ljusbordet"
-
 #~ msgid "remove selected film roll from collection"
 #~ msgstr "ta bort vald filmrulle från samling"
-
 #~ msgid "search film rolls by folder"
 #~ msgstr "sök filmrulle utifrån katalog"
-
 #~ msgid "(needs a restart)"
 #~ msgstr "(kräver omstart)"
-
 #~ msgid "0 -- append on top of stack, 1 -- replace it."
 #~ msgstr "0 -- lägg till på toppen av stacken, 1 -- byt ut."
-
 #~ msgid "0: mean, 1: min, 2: max"
 #~ msgstr "0: medel, 1: lägst, 2: högst"
-
-#~ msgid "Capture view mode"
-#~ msgstr "Fångstvy läge"
-
 #~ msgid "Default client to use, this overrides detection of default client."
 #~ msgstr ""
 #~ "Standard klient att använda, detta överskrider automatisk detectering av "
 #~ "klient."
-
 #~ msgid "append or replace history stack if pasted"
 #~ msgstr "lägg till eller byt ut historikstacken vid kopiering"
-
 #~ msgid "flag if backup of imported images should be performed"
 #~ msgstr "klicka i om backup av importerade bilder ska utföras"
-
 #~ msgid "flag if originals on camera should be deleted"
 #~ msgstr "klicka i om orginalen på kameran ska tas bort"
-
 #~ msgid ""
 #~ "flag if user should be interactivly warned about non present backup "
 #~ "destinations"
 #~ msgstr ""
 #~ "klicka i om du vill interaktivt bli varnad när ingen backup destination "
 #~ "är tillgänglig"
-
 #~ msgid "height of the exported image"
 #~ msgstr "höjd av exporterad bild"
-
 #~ msgid "height of the exported image, or 0 if no scaling should be done."
 #~ msgstr "höjd av exporterad bild, eller 0 för att utesluta skalning"
-
 #~ msgid "how many images are in one row"
 #~ msgstr "antal bilder som visas på en rad"
-
 #~ msgid ""
 #~ "how many smallest-size thumbnails to keep in main memory at maximum. this "
 #~ "also affects larger mipmap counts, these get fewer by size. only read at "
@@ -5101,123 +5181,92 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ msgstr ""
 #~ "hur många mini- miniatyrer ska hållas i huvudminnet som max, detta "
 #~ "påverkar också antalet för de större mipmaps."
-
 #~ msgid "icc profile to use for export"
 #~ msgstr "icc profil att använda vid export"
-
 #~ msgid "icc rendering intent"
 #~ msgstr "icc återgivningsavsikt"
-
 #~ msgid ""
 #~ "if non-negative, this overrides the per-image output color profile "
 #~ "rendering intent on export."
 #~ msgstr ""
 #~ "om icke-negativ så överskrider detta bildens färgprofil återgivningavsikt "
 #~ "vid exportering. "
-
 #~ msgid ""
 #~ "if this number is smaller than the darktable internal version number, the "
 #~ "values here will be synched with the new defaults."
 #~ msgstr ""
 #~ "om detta nummer är mindre än det interna program versionen så kommer "
 #~ "dessa värden att synkroniseras med nya standardvärden"
-
 #~ msgid "jobcode of import job"
 #~ msgstr "jobbkod vid importeringsjobb"
-
 #~ msgid "name of capture job"
 #~ msgstr "namn för fångstjobb"
-
 #~ msgid "path of storage for captured images"
 #~ msgstr "full sökväg till lagringsyta vid importering av bilder från kamera"
-
 #~ msgid "recursive directory traversal when importing filmrolls."
 #~ msgstr "importer filmrullar rekrusivt"
-
 #~ msgid "rename pattern for captured images"
 #~ msgstr "filnamnsmönster för importerade bilder"
-
 #~ msgid ""
 #~ "select a layout for the lighttable: 0 - zoomable or 1 - file manager."
 #~ msgstr ""
 #~ "ange layout för ljusbord: 0 - in/ut zoomingsbar eller 1 - filhanterare."
-
 #~ msgid "small thumbnails to keep in main memory cache"
 #~ msgstr "små minatyrbilder som ska hållas kvar i minnescachen"
-
 #~ msgid "subpath pattern in storage for captured images"
 #~ msgstr "underkatalog i lagringsyta för importerade bilder från kameran."
-
 #~ msgid "the name of backup directory to search for on mounted medias"
 #~ msgstr "ange namnet för backupkatalogen att söka efter på monterade medior"
-
 #~ msgid "this overrides the per-image settings, if not set to `image'."
 #~ msgstr "detta överskrider inställningen för bilden, om inte `bild' är valt."
-
 #~ msgid "version of these dt-gconf entries"
 #~ msgstr "version av dessa dt-gconf poster"
-
 #~ msgid ""
 #~ "when having raw+jpeg images together in one directory it makes no sense "
 #~ "to import both. with this flag one can ignore all jpegs found."
 #~ msgstr ""
 #~ "klicka i denna option om du har raw+jpeg bilder för att endast importera "
 #~ "råbilderna"
-
 #~ msgid "which layout should lighttable mode show"
 #~ msgstr "vilken layout ska ljusbordet visa"
-
 #~ msgid "width of the exported image"
 #~ msgstr "bredd av den exporterade bilden"
-
 #~ msgid "width of the exported image, or 0 if no scaling should be done."
 #~ msgstr "bredd av den exporterade bilden, eller 0 för att utesluta skalning."
-
 #~ msgid "single images"
 #~ msgstr "enstaka bilder"
-
 #~ msgid "image does no longer exist"
 #~ msgstr "bilden existerar inte"
-
 #~ msgid "matches selected images"
 #~ msgstr "matchar valda bilder"
-
 #~ msgid "doubleclick to select"
 #~ msgstr "dubbelklicka för att markera"
-
 #~ msgid "perspective"
 #~ msgstr "perspektiv"
-
 #~ msgid "cam"
 #~ msgstr "mamera"
-
 #~ msgid ""
 #~ "search for camera using a pattern\n"
 #~ "format: [maker, ][model]"
 #~ msgstr ""
 #~ "sök efter kamera, formatering:\n"
 #~ "[tillverkare, ][modell]"
-
 #~ msgid ""
 #~ "search for lens using a pattern\n"
 #~ "format: [maker, ][model]"
 #~ msgstr ""
 #~ "sök efter objektiv, formatering:\n"
 #~ "[tillverkare, ][modell]"
-
 #~ msgid "raw import"
 #~ msgstr "raw importering"
-
 #~ msgid ""
 #~ "warning: these are cryptic low level settings!\n"
 #~ "you probably don't have to change them."
 #~ msgstr ""
 #~ "varning: dessa kryptiska inställningar är avancerade.\n"
 #~ "Du behöver förmodligen inte ändra dem."
-
 #~ msgid "median passes"
 #~ msgstr "median pass"
-
 #~ msgid ""
 #~ "number of 3x3 median filter passes\n"
 #~ "on R-G and B-G after demosaicing"
@@ -5225,57 +5274,42 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "antal 3x3 median filter pass\n"
 #~ "på röd-grön och blå-grön efter demosaicing."
 #~ msgctxt "demosaic"
-
 #~ msgid "linear"
 #~ msgstr "Linjär"
-
 #~ msgid "VNG"
 #~ msgstr "VNG"
-
 #~ msgid "PPG"
 #~ msgstr "PPG"
-
 #~ msgid "AHD"
 #~ msgstr "AHD"
-
 #~ msgid "linear4"
 #~ msgstr "linear4"
-
 #~ msgid "VNG4"
 #~ msgstr "VNG4"
-
 #~ msgid "DCB"
 #~ msgstr "DCB"
-
 #~ msgid "VCD"
 #~ msgstr "VCD"
-
 #~ msgid "median filter before demosaicing"
 #~ msgstr "median filter före demosaicing"
-
 #~ msgid "green equilibration"
 #~ msgstr "grön jämnvikt"
-
 #~ msgid ""
 #~ "work around unequal green channels in some mid-range\n"
 #~ "cameras, e.g. canon eos 400d"
 #~ msgstr ""
 #~ "fix för ojämlik grön kanal som påverkar vissa\n"
 #~ "kameror i mellanklassen, ex. canon-eos-400d"
-
 #~ msgid "dcb enhance"
 #~ msgstr "dcb förbättrad"
-
 #~ msgid ""
 #~ "turns off the default image refinement if edges are jagged or you prefer "
 #~ "softer demosaicing."
 #~ msgstr ""
 #~ "stänger av bildförfining om kanter är taggiga eller om du föredrar "
 #~ "mjukare demosaicing."
-
 #~ msgid "dcb iterations"
 #~ msgstr "dcb iterationer"
-
 #~ msgid ""
 #~ "number of DCB correction routines passes(the default is zero)\n"
 #~ "this helps if you see lots of wrong interpolation directions, just "
@@ -5287,167 +5321,118 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "detta kanske skapar fler artefakter\n"
 #~ "normalt så fungerar 0 eller 1 fint, i vissa fall så är inte ens 10 "
 #~ "tillräckligt."
-
 #~ msgid "fbdd denoising"
 #~ msgstr "fbdd brusreducering"
 #~ msgctxt "fbdd noise"
-
 #~ msgid "none"
 #~ msgstr "ingen"
-
 #~ msgid "luma+chroma"
 #~ msgstr "luma+chroma"
-
 #~ msgid ""
 #~ "fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"
 #~ msgstr ""
 #~ "fbdd aktiverar för-demosaicing luma (och valfritt chroma) brusreducering"
-
 #~ msgid "vcd enhance"
 #~ msgstr "vcd förbättrad"
-
 #~ msgid "refine interpolated pixels"
 #~ msgstr "förfina interpolerade pixlar"
-
 #~ msgid "edge median passes"
 #~ msgstr "kant median pass"
-
 #~ msgid ""
 #~ "number of passes an edge-sensitive median filter to differential color "
 #~ "planes"
 #~ msgstr ""
 #~ "antal pass av kantkänslig medianfilter på diffrenetierade färgkanaler"
-
 #~ msgid "ca autocorrect"
 #~ msgstr "ca autokorrigering"
-
 #~ msgid "artificial ca autocorrection from AMaZE"
 #~ msgstr "artificiell ca autokorrigering från AMaZE"
-
-#~ msgid "reset"
-#~ msgstr "återställ"
-
 #~ msgid ""
 #~ "reset raw loading parameters\n"
 #~ "to darktable's defaults"
 #~ msgstr ""
 #~ "återställ avancerade RAW inställningar\n"
 #~ "till standardvärden."
-
 #~ msgid "re-import"
 #~ msgstr "återimportera"
-
 #~ msgid "trigger re-import of the raw image"
 #~ msgstr "åtlös återimportering av raw bilder"
-
 #~ msgid "luma (L)"
 #~ msgstr "luminance"
-
 #~ msgid "colorness (C)"
 #~ msgstr "färghet (C)"
-
 #~ msgid "hue (h)"
 #~ msgstr "he (h)"
-
 #~ msgid "select color by"
 #~ msgstr "välj färg utifrån"
-
 #~ msgid "all film rolls"
 #~ msgstr "alla filmrullar"
-
 #~ msgid "single images are persistent"
 #~ msgstr "enstaka bilder är persistenta"
-
 #~ msgid ""
 #~ "do you really want to remove this film roll and all its images from the "
 #~ "collection?"
 #~ msgstr ""
 #~ "vill du verkligen ta bort denna filmrulle och alla dess bilder i från "
 #~ "samlingen?"
-
 #~ msgid "remove film roll?"
 #~ msgstr "ta bort filmrulle?"
-
 #~ msgid "before module"
 #~ msgstr "före modul"
-
 #~ msgid "no module selected"
 #~ msgstr "ingen modul vald"
-
 #~ msgid "order by and limit clauses go last"
 #~ msgstr "sortera och limit klausul används sist"
-
 #~ msgid "sql query to select images for current view"
 #~ msgstr "sql-sats att använda som urval av bilder i nuvarande vy"
-
 #~ msgid "load dt file"
 #~ msgstr "läs in dt fil"
-
 #~ msgid "write dt files"
 #~ msgstr "spara inställningsfil"
 #~ msgctxt "color label"
-
 #~ msgid "red"
 #~ msgstr "röd"
 #~ msgctxt "color label"
-
 #~ msgid "green"
 #~ msgstr "grön"
-
 #~ msgid "channel"
 #~ msgstr "kanal"
 #~ msgctxt "color picker module"
-
 #~ msgid "`%s'"
 #~ msgstr "`%s'"
-
 #~ msgid "failed to get parameters from format module, aborting export.."
 #~ msgstr ""
 #~ "parametrar från formatmodul är inkorrekta, avbryter exporteringen..."
-
 #~ msgid "button"
 #~ msgstr "knapp"
-
 #~ msgid "original"
 #~ msgstr "orginal"
-
 #~ msgid "togglebutton"
 #~ msgstr "knappval"
-
 #~ msgid "lens distortions"
 #~ msgstr "linsdistortioner"
-
 #~ msgid "VCD interpolation...\n"
 #~ msgstr "VCD interpolering...\n"
-
 #~ msgid "AHD interpolation (modified for anti-aliasing)...\n"
 #~ msgstr "AHD interpolering (modifierad för antialiasing)...\n"
-
 #~ msgid "\tAHD partial interpolation..."
 #~ msgstr "\tAHD bitvis interpolering..."
-
 #~ msgid "FBDD full noise reduction...\n"
 #~ msgstr "FBDD full brusreducering...\n"
-
 #~ msgid "FBDD noise reduction...\n"
 #~ msgstr "FBDD brusreducering...\n"
-
 #~ msgid "DCB demosaicing...\n"
 #~ msgstr "DCB demosaicing...\n"
-
 #~ msgid "DCB correction pass %d...\n"
 #~ msgstr "DCB korrigeringspass %d...\n"
-
 #~ msgid "finishing DCB...\n"
 #~ msgstr "avslutar DCB...\n"
-
 #~ msgid ""
 #~ "how many most-recently used thumbnail mipmaps should be kept in the "
 #~ "database cache when darktable closes."
 #~ msgstr ""
 #~ "Antal senast använda miniatyrer som ska lagras i databascachen när "
 #~ "darktable avslutas."
-
 #~ msgid ""
 #~ "how many smallest-size most-recently used thumbnail mipmaps should be "
 #~ "kept in the database cache when darktable closes. these do not need a lot "
@@ -5456,61 +5441,42 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "hur många ministorlek och senast använda av miniatyrbilder ska sparas i "
 #~ "databascachen när darktable stängs. Detta förbrukar inte mycket minne "
 #~ "samt skapar en bra feedback när ljusbordet används."
-
 #~ msgid "thumbnails to keep in database"
 #~ msgstr "antal miniatyrer att spara i databasen"
-
 #~ msgid "very small thumbnails to keep in database"
 #~ msgstr "mycket små miniatyrer att spara i databasen"
-
 #~ msgid "file %s imported from camera."
 #~ msgstr "File %s importerad från kameran."
-
 #~ msgid "store as default for this camera"
 #~ msgstr "Spara som standard för aktuell kamera"
-
 #~ msgid "remove default for this camera"
 #~ msgstr "Ta bort standard för aktuell kamera"
-
 #~ msgid "8-bit tiff"
 #~ msgstr "TIFF (8-bit)"
-
 #~ msgid "float exr"
 #~ msgstr "EXR (Float) "
-
 #~ msgid "crop x"
 #~ msgstr "X:"
-
 #~ msgid "crop y"
 #~ msgstr "Y:"
-
 #~ msgid "crop w"
 #~ msgstr "B:"
-
 #~ msgid "crop h"
 #~ msgstr "H:"
-
 #~ msgid "fixed aspect ratio"
 #~ msgstr "fixerad förhållande ratio"
-
 #~ msgid "black white red"
 #~ msgstr "svart vit röd"
-
 #~ msgid "slope"
 #~ msgstr "Sluttning"
-
 #~ msgid "scan and detect sources available for capture"
 #~ msgstr "Avsök och hitta källor tillgängliga för fångst"
-
 #~ msgid "import settings"
 #~ msgstr "Import inställningar"
-
 #~ msgid "the the strength of applied grain"
 #~ msgstr "ange styrkan av bruset "
-
 #~ msgid "sigma g"
 #~ msgstr "sigma g"
-
 #~ msgid ""
 #~ "demosaic treating RGGB as\n"
 #~ "four distinct colors,\n"
@@ -5518,10 +5484,8 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ msgstr ""
 #~ "Demosaic hanterar RGGB som\n"
 #~ "fyra distinkta färger."
-
 #~ msgid "the amount of local contrast to apply"
 #~ msgstr "mängend av lokal kontrast att applicera"
-
 #~ msgid ""
 #~ "leave black and white,\n"
 #~ "but compress brighter\n"
@@ -5530,59 +5494,45 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "Lämna svart och vit,\n"
 #~ "men komprimera ljusare\n"
 #~ "värden (icke-linjärt)"
-
 #~ msgid "blend C (0 is same as clipping)"
 #~ msgstr "Blanda C (0 är lika med kapning)"
-
 #~ msgid "adjust the white level"
 #~ msgstr "Justering av vitnivå"
-
 #~ msgid ""
 #~ "percentage of bright values\n"
 #~ "to be clipped out"
 #~ msgstr ""
 #~ "Procentdel av ljusa värden\n"
 #~ "som ska klippas bort."
-
 #~ msgid "unclip"
 #~ msgstr "Kapa ej"
-
 #~ msgid "rebuild"
 #~ msgstr "Återskapa"
-
 #~ msgid "auto wb"
 #~ msgstr "automatisk vitbalans"
-
 #~ msgid "go"
 #~ msgstr "starta"
-
 #~ msgid ""
 #~ "write a history file for\n"
 #~ "physically delete"
 #~ msgstr ""
 #~ "Skapa en historikfil för\n"
 #~ "borttagna"
-
 #~ msgid "X profile"
 #~ msgstr "Profil X"
 #~ msgctxt "slider"
-
 #~ msgid "temperature"
 #~ msgstr "Temperatur"
-
 #~ msgid "gray box"
 #~ msgstr "Grå box"
-
 #~ msgid ""
 #~ "select a gray box\n"
 #~ "in the image"
 #~ msgstr ""
 #~ "Markera en grå box\n"
 #~ "i bilden"
-
 #~ msgid "intended temperature"
 #~ msgstr "Конечная"
-
 #~ msgid ""
 #~ "8-bit jpg\n"
 #~ "8-bit png\n"
@@ -5593,3 +5543,4 @@ msgstr "eller i pluginen för samlingar i den vänstra panelen."
 #~ "8-разрядный PNG\n"
 #~ "16-разрядный PPM\n"
 #~ "PFM с плавающей точкой"
+
