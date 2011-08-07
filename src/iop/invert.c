@@ -135,7 +135,7 @@ void init(dt_iop_module_t *module)
   module->params = NULL;
   module->default_params = NULL;
   module->default_enabled = 0;
-  module->priority = 21; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 20; // module order created by iop_dependencies.py, do not edit!
   module->params_size = 0;
   module->gui_data = NULL;
 }
