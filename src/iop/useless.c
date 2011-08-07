@@ -93,6 +93,10 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/useless/useless");
+}
 // implement this, if you have esoteric output bytes per pixel. default is 4*float
 /*
 int
@@ -229,6 +233,7 @@ void gui_init     (dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   g->scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE, 1, 100, 1, 50, 0));
+  dtgtk_slider_set_accel(g->scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/useless/useless");
   self->widget = GTK_WIDGET(g->scale);
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (slider_callback), self);
