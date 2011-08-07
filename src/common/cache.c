@@ -663,12 +663,6 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
   }
 }
 
-//=======================================================================
-// interface functions
-//=======================================================================
-
-// TODO:
-
 void
 dt_cache_read_release(dt_cache_t *cache, const uint32_t key)
 {
