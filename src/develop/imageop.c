@@ -1199,7 +1199,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = .9f/roi_out->scale;
+  const float px_footprint = 1.f/roi_out->scale;
   // how many 2x2 blocks can be sampled inside that area
   const int samples = ((int)px_footprint)/2;
 
@@ -1237,9 +1237,10 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
     {
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
-      // upper left corner:
-      float fx = (x + roi_out->x)/roi_out->scale, fy = (y + roi_out->y)/roi_out->scale;
+      // center pixel
+      float fx = (x + .5f + roi_out->x)/roi_out->scale, fy = (y + .5f + roi_out->y)/roi_out->scale;
       int px = (int)fx, py = (int)fy;
+      const float dx = fx - px, dy = fy - py;
 
       // round down to next even number and jump to rggb block:
       px = MAX(0, px & ~1) + rggbx;
@@ -1248,7 +1249,6 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       px = MIN((((roi_in->width -5) & ~1u) + rggbx), px);
       py = MIN((((roi_in->height-5) & ~1u) + rggby), py);
 
-      const float dx = .5f*(fx - px), dy = .5f*(fy - py);
       const __m128 d0 = _mm_set1_ps((1.0f-dx)*(1.0f-dy));
       const __m128 d1 = _mm_set1_ps((dx)*(1.0f-dy));
       const __m128 d2 = _mm_set1_ps((1.0f-dx)*(dy));
