@@ -71,10 +71,11 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   /* Fetch all values for shutterspeed2 and initialize current value */
   GList *values=NULL;
   gconstpointer orginal_value=NULL;
-
+  const char *expprogram = dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
   const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
   const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
-  if (value && cvalue)
+  /* get values for bracketing */
+  if (strcmp(expprogram,"M")==0 && value && cvalue)
   {
     do
     {
@@ -88,11 +89,16 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   }
   else
   {
-    dt_control_log(_("please set your camera to manual mode first!"));
-    dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
-    dt_control_backgroundjobs_destroy(darktable.control, jid);
-    return 1;
+    /* if this was an itended bracket capture bail out */
+    if(t->brackets)
+    {
+      dt_control_log(_("please set your camera to manual mode first!"));
+      dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
+      dt_control_backgroundjobs_destroy(darktable.control, jid);
+      return 1;
+    }
   }
+
   GList *current_value = g_list_find(values,orginal_value);
   for(int i=0; i<t->count; i++)
   {
@@ -284,7 +290,7 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 
   if( dt_conf_get_bool("plugins/capture/camera/import/backup/enable") == TRUE )
   {
-    // Backup is enabled, let's initialize a backup job of imported image...
+    // Backup is enable, let's initialize a backup job of imported image...
     char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
     dt_variables_expand( t->vp, base, FALSE );
     const char *sdpart=dt_variables_get_result(t->vp);

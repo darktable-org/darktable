@@ -932,8 +932,9 @@ void enter(dt_view_t *self)
       module->closures = g_list_prepend(module->closures, closure);
 
     }
+
     dt_ui_container_add_widget(darktable.gui->ui,
-                               DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+			       DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
     modules = g_list_previous(modules);
   }

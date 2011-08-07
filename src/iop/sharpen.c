@@ -82,6 +82,12 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/sharpen/radius");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/sharpen/amount");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/sharpen/threshold");
+}
 #if 0
 #ifdef HAVE_OPENCL
 int
@@ -466,12 +472,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0000, 0.100, p->radius, 3));
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the unblurring"), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("radius"));
+  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/sharpen/radius");
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0000, 0.010, p->amount, 3));
   g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the sharpen"), (char *)NULL);
   dtgtk_slider_set_label(g->scale2,_("amount"));
+  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/sharpen/amount");
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0000, 0.001, p->threshold, 3));
   g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("threshold to activate sharpen"), (char *)NULL);
   dtgtk_slider_set_label(g->scale3,_("threshold"));
+  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/sharpen/threshold");
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);

@@ -224,7 +224,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
-  gtk_button_set_accel(GTK_BUTTON(loadbutton),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/write sidecar files");
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/write sidecar files");
   g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);

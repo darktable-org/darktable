@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
+#include "control/control.h"
 #include "develop/imageop.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
@@ -72,6 +73,10 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
   return sizeof(float);
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/rawdenoise/noise threshold");
+}
 #if 0
 static int
 FC(const int row, const int col, const unsigned int filters)
@@ -333,6 +338,7 @@ void gui_init(dt_iop_module_t *self)
   g->threshold = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 0.1, 0.001, p->threshold, 3));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
   dtgtk_slider_set_label(g->threshold, _("noise threshold"));
+  dtgtk_slider_set_accel(g->threshold,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/rawdenoise/noise threshold");
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
 }
 
