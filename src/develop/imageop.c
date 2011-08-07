@@ -482,6 +482,11 @@ void dt_iop_load_modules_so()
       gtk_accel_map_add_entry(accelpath, 0, 0);
       dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
                                      NULL);
+      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/enable plugin",
+               (module->op));
+      gtk_accel_map_add_entry(accelpath, 0, 0);
+      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
+                                     NULL);
       snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
       dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
       snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
@@ -1048,7 +1053,10 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
           num++;
         }
       // col = _mm_mul_ps(col, _mm_set1_ps(1.0f/((2.0f*samples+1.0f)*(2.0f*samples+1.0f))));
-      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      if(num == 0.0f)
+        col = _mm_load_ps(in + 4*(CLAMPS(px, 0, roi_in->width-1) + in_stride*CLAMPS(py, 0, roi_in->height-1)));
+      else
+        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       // memcpy(outc, &col, 4*sizeof(float));
       _mm_stream_ps(outc, col);
       outc += 4;

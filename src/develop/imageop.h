@@ -174,8 +174,8 @@ typedef struct dt_iop_module_t
   GtkWidget *showhide;
   /** expander containing the widget. */
   GtkExpander *expander;
-  /** The show accelerator callback to be removed on unload */
-  GClosure *show_closure;
+  /** list of closures: show, enable/disable */
+  GList* closures;
 
 
   /** version of the parameters in the database. */
