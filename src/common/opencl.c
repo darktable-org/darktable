@@ -115,6 +115,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     cl->dev[dev].numevents = 0;
     cl->dev[dev].eventsconsolidated = 0;
     cl->dev[dev].maxevents = 0;
+    cl->dev[dev].lostevents = 0;
     cl->dev[dev].summary=CL_COMPLETE;
     cl->dev[dev].used_global_mem = 0;
     cl_device_id devid = cl->dev[dev].devid = devices[k];
@@ -806,6 +807,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
   int *numevents = &(cl->dev[devid].numevents);
   int *maxevents = &(cl->dev[devid].maxevents);
+  int *lostevents = &(cl->dev[devid].lostevents);
 
   // if first time called: allocate initial buffers
   if (*eventlist == NULL)
@@ -828,6 +830,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   // check if currently highest event slot was actually consumed. If not use it again
   if (*numevents > 0 && !memcmp((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event)))
   {
+    (*lostevents)++;
     if (tag != NULL)
     {
       strncpy((*eventtags)[*numevents-1].tag, tag, DT_OPENCL_EVENTNAMELENGTH);
@@ -887,6 +890,7 @@ void dt_opencl_events_reset(const int devid)
   int *numevents = &(cl->dev[devid].numevents);
   int *maxevents = &(cl->dev[devid].maxevents);
   int *eventsconsolidated = &(cl->dev[devid].eventsconsolidated);
+  int *lostevents = &(cl->dev[devid].lostevents);
   cl_int *summary = &(cl->dev[devid].summary);
 
   if (*eventlist == NULL || *numevents == 0) return; // nothing to do
@@ -900,6 +904,7 @@ void dt_opencl_events_reset(const int devid)
   memset(*eventtags, 0, *maxevents*sizeof(dt_opencl_eventtag_t));
   *numevents=0;
   *eventsconsolidated=0;
+  *lostevents=0;
   *summary=CL_COMPLETE;
   return;
 }
@@ -915,12 +920,17 @@ void dt_opencl_events_wait_for(const int devid)
   static const cl_event zeroevent[1];   // implicitly initialized to zero
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   int *numevents = &(cl->dev[devid].numevents);
+  int *lostevents = &(cl->dev[devid].lostevents);
   int *eventsconsolidated = &(cl->dev[devid].eventsconsolidated);
 
   if (*eventlist==NULL || *numevents==0) return; // nothing to do
 
   // check if last event slot was acutally used and correct numevents if needed	
-  if (!memcmp((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event))) (*numevents)--;
+  if (!memcmp((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event)))
+  {
+    (*numevents)--;
+    (*lostevents)++;
+  }
 
   if (*numevents == *eventsconsolidated) return; // nothing to do
 
@@ -1015,6 +1025,7 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
   int *numevents = &(cl->dev[devid].numevents);
   int *eventsconsolidated = &(cl->dev[devid].eventsconsolidated);
+  int *lostevents = &(cl->dev[devid].lostevents);
 
   if (*eventlist == NULL || *numevents == 0 ||
       *eventtags == NULL || *eventsconsolidated == 0) return; // nothing to do
@@ -1079,10 +1090,9 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
     total += timings[0];
   }
 
-  if (total != 0.0f);
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds totally in command queue\n", (double)total);
-  }
+  dt_print(DT_DEBUG_OPENCL, "[opencl_profiling] spent %7.4f seconds totally in command queue (with %d event%s missing)\n",
+        (double)total, *lostevents, *lostevents == 1 ? "" : "s");
+
   return;
 }
 
