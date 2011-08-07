@@ -1159,7 +1159,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       // const float pc4  = in[px+1 + in_stride*(py + 1)];
       const uint16_t pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
 
-      __m128 num = _mm_setzero_ps();
+      float num = 0.0f;
       const int maxii = MIN(maxi,  px + 2*samples);
       const int minii = MAX(rggbx, px - 2*samples);
       for(int j=minjj; j<=maxjj; j+=2)
@@ -1182,9 +1182,10 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
           // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*wb, .5f*(p2+p3)*wg, p1*wr), ff));
           // num = _mm_add_ps(num, _mm_mul_ps(_mm_set_ps(1.0f, wb, wg, wr), one));
           col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*w, .5f*(p2+p3)*w, p1*w), ff));
-          num = _mm_add_ps(num, _mm_set1_ps(w));
+          num += w;
         }
-      col = _mm_div_ps(col, num);
+      if(num > 0.0f)
+        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       _mm_stream_ps(outc, col);
       outc += 4;
     }
@@ -1244,7 +1245,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       px = MAX(0, px & ~1) + rggbx;
       py = MAX(0, py & ~1) + rggby;
 
-      px = MIN((((roi_in->width -5) & ~1u) + rggbx),  px);
+      px = MIN((((roi_in->width -5) & ~1u) + rggbx), px);
       py = MIN((((roi_in->height-5) & ~1u) + rggby), py);
 
       const float dx = .5f*(fx - px), dy = .5f*(fy - py);
@@ -1257,7 +1258,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       for(int j=MAX(rggby, py-2*samples); j<=MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples); j+=2)
         for(int i=MAX(rggbx, px-2*samples); i<=MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples); i+=2)
         {
-          // get four mosaic pattern uint16:
+          // get four mosaic pattern floats:
           float p1, p2, p4;
           p1 = in[i   + in_stride*j];
           p2 = in[i+1 + in_stride*j] + in[i   + in_stride*(j + 1)];
@@ -1282,7 +1283,10 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           col = _mm_add_ps(col, _mm_mul_ps(lerp, _mm_set1_ps(f)));
           num += f;
         }
-      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      if(num == 0.0f)
+        col = _mm_load_ps(in + 4*(CLAMPS(px, 0, roi_in->width-1) + in_stride*CLAMPS(py, 0, roi_in->height-1)));
+      else
+        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       _mm_stream_ps(outc, col);
       outc += 4;
     }
