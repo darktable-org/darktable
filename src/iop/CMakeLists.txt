@@ -12,7 +12,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer colorize lowpass)
+set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer colorize lowpass invert)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -59,6 +59,7 @@ add_library(nlmeans MODULE "nlmeans.c")
 add_library(colorcontrast MODULE "colorcontrast.c")
 add_library(levels MODULE "levels.c")
 add_library(colorize MODULE "colorize.c")
+add_library(invert MODULE "invert.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")

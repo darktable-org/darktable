@@ -49,6 +49,9 @@ void dt_tag_attach_list(GList *tags,gint imgid);
 /** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] imgid the image id to attach tag from, if < 0 selected images are used. */
 void dt_tag_detach(guint tagid,gint imgid);
 
+/** detach tags from images that matches name, it is valid to use % to match tag */
+void dt_tag_detach_by_string(const char *name, gint imgid);
+
 /** retreives a list of tags of specified imgid \param[out] result a list of dt_tag_t. */
 uint32_t dt_tag_get_attached(gint imgid,GList **result);
 

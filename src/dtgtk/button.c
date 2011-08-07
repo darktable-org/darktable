@@ -189,7 +189,7 @@ static void button_click_callback(GtkAccelGroup *accel_group,
 	GtkDarktableButton *button=DTGTK_BUTTON(data);
 	g_signal_emit_by_name(G_OBJECT(button),"activate");
 }
-void dtgtk_button_set_accel(GtkDarktableButton *button, GtkAccelGroup *accel_group, const gchar *accel_path)
+void gtk_button_set_accel(GtkButton *button, GtkAccelGroup *accel_group, const gchar *accel_path)
 {
   dt_accel_group_connect_by_path(accel_group,
                                  accel_path,
@@ -197,7 +197,11 @@ void dtgtk_button_set_accel(GtkDarktableButton *button, GtkAccelGroup *accel_gro
                                      G_CALLBACK(button_click_callback),
                                      (gpointer)button, NULL));
 }
-void dtgtk_button_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path)
+void dtgtk_button_set_accel(GtkDarktableButton *button, GtkAccelGroup *accel_group, const gchar *accel_path)
+{
+  gtk_button_set_accel(GTK_BUTTON(button), accel_group,accel_path);
+}
+void gtk_button_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path)
 {
   gtk_accel_map_add_entry(accel_path, 0, 0);
   dt_accel_group_connect_by_path(accel_group, accel_path,NULL);
@@ -209,6 +213,11 @@ void dtgtk_button_set_paint(GtkDarktableButton *button,
 {
   button->icon = paint;
   button->icon_flags = paintflags;
+}
+
+void dtgtk_button_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path)
+{
+  gtk_button_init_accel(accel_group,accel_path);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

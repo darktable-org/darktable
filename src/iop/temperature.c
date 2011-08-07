@@ -427,16 +427,12 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2]) return FALSE;
   for(int k=0; k<3; k++) old[k] = grayrgb[k];
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  for(int k=0; k<3; k++) p->coeffs[k] = 1.0/(0.01 + grayrgb[k]);
-  float len = 0.0, lenc = 0.0f;
-  for(int k=0; k<3; k++) len  += grayrgb[k]*grayrgb[k];
-  for(int k=0; k<3; k++) lenc += grayrgb[k]*grayrgb[k]*p->coeffs[k]*p->coeffs[k];
-  if(lenc > 0.0001f) for(int k=0; k<3; k++) p->coeffs[k] *= sqrtf(len/lenc);
+  for(int k=0; k<3; k++) p->coeffs[k] = (grayrgb[k] > 0.001f) ? 1.0f/grayrgb[k] : 1.0f;
   // normalize green:
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
-  for(int k=0; k<3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0, p->coeffs[k]));
+  for(int k=0; k<3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
