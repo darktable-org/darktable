@@ -892,7 +892,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, 100.0, 0));
     snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
     dtgtk_slider_set_accel(DTGTK_SLIDER(bd->opacity_slider),darktable.control->accels_darkroom,name);
-    dtgtk_button_set_accel(presetsbutton,darktable.control->accels_darkroom,name);
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
