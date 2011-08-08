@@ -35,6 +35,7 @@ dt_mipmap_size_t;
 
 typedef struct dt_mipmap_buffer_t
 {
+  dt_mipmap_size_t size;
   int32_t width, height;
   void *buf;
 }
@@ -48,7 +49,7 @@ typedef struct dt_mipmap_cache_t
   // TODO: implement our own garbage collection to free large buffers first!
   // TODO: need clever hashing img->mip (not just id..?)
   // TODO: say folder id + img filename hash
-  dt_cache_t *cache;
+  dt_cache_t cache[DT_MIPMAP_NONE];
 }
 dt_mipmap_cache_t;
 
@@ -60,18 +61,18 @@ void dt_mipmap_cache_print  (dt_image_cache_t *cache);
 // semantics, so you'll get a smaller mipmap or NULL if
 // your request is not found in the cache.
 const dt_mipmap_buffer_t*
-dt_image_cache_read_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_size_t mip);
+dt_mipmap_cache_read_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_size_t mip);
 
 // you need to hold a read lock for this buffer before you lock it for
 // writing:
 dt_mipmap_buffer_t*
-dt_image_cache_write_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_size_t mip);
+dt_mipmap_cache_write_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_size_t mip);
 
 // TODO: pass mip, too? pack it all into buffer_t? return bucket instead?
 // drop a read lock
-void dt_image_cache_read_release (dt_cache_image_t *cache, const uint32_t key);
+void dt_mipmap_cache_read_release (dt_cache_image_t *cache, const uint32_t key);
 // drop a write lock, read will still remain.
-void dt_image_cache_write_release(dt_cache_image_t *cache, const uint32_t key);
+void dt_mipmap_cache_write_release(dt_cache_image_t *cache, const uint32_t key);
 
 // TODO: read_get_blocking
 // TODO: prefetch (no lock, no return)

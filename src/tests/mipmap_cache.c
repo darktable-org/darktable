@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
+#include "control/conf.h"
+
 void*
 dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost)
 {
@@ -28,29 +31,48 @@ dt_mipmap_cache_cleanup(void *data, const uint32_t key, void *payload)
 {
 }
 
-void dt_mipmap_cache_init(dt_image_cache_t *cache)
+void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
-  cache->cache = (dt_cache_t **)malloc(sizeof(dt_cache_t *)*NONE);
+  const int32_t max_th = 100000, min_th = 20;
+  int32_t thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
+  thumbnails = CLAMPS(thumbnails, min_th, max_th);
+
   for(int k=0;k<NONE;k++)
   {
-    cache->cache[k] = (dt_cache_t *)malloc(sizeof(dt_cache_t));
-    dt_cache_init(cache->cache[k]);
+    dt_cache_init(&cache->cache[k], thumbnails, 16, 64, 1);
+    thumbnails >>= 2;
+    thumbnails = CLAMPS(thumbnails, min_th, max_th);
   }
 }
 
-void dt_mipmap_cache_cleanup(dt_image_cache_t *cache)
+void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 {
-  for(int k=0;k<NONE;k++)
+  for(int k=0;k<DT_MIPMAP_NONE;k++)
   {
-    dt_cache_cleanup(cache->cache[k]);
-    free(cache->cache[k]);
+    dt_cache_cleanup(&cache->cache[k]);
   }
-  free(cache->cache);
 }
 
-void dt_mipmap_cache_print(dt_image_cache_t *cache)
+void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
 }
 
+const dt_mipmap_buffer_t*
+dt_mipmap_cache_lock_if_available(dt_mipmap_cache_t *cache, const uint32_t key, dt_mipmap_size_t mip)
+{
+  // TODO:
+}
+
+const dt_mipmap_buffer_t*
+dt_mipmap_cache_read_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_size_t mip)
+{
+  // best-effort, might also return NULL.
+  for(int k=mip;k>DT_MIPMAP_0;k--)
+  {
+    // TODO: query cache->cache[k]
+    // TODO: 
+  }
+  return NULL;
+}
 
 
