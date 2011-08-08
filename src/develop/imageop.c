@@ -449,6 +449,7 @@ void dt_iop_load_modules_so()
   dt_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
+  char name[1024];
   if(!dir) return;
   while((d_name = g_dir_read_name(dir)))
   {
@@ -472,6 +473,15 @@ void dt_iop_load_modules_so()
     if(module->init_key_accels)
       (module->init_key_accels)();
 
+    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
+    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
+    if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
+    {
+	    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
+	    dtgtk_slider_init_accel(darktable.control->accels_darkroom,name);
+    }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Adding the optional show accelerator to the table (blank)
