@@ -67,14 +67,21 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   double fraction=0;
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
 
-  /* Fetch all values for shutterspeed2 and initialize current value */
+  /* try to get exp program mode for nikon */
+  char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
+  
+  /* if fail, lets try fetching mode for cannon */
+  if(!expprogram) 
+    expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "autoexposuremode");
+
+  /* Fetch all values for shutterspeed and initialize current value */
   GList *values=NULL;
   gconstpointer orginal_value=NULL;
-  const char *expprogram = dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
   const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
   const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
+  
   /* get values for bracketing */
-  if (strcmp(expprogram,"M")==0 && value && cvalue)
+  if (t->brackets && expprogram && expprogram[0]=='M' && value && cvalue)
   {
     do
     {
