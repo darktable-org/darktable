@@ -339,6 +339,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   g_object_set(data->settings.general.date_override,"tooltip-text",_("check this, if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),(char *)NULL);
 
   data->settings.general.date_entry=gtk_entry_new();
+  gtk_widget_set_sensitive( data->settings.general.date_entry, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)));
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_entry,TRUE,TRUE,0);
 
   g_signal_connect (G_OBJECT (data->settings.general.date_override), "clicked",G_CALLBACK (_check_button_callback),data);
