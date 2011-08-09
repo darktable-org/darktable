@@ -1220,7 +1220,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
   // unset gtk rc from kde:
   char path[1024], datadir[1024];
-  dt_get_datadir(datadir, 1024);
+  dt_util_get_datadir(datadir, 1024);
   gchar *themefile = dt_conf_get_string("themefile");
   if(themefile && themefile[0] == '/') snprintf(path, 1023, "%s", themefile);
   else snprintf(path, 1023, "%s/%s", datadir, themefile ? themefile : "darktable.gtkrc");
@@ -1313,7 +1313,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_background_jobs_init();
 
   /* Have the delete event (window close) end the program */
-  dt_get_datadir(datadir, 1024);
+  dt_util_get_datadir(datadir, 1024);
   snprintf(path, 1024, "%s/icons", datadir);
   gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), path);
 

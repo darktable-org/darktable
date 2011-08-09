@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson, Tobias Ellinghaus.
+    copyright (c) 2010-2011 Henrik Andersson, Tobias Ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@
 #if defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
 #include <pwd.h>
 #include <sys/types.h>
+#endif
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
 #endif
 
 #include "utility.h"
@@ -197,5 +201,122 @@ gchar* dt_util_fix_path(const gchar* path)
 
   return rpath;
 }
+
+void dt_util_get_user_config_dir (char *data, size_t bufsize)
+{
+  gchar *homedir = dt_util_get_home_dir(NULL);
+
+  if(homedir)
+  {
+    g_snprintf (data,bufsize,"%s/.config/darktable",homedir);
+    if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
+      g_mkdir_with_parents (data,0700);
+
+    g_free(homedir);
+  }
+}
+
+
+void dt_util_get_user_cache_dir (char *data, size_t bufsize)
+{
+  gchar *homedir = dt_util_get_home_dir(NULL);
+  if(homedir)
+  {
+    g_snprintf (data,bufsize,"%s/.cache/darktable",homedir);
+    if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
+      g_mkdir_with_parents (data,0700);
+    g_free(homedir);
+  }
+}
+
+void dt_util_get_user_local_dir (char *data, size_t bufsize)
+{
+  gchar *homedir = dt_util_get_home_dir(NULL);
+  if(homedir)
+  {
+    g_snprintf(data,bufsize,"%s/.local",homedir);
+    if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
+      g_mkdir_with_parents (data,0700);
+    g_free(homedir);
+  }
+}
+
+void dt_util_get_plugindir(char *datadir, size_t bufsize)
+{
+#if defined(__MACH__) || defined(__APPLE__)
+  gchar *curr = g_get_current_dir();
+  int contains = 0;
+  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
+    {
+      contains = 1;
+      break;
+    }
+  if(darktable.progname[0] == '/') // absolute path
+    snprintf(datadir, bufsize, "%s", darktable.progname);
+  else if(contains) // relative path
+    snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
+  else
+  {
+    // no idea where we have been called. use compiled in path
+    g_free(curr);
+    snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
+    return;
+  }
+  size_t len = MIN(strlen(datadir), bufsize);
+  char *t = datadir + len; // strip off bin/darktable
+  for(; t>datadir && *t!='/'; t--);
+  t--;
+  if(*t == '.' && *(t-1) != '.')
+  {
+    for(; t>datadir && *t!='/'; t--);
+    t--;
+  }
+  for(; t>datadir && *t!='/'; t--);
+  g_strlcpy(t, "/lib/darktable", bufsize-(t-datadir));
+  g_free(curr);
+#else
+  snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
+#endif
+}
+
+void dt_util_get_datadir(char *datadir, size_t bufsize)
+{
+#if defined(__MACH__) || defined(__APPLE__)
+  gchar *curr = g_get_current_dir();
+  int contains = 0;
+  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
+    {
+      contains = 1;
+      break;
+    }
+  if(darktable.progname[0] == '/') // absolute path
+    snprintf(datadir, bufsize, "%s", darktable.progname);
+  else if(contains) // relative path
+    snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
+  else
+  {
+    // no idea where we have been called. use compiled in path
+    g_free(curr);
+    snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
+    return;
+  }
+  size_t len = MIN(strlen(datadir), bufsize);
+  char *t = datadir + len; // strip off bin/darktable
+  for(; t>datadir && *t!='/'; t--);
+  t--;
+  if(*t == '.' && *(t-1) != '.')
+  {
+    for(; t>datadir && *t!='/'; t--);
+    t--;
+  }
+  for(; t>datadir && *t!='/'; t--);
+  g_strlcpy(t, "/share/darktable", bufsize-(t-datadir));
+  g_free(curr);
+#else
+  snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
+#endif
+}
+
+
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -446,7 +446,7 @@ void dt_iop_load_modules_so()
   darktable.iop = NULL;
   char plugindir[1024], op[20], accelpath[1024];
   const gchar *d_name;
-  dt_get_plugindir(plugindir, 1024);
+  dt_util_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   char name[1024];
