@@ -301,7 +301,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   gchar *conf_db = dt_conf_get_string("database");
   if (conf_db && conf_db[0] != '/')
   {
-    char *homedir = getenv ("HOME");
+    char *homedir = dt_util_get_home_dir(NULL);
     snprintf (dbfilename,2048,"%s/%s", homedir, conf_db);
     if (g_file_test (dbfilename, G_FILE_TEST_EXISTS))
     {
@@ -324,7 +324,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   gchar *conf_cache = dt_conf_get_string("cachefile");
   if (conf_cache && conf_cache[0] != '/')
   {
-    char *homedir = getenv ("HOME");
+    char *homedir = dt_util_get_home_dir(NULL);
     snprintf (cachefilename,2048,"%s/%s",homedir, conf_cache);
     if (g_file_test (cachefilename,G_FILE_TEST_EXISTS))
     {
