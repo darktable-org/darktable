@@ -28,16 +28,16 @@ static inline void _blend_colorspace_channel_range(dt_iop_colorspace_type_t cst,
   switch(cst)
   {
     case iop_cs_Lab:		// after scaling !!!
-      min[0] = 0.0; max[0] = 1.0;
-      min[1] = -1.0; max[1] = 1.0;
-      min[2] = -1.0; max[2] = 1.0;
-      min[3] = -1.0; max[3] = 1.0;
+      min[0] = 0.0f; max[0] = 1.0f;
+      min[1] = -1.0f; max[1] = 1.0f;
+      min[2] = -1.0f; max[2] = 1.0f;
+      min[3] = 0.0f; max[3] = 1.0f;
     break;
     default:
-      min[0] = 0; max[0] = 1.0;
-      min[1] = 0; max[1] = 1.0;
-      min[2] = 0; max[2] = 1.0;
-      min[3] = 0; max[3] = 1.0;
+      min[0] = 0.0f; max[0] = 1.0f;
+      min[1] = 0.0f; max[1] = 1.0f;
+      min[2] = 0.0f; max[2] = 1.0f;
+      min[3] = 0.0f; max[3] = 1.0f;
     break;
   }
 }
