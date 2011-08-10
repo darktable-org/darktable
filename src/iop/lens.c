@@ -68,6 +68,8 @@ void init_key_accels()
   dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/find camera");
   dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/find lens");
   dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/auto scale");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/camera model");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/lens model");
 }
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -410,7 +412,7 @@ void init_global(dt_iop_module_so_t *module)
 #endif
   {
     char path[1024];
-    dt_get_datadir(path, 1024);
+    dt_util_get_datadir(path, 1024);
     char *c = path + strlen(path);
     for(; c>path && *c != '/'; c--);
     sprintf(c, "/lensfun");
@@ -1306,6 +1308,7 @@ void gui_init(struct dt_iop_module_t *self)
   // camera selector
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
   g->camera_model = GTK_BUTTON(gtk_button_new());
+  gtk_button_set_accel(g->camera_model,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/camera model");
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model));
   gtk_button_set_label(g->camera_model, self->dev->image->exif_model);
   g_signal_connect (G_OBJECT (g->camera_model), "clicked",
@@ -1322,6 +1325,7 @@ void gui_init(struct dt_iop_module_t *self)
   // lens selector
   hbox = gtk_hbox_new(FALSE, 0);
   g->lens_model = GTK_BUTTON(gtk_button_new());
+  gtk_button_set_accel(g->lens_model,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lens/lens model");
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
   gtk_button_set_label(g->lens_model, self->dev->image->exif_lens);
   g_signal_connect (G_OBJECT (g->lens_model), "clicked",

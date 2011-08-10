@@ -23,6 +23,7 @@
 
 #include "common/camera_control.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "views/view.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
@@ -67,13 +68,21 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   double fraction=0;
   const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
 
-  /* Fetch all values for shutterspeed2 and initialize current value */
+  /* try to get exp program mode for nikon */
+  char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
+  
+  /* if fail, lets try fetching mode for cannon */
+  if(!expprogram) 
+    expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "autoexposuremode");
+
+  /* Fetch all values for shutterspeed and initialize current value */
   GList *values=NULL;
   gconstpointer orginal_value=NULL;
-
   const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
   const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
-  if (value && cvalue)
+  
+  /* get values for bracketing */
+  if (t->brackets && expprogram && expprogram[0]=='M' && value && cvalue)
   {
     do
     {
@@ -87,11 +96,16 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   }
   else
   {
-    dt_control_log(_("please set your camera to manual mode first!"));
-    dt_gui_background_jobs_set_progress(j, 1.001f);
-    dt_gui_background_jobs_destroy(j);
-    return 1;
+    /* if this was an itended bracket capture bail out */
+    if(t->brackets)
+    {
+      dt_control_log(_("please set your camera to manual mode first!"));
+      dt_gui_background_jobs_set_progress(j, 1.001f);
+      dt_gui_background_jobs_destroy(j);
+      return 1;
+    }
   }
+
   GList *current_value = g_list_find(values,orginal_value);
   for(int i=0; i<t->count; i++)
   {
@@ -282,7 +296,9 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   {
     // Backup is enabled, let's initialize a backup job of imported image...
     char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
-    dt_variables_expand( t->vp, base, FALSE );
+    char *fixed_base=dt_util_fix_path(base);
+    dt_variables_expand( t->vp, fixed_base, FALSE );
+    g_free(base);
     const char *sdpart=dt_variables_get_result(t->vp);
     if( sdpart )
     {
@@ -300,6 +316,9 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   t->vp->filename=filename;
 
+  gchar* fixed_path = dt_util_fix_path(t->path);
+  g_free(t->path);
+  t->path = fixed_path;
   dt_variables_expand( t->vp, t->path, FALSE );
   const gchar *storage=dt_variables_get_result(t->vp);
 
@@ -340,6 +359,9 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
 
   dt_film_init(t->film);
 
+  gchar* fixed_path = dt_util_fix_path(t->path);
+  g_free(t->path);
+  t->path = fixed_path;
   dt_variables_expand( t->vp, t->path, FALSE );
   sprintf(t->film->dirname,"%s",dt_variables_get_result(t->vp));
 

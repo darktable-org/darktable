@@ -895,7 +895,7 @@ void enter(dt_view_t *self)
 
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
       char filename[1024], datadir[1024];
-      dt_get_datadir(datadir, 1024);
+      dt_util_get_datadir(datadir, 1024);
       snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
       if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
         snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);

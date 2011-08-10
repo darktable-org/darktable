@@ -1,6 +1,6 @@
 /*
 	 This file is part of darktable,
-	 copyright (c) 2010 Henrik Andersson.
+	 copyright (c) 2010-2011 Henrik Andersson.
 
 	 darktable is free software: you can redistribute it and/or modify
 	 it under the terms of the GNU General Public License as published by
@@ -954,10 +954,16 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
     {
       if( event == GP_EVENT_UNKNOWN )
       {
-        if( strstr( (char *)data, "4006" ) )
+	/* this is really some undefined behavior, seems like its
+	 camera driver dependent... very ugly! */
+        if( strstr( (char *)data, "4006" ) || // Nikon PTP driver
+	    (strstr((char *)data, "PTP Property") && strstr((char *)data, "changed"))  // Some Canon driver maybe all ??
+
+	    )
         {
           // Property change event occured on camera
           // let's update cache and signalling
+	  dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event, lets update internal configuration cache.");
           _camera_configuration_update(c,cam);
         }
       }

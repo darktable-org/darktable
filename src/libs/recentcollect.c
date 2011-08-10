@@ -84,18 +84,13 @@ serialize(char *buf, int bufsize)
     bufsize -= c;
     snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
     gchar *str = dt_conf_get_string(confname);
-    if(str)
-    {
-      if(str[0] == '\0') return 1;
+    if(str && (str[0] != '\0'))
       c = snprintf(buf, bufsize, "%s$", str);
-      buf += c;
-      bufsize -= c;
-      g_free(str);
-    }
     else
-    {
-      return 1;
-    }
+      c = snprintf(buf, bufsize, "%%$");
+    buf += c;
+    bufsize -= c;
+    g_free(str);
   }
   return 0;
 }
@@ -105,8 +100,10 @@ deserialize(char *buf)
 {
   int num_rules = 0;
   char str[400], confname[200];
-  int mode, item;
+  sprintf(str, "%%");
+  int mode = 0, item = 0;
   sscanf(buf, "%d", &num_rules);
+  if(num_rules == 0) num_rules = 1;
   dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
   while(buf[0] != ':') buf++;
   buf++;

@@ -70,7 +70,6 @@ src/iop/highpass.c
 src/iop/hotpixels.c
 src/iop/invert.c
 src/iop/lens.c
-src/iop/localc.c
 src/iop/lowlight.c
 src/iop/lowpass.c
 src/iop/monochrome.c

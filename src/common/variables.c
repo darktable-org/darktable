@@ -98,9 +98,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   gboolean got_value=FALSE;
   struct tm *tim=localtime(&params->data->time);
 
-  const gchar *homedir=g_getenv("HOME");
-  if( !homedir )
-    homedir=g_get_home_dir();
+  const gchar *homedir = dt_util_get_home_dir(NULL);
 
   gchar *pictures_folder=NULL;
 

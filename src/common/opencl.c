@@ -175,7 +175,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       return;
     }
     char dtpath[1024], filename[1024], programname[1024];
-    dt_get_datadir(dtpath, 1024);
+    dt_util_get_datadir(dtpath, 1024);
     snprintf(filename, 1024, "%s/kernels/programs.conf", dtpath);
     // now load all darktable cl kernels.
     // TODO: compile as a job?

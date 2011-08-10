@@ -9,7 +9,7 @@ BEGIN {
   print "gint compare(gconstpointer a, gconstpointer b){"
   print "  const char *sa = ((struct accel*)a)->path;"
   print "  const char *sb = ((struct accel*)b)->path;"
-  print "  return strcmp(sb, sa);"
+  print "  return strcasecmp(sa, sb);"
   print "}"
   print "int main(int argc, char *argv[])"
   print "{"

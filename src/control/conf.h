@@ -269,7 +269,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   if(!f)
   {
     char buf[1024], defaultrc[1024];
-    dt_get_datadir(buf, 1024);
+    dt_util_get_datadir(buf, 1024);
     snprintf(defaultrc, 1024, "%s/darktablerc", buf);
     f = fopen(defaultrc, "rb");
   }

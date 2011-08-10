@@ -448,9 +448,10 @@ void dt_iop_load_modules_so()
   darktable.iop = NULL;
   char plugindir[1024], op[20], accelpath[1024];
   const gchar *d_name;
-  dt_get_plugindir(plugindir, 1024);
+  dt_util_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
+  char name[1024];
   if(!dir) return;
   while((d_name = g_dir_read_name(dir)))
   {
@@ -474,6 +475,15 @@ void dt_iop_load_modules_so()
     if(module->init_key_accels)
       (module->init_key_accels)();
 
+    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
+    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
+    if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
+    {
+	    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
+	    dtgtk_slider_init_accel(darktable.control->accels_darkroom,name);
+    }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Adding the optional show accelerator to the table (blank)
@@ -892,6 +902,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     GtkWidget *label = gtk_label_new(_("mode"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
     bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, 100.0, 0));
+    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
+    dtgtk_slider_set_accel(DTGTK_SLIDER(bd->opacity_slider),darktable.control->accels_darkroom,name);
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
@@ -1159,7 +1171,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
       // const float pc4  = in[px+1 + in_stride*(py + 1)];
       const uint16_t pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
 
-      __m128 num = _mm_setzero_ps();
+      float num = 0.0f;
       const int maxii = MIN(maxi,  px + 2*samples);
       const int minii = MAX(rggbx, px - 2*samples);
       for(int j=minjj; j<=maxjj; j+=2)
@@ -1182,9 +1194,10 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
           // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*wb, .5f*(p2+p3)*wg, p1*wr), ff));
           // num = _mm_add_ps(num, _mm_mul_ps(_mm_set_ps(1.0f, wb, wg, wr), one));
           col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*w, .5f*(p2+p3)*w, p1*w), ff));
-          num = _mm_add_ps(num, _mm_set1_ps(w));
+          num += w;
         }
-      col = _mm_div_ps(col, num);
+      if(num > 0.0f)
+        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       _mm_stream_ps(outc, col);
       outc += 4;
     }
@@ -1198,7 +1211,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = .9f/roi_out->scale;
+  const float px_footprint = 1.f/roi_out->scale;
   // how many 2x2 blocks can be sampled inside that area
   const int samples = ((int)px_footprint)/2;
 
@@ -1236,18 +1249,18 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
     {
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
-      // upper left corner:
-      float fx = (x + roi_out->x)/roi_out->scale, fy = (y + roi_out->y)/roi_out->scale;
+      // center pixel
+      float fx = (x + .5f + roi_out->x)/roi_out->scale, fy = (y + .5f + roi_out->y)/roi_out->scale;
       int px = (int)fx, py = (int)fy;
+      const float dx = fx - px, dy = fy - py;
 
       // round down to next even number and jump to rggb block:
       px = MAX(0, px & ~1) + rggbx;
       py = MAX(0, py & ~1) + rggby;
 
-      px = MIN((((roi_in->width -5) & ~1u) + rggbx),  px);
+      px = MIN((((roi_in->width -5) & ~1u) + rggbx), px);
       py = MIN((((roi_in->height-5) & ~1u) + rggby), py);
 
-      const float dx = .5f*(fx - px), dy = .5f*(fy - py);
       const __m128 d0 = _mm_set1_ps((1.0f-dx)*(1.0f-dy));
       const __m128 d1 = _mm_set1_ps((dx)*(1.0f-dy));
       const __m128 d2 = _mm_set1_ps((1.0f-dx)*(dy));
@@ -1257,7 +1270,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       for(int j=MAX(rggby, py-2*samples); j<=MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples); j+=2)
         for(int i=MAX(rggbx, px-2*samples); i<=MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples); i+=2)
         {
-          // get four mosaic pattern uint16:
+          // get four mosaic pattern floats:
           float p1, p2, p4;
           p1 = in[i   + in_stride*j];
           p2 = in[i+1 + in_stride*j] + in[i   + in_stride*(j + 1)];
@@ -1282,7 +1295,10 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           col = _mm_add_ps(col, _mm_mul_ps(lerp, _mm_set1_ps(f)));
           num += f;
         }
-      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      if(num == 0.0f)
+        col = _mm_load_ps(in + 4*(CLAMPS(px, 0, roi_in->width-1) + in_stride*CLAMPS(py, 0, roi_in->height-1)));
+      else
+        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
       _mm_stream_ps(outc, col);
       outc += 4;
     }
