@@ -367,7 +367,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // as the function name implies
   compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
-  float *temp = malloc(roi_out->width*roi_out->height*ch*sizeof(float));
+  float *temp = dt_alloc_align(64, roi_out->width*roi_out->height*ch*sizeof(float));
   if(temp==NULL) return;
 
   // vertical blur column by column
