@@ -37,7 +37,7 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
   const int y = get_global_id(1);
   const int mult = 1<<scale;
 
-  const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+  float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float4 sum = (float4)(0.0f);
@@ -45,7 +45,7 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
   for(int j=0;j<5;j++) for(int i=0;i<5;i++)
   {
     float4 px = read_imagef(in, sampleri, (float2)(x+mult*(i - 2), y+mult*(j - 2)));
-    const float4 w = filter[i]*filter[j]*weight(pixel, px, sharpen);
+    float4 w = filter[i]*filter[j]*weight(pixel, px, sharpen);
     sum += w*px;
     wgt += w;
   }
