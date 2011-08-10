@@ -210,6 +210,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
       snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
     }
 
+    gchar* fixed_path = dt_util_fix_path(d->filename);
+    g_strlcpy(d->filename, fixed_path, 1024);
+    g_free(fixed_path);
+
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
     d->vp->img = img;
@@ -337,7 +341,7 @@ static void
 copy_res(const char *src, const char *dst)
 {
   char share[1024];
-  dt_get_datadir(share, 1024);
+  dt_util_get_datadir(share, 1024);
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char* content = NULL;
   FILE *fin = fopen(sourcefile, "rb");

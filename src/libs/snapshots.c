@@ -287,7 +287,7 @@ void gui_init(dt_lib_module_t *self)
    */
   char wdname[32]={0};
   char localdir[4096]={0};
-  dt_get_user_local_dir (localdir,4096);
+  dt_util_get_user_local_dir (localdir,4096);
 
   for (long k=0;k<d->size;k++) {
     /* create snapshot button */

@@ -515,7 +515,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   if(event->is_modifier)
     return FALSE;
 
-  dt_get_user_config_dir(datadir, 1024);
+  dt_util_get_user_config_dir(datadir, 1024);
   snprintf(accelpath, 1024, "%s/keyboardrc", datadir);
 
   // Otherwise, determine whether we're in remap mode or not
@@ -694,7 +694,7 @@ static void import_export(GtkButton *button, gpointer data)
             gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
 
         // Saving to the permanent keyboardrc
-        dt_get_user_config_dir(confdir, 1024);
+        dt_util_get_user_config_dir(confdir, 1024);
         snprintf(accelpath, 1024, "%s/keyboardrc", confdir);
         gtk_accel_map_save(accelpath);
 
@@ -724,7 +724,7 @@ static void restore_defaults(GtkButton *button, gpointer data)
   if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
   {
     // First load the default keybindings for immediate effect
-    dt_get_user_config_dir(dir, 1024);
+    dt_util_get_user_config_dir(dir, 1024);
     snprintf(path, 1024, "%s/keyboardrc_default", dir);
     gtk_accel_map_load(path);
 
@@ -740,7 +740,7 @@ static void restore_defaults(GtkButton *button, gpointer data)
 
     // Then delete any changes to the user's keyboardrc so it gets reset
     // on next startup
-    dt_get_user_config_dir(dir, 1024);
+    dt_util_get_user_config_dir(dir, 1024);
     snprintf(path, 1024, "%s/keyboardrc", dir);
     g_file_delete(g_file_new_for_path(path), NULL, NULL);
   }

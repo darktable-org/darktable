@@ -23,6 +23,7 @@
 
 #include "common/camera_control.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "views/view.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
@@ -68,14 +69,21 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   double fraction=0;
   const guint jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
-  /* Fetch all values for shutterspeed2 and initialize current value */
+  /* try to get exp program mode for nikon */
+  char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
+  
+  /* if fail, lets try fetching mode for cannon */
+  if(!expprogram) 
+    expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "autoexposuremode");
+
+  /* Fetch all values for shutterspeed and initialize current value */
   GList *values=NULL;
   gconstpointer orginal_value=NULL;
-  const char *expprogram = dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
   const char *cvalue = dt_camctl_camera_get_property(darktable.camctl, NULL, "shutterspeed");
   const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
+  
   /* get values for bracketing */
-  if (strcmp(expprogram,"M")==0 && value && cvalue)
+  if (t->brackets && expprogram && expprogram[0]=='M' && value && cvalue)
   {
     do
     {
@@ -292,7 +300,9 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   {
     // Backup is enable, let's initialize a backup job of imported image...
     char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
-    dt_variables_expand( t->vp, base, FALSE );
+    char *fixed_base=dt_util_fix_path(base);
+    dt_variables_expand( t->vp, fixed_base, FALSE );
+    g_free(base);
     const char *sdpart=dt_variables_get_result(t->vp);
     if( sdpart )
     {
@@ -310,6 +320,9 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   t->vp->filename=filename;
 
+  gchar* fixed_path = dt_util_fix_path(t->path);
+  g_free(t->path);
+  t->path = fixed_path;
   dt_variables_expand( t->vp, t->path, FALSE );
   const gchar *storage=dt_variables_get_result(t->vp);
 
@@ -350,6 +363,9 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
 
   dt_film_init(t->film);
 
+  gchar* fixed_path = dt_util_fix_path(t->path);
+  g_free(t->path);
+  t->path = fixed_path;
   dt_variables_expand( t->vp, t->path, FALSE );
   sprintf(t->film->dirname,"%s",dt_variables_get_result(t->vp));
 

@@ -61,7 +61,7 @@ dt_database_t *dt_database_init(char *alternative)
   gchar dbfilename[1024] = {0};
   gchar datadir[1024] = {0};
 
-  dt_get_user_config_dir(datadir, 1024);
+  dt_util_get_user_config_dir(datadir, 1024);
 
   if ( alternative == NULL )
   {
@@ -165,7 +165,7 @@ static void _database_migrate_to_xdg_structure()
   gchar *conf_db = dt_conf_get_string("database");
   
   gchar datadir[1024] = {0};
-  dt_get_datadir(datadir, 1024);
+  dt_util_get_datadir(datadir, 1024);
   
   if (conf_db && conf_db[0] != '/')
   {

@@ -293,7 +293,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // thread-safe init:
   dt_exif_init();
   char datadir[1024];
-  dt_get_user_config_dir (datadir,1024);
+  dt_util_get_user_config_dir (datadir,1024);
   char filename[1024];
   snprintf(filename, 1024, "%s/darktablerc", datadir);
 
@@ -330,7 +330,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   gchar *conf_cache = dt_conf_get_string("cachefile");
   if (conf_cache && conf_cache[0] != '/')
   {
-    char *homedir = getenv ("HOME");
+    char *homedir = dt_util_get_home_dir(NULL);
     snprintf (cachefilename,2048,"%s/%s",homedir, conf_cache);
     if (g_file_test (cachefilename,G_FILE_TEST_EXISTS))
     {
@@ -624,108 +624,6 @@ void *dt_alloc_align(size_t alignment, size_t size)
   void *ptr = NULL;
   if(posix_memalign(&ptr, alignment, size)) return NULL;
   return ptr;
-#endif
-}
-
-void
-dt_get_user_config_dir (char *data, size_t bufsize)
-{
-  g_snprintf (data,bufsize,"%s/.config/darktable",getenv("HOME"));
-  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
-    g_mkdir_with_parents (data,0700);
-}
-
-void
-dt_get_user_cache_dir (char *data, size_t bufsize)
-{
-  g_snprintf (data,bufsize,"%s/.cache/darktable",getenv("HOME"));
-  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
-    g_mkdir_with_parents (data,0700);
-}
-
-
-void
-dt_get_user_local_dir (char *data, size_t bufsize)
-{
-  g_snprintf(data,bufsize,"%s/.local",getenv("HOME"));
-  if (g_file_test (data,G_FILE_TEST_EXISTS)==FALSE)
-    g_mkdir_with_parents (data,0700);
-
-}
-
-void dt_get_plugindir(char *datadir, size_t bufsize)
-{
-#if defined(__MACH__) || defined(__APPLE__)
-  gchar *curr = g_get_current_dir();
-  int contains = 0;
-  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
-    {
-      contains = 1;
-      break;
-    }
-  if(darktable.progname[0] == '/') // absolute path
-    snprintf(datadir, bufsize, "%s", darktable.progname);
-  else if(contains) // relative path
-    snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
-  else
-  {
-    // no idea where we have been called. use compiled in path
-    g_free(curr);
-    snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
-    return;
-  }
-  size_t len = MIN(strlen(datadir), bufsize);
-  char *t = datadir + len; // strip off bin/darktable
-  for(; t>datadir && *t!='/'; t--);
-  t--;
-  if(*t == '.' && *(t-1) != '.')
-  {
-    for(; t>datadir && *t!='/'; t--);
-    t--;
-  }
-  for(; t>datadir && *t!='/'; t--);
-  g_strlcpy(t, "/lib/darktable", bufsize-(t-datadir));
-  g_free(curr);
-#else
-  snprintf(datadir, bufsize, "%s/darktable", DARKTABLE_LIBDIR);
-#endif
-}
-
-void dt_get_datadir(char *datadir, size_t bufsize)
-{
-#if defined(__MACH__) || defined(__APPLE__)
-  gchar *curr = g_get_current_dir();
-  int contains = 0;
-  for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
-    {
-      contains = 1;
-      break;
-    }
-  if(darktable.progname[0] == '/') // absolute path
-    snprintf(datadir, bufsize, "%s", darktable.progname);
-  else if(contains) // relative path
-    snprintf(datadir, bufsize, "%s/%s", curr, darktable.progname);
-  else
-  {
-    // no idea where we have been called. use compiled in path
-    g_free(curr);
-    snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
-    return;
-  }
-  size_t len = MIN(strlen(datadir), bufsize);
-  char *t = datadir + len; // strip off bin/darktable
-  for(; t>datadir && *t!='/'; t--);
-  t--;
-  if(*t == '.' && *(t-1) != '.')
-  {
-    for(; t>datadir && *t!='/'; t--);
-    t--;
-  }
-  for(; t>datadir && *t!='/'; t--);
-  g_strlcpy(t, "/share/darktable", bufsize-(t-datadir));
-  g_free(curr);
-#else
-  snprintf(datadir, bufsize, "%s", DARKTABLE_DATADIR);
 #endif
 }
 

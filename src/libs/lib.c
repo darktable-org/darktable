@@ -423,7 +423,7 @@ dt_lib_load_modules ()
   dt_lib_module_t *module;
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
-  dt_get_plugindir(plugindir, 1024);
+  dt_util_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins/lighttable", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;

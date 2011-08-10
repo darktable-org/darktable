@@ -100,7 +100,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
   g_strlcpy(view->module_name, module, 64);
   char plugindir[1024];
-  dt_get_plugindir(plugindir, 1024);
+  dt_util_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/views", 1024);
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
