@@ -636,7 +636,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           }
 
           /* process module on cpu. use tiling if needed and possible. */
-          if(module->flags() & IOP_FLAGS_ALLOW_TILING && 
+          if((module->flags() & IOP_FLAGS_ALLOW_TILING) && 
                 !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
                 max(in_bpp, bpp), tiling.factor, tiling.overhead))
             module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
@@ -676,7 +676,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         }
 
         /* process module on cpu. use tiling if needed and possible. */
-        if(module->flags() & IOP_FLAGS_ALLOW_TILING && 
+        if((module->flags() & IOP_FLAGS_ALLOW_TILING) && 
               !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
               max(in_bpp, bpp), tiling.factor, tiling.overhead))
           module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
@@ -695,7 +695,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       /* opencl is not inited or not enabled or we got no resource/device -> everything runs on cpu */
 
       /* process module on cpu. use tiling if needed and possible. */
-      if(module->flags() & IOP_FLAGS_ALLOW_TILING && 
+      if((module->flags() & IOP_FLAGS_ALLOW_TILING) && 
             !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
             max(in_bpp, bpp), tiling.factor, tiling.overhead))
         module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
@@ -707,7 +707,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     } 
 #else
     /* process module on cpu. use tiling if needed and possible. */
-    if(module->flags() & IOP_FLAGS_ALLOW_TILING && 
+    if((module->flags() & IOP_FLAGS_ALLOW_TILING) && 
           !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
           max(in_bpp, bpp), tiling.factor, tiling.overhead))
       module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
