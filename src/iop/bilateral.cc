@@ -298,7 +298,7 @@ void init_key_accels()
     sigma[0] = data->sigma[0] * roi_in->scale / piece->iscale;
     sigma[1] = data->sigma[1] * roi_in->scale / piece->iscale;
     const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
-    tiling->factor = 2 + 5;
+    tiling->factor = 2 + 50;
     tiling->overhead = 0;
     tiling->overlap = rad;
     tiling->xalign = 1;
