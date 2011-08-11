@@ -576,9 +576,9 @@ dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const 
     dt_conf_set_int("host_memory_limit", host_memory_limit);
   }
 
-  unsigned long requirement = width * height * bpp * factor + overhead;
+  float requirement = factor * width * height * bpp + overhead;
 
-  if(host_memory_limit == 0 || requirement <= (unsigned long)host_memory_limit * 1024 * 1024) return TRUE;
+  if(host_memory_limit == 0 || requirement <= host_memory_limit * 1024.0f * 1024.0f) return TRUE;
 
   return FALSE;
 }
