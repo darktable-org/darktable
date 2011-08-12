@@ -45,6 +45,11 @@ typedef enum dt_signal_t {
    */
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
+  /** \bief This signal is rasied when a thumb is doubleclicked in
+      filmstrip module.
+   */
+  DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+
   /** \brief This signal is raised when darktable.develop is initialized.
       \note any modules that wants to acces darktable->develop should connect
       to this signal to be sure darktable.develop is initialized.

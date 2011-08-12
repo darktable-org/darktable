@@ -32,6 +32,7 @@ static char *_signal_name[DT_SIGNAL_COUNT] = {
   "dt-control-draw-center",                       // DT_SIGNAL_CONTROL_DRAW_CENTER
 
   "dt-viewmanager-view-changed",                  // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+  "dt-viewmanager-filmstrip-activate",            // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
 
   "dt-collection-changed",                        // DT_SIGNAL_COLLECTION_CHANGED
 
