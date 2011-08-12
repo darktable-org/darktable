@@ -94,7 +94,7 @@ dt_database_t *dt_database_init(char *alternative)
     else       fprintf(stderr, "\n");
 #ifndef HAVE_GCONF
     fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
-    dt_get_datadir(dbfilename, 512);
+    dt_util_get_datadir(dbfilename, 512);
     fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
 #else
     fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
