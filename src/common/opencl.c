@@ -733,8 +733,8 @@ int dt_opencl_image_fits_device(const int devid, const size_t width, const size_
 {
   if(!darktable.opencl->inited || devid < 0) return FALSE;
 
-  size_t singlebuffer = width * height * bpp;
-  size_t total = factor * singlebuffer + overhead;
+  float singlebuffer = (float)width * height * bpp;
+  float total = factor * singlebuffer + overhead;
 
   if(darktable.opencl->dev[devid].max_image_width < width || darktable.opencl->dev[devid].max_image_height < height) return FALSE;
 
