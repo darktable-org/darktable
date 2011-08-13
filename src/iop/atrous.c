@@ -36,6 +36,8 @@
 
 #define GLOBAL_TILING		// undef to use atrous-specific tiling instead (only for non-opencl)
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(1)
 
 #define BANDS 6
@@ -534,9 +536,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if (dev_detail[k] == NULL) goto error;
   }
 
-  size_t sizes[] = { roi_out->width, roi_out->height, 1};
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   size_t origin[] = { 0, 0, 0};
-  size_t region[] = { roi_out->width, roi_out->height, 1};
+  size_t region[] = { width, height, 1};
 
   // copy original input from dev_in -> dev_out as starting point
   err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
@@ -558,8 +562,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_tmp);
     }
     dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 4, sizeof(float), (void *)&sharp[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 5, sizeof(unsigned int), (void *)&scale);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 6, sizeof(float), (void *)&sharp[s]);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -580,14 +586,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     }
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  3, sizeof(float), (void *)&thrs[scale][0]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  4, sizeof(float), (void *)&thrs[scale][1]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][2]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][3]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&boost[scale][0]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&boost[scale][1]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][2]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][3]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&thrs[scale][2]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&thrs[scale][3]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 11, sizeof(float), (void *)&boost[scale][2]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 12, sizeof(float), (void *)&boost[scale][3]);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
     if(err != CL_SUCCESS) goto error;

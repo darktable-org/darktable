@@ -33,14 +33,14 @@ weight(const float4 c1, const float4 c2, const float sharpen)
 
 __kernel void
 eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_only image2d_t detail,
-     const int scale, const float sharpen)
+     const int width, const int height, const int scale, const float sharpen)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int maxx = get_global_size(0) - 1;
-  const int maxy = get_global_size(1) - 1;
-  const int mult = 1<<scale;
 
+  if(x >= width || y >= height) return;
+
+  const int mult = 1<<scale;
   float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
@@ -51,8 +51,8 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
     int xx = x + mult*(i - 2);
     int yy = y + mult*(j - 2);
     /* clamp to region */
-    xx = ICLAMP(xx, 0, maxx);
-    yy = ICLAMP(yy, 0, maxy);
+    xx = ICLAMP(xx, 0, width - 1);
+    yy = ICLAMP(yy, 0, height - 1);
 
     float4 px = read_imagef(in, sampleri, (int2)(xx, yy));
     float4 w = filter[i]*filter[j]*weight(pixel, px, sharpen);
@@ -69,11 +69,14 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
 
 __kernel void
 eaw_synthesize (__write_only image2d_t out, __read_only image2d_t coarse, __read_only image2d_t detail,
+     const int width, const int height,
      const float t0, const float t1, const float t2, const float t3,
      const float b0, const float b1, const float b2, const float b3)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   const float4 threshold = (float4)(t0, t1, t2, t3);
   const float4 boost     = (float4)(b0, b1, b2, b3);

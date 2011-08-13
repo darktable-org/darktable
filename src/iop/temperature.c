@@ -33,6 +33,8 @@
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(2)
 
 typedef struct dt_iop_temperature_global_data_t
@@ -245,16 +247,21 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, coeffs);
   if (dev_coeffs == NULL) goto error;
 
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   const int kernel = ui ? gd->kernel_whitebalance_1ui : gd->kernel_whitebalance_4f;
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_coeffs);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_coeffs);
   if(ui)
   {
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(uint32_t), (void *)&filters);
-    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(uint32_t), (void *)&roi_out->x);
-    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&filters);
+    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
   }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;

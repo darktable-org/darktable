@@ -38,6 +38,8 @@ DT_MODULE(1)
 #define MAXR 12
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 typedef struct dt_iop_sharpen_params_t
 {
   float radius, amount, threshold;
@@ -103,8 +105,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
-  const size_t width = roi_in->width;
-  const size_t height = roi_in->height;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
   const int rad = MIN(MAXR, ceilf(d->radius * roi_in->scale / piece->iscale));
   const int wd = 2*rad+1;
   float mat[wd];
@@ -112,7 +114,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(rad == 0)
   {
     size_t origin[] = {0, 0, 0};
-    size_t region[] = {roi_in->width, roi_in->height, 1};
+    size_t region[] = {width, height, 1};
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if (err != CL_SUCCESS) goto error;
     return TRUE;
@@ -160,7 +162,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   /* horizontal blur */
   sizes[0] = bwidth;
-  sizes[1] = height;
+  sizes[1] = ROUNDUP(height, 4);
   sizes[2] = 1;
   local[0] = blocksize;
   local[1] = 1;
@@ -177,7 +179,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   /* vertical blur */
-  sizes[0] = width;
+  sizes[0] = ROUNDUP(width, 4);
   sizes[1] = bheight;
   sizes[2] = 1;
   local[0] = 1;
@@ -195,14 +197,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   /* mixing out and in -> out */
-  sizes[0] = width;
-  sizes[1] = height;
+  sizes[0] = ROUNDUP(width, 4);
+  sizes[1] = ROUNDUP(height, 4);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 3, sizeof(float), (void *)&d->amount);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 4, sizeof(float), (void *)&d->threshold);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 4, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 5, sizeof(float), (void *)&d->amount);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 6, sizeof(float), (void *)&d->threshold);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 

@@ -62,23 +62,6 @@ _lcm(unsigned a, unsigned b)
   return (((unsigned long)a * b) / _gcd(a, b));
 }
 
-#ifdef HAVE_OPENCL  // only used in opencl-path
-/* check if n is a prime number */
-static int
-_isprime(unsigned n)
-{
-  if(!(n % 2)) return FALSE;
-
-  unsigned limit = sqrt(n) + 1;
-
-  for(int i=3; i<=limit; i+=2)
-  {
-    if(!(n % i)) return FALSE;
-  }
-  return TRUE;
-}
-#endif
-
 
 /* if a module does not implement process_tiling() by itself, this function is called instead.
    default_process_tiling() is able to handle standard cases where pixels change their values
@@ -445,20 +428,6 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     /* no need to process (end)tiles that are smaller than overlap */
     if((wd <= overlap && tx > 0) || (ht <= overlap && ty > 0)) continue;
 
-    /* take care that end-tiles do not have a prime tile width as this can cause dramatic slow-down
-       with some opencl implementations. Within certain limits we do an x-adjustment in this case, 
-       respecting the requirements set in xyalign. */
-    int xadjust = 0;
-    if(tx > 0 && wd != width)
-    { 
-      while(xadjust <= 3*xyalign && _isprime(wd + xadjust))
-      {
-        if(wd+xadjust+xyalign > width) break;
-        xadjust += xyalign;
-      }
-    }
-    wd += xadjust;
-
     /* origin and region of effective part of tile, which we want to store later */
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { wd, ht, 1 };
@@ -468,10 +437,10 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     dt_iop_roi_t oroi = { 0, 0, wd, ht, roi_out->scale };
 
     /* offsets of tile into ivoid and ovoid */
-    size_t ioffs = (ty * tile_ht)*ipitch + (tx * tile_wd - xadjust)*in_bpp;
-    size_t ooffs = (ty * tile_ht)*opitch + (tx * tile_wd - xadjust)*out_bpp;
+    size_t ioffs = (ty * tile_ht)*ipitch + tx * tile_wd*in_bpp;
+    size_t ooffs = (ty * tile_ht)*opitch + tx * tile_wd*out_bpp;
 
-    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd-xadjust, ty*tile_ht);
+    dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] tile (%d, %d) with %d x %d at origin [%d, %d]\n", tx, ty, wd, ht, tx*tile_wd, ty*tile_ht);
 
 
     /* non-blocking memory transfer: host input buffer -> opencl/device tile */
@@ -499,9 +468,9 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
        makes sure that we only copy back the "good" part. */
     if(tx > 0)
     {
-      origin[0] += (overlap+xadjust);
-      region[0] -= (overlap+xadjust);
-      ooffs += (overlap+xadjust)*out_bpp;
+      origin[0] += overlap;
+      region[0] -= overlap;
+      ooffs += overlap*out_bpp;
     }
     if(ty > 0)
     {

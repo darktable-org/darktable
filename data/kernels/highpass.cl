@@ -23,10 +23,12 @@ const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 /* This is highpass for Lab space. We only do invert/blur/mix on L and desaturate a and b */
 
 kernel void 
-highpass_invert(read_only image2d_t in, write_only image2d_t out)
+highpass_invert(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   pixel.x = clamp(100.0f - pixel.x, 0.0f, 100.0f);
@@ -43,6 +45,8 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, constant float 
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   float4 pixel = (float4)0.0f;
+
+  if(y >= height) return;
 
   /* read pixel and fill center part of buffer */
   if(x < width)
@@ -103,6 +107,8 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, constant float 
   const int y = get_global_id(1);
   float4 pixel = (float4)0.0f;
 
+  if(x >= width) return;
+
   /* read pixel and fill center part of buffer */
   if(y < height)
   {
@@ -153,11 +159,13 @@ highpass_vblur(read_only image2d_t in, write_only image2d_t out, constant float 
 
 
 kernel void 
-highpass_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2d_t out, const float contrast_scale)
+highpass_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2d_t out,
+             const int width, const int height, const float contrast_scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
+  if(x >= width || y >= height) return;
 
   float4 o = 0.0f;
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));

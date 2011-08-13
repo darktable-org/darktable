@@ -39,7 +39,8 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define CLAMPF(a, mn, mx)       ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
@@ -240,7 +241,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   // first blur step: column by column with dev_temp1 -> dev_temp2
-  sizes[0] = width;
+  sizes[0] = ROUNDUP(width, 4);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
@@ -273,7 +274,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
   // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
-  sizes[0] = height;
+  sizes[0] = ROUNDUP(height, 4);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
@@ -307,8 +308,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 
   // final mixing step dev_temp1 -> dev_temp2
-  sizes[0] = width;
-  sizes[1] = height;
+  sizes[0] = ROUNDUP(width, 4);
+  sizes[1] = ROUNDUP(height, 4);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_temp1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_temp2);

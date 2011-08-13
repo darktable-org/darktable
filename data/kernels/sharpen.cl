@@ -30,6 +30,8 @@ sharpen_hblur(read_only image2d_t in, write_only image2d_t out, constant float *
   const int y = get_global_id(1);
   float4 pixel = (float4)0.0f;
 
+  if(y >= height) return;
+
   /* read pixel and fill center part of buffer */
   if(x < width)
   {
@@ -88,6 +90,8 @@ sharpen_vblur(read_only image2d_t in, write_only image2d_t out, constant float *
   const int y = get_global_id(1);
   float4 pixel = (float4)0.0f;
 
+  if(x >= width) return;
+
   /* read pixel and fill center part of buffer */
   if(y < height)
   {
@@ -145,10 +149,13 @@ sharpen_vblur(read_only image2d_t in, write_only image2d_t out, constant float *
  * thrs = sharpening threshold
  */  
 kernel void
-sharpen_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2d_t out, const float sharpen, const float thrs)
+sharpen_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2d_t out,
+            const int width, const int height, const float sharpen, const float thrs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in_a, sampleri, (int2)(x, y));
   float blurredx  = read_imagef(in_b, sampleri, (int2)(x, y)).x;
