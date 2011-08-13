@@ -55,7 +55,7 @@ if(USE_GCONF_BACKEND)
     install (CODE "execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET COMMAND killall -HUP gconfd-2)")
     install (CODE "message(\"-- Installing: restarting gconfd-2\")")
   else()
-    install(FILES darktable.schemas DESTINATION ./etc/gconf/schemas)
+    install(FILES darktable.schemas DESTINATION /etc/gconf/schemas)
   endif(NOT DONT_INSTALL_GCONF_SCHEMAS)
 else()
  # Setup some custom commands to generate a darktablerc template

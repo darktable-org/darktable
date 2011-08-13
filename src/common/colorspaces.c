@@ -590,11 +590,11 @@ int
 dt_colorspaces_find_profile(char *filename, const int filename_len, const char *profile, const char *inout)
 {
   char datadir[1024];
-  dt_get_user_config_dir(datadir, 1024);
+  dt_util_get_user_config_dir(datadir, 1024);
   snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_get_datadir(datadir, 1024);
+    dt_util_get_datadir(datadir, 1024);
     snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
     if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
   }

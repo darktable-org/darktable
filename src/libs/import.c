@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
 #include "dtgtk/label.h"
+#include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/camera_import_dialog.h"
 #include "libs/lib.h"
@@ -65,6 +66,14 @@ uint32_t container()
 int position()
 {
   return 999;
+}
+
+void init_key_accels()
+{
+	gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/scan for devices");
+	gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/import from camera");
+	gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/tethered shoot");
+	gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/import image");
 }
 
 #ifdef HAVE_GPHOTO2
@@ -128,6 +137,7 @@ static void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
   /* add the rescan button */
   GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
+  gtk_button_set_accel(scan,darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/scan for devices");
   gtk_button_set_alignment(scan, 0.05, 0.5);
   g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
   g_signal_connect (G_OBJECT(scan), "clicked",G_CALLBACK (_lib_import_scan_devices_callback), self);
@@ -163,10 +173,14 @@ static void _lib_import_ui_devices_update(dt_lib_module_t *self)
       /* add camera actions buttons */
       GtkWidget *ib=NULL,*tb=NULL;
       GtkWidget *vbx=gtk_vbox_new(FALSE,5);
-      if( camera->can_import==TRUE )
+      if( camera->can_import==TRUE ) {
         gtk_box_pack_start (GTK_BOX (vbx),(ib=gtk_button_new_with_label (_("import from camera"))),FALSE,FALSE,0);
-      if( camera->can_tether==TRUE )
+	gtk_button_set_accel(GTK_BUTTON(ib),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/import from camera");
+      }
+      if( camera->can_tether==TRUE ) {
         gtk_box_pack_start (GTK_BOX (vbx),(tb=gtk_button_new_with_label (_("tethered shoot"))),FALSE,FALSE,0);
+	gtk_button_set_accel(GTK_BUTTON(tb),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/tethered shoot");
+      }
 
       if( ib )
       {
@@ -413,6 +427,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* add import singel image buttons */
   GtkWidget *widget = gtk_button_new_with_label(_("image"));
+  gtk_button_set_accel(GTK_BUTTON(widget),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/import image");
   gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
   gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
   gtk_widget_set_can_focus(widget, TRUE);
@@ -424,6 +439,7 @@ void gui_init(dt_lib_module_t *self)
  
   /* adding the import folder button */
   widget = gtk_button_new_with_label(_("folder"));
+  gtk_button_set_accel(GTK_BUTTON(widget),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/import/import folder");
   gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
   gtk_widget_set_tooltip_text(widget,
                               _("select a folder to import as film roll"));

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-28 12:24+0200\n"
-"PO-Revision-Date: 2011-07-27 17:06+0100\n"
+"POT-Creation-Date: 2011-08-02 00:27+0200\n"
+"PO-Revision-Date: 2011-08-02 00:27+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -268,25 +268,25 @@ msgstr "automatische Belichtung"
 msgid "auto scale"
 msgstr "automatisch skalieren"
 
-#: ../build/src/accelstrings_gen.h:6 ../src/iop/exposure.c:356
+#: ../build/src/accelstrings_gen.h:6 ../src/iop/exposure.c:362
 msgid "black"
 msgstr "Schwarz"
 
-#: ../build/src/accelstrings_gen.h:7 ../src/iop/highlights.c:406
+#: ../build/src/accelstrings_gen.h:7 ../src/iop/highlights.c:411
 msgid "blend C"
 msgstr "mische C"
 
-#: ../build/src/accelstrings_gen.h:8 ../src/iop/highlights.c:407
+#: ../build/src/accelstrings_gen.h:8 ../src/iop/highlights.c:412
 msgid "blend h"
 msgstr "mische h"
 
-#: ../build/src/accelstrings_gen.h:9 ../src/iop/highlights.c:405
+#: ../build/src/accelstrings_gen.h:9 ../src/iop/highlights.c:410
 msgid "blend L"
 msgstr "mische L"
 
 #: ../build/src/accelstrings_gen.h:10 ../src/common/collection.c:322
-#: ../src/iop/bilateral.cc:333 ../src/iop/channelmixer.c:347
-#: ../src/iop/channelmixer.c:370 ../src/iop/temperature.c:464
+#: ../src/iop/bilateral.cc:347 ../src/iop/channelmixer.c:347
+#: ../src/iop/channelmixer.c:370 ../src/iop/temperature.c:470
 #: ../src/libs/collect.c:252 ../src/libs/collect.c:254
 msgid "blue"
 msgstr "Blau"
@@ -303,13 +303,14 @@ msgstr "Randgröße"
 msgid "center"
 msgstr "zentrieren"
 
-#: ../build/src/accelstrings_gen.h:14 ../src/iop/atrous.c:1360
+#: ../build/src/accelstrings_gen.h:14 ../src/iop/atrous.c:1225
 #: ../src/iop/equalizer.c:344 ../src/iop/nlmeans.c:469
 msgid "chroma"
 msgstr "Chrominanz"
 
-#: ../build/src/accelstrings_gen.h:15 ../src/gui/preferences.c:70
-msgid "close"
+#: ../build/src/accelstrings_gen.h:15
+#, fuzzy
+msgid "close-up"
 msgstr "schließen"
 
 #: ../build/src/accelstrings_gen.h:16 ../src/iop/grain.c:515
@@ -363,7 +364,7 @@ msgstr "verwerfen"
 msgid "down"
 msgstr "runter"
 
-#: ../build/src/accelstrings_gen.h:28 ../src/iop/demosaic.c:1007
+#: ../build/src/accelstrings_gen.h:28 ../src/iop/demosaic.c:1023
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
@@ -392,8 +393,8 @@ msgid "fit"
 msgstr "Bild einpassen"
 
 #: ../build/src/accelstrings_gen.h:35 ../src/common/collection.c:321
-#: ../src/iop/bilateral.cc:332 ../src/iop/channelmixer.c:346
-#: ../src/iop/channelmixer.c:366 ../src/iop/temperature.c:463
+#: ../src/iop/bilateral.cc:346 ../src/iop/channelmixer.c:346
+#: ../src/iop/channelmixer.c:366 ../src/iop/temperature.c:469
 #: ../src/libs/collect.c:246 ../src/libs/collect.c:248
 msgid "green"
 msgstr "Grün"
@@ -427,232 +428,228 @@ msgstr "Kontrast erhöhen"
 msgid "interface"
 msgstr "Oberfläche"
 
-#: ../build/src/accelstrings_gen.h:43
-msgid "invert"
-msgstr "Auswahl invertieren"
-
 # war "Trapezkorrektur h", aber zu lang für GUI (Bug?)
-#: ../build/src/accelstrings_gen.h:44 ../src/iop/clipping.c:852
+#: ../build/src/accelstrings_gen.h:43 ../src/iop/clipping.c:852
 msgid "keystone h"
 msgstr "Trapez h"
 
 # siehe "keystone h"
-#: ../build/src/accelstrings_gen.h:45 ../src/iop/clipping.c:860
+#: ../build/src/accelstrings_gen.h:44 ../src/iop/clipping.c:860
 msgid "keystone v"
 msgstr "Trapez v"
 
-#: ../build/src/accelstrings_gen.h:46
+#: ../build/src/accelstrings_gen.h:45
 msgid "leave fullscreen"
 msgstr "Vollbild verlassen"
 
-#: ../build/src/accelstrings_gen.h:47
+#: ../build/src/accelstrings_gen.h:46
 msgid "left"
 msgstr "links"
 
-#: ../build/src/accelstrings_gen.h:48 ../src/iop/basecurve.c:50
-#: ../src/iop/profile_gamma.c:181 ../src/iop/tonecurve.c:133
+#: ../build/src/accelstrings_gen.h:47 ../src/iop/basecurve.c:51
+#: ../src/iop/profile_gamma.c:181 ../src/iop/tonecurve.c:132
 msgid "linear"
 msgstr "linear"
 
-#: ../build/src/accelstrings_gen.h:49
+#: ../build/src/accelstrings_gen.h:48
 #, fuzzy
 msgid "localc"
 msgstr "Lokaler Kontrast"
 
 # siehe equalizer (deprecated)
 #. make sure you put all your translatable strings into _() !
-#: ../build/src/accelstrings_gen.h:50 ../src/iop/anlfyeni.c:81
+#: ../build/src/accelstrings_gen.h:49 ../src/iop/anlfyeni.c:81
 #: ../src/iop/localc.c:81
 msgid "local contrast 2"
 msgstr "Lokaler Kontrast 2"
 
-#: ../build/src/accelstrings_gen.h:51
+#: ../build/src/accelstrings_gen.h:50
 #, fuzzy
 msgid "local_contrast_2"
 msgstr "Lokaler Kontrast 2"
 
-#: ../build/src/accelstrings_gen.h:52 ../src/iop/atrous.c:1358
+#: ../build/src/accelstrings_gen.h:51 ../src/iop/atrous.c:1223
 #: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:467
 msgid "luma"
 msgstr "Luminanz"
 
-#: ../build/src/accelstrings_gen.h:53 ../src/gui/gtk.c:2510
+#: ../build/src/accelstrings_gen.h:52 ../src/gui/gtk.c:2510
 msgid "max"
 msgstr "Maximum"
 
-#: ../build/src/accelstrings_gen.h:54 ../src/gui/gtk.c:2509
+#: ../build/src/accelstrings_gen.h:53 ../src/gui/gtk.c:2509
 msgid "min"
 msgstr "Minimum"
 
-#: ../build/src/accelstrings_gen.h:55
+#: ../build/src/accelstrings_gen.h:54
 msgid "navigate"
 msgstr "Navigation"
 
-#: ../build/src/accelstrings_gen.h:56 ../src/iop/clipping.c:913
+#: ../build/src/accelstrings_gen.h:55 ../src/iop/clipping.c:913
 msgid "none"
 msgstr "keine"
 
-#: ../build/src/accelstrings_gen.h:57
+#: ../build/src/accelstrings_gen.h:56
 msgid "out"
 msgstr "herauszoomen"
 
-#: ../build/src/accelstrings_gen.h:58
+#: ../build/src/accelstrings_gen.h:57
 msgid "page down"
 msgstr "Eine Seite runter"
 
-#: ../build/src/accelstrings_gen.h:59
+#: ../build/src/accelstrings_gen.h:58
 msgid "page up"
 msgstr "Eine Seite hoch"
 
-#: ../build/src/accelstrings_gen.h:60 ../src/libs/copy_history.c:227
+#: ../build/src/accelstrings_gen.h:59 ../src/libs/copy_history.c:227
 msgid "paste"
 msgstr "einfügen"
 
-#: ../build/src/accelstrings_gen.h:61 ../src/iop/borders.c:404
+#: ../build/src/accelstrings_gen.h:60 ../src/iop/borders.c:404
 #: ../src/iop/colorzones.c:799
 msgid "pick gui color from image"
 msgstr "GUI-Farbe aus dem Bild übernehmen"
 
-#: ../build/src/accelstrings_gen.h:62
+#: ../build/src/accelstrings_gen.h:61
 msgid "pick primary color"
 msgstr "erste Farbe wählen"
 
-#: ../build/src/accelstrings_gen.h:63
+#: ../build/src/accelstrings_gen.h:62
 msgid "pick secondary color"
 msgstr "zweite Farbe wählen"
 
-#: ../build/src/accelstrings_gen.h:64
+#: ../build/src/accelstrings_gen.h:63
 msgid "plugins"
 msgstr "Module"
 
-#: ../build/src/accelstrings_gen.h:65
+#: ../build/src/accelstrings_gen.h:64
 msgid "preview"
 msgstr "Vorschau"
 
-#: ../build/src/accelstrings_gen.h:66 ../src/common/collection.c:323
+#: ../build/src/accelstrings_gen.h:65 ../src/common/collection.c:323
 #: ../src/libs/collect.c:258 ../src/libs/collect.c:260
 msgid "purple"
 msgstr "Violett"
 
-#: ../build/src/accelstrings_gen.h:67
+#: ../build/src/accelstrings_gen.h:66
 msgid "quit"
 msgstr "verlassen"
 
-#: ../build/src/accelstrings_gen.h:68 ../src/gui/gtk.c:1744
+#: ../build/src/accelstrings_gen.h:67 ../src/gui/gtk.c:1744
 msgid "rating"
 msgstr "Bewertung"
 
-#: ../build/src/accelstrings_gen.h:69 ../src/common/collection.c:319
-#: ../src/iop/bilateral.cc:331 ../src/iop/channelmixer.c:345
-#: ../src/iop/channelmixer.c:362 ../src/iop/temperature.c:462
+#: ../build/src/accelstrings_gen.h:68 ../src/common/collection.c:319
+#: ../src/iop/bilateral.cc:345 ../src/iop/channelmixer.c:345
+#: ../src/iop/channelmixer.c:362 ../src/iop/temperature.c:468
 #: ../src/libs/collect.c:234 ../src/libs/collect.c:236
 msgid "red"
 msgstr "Rot"
 
-#: ../build/src/accelstrings_gen.h:70
+#: ../build/src/accelstrings_gen.h:69
 msgid "refresh"
 msgstr "neu laden"
 
-#: ../build/src/accelstrings_gen.h:71
+#: ../build/src/accelstrings_gen.h:70
 msgid "reject"
 msgstr "abgelehnt"
 
-#: ../build/src/accelstrings_gen.h:72
+#: ../build/src/accelstrings_gen.h:71
 msgid "remove from collection"
 msgstr "aus der Kollektion entfernen"
 
-#: ../build/src/accelstrings_gen.h:73
+#: ../build/src/accelstrings_gen.h:72
 msgid "reset camera from exif data"
 msgstr "Kamera auf EXIF-Angabe zurücksetzen"
 
-#: ../build/src/accelstrings_gen.h:74
+#: ../build/src/accelstrings_gen.h:73
 msgid "reset distance from exif data"
 msgstr "Entfernung auf EXIF-Angabe zurücksetzen"
 
-#: ../build/src/accelstrings_gen.h:75
+#: ../build/src/accelstrings_gen.h:74
 msgid "reset lens from exif data"
 msgstr "Objektiv auf EXIF-Angabe zurücksetzen"
 
-#: ../build/src/accelstrings_gen.h:76
+#: ../build/src/accelstrings_gen.h:75
 msgid "reset plugin parameters"
 msgstr "Modul-Einstellungen zurücksetzen"
 
-#: ../build/src/accelstrings_gen.h:77
+#: ../build/src/accelstrings_gen.h:76
 msgid "right"
 msgstr "rechts"
 
-#: ../build/src/accelstrings_gen.h:78 ../src/libs/image.c:119
+#: ../build/src/accelstrings_gen.h:77 ../src/libs/image.c:119
 msgid "rotate selected images 90 degrees ccw"
 msgstr "Ausgewählte Bilder um 90° gegen den Uhrzeigersinn drehen"
 
-#: ../build/src/accelstrings_gen.h:79 ../src/libs/image.c:125
+#: ../build/src/accelstrings_gen.h:78 ../src/libs/image.c:125
 msgid "rotate selected images 90 degrees cw"
 msgstr "Ausgewählte Bilder um 90° im Uhrzeigersinn drehen"
 
-#: ../build/src/accelstrings_gen.h:80 ../src/iop/graduatednd.c:540
+#: ../build/src/accelstrings_gen.h:79 ../src/iop/graduatednd.c:540
 msgid "rotation"
 msgstr "Drehung"
 
-#: ../build/src/accelstrings_gen.h:81 ../src/iop/channelmixer.c:343
+#: ../build/src/accelstrings_gen.h:80 ../src/iop/channelmixer.c:343
 #: ../src/iop/colorcorrection.c:197 ../src/iop/colorzones.c:793
 #: ../src/iop/colorzones.c:811 ../src/iop/graduatednd.c:527
-#: ../src/iop/lowpass.c:628 ../src/iop/soften.c:347
+#: ../src/iop/lowpass.c:701 ../src/iop/soften.c:347
 #: ../src/iop/splittoning.c:433 ../src/iop/splittoning.c:493
 #: ../src/iop/velvia.c:237 ../src/iop/vignette.c:853
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../build/src/accelstrings_gen.h:82 ../src/iop/anlfyeni.c:295
+#: ../build/src/accelstrings_gen.h:81 ../src/iop/anlfyeni.c:295
 #: ../src/iop/lens.c:1381 ../src/iop/localc.c:300 ../src/iop/vignette.c:848
 #: ../src/iop/watermark.c:681
 msgid "scale"
 msgstr "Skalierung"
 
-#: ../build/src/accelstrings_gen.h:83
+#: ../build/src/accelstrings_gen.h:82
 msgid "scroll"
 msgstr "scrollen"
 
-#: ../build/src/accelstrings_gen.h:84
+#: ../build/src/accelstrings_gen.h:83
 msgid "scroll back"
 msgstr "nach links scrollen"
 
-#: ../build/src/accelstrings_gen.h:85
+#: ../build/src/accelstrings_gen.h:84
 msgid "scroll forward"
 msgstr "nach rechts scrollen"
 
-#: ../build/src/accelstrings_gen.h:86 ../src/iop/anlfyeni.c:291
+#: ../build/src/accelstrings_gen.h:85 ../src/iop/anlfyeni.c:291
 #: ../src/iop/localc.c:296
 msgid "sensitivity"
 msgstr "Empfindlichkeit"
 
-#: ../build/src/accelstrings_gen.h:87 ../src/iop/atrous.c:1362
+#: ../build/src/accelstrings_gen.h:86 ../src/iop/atrous.c:1227
 #: ../src/iop/highpass.c:423
 msgid "sharpness"
 msgstr "Schärfe"
 
-#: ../build/src/accelstrings_gen.h:88
+#: ../build/src/accelstrings_gen.h:87
 msgid "show"
 msgstr "anzeigen"
 
-#: ../build/src/accelstrings_gen.h:89
+#: ../build/src/accelstrings_gen.h:88
 msgid "show plugin"
 msgstr "Modul zeigen"
 
-#: ../build/src/accelstrings_gen.h:90
+#: ../build/src/accelstrings_gen.h:89
 msgid "show preset menu"
 msgstr "Voreinstellungs-Menü zeigen"
 
-#: ../build/src/accelstrings_gen.h:91 ../src/iop/bloom.c:332
+#: ../build/src/accelstrings_gen.h:90 ../src/iop/bloom.c:332
 #: ../src/iop/soften.c:345 ../src/libs/camera.c:561
 msgid "size"
 msgstr "Größe"
 
 # nicht schön
-#: ../build/src/accelstrings_gen.h:92 ../src/iop/graduatednd.c:542
+#: ../build/src/accelstrings_gen.h:91 ../src/iop/graduatednd.c:542
 msgid "split"
 msgstr "Teilung"
 
-#: ../build/src/accelstrings_gen.h:93 ../src/iop/anlfyeni.c:299
+#: ../build/src/accelstrings_gen.h:92 ../src/iop/anlfyeni.c:299
 #: ../src/iop/bloom.c:336 ../src/iop/grain.c:517 ../src/iop/hotpixels.c:283
 #: ../src/iop/localc.c:304
 msgid "strength"
@@ -660,61 +657,61 @@ msgstr "Stärke"
 
 #. TODO: what about this?
 #. g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
-#: ../build/src/accelstrings_gen.h:94 ../src/iop/borders.c:392
+#: ../build/src/accelstrings_gen.h:93 ../src/iop/borders.c:392
 msgid "swap the aspect ratio"
 msgstr "Seitenverhältnis tauschen"
 
-#: ../build/src/accelstrings_gen.h:95
+#: ../build/src/accelstrings_gen.h:94
 msgid "switch view"
 msgstr "Ansicht wechseln"
 
-#: ../build/src/accelstrings_gen.h:96 ../src/iop/lens.c:1407
+#: ../build/src/accelstrings_gen.h:95 ../src/iop/lens.c:1407
 msgid "tca B"
 msgstr "TCA B"
 
-#: ../build/src/accelstrings_gen.h:97 ../src/iop/lens.c:1406
+#: ../build/src/accelstrings_gen.h:96 ../src/iop/lens.c:1406
 msgid "tca R"
 msgstr "TCA R"
 
-#: ../build/src/accelstrings_gen.h:98 ../src/iop/bloom.c:334
-#: ../src/iop/hotpixels.c:275 ../src/iop/sharpen.c:392
+#: ../build/src/accelstrings_gen.h:97 ../src/iop/bloom.c:334
+#: ../src/iop/hotpixels.c:275 ../src/iop/sharpen.c:474
 msgid "threshold"
 msgstr "Schwellwert"
 
-#: ../build/src/accelstrings_gen.h:99
+#: ../build/src/accelstrings_gen.h:98
 msgid "toggle film strip"
 msgstr "Filmstreifen ein-/ausblenden"
 
-#: ../build/src/accelstrings_gen.h:100
+#: ../build/src/accelstrings_gen.h:99
 msgid "toggle fullscreen"
 msgstr "Vollbild umschalten"
 
-#: ../build/src/accelstrings_gen.h:101
+#: ../build/src/accelstrings_gen.h:100
 msgid "toggle side borders"
 msgstr "Seitenränder umschalten"
 
-#: ../build/src/accelstrings_gen.h:102
+#: ../build/src/accelstrings_gen.h:101
 msgid "toggle softproofing"
 msgstr "Softproofing umschalten"
 
-#: ../build/src/accelstrings_gen.h:103
+#: ../build/src/accelstrings_gen.h:102
 msgid "undo"
 msgstr "rückgängig machen"
 
-#: ../build/src/accelstrings_gen.h:104
+#: ../build/src/accelstrings_gen.h:103
 msgid "up"
 msgstr "hoch"
 
-#: ../build/src/accelstrings_gen.h:105
+#: ../build/src/accelstrings_gen.h:104
 msgid "views"
 msgstr "Ansichten"
 
-#: ../build/src/accelstrings_gen.h:106 ../src/common/collection.c:320
+#: ../build/src/accelstrings_gen.h:105 ../src/common/collection.c:320
 #: ../src/libs/collect.c:240 ../src/libs/collect.c:242
 msgid "yellow"
 msgstr "Gelb"
 
-#: ../build/src/accelstrings_gen.h:107
+#: ../build/src/accelstrings_gen.h:106
 msgid "zoom"
 msgstr "Zoom"
 
@@ -765,22 +762,22 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../src/common/darktable.c:486
+#: ../src/common/darktable.c:487
 #, c-format
 msgid "found strange path `%s'"
 msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
 
-#: ../src/common/darktable.c:514
+#: ../src/common/darktable.c:515
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
 
-#: ../src/common/darktable.c:535 ../src/gui/gtk.c:1028
+#: ../src/common/darktable.c:536 ../src/gui/gtk.c:1028
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:547 ../src/gui/gtk.c:1013
+#: ../src/common/darktable.c:548 ../src/gui/gtk.c:1013
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
@@ -869,28 +866,28 @@ msgstr[1] "%d Bilder aufnehmen"
 msgid "please set your camera to manual mode first!"
 msgstr "Bitte die Kamera erst auf manuellen Modus setzen!"
 
-#: ../src/control/jobs/camera_jobs.c:274
+#: ../src/control/jobs/camera_jobs.c:276
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d nach %s importiert"
 
-#: ../src/control/jobs/camera_jobs.c:334
+#: ../src/control/jobs/camera_jobs.c:336
 msgid "starting to import images from camera"
 msgstr "Starte Import der Bilder von der Kamera"
 
-#: ../src/control/jobs/camera_jobs.c:351
+#: ../src/control/jobs/camera_jobs.c:353
 #, c-format
 msgid "failed to create import path `%s', import aborted."
 msgstr "Fehler beim Erstellen des Import-Pfades ‚%s‘, Import abgebrochen"
 
-#: ../src/control/jobs/camera_jobs.c:360
+#: ../src/control/jobs/camera_jobs.c:362
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "%d Bild von Kamera importieren"
 msgstr[1] "%d Bilder von Kamera importieren"
 
-#: ../src/control/jobs/camera_jobs.c:382
+#: ../src/control/jobs/camera_jobs.c:384
 msgid "failed to create filmroll for camera import, import aborted."
 msgstr ""
 "Fehler beim Erstellen einer Filmrolle für den Kamera-Import, Import "
@@ -1133,60 +1130,60 @@ msgstr "zurücksetzen"
 msgid "background jobs"
 msgstr "Hintergrundjobs"
 
-#: ../src/gui/camera_import_dialog.c:229
+#: ../src/gui/camera_import_dialog.c:232
 msgid "store value as default"
 msgstr "Als Standard speichern"
 
-#: ../src/gui/camera_import_dialog.c:236
+#: ../src/gui/camera_import_dialog.c:239
 msgid "reset value to default"
 msgstr "Auf Standard zurücksetzen"
 
-#: ../src/gui/camera_import_dialog.c:260
+#: ../src/gui/camera_import_dialog.c:263
 msgid "import images from camera"
 msgstr "Bilder von Kamera importieren"
 
-#: ../src/gui/camera_import_dialog.c:260
+#: ../src/gui/camera_import_dialog.c:263
 msgid "cancel"
 msgstr "Abbrechen"
 
-#: ../src/gui/camera_import_dialog.c:260
+#: ../src/gui/camera_import_dialog.c:263
 msgctxt "camera import"
 msgid "import"
 msgstr "Importieren"
 
-#: ../src/gui/camera_import_dialog.c:268
+#: ../src/gui/camera_import_dialog.c:271
 msgid "my jobcode"
 msgstr "Mein Job-Kode"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:276
+#: ../src/gui/camera_import_dialog.c:279
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr "Bitte warten, Vorschaubilder werden von der Kamera geholt …"
 
 #. jobcode
-#: ../src/gui/camera_import_dialog.c:282 ../src/libs/capture.c:104
+#: ../src/gui/camera_import_dialog.c:285 ../src/libs/capture.c:104
 msgid "jobcode"
 msgstr "Job-Kode"
 
-#: ../src/gui/camera_import_dialog.c:294
+#: ../src/gui/camera_import_dialog.c:297
 msgid "thumbnail"
 msgstr "Vorschau"
 
-#: ../src/gui/camera_import_dialog.c:298
+#: ../src/gui/camera_import_dialog.c:301
 msgid "storage file"
 msgstr "Dateiname"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:317
+#: ../src/gui/camera_import_dialog.c:320
 msgid "general"
 msgstr "allgemein"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:320 ../src/gui/gtk.c:920
+#: ../src/gui/camera_import_dialog.c:323 ../src/gui/gtk.c:920
 msgid "ignore jpeg files"
 msgstr "JPEG-Dateien ignorieren"
 
-#: ../src/gui/camera_import_dialog.c:321 ../src/gui/gtk.c:921
+#: ../src/gui/camera_import_dialog.c:324 ../src/gui/gtk.c:921
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -1194,11 +1191,11 @@ msgstr ""
 "Lade keine Dateien mit der Endung .JPG oder .JPEG. Dies kann nützlich sein, "
 "wenn es RAW+JPEG im gleichen Ordner gibt."
 
-#: ../src/gui/camera_import_dialog.c:326
+#: ../src/gui/camera_import_dialog.c:329
 msgid "delete originals after import"
 msgstr "Originale nach dem Import löschen"
 
-#: ../src/gui/camera_import_dialog.c:330
+#: ../src/gui/camera_import_dialog.c:333
 msgid ""
 "check this option if you want to delete images on camera after download to "
 "computer"
@@ -1206,11 +1203,11 @@ msgstr ""
 "Diese Option auswählen, wenn die Bilder auf der Kamera gelöscht werden "
 "sollen, nachdem sie auf den Computer geladen wurden"
 
-#: ../src/gui/camera_import_dialog.c:334
+#: ../src/gui/camera_import_dialog.c:337
 msgid "override today's date"
 msgstr "Heutiges Datum überschreiben"
 
-#: ../src/gui/camera_import_dialog.c:336
+#: ../src/gui/camera_import_dialog.c:339
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -1224,11 +1221,11 @@ msgstr ""
 
 # etwas zu frei übersetzt?
 #. Storage structure
-#: ../src/gui/camera_import_dialog.c:347
+#: ../src/gui/camera_import_dialog.c:350
 msgid "storage structure"
 msgstr "Speicherort"
 
-#: ../src/gui/camera_import_dialog.c:348
+#: ../src/gui/camera_import_dialog.c:351
 msgid ""
 "the following three settings describe the directory structure and file "
 "renaming for import storage and images; if you dont know how to use this, "
@@ -1238,29 +1235,29 @@ msgstr ""
 "Dateibenennung für Importspeicher und -bilder; wenn nicht klar ist, wie es "
 "benutzt werden soll, die Standardwerte beibehalten."
 
-#: ../src/gui/camera_import_dialog.c:354
+#: ../src/gui/camera_import_dialog.c:357
 msgid "storage directory"
 msgstr "Speicher-Verzeichnis"
 
-#: ../src/gui/camera_import_dialog.c:357
+#: ../src/gui/camera_import_dialog.c:360
 msgid "directory structure"
 msgstr "Verzeichnis-Struktur"
 
-#: ../src/gui/camera_import_dialog.c:361
+#: ../src/gui/camera_import_dialog.c:364
 msgid "filename structure"
 msgstr "Aufbau des Dateinamens"
 
 #. Add example
-#: ../src/gui/camera_import_dialog.c:365
+#: ../src/gui/camera_import_dialog.c:368
 msgid "above settings expands to:"
 msgstr "Beispiel zur aktuellen Einstellung:"
 
 #. External backup
-#: ../src/gui/camera_import_dialog.c:376
+#: ../src/gui/camera_import_dialog.c:379
 msgid "external backup"
 msgstr "Externes Backup"
 
-#: ../src/gui/camera_import_dialog.c:377
+#: ../src/gui/camera_import_dialog.c:380
 msgid ""
 "external backup is an option to automatic do a backup of the imported image"
 "(s) to another physical location, when activated it does looks for specified "
@@ -1276,21 +1273,21 @@ msgstr ""
 "heruntergeladen wurde, dann wird es in die gefundenen Sicherungsziele "
 "repliziert."
 
-#: ../src/gui/camera_import_dialog.c:383
+#: ../src/gui/camera_import_dialog.c:386
 msgid "enable backup"
 msgstr "Backup aktivieren"
 
-#: ../src/gui/camera_import_dialog.c:385
+#: ../src/gui/camera_import_dialog.c:388
 msgid "check this option to enable automatic backup of imported images"
 msgstr ""
 "Diese Option auswählen, um ein automatisches Backup der importierten Bilder "
 "zu aktivieren"
 
-#: ../src/gui/camera_import_dialog.c:387
+#: ../src/gui/camera_import_dialog.c:390
 msgid "warn if no backup destinations are present"
 msgstr "Warnen, wenn keine Backup-Ziele verfügbar sind"
 
-#: ../src/gui/camera_import_dialog.c:389
+#: ../src/gui/camera_import_dialog.c:392
 msgid ""
 "check this option to get an interactive warning if no backupdestinations are "
 "present"
@@ -1298,11 +1295,11 @@ msgstr ""
 "Diese Option auswählen, um eine interaktive Warnung zu bekommen, wenn keine "
 "Backup-Ziele verfügbar sind"
 
-#: ../src/gui/camera_import_dialog.c:391
+#: ../src/gui/camera_import_dialog.c:394
 msgid "backup foldername"
 msgstr "Backup-Verzeichnisname"
 
-#: ../src/gui/camera_import_dialog.c:393
+#: ../src/gui/camera_import_dialog.c:396
 msgid ""
 "this is the name of folder that indicates a backup destination,\n"
 "if such a folder is found in any mounter media it is used as a backup "
@@ -1312,16 +1309,16 @@ msgstr ""
 "wenn ein solches Verzeichnis auf einem eingehängten\n"
 "Medium gefunden wird, wird es als Backup-Ziel benutzt."
 
-#: ../src/gui/camera_import_dialog.c:409
+#: ../src/gui/camera_import_dialog.c:412
 msgid "images"
 msgstr "Bilder"
 
-#: ../src/gui/camera_import_dialog.c:410
+#: ../src/gui/camera_import_dialog.c:413
 msgid "settings"
 msgstr "Einstellungen"
 
 #. Lets run dialog
-#: ../src/gui/camera_import_dialog.c:567
+#: ../src/gui/camera_import_dialog.c:584
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
@@ -1329,19 +1326,23 @@ msgstr ""
 "Bilder aus der Liste auswählen, die in eine neue Film-Rolle importiert "
 "werden sollen"
 
-#: ../src/gui/camera_import_dialog.c:608
+#: ../src/gui/camera_import_dialog.c:629
 msgid "please set the basedirectory settings before importing"
 msgstr ""
 "Die Basisverzeichnis-Einstellungen müssen vor dem Importieren gesetzt werden"
 
-#: ../src/gui/camera_import_dialog.c:615
+#: ../src/gui/camera_import_dialog.c:636
 msgid "please set the subdirectory settings before importing"
 msgstr ""
 "Die Unterverzeichnis-Einstellungen müssen vor dem Importieren gesetzt werden"
 
-#: ../src/gui/camera_import_dialog.c:622
+#: ../src/gui/camera_import_dialog.c:643
 msgid "please set the filenamepattern settings before importing"
 msgstr "Das Dateinamenformat muss vor dem Importieren gesetzt werden"
+
+#: ../src/gui/camera_import_dialog.c:650
+msgid "please use YYYY-MM-DD format for date override"
+msgstr ""
 
 #. Add the rescan button
 #: ../src/gui/devices.c:145
@@ -1519,7 +1520,7 @@ msgstr "Blende"
 
 #. exposure
 #: ../src/gui/gtk.c:1985 ../src/gui/presets.c:308 ../src/iop/exposure.c:42
-#: ../src/iop/exposure.c:361 ../src/iop/relight.c:301
+#: ../src/iop/exposure.c:367 ../src/iop/relight.c:301
 msgid "exposure"
 msgstr "Belichtung"
 
@@ -1749,6 +1750,10 @@ msgstr "Effektgruppe"
 #: ../src/gui/preferences.c:68
 msgid "darktable preferences"
 msgstr "darktable-Voreinstellungen"
+
+#: ../src/gui/preferences.c:70
+msgid "close"
+msgstr "schließen"
 
 #: ../src/gui/preferences.c:117
 msgid "shortcuts"
@@ -2326,152 +2331,151 @@ msgid "equalizer"
 msgstr "Equalizer"
 
 # uh. passt das so?
-#: ../src/iop/atrous.c:773
+#: ../src/iop/atrous.c:638
 msgid "enhance coarse"
 msgstr "grobe Strukturen verstärken"
 
-#: ../src/iop/atrous.c:787
+#: ../src/iop/atrous.c:652
 msgid "sharpen and denoise (strong)"
 msgstr "schärfen und entrauschen (stark)"
 
-#: ../src/iop/atrous.c:801
+#: ../src/iop/atrous.c:666
 msgid "sharpen and denoise"
 msgstr "schärfen und entrauschen"
 
-#: ../src/iop/atrous.c:815 ../src/iop/equalizer.c:260
+#: ../src/iop/atrous.c:680 ../src/iop/equalizer.c:260
 msgid "sharpen (strong)"
 msgstr "schärfen (stark)"
 
-#: ../src/iop/atrous.c:829
+#: ../src/iop/atrous.c:694
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "schärfen"
 
-#: ../src/iop/atrous.c:843 ../src/iop/bilateral.cc:73
-#: ../src/iop/equalizer.c:286
+#: ../src/iop/atrous.c:708 ../src/iop/equalizer.c:286
 msgid "denoise"
 msgstr "entrauschen"
 
-#: ../src/iop/atrous.c:859 ../src/iop/equalizer.c:296
+#: ../src/iop/atrous.c:724 ../src/iop/equalizer.c:296
 msgid "denoise (strong)"
 msgstr "entrauschen (stark)"
 
-#: ../src/iop/atrous.c:874 ../src/iop/bloom.c:67
+#: ../src/iop/atrous.c:739 ../src/iop/bloom.c:67
 msgid "bloom"
 msgstr "Überstrahlung"
 
-#: ../src/iop/atrous.c:888
+#: ../src/iop/atrous.c:753
 msgid "clarity (subtle)"
 msgstr "Klarheit (schwach)"
 
-#: ../src/iop/atrous.c:902
+#: ../src/iop/atrous.c:767
 msgid "clarity"
 msgstr "Klarheit"
 
-#: ../src/iop/atrous.c:1150 ../src/iop/atrous.c:1154
+#: ../src/iop/atrous.c:1015 ../src/iop/atrous.c:1019
 msgid "coarse"
 msgstr "grob"
 
-#: ../src/iop/atrous.c:1156 ../src/iop/atrous.c:1160
+#: ../src/iop/atrous.c:1021 ../src/iop/atrous.c:1025
 msgid "fine"
 msgstr "fein"
 
-#: ../src/iop/atrous.c:1167
+#: ../src/iop/atrous.c:1032
 msgid "contrasty"
 msgstr "kontrastreich"
 
 # ist das eine passende Übersetzung?
-#: ../src/iop/atrous.c:1168 ../src/iop/atrous.c:1172
+#: ../src/iop/atrous.c:1033 ../src/iop/atrous.c:1037
 msgid "smooth"
 msgstr "gleichmäßig"
 
-#: ../src/iop/atrous.c:1173
+#: ../src/iop/atrous.c:1038
 msgid "noisy"
 msgstr "verrauscht"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1176
+#: ../src/iop/atrous.c:1041
 msgid "bold"
 msgstr "kräftig"
 
-#: ../src/iop/atrous.c:1177
+#: ../src/iop/atrous.c:1042
 msgid "dull"
 msgstr "matt"
 
 # uh, häßlich
-#: ../src/iop/atrous.c:1359
+#: ../src/iop/atrous.c:1224
 msgid "change lightness at each feature size"
 msgstr "Helligkeit bei jeder Strukturgröße ändern"
 
-#: ../src/iop/atrous.c:1361
+#: ../src/iop/atrous.c:1226
 msgid "change color saturation at each feature size"
 msgstr "Farbsättigung bei jeder Strukturgröße ändern"
 
-#: ../src/iop/atrous.c:1363
+#: ../src/iop/atrous.c:1228
 msgid "sharpness of edges at each feature size"
 msgstr "Kantenschärfe bei jeder Strukturgröße"
 
-#: ../src/iop/atrous.c:1399 ../src/iop/soften.c:352
+#: ../src/iop/atrous.c:1264 ../src/iop/soften.c:352
 msgid "mix"
 msgstr "einblenden"
 
-#: ../src/iop/atrous.c:1400
+#: ../src/iop/atrous.c:1265
 msgid "make effect stronger or weaker"
 msgstr "mache den Effekt stärker oder schwächer"
 
-#: ../src/iop/basecurve.c:51
+#: ../src/iop/basecurve.c:52
 msgid "dark contrast"
 msgstr "dunkler Kontrast"
 
-#: ../src/iop/basecurve.c:52
+#: ../src/iop/basecurve.c:53
 msgid "canon eos like"
 msgstr "Canon EOS-artig"
 
-#: ../src/iop/basecurve.c:53
+#: ../src/iop/basecurve.c:54
 msgid "nikon like"
 msgstr "Nikon-artig"
 
-#: ../src/iop/basecurve.c:54
+#: ../src/iop/basecurve.c:55
 msgid "sony alpha like"
 msgstr "Sony Alpha-artig"
 
-#: ../src/iop/basecurve.c:55
+#: ../src/iop/basecurve.c:56
 msgid "pentax like"
 msgstr "Pentax-artig"
 
-#: ../src/iop/basecurve.c:56
+#: ../src/iop/basecurve.c:57
 msgid "olympus like"
 msgstr "Olympus-artig"
 
-#: ../src/iop/basecurve.c:57
+#: ../src/iop/basecurve.c:58
 msgid "panasonic like"
 msgstr "Panasonic-artig"
 
-#: ../src/iop/basecurve.c:58
+#: ../src/iop/basecurve.c:59
 msgid "leica like"
 msgstr "Leica-artig"
 
-#: ../src/iop/basecurve.c:59
+#: ../src/iop/basecurve.c:60
 msgid "kodak easyshare like"
 msgstr "Kodak EasyShare-artig"
 
-#: ../src/iop/basecurve.c:60
+#: ../src/iop/basecurve.c:61
 msgid "konica minolta like"
 msgstr "Konica Minolta-artig"
 
-#: ../src/iop/basecurve.c:61
+#: ../src/iop/basecurve.c:62
 msgid "fotogenetic (point & shoot)"
 msgstr "Fotogenic (Point & Shoot)"
 
-#: ../src/iop/basecurve.c:62
+#: ../src/iop/basecurve.c:63
 msgid "fotogenetic (EV3)"
 msgstr "Fotogenetic (EV3)"
 
-#: ../src/iop/basecurve.c:134
+#: ../src/iop/basecurve.c:139
 msgid "base curve"
 msgstr "Basiskurve"
 
-#: ../src/iop/basecurve.c:614
+#: ../src/iop/basecurve.c:644
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on RGB channels"
@@ -2479,24 +2483,37 @@ msgstr ""
 "x-Wert: Eingabe, y-Wert: Ausgabe\n"
 "arbeitet auf den RGB-Kanälen"
 
-#: ../src/iop/bilateral.cc:325
+#: ../src/iop/basecurve.c:651
+msgid "invert colors"
+msgstr "Farben invertieren"
+
+#: ../src/iop/basecurve.c:653
+msgid "invert the colors of the image. useful for scanned negatives."
+msgstr ""
+"Invertiere die Farben im Bild. Dies ist nützlich für gescannte Negative."
+
+#: ../src/iop/bilateral.cc:73
+msgid "denoise (bilateral filter)"
+msgstr ""
+
+#: ../src/iop/bilateral.cc:339
 msgid "spatial extent of the gaussian"
 msgstr "Ausdehnung des Gaußschen Weichzeichners"
 
-#: ../src/iop/bilateral.cc:326
+#: ../src/iop/bilateral.cc:340
 msgid "how much to blur red"
 msgstr "wie stark soll Rot weichgezeichnet werden"
 
-#: ../src/iop/bilateral.cc:327
+#: ../src/iop/bilateral.cc:341
 msgid "how much to blur green"
 msgstr "wie stark soll Grün weichgezeichnet werden"
 
-#: ../src/iop/bilateral.cc:328
+#: ../src/iop/bilateral.cc:342
 msgid "how much to blur blue"
 msgstr "wie stark soll Blau weichgezeichnet werden"
 
-#: ../src/iop/bilateral.cc:330 ../src/iop/clahe.c:344 ../src/iop/lowpass.c:626
-#: ../src/iop/sharpen.c:386
+#: ../src/iop/bilateral.cc:344 ../src/iop/clahe.c:344 ../src/iop/lowpass.c:699
+#: ../src/iop/sharpen.c:468
 msgid "radius"
 msgstr "Radius"
 
@@ -2679,7 +2696,7 @@ msgstr "s/w blaue Artefakte reduzieren"
 msgid "local contrast"
 msgstr "Lokaler Kontrast"
 
-#: ../src/iop/clahe.c:346 ../src/iop/sharpen.c:389
+#: ../src/iop/clahe.c:346 ../src/iop/sharpen.c:471
 msgid "amount"
 msgstr "Menge"
 
@@ -2856,47 +2873,47 @@ msgstr "Globale Sättigung setzen"
 msgid "input color profile"
 msgstr "Eingabefarbprofil"
 
-#: ../src/iop/colorin.c:370
+#: ../src/iop/colorin.c:377
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "Nicht unterstütztes Eingabeprofil wurde durch lineares RGB ersetzt!"
 
-#: ../src/iop/colorin.c:588 ../src/libs/export.c:520
+#: ../src/iop/colorin.c:595 ../src/libs/export.c:520
 msgid "profile"
 msgstr "Profil"
 
-#: ../src/iop/colorin.c:596
+#: ../src/iop/colorin.c:603
 msgid "standard color matrix"
 msgstr "Standard-Farb-Matrix"
 
-#: ../src/iop/colorin.c:598
+#: ../src/iop/colorin.c:605
 msgid "enhanced color matrix"
 msgstr "Erweiterte Farb-Matrix"
 
-#: ../src/iop/colorin.c:600
+#: ../src/iop/colorin.c:607
 msgid "sRGB (e.g. jpg)"
 msgstr "sRGB (z.B. JPEG)"
 
-#: ../src/iop/colorin.c:602 ../src/iop/colorout.c:758
-#: ../src/iop/colorout.c:759 ../src/iop/colorout.c:760
+#: ../src/iop/colorin.c:609 ../src/iop/colorout.c:757
+#: ../src/iop/colorout.c:758 ../src/iop/colorout.c:759
 #: ../src/libs/export.c:470
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/iop/colorin.c:604 ../src/iop/colorout.c:746
-#: ../src/iop/colorout.c:747 ../src/iop/colorout.c:748
+#: ../src/iop/colorin.c:611 ../src/iop/colorout.c:745
+#: ../src/iop/colorout.c:746 ../src/iop/colorout.c:747
 #: ../src/libs/export.c:482
 msgid "linear RGB"
 msgstr "lineares RGB"
 
-#: ../src/iop/colorin.c:606
+#: ../src/iop/colorin.c:613
 msgid "linear infrared BGR"
 msgstr "linears Infrarot-BGR"
 
-#: ../src/iop/colorin.c:608
+#: ../src/iop/colorin.c:615
 msgid "linear XYZ"
 msgstr "lineares XYZ"
 
-#: ../src/iop/colorin.c:617
+#: ../src/iop/colorin.c:624
 #, c-format
 msgid "icc profiles in %s/color/in or %s/color/in"
 msgstr "ICC-Profile in %s/color/in oder %s/color/in"
@@ -2905,81 +2922,81 @@ msgstr "ICC-Profile in %s/color/in oder %s/color/in"
 msgid "output color profile"
 msgstr "Ausgabefarbprofil"
 
-#: ../src/iop/colorout.c:475
+#: ../src/iop/colorout.c:482
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 
-#: ../src/iop/colorout.c:620 ../src/iop/colorout.c:627
-msgid "SoftProof"
+#: ../src/iop/colorout.c:619 ../src/iop/colorout.c:626
+msgid "soft proof"
 msgstr "Softproof"
 
-#: ../src/iop/colorout.c:710
+#: ../src/iop/colorout.c:709
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:711
+#: ../src/iop/colorout.c:710
 msgid "output profile"
 msgstr "Ausgabeprofil"
 
-#: ../src/iop/colorout.c:712
+#: ../src/iop/colorout.c:711
 msgid "softproof profile"
 msgstr "Softproof-Profil"
 
-#: ../src/iop/colorout.c:714
+#: ../src/iop/colorout.c:713
 msgid "display intent"
 msgstr "Anzeigevorsatz"
 
-#: ../src/iop/colorout.c:715
+#: ../src/iop/colorout.c:714
 msgid "display profile"
 msgstr "Anzeigeprofil"
 
-#: ../src/iop/colorout.c:722 ../src/iop/colorout.c:727
+#: ../src/iop/colorout.c:721 ../src/iop/colorout.c:726
 #: ../src/libs/export.c:453
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:723 ../src/iop/colorout.c:728
+#: ../src/iop/colorout.c:722 ../src/iop/colorout.c:727
 #: ../src/libs/export.c:454
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:724 ../src/iop/colorout.c:729
+#: ../src/iop/colorout.c:723 ../src/iop/colorout.c:728
 #: ../src/libs/export.c:455
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:725 ../src/iop/colorout.c:730
+#: ../src/iop/colorout.c:724 ../src/iop/colorout.c:729
 #: ../src/libs/export.c:456
 msgid "absolute colorimetric"
 msgstr "Kolorimetrisch (absolut)"
 
-#: ../src/iop/colorout.c:740 ../src/iop/colorout.c:741
-#: ../src/iop/colorout.c:742 ../src/libs/export.c:531
+#: ../src/iop/colorout.c:739 ../src/iop/colorout.c:740
+#: ../src/iop/colorout.c:741 ../src/libs/export.c:531
 msgid "system display profile"
 msgstr "System-Bildschirmprofil"
 
-#: ../src/iop/colorout.c:752 ../src/iop/colorout.c:753
-#: ../src/iop/colorout.c:754 ../src/libs/export.c:463
+#: ../src/iop/colorout.c:751 ../src/iop/colorout.c:752
+#: ../src/iop/colorout.c:753 ../src/libs/export.c:463
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sicher)"
 
 # FIXME: ZU LANG!!1!einself!!
-#: ../src/iop/colorout.c:783
+#: ../src/iop/colorout.c:782
 msgid "rendering intent"
 msgstr "Wiedergabeabsicht"
 
-#: ../src/iop/colorout.c:784
+#: ../src/iop/colorout.c:783
 #, c-format
 msgid "icc profiles in %s/color/out or %s/color/out"
 msgstr "ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:786
+#: ../src/iop/colorout.c:785
 #, c-format
 msgid "display icc profiles in %s/color/out or %s/color/out"
 msgstr "Anzeige-ICC-Profile in %s/color/out oder %s/color/out"
 
-#: ../src/iop/colorout.c:788
+#: ../src/iop/colorout.c:787
 #, c-format
 msgid "softproof icc profiles in %s/color/out or %s/color/out"
 msgstr "Softproof-ICC-Profile in %s/color/out oder %s/color/out"
@@ -3039,24 +3056,24 @@ msgid "demosaic"
 msgstr "Entrastern"
 
 #. //////////////////////////
-#: ../src/iop/demosaic.c:996 ../src/iop/highlights.c:387
+#: ../src/iop/demosaic.c:1012 ../src/iop/highlights.c:392
 msgid "method"
 msgstr "Methode"
 
-#: ../src/iop/demosaic.c:999
+#: ../src/iop/demosaic.c:1015
 msgid "ppg"
 msgstr "PPG"
 
-#: ../src/iop/demosaic.c:1000
+#: ../src/iop/demosaic.c:1016
 msgid "AMaZE"
 msgstr "AMaZE"
 
-#: ../src/iop/demosaic.c:1001
+#: ../src/iop/demosaic.c:1017
 msgid "demosaicing raw data method"
 msgstr "Methode zum Entrastern der Rohdaten"
 
 # WTF? Wer bitte soll das verstehen?
-#: ../src/iop/demosaic.c:1006
+#: ../src/iop/demosaic.c:1022
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -3066,19 +3083,19 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen um Kanten zu ignorieren."
 
-#: ../src/iop/demosaic.c:1012
+#: ../src/iop/demosaic.c:1028
 msgid "color smoothing"
 msgstr "Farbglättung"
 
-#: ../src/iop/demosaic.c:1017
+#: ../src/iop/demosaic.c:1033
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "wie viele Median-Schritte zur Fabrglättung nach dem Entrastern"
 
-#: ../src/iop/demosaic.c:1020
+#: ../src/iop/demosaic.c:1036
 msgid "match greens"
 msgstr "Grün anpassen"
 
-#: ../src/iop/demosaic.c:1023
+#: ../src/iop/demosaic.c:1039
 msgid ""
 "switch on green equilibration before demosaicing.\n"
 "necessary for some mid-range cameras such as the EOS 400D."
@@ -3109,19 +3126,19 @@ msgstr ""
 "und ist nur noch hier, damit Sie es abschalten\n"
 "und durch den neuen Equalizer ersetzen können."
 
-#: ../src/iop/exposure.c:355
+#: ../src/iop/exposure.c:361
 msgid "adjust the black level"
 msgstr "Schwarzwert anpassen"
 
-#: ../src/iop/exposure.c:360
+#: ../src/iop/exposure.c:366
 msgid "adjust the exposure correction"
 msgstr "Belichtungskorrektur anpassen"
 
-#: ../src/iop/exposure.c:368
+#: ../src/iop/exposure.c:374
 msgid "auto"
 msgstr "auto"
 
-#: ../src/iop/exposure.c:371
+#: ../src/iop/exposure.c:377
 msgid "percentage of bright values clipped out"
 msgstr "Prozentsatz der hellen Werte, die abgeschnitten werden"
 
@@ -3241,27 +3258,27 @@ msgstr "Stärke der hinzugefügten Körnung"
 msgid "highlight reconstruction"
 msgstr "Spitzlicht-Rekonstruktion"
 
-#: ../src/iop/highlights.c:390
+#: ../src/iop/highlights.c:395
 msgid "clip highlights"
 msgstr "Spitzlichter abschneiden"
 
-#: ../src/iop/highlights.c:391
+#: ../src/iop/highlights.c:396
 msgid "reconstruct in LCh"
 msgstr "in LCh rekonstruieren"
 
-#: ../src/iop/highlights.c:392
+#: ../src/iop/highlights.c:397
 msgid "highlight reconstruction method"
 msgstr "Methode zur Rekonstruktion der Spitzlichter"
 
-#: ../src/iop/highlights.c:402
+#: ../src/iop/highlights.c:407
 msgid "blend lightness (0 is same as clipping)"
 msgstr "mische Helligkeit (0 ist identisch mit Abschneiden)"
 
-#: ../src/iop/highlights.c:403
+#: ../src/iop/highlights.c:408
 msgid "blend colorness (0 is same as clipping)"
 msgstr "mische Buntheit (0 ist identisch mit Abschneiden)"
 
-#: ../src/iop/highlights.c:404
+#: ../src/iop/highlights.c:409
 msgid "blend hue (0 is same as clipping)"
 msgstr "mische Farbton (0 ist identisch mit Abschneiden)"
 
@@ -3301,6 +3318,20 @@ msgstr "durch 3 Nachbarpixel erkennen"
 #: ../src/iop/hotpixels.c:297
 msgid "mark fixed pixels"
 msgstr "korrigierte Pixel markieren"
+
+#: ../src/iop/invert.c:37
+msgid "invert"
+msgstr "Invertieren"
+
+#: ../src/iop/invert.c:163
+msgid ""
+"look at the image. now look back at me.\n"
+"this doesn't work for raw images."
+msgstr ""
+
+#: ../src/iop/invert.c:165
+msgid "look at the image. now look back at me."
+msgstr ""
 
 #: ../src/iop/lens.c:45
 msgid "lens correction"
@@ -3478,47 +3509,47 @@ msgstr "Nachtsicht"
 msgid "blueness in shadows"
 msgstr "Blautönung in den Schatten"
 
-#: ../src/iop/lowpass.c:95
+#: ../src/iop/lowpass.c:97
 msgid "lowpass"
 msgstr "Tiefpass"
 
-#: ../src/iop/lowpass.c:575
+#: ../src/iop/lowpass.c:647
 msgid "local contrast mask"
 msgstr "Maske aus lokalem Kontrast"
 
-#: ../src/iop/lowpass.c:613
+#: ../src/iop/lowpass.c:686
 msgid "filter order"
 msgstr "Filter-Ordnung"
 
-#: ../src/iop/lowpass.c:616
+#: ../src/iop/lowpass.c:689
 msgid "0th order"
 msgstr "0. Ordnung"
 
-#: ../src/iop/lowpass.c:617
+#: ../src/iop/lowpass.c:690
 msgid "1st order"
 msgstr "1. Ordnung"
 
-#: ../src/iop/lowpass.c:618
+#: ../src/iop/lowpass.c:691
 msgid "2nd order"
 msgstr "2. Ordnung"
 
-#: ../src/iop/lowpass.c:619
+#: ../src/iop/lowpass.c:692
 msgid "filter order of gaussian blur"
 msgstr "Filter-Ordnung des Gaußschen Weichzeichners"
 
-#: ../src/iop/lowpass.c:627
+#: ../src/iop/lowpass.c:700
 msgid "contrast"
 msgstr "Kontrast"
 
-#: ../src/iop/lowpass.c:634
+#: ../src/iop/lowpass.c:707
 msgid "the radius of gaussian blur"
 msgstr "der Radius des Gaußschen Weichzeichners"
 
-#: ../src/iop/lowpass.c:635
+#: ../src/iop/lowpass.c:708
 msgid "the contrast of lowpass filter"
 msgstr "der Kontrast des Tiefpassfilters"
 
-#: ../src/iop/lowpass.c:636
+#: ../src/iop/lowpass.c:709
 msgid "the color saturation of lowpass filter"
 msgstr "die Farbsättigung des Tiefpassfilters"
 
@@ -3532,8 +3563,8 @@ msgstr ""
 "ziehen und mit Mausrad scrollen, um den virtuellen Farbfilter einzustellen"
 
 #: ../src/iop/nlmeans.c:58
-msgid "denoising (extra slow)"
-msgstr "entrauschen (besonders langsam)"
+msgid "denoise (non-local means)"
+msgstr ""
 
 #: ../src/iop/nlmeans.c:473
 msgid "how much to smooth brightness"
@@ -3617,27 +3648,27 @@ msgstr "Füllicht in EV"
 msgid "width of fill-light area defined in zones"
 msgstr "Breite der Füllicht-Fläche, definiert in Zonen."
 
-#: ../src/iop/sharpen.c:67
+#: ../src/iop/sharpen.c:69
 msgctxt "sharpen"
 msgid "sharpen"
 msgstr "Schärfen"
 
-#: ../src/iop/sharpen.c:385
+#: ../src/iop/sharpen.c:467
 msgid "spatial extent of the unblurring"
 msgstr "Ausdehnung des Schärfens"
 
-#: ../src/iop/sharpen.c:388
+#: ../src/iop/sharpen.c:470
 msgid "strength of the sharpen"
 msgstr "Stärke des Schärfens"
 
-#: ../src/iop/sharpen.c:391
+#: ../src/iop/sharpen.c:473
 msgid "threshold to activate sharpen"
 msgstr "Schwellwert zum Aktivieren des Schärfens"
 
 # nicht schön
 #: ../src/iop/soften.c:71
 msgid "soften"
-msgstr "Weichmachen"
+msgstr "Weichzeichnen"
 
 #: ../src/iop/soften.c:349 ../src/iop/vignette.c:852
 msgid "brightness"
@@ -3740,31 +3771,31 @@ msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:457
+#: ../src/iop/temperature.c:463
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:458
+#: ../src/iop/temperature.c:464
 msgid "temperature in"
 msgstr "Farbtemperatur ein"
 
-#: ../src/iop/temperature.c:460
+#: ../src/iop/temperature.c:466
 msgid "temperature out"
 msgstr "Farbtemperatur aus"
 
-#: ../src/iop/temperature.c:483
+#: ../src/iop/temperature.c:489
 msgid "camera white balance"
 msgstr "Weißabgleich der Kamera"
 
-#: ../src/iop/temperature.c:484
+#: ../src/iop/temperature.c:490
 msgid "spot white balance"
 msgstr "Weißabgleich manuell setzen"
 
-#: ../src/iop/temperature.c:485
+#: ../src/iop/temperature.c:491
 msgid "passthrough"
 msgstr "Durchschleifen"
 
-#: ../src/iop/temperature.c:511
+#: ../src/iop/temperature.c:517
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -3772,15 +3803,15 @@ msgstr "Weißabgleichsvorgabe feinabstimmen"
 msgid "tone curve"
 msgstr "Farbkurve"
 
-#: ../src/iop/tonecurve.c:143
+#: ../src/iop/tonecurve.c:142
 msgid "med contrast"
 msgstr "mittlerer Kontrast"
 
-#: ../src/iop/tonecurve.c:153
+#: ../src/iop/tonecurve.c:152
 msgid "high contrast"
 msgstr "hoher Kontrast"
 
-#: ../src/iop/tonecurve.c:274
+#: ../src/iop/tonecurve.c:273
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on L channel"
@@ -4853,6 +4884,9 @@ msgstr "Filterregeln in der oberen Leiste anpassen"
 #: ../src/views/lighttable.c:408
 msgid "or in the collection plugin in the left panel."
 msgstr "oder links im Sammlungs-Plugin."
+
+#~ msgid "denoising (extra slow)"
+#~ msgstr "entrauschen (besonders langsam)"
 
 #~ msgid "filmstrip"
 #~ msgstr "Filmstreifen"

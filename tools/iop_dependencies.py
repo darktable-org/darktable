@@ -56,7 +56,10 @@ def add_edges(gr):
   
   # and of course rawspeed needs to give us the pixels first:
   gr.add_edge(('temperature', 'rawspeed'))
-  
+
+  # inversion should be really early in the pipe
+  gr.add_edge(('temperature', 'invert'))
+
   # these need to be in camera color space (input rgb):
   gr.add_edge(('colorin', 'exposure'))
   gr.add_edge(('colorin', 'highlights'))
@@ -185,13 +188,15 @@ def add_edges(gr):
   
   # borders should not change shape/color:
   gr.add_edge(('borders', 'colorout'))
-  gr.add_edge(('borders', 'watermark'))
   gr.add_edge(('borders', 'vignette'))
   gr.add_edge(('borders', 'splittoning'))
   gr.add_edge(('borders', 'velvia'))
   gr.add_edge(('borders', 'soften'))
   gr.add_edge(('borders', 'clahe'))
   gr.add_edge(('borders', 'channelmixer'))
+
+  # but watermark can be drawn on top of borders
+  gr.add_edge(('watermark', 'borders'))
   
   # want to sharpen after geometric transformations:
   gr.add_edge(('sharpen', 'clipping'))
@@ -271,10 +276,11 @@ gr.add_nodes([
 'grain',
 'highlights',
 'highpass',
-'lowpass',
+'invert',
 'hotpixels',
 'lens',
 'levels',
+'lowpass',
 'lowlight',
 'monochrome',
 'nlmeans',

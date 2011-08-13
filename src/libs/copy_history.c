@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -173,24 +174,6 @@ gui_reset (dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
 }
 
-static void
-key_accel_copy_callback(GtkAccelGroup *accel_group,
-                        GObject *acceleratable, guint keyval,
-                        GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  copy_button_clicked(NULL, self);
-}
-
-static void
-key_accel_paste_callback(GtkAccelGroup *accel_group,
-                         GObject *acceleratable, guint keyval,
-                         GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  paste_button_clicked(NULL, self);
-}
-
 int
 position ()
 {
@@ -206,15 +189,12 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_lighttable,
-      "<Darktable>/lighttable/plugins/copy_history/copy",
-      g_cclosure_new(G_CALLBACK(key_accel_copy_callback),
-                     (gpointer)self, NULL));
+  gtk_button_set_accel(GTK_BUTTON(copy),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/copy");
   g_object_set(G_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"), (char *)NULL);
   gtk_box_pack_start(hbox, copy, TRUE, TRUE, 0);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
+  gtk_button_set_accel(GTK_BUTTON(delete),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/discard");
   g_object_set(G_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, delete, TRUE, TRUE, 0);
 
@@ -229,11 +209,7 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_lighttable,
-      "<Darktable>/lighttable/plugins/copy_history/paste",
-      g_cclosure_new(G_CALLBACK(key_accel_paste_callback),
-                     (gpointer)self, NULL));
+  gtk_button_set_accel(GTK_BUTTON(d->paste),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/paste");
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), (char *)NULL);
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
@@ -243,10 +219,12 @@ gui_init (dt_lib_module_t *self)
 
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
+  gtk_button_set_accel(GTK_BUTTON(loadbutton),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/load sidecar file");
   g_object_set(G_OBJECT(loadbutton), "tooltip-text", _("open an xmp sidecar file\nand apply it to selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/write sidecar files");
   g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
@@ -276,8 +254,9 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/copy_history/copy",
-                          GDK_c, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/copy_history/paste",
-                          GDK_v, GDK_CONTROL_MASK);
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/copy");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/discard");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/paste");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/load sidecar file");
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/write sidecar files");
 }

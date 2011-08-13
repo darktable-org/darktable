@@ -98,6 +98,15 @@ flags ()
   return IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/tint");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/temperature in");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/temperature out");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/red");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/green");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/blue");
+}
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -370,7 +379,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 21; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 41; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
@@ -427,16 +436,12 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2]) return FALSE;
   for(int k=0; k<3; k++) old[k] = grayrgb[k];
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  for(int k=0; k<3; k++) p->coeffs[k] = 1.0/(0.01 + grayrgb[k]);
-  float len = 0.0, lenc = 0.0f;
-  for(int k=0; k<3; k++) len  += grayrgb[k]*grayrgb[k];
-  for(int k=0; k<3; k++) lenc += grayrgb[k]*grayrgb[k]*p->coeffs[k]*p->coeffs[k];
-  if(lenc > 0.0001f) for(int k=0; k<3; k++) p->coeffs[k] *= sqrtf(len/lenc);
+  for(int k=0; k<3; k++) p->coeffs[k] = (grayrgb[k] > 0.001f) ? 1.0f/grayrgb[k] : 1.0f;
   // normalize green:
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
-  for(int k=0; k<3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0, p->coeffs[k]));
+  for(int k=0; k<3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
@@ -469,6 +474,13 @@ void gui_init (struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->scale_r,_("red"));
   dtgtk_slider_set_label(g->scale_g,_("green"));
   dtgtk_slider_set_label(g->scale_b,_("blue"));
+
+  dtgtk_slider_set_accel(g->scale_tint,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/tint");
+  dtgtk_slider_set_accel(g->scale_k,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/temperature in");
+  dtgtk_slider_set_accel(g->scale_k_out,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/temperature out");
+  dtgtk_slider_set_accel(g->scale_r,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/red");
+  dtgtk_slider_set_accel(g->scale_g,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/green");
+  dtgtk_slider_set_accel(g->scale_b,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/blue");
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_tint), TRUE, TRUE, 0);

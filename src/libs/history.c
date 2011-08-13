@@ -68,6 +68,13 @@ int position()
   return 900;
 }
 
+void init_key_accels()
+{
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/create a style from the current history stack");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/applies a style selected from popup menu");
+  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/compress history stack");
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -81,6 +88,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hhbox = gtk_hbox_new (FALSE,2);
 
   GtkWidget *hbutton = gtk_button_new_with_label (_("compress history stack"));
+  gtk_button_set_accel(GTK_BUTTON(hbutton),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/compress history stack");
   g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a minimal history stack which produces the same image"), (char *)NULL);
   
   g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (_lib_history_compress_clicked_callback),(gpointer)0);
@@ -90,12 +98,14 @@ void gui_init(dt_lib_module_t *self)
   //gtk_widget_set_size_request (hbutton,24,-1);
   g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (_lib_history_create_style_button_clicked_callback),(gpointer)0);
   g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from the current history stack"), (char *)NULL);
+  dtgtk_button_set_accel(DTGTK_BUTTON(hbutton2),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/create a style from the current history stack");
 
   /* add toolbar button for applying a style */
   GtkWidget *hbutton3 = dtgtk_button_new (dtgtk_cairo_paint_styles,1);
   //gtk_widget_set_size_request (hbutton,24,-1);
   g_signal_connect (G_OBJECT (hbutton3), "button-press-event", G_CALLBACK (_lib_history_apply_style_button_press_callback),(gpointer)0);
   g_object_set (G_OBJECT (hbutton3), "tooltip-text", _("applies a style selected from popup menu"), (char *)NULL);
+  dtgtk_button_set_accel(DTGTK_BUTTON(hbutton3),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/applies a style selected from popup menu");
 
   /* add buttons to buttonbox */
   gtk_box_pack_start (GTK_BOX (hhbox),hbutton,TRUE,TRUE,0);
@@ -193,18 +203,11 @@ static void _lib_history_compress_clicked_callback (GtkWidget *widget, gpointer 
   dt_dev_write_history(darktable.develop);
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "create temporary table temp_history as select * from history as a where imgid = ?1 and num in (select MAX(num) from history as b where imgid = ?1 and a.operation = b.operation) order by num", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1 and num not in (select MAX(num) from history where imgid = ?1 group by operation)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into history select imgid,rowid-1,module,operation,op_params,enabled,blendop_params from temp_history", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from temp_history", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "drop table temp_history", NULL, NULL, NULL);
   dt_dev_reload_history_items(darktable.develop);
 }
 

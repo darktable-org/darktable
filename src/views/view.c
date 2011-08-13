@@ -100,7 +100,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
   g_strlcpy(view->module_name, module, 64);
   char plugindir[1024];
-  dt_get_plugindir(plugindir, 1024);
+  dt_util_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/views", 1024);
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
@@ -1082,7 +1082,10 @@ void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid)
 void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data)
 {
   dt_view_t *self = (dt_view_t *)data;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
+  dt_develop_t *dev = NULL;
+
+  if(!strcmp(self->name(self),"darkroom"))
+    dev = (dt_develop_t *)self->data;
 
   vm->film_strip_activated = activated;
   vm->film_strip_data = data;
@@ -1093,7 +1096,7 @@ void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int 
   const int ht = darktable.control->height - 2*tb;
   dt_view_manager_configure (vm, wd, ht);
   
-  if(dev->image)
+  if(dev && dev->image)
     dt_view_film_strip_scroll_to(vm, dev->image->id);
 }
 

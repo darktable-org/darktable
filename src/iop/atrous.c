@@ -124,6 +124,11 @@ flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/atrous/mix");
+}
+
 static __m128
 weight (const float *c1, const float *c2, const float sharpen)
 {
@@ -319,6 +324,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   detail = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full*max_scale);
   tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
   buf2   = tmp;
+  if(!detail || !tmp || !buf1)
+  {
+    fprintf(stderr, "[atrous] failed to allocate buffers!\n");
+    return;
+  }
 
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
   const int width = roi_out->width, height = roi_out->height;
@@ -529,7 +539,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 468; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 479; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -1128,10 +1138,25 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 static gboolean
 area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  // set active point
-  if(event->button == 1)
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    // reset current curve
+    dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
+    dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    reset_mix(self);
+    for(int k=0; k<BANDS; k++)
+    {
+        p->x[c->channel2][k] = d->x[c->channel2][k];
+        p->y[c->channel2][k] = d->y[c->channel2][k];
+    }
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(self->widget);
+  }
+  else if(event->button == 1)
+  {
+    // set active point
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     const int inset = INSET;
@@ -1262,6 +1287,7 @@ void gui_init (struct dt_iop_module_t *self)
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
   dtgtk_slider_set_label(DTGTK_SLIDER(c->mix), _("mix"));
+  dtgtk_slider_set_accel(DTGTK_SLIDER(c->mix),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/atrous/mix");
   g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);

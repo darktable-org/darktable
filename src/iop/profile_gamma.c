@@ -43,6 +43,11 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/profile_gamma/linear part");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/profile_gamma/gamma exponential part");
+}
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_profile_gamma_data_t *d = (dt_iop_profile_gamma_data_t *)piece->data;
@@ -149,7 +154,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_profile_gamma_params_t);
   module->gui_data = NULL;
-  module->priority = 276; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 291; // module order created by iop_dependencies.py, do not edit!
   dt_iop_profile_gamma_params_t tmp = (dt_iop_profile_gamma_params_t)
   {
     1.0, 1.0
@@ -177,10 +182,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.0001,p->linear,4));
+  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/profile_gamma/linear part");
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("linear part"), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("linear"));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.0001,p->gamma,4));
   g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("gamma exponential factor"), (char *)NULL);
+  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/profile_gamma/gamma exponential part");
   dtgtk_slider_set_label(g->scale2,_("gamma"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);

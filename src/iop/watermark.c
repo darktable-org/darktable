@@ -102,6 +102,10 @@ int groups()
 void init_key_accels()
 {
   dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/refresh");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/opacity");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/scale");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/x offset");
+  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/y offset");
 }
 
 static gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text)
@@ -154,8 +158,8 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
 
   gchar *svgdoc=NULL;
   gchar configdir[1024],datadir[1024], *filename;
-  dt_get_datadir(datadir, 1024);
-  dt_get_user_config_dir(configdir, 1024);
+  dt_util_get_datadir(datadir, 1024);
+  dt_util_get_user_config_dir(configdir, 1024);
   g_strlcat(datadir,"/watermarks/",1024);
   g_strlcat(configdir,"/watermarks/",1024);
   g_strlcat(datadir,data->filename,1024);
@@ -450,8 +454,8 @@ static void refresh_watermarks( dt_iop_module_t *self )
   int count=0;
   const gchar *d_name = NULL;
   gchar configdir[1024],datadir[1024],filename[2048];
-  dt_get_datadir(datadir, 1024);
-  dt_get_user_config_dir(configdir, 1024);
+  dt_util_get_datadir(datadir, 1024);
+  dt_util_get_user_config_dir(configdir, 1024);
   g_strlcat(datadir,"/watermarks",1024);
   g_strlcat(configdir,"/watermarks",1024);
 
@@ -629,7 +633,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->default_params = malloc(sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
-  module->priority = 872; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 979; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)
@@ -680,6 +684,8 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale1,"%");
   dtgtk_slider_set_label(g->scale2,_("scale"));
   dtgtk_slider_set_unit(g->scale2,"%");
+  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/opacity");
+  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/scale");
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -702,6 +708,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
   dtgtk_slider_set_label(g->scale3,_("x offset"));
   dtgtk_slider_set_label(g->scale4,_("y offset"));
+  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/x offset");
+  dtgtk_slider_set_accel(g->scale4,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/y offset");
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 

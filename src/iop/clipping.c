@@ -667,7 +667,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 361; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 374; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -861,7 +861,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->keystone_v), "tooltip-text", _("adjust perspective for vertical keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_v), "value-changed",
                     G_CALLBACK (keystone_callback_v), self);
-  dtgtk_slider_set_accel(g->keystone_h,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
+  dtgtk_slider_set_accel(g->keystone_v,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_v), 0, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("aspect"));

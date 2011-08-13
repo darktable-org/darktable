@@ -4,5 +4,5 @@
 <!ENTITY chapter_lighttable SYSTEM "../lighttable/lighttable.xml">
 <!ENTITY chapter_darkroom SYSTEM "../darkroom/darkroom.xml">
 
-<!ENTITY addendum "../addendum/addendum.xml">
-<!ENTITY addendum_keyaccelerators "../addendum/keymappings.xml">
+<!ENTITY addendum SYSTEM "../addendum/addendum.xml">
+<!ENTITY addendum_keyaccelerators SYSTEM "../addendum/keymappings.xml">

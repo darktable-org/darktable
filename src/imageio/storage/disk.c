@@ -21,6 +21,7 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/utility.h"
 #include "common/variables.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -173,6 +174,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
       snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
     }
 
+    gchar* fixed_path = dt_util_fix_path(d->filename);
+    g_strlcpy(d->filename, fixed_path, 1024);
+    g_free(fixed_path);
 
     d->vp->filename = dirname;
     d->vp->jobcode = "export";

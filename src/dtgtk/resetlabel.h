@@ -30,6 +30,7 @@ G_BEGIN_DECLS
 typedef struct _GtkDarktableResetLabel
 {
   GtkEventBox widget;
+  GtkLabel *lb;
   dt_iop_module_t *module;
   int offset; // offset in params to reset
   int size;   // size of param to reset
@@ -46,7 +47,11 @@ GType dtgtk_reset_label_get_type (void);
 
 /** instantiate a new darktable reset label for the given module and param. */
 GtkWidget* dtgtk_reset_label_new(const gchar *label, dt_iop_module_t *module, void *param, int param_size);
+/** Sets the text within the GtkResetLabel widget. It overwrites any text that was there before. */
+void dtgtk_reset_label_set_text(GtkDarktableResetLabel *label, const gchar *str);
 
 G_END_DECLS
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

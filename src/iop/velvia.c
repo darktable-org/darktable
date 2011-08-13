@@ -80,6 +80,12 @@ groups ()
 }
 
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/saturation");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/vibrance");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/mid-tones bias");
+}
 
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -203,7 +209,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_velvia_params_t));
   module->default_params = malloc(sizeof(dt_iop_velvia_params_t));
   module->default_enabled = 0;
-  module->priority = 851; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 854; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_velvia_params_t);
   module->gui_data = NULL;
   dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t)
@@ -233,14 +239,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, p->saturation, 0));
+  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/saturation");
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->scale1,_("saturation"));
   dtgtk_slider_set_unit(g->scale1,"%");
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, p->vibrance, 0));
+  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/vibrance");
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->scale2,_("vibrance"));
   dtgtk_slider_set_unit(g->scale2,"%");
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->luminance, 2));
+  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/mid-tones bias");
   dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_RATIO);
   dtgtk_slider_set_label(g->scale3,_("mid-tones bias"));
 

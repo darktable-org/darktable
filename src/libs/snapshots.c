@@ -21,6 +21,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
+#include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
 
@@ -90,6 +91,11 @@ uint32_t container()
 int position()
 {
   return 1000;
+}
+
+void init_key_accels()
+{
+  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/snapshots/take snapshot");
 }
 
 
@@ -270,6 +276,7 @@ void gui_init(dt_lib_module_t *self)
   
   /* create take snapshot button */
   GtkWidget *button = gtk_button_new_with_label(_("take snapshot"));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/snapshots/take snapshot");
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
   g_object_set(button, "tooltip-text", 
 		_("take snapshot to compare with another image or the same image at another stage of development"), 
@@ -280,7 +287,7 @@ void gui_init(dt_lib_module_t *self)
    */
   char wdname[32]={0};
   char localdir[4096]={0};
-  dt_get_user_local_dir (localdir,4096);
+  dt_util_get_user_local_dir (localdir,4096);
 
   for (long k=0;k<d->size;k++) {
     /* create snapshot button */

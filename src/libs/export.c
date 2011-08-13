@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -81,14 +82,6 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   // Let's get the max dimension restriction if any...
   dt_control_export();
-}
-
-static void
-key_accel_callback(GtkAccelGroup *accel_group,
-                   GObject *acceleratable, guint keyval,
-                   GdkModifierType modifier, gpointer data)
-{
-  export_button_clicked(NULL, (void*)data);
 }
 
 static void
@@ -490,8 +483,8 @@ gui_init (dt_lib_module_t *self)
 
   // read datadir/color/out/*.icc
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_get_user_config_dir(confdir, 1024);
-  dt_get_datadir(datadir, 1024);
+  dt_util_get_user_config_dir(confdir, 1024);
+  dt_util_get_datadir(datadir, 1024);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   snprintf(dirname, 1024, "%s/color/out", confdir);
@@ -565,6 +558,7 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)d);
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
+  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/export/export");
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
@@ -760,13 +754,7 @@ set_params (dt_lib_module_t *self, const void *params, int size)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  gtk_accel_map_add_entry("<Darktable>/lighttable/plugins/export/export selected images",
-                          GDK_e, GDK_CONTROL_MASK);
-
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_lighttable,
-      "<Darktable>/lighttable/plugins/export/export selected images",
-      g_cclosure_new(G_CALLBACK(key_accel_callback), NULL, NULL));
+  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/export/export");
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

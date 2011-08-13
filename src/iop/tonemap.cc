@@ -89,6 +89,12 @@ extern "C"
     return IOP_FLAGS_SUPPORTS_BLENDING;
   }
 
+void init_key_accels()
+{
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tonemap/contrast compression");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tonemap/spatial extent");
+}
+
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
     dt_iop_tonemapping_data_t *data = (dt_iop_tonemapping_data_t *)piece->data;
@@ -262,7 +268,7 @@ extern "C"
     module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_enabled = 1;
-  module->priority = 148; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 166; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_tonemapping_params_t);
     module->gui_data = NULL;
   }
@@ -288,11 +294,13 @@ extern "C"
     g->contrast = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 5.0000, 0.1, p->contrast, 3));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
     dtgtk_slider_set_label(g->contrast,_("contrast compression"));
+    dtgtk_slider_set_accel(g->contrast,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tonemap/contrast compression");
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
 
     g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,100.0, 1.0, p->Fsize*100.0, 1));
     dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
     dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
+    dtgtk_slider_set_accel(g->Fsize,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tonemap/spatial extent");
     dtgtk_slider_set_unit(g->Fsize,(gchar *)"%");
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
     g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);

@@ -208,6 +208,15 @@ void dt_tag_detach(guint tagid,gint imgid)
   }
 }
 
+void dt_tag_detach_by_string(const char *name, gint imgid)
+{
+  char query[2048]={0};
+  g_snprintf(query,2048,"delete from tagged_images where tagid in (select id from tags where name like '%s') and imgid = %d;",
+             name,imgid);    
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+ }
+
+
 uint32_t dt_tag_get_attached(gint imgid,GList **result)
 {
   sqlite3_stmt *stmt;

@@ -797,6 +797,17 @@ static void show_module_callback(GtkAccelGroup *accel_group,
   dt_iop_request_focus(module);
 }
 
+static void enable_module_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+  gboolean active= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
+}
+
 static void connect_closures(dt_view_t *self)
 {
   GClosure *closure;
@@ -899,18 +910,31 @@ void enter(dt_view_t *self)
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     module->topwidget = GTK_WIDGET(expander);
-    module->show_closure = NULL;
+    module->closures = NULL;
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
+      GClosure* closure = NULL;
+
       // Connecting the (optional) module show accelerator
       snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show plugin", module->op);
-      module->show_closure = g_cclosure_new(G_CALLBACK(show_module_callback),
-                                                       module, NULL);
+      closure = g_cclosure_new(G_CALLBACK(show_module_callback),
+                               module, NULL);
       dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                     accelpath, module->show_closure);
+                                     accelpath, closure);
+      module->closures = g_list_prepend(module->closures, closure);
+
+      // Connecting the (optional) module switch accelerator
+      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/enable plugin", module->op);
+      closure = g_cclosure_new(G_CALLBACK(enable_module_callback),
+                               module, NULL);
+      dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
+                                     accelpath, closure);
+      module->closures = g_list_prepend(module->closures, closure);
+
     }
+
     dt_ui_container_add_widget(darktable.gui->ui,
-                               DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+			       DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
     modules = g_list_previous(modules);
   }
@@ -956,6 +980,12 @@ void enter(dt_view_t *self)
   DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
 }
 
+static void
+dt_disconnect_accel_closure(gpointer data)
+{
+    dt_accel_group_disconnect(darktable.control->accels_darkroom,
+                              data);
+}
 
 void leave(dt_view_t *self)
 {
@@ -1031,10 +1061,14 @@ void leave(dt_view_t *self)
     snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
 
-    // disconnect the show accelerator
-    if(module->show_closure)
-      dt_accel_group_disconnect(darktable.control->accels_darkroom,
-                                module->show_closure);
+    // disconnect module closures
+    // could use this starting from gtk 2.28
+    // g_list_free_full(module->closures, dt_disconnect_accel_closure);
+    while(module->closures)
+    {
+      dt_disconnect_accel_closure(module->closures->data);
+      module->closures = g_list_delete_link(module->closures, module->closures);
+    }
 
     module->gui_cleanup(module);
     dt_iop_cleanup_module(module) ;
