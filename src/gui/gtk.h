@@ -123,6 +123,10 @@ typedef enum dt_ui_container_t
   DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER,
   DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT,
 
+  /* this panel is placed at bottom of ui 
+     only used by the filmstrip if shown */
+  DT_UI_CONTAINER_PANEL_BOTTOM,
+
   /* Count of containers */
   DT_UI_CONTAINER_SIZE
 } dt_ui_container_t;
@@ -139,6 +143,8 @@ typedef enum dt_ui_panel_t
   DT_UI_PANEL_LEFT,
   /* right panel */
   DT_UI_PANEL_RIGHT,
+  /* bottom panel */
+  DT_UI_PANEL_BOTTOM,
 
   DT_UI_PANEL_SIZE
 } dt_ui_panel_t;

@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,15 +37,6 @@
 
 void dt_view_manager_init(dt_view_manager_t *vm)
 {
-  vm->film_strip_dragging = 0;
-  vm->film_strip_on = 0;
-  vm->film_strip_size = dt_conf_get_float("plugins/filmstrip/size");
-  vm->film_strip_scroll_to = -1;
-  vm->film_strip_active_image = -1;
-  vm->num_views = 0;
-  if(dt_view_load_module(&vm->film_strip, "filmstrip"))
-    fprintf(stderr, "[view_manager_init] failed to load film strip view!\n");
-
   /* prepare statements */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images where imgid = ?1", -1, &vm->statements.is_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid = ?1", -1, &vm->statements.delete_from_selected, NULL);
@@ -249,12 +241,16 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
       if( plugin->views() & nv->view(v) )
       {
-	/* module should be in this view, lets initialize */                                                                         
+	/* module should be in this view, lets initialize */        
 	plugin->gui_init(plugin);
-
-	/* add module widget to the ui */
+	
+	/* try get the module expander  */
 	GtkWidget *w = NULL;
 	w = dt_lib_gui_get_expander(plugin);
+
+	/* if we dont got an expander lets add the widget */
+	if (!w)
+	  w = plugin->widget;
 
 	/* add module to it's container */
 	dt_ui_container_add_widget(darktable.gui->ui, plugin->container(), w);
@@ -281,13 +277,16 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 	  expanded = dt_conf_get_bool(var);
 	  gtk_expander_set_expanded (plugin->expander, expanded);
 	
-	  /* show all widgets in expander */
-	  gtk_widget_show_all(GTK_WIDGET(plugin->expander));
+	  /* show expander if visible  */
+	  if(dt_lib_is_visible(plugin))
+	    gtk_widget_show_all(GTK_WIDGET(plugin->expander));
+	  else
+	    gtk_widget_hide(GTK_WIDGET(plugin->expander));
 	}
 
 	/* show/hide plugin widget depending on expanded flag or if plugin
 	   not is expandeable() */
-	if(expanded || !plugin->expandable()) 
+	if(dt_lib_is_visible(plugin) && (expanded || !plugin->expandable())) 
 	  gtk_widget_show_all(plugin->widget);
 	else         
 	  gtk_widget_hide_all(plugin->widget);	
@@ -342,38 +341,6 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
   dt_view_t *v = vm->view + vm->current_view;
   v->width = width;
   v->height = height;
-  if(vm->film_strip_on)
-  {
-    const float tb = darktable.control->tabborder;
-    cairo_save(cr);
-    v->height = height*(1.0-vm->film_strip_size) - tb;
-    vm->film_strip.height = height * vm->film_strip_size;
-    vm->film_strip.width  = width;
-    cairo_rectangle(cr, -10, v->height, width+20, tb);
- 
-    GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
-    cairo_set_source_rgb (cr,
-                          style->bg[GTK_STATE_NORMAL].red/65535.0,
-                          style->bg[GTK_STATE_NORMAL].green/65535.0,
-                          style->bg[GTK_STATE_NORMAL].blue/65535.0
-                         );
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.5);
-    cairo_set_source_rgb (cr, .1, .1, .1);
-    cairo_stroke(cr);
-    cairo_translate(cr, 0, v->height+tb);
-    cairo_rectangle(cr, 0, 0, vm->film_strip.width, vm->film_strip.height);
-    cairo_clip(cr);
-    cairo_new_path(cr);
-    float px = pointerx, py = pointery;
-    if(pointery <= v->height+darktable.control->tabborder)
-    {
-      px = 10000.0;
-      py = -1.0;
-    }
-    vm->film_strip.expose(&(vm->film_strip), cr, vm->film_strip.width, vm->film_strip.height, px, py);
-    cairo_restore(cr);
-  }
 
   if(v->expose)
   {
@@ -420,92 +387,66 @@ void dt_view_manager_mouse_leave (dt_view_manager_t *vm)
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
   if(v->mouse_leave) v->mouse_leave(v);
-  if(vm->film_strip_on && vm->film_strip.mouse_leave) vm->film_strip.mouse_leave(&vm->film_strip);
 }
 
 void dt_view_manager_mouse_enter (dt_view_manager_t *vm)
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
-  if(vm->film_strip_on && vm->film_strip.mouse_enter) vm->film_strip.mouse_enter(&vm->film_strip);
   if(v->mouse_enter) v->mouse_enter(v);
 }
 
 void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)
 {
-  static int oldstate = 0;
-  const float tb = darktable.control->tabborder;
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
-  if(vm->film_strip_on && vm->film_strip_dragging)
-  {
-    vm->film_strip_size = fmaxf(0.1, fminf(0.6, (darktable.control->height - y - .5*tb)/darktable.control->height));
-    const int wd = darktable.control->width  - 2*tb;
-    const int ht = darktable.control->height - 2*tb;
-    dt_view_manager_configure (vm, wd, ht);
-  }
-  else if(vm->film_strip_on && v->height + tb < y && vm->film_strip.mouse_moved)
-    vm->film_strip.mouse_moved(&vm->film_strip, x, y - v->height - tb, which);
-  else
-  {
-    /* lets check if any plugins want to handle mouse move */
-    gboolean handled = FALSE;
-    GList *plugins = g_list_last(darktable.lib->plugins);
-    while (plugins)
-    {
-      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-    
-      /* does this module belong to current view ?*/
-      if (plugin->mouse_moved && plugin->views() & v->view(v) )
-	if(plugin->mouse_moved(plugin, x, y, which))
-	  handled = TRUE;
-      
-      /* get next plugin */
-      plugins = g_list_previous(plugins);
-    } 
 
-    /* if not handled by any plugin let pass to view handler*/
-    if(!handled && v->mouse_moved) 
-      v->mouse_moved(v, x, y, which);
-  }
+  /* lets check if any plugins want to handle mouse move */
+  gboolean handled = FALSE;
+  GList *plugins = g_list_last(darktable.lib->plugins);
+  while (plugins)
+  {
+    dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
     
+    /* does this module belong to current view ?*/
+    if (plugin->mouse_moved && plugin->views() & v->view(v) )
+      if(plugin->mouse_moved(plugin, x, y, which))
+	handled = TRUE;
+    
+    /* get next plugin */
+    plugins = g_list_previous(plugins);
+  } 
+  
+  /* if not handled by any plugin let pass to view handler*/
+  if(!handled && v->mouse_moved) 
+    v->mouse_moved(v, x, y, which);
 
-  int state = vm->film_strip_on && (v->height + tb > y) && (y > v->height);
-  if(state && !oldstate)      dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
-  else if(oldstate && !state) dt_control_change_cursor(GDK_LEFT_PTR);
-  oldstate = state;
 }
 
 int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, int which, uint32_t state)
 {
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  vm->film_strip_dragging = 0;
-  dt_control_change_cursor(GDK_LEFT_PTR);
-  if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_released)
-    return vm->film_strip.button_released(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, state);
-  else
-  {
-    /* lets check if any plugins want to handle button press */
-    gboolean handled = FALSE;
-    GList *plugins = g_list_last(darktable.lib->plugins);
-    while (plugins)
-    {
-      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-    
-      /* does this module belong to current view ?*/
-      if (plugin->button_released && plugin->views() & v->view(v) )
-	if(plugin->button_released(plugin, x, y, which,state))
-	  handled = TRUE;
-      
-      /* get next plugin */
-      plugins = g_list_previous(plugins);
-    } 
 
-    /* if not handled by any plugin let pass to view handler*/
-    if(!handled && v->button_released) 
-      v->button_released(v, x, y, which,state);
+  /* lets check if any plugins want to handle button press */
+  gboolean handled = FALSE;
+  GList *plugins = g_list_last(darktable.lib->plugins);
+  while (plugins)
+  {
+    dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    
+    /* does this module belong to current view ?*/
+    if (plugin->button_released && plugin->views() & v->view(v) )
+      if(plugin->button_released(plugin, x, y, which,state))
+	handled = TRUE;
+    
+    /* get next plugin */
+    plugins = g_list_previous(plugins);
   } 
+  
+  /* if not handled by any plugin let pass to view handler*/
+  if(!handled && v->button_released) 
+    v->button_released(v, x, y, which,state);
 
   return 0;
 }
@@ -515,35 +456,25 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
 
-  if(vm->film_strip_on && y > v->height && y < v->height + darktable.control->tabborder)
+  /* lets check if any plugins want to handle button press */
+  gboolean handled = FALSE;
+  GList *plugins = g_list_last(darktable.lib->plugins);
+  while (plugins)
   {
-    vm->film_strip_dragging = 1;
-    dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
-  }
-  else if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.button_pressed)
-    return vm->film_strip.button_pressed(&vm->film_strip, x, y - v->height - darktable.control->tabborder, which, type, state);
-  else
-  {
-    /* lets check if any plugins want to handle button press */
-    gboolean handled = FALSE;
-    GList *plugins = g_list_last(darktable.lib->plugins);
-    while (plugins)
-    {
-      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+    dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
     
-      /* does this module belong to current view ?*/
-      if (plugin->button_pressed && plugin->views() & v->view(v) )
-	if(plugin->button_pressed(plugin, x, y, which,type,state))
-	  handled = TRUE;
-      
-      /* get next plugin */
-      plugins = g_list_previous(plugins);
-    } 
+    /* does this module belong to current view ?*/
+    if (plugin->button_pressed && plugin->views() & v->view(v) )
+      if(plugin->button_pressed(plugin, x, y, which,type,state))
+	handled = TRUE;
+    
+    /* get next plugin */
+    plugins = g_list_previous(plugins);
+  } 
 
-    /* if not handled by any plugin let pass to view handler*/
-    if(!handled && v->button_pressed) 
-      v->button_pressed(v, x, y, which,type,state);
-  }
+  /* if not handled by any plugin let pass to view handler*/
+  if(!handled && v->button_pressed) 
+    v->button_pressed(v, x, y, which,type,state);
 
   return 0;
 }
@@ -553,12 +484,9 @@ int dt_view_manager_key_pressed (dt_view_manager_t *vm, guint key, guint state)
   int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(vm->film_strip_on)
-    film_strip_result = (vm->film_strip.key_pressed)(&vm->film_strip,
-                                                     key, state);
   if(v->key_pressed)
     return v->key_pressed(v, key, state) || film_strip_result;
-  return film_strip_result;
+  return 0;
 }
 
 int dt_view_manager_key_released (dt_view_manager_t *vm, guint key, guint state)
@@ -566,17 +494,15 @@ int dt_view_manager_key_released (dt_view_manager_t *vm, guint key, guint state)
   int film_strip_result = 0;
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
-  if(vm->film_strip_on)
-    film_strip_result = (vm->film_strip.key_pressed)(&vm->film_strip,
-                                                     key, state);
+
   if(v->key_released)
     return v->key_released(v, key, state) || film_strip_result;
-  return film_strip_result;
+
+  return 0;
 }
 
 void dt_view_manager_configure (dt_view_manager_t *vm, int width, int height)
 {
-  if(vm->film_strip_on) height = height*(1.0-vm->film_strip_size)-darktable.control->tabborder;
   for(int k=0; k<vm->num_views; k++)
   {
     // this is necessary for all
@@ -591,9 +517,8 @@ void dt_view_manager_scrolled (dt_view_manager_t *vm, double x, double y, int up
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
-  if(vm->film_strip_on && v->height + darktable.control->tabborder < y && vm->film_strip.scrolled)
-    return vm->film_strip.scrolled(&vm->film_strip, x, y - v->height - darktable.control->tabborder, up, state);
-  if(v->scrolled) v->scrolled(v, x, y, up, state);
+  if(v->scrolled) 
+    v->scrolled(v, x, y, up, state);
 }
 
 void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up)
@@ -1058,12 +983,27 @@ void dt_view_toggle_selection(int imgid)
   }
 }
 
-uint32_t dt_view_film_strip_get_active_image(dt_view_manager_t *vm)
+void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid)
 {
-  return vm->film_strip_active_image;
+  //g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happend here for debugging
+  //g_return_if_fail(vm->proxy.filmstrip.scroll_to_image!=NULL);
+
+  if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.scroll_to_image)
+    vm->proxy.filmstrip.scroll_to_image(vm->proxy.filmstrip.module, imgid);
 }
 
-void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid)
+int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
+{
+  //g_return_val_if_fail(vm->proxy.filmstrip.module!=NULL, 0); // This can happend here for debugging
+  //g_return_val_if_fail(vm->proxy.filmstrip.activated_image!=NULL, 0);
+
+  if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.activated_image)
+    return vm->proxy.filmstrip.activated_image(vm->proxy.filmstrip.module);
+
+  return 0;
+}
+
+void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid)
 {
   /* First off clear all selected images... */
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
@@ -1076,63 +1016,10 @@ void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid)
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, iid);
   sqlite3_step(darktable.view_manager->statements.make_selected);
 
-  vm->film_strip_scroll_to=vm->film_strip_active_image=iid;
+  dt_view_filmstrip_scroll_to_image(vm,iid);
 }
 
-void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data)
-{
-  dt_view_t *self = (dt_view_t *)data;
-  dt_develop_t *dev = NULL;
-
-  if(!strcmp(self->name(self),"darkroom"))
-    dev = (dt_develop_t *)self->data;
-
-  vm->film_strip_activated = activated;
-  vm->film_strip_data = data;
-  vm->film_strip_on = 1;
-  if(vm->film_strip.enter) vm->film_strip.enter(&vm->film_strip);
-  const int tb = darktable.control->tabborder;
-  const int wd = darktable.control->width  - 2*tb;
-  const int ht = darktable.control->height - 2*tb;
-  dt_view_manager_configure (vm, wd, ht);
-  
-  if(dev && dev->image)
-    dt_view_film_strip_scroll_to(vm, dev->image->id);
-}
-
-void dt_view_film_strip_close(dt_view_manager_t *vm)
-{
-  if(vm->film_strip.leave) vm->film_strip.leave(&vm->film_strip);
-
-  dt_conf_set_float("plugins/filmstrip/size", vm->film_strip_size);
-
-  vm->film_strip_on = 0;
-  const int tb = darktable.control->tabborder;
-  const int wd = darktable.control->width  - 2*tb;
-  const int ht = darktable.control->height - 2*tb;
-  dt_view_manager_configure (vm, wd, ht);
-}
-
-void dt_view_film_strip_toggle(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data)
-{
-  if(dt_conf_get_bool("plugins/filmstrip/on"))
-  {
-    dt_view_film_strip_close(vm);
-    dt_conf_set_bool("plugins/filmstrip/on", FALSE);
-  }
-  else
-  {
-    dt_view_film_strip_open(vm, activated, data);
-    dt_conf_set_bool("plugins/filmstrip/on", TRUE);
-  }
-}
-
-void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int st)
-{
-  vm->film_strip_scroll_to = st;
-}
-
-void dt_view_film_strip_prefetch()
+void dt_view_filmstrip_prefetch()
 {
   char query[1024];
   const gchar *qin = dt_collection_get_query (darktable.collection);

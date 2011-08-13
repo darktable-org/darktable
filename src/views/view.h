@@ -103,14 +103,8 @@ void dt_view_toggle_selection(int imgid);
  */
 typedef struct dt_view_manager_t
 {
-  dt_view_t film_strip;
   dt_view_t view[DT_VIEW_MAX_MODULES];
   int32_t current_view, num_views;
-  int32_t film_strip_on;
-  float film_strip_size;
-  int32_t film_strip_dragging, film_strip_scroll_to, film_strip_active_image;
-  void (*film_strip_activated)(const int imgid, void *data);
-  void *film_strip_data;
 
   /* reusable db statements 
    * TODO: reconsider creating a common/database helper API
@@ -141,6 +135,13 @@ typedef struct dt_view_manager_t
       struct dt_lib_module_t *module;
       void (*add)(struct dt_lib_module_t *,GtkWidget *);
     } view_toolbox;
+
+    /* filmstrip proxy object */
+    struct {
+      struct dt_lib_module_t *module;
+      void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid);
+      int32_t (*activated_image)(struct dt_lib_module_t *);
+    } filmstrip;
 
   } proxy;
 
@@ -184,19 +185,23 @@ int dt_view_load_module(dt_view_t *view, const char *module);
 void dt_view_unload_module(dt_view_t *view);
 /** set scrollbar positions, gui method. */
 void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize, float vwinsize);
-/** open up the film strip view, with given callback on image activation. */
-void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int, void*), void *data);
-/** close the film strip view. */
-void dt_view_film_strip_close(dt_view_manager_t *vm);
-/** toggles the film strip. */
-void dt_view_film_strip_toggle(dt_view_manager_t *vm, void (*activated)(const int imgid, void*), void *data);
-/** advise the film strip to scroll to imgid at next expose. */
-void dt_view_film_strip_scroll_to(dt_view_manager_t *vm, const int imgid);
-/** prefetch the next few images in film strip, from selected on. */
-void dt_view_film_strip_prefetch();
-/** Clears all selection and selects the given image as active image in film strip. */
-void dt_view_film_strip_set_active_image(dt_view_manager_t *vm,int iid);
-/** Gets the active image id in filmstrip */
-uint32_t dt_view_film_strip_get_active_image(dt_view_manager_t *vm);
+
+
+/*
+ * NEW filmstrip api
+ */
+/** scrolls filmstrip to the specified image */
+void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid);
+/** get the imageid from last filmstrip activate request */
+int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
+
+/** set active image */
+void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid);
+/** prefetch the next few images in film strip, from selected on. 
+    TODO: move to control ?
+*/
+void dt_view_filmstrip_prefetch();
+
+
 
 #endif

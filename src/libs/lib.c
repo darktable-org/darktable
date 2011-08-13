@@ -545,8 +545,12 @@ popup_callback(GtkButton *button, dt_lib_module_t *module)
 GtkWidget *
 dt_lib_gui_get_expander (dt_lib_module_t *module)
 {
+  /* check if module is expandable */
   if(!module->expandable())
-    return module->widget;
+  {
+    module->expander = NULL;
+    return NULL;
+  }
 
   char name[1024];
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
@@ -635,6 +639,28 @@ dt_lib_presets_add(const char *name, const char *plugin_name, const void *params
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, params, params_size, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+}
+
+gboolean dt_lib_is_visible(dt_lib_module_t *module)
+{
+  char key[512];
+  g_snprintf(key,512,"plugins/%s/visible", module->plugin_name);
+  if (dt_conf_key_exists(key))
+    return dt_conf_get_bool(key);
+
+  /* if not key found, always make module visible */
+  return TRUE;
+}
+
+void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
+{
+  char key[512];
+  g_snprintf(key,512,"plugins/%s/visible", module->plugin_name);
+  dt_conf_set_bool(key, visible);  
+  if (module->expander)
+    gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);  
+  else if (module->widget)
+    gtk_widget_set_visible(GTK_WIDGET(module->widget), visible);  
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

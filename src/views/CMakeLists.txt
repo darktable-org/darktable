@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
-set(MODULES filmstrip darkroom lighttable)
+set(MODULES darkroom lighttable)
 
-add_library(filmstrip MODULE "filmstrip.c")
 add_library(darkroom MODULE "darkroom.c")
 add_library(lighttable MODULE "lighttable.c")
 

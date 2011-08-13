@@ -60,6 +60,9 @@ static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
                                       guint keyval, GdkModifierType modifier,
                                       gpointer data);
 
+/* signal handler for filmstrip image switching */
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance,gpointer user_data);
+
 const char
 *name(dt_view_t *self)
 {
@@ -642,7 +645,14 @@ film_strip_activated(const int imgid, void *data)
   // force redraw
   dt_control_queue_redraw();
   // prefetch next few from first selected image on.
-  dt_view_film_strip_prefetch();
+  dt_view_filmstrip_prefetch();
+}
+
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance,gpointer user_data)
+{
+  int32_t imgid = 0;
+  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager))>0)
+    film_strip_activated(imgid,user_data);
 }
 
 static void
@@ -689,13 +699,8 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       dt_dev_change_image(dev, image);
       dt_image_cache_release(dev->image, 'r');
       select_this_image(dev->image->id);
-      dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
+      dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image->id);
 
-      if(dt_conf_get_bool("plugins/filmstrip/on"))
-      {
-        dt_view_film_strip_prefetch();
-      }
-      dt_control_queue_redraw();
     }
     sqlite3_finalize(stmt);
   }
@@ -744,10 +749,11 @@ film_strip_key_accel(GtkAccelGroup *accel_group,
                      GObject *acceleratable, guint keyval,
                      GdkModifierType modifier, gpointer data)
 {
-  dt_view_film_strip_toggle(darktable.view_manager, film_strip_activated,
-                            (void*)data);
-  dt_control_queue_redraw();
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module; 
+  gboolean vs = dt_lib_is_visible(m);
+  dt_lib_set_visible(m,!vs);
 }
+
 
 static void
 export_key_accel_callback(GtkAccelGroup *accel_group,
@@ -947,13 +953,8 @@ void enter(dt_view_t *self)
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(dev, dev->history_end);
 
-  if(dt_conf_get_bool("plugins/filmstrip/on"))
-  {
-    // double click callback:
-    dt_view_film_strip_scroll_to(darktable.view_manager, dev->image->id);
-    dt_view_film_strip_open(darktable.view_manager, film_strip_activated, self);
-    dt_view_film_strip_prefetch();
-  }
+  /* ensure that filmstrip shows current image */
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image->id);
 
   // switch on groups as they where last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
@@ -978,6 +979,12 @@ void enter(dt_view_t *self)
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
   DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
   DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+
+  /* connect signal for filmstrip image activate */
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+			    G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
+			    self);
 }
 
 static void
@@ -994,6 +1001,11 @@ void leave(dt_view_t *self)
   // Detaching the accelerator group
   gtk_window_remove_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                                 darktable.control->accels_darkroom);
+
+  /* disconnect from filmstrip image activate */
+  dt_control_signal_disconnect(darktable.signals,
+			       G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
+			       (gpointer)self);
 
   /* disconnect from pipe finish signal */
   dt_control_signal_disconnect(darktable.signals,
@@ -1017,9 +1029,6 @@ void leave(dt_view_t *self)
     dt_conf_set_string("plugins/darkroom/active", darktable.develop->gui_module->op);
   else
     dt_conf_set_string("plugins/darkroom/active", "");
-
-  if(dt_conf_get_bool("plugins/filmstrip/on"))
-    dt_view_film_strip_close(darktable.view_manager);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // tag image as changed

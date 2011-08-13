@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -121,6 +122,10 @@ void dt_lib_unload_module(dt_lib_module_t *module);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
 
+/** get the visible state of a plugin */
+gboolean dt_lib_is_visible(dt_lib_module_t *module);
+/** set the visible state of a plugin */
+void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible);
 
 /** preset stuff for lib */
 

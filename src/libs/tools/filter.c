@@ -211,5 +211,5 @@ static void _lib_filter_update_query(dt_lib_module_t *self)
 
   /* update film strip, jump to currently opened image, if any: */
   if(darktable.develop->image)
-    dt_view_film_strip_scroll_to(darktable.view_manager, darktable.develop->image->id);
+    dt_view_filmstrip_scroll_to_image(darktable.view_manager, darktable.develop->image->id);
 }

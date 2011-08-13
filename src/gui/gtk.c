@@ -1,7 +1,7 @@
 
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika, henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -87,6 +87,8 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container);
 static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container);
 /* initialize the center bottom panel */
 static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container);
+/* initialize the bottom panel */
+static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container);
 /* generic callback for redraw widget signals */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
 
@@ -999,7 +1001,7 @@ void init_main_table(GtkWidget *container)
   GtkWidget *widget;
 
   // Creating the table
-  widget = gtk_table_new(2, 5, FALSE);
+  widget = gtk_table_new(3, 5, FALSE);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_widget_show(widget);
 
@@ -1044,8 +1046,6 @@ void init_main_table(GtkWidget *container)
   /* initialize the top container */
   _ui_init_panel_top(darktable.gui->ui, container);
 
-
-
   /* 
    * initialize the center top/center/bottom 
    */
@@ -1081,7 +1081,9 @@ void init_main_table(GtkWidget *container)
 
   /* initialize the center bottom panel */
   _ui_init_panel_center_bottom(darktable.gui->ui, widget);
-  
+
+  /* initialize the bottom panel */
+  _ui_init_panel_bottom(darktable.gui->ui, container);
 
   /* initialize  left panel */
   _ui_init_panel_left(darktable.gui->ui, container);
@@ -1118,8 +1120,11 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
       gtk_box_pack_end(GTK_BOX(ui->containers[c]),w,FALSE,FALSE,0);
       break;
     default:
-      gtk_box_pack_start(GTK_BOX(ui->containers[c]),w,FALSE,FALSE,0);
-      break;
+    {
+      /* add specialcase where we want widget added to panel to fill */
+      gboolean fill = c==DT_UI_CONTAINER_PANEL_BOTTOM?TRUE:FALSE;
+      gtk_box_pack_start(GTK_BOX(ui->containers[c]),w,fill,fill,0);
+    }  break;
   }
   gtk_widget_show_all(w);
 }
@@ -1299,6 +1304,20 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
   ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT] = gtk_hbox_new(FALSE,0);
   gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT], FALSE, FALSE, 10);
 
+}
+
+static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
+{
+  GtkWidget *widget;
+
+  /* create the panel box */
+  ui->panels[DT_UI_PANEL_BOTTOM] = widget = gtk_hbox_new(FALSE, 0);
+  gtk_table_attach(GTK_TABLE(container), widget, 1, 4, 2, 3,
+		   GTK_EXPAND | GTK_FILL | GTK_SHRINK, GTK_SHRINK, 0, 0); 
+
+  /* add the container */
+  ui->containers[DT_UI_CONTAINER_PANEL_BOTTOM] = gtk_hbox_new(TRUE,0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_BOTTOM], TRUE, TRUE, 0);
 }
 
 static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
