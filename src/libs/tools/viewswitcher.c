@@ -107,6 +107,41 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+#define LABEL_HIGHLIGHTED  "<span color=\"#a0a0a0\"><big><b>%s</b></big></span>"
+#define LABEL_SELECTED     "<span color=\"#afafaf\"><big><b>%s</b></big></span>"
+#define LABEL_DEFAULT     "<span color=\"#7f7f7f\"><big><b>%s</b></big></span>"
+
+
+static void _lib_viewswitcher_enter_notify_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+{
+  char label[512]={0};
+  GtkLabel *l = (GtkLabel *)user_data;
+
+  /* if not active view lets highlight */
+  if (strcmp(g_object_get_data(G_OBJECT(w),"view-label"), 
+	     dt_view_manager_name(darktable.view_manager)))
+  {
+    g_snprintf(label,512,LABEL_HIGHLIGHTED,
+	       (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
+    gtk_label_set_markup(l,label);
+  }
+}
+
+static void _lib_viewswitcher_leave_notify_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+{
+  char label[512]={0};
+  GtkLabel *l = (GtkLabel *)user_data;
+
+  /* if not active view lets set default */
+  if (strcmp(g_object_get_data(G_OBJECT(w),"view-label"), 
+	     dt_view_manager_name(darktable.view_manager)))
+  {
+    g_snprintf(label,512,LABEL_DEFAULT,
+	       (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
+    gtk_label_set_markup(l,label);
+  }
+}
+
 static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
@@ -118,7 +153,7 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer 
   {
     x++;
 
-    /* check ifeven number then continue to skip seperator widgets*/
+    /* check if even number then continue to skip seperator widgets */
     if(!(x%2))
     {
       childs = g_list_next(childs);
@@ -129,15 +164,15 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer 
     char label[512]={0};
     /* check if current is the same as the one we iterate, then hilite */
     if(!strcmp(g_object_get_data(G_OBJECT(w),"view-label"),dt_view_manager_name(darktable.view_manager)))
-      g_snprintf(label,512,"<span color=\"#afafaf\"><big><b>%s</b></big></span>",
+      g_snprintf(label,512,LABEL_SELECTED,
 		 (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
     else
-      g_snprintf(label,512,"<span color=\"#7f7f7f\"><big><b>%s</b></big></span>",
+      g_snprintf(label,512,LABEL_DEFAULT,
 		 (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
 
     /* set label */
     gtk_label_set_markup(w,label);
-    
+
     /* get next */
     childs = g_list_next(childs);
   }
@@ -147,15 +182,32 @@ static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *v)
 {
   GtkWidget *eb = gtk_event_box_new();
   char label[512]={0};
-  g_snprintf(label,512,"<span color=\"#7f7f7f\"><big><b>%s</b></big></span>",v->name(v));
+  g_snprintf(label,512,LABEL_DEFAULT,v->name(v));
   GtkWidget *b = gtk_label_new(label);
   gtk_container_add(GTK_CONTAINER(eb),b);
   /*setup label*/
   gtk_misc_set_alignment(GTK_MISC(b), 0, 1.0);
   g_object_set_data(G_OBJECT(b),"view-label",(gchar *)v->name(v));
+  g_object_set_data(G_OBJECT(eb),"view-label",(gchar *)v->name(v));
   gtk_label_set_use_markup(GTK_LABEL(b), TRUE);
   gtk_widget_set_name(b,"view_label");
+  
+  /* connect button press handler */
   g_signal_connect(G_OBJECT(eb),"button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback), (gpointer)(long)v->view(v));
+
+  /* set enter/leave notify events and connect signals */
+  gtk_widget_add_events(GTK_WIDGET(eb),
+			GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+  
+  g_signal_connect(G_OBJECT(eb), 
+		   "enter-notify-event", 
+		   G_CALLBACK(_lib_viewswitcher_enter_notify_callback), b);
+  g_signal_connect(G_OBJECT(eb), 
+		   "leave-notify-event", 
+		   G_CALLBACK(_lib_viewswitcher_leave_notify_callback), b);
+  
+
+
   return eb;
 }
 
