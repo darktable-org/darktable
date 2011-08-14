@@ -56,6 +56,8 @@ static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self);
 
 /* motion notify event handler */
 static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data);
+/* motion leave event handler */
+static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data);
 /* scroll event */
 static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w,GdkEventScroll *e, gpointer user_data);
 /* expose function for filmstrip module */
@@ -284,6 +286,9 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_filmstrip_scroll_callback), self);
   g_signal_connect (G_OBJECT (self->widget), "motion-notify-event",
 		    G_CALLBACK(_lib_filmstrip_motion_notify_callback), self);
+  g_signal_connect (G_OBJECT (self->widget), "leave-notify-event",
+		    G_CALLBACK(_lib_filmstrip_mouse_leave_callback), self);
+
   
   /* set size of filmstrip */
   gtk_widget_set_size_request(self->widget, -1, 64);
@@ -320,6 +325,13 @@ void gui_cleanup(dt_lib_module_t *self)
   /* cleaup */
   g_free(self->data);
   self->data = NULL;
+}
+
+
+static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+{
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  return TRUE;
 }
 
 static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data)
