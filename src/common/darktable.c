@@ -315,6 +315,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.camctl=dt_camctl_new();
 #endif
 
+  // has to go first for settings needed by all the others.
+  darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
+  memset(darktable.conf, 0, sizeof(dt_conf_t));
+  dt_conf_init(darktable.conf, filename);
+
   // get max lighttable thumbnail size:
   darktable.thumbnail_size = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_size"), 160, 1300);
   // and make sure it can be mip-mapped all the way from mip4 to mip0
@@ -350,6 +355,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
+  memset(darktable.control, 0, sizeof(dt_control_t));
   if(init_gui)
   {
     dt_control_init(darktable.control);
@@ -381,22 +387,26 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.collection = dt_collection_new(NULL);
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
+  memset(darktable.opencl, 0, sizeof(dt_opencl_t));
   dt_opencl_init(darktable.opencl, argc, argv);
 
   darktable.blendop = (dt_blendop_t *)malloc(sizeof(dt_blendop_t));
+  memset(darktable.blendop, 0, sizeof(dt_blendop_t));
   dt_develop_blend_init(darktable.blendop);
 
   darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
+  memset(darktable.points, 0, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
   int thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
   thumbnails = MIN(1000000, MAX(20, thumbnails));
 
   darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
+  memset(darktable.mipmap_cache, 0, sizeof(dt_mipmap_cache_t));
   dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
 
   darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  
+  memset(darktable.image_cache, 0, sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache, 
 		      MIN(10000, MAX(500, thumbnails)), 
 		      !dt_database_is_new(darktable.db));
@@ -408,11 +418,13 @@ int dt_init(int argc, char *argv[], const int init_gui)
   if(init_gui)
   {
     darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
+    memset(darktable.gui,0,sizeof(dt_gui_gtk_t));
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
   }
   else darktable.gui = NULL;
 
   darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
+  memset(darktable.view_manager, 0, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
   // load the darkroom mode plugins once:
@@ -421,12 +433,14 @@ int dt_init(int argc, char *argv[], const int init_gui)
   if(init_gui)
   {
     darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
+    memset(darktable.lib, 0, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
     dt_control_load_config(darktable.control);
     g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
 
     darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
+    memset(darktable.imageio, 0, sizeof(dt_imageio_t));
     dt_imageio_init(darktable.imageio);
   }
 
