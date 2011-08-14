@@ -1358,6 +1358,11 @@ int dt_control_key_pressed_override(guint key, guint state)
 	*/
 
     dt_dev_invalidate(darktable.develop);
+  } else if (key == accels->global_header.accel_key &&
+	     state == accels->global_header.accel_mods)
+  {
+    gboolean visible = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, !visible); 
   }
  
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));

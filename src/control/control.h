@@ -184,10 +184,10 @@ void dt_control_job_wait(dt_job_t *j);
 typedef struct dt_control_accels_t
 {
   GtkAccelKey
-      filmstrip_forward, filmstrip_back,
-      lighttable_up, lighttable_down, lighttable_right,
-      lighttable_left, lighttable_center, lighttable_preview,
-      global_sideborders;
+    filmstrip_forward, filmstrip_back,
+    lighttable_up, lighttable_down, lighttable_right,
+    lighttable_left, lighttable_center, lighttable_preview,
+    global_sideborders, global_header;
 
 } dt_control_accels_t;
 

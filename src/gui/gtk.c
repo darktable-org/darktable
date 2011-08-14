@@ -131,6 +131,10 @@ static void key_accel_changed(GtkAccelMap *object,
   gtk_accel_map_lookup_entry("<Darktable>/global/toggle side borders",
                              &darktable.control->accels.global_sideborders);
 
+  gtk_accel_map_lookup_entry("<Darktable>/global/toggle header",
+                             &darktable.control->accels.global_header);
+
+
 }
 
 static void brightness_key_accel_callback(GtkAccelGroup *accel_group,
@@ -888,6 +892,14 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                                  "<Darktable>/global/toggle side borders",
                                  NULL);
 
+  // toggle view of header 
+  gtk_accel_map_add_entry("<Darktable>/global/toggle header",
+                          GDK_h, GDK_CONTROL_MASK);
+
+  dt_accel_group_connect_by_path(darktable.control->accels_global,
+                                 "<Darktable>/global/toggle header",
+                                 NULL);
+
   // View-switch
   gtk_accel_map_add_entry("<Darktable>/global/switch view",
                           GDK_period, 0);
@@ -1148,6 +1160,7 @@ void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
   //if(!GTK_IS_WIDGET(ui->panels[p])) return;
   g_return_if_fail(GTK_IS_WIDGET(ui->panels[p]));
 
+  // TODO: store panel state to conf
   if(show)
     gtk_widget_show(ui->panels[p]);
   else
