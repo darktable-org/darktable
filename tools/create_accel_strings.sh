@@ -18,7 +18,7 @@ BEGIN {
   print "void accel_strings(){"
 }
 /^[a-zA-Z].*/{
-  print "_(\"accel\",\"" $0 "\");"
+  print "C_(\"accel\",\"" $0 "\");"
 }
 
 END {
