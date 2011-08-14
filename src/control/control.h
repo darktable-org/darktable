@@ -117,8 +117,6 @@ void dt_control_gdk_unlock();
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 
-void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
-void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
 struct dt_control_t;
 struct dt_job_t;
 

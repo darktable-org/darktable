@@ -55,6 +55,15 @@
 
 #define DT_UI_PANEL_MODULE_SPACING 10
 
+const char *_ui_panel_config_names[] = {
+  "header",
+  "toolbar_top",
+  "toolbar_bottom",
+  "left",
+  "right",
+  "bottom"
+}; 
+
 typedef struct dt_ui_t {
   /* container widgets */
   GtkWidget *containers[DT_UI_CONTAINER_SIZE];
@@ -1006,6 +1015,21 @@ void init_widgets()
 
   // Showing everything
   gtk_widget_show_all(dt_ui_main_window(darktable.gui->ui));
+
+  /* hide panels depending on last ui state */
+  for(int k=0;k<DT_UI_PANEL_SIZE;k++)
+  {
+    /* prevent show all */
+    gtk_widget_set_no_show_all(GTK_WIDGET(darktable.gui->ui->containers[k]), TRUE);
+
+    /* check last visible state of panel */
+    char key[512];
+    g_snprintf(key, 512, "ui_last/%s/visible", _ui_panel_config_names[k]);
+    if (!dt_conf_get_bool(key))
+      gtk_widget_set_visible(darktable.gui->ui->panels[k],FALSE);
+    fprintf(stderr,"%s is %s\n", _ui_panel_config_names[k], dt_conf_get_bool(key)?"visible":"hidden"); 
+  }
+
 }
 
 void init_main_table(GtkWidget *container)
@@ -1161,6 +1185,10 @@ void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
   g_return_if_fail(GTK_IS_WIDGET(ui->panels[p]));
 
   // TODO: store panel state to conf
+  char key[512];
+  g_snprintf(key,512,"ui_last/%s/visible",_ui_panel_config_names[p]);
+  dt_conf_set_bool(key, show);
+
   if(show)
     gtk_widget_show(ui->panels[p]);
   else

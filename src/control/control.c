@@ -170,15 +170,11 @@ int dt_control_load_config(dt_control_t *c)
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
   if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
   else           gtk_window_unfullscreen(GTK_WINDOW(widget));
-  dt_control_restore_gui_settings(DT_LIBRARY);
   return 0;
 }
 
 int dt_control_write_config(dt_control_t *c)
 {
-  dt_ctl_gui_mode_t gui = dt_conf_get_int("ui_last/view");
-  dt_control_save_gui_settings(gui);
-
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   gint x, y;
   gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
@@ -1052,7 +1048,6 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
   dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode == mode) return;
 
-  dt_control_save_gui_settings(oldmode);
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
   darktable.gui->center_tooltip = 0;
@@ -1070,8 +1065,6 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 
   if(error) return;
 
-  dt_control_restore_gui_settings(mode);
-  /* TODO: highlight current view */
   dt_conf_set_int ("ui_last/view", mode);
 }
 
@@ -1279,65 +1272,6 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
   }
 }
 
-
-void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode)
-{
-  if(mode==DT_MODE_NONE) return;
-
-  int8_t bit;
-
-  bit = dt_conf_get_int("ui_last/panel_header");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
-
-  bit = dt_conf_get_int("ui_last/panel_left");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (bit&(1<<mode)) ? TRUE : FALSE);
-
-  bit = dt_conf_get_int("ui_last/panel_right");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (bit&(1<<mode)) ? TRUE : FALSE);
-
-  bit = dt_conf_get_int("ui_last/panel_top");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (bit&(1<<mode)) ? TRUE : FALSE);
-
-  bit = dt_conf_get_int("ui_last/panel_bottom");
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (bit&(1<<mode)) ? TRUE : FALSE);
-
-}
-
-void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode)
-{
-  int8_t bit;
-  /* store header panel visible state */
-  bit = dt_conf_get_int("ui_last/panel_header");
-  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_header",bit);
-
-  /* store left panel visible state */
-  bit = dt_conf_get_int("ui_last/panel_left");
-  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_left",bit);
-
-  /* store right panel visible state */
-  bit = dt_conf_get_int("ui_last/panel_right");
-  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT)) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_right",bit);
-
-  /* store top panel visible state */
-  bit = dt_conf_get_int("ui_last/panel_top");
-  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP)) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_top",bit);
-
-  /* store bottom panel visible state */
-  bit = dt_conf_get_int("ui_last/panel_bottom");
-  if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM)) bit |= 1<<mode;
-  else bit &= ~(1<<mode);
-  dt_conf_set_int("ui_last/panel_bottom",bit);
-
-
-}
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
