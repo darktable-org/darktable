@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-11 16:58+0200\n"
-"PO-Revision-Date: 2011-08-11 17:00+0100\n"
+"POT-Creation-Date: 2011-08-15 00:57+0200\n"
+"PO-Revision-Date: 2011-08-15 00:54+0100\n"
 "Last-Translator: Tobias Ellinghaus <houz@gmx.de>\n"
 "Language-Team: German\n"
 "Language: \n"
@@ -255,669 +255,835 @@ msgstr ""
 "Speicher-Backend für pwstorage: 0 - keines, 1 - gconf (nicht benutzen), 2 - "
 "kwallet, 3 - gnome keyring"
 
-#: ../build/src/accelstrings_gen.h:2 ../src/iop/colortransfer.c:651
+#: ../build/src/accelstrings_gen.h:2
+msgctxt "accel"
 msgid "acquire"
 msgstr "berechnen"
 
-#: ../build/src/accelstrings_gen.h:3 ../src/iop/clahe.c:346
-#: ../src/iop/sharpen.c:478
+#: ../build/src/accelstrings_gen.h:3
+msgctxt "accel"
 msgid "amount"
 msgstr "Menge"
 
-#: ../build/src/accelstrings_gen.h:4 ../src/iop/clipping.c:842
+#: ../build/src/accelstrings_gen.h:4
+msgctxt "accel"
 msgid "angle"
 msgstr "Winkel"
 
-#: ../build/src/accelstrings_gen.h:5 ../src/iop/colortransfer.c:657
-#: ../src/libs/metadata.c:349
+#: ../build/src/accelstrings_gen.h:5
+msgctxt "accel"
 msgid "apply"
 msgstr "anwenden"
 
 #: ../build/src/accelstrings_gen.h:6
+msgctxt "accel"
 msgid "auto-exposure"
 msgstr "automatische Belichtung"
 
-#: ../build/src/accelstrings_gen.h:7 ../src/iop/lens.c:1393
+#: ../build/src/accelstrings_gen.h:7
+msgctxt "accel"
 msgid "auto scale"
 msgstr "automatisch skalieren"
 
-#: ../build/src/accelstrings_gen.h:8 ../src/iop/splittoning.c:549
+#: ../build/src/accelstrings_gen.h:8
+msgctxt "accel"
 msgid "balance"
 msgstr "Ausgleich"
 
-#: ../build/src/accelstrings_gen.h:9 ../src/iop/exposure.c:362
+#: ../build/src/accelstrings_gen.h:9
+msgctxt "accel"
 msgid "black"
 msgstr "Schwarz"
 
-#: ../build/src/accelstrings_gen.h:10 ../src/iop/highlights.c:411
+#: ../build/src/accelstrings_gen.h:10
+msgctxt "accel"
 msgid "blend C"
 msgstr "mische C"
 
-#: ../build/src/accelstrings_gen.h:11 ../src/iop/highlights.c:412
+#: ../build/src/accelstrings_gen.h:11
+msgctxt "accel"
 msgid "blend h"
 msgstr "mische h"
 
-#: ../build/src/accelstrings_gen.h:12 ../src/iop/highlights.c:410
+#: ../build/src/accelstrings_gen.h:12
+msgctxt "accel"
 msgid "blend L"
 msgstr "mische L"
 
-#: ../build/src/accelstrings_gen.h:13 ../src/common/collection.c:322
-#: ../src/iop/bilateral.cc:355 ../src/iop/channelmixer.c:347
-#: ../src/iop/channelmixer.c:370 ../src/iop/temperature.c:475
-#: ../src/libs/collect.c:252 ../src/libs/collect.c:254
+#: ../build/src/accelstrings_gen.h:13
+msgctxt "accel"
 msgid "blue"
 msgstr "Blau"
 
-#: ../build/src/accelstrings_gen.h:14 ../src/iop/lowlight.c:722
+#: ../build/src/accelstrings_gen.h:14
+msgctxt "accel"
 msgid "blue shift"
 msgstr "Blauverschiebung"
 
-#: ../build/src/accelstrings_gen.h:15 ../src/iop/colorcontrast.c:256
+#: ../build/src/accelstrings_gen.h:15
+msgctxt "accel"
 msgid "blue vs yellow"
 msgstr "Blau / Gelb"
 
-#: ../build/src/accelstrings_gen.h:16 ../src/iop/borders.c:366
+#: ../build/src/accelstrings_gen.h:16
+msgctxt "accel"
 msgid "border size"
 msgstr "Randgröße"
 
-#: ../build/src/accelstrings_gen.h:17 ../src/iop/soften.c:356
-#: ../src/iop/vignette.c:866
+#: ../build/src/accelstrings_gen.h:17
+msgctxt "accel"
 msgid "brightness"
 msgstr "Helligkeit"
 
 #: ../build/src/accelstrings_gen.h:18
+msgctxt "accel"
 msgid "camera model"
 msgstr "Kamera"
 
-#: ../build/src/accelstrings_gen.h:19 ../src/libs/camera.c:459
+#: ../build/src/accelstrings_gen.h:19
+msgctxt "accel"
 msgid "capture image(s)"
 msgstr "Bild(er) aufnehmen"
 
 #: ../build/src/accelstrings_gen.h:20
+msgctxt "accel"
 msgid "capture view"
 msgstr "Aufnahme-Ansicht"
 
 #: ../build/src/accelstrings_gen.h:21
+msgctxt "accel"
 msgid "center"
 msgstr "zentrieren"
 
-#: ../build/src/accelstrings_gen.h:22 ../src/iop/atrous.c:1250
-#: ../src/iop/equalizer.c:344 ../src/iop/nlmeans.c:469
+#: ../build/src/accelstrings_gen.h:22
+msgctxt "accel"
 msgid "chroma"
 msgstr "Chrominanz"
 
-#: ../build/src/accelstrings_gen.h:23 ../src/libs/metadata.c:342
+#: ../build/src/accelstrings_gen.h:23
+msgctxt "accel"
 msgid "clear"
 msgstr "löschen"
 
 #: ../build/src/accelstrings_gen.h:24
+msgctxt "accel"
 msgid "close-up"
 msgstr "Nahansicht"
 
-#: ../build/src/accelstrings_gen.h:25 ../src/iop/grain.c:515
+#: ../build/src/accelstrings_gen.h:25
+msgctxt "accel"
 msgid "coarseness"
 msgstr "Korngröße"
 
-#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
-#. add button for color plugins
-#. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
-#: ../build/src/accelstrings_gen.h:26 ../src/gui/iop_modulegroups.c:235
+#: ../build/src/accelstrings_gen.h:26
+msgctxt "accel"
 msgid "color"
 msgstr "Farbe"
 
 #: ../build/src/accelstrings_gen.h:27
+msgctxt "accel"
 msgid "commit"
 msgstr "Änderungen übernehmen"
 
-#: ../build/src/accelstrings_gen.h:28 ../src/iop/splittoning.c:556
+#: ../build/src/accelstrings_gen.h:28
+msgctxt "accel"
 msgid "compress"
 msgstr "komprimieren"
 
-#: ../build/src/accelstrings_gen.h:29 ../src/iop/graduatednd.c:538
+#: ../build/src/accelstrings_gen.h:29
+msgctxt "accel"
 msgid "compression"
 msgstr "Kompression"
 
-#: ../build/src/accelstrings_gen.h:30 ../src/iop/lowpass.c:707
+#: ../build/src/accelstrings_gen.h:30
+msgctxt "accel"
 msgid "contrast"
 msgstr "Kontrast"
 
-#: ../build/src/accelstrings_gen.h:31 ../src/iop/highpass.c:425
+#: ../build/src/accelstrings_gen.h:31
+msgctxt "accel"
 msgid "contrast boost"
 msgstr "Kontrastverstärkung"
 
-#: ../build/src/accelstrings_gen.h:32 ../src/iop/tonemap.cc:296
+#: ../build/src/accelstrings_gen.h:32
+msgctxt "accel"
 msgid "contrast compression"
 msgstr "Kontrast-Kompression"
 
-#: ../build/src/accelstrings_gen.h:33 ../src/libs/image.c:106
+#: ../build/src/accelstrings_gen.h:33
+msgctxt "accel"
 msgid "create hdr"
 msgstr "HDR erzeugen"
 
 #: ../build/src/accelstrings_gen.h:34
+msgctxt "accel"
 msgid "darkroom view"
 msgstr "Dunkelkammer-Ansicht"
 
 #: ../build/src/accelstrings_gen.h:35
+msgctxt "accel"
 msgid "decrease brightness"
 msgstr "Helligkeit verringern"
 
 #: ../build/src/accelstrings_gen.h:36
+msgctxt "accel"
 msgid "decrease contrast"
 msgstr "Kontrast verringern"
 
-#: ../build/src/accelstrings_gen.h:37 ../src/libs/image.c:97
-#: ../src/libs/styles.c:349 ../src/libs/tagging.c:430
+#: ../build/src/accelstrings_gen.h:37
+msgctxt "accel"
 msgid "delete"
 msgstr "löschen"
 
 #: ../build/src/accelstrings_gen.h:38
+msgctxt "accel"
 msgid "delete from disk"
-msgstr "physikalisch von der Festplatte löschen"
+msgstr "von der Festplatte löschen"
 
-#: ../build/src/accelstrings_gen.h:39 ../src/iop/graduatednd.c:536
+#: ../build/src/accelstrings_gen.h:39
+msgctxt "accel"
 msgid "density"
 msgstr "Dichte"
 
 #: ../build/src/accelstrings_gen.h:40
+msgctxt "accel"
 msgid "desert"
 msgstr "kein Stern"
 
-#: ../build/src/accelstrings_gen.h:41 ../src/libs/copy_history.c:192
+#: ../build/src/accelstrings_gen.h:41
+msgctxt "accel"
 msgid "discard"
 msgstr "verwerfen"
 
 #: ../build/src/accelstrings_gen.h:42
+msgctxt "accel"
 msgid "down"
 msgstr "runter"
 
-#: ../build/src/accelstrings_gen.h:43 ../src/libs/image.c:112
+#: ../build/src/accelstrings_gen.h:43
+msgctxt "accel"
 msgid "duplicate"
 msgstr "duplizieren"
 
-#: ../build/src/accelstrings_gen.h:44 ../src/iop/demosaic.c:1023
+#: ../build/src/accelstrings_gen.h:44
+msgctxt "accel"
 msgid "edge threshold"
 msgstr "Kantenschwellwert"
 
 #: ../build/src/accelstrings_gen.h:45
+msgctxt "accel"
 msgid "enable plugin"
 msgstr "Modul aktivieren"
 
-#: ../build/src/accelstrings_gen.h:46 ../src/iop/vignette.c:863
+#: ../build/src/accelstrings_gen.h:46
+msgctxt "accel"
 msgid "fall-off strength"
 msgstr "Abfallstärke"
 
 #: ../build/src/accelstrings_gen.h:47
+msgctxt "accel"
 msgid "fill"
 msgstr "Rahmen füllen"
 
-#: ../build/src/accelstrings_gen.h:48 ../src/views/filmstrip.c:88
+#: ../build/src/accelstrings_gen.h:48
+msgctxt "accel"
 msgid "film strip"
 msgstr "Filmstreifen"
 
-#: ../build/src/accelstrings_gen.h:49 ../src/iop/lens.c:1320
+#: ../build/src/accelstrings_gen.h:49
+msgctxt "accel"
 msgid "find camera"
 msgstr "Kamera finden"
 
-#: ../build/src/accelstrings_gen.h:50 ../src/iop/lens.c:1337
+#: ../build/src/accelstrings_gen.h:50
+msgctxt "accel"
 msgid "find lens"
 msgstr "Objektiv finden"
 
 #: ../build/src/accelstrings_gen.h:51
+msgctxt "accel"
 msgid "fit"
 msgstr "Bild einpassen"
 
 #: ../build/src/accelstrings_gen.h:52
+msgctxt "accel"
 msgid "fusion opacity"
 msgstr "Deckkraft der Überblendung"
 
 #: ../build/src/accelstrings_gen.h:53
+msgctxt "accel"
 msgid "gamma exponential part"
 msgstr "exponentieller Gamma-Teil"
 
 # müsste zwar "global" sein, sieht aber kleingeschrieben zwischen den anderen Einträgen kacke aus.
 #: ../build/src/accelstrings_gen.h:54
+msgctxt "accel"
 msgid "global"
 msgstr "Global"
 
-#: ../build/src/accelstrings_gen.h:55 ../src/common/collection.c:321
-#: ../src/iop/bilateral.cc:354 ../src/iop/channelmixer.c:346
-#: ../src/iop/channelmixer.c:366 ../src/iop/temperature.c:474
-#: ../src/libs/collect.c:246 ../src/libs/collect.c:248
+#: ../build/src/accelstrings_gen.h:55
+msgctxt "accel"
 msgid "green"
 msgstr "Grün"
 
-#: ../build/src/accelstrings_gen.h:56 ../src/iop/colorcontrast.c:253
+#: ../build/src/accelstrings_gen.h:56
+msgctxt "accel"
 msgid "green vs magenta"
 msgstr "Grün / Magenta"
 
-#: ../build/src/accelstrings_gen.h:57 ../src/gui/gtk.c:1928
-#: ../src/libs/collect.h:33
+#: ../build/src/accelstrings_gen.h:57
+msgctxt "accel"
 msgid "history"
 msgstr "Verlauf"
 
-#: ../build/src/accelstrings_gen.h:58 ../src/iop/vignette.c:870
+#: ../build/src/accelstrings_gen.h:58
+msgctxt "accel"
 msgid "horizontal center"
 msgstr "horizontale Mitte"
 
 #: ../build/src/accelstrings_gen.h:59
+msgctxt "accel"
 msgid "image back"
 msgstr "vorheriges Bild"
 
 #: ../build/src/accelstrings_gen.h:60
+msgctxt "accel"
 msgid "image forward"
 msgstr "nächstes Bild"
 
 #: ../build/src/accelstrings_gen.h:61
+msgctxt "accel"
 msgid "import"
 msgstr "importieren"
 
 #: ../build/src/accelstrings_gen.h:62
+msgctxt "accel"
 msgid "in"
 msgstr "heranzoomen"
 
 #: ../build/src/accelstrings_gen.h:63
+msgctxt "accel"
 msgid "increase brightness"
 msgstr "Helligkeit erhöhen"
 
 #: ../build/src/accelstrings_gen.h:64
+msgctxt "accel"
 msgid "increase contrast"
 msgstr "Kontrast erhöhen"
 
-#: ../build/src/accelstrings_gen.h:65 ../src/libs/select.c:129
+#: ../build/src/accelstrings_gen.h:65
+msgctxt "accel"
 msgid "invert selection"
 msgstr "Auswahl invertieren"
 
 # war "Trapezkorrektur h", aber zu lang für GUI (Bug?)
-#: ../build/src/accelstrings_gen.h:66 ../src/iop/clipping.c:852
+#: ../build/src/accelstrings_gen.h:66
+msgctxt "accel"
 msgid "keystone h"
 msgstr "Trapez h"
 
 # siehe "keystone h"
-#: ../build/src/accelstrings_gen.h:67 ../src/iop/clipping.c:860
+#: ../build/src/accelstrings_gen.h:67
+msgctxt "accel"
 msgid "keystone v"
 msgstr "Trapez v"
 
 #: ../build/src/accelstrings_gen.h:68
+msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "Vollbild verlassen"
 
 #: ../build/src/accelstrings_gen.h:69
+msgctxt "accel"
 msgid "left"
 msgstr "links"
 
 #: ../build/src/accelstrings_gen.h:70
+msgctxt "accel"
 msgid "lens model"
 msgstr "Objektiv"
 
 #: ../build/src/accelstrings_gen.h:71
+msgctxt "accel"
 msgid "lighttable view"
 msgstr "Leuchttisch-Ansicht"
 
-#: ../build/src/accelstrings_gen.h:72 ../src/iop/basecurve.c:50
-#: ../src/iop/profile_gamma.c:187 ../src/iop/tonecurve.c:132
+#: ../build/src/accelstrings_gen.h:72
+msgctxt "accel"
 msgid "linear"
 msgstr "linear"
 
-#: ../build/src/accelstrings_gen.h:73 ../src/iop/profile_gamma.c:186
+#: ../build/src/accelstrings_gen.h:73
+msgctxt "accel"
 msgid "linear part"
 msgstr "linearer Teil"
 
-#: ../build/src/accelstrings_gen.h:74 ../src/libs/copy_history.c:217
+#: ../build/src/accelstrings_gen.h:74
+msgctxt "accel"
 msgid "load sidecar file"
 msgstr "Begleitdateien laden"
 
 #: ../build/src/accelstrings_gen.h:75
+msgctxt "accel"
 msgid "local_contrast_2"
 msgstr "Lokaler Kontrast 2"
 
-#: ../build/src/accelstrings_gen.h:76 ../src/iop/overexposed.c:268
+#: ../build/src/accelstrings_gen.h:76
+msgctxt "accel"
 msgid "lower threshold"
 msgstr "unterer Schwellwert"
 
-#: ../build/src/accelstrings_gen.h:77 ../src/iop/atrous.c:1248
-#: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:467
+#: ../build/src/accelstrings_gen.h:77
+msgctxt "accel"
 msgid "luma"
 msgstr "Luminanz"
 
-#: ../build/src/accelstrings_gen.h:78 ../src/gui/gtk.c:2510
+#: ../build/src/accelstrings_gen.h:78
+msgctxt "accel"
 msgid "max"
 msgstr "Maximum"
 
-#: ../build/src/accelstrings_gen.h:79 ../src/iop/velvia.c:254
+#: ../build/src/accelstrings_gen.h:79
+msgctxt "accel"
 msgid "mid-tones bias"
 msgstr "Mittenbetonung"
 
-#: ../build/src/accelstrings_gen.h:80 ../src/gui/gtk.c:2509
+#: ../build/src/accelstrings_gen.h:80
+msgctxt "accel"
 msgid "min"
 msgstr "Minimum"
 
-#: ../build/src/accelstrings_gen.h:81 ../src/iop/atrous.c:1289
-#: ../src/iop/soften.c:359
+#: ../build/src/accelstrings_gen.h:81
+msgctxt "accel"
 msgid "mix"
 msgstr "einblenden"
 
 #: ../build/src/accelstrings_gen.h:82
+msgctxt "accel"
 msgid "navigate"
 msgstr "Navigation"
 
-#: ../build/src/accelstrings_gen.h:83 ../src/iop/rawdenoise.c:340
+#: ../build/src/accelstrings_gen.h:83
+msgctxt "accel"
 msgid "noise threshold"
 msgstr "Rausch-Schwellwert"
 
-#: ../build/src/accelstrings_gen.h:84 ../src/develop/imageop.c:905
-#: ../src/iop/watermark.c:683
+#: ../build/src/accelstrings_gen.h:84
+msgctxt "accel"
 msgid "opacity"
 msgstr "Deckkraft"
 
 #: ../build/src/accelstrings_gen.h:85
+msgctxt "accel"
 msgid "out"
 msgstr "herauszoomen"
 
 #: ../build/src/accelstrings_gen.h:86
+msgctxt "accel"
 msgid "page down"
 msgstr "Eine Seite runter"
 
 #: ../build/src/accelstrings_gen.h:87
+msgctxt "accel"
 msgid "page up"
 msgstr "Eine Seite hoch"
 
-#: ../build/src/accelstrings_gen.h:88 ../src/libs/copy_history.c:207
+#: ../build/src/accelstrings_gen.h:88
+msgctxt "accel"
 msgid "paste"
 msgstr "einfügen"
 
-#: ../build/src/accelstrings_gen.h:89 ../src/iop/invert.c:332
+#: ../build/src/accelstrings_gen.h:89
+msgctxt "accel"
 msgid "pick color of film material from image"
 msgstr "Farbe des Filmmaterials aus dem Bild übernehmen"
 
-#: ../build/src/accelstrings_gen.h:90 ../src/iop/borders.c:404
-#: ../src/iop/colorzones.c:813
+#: ../build/src/accelstrings_gen.h:90
+msgctxt "accel"
 msgid "pick gui color from image"
 msgstr "GUI-Farbe aus dem Bild übernehmen"
 
 #: ../build/src/accelstrings_gen.h:91
+msgctxt "accel"
 msgid "pick primary color"
 msgstr "erste Farbe wählen"
 
 #: ../build/src/accelstrings_gen.h:92
+msgctxt "accel"
 msgid "pick secondary color"
 msgstr "zweite Farbe wählen"
 
 #: ../build/src/accelstrings_gen.h:93
+msgctxt "accel"
 msgid "plugins"
 msgstr "Module"
 
 #: ../build/src/accelstrings_gen.h:94
+msgctxt "accel"
 msgid "preview"
 msgstr "Vorschau"
 
-#: ../build/src/accelstrings_gen.h:95 ../src/common/collection.c:323
-#: ../src/libs/collect.c:258 ../src/libs/collect.c:260
+#: ../build/src/accelstrings_gen.h:95
+msgctxt "accel"
 msgid "purple"
 msgstr "Violett"
 
 #: ../build/src/accelstrings_gen.h:96
+msgctxt "accel"
 msgid "quit"
 msgstr "verlassen"
 
-#: ../build/src/accelstrings_gen.h:97 ../src/iop/bilateral.cc:352
-#: ../src/iop/clahe.c:344 ../src/iop/lowpass.c:706 ../src/iop/sharpen.c:474
+#: ../build/src/accelstrings_gen.h:97
+msgctxt "accel"
 msgid "radius"
 msgstr "Radius"
 
-#: ../build/src/accelstrings_gen.h:98 ../src/gui/gtk.c:1744
+#: ../build/src/accelstrings_gen.h:98
+msgctxt "accel"
 msgid "rating"
 msgstr "Bewertung"
 
-#: ../build/src/accelstrings_gen.h:99 ../src/common/collection.c:319
-#: ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:345
-#: ../src/iop/channelmixer.c:362 ../src/iop/temperature.c:473
-#: ../src/libs/collect.c:234 ../src/libs/collect.c:236
+#: ../build/src/accelstrings_gen.h:99
+msgctxt "accel"
 msgid "red"
 msgstr "Rot"
 
 #: ../build/src/accelstrings_gen.h:100
+msgctxt "accel"
 msgid "refresh"
 msgstr "neu laden"
 
 #: ../build/src/accelstrings_gen.h:101
+msgctxt "accel"
 msgid "reject"
 msgstr "abgelehnt"
 
-#: ../build/src/accelstrings_gen.h:102 ../src/libs/image.c:91
+#: ../build/src/accelstrings_gen.h:102
+msgctxt "accel"
 msgid "remove"
 msgstr "entfernen"
 
 #: ../build/src/accelstrings_gen.h:103
+msgctxt "accel"
 msgid "remove from collection"
 msgstr "aus der Kollektion entfernen"
 
 #: ../build/src/accelstrings_gen.h:104
+msgctxt "accel"
 msgid "reset camera from exif data"
 msgstr "Kamera auf EXIF-Angabe zurücksetzen"
 
 #: ../build/src/accelstrings_gen.h:105
+msgctxt "accel"
 msgid "reset distance from exif data"
 msgstr "Entfernung auf EXIF-Angabe zurücksetzen"
 
 #: ../build/src/accelstrings_gen.h:106
+msgctxt "accel"
 msgid "reset lens from exif data"
 msgstr "Objektiv auf EXIF-Angabe zurücksetzen"
 
 #: ../build/src/accelstrings_gen.h:107
+msgctxt "accel"
 msgid "reset plugin parameters"
 msgstr "Modul-Einstellungen zurücksetzen"
 
-#: ../build/src/accelstrings_gen.h:108 ../src/libs/image.c:135
+#: ../build/src/accelstrings_gen.h:108
+msgctxt "accel"
 msgid "reset rotation"
 msgstr "Drehung zurücksetzen"
 
 #: ../build/src/accelstrings_gen.h:109
+msgctxt "accel"
 msgid "right"
 msgstr "rechts"
 
-#: ../build/src/accelstrings_gen.h:110 ../src/libs/image.c:124
+#: ../build/src/accelstrings_gen.h:110
+msgctxt "accel"
 msgid "rotate selected images 90 degrees ccw"
 msgstr "Ausgewählte Bilder um 90° gegen den Uhrzeigersinn drehen"
 
-#: ../build/src/accelstrings_gen.h:111 ../src/libs/image.c:130
+#: ../build/src/accelstrings_gen.h:111
+msgctxt "accel"
 msgid "rotate selected images 90 degrees cw"
 msgstr "Ausgewählte Bilder um 90° im Uhrzeigersinn drehen"
 
-#: ../build/src/accelstrings_gen.h:112 ../src/iop/graduatednd.c:540
+#: ../build/src/accelstrings_gen.h:112
+msgctxt "accel"
 msgid "rotation"
 msgstr "Drehung"
 
-#: ../build/src/accelstrings_gen.h:113 ../src/iop/channelmixer.c:343
-#: ../src/iop/colorcorrection.c:197 ../src/iop/colorzones.c:807
-#: ../src/iop/colorzones.c:825 ../src/iop/graduatednd.c:527
-#: ../src/iop/lowpass.c:708 ../src/iop/soften.c:354
-#: ../src/iop/splittoning.c:436 ../src/iop/splittoning.c:496
-#: ../src/iop/velvia.c:244 ../src/iop/vignette.c:868
+#: ../build/src/accelstrings_gen.h:113
+msgctxt "accel"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../build/src/accelstrings_gen.h:114 ../src/iop/anlfyeni.c:295
-#: ../src/iop/lens.c:1385 ../src/iop/vignette.c:860 ../src/iop/watermark.c:685
+#: ../build/src/accelstrings_gen.h:114
+msgctxt "accel"
 msgid "scale"
 msgstr "Skalierung"
 
 #: ../build/src/accelstrings_gen.h:115
+msgctxt "accel"
 msgid "scroll"
-msgstr "scrollen"
+msgstr "Scrollen"
 
 #: ../build/src/accelstrings_gen.h:116
+msgctxt "accel"
 msgid "scroll back"
 msgstr "nach links scrollen"
 
 #: ../build/src/accelstrings_gen.h:117
+msgctxt "accel"
 msgid "scroll forward"
 msgstr "nach rechts scrollen"
 
-#: ../build/src/accelstrings_gen.h:118 ../src/libs/select.c:114
+#: ../build/src/accelstrings_gen.h:118
+msgctxt "accel"
 msgid "select all"
 msgstr "alles auswählen"
 
-#: ../build/src/accelstrings_gen.h:119 ../src/libs/select.c:135
+#: ../build/src/accelstrings_gen.h:119
+msgctxt "accel"
 msgid "select film roll"
 msgstr "Filmrolle auswählen"
 
-#: ../build/src/accelstrings_gen.h:120 ../src/libs/select.c:120
+#: ../build/src/accelstrings_gen.h:120
+msgctxt "accel"
 msgid "select none"
 msgstr "nichts auswählen"
 
-# eigentlich: "unbearbeitete auswählen", was aber zu lang für den Knopf ist.
-#: ../build/src/accelstrings_gen.h:121 ../src/libs/select.c:144
+#: ../build/src/accelstrings_gen.h:121
+msgctxt "accel"
 msgid "select untouched"
-msgstr "unbearbeitete"
+msgstr "unbearbeitete auswählen"
 
-#: ../build/src/accelstrings_gen.h:122 ../src/iop/anlfyeni.c:291
+#: ../build/src/accelstrings_gen.h:122
+msgctxt "accel"
 msgid "sensitivity"
 msgstr "Empfindlichkeit"
 
-#: ../build/src/accelstrings_gen.h:123 ../src/iop/vignette.c:874
+#: ../build/src/accelstrings_gen.h:123
+msgctxt "accel"
 msgid "shape"
 msgstr "Form"
 
-#: ../build/src/accelstrings_gen.h:124 ../src/iop/atrous.c:1252
-#: ../src/iop/highpass.c:423
+#: ../build/src/accelstrings_gen.h:124
+msgctxt "accel"
 msgid "sharpness"
 msgstr "Schärfe"
 
 #: ../build/src/accelstrings_gen.h:125
+msgctxt "accel"
 msgid "show"
 msgstr "anzeigen"
 
 #: ../build/src/accelstrings_gen.h:126
+msgctxt "accel"
 msgid "show plugin"
 msgstr "Modul zeigen"
 
 #: ../build/src/accelstrings_gen.h:127
+msgctxt "accel"
 msgid "show preset menu"
 msgstr "Voreinstellungs-Menü zeigen"
 
-#: ../build/src/accelstrings_gen.h:128 ../src/iop/bloom.c:332
-#: ../src/iop/soften.c:352 ../src/libs/camera.c:567
+#: ../build/src/accelstrings_gen.h:128
+msgctxt "accel"
 msgid "size"
 msgstr "Größe"
 
-#: ../build/src/accelstrings_gen.h:129 ../src/iop/tonemap.cc:302
+#: ../build/src/accelstrings_gen.h:129
+msgctxt "accel"
 msgid "spatial extent"
 msgstr "räumliche Ausdehnung"
 
 # nicht schön
-#: ../build/src/accelstrings_gen.h:130 ../src/iop/graduatednd.c:542
+#: ../build/src/accelstrings_gen.h:130
+msgctxt "accel"
 msgid "split"
 msgstr "Teilung"
 
-#: ../build/src/accelstrings_gen.h:131 ../src/iop/anlfyeni.c:299
-#: ../src/iop/bloom.c:336 ../src/iop/grain.c:517 ../src/iop/hotpixels.c:283
+#: ../build/src/accelstrings_gen.h:131
+msgctxt "accel"
 msgid "strength"
 msgstr "Stärke"
 
-#. TODO: what about this?
-#. g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
-#: ../build/src/accelstrings_gen.h:132 ../src/iop/borders.c:392
+#: ../build/src/accelstrings_gen.h:132
+msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "Seitenverhältnis tauschen"
 
 #: ../build/src/accelstrings_gen.h:133
+msgctxt "accel"
 msgid "switch view"
 msgstr "Ansicht wechseln"
 
-#: ../build/src/accelstrings_gen.h:134 ../src/iop/lens.c:1411
+#: ../build/src/accelstrings_gen.h:134
+msgctxt "accel"
 msgid "tca B"
 msgstr "TCA B"
 
-#: ../build/src/accelstrings_gen.h:135 ../src/iop/lens.c:1410
+#: ../build/src/accelstrings_gen.h:135
+msgctxt "accel"
 msgid "tca R"
 msgstr "TCA R"
 
-#: ../build/src/accelstrings_gen.h:136 ../src/iop/temperature.c:469
+#: ../build/src/accelstrings_gen.h:136
+msgctxt "accel"
 msgid "temperature in"
 msgstr "Farbtemperatur ein"
 
-#: ../build/src/accelstrings_gen.h:137 ../src/iop/temperature.c:471
+#: ../build/src/accelstrings_gen.h:137
+msgctxt "accel"
 msgid "temperature out"
 msgstr "Farbtemperatur aus"
 
-#: ../build/src/accelstrings_gen.h:138 ../src/iop/bloom.c:334
-#: ../src/iop/hotpixels.c:275 ../src/iop/sharpen.c:482
+#: ../build/src/accelstrings_gen.h:138
+msgctxt "accel"
 msgid "threshold"
 msgstr "Schwellwert"
 
-#: ../build/src/accelstrings_gen.h:139 ../src/iop/temperature.c:468
+#: ../build/src/accelstrings_gen.h:139
+msgctxt "accel"
 msgid "tint"
 msgstr "Farbton"
 
 #: ../build/src/accelstrings_gen.h:140
+msgctxt "accel"
 msgid "toggle film strip"
-msgstr "Filmstreifen ein-/ausblenden"
+msgstr "Filmstreifen umschalten"
 
 #: ../build/src/accelstrings_gen.h:141
+msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "Vollbild umschalten"
 
 #: ../build/src/accelstrings_gen.h:142
+msgctxt "accel"
 msgid "toggle side borders"
 msgstr "Seitenränder umschalten"
 
 #: ../build/src/accelstrings_gen.h:143
+msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "Softproofing umschalten"
 
 #: ../build/src/accelstrings_gen.h:144
+msgctxt "accel"
 msgid "undo"
 msgstr "rückgängig machen"
 
 #: ../build/src/accelstrings_gen.h:145
+msgctxt "accel"
 msgid "up"
 msgstr "hoch"
 
-#: ../build/src/accelstrings_gen.h:146 ../src/iop/overexposed.c:273
+#: ../build/src/accelstrings_gen.h:146
+msgctxt "accel"
 msgid "upper threshold"
 msgstr "oberer Schwellwert"
 
 #: ../build/src/accelstrings_gen.h:147
+msgctxt "accel"
 msgid "useless"
 msgstr "nutzlos"
 
-#: ../build/src/accelstrings_gen.h:148 ../src/iop/vignette.c:872
+#: ../build/src/accelstrings_gen.h:148
+msgctxt "accel"
 msgid "vertical center"
 msgstr "vertikale Mitte"
 
-#: ../build/src/accelstrings_gen.h:149 ../src/iop/velvia.c:249
+#: ../build/src/accelstrings_gen.h:149
+msgctxt "accel"
 msgid "vibrance"
 msgstr "Lebendigkeit"
 
-#: ../build/src/accelstrings_gen.h:150 ../src/gui/gtk.c:1991
-#: ../src/iop/relight.c:310
+#: ../build/src/accelstrings_gen.h:150
+msgctxt "accel"
 msgid "width"
 msgstr "Breite"
 
 #: ../build/src/accelstrings_gen.h:151
+msgctxt "accel"
 msgid "width-height ration"
 msgstr "Verhältnis Breite/Höhe"
 
-#: ../build/src/accelstrings_gen.h:152 ../src/libs/copy_history.c:222
+#: ../build/src/accelstrings_gen.h:152
+msgctxt "accel"
 msgid "write sidecar files"
 msgstr "Begleitdateien schreiben"
 
-#: ../build/src/accelstrings_gen.h:153 ../src/iop/watermark.c:709
+#: ../build/src/accelstrings_gen.h:153
+msgctxt "accel"
 msgid "x offset"
 msgstr "X-Versatz"
 
-#: ../build/src/accelstrings_gen.h:154 ../src/common/collection.c:320
-#: ../src/libs/collect.c:240 ../src/libs/collect.c:242
+#: ../build/src/accelstrings_gen.h:154
+msgctxt "accel"
 msgid "yellow"
 msgstr "Gelb"
 
-#: ../build/src/accelstrings_gen.h:155 ../src/iop/watermark.c:710
+#: ../build/src/accelstrings_gen.h:155
+msgctxt "accel"
 msgid "y offset"
 msgstr "Y-Versatz"
 
 #: ../build/src/accelstrings_gen.h:156
+msgctxt "accel"
 msgid "zoom"
 msgstr "Zoom"
+
+#: ../build/src/accelstrings_gen.h:157
+msgctxt "accel"
+msgid "darkroom"
+msgstr "Dunkelkammer"
+
+#: ../build/src/accelstrings_gen.h:158
+msgctxt "accel"
+msgid "lighttable"
+msgstr "Leuchttisch"
+
+#: ../build/src/accelstrings_gen.h:159
+msgctxt "accel"
+msgid "export"
+msgstr "exportieren"
+
+#: ../build/src/accelstrings_gen.h:160
+msgctxt "accel"
+msgid "copy"
+msgstr "kopieren"
+
+#: ../src/common/collection.c:319 ../src/iop/bilateral.cc:353
+#: ../src/iop/channelmixer.c:345 ../src/iop/channelmixer.c:362
+#: ../src/iop/temperature.c:473 ../src/libs/collect.c:234
+#: ../src/libs/collect.c:236
+msgid "red"
+msgstr "Rot"
+
+#: ../src/common/collection.c:320 ../src/libs/collect.c:240
+#: ../src/libs/collect.c:242
+msgid "yellow"
+msgstr "Gelb"
+
+#: ../src/common/collection.c:321 ../src/iop/bilateral.cc:354
+#: ../src/iop/channelmixer.c:346 ../src/iop/channelmixer.c:366
+#: ../src/iop/temperature.c:474 ../src/libs/collect.c:246
+#: ../src/libs/collect.c:248
+msgid "green"
+msgstr "Grün"
+
+#: ../src/common/collection.c:322 ../src/iop/bilateral.cc:355
+#: ../src/iop/channelmixer.c:347 ../src/iop/channelmixer.c:370
+#: ../src/iop/temperature.c:475 ../src/libs/collect.c:252
+#: ../src/libs/collect.c:254
+msgid "blue"
+msgstr "Blau"
+
+#: ../src/common/collection.c:323 ../src/libs/collect.c:258
+#: ../src/libs/collect.c:260
+msgid "purple"
+msgstr "Violett"
 
 #. history
 #: ../src/common/collection.c:329 ../src/libs/collect.c:218
@@ -966,22 +1132,22 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../src/common/darktable.c:487
+#: ../src/common/darktable.c:498
 #, c-format
 msgid "found strange path `%s'"
 msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
 
-#: ../src/common/darktable.c:515
+#: ../src/common/darktable.c:526
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
 
-#: ../src/common/darktable.c:536 ../src/gui/gtk.c:1028
+#: ../src/common/darktable.c:547 ../src/gui/gtk.c:1028
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:548 ../src/gui/gtk.c:1013
+#: ../src/common/darktable.c:559 ../src/gui/gtk.c:1013
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
@@ -994,13 +1160,11 @@ msgstr ""
 
 #: ../src/common/history.c:180 ../src/common/history.c:208
 #: ../src/common/styles.c:238 ../src/develop/develop.c:963
-#: ../src/gui/styles_dialog.c:323
 msgid "on"
 msgstr "ein"
 
 #: ../src/common/history.c:180 ../src/common/history.c:208
 #: ../src/common/styles.c:238 ../src/develop/develop.c:963
-#: ../src/gui/styles_dialog.c:323
 msgid "off"
 msgstr "aus"
 
@@ -1238,6 +1402,10 @@ msgstr "Überblenden"
 msgid "mode"
 msgstr "Modus"
 
+#: ../src/develop/imageop.c:905 ../src/iop/watermark.c:683
+msgid "opacity"
+msgstr "Deckkraft"
+
 #: ../src/develop/imageop.c:907
 msgid "normal"
 msgstr "Normal"
@@ -1314,17 +1482,25 @@ msgstr "Modus des Überblendens wählen"
 msgid "double-click to reset"
 msgstr "Doppelklick zum Zurücksetzen"
 
-#: ../src/dtgtk/slider.c:723
+#: ../src/dtgtk/slider.c:722
+msgctxt "accel"
 msgid "increase"
 msgstr "erhöhen"
 
-#: ../src/dtgtk/slider.c:730
+#: ../src/dtgtk/slider.c:729
+msgctxt "accel"
 msgid "reduce"
 msgstr "reduzieren"
 
-#: ../src/dtgtk/slider.c:738
+#: ../src/dtgtk/slider.c:737
+msgctxt "accel"
 msgid "reset"
 msgstr "zurücksetzen"
+
+#: ../src/dtgtk/slider.c:744
+msgctxt "accel"
+msgid "edit"
+msgstr "bearbeiten"
 
 #: ../src/gui/background_jobs.c:33
 msgid "background jobs"
@@ -1690,6 +1866,10 @@ msgstr "Dateiname"
 msgid "time"
 msgstr "Datum/Uhrzeit"
 
+#: ../src/gui/gtk.c:1744
+msgid "rating"
+msgstr "Bewertung"
+
 #: ../src/gui/gtk.c:1745
 msgid "id"
 msgstr "ID"
@@ -1709,6 +1889,10 @@ msgstr "über darktable"
 #: ../src/gui/gtk.c:1861
 msgid "navigation"
 msgstr "Navigation"
+
+#: ../src/gui/gtk.c:1928 ../src/libs/collect.h:33
+msgid "history"
+msgstr "Verlauf"
 
 #: ../src/gui/gtk.c:1982 ../src/gui/presets.c:274
 msgid "model"
@@ -1749,6 +1933,10 @@ msgstr "Datum/Uhrzeit"
 #: ../src/gui/gtk.c:1990 ../src/gui/presets.c:288
 msgid "lens"
 msgstr "Objektiv"
+
+#: ../src/gui/gtk.c:1991 ../src/iop/relight.c:310
+msgid "width"
+msgstr "Breite"
 
 #: ../src/gui/gtk.c:1992
 msgid "height"
@@ -1820,6 +2008,14 @@ msgstr "weitere Module"
 #: ../src/gui/gtk.c:2508
 msgid "mean"
 msgstr "Mittel"
+
+#: ../src/gui/gtk.c:2509
+msgid "min"
+msgstr "Minimum"
+
+#: ../src/gui/gtk.c:2510
+msgid "max"
+msgstr "Maximum"
 
 #: ../src/gui/gtk.c:2523
 msgid "rgb"
@@ -1921,6 +2117,13 @@ msgstr "Basis"
 #: ../src/gui/iop_modulegroups.c:230
 msgid "basic group"
 msgstr "Basisgruppe"
+
+#. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_basic_widget,TRUE,TRUE,0);
+#. add button for color plugins
+#. _iop_modulegroups_color_widget = dtgtk_togglebutton_new (dtgtk_cairo_paint_refresh,0);
+#: ../src/gui/iop_modulegroups.c:235
+msgid "color"
+msgstr "Farbe"
 
 #: ../src/gui/iop_modulegroups.c:237
 msgid "color group"
@@ -2155,7 +2358,7 @@ msgstr "einbeziehen"
 msgid "item"
 msgstr "Einstellung"
 
-#: ../src/gui/styles_dialog.c:341
+#: ../src/gui/styles_dialog.c:338
 msgid "can't create style out of unaltered image"
 msgstr "Kann keinen Stil aus unbearbeitetem Bild erzeugen."
 
@@ -2525,13 +2728,27 @@ msgstr "Lokaler Kontrast 2"
 msgid "sensitivity of edge detection"
 msgstr "Empfindlichkeit der Kantenerkennung"
 
+#: ../src/iop/anlfyeni.c:291
+msgid "sensitivity"
+msgstr "Empfindlichkeit"
+
 #: ../src/iop/anlfyeni.c:294
 msgid "spatial extent of the effect around edges"
 msgstr "Ausdehnung des Effekts entlang von Kanten"
 
+#: ../src/iop/anlfyeni.c:295 ../src/iop/lens.c:1385 ../src/iop/vignette.c:860
+#: ../src/iop/watermark.c:685
+msgid "scale"
+msgstr "Skalierung"
+
 #: ../src/iop/anlfyeni.c:298
 msgid "strength of the local contrast"
 msgstr "Stärke des lokalen Kontrastes"
+
+#: ../src/iop/anlfyeni.c:299 ../src/iop/bloom.c:336 ../src/iop/grain.c:517
+#: ../src/iop/hotpixels.c:283
+msgid "strength"
+msgstr "Stärke"
 
 #: ../src/iop/atrous.c:112
 msgid "equalizer"
@@ -2609,22 +2826,45 @@ msgstr "kräftig"
 msgid "dull"
 msgstr "matt"
 
+#: ../src/iop/atrous.c:1248 ../src/iop/equalizer.c:343
+#: ../src/iop/nlmeans.c:467
+msgid "luma"
+msgstr "Luminanz"
+
 # uh, häßlich
 #: ../src/iop/atrous.c:1249
 msgid "change lightness at each feature size"
 msgstr "Helligkeit bei jeder Strukturgröße ändern"
 
+#: ../src/iop/atrous.c:1250 ../src/iop/equalizer.c:344
+#: ../src/iop/nlmeans.c:469
+msgid "chroma"
+msgstr "Chrominanz"
+
 #: ../src/iop/atrous.c:1251
 msgid "change color saturation at each feature size"
 msgstr "Farbsättigung bei jeder Strukturgröße ändern"
+
+#: ../src/iop/atrous.c:1252 ../src/iop/highpass.c:423
+msgid "sharpness"
+msgstr "Schärfe"
 
 #: ../src/iop/atrous.c:1253
 msgid "sharpness of edges at each feature size"
 msgstr "Kantenschärfe bei jeder Strukturgröße"
 
+#: ../src/iop/atrous.c:1289 ../src/iop/soften.c:359
+msgid "mix"
+msgstr "einblenden"
+
 #: ../src/iop/atrous.c:1291
 msgid "make effect stronger or weaker"
 msgstr "mache den Effekt stärker oder schwächer"
+
+#: ../src/iop/basecurve.c:50 ../src/iop/profile_gamma.c:187
+#: ../src/iop/tonecurve.c:132
+msgid "linear"
+msgstr "linear"
 
 #: ../src/iop/basecurve.c:51
 msgid "dark contrast"
@@ -2687,7 +2927,6 @@ msgstr ""
 "arbeitet auf den RGB-Kanälen"
 
 #: ../src/iop/bilateral.cc:73
-#, fuzzy
 msgid "denoise (bilateral filter)"
 msgstr "Entrauschen (bilateraler Filter)"
 
@@ -2706,6 +2945,19 @@ msgstr "wie stark soll Grün weichgezeichnet werden"
 #: ../src/iop/bilateral.cc:350
 msgid "how much to blur blue"
 msgstr "wie stark soll Blau weichgezeichnet werden"
+
+#: ../src/iop/bilateral.cc:352 ../src/iop/clahe.c:344 ../src/iop/lowpass.c:706
+#: ../src/iop/sharpen.c:474
+msgid "radius"
+msgstr "Radius"
+
+#: ../src/iop/bloom.c:332 ../src/iop/soften.c:352 ../src/libs/camera.c:567
+msgid "size"
+msgstr "Größe"
+
+#: ../src/iop/bloom.c:334 ../src/iop/hotpixels.c:275 ../src/iop/sharpen.c:482
+msgid "threshold"
+msgstr "Schwellwert"
 
 #: ../src/iop/bloom.c:345
 msgid "the size of bloom"
@@ -2735,6 +2987,10 @@ msgstr "15:10-Postkarte (weiß)"
 #: ../src/iop/borders.c:279
 msgid "select frame color"
 msgstr "Rahmenfarbe wählen"
+
+#: ../src/iop/borders.c:366
+msgid "border size"
+msgstr "Randgröße"
 
 #: ../src/iop/borders.c:369
 msgid "size of the border in percent of the full image"
@@ -2780,9 +3036,19 @@ msgstr ""
 "Seitenverhältnis setzen (b:h)\n"
 "Drücke Strg-x um die Seiten zu tauschen"
 
+#. TODO: what about this?
+#. g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
+#: ../src/iop/borders.c:392
+msgid "swap the aspect ratio"
+msgstr "Seitenverhältnis tauschen"
+
 #: ../src/iop/borders.c:399
 msgid "frame color"
 msgstr "Rahmenfarbe"
+
+#: ../src/iop/borders.c:404 ../src/iop/colorzones.c:813
+msgid "pick gui color from image"
+msgstr "GUI-Farbe aus dem Bild übernehmen"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:57
@@ -2818,6 +3084,15 @@ msgstr "Ausgabekanal"
 #: ../src/iop/splittoning.c:435 ../src/iop/splittoning.c:495
 msgid "hue"
 msgstr "Farbton"
+
+#: ../src/iop/channelmixer.c:343 ../src/iop/colorcorrection.c:197
+#: ../src/iop/colorzones.c:807 ../src/iop/colorzones.c:825
+#: ../src/iop/graduatednd.c:527 ../src/iop/lowpass.c:708
+#: ../src/iop/soften.c:354 ../src/iop/splittoning.c:436
+#: ../src/iop/splittoning.c:496 ../src/iop/velvia.c:244
+#: ../src/iop/vignette.c:868
+msgid "saturation"
+msgstr "Sättigung"
 
 #: ../src/iop/channelmixer.c:344 ../src/iop/colorzones.c:808
 #: ../src/iop/colorzones.c:824
@@ -2886,6 +3161,10 @@ msgstr "s/w blaue Artefakte reduzieren"
 msgid "local contrast"
 msgstr "Lokaler Kontrast"
 
+#: ../src/iop/clahe.c:346 ../src/iop/sharpen.c:478
+msgid "amount"
+msgstr "Menge"
+
 #: ../src/iop/clahe.c:355
 msgid "size of features to preserve"
 msgstr "Größe der Features, die erhalten bleiben sollen"
@@ -2923,6 +3202,10 @@ msgstr "Bild horizontal spiegeln"
 msgid "flip image vertically"
 msgstr "Bild vertikal spiegeln"
 
+#: ../src/iop/clipping.c:842
+msgid "angle"
+msgstr "Winkel"
+
 # sehr unschön :-(
 #: ../src/iop/clipping.c:846
 msgid "right-click and drag a line on the image to drag a straight line"
@@ -2930,9 +3213,19 @@ msgstr ""
 "Mit rechter Maustaste ins Bild klicken und eine Linie ziehen, um eine gerade "
 "Kante zu markieren"
 
+# war "Trapezkorrektur h", aber zu lang für GUI (Bug?)
+#: ../src/iop/clipping.c:852
+msgid "keystone h"
+msgstr "Trapez h"
+
 #: ../src/iop/clipping.c:853
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "Perspektive für horizontale Trapezverzerrung anpassen"
+
+# siehe "keystone h"
+#: ../src/iop/clipping.c:860
+msgid "keystone v"
+msgstr "Trapez v"
 
 #: ../src/iop/clipping.c:861
 msgid "adjust perspective for vertical keystone distortion"
@@ -3030,6 +3323,14 @@ msgstr "Diese Option auswählen, um Goldene Dreiecke anzuzeigen"
 #: ../src/iop/colorcontrast.c:84
 msgid "color contrast"
 msgstr "Farbkontrast"
+
+#: ../src/iop/colorcontrast.c:253
+msgid "green vs magenta"
+msgstr "Grün / Magenta"
+
+#: ../src/iop/colorcontrast.c:256
+msgid "blue vs yellow"
+msgstr "Blau / Gelb"
 
 #: ../src/iop/colorcontrast.c:265
 msgid "steepness of the a* curve in Lab"
@@ -3193,9 +3494,17 @@ msgstr ""
 "Anzahl zusammenhängender Bereiche,\n"
 "die im Bild gesucht werden sollen"
 
+#: ../src/iop/colortransfer.c:651
+msgid "acquire"
+msgstr "berechnen"
+
 #: ../src/iop/colortransfer.c:652
 msgid "analyze this image"
 msgstr "dieses Bild analysieren"
+
+#: ../src/iop/colortransfer.c:657 ../src/libs/metadata.c:349
+msgid "apply"
+msgstr "anwenden"
 
 #: ../src/iop/colortransfer.c:659
 msgid "apply previously analyzed image look to this image"
@@ -3257,6 +3566,10 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen um Kanten zu ignorieren."
 
+#: ../src/iop/demosaic.c:1023
+msgid "edge threshold"
+msgstr "Kantenschwellwert"
+
 #: ../src/iop/demosaic.c:1028
 msgid "color smoothing"
 msgstr "Farbglättung"
@@ -3303,6 +3616,10 @@ msgstr ""
 #: ../src/iop/exposure.c:361
 msgid "adjust the black level"
 msgstr "Schwarzwert anpassen"
+
+#: ../src/iop/exposure.c:362
+msgid "black"
+msgstr "Schwarz"
 
 #: ../src/iop/exposure.c:366
 msgid "adjust the exposure correction"
@@ -3387,6 +3704,23 @@ msgstr "Braun ND4 (weich)"
 msgid "graduated density"
 msgstr "Verlaufsfilter"
 
+#: ../src/iop/graduatednd.c:536
+msgid "density"
+msgstr "Dichte"
+
+#: ../src/iop/graduatednd.c:538
+msgid "compression"
+msgstr "Kompression"
+
+#: ../src/iop/graduatednd.c:540
+msgid "rotation"
+msgstr "Drehung"
+
+# nicht schön
+#: ../src/iop/graduatednd.c:542
+msgid "split"
+msgstr "Teilung"
+
 #: ../src/iop/graduatednd.c:584
 msgid "select the hue tone of filter"
 msgstr "Farbton des Filters wählen"
@@ -3428,6 +3762,10 @@ msgstr "die Korngröße (~ISO des Films)"
 msgid "the strength of applied grain"
 msgstr "Stärke der hinzugefügten Körnung"
 
+#: ../src/iop/grain.c:515
+msgid "coarseness"
+msgstr "Korngröße"
+
 #: ../src/iop/highlights.c:79
 msgid "highlight reconstruction"
 msgstr "Spitzlicht-Rekonstruktion"
@@ -3456,9 +3794,25 @@ msgstr "mische Buntheit (0 ist identisch mit Abschneiden)"
 msgid "blend hue (0 is same as clipping)"
 msgstr "mische Farbton (0 ist identisch mit Abschneiden)"
 
+#: ../src/iop/highlights.c:410
+msgid "blend L"
+msgstr "mische L"
+
+#: ../src/iop/highlights.c:411
+msgid "blend C"
+msgstr "mische C"
+
+#: ../src/iop/highlights.c:412
+msgid "blend h"
+msgstr "mische h"
+
 #: ../src/iop/highpass.c:79
 msgid "highpass"
 msgstr "Hochpass"
+
+#: ../src/iop/highpass.c:425
+msgid "contrast boost"
+msgstr "Kontrastverstärkung"
 
 #: ../src/iop/highpass.c:432
 msgid "the sharpness of highpass filter"
@@ -3508,6 +3862,10 @@ msgstr "Dies funktioniert nicht bei RAW/HDR-Bildern."
 #: ../src/iop/invert.c:299
 msgid "color of film material"
 msgstr "Farbe des Filmmaterials"
+
+#: ../src/iop/invert.c:332
+msgid "pick color of film material from image"
+msgstr "Farbe des Filmmaterials aus dem Bild übernehmen"
 
 #: ../src/iop/lens.c:45
 msgid "lens correction"
@@ -3573,6 +3931,14 @@ msgstr "d"
 msgid "distance to subject"
 msgstr "Entfernung"
 
+#: ../src/iop/lens.c:1320
+msgid "find camera"
+msgstr "Kamera finden"
+
+#: ../src/iop/lens.c:1337
+msgid "find lens"
+msgstr "Objektiv finden"
+
 #. target geometry
 #: ../src/iop/lens.c:1365
 msgid "geometry"
@@ -3598,6 +3964,10 @@ msgstr "Panorama"
 msgid "equirectangular"
 msgstr "Equirectangular"
 
+#: ../src/iop/lens.c:1393
+msgid "auto scale"
+msgstr "automatisch skalieren"
+
 #. reverse direction
 #: ../src/iop/lens.c:1400
 msgid "reverse"
@@ -3606,6 +3976,14 @@ msgstr "umkehren"
 #: ../src/iop/lens.c:1401
 msgid "apply distortions instead of correcting them"
 msgstr "füge Verzerrung hinzu statt sie zu korrigieren"
+
+#: ../src/iop/lens.c:1410
+msgid "tca R"
+msgstr "TCA R"
+
+#: ../src/iop/lens.c:1411
+msgid "tca B"
+msgstr "TCA B"
 
 #: ../src/iop/lens.c:1418
 msgid ""
@@ -3681,6 +4059,10 @@ msgstr "Tagessicht"
 msgid "night vision"
 msgstr "Nachtsicht"
 
+#: ../src/iop/lowlight.c:722
+msgid "blue shift"
+msgstr "Blauverschiebung"
+
 #: ../src/iop/lowlight.c:726
 msgid "blueness in shadows"
 msgstr "Blautönung in den Schatten"
@@ -3713,6 +4095,10 @@ msgstr "2. Ordnung"
 msgid "filter order of gaussian blur"
 msgstr "Filter-Ordnung des Gaußschen Weichzeichners"
 
+#: ../src/iop/lowpass.c:707
+msgid "contrast"
+msgstr "Kontrast"
+
 #: ../src/iop/lowpass.c:717
 msgid "the radius of gaussian blur"
 msgstr "der Radius des Gaußschen Weichzeichners"
@@ -3735,7 +4121,6 @@ msgstr ""
 "ziehen und mit Mausrad scrollen, um den virtuellen Farbfilter einzustellen"
 
 #: ../src/iop/nlmeans.c:58
-#, fuzzy
 msgid "denoise (non-local means)"
 msgstr "Entrauschen (nicht-lokale Mittelwerte)"
 
@@ -3751,6 +4136,14 @@ msgstr "wie stark sollen die Farben geglättet werden"
 msgid "overexposed"
 msgstr "Überbelichtet"
 
+#: ../src/iop/overexposed.c:268
+msgid "lower threshold"
+msgstr "unterer Schwellwert"
+
+#: ../src/iop/overexposed.c:273
+msgid "upper threshold"
+msgstr "oberer Schwellwert"
+
 #: ../src/iop/overexposed.c:278
 msgid "threshold of what shall be considered underexposed"
 msgstr "Schwellwert dafür, was als unterbelichtet markiert wird"
@@ -3763,6 +4156,10 @@ msgstr "Schwellwert dafür, was als überbelichtet markiert wird"
 msgid "unbreak input profile"
 msgstr "Eingabeprofil korrigieren"
 
+#: ../src/iop/profile_gamma.c:186
+msgid "linear part"
+msgstr "linearer Teil"
+
 #: ../src/iop/profile_gamma.c:189
 msgid "gamma exponential factor"
 msgstr "Gamma-Exponent"
@@ -3774,6 +4171,10 @@ msgstr "Gamma"
 #: ../src/iop/rawdenoise.c:56
 msgid "raw denoise"
 msgstr "RAW-Entrauschen"
+
+#: ../src/iop/rawdenoise.c:340
+msgid "noise threshold"
+msgstr "Rausch-Schwellwert"
 
 #: ../src/iop/relight.c:54
 msgid "fill-light 0.25EV with 4 zones"
@@ -3827,6 +4228,10 @@ msgstr "Schwellwert zum Aktivieren des Schärfens"
 msgid "soften"
 msgstr "Weichzeichnen"
 
+#: ../src/iop/soften.c:356 ../src/iop/vignette.c:866
+msgid "brightness"
+msgstr "Helligkeit"
+
 #: ../src/iop/soften.c:373
 msgid "the size of blur"
 msgstr "Größe der Unschärfe"
@@ -3877,6 +4282,14 @@ msgstr "Farbton für die Spitzlichter wählen"
 msgid "select the saturation highlights tone"
 msgstr "Sättigung für die Spitzlichter wählen"
 
+#: ../src/iop/splittoning.c:549
+msgid "balance"
+msgstr "Ausgleich"
+
+#: ../src/iop/splittoning.c:556
+msgid "compress"
+msgstr "komprimieren"
+
 #: ../src/iop/splittoning.c:562
 msgid "the balance of center of splittoning"
 msgstr "Mittelpunkt des Split-Toning ausgleichen"
@@ -3915,6 +4328,18 @@ msgstr "Fleckenentfernung unterstützt nur 32 Flecken"
 msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
+
+#: ../src/iop/temperature.c:468
+msgid "tint"
+msgstr "Farbton"
+
+#: ../src/iop/temperature.c:469
+msgid "temperature in"
+msgstr "Farbtemperatur ein"
+
+#: ../src/iop/temperature.c:471
+msgid "temperature out"
+msgstr "Farbtemperatur aus"
 
 #: ../src/iop/temperature.c:501
 msgid "camera white balance"
@@ -3956,9 +4381,25 @@ msgstr ""
 msgid "tone mapping"
 msgstr "Tonemapping"
 
+#: ../src/iop/tonemap.cc:296
+msgid "contrast compression"
+msgstr "Kontrast-Kompression"
+
+#: ../src/iop/tonemap.cc:302
+msgid "spatial extent"
+msgstr "räumliche Ausdehnung"
+
 #: ../src/iop/velvia.c:68
 msgid "velvia"
 msgstr "Velvia"
+
+#: ../src/iop/velvia.c:249
+msgid "vibrance"
+msgstr "Lebendigkeit"
+
+#: ../src/iop/velvia.c:254
+msgid "mid-tones bias"
+msgstr "Mittenbetonung"
 
 #: ../src/iop/velvia.c:259
 msgid "the amount of saturation to apply"
@@ -3983,6 +4424,22 @@ msgstr "autom. Verhältnis"
 #: ../src/iop/vignette.c:857
 msgid "automatic"
 msgstr "automatisch"
+
+#: ../src/iop/vignette.c:863
+msgid "fall-off strength"
+msgstr "Abfallstärke"
+
+#: ../src/iop/vignette.c:870
+msgid "horizontal center"
+msgstr "horizontale Mitte"
+
+#: ../src/iop/vignette.c:872
+msgid "vertical center"
+msgstr "vertikale Mitte"
+
+#: ../src/iop/vignette.c:874
+msgid "shape"
+msgstr "Form"
 
 #: ../src/iop/vignette.c:876
 msgid "width/height ratio"
@@ -4046,6 +4503,14 @@ msgstr "Zeichen"
 #: ../src/iop/watermark.c:666
 msgid "alignment"
 msgstr "Position"
+
+#: ../src/iop/watermark.c:709
+msgid "x offset"
+msgstr "X-Versatz"
+
+#: ../src/iop/watermark.c:710
+msgid "y offset"
+msgstr "Y-Versatz"
 
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/watermark.c:718
@@ -4237,6 +4702,10 @@ msgstr "Belichtungen"
 msgid "bkt. steps"
 msgstr "Belichtungsschritte"
 
+#: ../src/libs/camera.c:459
+msgid "capture image(s)"
+msgstr "Bild(er) aufnehmen"
+
 #: ../src/libs/camera.c:463
 msgid "toggle delayed capture mode"
 msgstr "zeitverzögerte Aufnahme umschalten"
@@ -4426,6 +4895,10 @@ msgstr ""
 "kopiere den Verlaufsstapel des\n"
 "ersten ausgewählten Bildes (Strg-c)"
 
+#: ../src/libs/copy_history.c:192
+msgid "discard"
+msgstr "verwerfen"
+
 #: ../src/libs/copy_history.c:194
 msgid ""
 "discard history stack of\n"
@@ -4448,6 +4921,10 @@ msgstr ""
 "wie soll mit einem vorhandenen\n"
 "Verlauf umgegangen werden"
 
+#: ../src/libs/copy_history.c:207
+msgid "paste"
+msgstr "einfügen"
+
 #: ../src/libs/copy_history.c:209
 msgid ""
 "paste history stack to\n"
@@ -4456,6 +4933,10 @@ msgstr ""
 "füge den Verlaufsstapel in allen\n"
 "ausgewählten Bildern ein (Strg-v)"
 
+#: ../src/libs/copy_history.c:217
+msgid "load sidecar file"
+msgstr "Begleitdateien laden"
+
 #: ../src/libs/copy_history.c:219
 msgid ""
 "open an xmp sidecar file\n"
@@ -4463,6 +4944,10 @@ msgid ""
 msgstr ""
 "eine xmp-Begleitdatei öffnen und auf\n"
 "die ausgewählten Bilder anwenden"
+
+#: ../src/libs/copy_history.c:222
+msgid "write sidecar files"
+msgstr "Begleitdateien schreiben"
 
 #: ../src/libs/copy_history.c:224
 msgid "write history stack and tags to xmp sidecar files"
@@ -4559,21 +5044,49 @@ msgstr ""
 msgid "selected image[s]"
 msgstr "ausgewählte[s] Bild[er]"
 
+#: ../src/libs/image.c:91
+msgid "remove"
+msgstr "entfernen"
+
 #: ../src/libs/image.c:93
 msgid "remove from the collection"
 msgstr "aus der Kollektion entfernen"
+
+#: ../src/libs/image.c:97 ../src/libs/styles.c:349 ../src/libs/tagging.c:430
+msgid "delete"
+msgstr "löschen"
 
 #: ../src/libs/image.c:99
 msgid "physically delete from disk"
 msgstr "physikalisch von der Festplatte löschen"
 
+#: ../src/libs/image.c:106
+msgid "create hdr"
+msgstr "HDR erzeugen"
+
 #: ../src/libs/image.c:110
 msgid "create a high dynamic range image from selected shots"
 msgstr "Hochkontrastbild (HDRI) aus ausgewählten Bildern erzeugen"
 
+#: ../src/libs/image.c:112
+msgid "duplicate"
+msgstr "duplizieren"
+
 #: ../src/libs/image.c:114
 msgid "add a duplicate to the collection"
 msgstr "füge ein Duplikat zur Kollektion hinzu"
+
+#: ../src/libs/image.c:124
+msgid "rotate selected images 90 degrees ccw"
+msgstr "Ausgewählte Bilder um 90° gegen den Uhrzeigersinn drehen"
+
+#: ../src/libs/image.c:130
+msgid "rotate selected images 90 degrees cw"
+msgstr "Ausgewählte Bilder um 90° im Uhrzeigersinn drehen"
+
+#: ../src/libs/image.c:135
+msgid "reset rotation"
+msgstr "Drehung zurücksetzen"
 
 #: ../src/libs/image.c:137
 msgid "reset rotation to exif data"
@@ -4595,6 +5108,10 @@ msgstr "Metadaten-Editor"
 #: ../src/libs/metadata.c:77
 msgid "<leave unchanged>"
 msgstr "<nicht ändern>"
+
+#: ../src/libs/metadata.c:342
+msgid "clear"
+msgstr "löschen"
 
 #: ../src/libs/metadata.c:344
 msgid "remove metadata from selected images"
@@ -4691,14 +5208,26 @@ msgstr " ABER NICHT "
 msgid "select"
 msgstr "Auswahl"
 
+#: ../src/libs/select.c:114
+msgid "select all"
+msgstr "alles auswählen"
+
 #: ../src/libs/select.c:116
 msgid "select all images in current collection (ctrl-a)"
 msgstr "wähle alle Bilder der aktuellen Kollektion (Strg-a)"
+
+#: ../src/libs/select.c:120
+msgid "select none"
+msgstr "nichts auswählen"
 
 # Probleme mit "löschen" != "datei löschen"?
 #: ../src/libs/select.c:122
 msgid "clear selection (ctrl-shift-a)"
 msgstr "entferne die aktuelle Auswahl (Strg-Shift-a)"
+
+#: ../src/libs/select.c:129
+msgid "invert selection"
+msgstr "Auswahl invertieren"
 
 #: ../src/libs/select.c:130
 msgid ""
@@ -4708,6 +5237,10 @@ msgstr ""
 "wähle alle Bilder der aktuellen Kollektion\n"
 "aus, die nicht ausgewählt sind (Strg-!)"
 
+#: ../src/libs/select.c:135
+msgid "select film roll"
+msgstr "Filmrolle auswählen"
+
 #: ../src/libs/select.c:137
 msgid ""
 "select all images which are in the same\n"
@@ -4715,6 +5248,11 @@ msgid ""
 msgstr ""
 "wähle alle Bilder aus, die in der selben\n"
 "Filmrolle sind wie die ausgewählten"
+
+# eigentlich: "unbearbeitete auswählen", was aber zu lang für den Knopf ist.
+#: ../src/libs/select.c:144
+msgid "select untouched"
+msgstr "unbearbeitete"
 
 #: ../src/libs/select.c:146
 msgid ""
@@ -4897,6 +5435,10 @@ msgstr "%s verstecken"
 msgid "no image selected!"
 msgstr "Kein Bild ausgewählt!"
 
+#: ../src/views/filmstrip.c:88
+msgid "film strip"
+msgstr "Filmstreifen"
+
 #: ../src/views/lighttable.c:109
 msgid "lighttable"
 msgstr "Leuchttisch"
@@ -4920,6 +5462,10 @@ msgstr "Filterregeln in der oberen Leiste anpassen"
 #: ../src/views/lighttable.c:408
 msgid "or in the collection plugin in the left panel."
 msgstr "oder links im Sammlungs-Plugin."
+
+#, fuzzy
+#~ msgid "accel"
+#~ msgstr "Aktion"
 
 #~ msgid "localc"
 #~ msgstr "Lokaler Kontrast"
@@ -5003,9 +5549,6 @@ msgstr "oder links im Sammlungs-Plugin."
 
 #~ msgid "swap aspect"
 #~ msgstr "Seitenverhältnis umkehren"
-
-#~ msgid "accelerator"
-#~ msgstr "Aktion"
 
 #~ msgctxt "style"
 #~ msgid "import"
