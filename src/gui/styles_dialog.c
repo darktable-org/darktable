@@ -319,10 +319,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
         }
 
         gchar name[256]= {0};
-        if (module)
-          g_snprintf(name,256,"%s (%s)",module->name(),enabled?_("on"):_("off"));
-        else
-          g_snprintf(name,256,"%s",item->name);
+        g_snprintf(name,256,"%s",item->name);
 
         gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
