@@ -1025,9 +1025,14 @@ void init_widgets()
     /* check last visible state of panel */
     char key[512];
     g_snprintf(key, 512, "ui_last/%s/visible", _ui_panel_config_names[k]);
+    
+    /* if no key, lets default to TRUE*/
+    if(!dt_conf_key_exists(key))
+      dt_conf_set_bool(key,TRUE);
+
     if (!dt_conf_get_bool(key))
       gtk_widget_set_visible(darktable.gui->ui->panels[k],FALSE);
-    fprintf(stderr,"%s is %s\n", _ui_panel_config_names[k], dt_conf_get_bool(key)?"visible":"hidden"); 
+
   }
 
 }
