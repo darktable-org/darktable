@@ -105,7 +105,7 @@
       </locale>
     </schema>
 
-    <schema><!--tab:core-->
+    <schema>
       <key>/schemas/apps/darktable/host_memory_limit</key>
       <applyto>/apps/darktable/host_memory_limit</applyto>
       <owner>darktable</owner>
