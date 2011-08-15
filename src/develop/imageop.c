@@ -1211,7 +1211,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   // pixel footprint on input buffer, radius:
   const float px_footprint = 1.f/roi_out->scale;
   // how many 2x2 blocks can be sampled inside that area
-  const int samples = ((int)px_footprint)/2;
+  const int samples = round(px_footprint/2);
 
   // move p to point to an rggb block:
   int trggbx = 0, trggby = 0;
@@ -1229,62 +1229,121 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   for(int y=0; y<roi_out->height; y++)
   {
     float *outc = out + 4*(out_stride*y);
+
+    float fy = (y + roi_out->y)/roi_out->scale;
+    int py = (int)fy;
+    py = MAX(0, py & ~1);
+    const float dy = (fy - py)/2;
+    py = MIN(((roi_in->height-6) & ~1u), py + rggby) + rggbx;
+
+    int maxj = MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples);
+
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
-      // _mm_prefetch
-      // center pixel
-      float fx = (x + roi_out->x)/roi_out->scale, fy = (y + roi_out->y)/roi_out->scale;
-      int px = (int)fx, py = (int)fy;
 
-      // round down to next even number and jump to rggb block:
+      float fx = (x + roi_out->x)/roi_out->scale;
+      int px = (int)fx;
       px = MAX(0, px & ~1);
-      py = MAX(0, py & ~1);
+      const float dx = (fx - px)/2;
+      px = MIN(((roi_in->width -6) & ~1u), px) + rggby;
 
-      const float dx = (fx - px)/2, dy = (fy - py)/2;
-      px += rggbx;
-      py += rggby;
+      int maxi = MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples);
 
-      px = MIN((((roi_in->width -5) & ~1u) + rggbx), px);
-      py = MIN((((roi_in->height-5) & ~1u) + rggby), py);
+      float p1, p2, p4;
+      int i,j;
 
-      const __m128 d0 = _mm_set1_ps((1.0f-dx)*(1.0f-dy));
-      const __m128 d1 = _mm_set1_ps((dx)*(1.0f-dy));
-      const __m128 d2 = _mm_set1_ps((1.0f-dx)*(dy));
-      const __m128 d3 = _mm_set1_ps(dx*dy);
+      // upper left 2x2 block of sampling region
+      p1 = in[px   + in_stride*py];
+      p2 = in[px+1 + in_stride*py] + in[px   + in_stride*(py + 1)];
+      p4 = in[px+1 + in_stride*(py + 1)];
+      col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1-dx)*(1-dy)),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
+      float num = (1-dx)*(1-dy);
 
-      int num = 0;
-      for(int j=py; j<= MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples); j+=2)
-        for(int i=px; i<= MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples); i+=2)
+      // left 2x2 block border of sampling region
+      for (j = py+2 ; j <= maxj ; j+=2)
+      {
+          p1 = in[px   + in_stride*j];
+          p2 = in[px+1 + in_stride*j] + in[px   + in_stride*(j + 1)];
+          p4 = in[px+1 + in_stride*(j + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1-dx),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
+          num += (1-dx);
+      }
+
+      // upper 2x2 block border of sampling region
+      for (i = px+2 ; i <= maxi ; i+=2)
+      {
+          p1 = in[i   + in_stride*py];
+          p2 = in[i+1 + in_stride*py] + in[i   + in_stride*(py + 1)];
+          p4 = in[i+1 + in_stride*(py + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1-dy),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
+          num += (1-dy);
+      }
+
+      // 2x2 blocks in the middle of sampling region
+      for(int j=py+2; j<=maxj; j+=2)
+        for(int i=px+2; i<=maxi; i+=2)
         {
-          // get four mosaic pattern floats:
-          float p1, p2, p4;
           p1 = in[i   + in_stride*j];
           p2 = in[i+1 + in_stride*j] + in[i   + in_stride*(j + 1)];
           p4 = in[i+1 + in_stride*(j + 1)];
-          const __m128 px0 = _mm_set_ps(0.0f, p4, .5f*p2, p1);
-          p1 = in[i+2   + in_stride*j];
-          p2 = in[i+2+1 + in_stride*j] + in[i+2   + in_stride*(j + 1)];
-          p4 = in[i+2+1 + in_stride*(j + 1)];
-          const __m128 px1 = _mm_set_ps(0.0f, p4, .5f*p2, p1);
-          p1 = in[i   + in_stride*(j+2)];
-          p2 = in[i+1 + in_stride*(j+2)] + in[i   + in_stride*(j+2 + 1)];
-          p4 = in[i+1 + in_stride*(j+2 + 1)];
-          const __m128 px2 = _mm_set_ps(0.0f, p4, .5f*p2, p1);
-          p1 = in[i+2   + in_stride*(j+2)];
-          p2 = in[i+2+1 + in_stride*(j+2)] + in[i+2   + in_stride*(j+2 + 1)];
-          p4 = in[i+2+1 + in_stride*(j+2 + 1)];
-          const __m128 px3 = _mm_set_ps(0.0f, p4, .5f*p2, p1);
-
-          col = _mm_add_ps(col, _mm_mul_ps(d0, px0));
-          col = _mm_add_ps(col, _mm_mul_ps(d1, px1));
-          col = _mm_add_ps(col, _mm_mul_ps(d2, px2));
-          col = _mm_add_ps(col, _mm_mul_ps(d3, px3));
-          num++;
+          col = _mm_add_ps(col, _mm_set_ps(0.0f, p4, .5f*p2, p1));
+          num += 1.0f;
         }
-        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
-        _mm_stream_ps(outc, col);
-        outc += 4;
+
+      if (maxi == px + 2*samples)
+      {
+        // right border
+        for (j = py+2 ; j <= maxj ; j+=2)
+        {
+          p1 = in[maxi+2   + in_stride*j];
+          p2 = in[maxi+3 + in_stride*j] + in[maxi+2   + in_stride*(j + 1)];
+          p4 = in[maxi+3 + in_stride*(j + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
+          num += dx;
+        }
+
+        // upper right
+        p1 = in[maxi+2   + in_stride*py];
+        p2 = in[maxi+3 + in_stride*py] + in[maxi+2   + in_stride*(py + 1)];
+        p4 = in[maxi+3 + in_stride*(py + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx*(1-dy)),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
+        num += dx*(1-dy);
+      }
+
+      if (maxj == py + 2*samples)
+      {
+        // lower border
+        for (i = px+2 ; i <= maxi ; i+=2)
+        {
+          p1 = in[i   + in_stride*(maxj+2)];
+          p2 = in[i+1 + in_stride*(maxj+2)] + in[i   + in_stride*(maxj+3)];
+          p4 = in[i+1 + in_stride*(maxj+3)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
+          num += dy;
+        }
+
+        // lower left 2x2 block
+        p1 = in[px   + in_stride*(maxj+2)];
+        p2 = in[px+1 + in_stride*(maxj+2)] + in[px   + in_stride*(maxj+3)];
+        p4 = in[px+1 + in_stride*(maxj+3)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1-dx)*dy),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
+        num += (1-dx)*dy;
+
+        if (maxi == px + 2*samples)
+        {
+          // upper left 2x2 block
+          p1 = in[maxi+2   + in_stride*(maxj+2)];
+          p2 = in[maxi+3 + in_stride*(maxj+2)] + in[maxi   + in_stride*(maxj+3)];
+          p4 = in[maxi+3 + in_stride*(maxj+3)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx*dy),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
+          num += dx*dy;
+        }
+      }
+
+      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      _mm_stream_ps(outc, col);
+      outc += 4;
     }
   }
   _mm_sfence();
