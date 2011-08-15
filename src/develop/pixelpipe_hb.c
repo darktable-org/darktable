@@ -934,14 +934,15 @@ restart:
   {
     // Well, there were error -> we might need to free an invalid opencl memory object
     if (cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
+    dt_opencl_unlock_device(pipe->devid); // release opencl resource
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     pipe->opencl_enabled = 0;             // disable opencl for this pipe
     pipe->opencl_error = 0;               // reset error status
-    dt_opencl_unlock_device(pipe->devid); // release opencl resource
     pipe->devid = -1;
+    dt_pthread_mutex_unlock(&pipe->busy_mutex);
     dt_dev_pixelpipe_flush_caches(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
-    dt_pthread_mutex_unlock(&pipe->busy_mutex);
+    dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     goto restart;  // try again (this time without opencl)
   }
 
