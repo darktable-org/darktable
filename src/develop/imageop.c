@@ -1246,7 +1246,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       int px = (int)fx;
       px = MAX(0, px & ~1);
       const float dx = (fx - px)/2;
-      px = MIN(((roi_in->width -6) & ~1u), px) + rggby;
+      px = MIN(((roi_in->width -6) & ~1u), px) + rggbx;
 
       int maxi = MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples);
 
