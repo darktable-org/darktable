@@ -82,8 +82,10 @@ typedef struct dt_lib_module_t
   void* (*get_params)     (struct dt_lib_module_t *self, int *size);
   int   (*set_params)     (struct dt_lib_module_t *self, const void *params, int size);
   void  (*init_presets)   (struct dt_lib_module_t *self);
-  /** Optional callback for keyboard accelerators */
+  /** Optional callbacks for keyboard accelerators */
   void (*init_key_accels)();
+  void (*connect_key_accels)(struct dt_lib_module_t *self);
+  void (*disconnect_key_accels)(struct dt_lib_module_t *self);
 }
 dt_lib_module_t;
 

@@ -372,6 +372,9 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
     module->init_presets = NULL;
   }
   if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
+  if(!g_module_symbol(module->module, "connect_key_accels", (gpointer)&(module->connect_key_accels)))        module->connect_key_accels = NULL;
+  if(!g_module_symbol(module->module, "disconnect_key_accels", (gpointer)&(module->disconnect_key_accels)))        module->disconnect_key_accels = NULL;
+
   if (module->gui_reset)
   {
     snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/reset plugin parameters",module->plugin_name);
