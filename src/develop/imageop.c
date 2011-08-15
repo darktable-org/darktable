@@ -1234,7 +1234,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
     int py = (int)fy;
     py = MAX(0, py & ~1);
     const float dy = (fy - py)/2;
-    py = MIN(((roi_in->height-6) & ~1u), py + rggby) + rggbx;
+    py = MIN(((roi_in->height-6) & ~1u), py) + rggby;
 
     int maxj = MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples);
 
