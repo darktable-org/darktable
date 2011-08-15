@@ -1213,19 +1213,6 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   // how many 2x2 blocks can be sampled inside that area
   const int samples = ((int)px_footprint)/2;
 
-  // init gauss with sigma = samples (half footprint)
-  float filter[2*samples + 1];
-  float sum = 0.0f;
-
-  memset(filter, 0, sizeof(float)*(2*samples + 1));
-
-  if(samples)
-  {
-    for(int i=-samples; i<=samples; i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
-    for(int k=0; k<2*samples+1; k++) filter[k] /= sum;
-  }
-  else filter[0] = 1.0f;
-
   // move p to point to an rggb block:
   int trggbx = 0, trggby = 0;
   if(FC(trggby, trggbx+1, filters) != 1) trggbx ++;
@@ -1236,9 +1223,8 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   }
   const int rggbx = trggbx, rggby = trggby;
 
-
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out, filter) schedule(static)
+  #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
@@ -1248,13 +1234,16 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       __m128 col = _mm_setzero_ps();
       // _mm_prefetch
       // center pixel
-      float fx = (x + .5f + roi_out->x)/roi_out->scale, fy = (y + .5f + roi_out->y)/roi_out->scale;
+      float fx = (x + roi_out->x)/roi_out->scale, fy = (y + roi_out->y)/roi_out->scale;
       int px = (int)fx, py = (int)fy;
-      const float dx = fx - px, dy = fy - py;
 
       // round down to next even number and jump to rggb block:
-      px = MAX(0, px & ~1) + rggbx;
-      py = MAX(0, py & ~1) + rggby;
+      px = MAX(0, px & ~1);
+      py = MAX(0, py & ~1);
+
+      const float dx = (fx - px)/2, dy = (fy - py)/2;
+      px += rggbx;
+      py += rggby;
 
       px = MIN((((roi_in->width -5) & ~1u) + rggbx), px);
       py = MIN((((roi_in->height-5) & ~1u) + rggby), py);
@@ -1264,9 +1253,9 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       const __m128 d2 = _mm_set1_ps((1.0f-dx)*(dy));
       const __m128 d3 = _mm_set1_ps(dx*dy);
 
-      float num = 0.0f;
-      for(int j=MAX(rggby, py-2*samples); j<=MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples); j+=2)
-        for(int i=MAX(rggbx, px-2*samples); i<=MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples); i+=2)
+      int num = 0;
+      for(int j=MAX(rggby, py); j<= MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples); j+=2)
+        for(int i=MAX(rggbx, px); i<= MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples); i+=2)
         {
           // get four mosaic pattern floats:
           float p1, p2, p4;
@@ -1286,12 +1275,12 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           p2 = in[i+2+1 + in_stride*(j+2)] + in[i+2   + in_stride*(j+2 + 1)];
           p4 = in[i+2+1 + in_stride*(j+2 + 1)];
           const __m128 px3 = _mm_set_ps(0.0f, p4, .5f*p2, p1);
-          const __m128 lerp = _mm_add_ps(_mm_add_ps(_mm_mul_ps(d0, px0), _mm_mul_ps(d1, px1)),
-                                         _mm_add_ps(_mm_mul_ps(d2, px2), _mm_mul_ps(d3, px3)));
 
-          const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
-          col = _mm_add_ps(col, _mm_mul_ps(lerp, _mm_set1_ps(f)));
-          num += f;
+          col = _mm_add_ps(col, _mm_mul_ps(d0, px0));
+          col = _mm_add_ps(col, _mm_mul_ps(d1, px1));
+          col = _mm_add_ps(col, _mm_mul_ps(d2, px2));
+          col = _mm_add_ps(col, _mm_mul_ps(d3, px3));
+          num++;
         }
       if(num == 0.0f)
         col = _mm_load_ps(in + 4*(CLAMPS(px, 0, roi_in->width-1) + in_stride*CLAMPS(py, 0, roi_in->height-1)));
