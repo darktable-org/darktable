@@ -1254,8 +1254,8 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
       const __m128 d3 = _mm_set1_ps(dx*dy);
 
       int num = 0;
-      for(int j=MAX(rggby, py); j<= MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples); j+=2)
-        for(int i=MAX(rggbx, px); i<= MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples); i+=2)
+      for(int j=py; j<= MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples); j+=2)
+        for(int i=px; i<= MIN(((roi_in->width -5)&~1u)+rggbx, px+2*samples); i+=2)
         {
           // get four mosaic pattern floats:
           float p1, p2, p4;
@@ -1282,12 +1282,9 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           col = _mm_add_ps(col, _mm_mul_ps(d3, px3));
           num++;
         }
-      if(num == 0.0f)
-        col = _mm_load_ps(in + 4*(CLAMPS(px, 0, roi_in->width-1) + in_stride*CLAMPS(py, 0, roi_in->height-1)));
-      else
         col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
-      _mm_stream_ps(outc, col);
-      outc += 4;
+        _mm_stream_ps(outc, col);
+        outc += 4;
     }
   }
   _mm_sfence();
