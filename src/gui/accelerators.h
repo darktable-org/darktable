@@ -17,13 +17,13 @@ typedef struct dt_accel_t
 } dt_accel_t;
 
 // Accel path string building functions
-static void dt_accel_path_global(char *s, size_t n, const char* path);
-static void dt_accel_path_view(char *s, size_t n, char *module,
-                               const char* path);
-static void dt_accel_path_iop(char *s, size_t n, char *module,
-                              const char *path);
-static void dt_accel_path_lib(char *s, size_t n, char *module,
-                              const char* path);
+void dt_accel_path_global(char *s, size_t n, const char* path);
+void dt_accel_path_view(char *s, size_t n, char *module,
+                        const char* path);
+void dt_accel_path_iop(char *s, size_t n, char *module,
+                       const char *path);
+void dt_accel_path_lib(char *s, size_t n, char *module,
+                       const char* path);
 
 // Accelerator registration functions
 void dt_accel_register_global(const gchar *path, guint accel_key,

@@ -4,27 +4,27 @@
 #include "common/darktable.h"
 #include "control/control.h"
 
-static void dt_accel_path_global(char *s, size_t n, const char* path)
+void dt_accel_path_global(char *s, size_t n, const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s",
            NC_("accel", "global"), path);
 }
 
-static void dt_accel_path_view(char *s, size_t n, char *module,
+void dt_accel_path_view(char *s, size_t n, char *module,
                                const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
            NC_("accel", "views"), module, path);
 }
 
-static void dt_accel_path_iop(char *s, size_t n, char *module,
+void dt_accel_path_iop(char *s, size_t n, char *module,
                               const char *path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
            NC_("accel", "image operations"), module, path);
 }
 
-static void dt_accel_path_lib(char *s, size_t n, char *module,
+void dt_accel_path_lib(char *s, size_t n, char *module,
                               const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s/%s",
