@@ -328,6 +328,9 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->modify_roi_out  = so->modify_roi_out;
   module->legacy_params   = so->legacy_params;
 
+  module->connect_key_accels = so->connect_key_accels;
+  module->disconnect_key_accels = so->disconnect_key_accels;
+
   // now init the instance:
   module->init(module);
 
