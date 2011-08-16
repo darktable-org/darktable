@@ -289,45 +289,6 @@ static gint _strcmp(gconstpointer a, gconstpointer b)
   return strcmp((const char*)b, (const char*)a);
 }
 
-void dt_accel_group_connect_by_path(GtkAccelGroup *accel_group,
-                                    const gchar *accel_path,
-                                    GClosure *closure)
-{
-  if(!accel_group)
-    return;
-
-  GSList **list = NULL;
-
-  // First register with GTK...
-  if(closure)
-    gtk_accel_group_connect_by_path(accel_group, accel_path, closure);
-
-  // ... and then with our accelerator lists
-  if(accel_group == darktable.control->accels_global)
-    list = &darktable.control->accels_list_global;
-  else if(accel_group == darktable.control->accels_lighttable)
-    list = &darktable.control->accels_list_lighttable;
-  else if(accel_group == darktable.control->accels_darkroom)
-    list = &darktable.control->accels_list_darkroom;
-  else if(accel_group == darktable.control->accels_capture)
-    list = &darktable.control->accels_list_capture;
-  else if(accel_group == darktable.control->accels_filmstrip)
-    list = &darktable.control->accels_list_filmstrip;
-
-  // Only add if the accel isn't already in the list
-  if(!g_slist_find_custom(*list, (gconstpointer)accel_path, _strcmp))
-    *list = g_slist_prepend(*list, strdup(accel_path));
-}
-
-void dt_accel_group_disconnect(GtkAccelGroup *accel_group,
-                               GClosure *closure)
-{
-  if(!accel_group)
-    return;
-
-  gtk_accel_group_disconnect(accel_group, closure);
-}
-
 static gboolean
 expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
@@ -1254,17 +1215,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_free(themefile);
 
   // Initializing the shortcut groups
-  darktable.control->accels_global = gtk_accel_group_new();
-  darktable.control->accels_darkroom = gtk_accel_group_new();
-  darktable.control->accels_lighttable = gtk_accel_group_new();
-  darktable.control->accels_capture = gtk_accel_group_new();
-  darktable.control->accels_filmstrip = gtk_accel_group_new();
+  darktable.control->accelerator = gtk_accel_group_new();
 
-  darktable.control->accels_list_global = NULL;
-  darktable.control->accels_list_lighttable = NULL;
-  darktable.control->accels_list_darkroom = NULL;
-  darktable.control->accels_list_capture = NULL;
-  darktable.control->accels_list_filmstrip = NULL;
+  darktable.control->accelerator_list = NULL;
 
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()),
@@ -1277,7 +1230,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   // Adding the global shortcut group to the main window
   gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                             darktable.control->accels_global);
+                             darktable.control->accelerator);
 
   // set constant width from gconf key
   int panel_width = dt_conf_get_int("panel_width");

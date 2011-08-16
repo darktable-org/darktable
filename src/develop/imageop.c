@@ -331,6 +331,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->connect_key_accels = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
 
+  module->accel_closures = NULL;
+
   // now init the instance:
   module->init(module);
 
@@ -449,12 +451,11 @@ void dt_iop_load_modules_so()
   GList *res = NULL;
   dt_iop_module_so_t *module;
   darktable.iop = NULL;
-  char plugindir[1024], op[20], accelpath[1024];
+  char plugindir[1024], op[20];
   const gchar *d_name;
   dt_util_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
-  char name[1024];
   if(!dir) return;
   while((d_name = g_dir_read_name(dir)))
   {
@@ -476,34 +477,34 @@ void dt_iop_load_modules_so()
     init_presets(module);
     // Calling the accelerator initialization callback, if present
     if(module->init_key_accels)
-      (module->init_key_accels)();
+      (module->init_key_accels)(module);
 
-    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
-    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
-    if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
-    {
-	    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
-	    dtgtk_slider_init_accel(darktable.control->accels_darkroom,name);
-    }
+//    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+//    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
+//    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+//    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
+//    if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
+//    {
+//      snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
+//      dtgtk_slider_init_accel(darktable.control->accels_darkroom,name);
+//    }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      // Adding the optional show accelerator to the table (blank)
-      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show plugin",
-               (module->op));
-      gtk_accel_map_add_entry(accelpath, 0, 0);
-      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
-                                     NULL);
-      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/enable plugin",
-               (module->op));
-      gtk_accel_map_add_entry(accelpath, 0, 0);
-      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
-                                     NULL);
-      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
-      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
+//      // Adding the optional show accelerator to the table (blank)
+//      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show plugin",
+//               (module->op));
+//      gtk_accel_map_add_entry(accelpath, 0, 0);
+//      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
+//                                     NULL);
+//      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/enable plugin",
+//               (module->op));
+//      gtk_accel_map_add_entry(accelpath, 0, 0);
+//      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
+//                                     NULL);
+//      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+//      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
+//      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+//      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
     }
   }
   g_dir_close(dir);
@@ -869,11 +870,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-  dtgtk_button_set_accel(resetbutton,darktable.control->accels_darkroom,name);
+//  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
+//  dtgtk_button_set_accel(resetbutton,darktable.control->accels_darkroom,name);
   GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-  dtgtk_button_set_accel(presetsbutton,darktable.control->accels_darkroom,name);
+//  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
+//  dtgtk_button_set_accel(presetsbutton,darktable.control->accels_darkroom,name);
   gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
@@ -905,8 +906,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     GtkWidget *label = gtk_label_new(_("mode"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
     bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, 100.0, 0));
-    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
-    dtgtk_slider_set_accel(DTGTK_SLIDER(bd->opacity_slider),darktable.control->accels_darkroom,name);
+//    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
+//    dtgtk_slider_set_accel(DTGTK_SLIDER(bd->opacity_slider),darktable.control->accels_darkroom,name);
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));

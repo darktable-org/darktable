@@ -99,7 +99,7 @@ typedef struct dt_iop_module_so_t
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
   /** Optional callback for keyboard accelerators */
-  void (*init_key_accels)();
+  void (*init_key_accels)(struct dt_iop_module_so_t *so);
   void (*connect_key_accels)(struct dt_iop_module_t *self);
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 
@@ -175,7 +175,7 @@ typedef struct dt_iop_module_t
   /** expander containing the widget. */
   GtkExpander *expander;
   /** list of closures: show, enable/disable */
-  GList* closures;
+  GSList* accel_closures;
 
 
   /** version of the parameters in the database. */

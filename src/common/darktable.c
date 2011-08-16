@@ -394,11 +394,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
       dt_gui_presets_init(); // also init preset db schema.
     }
     darktable.control->running = 0;
-    darktable.control->accels_global = NULL;
-    darktable.control->accels_lighttable = NULL;
-    darktable.control->accels_darkroom = NULL;
-    darktable.control->accels_filmstrip = NULL;
-    darktable.control->accels_capture = NULL;
+    darktable.control->accelerators = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
   }
 

@@ -373,7 +373,8 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   }
   if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
   if(!g_module_symbol(module->module, "connect_key_accels", (gpointer)&(module->connect_key_accels)))        module->connect_key_accels = NULL;
-  if(!g_module_symbol(module->module, "disconnect_key_accels", (gpointer)&(module->disconnect_key_accels)))        module->disconnect_key_accels = NULL;
+
+  module->accel_closures = NULL;
 
   if (module->gui_reset)
   {

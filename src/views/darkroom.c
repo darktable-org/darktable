@@ -812,10 +812,6 @@ void enter(dt_view_t *self)
 {
   char accelpath[256];
 
-  // Attaching accelerator group
-  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                             darktable.control->accels_darkroom);
-
   // Connecting the closures
   connect_closures(self);
 
@@ -1020,10 +1016,6 @@ dt_disconnect_accel_closure(gpointer data)
 void leave(dt_view_t *self)
 {
   GSList *c = ((dt_develop_t*)self->data)->closures;
-
-  // Detaching the accelerator group
-  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                                darktable.control->accels_darkroom);
 
   // Disconnecting and deleting the closures
   while(c)

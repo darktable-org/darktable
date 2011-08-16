@@ -146,7 +146,10 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer)&(view->connect_key_accels))) view->connect_key_accels = NULL;
   if(!g_module_symbol(view->module, "disconnect_key_accels", (gpointer)&(view->disconnect_key_accels))) view->disconnect_key_accels = NULL;
 
+  view->accel_closures = NULL;
+
   if(view->init) view->init(view);
+  if(view->init_key_accels) view->init_key_accels(view);
 
   /* success */
   retval = 0;

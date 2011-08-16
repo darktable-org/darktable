@@ -188,11 +188,4 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus (GtkWidget *w);
 
-// A wrapper around GTK's accel group connection function
-void dt_accel_group_connect_by_path(GtkAccelGroup *accel_group,
-                                    const gchar *accel_path,
-                                    GClosure *closure);
-void dt_accel_group_disconnect(GtkAccelGroup *accel_group,
-                               GClosure *closure);
-
 #endif
