@@ -1230,21 +1230,21 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   {
     float *outc = out + 4*(out_stride*y);
 
-    float fy = (y + roi_out->y)/roi_out->scale;
-    int py = (int)fy;
-    py = MAX(0, py & ~1);
+    float fy = (y + roi_out->y)*px_footprint;
+    int py = (int)fy & ~1;
     const float dy = (fy - py)/2;
     py = MIN(((roi_in->height-6) & ~1u), py) + rggby;
 
     int maxj = MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples);
 
+    float fx = roi_out->x;
+      
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
 
-      float fx = (x + roi_out->x)/roi_out->scale;
-      int px = (int)fx;
-      px = MAX(0, px & ~1);
+      fx += px_footprint;
+      int px = (int)fx & ~1;
       const float dx = (fx - px)/2;
       px = MIN(((roi_in->width -6) & ~1u), px) + rggbx;
 
@@ -1252,13 +1252,13 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
 
       float p1, p2, p4;
       int i,j;
+      float num = 0;
 
       // upper left 2x2 block of sampling region
       p1 = in[px   + in_stride*py];
       p2 = in[px+1 + in_stride*py] + in[px   + in_stride*(py + 1)];
       p4 = in[px+1 + in_stride*(py + 1)];
-      col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1-dx)*(1-dy)),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
-      float num = (1-dx)*(1-dy);
+      col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1-dx)*(1-dy)),_mm_set_ps(0.0f, p4, p2, p1)));
 
       // left 2x2 block border of sampling region
       for (j = py+2 ; j <= maxj ; j+=2)
@@ -1266,8 +1266,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           p1 = in[px   + in_stride*j];
           p2 = in[px+1 + in_stride*j] + in[px   + in_stride*(j + 1)];
           p4 = in[px+1 + in_stride*(j + 1)];
-          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1-dx),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
-          num += (1-dx);
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1-dx),_mm_set_ps(0.0f, p4, p2, p1)));
       }
 
       // upper 2x2 block border of sampling region
@@ -1276,8 +1275,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           p1 = in[i   + in_stride*py];
           p2 = in[i+1 + in_stride*py] + in[i   + in_stride*(py + 1)];
           p4 = in[i+1 + in_stride*(py + 1)];
-          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1-dy),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
-          num += (1-dy);
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(1-dy),_mm_set_ps(0.0f, p4, p2, p1)));
       }
 
       // 2x2 blocks in the middle of sampling region
@@ -1287,11 +1285,10 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           p1 = in[i   + in_stride*j];
           p2 = in[i+1 + in_stride*j] + in[i   + in_stride*(j + 1)];
           p4 = in[i+1 + in_stride*(j + 1)];
-          col = _mm_add_ps(col, _mm_set_ps(0.0f, p4, .5f*p2, p1));
-          num += 1.0f;
+          col = _mm_add_ps(col, _mm_set_ps(0.0f, p4, p2, p1));
         }
 
-      if (maxi == px + 2*samples)
+      if (maxi == px + 2*samples && maxj == py + 2*samples)
       {
         // right border
         for (j = py+2 ; j <= maxj ; j+=2)
@@ -1299,19 +1296,58 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           p1 = in[maxi+2   + in_stride*j];
           p2 = in[maxi+3 + in_stride*j] + in[maxi+2   + in_stride*(j + 1)];
           p4 = in[maxi+3 + in_stride*(j + 1)];
-          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
-          num += dx;
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx),_mm_set_ps(0.0f, p4, p2, p1)));
         }
 
         // upper right
         p1 = in[maxi+2   + in_stride*py];
         p2 = in[maxi+3 + in_stride*py] + in[maxi+2   + in_stride*(py + 1)];
         p4 = in[maxi+3 + in_stride*(py + 1)];
-        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx*(1-dy)),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
-        num += dx*(1-dy);
-      }
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx*(1-dy)),_mm_set_ps(0.0f, p4, p2, p1)));
 
-      if (maxj == py + 2*samples)
+        // lower border
+        for (i = px+2 ; i <= maxi ; i+=2)
+        {
+          p1 = in[i   + in_stride*(maxj+2)];
+          p2 = in[i+1 + in_stride*(maxj+2)] + in[i   + in_stride*(maxj+3)];
+          p4 = in[i+1 + in_stride*(maxj+3)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy),_mm_set_ps(0.0f, p4, p2, p1)));
+        }
+
+        // lower left 2x2 block
+        p1 = in[px   + in_stride*(maxj+2)];
+        p2 = in[px+1 + in_stride*(maxj+2)] + in[px   + in_stride*(maxj+3)];
+        p4 = in[px+1 + in_stride*(maxj+3)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1-dx)*dy),_mm_set_ps(0.0f, p4, p2, p1)));
+
+        // lower right 2x2 block
+        p1 = in[maxi+2   + in_stride*(maxj+2)];
+        p2 = in[maxi+3 + in_stride*(maxj+2)] + in[maxi   + in_stride*(maxj+3)];
+        p4 = in[maxi+3 + in_stride*(maxj+3)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx*dy),_mm_set_ps(0.0f, p4, p2, p1)));
+
+        num = (samples+1)*(samples+1);
+      }
+      else if (maxi == px + 2*samples)
+      {
+        // right border
+        for (j = py+2 ; j <= maxj ; j+=2)
+        {
+          p1 = in[maxi+2   + in_stride*j];
+          p2 = in[maxi+3 + in_stride*j] + in[maxi+2   + in_stride*(j + 1)];
+          p4 = in[maxi+3 + in_stride*(j + 1)];
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx),_mm_set_ps(0.0f, p4, p2, p1)));
+        }
+
+        // upper right
+        p1 = in[maxi+2   + in_stride*py];
+        p2 = in[maxi+3 + in_stride*py] + in[maxi+2   + in_stride*(py + 1)];
+        p4 = in[maxi+3 + in_stride*(py + 1)];
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx*(1-dy)),_mm_set_ps(0.0f, p4, p2, p1)));
+
+        num = ((maxj-py)/2+1-dy)*(samples+1);
+      }
+      else if (maxj == py + 2*samples)
       {
         // lower border
         for (i = px+2 ; i <= maxi ; i+=2)
@@ -1319,29 +1355,24 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
           p1 = in[i   + in_stride*(maxj+2)];
           p2 = in[i+1 + in_stride*(maxj+2)] + in[i   + in_stride*(maxj+3)];
           p4 = in[i+1 + in_stride*(maxj+3)];
-          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
-          num += dy;
+          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dy),_mm_set_ps(0.0f, p4, p2, p1)));
         }
 
         // lower left 2x2 block
         p1 = in[px   + in_stride*(maxj+2)];
         p2 = in[px+1 + in_stride*(maxj+2)] + in[px   + in_stride*(maxj+3)];
         p4 = in[px+1 + in_stride*(maxj+3)];
-        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1-dx)*dy),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
-        num += (1-dx)*dy;
+        col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps((1-dx)*dy),_mm_set_ps(0.0f, p4, p2, p1)));
 
-        if (maxi == px + 2*samples)
-        {
-          // upper left 2x2 block
-          p1 = in[maxi+2   + in_stride*(maxj+2)];
-          p2 = in[maxi+3 + in_stride*(maxj+2)] + in[maxi   + in_stride*(maxj+3)];
-          p4 = in[maxi+3 + in_stride*(maxj+3)];
-          col = _mm_add_ps(col, _mm_mul_ps(_mm_set1_ps(dx*dy),_mm_set_ps(0.0f, p4, .5f*p2, p1)));
-          num += dx*dy;
-        }
+        num = ((maxi-px)/2+1-dx)*(samples+1);
+      }
+      else
+      {
+        num = ((maxi-px)/2+1-dx)*((maxj-py)/2+1-dy);
       }
 
-      col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+      num = 1.0f/num;
+      col = _mm_mul_ps(col, _mm_set_ps(0.0f,num,0.5f*num,num));
       _mm_stream_ps(outc, col);
       outc += 4;
     }
