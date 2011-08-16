@@ -1081,22 +1081,6 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
-#if 0
-static float
-weight (const float c1, const float c2)
-{
-  // return dt_fast_expf(-(c1-c2)*(c1-c2)*(1.0f/(0.001f*65535.0f*65535.0f)));
-  return ((c1 > 65500.0f) ^ (c2 > 65500.0f)) ? 0.0f : 1.0f;
-}
-#else
-/*static float
-weight (const float c0, const float c1, const float c2, const float c3, const float c4)
-{
-  const float c = 65534.0f;
-  const float cc = fmaxf(fmaxf(c1, c2), fmaxf(c3, c4));
-  return ((c0 > c) ^ (cc > c)) ? 0.001f : 1.0f;
-}*/
-#endif
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -1107,24 +1091,18 @@ void
 dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
                                         const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
 {
+#if 0
+  printf("scale: %f\n",roi_out->scale);
+  struct timeval tm1,tm2;
+  gettimeofday(&tm1,NULL);
+  for (int k = 0 ; k < 100 ; k++)
+  {
+#endif
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
-  const float px_footprint = .9f/roi_out->scale;
+  const float px_footprint = 1.f/roi_out->scale;
   // how many 2x2 blocks can be sampled inside that area
-  const int samples = ((int)px_footprint)/2;
-
-  // init gauss with sigma = samples (half footprint)
-  float filter[2*samples + 1];
-  float sum = 0.0f;
-
-  memset(filter, 0, sizeof(float)*(2*samples + 1));
-
-  if(samples)
-  {
-    for(int i=-samples; i<=samples; i++) sum += (filter[i+samples] = expf(-i*i/(float)(.5f*samples*samples)));
-    for(int k=0; k<2*samples+1; k++) filter[k] /= sum;
-  }
-  else filter[0] = 1.0f;
+  const int samples = round(px_footprint/2);
 
   // move p to point to an rggb block:
   int trggbx = 0, trggby = 0;
@@ -1135,72 +1113,67 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
     trggby ++;
   }
   const int rggbx = trggbx, rggby = trggby;
-  const int maxj = ((roi_in->height-3)&~1u)+rggby;
-  const int maxi = ((roi_in->width -3)&~1u)+rggbx;
 
-  const __m128 ff  = _mm_set1_ps(1.0f/65535.0f);
-  // const __m128 one = _mm_set1_ps(1.0f);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out, filter) schedule(static)
+  #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
-    int py = (y + roi_out->y)/roi_out->scale;
-    py = MAX(0, py & ~1) + rggby;
-    py = MIN((((roi_in->height-3) & ~1u) + rggby), py);
-    const int maxjj = MIN(maxj,  py + 2*samples);
-    const int minjj = MAX(rggby, py - 2*samples);
+    float *outc = out + 4*(out_stride*y);
 
-    float *outc = out + 4*out_stride*y;
+    float fy = (y + roi_out->y)*px_footprint;
+    int py = (int)fy & ~1;
+    py = MIN(((roi_in->height-4) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
+
+    float fx = roi_out->x;
+      
     for(int x=0; x<roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
-      // _mm_prefetch
-      int px = (x + roi_out->x)/roi_out->scale;
 
-      // round down to next even number and jump to rggb block:
-      px = MAX(0, px & ~1) + rggbx;
-      px = MIN((((roi_in->width -3) & ~1u) + rggbx), px);
+      fx += px_footprint;
+      int px = (int)fx & ~1;
+      px = MIN(((roi_in->width -4) & ~1u), px) + rggbx;
 
-      const int idx = px   + in_stride*py;
+      int maxi = MIN(((roi_in->width -3)&~1u)+rggbx, px+2*samples);
 
-      // const float pc1  = in[px   + in_stride*py];
-      // const float pc23 = .5f*(in[px+1 + in_stride*py] + in[px   + in_stride*(py + 1)]);
-      // const float pc4  = in[px+1 + in_stride*(py + 1)];
+      int num = 0;
+
+      const int idx = px + in_stride*py;
       const uint16_t pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
 
-      float num = 0.0f;
-      const int maxii = MIN(maxi,  px + 2*samples);
-      const int minii = MAX(rggbx, px - 2*samples);
-      for(int j=minjj; j<=maxjj; j+=2)
-        for(int i=minii; i<=maxii; i+=2)
+      // 2x2 blocks in the middle of sampling region
+      __m128i sum = _mm_set_epi32(0,0,0,0);
+
+      for(int j=py; j<=maxj; j+=2)
+        for(int i=px; i<=maxi; i+=2)
         {
-          // get four mosaic pattern uint16:
           const uint16_t p1 = in[i   + in_stride*j];
           const uint16_t p2 = in[i+1 + in_stride*j];
           const uint16_t p3 = in[i   + in_stride*(j + 1)];
           const uint16_t p4 = in[i+1 + in_stride*(j + 1)];
 
-          // const float wr = weight(pc1, p1);
-          // const float wg = weight(pc23, .5f*(p2+p3));
-          const float w = ((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)) ? 0.001f : 1.0f;
-          // const float wb = weight(pc4, p4);
-
-          // const float f = filter[(i-px)/2+samples]*filter[(j-py)/2+samples];
-          // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*wb, .5f*(p2+p3)*wg, p1*wr), _mm_set1_ps(f/65535.0f)));
-          // num = _mm_add_ps(num, _mm_mul_ps(_mm_set_ps(1.0f, wb, wg, wr), _mm_set1_ps(f)));
-          // col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*wb, .5f*(p2+p3)*wg, p1*wr), ff));
-          // num = _mm_add_ps(num, _mm_mul_ps(_mm_set_ps(1.0f, wb, wg, wr), one));
-          col = _mm_add_ps(col, _mm_mul_ps(_mm_set_ps(0.0f, p4*w, .5f*(p2+p3)*w, p1*w), ff));
-          num += w;
+          if (!((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)))
+          {
+            sum = _mm_add_epi32(sum, _mm_set_epi32(0,p4,p3+p2,p1));
+            num++;
+          }
         }
-      if(num > 0.0f)
-        col = _mm_mul_ps(col, _mm_set1_ps(1.0f/num));
+
+      col = _mm_mul_ps(_mm_cvtepi32_ps(sum), _mm_div_ps(_mm_set_ps(0.0f,1.0f/65535.0f,0.5f/65535.0f,1.0f/65535.0f),_mm_set1_ps(num)));
       _mm_stream_ps(outc, col);
       outc += 4;
     }
   }
   _mm_sfence();
+#if 0
+  }
+  gettimeofday(&tm2,NULL);
+  float perf = (tm2.tv_sec-tm1.tv_sec)*1000.0f + (tm2.tv_usec-tm1.tv_usec)/1000.0f;
+  printf("time spent: %.4f\n",perf/100.0f);
+#endif
 }
 
 void
