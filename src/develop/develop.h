@@ -80,8 +80,6 @@ typedef struct dt_develop_t
   float histogram_max, histogram_pre_max;
   uint8_t gamma[0x100];
 
-  // list of closures for the keyboard accelerators
-  GSList *closures;
 }
 dt_develop_t;
 

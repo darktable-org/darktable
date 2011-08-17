@@ -63,7 +63,6 @@ typedef struct dt_view_t
   // keyboard accel callbacks
   void (*init_key_accels)(struct dt_view_t *self);
   void (*connect_key_accels)(struct dt_view_t *self);
-  void (*disconnect_key_accels)(struct dt_view_t *self);
 
   GSList *accel_closures;
 }

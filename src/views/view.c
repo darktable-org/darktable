@@ -144,7 +144,6 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
   if(!g_module_symbol(view->module, "init_key_accels", (gpointer)&(view->init_key_accels))) view->init_key_accels = NULL;
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer)&(view->connect_key_accels))) view->connect_key_accels = NULL;
-  if(!g_module_symbol(view->module, "disconnect_key_accels", (gpointer)&(view->disconnect_key_accels))) view->disconnect_key_accels = NULL;
 
   view->accel_closures = NULL;
 
