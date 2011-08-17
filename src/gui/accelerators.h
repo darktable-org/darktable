@@ -11,6 +11,8 @@ typedef struct dt_accel_t
 {
 
   gchar path[256];
+  gchar translated_path[256];
+  gchar module[256];
   guint views;
   gboolean local;
 
