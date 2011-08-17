@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
+    copyright (c) 2010-2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -354,6 +354,7 @@ dt_styles_style_plugin_new ()
   StylePluginData *plugin = g_new0(StylePluginData,1);
   plugin->operation = g_string_new("");
   plugin->op_params = g_string_new("");
+  plugin->blendop_params = g_string_new("");
   return plugin;
 }
 
