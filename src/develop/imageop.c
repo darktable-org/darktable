@@ -1127,7 +1127,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 
     int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
 
-    float fx = roi_out->x;
+    float fx = roi_out->x*px_footprint;
       
     for(int x=0; x<roi_out->width; x++)
     {
@@ -1210,7 +1210,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
 
     int maxj = MIN(((roi_in->height-5)&~1u)+rggby, py+2*samples);
 
-    float fx = roi_out->x;
+    float fx = roi_out->x*px_footprint;
       
     for(int x=0; x<roi_out->width; x++)
     {
