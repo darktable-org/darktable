@@ -166,8 +166,10 @@ function(_GTK2_FIND_INCLUDE_DIR _var _hdr)
 
     find_path(${_var} ${_hdr}
         PATHS
-        # look in debian/ubuntu multi-arch path
-        /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
+ # fix for Ubuntu >= 11.04 (Natty Narwhal)
+ /usr/lib/i386-linux-gnu/
+ /usr/lib/x86_64-linux-gnu/
+ # end fix for Ubuntu >= 11.04 (Natty Narwhal)
             /usr/local/lib64
             /usr/local/lib
             /usr/lib64
