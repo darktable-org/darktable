@@ -93,11 +93,11 @@ flags ()
   return IOP_FLAGS_ALLOW_TILING;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
 }
 
 static const float xyz_rgb[3][3] =    /* XYZ from RGB */
@@ -417,9 +417,9 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->blendL,_("blend L"));
   dtgtk_slider_set_label(g->blendC,_("blend C"));
   dtgtk_slider_set_label(g->blendh,_("blend h"));
-  dtgtk_slider_set_accel(g->blendL,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
-  dtgtk_slider_set_accel(g->blendC,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
-  dtgtk_slider_set_accel(g->blendh,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
+//  dtgtk_slider_set_accel(g->blendL,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
+//  dtgtk_slider_set_accel(g->blendC,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
+//  dtgtk_slider_set_accel(g->blendh,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
   dtgtk_slider_set_default_value(g->blendL, p->blendL);
   dtgtk_slider_set_default_value(g->blendC, p->blendC);
   dtgtk_slider_set_default_value(g->blendh, p->blendh);

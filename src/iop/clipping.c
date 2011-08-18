@@ -37,6 +37,7 @@
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/button.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -95,8 +96,6 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkLabel *label7;
   GtkDarktableToggleButton *flipHorGoldenGuide, *flipVerGoldenGuide;
   GtkCheckButton *goldenSectionBox, *goldenSpiralSectionBox, *goldenSpiralBox, *goldenTriangleBox;
-  GClosure *commit_callback;
-  GClosure *undo_callback;
 
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
@@ -844,7 +843,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                     G_CALLBACK (angle_callback), self);
   g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
-  dtgtk_slider_set_accel(g->scale5,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/angle");
+//  dtgtk_slider_set_accel(g->scale5,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/angle");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale5), 0, 6, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
 
@@ -853,7 +852,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->keystone_h), "tooltip-text", _("adjust perspective for horizontal keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_h), "value-changed",
                     G_CALLBACK (keystone_callback_h), self);
-  dtgtk_slider_set_accel(g->keystone_h,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone h");
+//  dtgtk_slider_set_accel(g->keystone_h,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone h");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_h), 0, 6, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g->keystone_v = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -1.0, 1.0, 0.01, 0.0, 2));
@@ -861,7 +860,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->keystone_v), "tooltip-text", _("adjust perspective for vertical keystone distortion"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->keystone_v), "value-changed",
                     G_CALLBACK (keystone_callback_v), self);
-  dtgtk_slider_set_accel(g->keystone_v,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
+//  dtgtk_slider_set_accel(g->keystone_v,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->keystone_v), 0, 6, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("aspect"));
@@ -878,16 +877,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
-  g->commit_callback = g_cclosure_new(G_CALLBACK(key_commit_callback),
-                                      (gpointer)self, NULL);
-  g->undo_callback = g_cclosure_new(G_CALLBACK(key_undo_callback),
-                                    (gpointer)self, NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                 "<Darktable>/darkroom/plugins/clipping/commit",
-                                 g->commit_callback);
-  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                 "<Darktable>/darkroom/plugins/clipping/undo",
-                                 g->undo_callback);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act >= 9) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
@@ -898,7 +887,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(g->aspect_presets), TRUE, TRUE, 0);
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, CPF_STYLE_FLAT);
-  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/swap the aspect ratio");
+//  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/swap the aspect ratio");
   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
   g_object_set(G_OBJECT(button), "tooltip-text", _("swap the aspect ratio (ctrl-x)"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, FALSE, 0);
@@ -999,12 +988,6 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_accel_group_disconnect(darktable.control->accels_darkroom,
-                             ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
-                             commit_callback);
-  dt_accel_group_disconnect(darktable.control->accels_darkroom,
-                             ((dt_iop_clipping_gui_data_t*)(self->gui_data))->
-                             undo_callback);
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -1544,24 +1527,31 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
   else return 0;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/clipping/commit",
-                          GDK_Return, 0);
-  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/clipping/undo",
-                          GDK_z, GDK_CONTROL_MASK);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "commit"),
+                        GDK_Return, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "undo"),
+                        GDK_z, GDK_CONTROL_MASK);
 
-  // Making sure these get into the accelerator lists as well
-  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                 "<Darktable>/darkroom/plugins/clipping/commit",
-                                 NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_darkroom,
-                                 "<Darktable>/darkroom/plugins/clipping/undo",
-                                 NULL);
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/angle");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone h");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/swap the aspect ratio");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/angle");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone h");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/keystone v");
+//  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/clipping/swap the aspect ratio");
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+
+  GClosure *closure;
+  closure = g_cclosure_new(G_CALLBACK(key_commit_callback),
+                           (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "commit", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(key_undo_callback),
+                           (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "commit", closure);
+
 }
 
 #undef PHI

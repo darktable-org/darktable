@@ -59,9 +59,9 @@ groups ()
   return IOP_GROUP_BASIC;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/invert/pick color of film material from image");
+//  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/invert/pick color of film material from image");
 }
 
 int
@@ -323,7 +323,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
   g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE));
-  dtgtk_button_set_accel(g->colorpicker,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/invert/pick color of film material from image");
+//  dtgtk_button_set_accel(g->colorpicker,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/invert/pick color of film material from image");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), 75, 24);
   g_signal_connect (G_OBJECT (g->colorpicker), "clicked", G_CALLBACK (colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);

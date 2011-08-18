@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
@@ -809,16 +810,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->cbox5), "changed",
                     G_CALLBACK (softproof_profile_changed),
                     (gpointer)self);
-
-
-  // Connecting the accelerator
-  g->softproof_callback = g_cclosure_new(G_CALLBACK(key_softproof_callback),
-                                         (gpointer)self, NULL);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_darkroom,
-      "<Darktable>/darkroom/plugins/colorout/toggle softproofing",
-      g->softproof_callback);
-
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -829,22 +820,22 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->profiles->data);
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
   }
-  dt_accel_group_disconnect(darktable.control->accels_darkroom,
-                             ((dt_iop_colorout_gui_data_t*)(self->gui_data))->
-                             softproof_callback);
   free(self->gui_data);
   self->gui_data = NULL;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/colorout/toggle softproofing",
-                          GDK_s, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "toggle softproofing"),
+                        GDK_s, 0);
+}
 
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_darkroom,
-      "<Darktable>/darkroom/plugins/colorout/toggle softproofing",
-      NULL);
+void connect_key_accels(dt_iop_module_t *self)
+{
+  GClosure *closure = g_cclosure_new(G_CALLBACK(key_softproof_callback),
+                                     (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "toggle softproofing", closure);
+
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

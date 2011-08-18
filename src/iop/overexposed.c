@@ -63,10 +63,10 @@ int groups()
   return IOP_GROUP_COLOR;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/lower threshold");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/upper threshold");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/lower threshold");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/upper threshold");
 }
 
 // FIXME: I'm not sure if this is the best test (all >= / <= threshold), but it seems to work.
@@ -263,12 +263,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
   g->lower = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lower, 2));
-  dtgtk_slider_set_accel(g->lower,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/lower threshold");
+//  dtgtk_slider_set_accel(g->lower,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/lower threshold");
   dtgtk_slider_set_format_type(g->lower,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->lower,_("lower threshold"));
   dtgtk_slider_set_unit(g->lower,"%");
   g->upper = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->upper, 2));
-  dtgtk_slider_set_accel(g->upper,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/upper threshold");
+//  dtgtk_slider_set_accel(g->upper,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/upper threshold");
   dtgtk_slider_set_format_type(g->upper,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->upper,_("upper threshold"));
   dtgtk_slider_set_unit(g->upper,"%");

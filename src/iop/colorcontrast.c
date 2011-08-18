@@ -98,10 +98,10 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_t *self)
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/green vs magenta");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/blue vs yellow");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/green vs magenta");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/blue vs yellow");
 }
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
@@ -251,10 +251,10 @@ void gui_init     (dt_iop_module_t *self)
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
   g->a_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 5.0, 0.01, p->a_steepness, 2));
   dtgtk_slider_set_label(g->a_scale,_("green vs magenta"));
-  dtgtk_slider_set_accel(g->a_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/green vs magenta");
+//  dtgtk_slider_set_accel(g->a_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/green vs magenta");
   g->b_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 5.0, 0.01, p->b_steepness, 2));
   dtgtk_slider_set_label(g->b_scale,_("blue vs yellow"));
-  dtgtk_slider_set_accel(g->b_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/blue vs yellow");
+//  dtgtk_slider_set_accel(g->b_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/blue vs yellow");
   
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));

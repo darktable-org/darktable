@@ -112,10 +112,10 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/acquire");
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/apply");
+//  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/acquire");
+//  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/apply");
 }
 
 static void
@@ -650,12 +650,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   button = gtk_button_new_with_label(_("acquire"));
   g_object_set(G_OBJECT(button), "tooltip-text", _("analyze this image"), (char *)NULL);
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/acquire");
+//  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/acquire");
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_button_pressed), (gpointer)self);
 
   g->apply_button = gtk_button_new_with_label(_("apply"));
-  gtk_button_set_accel(GTK_BUTTON(g->apply_button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/apply");
+//  gtk_button_set_accel(GTK_BUTTON(g->apply_button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/apply");
   g_object_set(G_OBJECT(g->apply_button), "tooltip-text", _("apply previously analyzed image look to this image"), (char *)NULL);
   gtk_box_pack_start(box, g->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->apply_button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);

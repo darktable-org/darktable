@@ -88,12 +88,12 @@ groups ()
 {
   return IOP_GROUP_EFFECT;
 }
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick primary color");
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick secondary color");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/balance");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/compress");
+//  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick primary color");
+//  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick secondary color");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/balance");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/compress");
 
 }
 
@@ -421,7 +421,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(dtgtk_label_new(_("shadows"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
 
   g->colorpick1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
-  dtgtk_button_set_accel(g->colorpick1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick primary color");
+//  dtgtk_button_set_accel(g->colorpick1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick primary color");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick1),32,32);
 
   GtkWidget *hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
@@ -481,7 +481,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(dtgtk_label_new(_("highlights"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
 
   g->colorpick2 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE));
-  dtgtk_button_set_accel(g->colorpick2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick secondary color");
+//  dtgtk_button_set_accel(g->colorpick2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/pick secondary color");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick2),32,32);
 
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE, 0));
@@ -547,14 +547,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.010, p->balance, 2));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_RATIO);
   dtgtk_slider_set_label(g->scale1,_("balance"));
-  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/balance");
+//  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/balance");
   dtgtk_slider_set_unit(g->scale1,"%/%");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->compress, 2));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->scale2,_("compress"));
-  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/compress");
+//  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/splittoning/compress");
   dtgtk_slider_set_unit(g->scale2,"%");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 

@@ -91,9 +91,9 @@ groups ()
 }
 
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowlight/blue shift");
+//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowlight/blue shift");
 }
 static float
 lookup(const float *lut, const float i)
@@ -722,7 +722,7 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_label(c->scale_blueness,_("blue shift"));
   dtgtk_slider_set_unit(c->scale_blueness,"%");
   dtgtk_slider_set_format_type(c->scale_blueness,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_accel(c->scale_blueness,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowlight/blue shift");
+//  dtgtk_slider_set_accel(c->scale_blueness,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowlight/blue shift");
   g_object_set(G_OBJECT(c->scale_blueness), "tooltip-text", _("blueness in shadows"), (char *)NULL);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 5);
