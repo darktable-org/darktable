@@ -91,27 +91,35 @@ static void key_accel_changed(GtkAccelMap *object,
                               GdkModifierType accel_mods,
                               gpointer user_data)
 {
-  // Updating all the stored accelerator keys/mods for key_pressed shortcuts
   char path[256];
 
-  // Filmstrip
-  gtk_accel_map_lookup_entry("<Darktable>/darkroom/filmstrip/scroll forward",
+  // Updating all the stored accelerator keys/mods for key_pressed shortcuts
+
+  dt_accel_path_view(path, 256, "filmstrip", "scroll forward");
+  gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.filmstrip_forward);
-  gtk_accel_map_lookup_entry("<Darktable>/darkroom/filmstrip/scroll back",
+  dt_accel_path_view(path, 256, "filmstrip", "scroll back");
+  gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.filmstrip_back);
 
   // Lighttable
-  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/up",
+  dt_accel_path_view(path, 256, "lighttable", "scroll up");
+  gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_up);
-  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/down",
+  dt_accel_path_view(path, 256, "lighttable", "scroll down");
+  gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_down);
-  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/left",
+  dt_accel_path_view(path, 256, "lighttable", "scroll left");
+  gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_left);
-  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/right",
+  dt_accel_path_view(path, 256, "lighttable", "scroll right");
+  gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_right);
-  gtk_accel_map_lookup_entry("<Darktable>/lighttable/scroll/center",
+  dt_accel_path_view(path, 256, "lighttable", "scroll center");
+  gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_center);
-  gtk_accel_map_lookup_entry("<Darktable>/lighttable/preview",
+  dt_accel_path_view(path, 256, "lighttable", "preview");
+  gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_preview);
 
   // Global

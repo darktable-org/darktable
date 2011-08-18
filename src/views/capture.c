@@ -39,6 +39,7 @@
 #include "common/camera_control.h"
 #include "common/variables.h"
 #include "common/utility.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "capture.h"
@@ -62,9 +63,6 @@ DT_MODULE(1)
 /** module data for the capture view */
 typedef struct dt_capture_t
 {
-  /** The only accelerator closure currently used in capture mode */
-  GClosure *filmstrip_toggle;
-
   /** The current image activated in capture view, either latest tethered shoot
   	or manually picked from filmstrip view...
   */
@@ -137,14 +135,6 @@ void init(dt_view_t *self)
   lib->subdirectory = dt_conf_get_string("plugins/capture/storage/subpath");
   lib->filenamepattern = dt_conf_get_string("plugins/capture/storage/namepattern");
 
-  // Setup key accelerators in capture view...
-  gtk_accel_map_add_entry("<Darktable>/capture/toggle film strip",
-                          GDK_f, GDK_CONTROL_MASK);
-
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_capture,
-      "<Darktable>/capture/toggle film strip",
-      NULL);
 }
 
 void cleanup(dt_view_t *self)
@@ -359,15 +349,6 @@ void enter(dt_view_t *self)
 
   lib->mode = dt_conf_get_int("plugins/capture/mode");
 
-  // Adding the accelerators
-  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                             darktable.control->accels_capture);
-
-  lib->filmstrip_toggle = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
-                                         (gpointer)self, NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_capture,
-                                 "<Darktable>/capture/toggle film strip",
-                                 lib->filmstrip_toggle);
 
   // add expanders
   GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
@@ -463,12 +444,6 @@ void leave(dt_view_t *self)
 
   if( dt_film_is_empty(cv->film->id) != 0)
     dt_film_remove(cv->film->id );
-
-  // Detaching accelerators
-  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                                darktable.control->accels_capture);
-  dt_accel_group_disconnect(darktable.control->accels_capture,
-                            cv->filmstrip_toggle);
 
   // Restore user interface
   GtkWidget *widget;
@@ -627,3 +602,16 @@ void scrolled(dt_view_t *view, double x, double y, int up)
   }*/
 }
 
+void init_key_accels(dt_view_t *self)
+{
+  // Setup key accelerators in capture view...
+  dt_accel_register_view(self, NC_("accel", "toggle film strip"),
+                         GDK_f, GDK_CONTROL_MASK);
+}
+
+void connect_key_accels(dt_view_t *self)
+{
+  GClosure *closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
+                                     (gpointer)self, NULL);
+  dt_accel_connect_view(self, "toggle film strip", closure);
+}
