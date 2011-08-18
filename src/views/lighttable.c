@@ -876,6 +876,9 @@ void enter(dt_view_t *self)
     {
       // Module does support this view let's add it to plugin box
       module->gui_init(module);
+      module->accel_closures = NULL;
+      if(module->connect_key_accels)
+        module->connect_key_accels(module);
       // add the widget created by gui_init to an expander and both to list.
       GtkWidget *expander = dt_lib_gui_get_expander(module);
       if(module->views() & DT_LEFT_PANEL_VIEW) gtk_box_pack_start(box_left, expander, FALSE, FALSE, 0);
@@ -925,7 +928,11 @@ void leave(dt_view_t *self)
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(it->data);
     if( module->views() & DT_LIGHTTABLE_VIEW )
+    {
       module->gui_cleanup(module);
+      dt_accel_disconnect_list(module->accel_closures);
+      module->accel_closures = NULL;
+    }
     it = g_list_next(it);
   }
   GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
