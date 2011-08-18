@@ -121,18 +121,17 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local,
   dt_accel_t *accel = (dt_accel_t*)malloc(sizeof(dt_accel_t));
 
   dt_accel_path_iop(accel_path, 256, so->op, path);
-  (void)accel;
-//  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+  gtk_accel_map_add_entry(accel_path, accel_key, mods);
 
-//  strcpy(accel->path, accel_path);
+  strcpy(accel->path, accel_path);
   dt_accel_path_iop_translated(accel_path, 256, so, path);
-//  strcpy(accel->translated_path, accel_path);
+  strcpy(accel->translated_path, accel_path);
 
-//  strcpy(accel->module, so->op);
-//  accel->local = local;
-//  accel->views = DT_DARKTABLE_VIEW;
-//  darktable.control->accelerator_list =
-//      g_slist_prepend(darktable.control->accelerator_list, accel);
+  strcpy(accel->module, so->op);
+  accel->local = local;
+  accel->views = DT_DARKTABLE_VIEW;
+  darktable.control->accelerator_list =
+      g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
 void dt_accel_register_lib(dt_lib_module_t *self, gboolean local,
@@ -143,6 +142,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, gboolean local,
   dt_accel_t *accel = (dt_accel_t*)malloc(sizeof(dt_accel_t));
 
   dt_accel_path_lib(accel_path, 256, self->plugin_name, path);
+  gtk_accel_map_add_entry(accel_path, accel_key, mods);
   strcpy(accel->path, accel_path);
   dt_accel_path_lib_translated(accel_path, 256, self, path);
   strcpy(accel->translated_path, accel_path);

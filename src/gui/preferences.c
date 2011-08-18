@@ -211,8 +211,6 @@ static void tree_insert_accel(gpointer accel_struct, gpointer model_link)
   char *accel_path = accel->path;
   char *translated_path = accel->translated_path;
   
-  printf("===\n%s\n---\n%s\n===\n", accel->path, accel->translated_path);
-
   /* if prefixed lets forward pointer */
   if (!strncmp(accel_path,"<Darktable>",strlen("<Darktable>")))
   {

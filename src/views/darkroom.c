@@ -452,9 +452,13 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
       // re-init and re-gui_init
       module->gui_cleanup(module);
+      dt_accel_disconnect_list(module->accel_closures);
       gtk_widget_destroy(GTK_WIDGET(module->widget));
       dt_iop_reload_defaults(module);
       module->gui_init(module);
+      module->accel_closures = NULL;
+      if(module->connect_key_accels)
+        module->connect_key_accels(module);
       // copy over already inited stuff:
       module->topwidget = top;
       module->expander = GTK_EXPANDER(exp);
@@ -758,6 +762,8 @@ void enter(dt_view_t *self)
     module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     module->accel_closures = NULL;
+    if(module->connect_key_accels)
+      module->connect_key_accels(module);
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
 //      GClosure* closure = NULL;
@@ -984,6 +990,8 @@ void leave(dt_view_t *self)
 //    }
 
     module->gui_cleanup(module);
+    dt_accel_disconnect_list(module->accel_closures);
+    module->accel_closures = NULL;
     dt_iop_cleanup_module(module) ;
     free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
