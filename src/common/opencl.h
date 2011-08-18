@@ -77,6 +77,7 @@ typedef struct dt_opencl_device_t
   int numevents;
   int eventsconsolidated;
   int maxevents;
+  int lostevents;
   cl_int summary;
 }
 dt_opencl_device_t;

@@ -19,7 +19,8 @@
 #include "develop/imageop.h"
 #include "blend.h"
 
-#define CLAMP_RANGE(x,y,z) (CLAMP(x,y,z))
+#define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 typedef void (_blend_row_func)(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag);
 
@@ -28,16 +29,16 @@ static inline void _blend_colorspace_channel_range(dt_iop_colorspace_type_t cst,
   switch(cst)
   {
     case iop_cs_Lab:		// after scaling !!!
-      min[0] = 0.0; max[0] = 1.0;
-      min[1] = -1.0; max[1] = 1.0;
-      min[2] = -1.0; max[2] = 1.0;
-      min[3] = -1.0; max[3] = 1.0;
+      min[0] = 0.0f; max[0] = 1.0f;
+      min[1] = -1.0f; max[1] = 1.0f;
+      min[2] = -1.0f; max[2] = 1.0f;
+      min[3] = 0.0f; max[3] = 1.0f;
     break;
     default:
-      min[0] = 0; max[0] = 1.0;
-      min[1] = 0; max[1] = 1.0;
-      min[2] = 0; max[2] = 1.0;
-      min[3] = 0; max[3] = 1.0;
+      min[0] = 0.0f; max[0] = 1.0f;
+      min[1] = 0.0f; max[1] = 1.0f;
+      min[2] = 0.0f; max[2] = 1.0f;
+      min[3] = 0.0f; max[3] = 1.0f;
     break;
   }
 }
@@ -1000,14 +1001,18 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int devid = piece->pipe->devid;
   const float opacity = fmin(fmax(0,(d->opacity/100.0)),1.0);
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
 
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(d->mode));
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), (void *)&opacity);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&blendflag);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&(d->mode));
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), (void *)&opacity);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
