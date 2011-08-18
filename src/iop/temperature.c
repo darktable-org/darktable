@@ -191,11 +191,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t*)ivoid) + j*roi_out->width;
+      int i=0;
+      const uint16_t *in = ((uint16_t *)ivoid) + j*roi_out->width;
       float *out = ((float*)ovoid) + j*roi_out->width;
-      for(int i=0; i<roi_out->width; i++,out++,in++)
-        *out = *in * coeffsi[FC(j+roi_out->x, i+roi_out->y, filters)];
+
+      // process unaligned pixels
+      for ( ; i < ((4-(j*roi_out->width & 3)) & 3) ; i++,out++,in++)
+        *out = *in * coeffsi[FC(j+roi_out->y, i+roi_out->x, filters)];
+
+      const __m128 coeffs = _mm_set_ps(coeffsi[FC(j+roi_out->y, roi_out->x+i+3, filters)],
+                                       coeffsi[FC(j+roi_out->y, roi_out->x+i+2, filters)],
+                                       coeffsi[FC(j+roi_out->y, roi_out->x+i+1, filters)],
+                                       coeffsi[FC(j+roi_out->y, roi_out->x+i  , filters)]);
+
+      // process aligned pixels with SSE
+      for( ; i < (roi_out->width & ~3) ; i+=4,out+=4,in+=4)
+      {
+        _mm_stream_ps(out,_mm_mul_ps(coeffs,_mm_set_ps(in[3],in[2],in[1],in[0])));
+      }
+
+      // process the rest
+      for( ; i<roi_out->width; i++,out++,in++)
+        *out = *in * coeffsi[FC(j+roi_out->y, i+roi_out->x, filters)];
     }
+    _mm_sfence();
   }
   else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp == 4)
   {
