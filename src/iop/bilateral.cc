@@ -29,6 +29,7 @@ extern "C"
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/slider.h"
@@ -290,16 +291,18 @@ void init_key_accels(dt_iop_module_so_t *self)
     dtgtk_slider_set_value(g->scale5, p->sigma[4]);
   }
 
-  void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+  void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
   {
     dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
     float sigma[5];
     sigma[0] = data->sigma[0] * roi_in->scale / piece->iscale;
     sigma[1] = data->sigma[1] * roi_in->scale / piece->iscale;
     const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
-    *factor = 2 + 5;
-    *overhead = 0;
-    *overlap = rad;
+    tiling->factor = 2 + 50;
+    tiling->overhead = 0;
+    tiling->overlap = rad;
+    tiling->xalign = 1;
+    tiling->yalign = 1;
     return;
   }
 

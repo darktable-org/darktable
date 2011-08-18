@@ -34,6 +34,8 @@
 
 #define exposure2white(x)	exp2f(-(x))
 #define white2exposure(x)	-dt_log2f(fmaxf(0.001, x))
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 
 DT_MODULE(2)
 
@@ -78,11 +80,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float white = exposure2white(d->exposure);
   const float scale = 1.0/(white - black);
   const int devid = piece->pipe->devid;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(float), (void *)&black);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 3, sizeof(float), (void *)&scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&black);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&scale);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) goto error;
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;

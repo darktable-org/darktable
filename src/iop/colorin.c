@@ -33,6 +33,8 @@
 #include "dtgtk/resetlabel.h"
 #include "external/adobe_coeff.c"
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(1)
 
 typedef struct dt_iop_colorin_global_data_t
@@ -139,7 +141,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err = -999;
   const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
   const int devid = piece->pipe->devid;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*9, d->cmatrix);
   if (dev_m == NULL) goto error;
   dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
@@ -152,12 +157,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 2, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 3, sizeof(cl_mem), (void *)&dev_r);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 4, sizeof(cl_mem), (void *)&dev_g);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 5, sizeof(cl_mem), (void *)&dev_b);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 6, sizeof(cl_int), (void *)&map_blues);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 7, sizeof(cl_mem), (void *)&dev_coeffs);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 4, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 5, sizeof(cl_mem), (void *)&dev_r);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 6, sizeof(cl_mem), (void *)&dev_g);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 7, sizeof(cl_mem), (void *)&dev_b);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 8, sizeof(cl_int), (void *)&map_blues);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 9, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorin, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);

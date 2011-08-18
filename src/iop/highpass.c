@@ -27,6 +27,7 @@
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "common/opencl.h"
 #include "dtgtk/slider.h"
@@ -37,9 +38,12 @@
 
 #define MAX_RADIUS  16
 #define BOX_ITERATIONS 8
+#define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-#define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
+#define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
+#define LCLIP(x)                ((x<0)?0.0:(x>100.0)?100.0:x)
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(1)
 
 typedef struct dt_iop_highpass_params_t
@@ -97,7 +101,7 @@ void init_key_accels()
 }
 
 
-void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
 
@@ -107,9 +111,11 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
-  *factor = 2;
-  *overhead = 0;
-  *overlap = wdh;
+  tiling->factor = 2;
+  tiling->overhead = 0;
+  tiling->overlap = wdh;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
   return;
 }
 
@@ -124,6 +130,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err = -999;
   cl_mem dev_m = NULL;
   const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
 
   int rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
@@ -145,41 +154,98 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   float contrast_scale = ((d->contrast/100.0f)*7.5f);
 
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+  size_t workgroupsize = 0;          // the maximum number of items in a work group
+  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  
+  // make sure blocksize is not too large
+  size_t blocksize = BLOCKSIZE;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
+  {
+    // reduce blocksize step by step until it fits to limits
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
+          || blocksize > workgroupsize || (blocksize+2*wdh)*sizeof(float) > localmemsize)
+    {
+      if(blocksize == 1) break;
+      blocksize >>= 1;    
+    }
+  }
+  else
+  {
+    blocksize = 1;   // slow but safe
+  }
+
+  // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
+  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
+  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+
+  size_t sizes[3];
+  size_t local[3];
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*wd, mat);
   if (dev_m == NULL) goto error;
 
   /* invert image */
+  sizes[0] = ROUNDUP(width, 4);
+  sizes[1] = ROUNDUP(height, 4);
+  sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 3, sizeof(int), (void *)&height);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_invert, sizes);
   if(err != CL_SUCCESS) goto error;
 
   if(rad != 0)
   {
     /* horizontal blur */
+    sizes[0] = bwidth;
+    sizes[1] = ROUNDUP(height, 4);
+    sizes[2] = 1;
+    local[0] = blocksize;
+    local[1] = 1;
+    local[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 0, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 3, sizeof(int), (void *)&wdh);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_hblur, sizes);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 4, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 5, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 6, sizeof(int), (void *)&blocksize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_hblur, 7, (blocksize+2*wdh)*sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highpass_hblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
+
     /* vertical blur */
+    sizes[0] = ROUNDUP(width, 4);
+    sizes[1] = bheight;
+    sizes[2] = 1;
+    local[0] = 1;
+    local[1] = blocksize;
+    local[2] = 1;
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 0, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 2, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 3, sizeof(int), (void *)&wdh);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_vblur, sizes);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 4, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 5, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 6, sizeof(int), (void *)&blocksize);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_vblur, 7, (blocksize+2*wdh)*sizeof(float), NULL);
+    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highpass_vblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
 
   /* mixing out and in -> out */
+  sizes[0] = ROUNDUP(width, 4);
+  sizes[1] = ROUNDUP(height, 4);
+  sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 3, sizeof(float), (void *)&contrast_scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 4, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 5, sizeof(float), (void *)&contrast_scale);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 

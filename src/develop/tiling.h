@@ -25,9 +25,34 @@
 #include "develop/develop.h"
 #include "develop/pixelpipe.h"
 
+typedef struct dt_develop_tiling_t
+{
+  /** memory requirement as a multiple of image buffer size */
+  float factor;
+  /** on-top memory requirement, with a size independent of input buffer */
+  unsigned overhead;
+  /** overlap needed between tiles (in pixels) */
+  unsigned overlap;
+  /** horizontal and vertical alignment requirement of upper left position 
+      of tiles. set to a value of 1 for no alignment, or 2 to account for
+      Bayer pattern. */
+  unsigned xalign;
+  unsigned yalign;
+} dt_develop_tiling_t;
+
 int default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp);
 
-void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap);
+int process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp);
+
+void default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp);
+
+void process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int bpp);
+
+void default_tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
+
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
+
+int dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead);
 
 #endif
 

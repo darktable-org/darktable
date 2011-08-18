@@ -23,10 +23,12 @@ const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 /* This is highpass for Lab space. We only do invert/blur/mix on L and desaturate a and b */
 
 kernel void 
-highpass_invert(read_only image2d_t in, write_only image2d_t out)
+highpass_invert(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   pixel.x = clamp(100.0f - pixel.x, 0.0f, 100.0f);
@@ -35,67 +37,135 @@ highpass_invert(read_only image2d_t in, write_only image2d_t out)
 
 
 kernel void 
-highpass_hblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad)
+highpass_hblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
+      const int width, const int height, const int blocksize, local float *buffer)
 {
+  const int lid = get_local_id(0);
+  const int lsz = get_local_size(0);
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int maxx = get_global_size(0);
-  const int wd = 2*rad+1;
-  
+  float4 pixel = (float4)0.0f;
+
+  if(y >= height) return;
+
+  /* read pixel and fill center part of buffer */
+  if(x < width)
+  {
+    pixel = read_imagef(in, sampleri, (int2)(x, y));
+    buffer[rad + lid] = pixel.x;
+  }
+
+  /* left wing of buffer */
+  for(int n=0; n <= rad/lsz; n++)
+  {
+    const int l = n*lsz + lid + 1;
+    if(l > rad) continue;
+    const int xx = mad24((int)get_group_id(0), lsz, -l);
+    if(xx < 0) break;
+    buffer[rad - l] = read_imagef(in, sampleri, (int2)(xx, y)).x;
+  }
+    
+  /* right wing of buffer */
+  for(int n=0; n <= rad/lsz; n++)
+  {
+    const int r = n*lsz + (lsz - lid);
+    if(r > rad) continue;
+    const int xx = mad24((int)get_group_id(0), lsz, lsz - 1 + r);
+    if(xx >= width) break;
+    buffer[rad + lsz - 1 + r] = read_imagef(in, sampleri, (int2)(xx, y)).x;
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(x >= width) return;
+
+  buffer += lid + rad;
+  m += rad;
+
   float sum = 0.0f;
   float weight = 0.0f;
-  float4 ipixel;
-  float4 opixel = 0.0f;
-  int xx;
 
-  for (int i=0;i<wd;i++)
+  for (int i=-rad; i<rad; i++)
   {
-    xx = x + (i - rad);
-    if (xx < 0 || xx > maxx) continue;
-    ipixel = read_imagef(in, sampleri, (int2)(xx, y));
-    sum += ipixel.x * m[i];
+    if (x + i < 0 || x + i >= width) continue;
+    sum += buffer[i] * m[i];
     weight += m[i];
-    if (i == rad) opixel = ipixel;
   }
-  opixel.x = weight > 0.0f ? sum/weight : 0.0f;
-  write_imagef (out, (int2)(x, y), opixel);
+  pixel.x = weight > 0.0f ? sum/weight : 0.0f;
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
+
 kernel void 
-highpass_vblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad)
+highpass_vblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
+      const int width, const int height, const int blocksize, local float *buffer)
 {
+  const int lid = get_local_id(1);
+  const int lsz = get_local_size(1);
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int maxy = get_global_size(1);
-  const int wd = 2*rad+1;
-  
+  float4 pixel = (float4)0.0f;
+
+  if(x >= width) return;
+
+  /* read pixel and fill center part of buffer */
+  if(y < height)
+  {
+    pixel = read_imagef(in, sampleri, (int2)(x, y));
+    buffer[rad + lid] = pixel.x;
+  }
+
+  /* left wing of buffer */
+  for(int n=0; n <= rad/lsz; n++)
+  {
+    const int l = n*lsz + lid + 1;
+    if(l > rad) continue;
+    const int yy = mad24((int)get_group_id(1), lsz, -l);
+    if(yy < 0) break;
+    buffer[rad - l] = read_imagef(in, sampleri, (int2)(x, yy)).x;
+  }
+    
+  /* right wing of buffer */
+  for(int n=0; n <= rad/lsz; n++)
+  {
+    const int r = n*lsz + (lsz - lid);
+    if(r > rad) continue;
+    const int yy = mad24((int)get_group_id(1), lsz, lsz - 1 + r);
+    if(yy >= height) break;
+    buffer[rad + lsz - 1 + r] = read_imagef(in, sampleri, (int2)(x, yy)).x;
+  }
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(y >= height) return;
+
+  buffer += lid + rad;
+  m += rad;
+
   float sum = 0.0f;
   float weight = 0.0f;
-  float4 ipixel;
-  float4 opixel = 0.0f;
-  int yy;
 
-  for (int i=0;i<wd;i++)
+  for (int i=-rad; i<rad; i++)
   {
-    yy = y + (i - rad);
-    if (yy < 0 || yy > maxy) continue;
-    ipixel = read_imagef(in, sampleri, (int2)(x, yy));
-    sum += ipixel.x * m[i];
+    if (y + i < 0 || y + i >= height) continue;
+    sum += buffer[i] * m[i];
     weight += m[i];
-    if (i == rad) opixel = ipixel;
   }
-  opixel.x = weight > 0.0f ? sum/weight : 0.0f;
-  write_imagef (out, (int2)(x, y), opixel);
+  pixel.x = weight > 0.0f ? sum/weight : 0.0f;
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 
+
 kernel void 
-highpass_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2d_t out, const float contrast_scale)
+highpass_mix(read_only image2d_t in_a, read_only image2d_t in_b, write_only image2d_t out,
+             const int width, const int height, const float contrast_scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
+  if(x >= width || y >= height) return;
 
   float4 o = 0.0f;
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));

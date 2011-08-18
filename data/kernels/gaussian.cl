@@ -58,6 +58,8 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
 {
   const int x = get_global_id(0);
 
+  if(x >= width) return;
+
   float4 xp = (float4)0.0f;
   float4 yb = (float4)0.0f;
   float4 yp = (float4)0.0f;
@@ -68,15 +70,18 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
   float4 yn = (float4)0.0f;
   float4 ya = (float4)0.0f;
 
+  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
+
   // forward filter
-  xp = in[x]; // 0*width+x
+  xp = clamp(in[x], Labmin, Labmax); // 0*width+x
   yb = xp * coefp;
   yp = yb;
 
  
   for(int y=0; y<height; y++)
   {
-    xc = in[x + y * width];
+    xc = clamp(in[x + y * width], Labmin, Labmax);
     yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
 
     xp = xc;
@@ -88,7 +93,7 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
   }
 
   // backward filter
-  xn = in[x + (height-1)*width];
+  xn = clamp(in[x + (height-1)*width], Labmin, Labmax);
   xa = xn;
   yn = xn * coefn;
   ya = yn;
@@ -96,7 +101,7 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
 
   for(int y=height-1; y>-1; y--)
   {
-    xc = in[x + y * width];
+    xc = clamp(in[x + y * width], Labmin, Labmax);
     yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
 
     xa = xn; 
@@ -109,72 +114,14 @@ gaussian_column(global float4 *in, global float4 *out, unsigned int width, unsig
   }
 }
 
-
-#if 0
-kernel void 
-gaussian_row(global float4 *in, global float4 *out, unsigned int width, unsigned int height,
-                const float a0, const float a1, const float a2, const float a3, const float b1, const float b2,
-                const float coefp, const float coefn)
-{
-  const int y = get_global_id(1);
-
-  float4 xp = (float4)0.0f;
-  float4 yb = (float4)0.0f;
-  float4 yp = (float4)0.0f;
-  float4 xc = (float4)0.0f;
-  float4 yc = (float4)0.0f;
-  float4 xn = (float4)0.0f;
-  float4 xa = (float4)0.0f;
-  float4 yn = (float4)0.0f;
-  float4 ya = (float4)0.0f;
-
-  // forward filter
-  xp = in[y*width]; // 0 + y*width
-  yb = xp * coefp;
-  yp = yb;
-
- 
-  for(int x=0; x<width; x++)
-  {
-    xc = in[x + y*width];
-    yc = (a0 * xc) + (a1 * xp) - (b1 * yp) - (b2 * yb);
-
-    xp = xc;
-    yb = yp;
-    yp = yc;
-
-    out[x + y*width] = yc;
-
-  }
-
-  // backward filter
-  xn = in[width-1 + y*width];
-  xa = xn;
-  yn = xn * coefn;
-  ya = yn;
-
-
-  for(int x=width-1; x>-1; x--)
-  {
-    xc = in[x + y*width];
-    yc = (a2 * xn) + (a3 * xa) - (b1 * yn) - (b2 * ya);
-
-    xa = xn; 
-    xn = xc; 
-    ya = yn; 
-    yn = yc;
-
-    out[x + y*width] += yc;
-
-  }
-}
-#endif
 
 kernel void 
 lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned int height, const float contrast, const float saturation)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 i = in[x + y*width];
   float4 o;

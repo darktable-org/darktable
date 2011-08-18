@@ -25,56 +25,36 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
-#if 0 // code moved to sharpen.cl
-/* kernel for the sharpen plugin */
-kernel void
-sharpen (read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
-    const float sharpen, const float thrs)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  const int wd = 2*rad+1;
-
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  float sum = 0.0f;
-  for(int j=0;j<wd;j++) for(int i=0;i<wd;i++)
-  {
-    float px = read_imagef(in, sampleri, (float2)(x+(i - rad), y+(j - rad))).x;
-    const float w = m[j]*m[i];
-    sum += w*px;
-  }
-  float d = pixel.x - sum;
-  float amount = sharpen * copysign(max(0.0f, fabs(d) - thrs), d);
-  write_imagef (out, (int2)(x, y), (float4)(max(0.0f, pixel.x + amount), pixel.y, pixel.z, 1.0f));
-}
-#endif
 
 kernel void
-whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, constant float *coeffs,
+whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, constant float *coeffs,
     const unsigned int filters, const int rx, const int ry)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
   const uint4 pixel = read_imageui(in, sampleri, (int2)(x, y));
   write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[FC(ry+y, rx+x, filters)], 0.0f, 0.0f, 0.0f));
 }
 
 kernel void
-whitebalance_4f(read_only image2d_t in, write_only image2d_t out, constant float *coeffs)
+whitebalance_4f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, constant float *coeffs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
   const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[0], pixel.y * coeffs[1], pixel.z * coeffs[2], pixel.w));
 }
 
 /* kernel for the exposure plugin. should work transparently with float4 and float image2d. */
 kernel void
-exposure (read_only image2d_t in, write_only image2d_t out, const float black, const float scale)
+exposure (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float black, const float scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
+  if(x >= width || y >= height) return;
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   pixel = (pixel - black)*scale;
   write_imagef (out, (int2)(x, y), pixel);
@@ -138,11 +118,13 @@ lch_to_rgb(float *lch, float *rgb)
 
 /* kernel for the highlights plugin. */
 kernel void
-highlights (read_only image2d_t in, write_only image2d_t out, const int mode, const float clip,
-            const float blendL, const float blendC, const float blendh)
+highlights (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+            const int mode, const float clip, const float blendL, const float blendC, const float blendh)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float4 inc, lchi, lchc, lch;
@@ -188,10 +170,14 @@ lookup_unbounded(read_only image2d_t lut, const float x, constant float *a)
 
 /* kernel for the basecurve plugin. */
 kernel void
-basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table, constant float *a)
+basecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+           read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   // use lut or extrapolation:
   pixel.x = lookup_unbounded(table, pixel.x, a);
@@ -215,13 +201,15 @@ XYZ_to_Lab(float *xyz, float *lab)
 
 /* kernel for the plugin colorin */
 kernel void
-colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
-         read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+colorin (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+         constant float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
          const int map_blues,
          constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
@@ -258,10 +246,13 @@ colorin (read_only image2d_t in, write_only image2d_t out, constant float *mat,
 
 /* kernel for the tonecurve plugin. */
 kernel void
-tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table, constant float *a)
+tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+           read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float L_in = pixel.x/100.0f;
@@ -368,12 +359,14 @@ Lab_to_XYZ(float *Lab, float *XYZ)
 
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
-colorout (read_only image2d_t in, write_only image2d_t out, constant float *mat, 
-          read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+colorout (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+          constant float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
           constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float XYZ[3], rgb[3];
