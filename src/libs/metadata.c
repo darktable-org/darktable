@@ -133,28 +133,31 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
-    switch(sqlite3_column_int(stmt, 0))
+    if(sqlite3_column_bytes(stmt,1))
     {
-      case DT_METADATA_XMP_DC_CREATOR:
-        creator_count++;
-        creator = g_list_append(creator, value);
-        break;
-      case DT_METADATA_XMP_DC_PUBLISHER:
-        publisher_count++;
-        publisher = g_list_append(publisher, value);
-        break;
-      case DT_METADATA_XMP_DC_TITLE:
-        title_count++;
-        title = g_list_append(title, value);
-        break;
-      case DT_METADATA_XMP_DC_DESCRIPTION:
-        description_count++;
-        description = g_list_append(description, value);
-        break;
-      case DT_METADATA_XMP_DC_RIGHTS:
-        rights_count++;
-        rights = g_list_append(rights, value);
-        break;
+      switch(sqlite3_column_int(stmt, 0))
+      {
+	case DT_METADATA_XMP_DC_CREATOR:
+	  creator_count++;
+	  creator = g_list_append(creator, value);
+	  break;
+        case DT_METADATA_XMP_DC_PUBLISHER:
+	  publisher_count++;
+	  publisher = g_list_append(publisher, value);
+	  break;
+        case DT_METADATA_XMP_DC_TITLE:
+	  title_count++;
+	  title = g_list_append(title, value);
+	  break;
+        case DT_METADATA_XMP_DC_DESCRIPTION:
+	  description_count++;
+	  description = g_list_append(description, value);
+	  break;
+        case DT_METADATA_XMP_DC_RIGHTS:
+	  rights_count++;
+	  rights = g_list_append(rights, value);
+	  break;
+      }
     }
   }
   sqlite3_finalize(stmt);
