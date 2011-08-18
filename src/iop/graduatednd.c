@@ -35,6 +35,7 @@
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include <xmmintrin.h>
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
@@ -306,6 +307,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float c = 1.0f + 1000.0f*powf(4.0, compression);
 #endif
 
+  if (data->density > 0)
+  {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
 #endif
@@ -314,36 +317,86 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int k=roi_out->width*y*ch;
     const float *in = (float*)ivoid + k;
     float *out = (float*)ovoid + k;
+
+    float length = (sinv * (-1.0+ix*hw_inv) - cosv * (-1.0+(iy+y)*hh_inv) - 1.0 + offset) * filter_compression;
+    const float length_inc = sinv * hw_inv * filter_compression;
+
+    __m128 c = _mm_set_ps(0,color[2],color[1],color[0]); 
+    __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f),c); 
+
     for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
     {
-
-      /* first rotate and offset */
-      const float sx=-1.0+(ix+x)*hw_inv;
-      const float sy=-1.0+(iy+y)*hh_inv;
-      const dt_iop_vector_2d_t pv= {
-	cosv*sx-sinv*sy,
-	sinv*sx-cosv*sy-1.0+offset
-      };
+      length += length_inc;
 
 #if 1
-      const float length=pv.y*filter_compression;
-      const float density = (data->density > 0)
-	? exp2f(-data->density * CLIP( 0.5+length ))
-	: exp2f(data->density * CLIP( 0.5-length ));
+      // !!! approximation is ok only when highest density is 8
+      // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
+      // use exp2f approximation to calculate e^(ln2*x/8)
+      // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
+      const float t = 0.693147181f /* ln2 */ * (data->density * CLIP( 0.5+length )/8.0f);
+      float d1 = t*t*0.5f;
+      float d2 = d1*t*0.333333333f;
+      float d3 = d2*t*0.25f;
+      float d = 1+t+d1+d2+d3; /* taylor series for e^x till x^4 */
+      __m128 density = _mm_set1_ps(d);
+      density = _mm_mul_ps(density,density);
+      density = _mm_mul_ps(density,density);
+      density = _mm_mul_ps(density,density);
 #else
-      const float length=pv.y/filter_radie;
-      const float density = 1.0f/exp2f(data->density*f(t, c, length));
+      // use fair exp2f
+      __m128 density = _mm_set1_ps(exp2f(data->density * CLIP( 0.5+length )));
 #endif
-
-      if (data->density > 0)
-	for( int l=0; l<3; l++)
-	  out[l] = fmaxf(0.0, in[l]*density / (1.0-(1.0-density)*color[l]) );
-      else
-	for( int l=0; l<3; l++)
-	  out[l] = fmaxf(0.0, in[l]/density * (1.0-(1.0-density)*color[l]) );
-
+      
+      /* max(0,in / (c + (1-c)*density)) */
+      _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0),_mm_div_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
     }
   }
+  }
+  else
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_out, color, data, ivoid, ovoid) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    int k=roi_out->width*y*ch;
+    const float *in = (float*)ivoid + k;
+    float *out = (float*)ovoid + k;
+
+    float length = (sinv * (-1.0+ix*hw_inv) - cosv * (-1.0+(iy+y)*hh_inv) - 1.0 + offset) * filter_compression;
+    const float length_inc = sinv * hw_inv * filter_compression;
+
+    __m128 c = _mm_set_ps(0,color[2],color[1],color[0]); 
+    __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f),c); 
+
+    for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
+    {
+      length += length_inc;
+
+#if 1
+      // !!! approximation is ok only when lowest density is -8
+      // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
+      // use exp2f approximation to calculate e^(ln2*x/8)
+      // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
+      const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP( 0.5-length )/8.0f);
+      float d1 = t*t*0.5f;
+      float d2 = d1*t*0.333333333f;
+      float d3 = d2*t*0.25f;
+      float d = 1+t+d1+d2+d3; /* taylor series for e^x till x^4 */
+      __m128 density = _mm_set1_ps(d);
+      density = _mm_mul_ps(density,density);
+      density = _mm_mul_ps(density,density);
+      density = _mm_mul_ps(density,density);
+#else
+      __m128 density = _mm_set1_ps(exp2f(-data->density * CLIP( 0.5-length )));
+#endif
+
+      /* max(0,in * (c + (1-c)*density)) */
+      _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0),_mm_mul_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+    }
+  }
+  }
+  _mm_sfence();
 }
 
 static void
