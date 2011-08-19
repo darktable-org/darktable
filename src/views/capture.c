@@ -413,6 +413,9 @@ void enter(dt_view_t *self)
       gtk_expander_set_expanded (module->expander, expanded);
       if(expanded) gtk_widget_show_all(module->widget);
       else         gtk_widget_hide_all(module->widget);
+      module->accel_closures = NULL;
+      if(module->connect_key_accels)
+        module->connect_key_accels(module);
     }
     modules = g_list_next(modules);
   }
@@ -473,6 +476,7 @@ void leave(dt_view_t *self)
     dt_lib_module_t *module = (dt_lib_module_t *)(it->data);
     if( (module->views() & DT_CAPTURE_VIEW) )
       module->gui_cleanup(module);
+    dt_accel_disconnect_list(module->accel_closures);
     it = g_list_next(it);
   }
   GtkBox *box = GTK_BOX(darktable.gui->widgets.plugins_vbox);
