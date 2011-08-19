@@ -105,6 +105,19 @@
       </locale>
     </schema>
 
+    <schema>
+      <key>/schemas/apps/darktable/host_memory_limit</key>
+      <applyto>/apps/darktable/host_memory_limit</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1500</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>define memory limit (in MB) below which modules should use tiling</short>
+        <long>this variable controls the maximum amount of memory (in MB) that a module should use at once during image processing. reducing this value will prevent thrashing by using a tiling approach at the cost of slower processing speed. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart.</long>
+      </locale>
+    </schema>
+
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/never_use_embedded_thumb</key>
       <applyto>/apps/darktable/never_use_embedded_thumb</applyto>
