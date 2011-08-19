@@ -186,7 +186,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   float processed_maximum_saved[3];
   float processed_maximum_new[3] = { 1.0f };
   for(int k=0; k<3; k++)
-    processed_maximum_saved[k] = piece->processed_maximum[k];
+    processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
 
 
   /* iterate over tiles */
@@ -222,7 +222,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
 
     /* take original processed_maximum as starting point */
     for(int k=0; k<3; k++)
-      piece->processed_maximum[k] = processed_maximum_saved[k];
+      piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
 
     /* call process() of module */
     self->process(self, piece, input, output, &iroi, &oroi);
@@ -232,9 +232,9 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
              appropriate action (calculate minimum, maximum, average, ...?) */
     for(int k=0; k<3; k++)
     {
-      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->processed_maximum[k]) > 1.0e-6f)
+      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
         dt_print(DT_DEBUG_DEV, "[default_process_tiling] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
-      processed_maximum_new[k] = piece->processed_maximum[k];
+      processed_maximum_new[k] = piece->pipe->processed_maximum[k];
     }
 
     /* correct origin and region of tile for overlap.
@@ -262,7 +262,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
-    piece->processed_maximum[k] = processed_maximum_new[k];
+    piece->pipe->processed_maximum[k] = processed_maximum_new[k];
 
   if(input != NULL) free(input);
   if(output != NULL) free(output);
@@ -404,7 +404,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   float processed_maximum_saved[3];
   float processed_maximum_new[3] = { 1.0f };
   for(int k=0; k<3; k++)
-    processed_maximum_saved[k] = piece->processed_maximum[k];
+    processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
 
 
   /* get opencl input and output buffers, to be re-used for all tiles.
@@ -449,7 +449,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
     /* take original processed_maximum as starting point */
     for(int k=0; k<3; k++)
-      piece->processed_maximum[k] = processed_maximum_saved[k];
+      piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
 
     /* call process_cl of module */
     if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
@@ -459,9 +459,9 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
              appropriate action (calculate minimum, maximum, average, ...?) */
     for(int k=0; k<3; k++)
     {
-      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->processed_maximum[k]) > 1.0e-6f)
+      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
         dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
-      processed_maximum_new[k] = piece->processed_maximum[k];
+      processed_maximum_new[k] = piece->pipe->processed_maximum[k];
     }
 
     /* correct origin and region of tile for overlap.
@@ -489,7 +489,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
-    piece->processed_maximum[k] = processed_maximum_new[k];
+    piece->pipe->processed_maximum[k] = processed_maximum_new[k];
 
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
@@ -498,7 +498,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 error:
   /* copy back stored processed_maximum */
   for(int k=0; k<3; k++)
-    piece->processed_maximum[k] = processed_maximum_saved[k];
+    piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_opencl] couldn't run process_cl() for module '%s' in tiling mode: %d\n", self->op, err);
