@@ -35,6 +35,8 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(1)
 
 typedef enum dt_iop_highlights_mode_t
@@ -167,15 +169,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 2, sizeof(int), (void *)&d->mode);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 3, sizeof(float), (void *)&clip);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 4, sizeof(float), (void *)&d->blendL);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 5, sizeof(float), (void *)&d->blendC);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 6, sizeof(float), (void *)&d->blendh);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 4, sizeof(int), (void *)&d->mode);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 5, sizeof(float), (void *)&clip);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 6, sizeof(float), (void *)&d->blendL);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 7, sizeof(float), (void *)&d->blendC);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights, 8, sizeof(float), (void *)&d->blendh);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights, sizes);
   if(err != CL_SUCCESS) goto error;
   return TRUE;

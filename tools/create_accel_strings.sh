@@ -1,5 +1,8 @@
 #!/bin/sh
 # Finding all the module names
+
+FIXED_CATEGORIES="darkroom\nlighttable\nexport\ncopy" # ugly hack to keep these strings in the results
+
 modules=`grep -r 'add_library( *[a-zA-Z0-9_]\+ *MODULE *[^)]\+' $1 | \
 sed 's/[^:]*:[^a]*add_library( *\([^ ]\+\).*/\1/p' | sort | uniq`
 
@@ -12,7 +15,7 @@ do
   words=`echo "$words" | sed "s/^$module$//"`
 done
 
-echo "$words" | \
+echo "$words\n$FIXED_CATEGORIES" | \
 awk '
 BEGIN {
   print "void accel_strings(){"

@@ -27,6 +27,7 @@
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
@@ -38,10 +39,8 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-#define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
-#define CLAMP_RANGE(x,y,z) (CLAMP(x,y,z))
+#define CLAMPF(a, mn, mx)       ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
@@ -181,9 +180,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
 
-  const size_t width = roi_in->width;
-  const size_t height = roi_in->height;
-  const size_t bpp = 4*sizeof(float);
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int bpp = 4*sizeof(float);
 
   // check if we need to reduce blocksize
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
@@ -191,7 +190,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   
   // make sure blocksize is not too large
-  size_t blocksize = BLOCKSIZE;
+  int blocksize = BLOCKSIZE;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
@@ -208,8 +207,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
 
   // width and height of intermediate buffers. Need to be multiples of BLOCKSIZE
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+  const int bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
+  const int bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
 
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
@@ -225,15 +224,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   cl_mem dev_temp1 = NULL;
   cl_mem dev_temp2 = NULL;
-  cl_mem dev_temp3 = NULL;
 
   // get intermediate vector buffers with read-write access
   dev_temp1 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp1 == NULL) goto error;
   dev_temp2 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
   if(dev_temp2 == NULL) goto error;
-  dev_temp3 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*bpp);
-  if(dev_temp3 == NULL) goto error;
 
 
   // compute gaussian parameters
@@ -245,13 +241,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   // first blur step: column by column with dev_temp1 -> dev_temp2
-  sizes[0] = width;
+  sizes[0] = ROUNDUP(width, 4);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(size_t), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(size_t), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(int), (void *)&height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
@@ -268,23 +264,23 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   sizes[1] = bheight;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp3);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(size_t), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(size_t), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(size_t), (void *)&blocksize);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
 
-  // second blur step: column by column of transposed image with dev_temp3 -> dev_temp1 (!! height <-> width !!)
-  sizes[0] = height;
+  // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width !!)
+  sizes[0] = ROUNDUP(height, 4);
   sizes[1] = 1;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp3);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(size_t), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(size_t), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 2, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 3, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
@@ -297,61 +293,61 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
 
-  // transpose back dev_temp1 -> dev_temp2
+  // transpose back dev_temp2 -> dev_temp1
   sizes[0] = bheight;
   sizes[1] = bwidth;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(size_t), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(size_t), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(size_t), (void *)&blocksize);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 2, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
   dt_opencl_set_kernel_arg(devid, gd->kernel_gaussian_transpose, 5, bpp*blocksize*(blocksize+1), NULL);
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
 
-  // final mixing step dev_temp2 -> dev_temp3
-  sizes[0] = width;
-  sizes[1] = height;
+  // final mixing step dev_temp1 -> dev_temp2
+  sizes[0] = ROUNDUP(width, 4);
+  sizes[1] = ROUNDUP(height, 4);
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_temp3);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 2, sizeof(size_t), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 3, sizeof(size_t), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_temp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_temp2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 3, sizeof(int), (void *)&height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 4, sizeof(float), (void *)&contrast);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 5, sizeof(float), (void *)&saturation);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  // copy result of full gaussian blur from dev_temp3 -> dev_out
-  err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp3, dev_out, 0, origin, region);
+  // copy final result from dev_temp2 -> dev_out
+  err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp2, dev_out, 0, origin, region);
   if(err != CL_SUCCESS) goto error;
 
   if (dev_temp1 != NULL) clReleaseMemObject(dev_temp1);
   if (dev_temp2 != NULL) clReleaseMemObject(dev_temp2);
-  if (dev_temp3 != NULL) clReleaseMemObject(dev_temp3);
   return TRUE;
 
 error:
   if (dev_temp1 != NULL) dt_opencl_release_mem_object(dev_temp1);
   if (dev_temp2 != NULL) dt_opencl_release_mem_object(dev_temp2);
-  if (dev_temp3 != NULL) dt_opencl_release_mem_object(dev_temp3);
   dt_print(DT_DEBUG_OPENCL, "[opencl_lowpass] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
 
-void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, float *factor, unsigned *overhead, unsigned *overlap)
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
   dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
 
   const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
 
-  *factor = 5; // in + out + 3*temp
-  *overhead = 0;
-  *overlap = 4*sigma;
+  tiling->factor = 4; // in + out + 2*temp
+  tiling->overhead = 0;
+  tiling->overlap = 4*sigma;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
   return;
 }
 
@@ -363,6 +359,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   float a0, a1, a2, a3, b1, b2, coefp, coefn;
 
+  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
   const float radius = fmax(0.1f, data->radius);
   const float sigma = radius * roi_in->scale / piece ->iscale;
@@ -370,7 +368,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // as the function name implies
   compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
 
-  float *temp = malloc(roi_out->width*roi_out->height*ch*sizeof(float));
+  float *temp = dt_alloc_align(64, roi_out->width*roi_out->height*ch*sizeof(float));
   if(temp==NULL) return;
 
   // vertical blur column by column
@@ -390,9 +388,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k < 4; k++)
+    for(int k=0; k<4; k++)
     {
-      xp[k] = in[i*ch+k];
+      xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
     }
@@ -401,9 +399,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k < 4; k++)
+      for(int k=0; k<4; k++)
       {
-        xc[k] = in[offset+k];
+        xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
         temp[offset+k] = yc[k];
@@ -415,9 +413,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k < 4; k++)
+    for(int k=0; k<4; k++)
     {
-      xn[k] = in[((roi_out->height - 1) * roi_out->width + i)*ch+k];
+      xn[k] = CLAMPF(in[((roi_out->height - 1) * roi_out->width + i)*ch+k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
       yn[k] = xn[k] * coefn;
       ya[k] = yn[k];
@@ -427,9 +425,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k < 4; k++)
+      for(int k=0; k<4; k++)
       {      
-        xc[k] = in[offset+k];
+        xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
 
         yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
@@ -460,9 +458,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float ya[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // forward filter
-    for(int k=0; k < 4; k++)
+    for(int k=0; k<4; k++)
     {
-      xp[k] = temp[j*roi_out->width*ch+k];
+      xp[k] = CLAMPF(temp[j*roi_out->width*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
     }
@@ -471,9 +469,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k < 4; k++)
+      for(int k=0; k<4; k++)
       {
-        xc[k] = temp[offset+k];
+        xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
         yc[k] = (a0 * xc[k]) + (a1 * xp[k]) - (b1 * yp[k]) - (b2 * yb[k]);
 
         out[offset+k] = yc[k];
@@ -485,9 +483,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // backward filter
-    for(int k=0; k < 4; k++)
+    for(int k=0; k<4; k++)
     {
-      xn[k] = temp[((j + 1)*roi_out->width - 1)*ch + k];
+      xn[k] = CLAMPF(temp[((j + 1)*roi_out->width - 1)*ch + k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
       yn[k] = xn[k] * coefn;
       ya[k] = yn[k];
@@ -497,9 +495,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       int offset = (i + j * roi_out->width)*ch;
 
-      for(int k=0; k < 4; k++)
+      for(int k=0; k<4; k++)
       {      
-        xc[k] = temp[offset+k];
+        xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
 
         yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
@@ -521,9 +519,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
-    out[k*ch+0] = CLAMP(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), 0.0f, 100.0f);
-    out[k*ch+1] = CLAMP(out[k*ch+1]*data->saturation, -128.0f, 128.0f);
-    out[k*ch+2] = CLAMP(out[k*ch+2]*data->saturation, -128.0f, 128.0f);
+    out[k*ch+0] = CLAMPF(out[k*ch+0]*data->contrast + 50.0f * (1.0f - data->contrast), Labmin[0], Labmax[0]);
+    out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labmin[1], Labmax[1]);
+    out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labmin[2], Labmax[2]);
+    out[k*ch+3] = CLAMPF(out[k*ch+3], Labmin[3], Labmax[3]);
   }
 }
 

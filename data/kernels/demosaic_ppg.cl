@@ -39,14 +39,16 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
 }
 
 __kernel void
-green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
+green_equilibration(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
 {
-  const float thr = 0.01f;
-  const float maximum = 1.0f;
   const int x = get_global_id(0);
   const int y = get_global_id(1);
-  const int c = FC(y, x, filters);
 
+  if(x >= width || y >= height) return;
+
+  const int c = FC(y, x, filters);
+  const float thr = 0.01f;
+  const float maximum = 1.0f;
   const float o = read_imagef(in, sampleri, (int2)(x, y)).x;
   if(c == 1 && (y & 1))
   {
@@ -82,12 +84,17 @@ constant int goffy[18] = { -2, -2, -2,  0,  0,  0,  2,  2,  2,   // r, b
                            -2, -1, -1,  0,  0,  0,  1,  1,  2};  // green
 
 __kernel void
-pre_median(__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters, const float thrs, const int f4)
+pre_median(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, 
+           const unsigned int filters, const float thrs, const int f4)
 {
-  constant int (*offx)[9] = (constant int (*)[9])goffx;
-  constant int (*offy)[9] = (constant int (*)[9])goffy;
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  constant int (*offx)[9] = (constant int (*)[9])goffx;
+  constant int (*offy)[9] = (constant int (*)[9])goffy;
+
   const int c = FC(y, x, filters);
   const int c1 = c & 1;
   const float pix = read_imagef(in, sampleri, (int2)(x, y)).x;
@@ -167,12 +174,15 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out)
  * operates on float4 -> float4 textures.
  */
 __kernel void
-clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out,
+clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
               const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale)
 {
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
 
   const float px_footprint = .5f/r_scale;
@@ -194,12 +204,15 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out,
  * resamping is done via rank-1 lattices and demosaicing using half-size interpolation.
  */
 __kernel void
-clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_t out,
+clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
     const int r_x, const int r_y, const int r_wd, const int r_ht, const float r_scale, const unsigned int filters)
 {
   // global id is pixel in output image (float4)
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -243,10 +256,13 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
  * in (float) -> out (float4)
  */
 __kernel void
-ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
+ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
+                    const unsigned int filters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   // process all non-green pixels
   const int row = y;
@@ -305,10 +321,13 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
 }
 
 __kernel void
-ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
+ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
+                           const unsigned int filters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   // process all non-green pixels
   const int row = y;
@@ -366,11 +385,14 @@ ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out,
  * in (float4) -> out (float4)
  */
 __kernel void
-ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, const unsigned int filters)
+ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height,
+                      const unsigned int filters)
 {
   // image in contains full green and sparse r b
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   const int row = y;
   const int col = x;
@@ -442,10 +464,13 @@ FCN(const int row, const int col, const unsigned int filters)
  * Demosaic image border
  */
 __kernel void
-border_interpolate(__read_only image2d_t in, __write_only image2d_t out, unsigned int width, unsigned int height, const unsigned int filters)
+border_interpolate(__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const unsigned int filters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
   int border = 3;
   int avgwindow = 1;
 

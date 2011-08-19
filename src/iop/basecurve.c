@@ -37,6 +37,8 @@
 #define DT_GUI_CURVE_INFL .3f
 #define DT_IOP_TONECURVE_RES 64
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 DT_MODULE(1)
 
 typedef struct dt_iop_basecurve_params_t
@@ -178,7 +180,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_mem dev_coeffs = NULL;
   cl_int err = -999;
   const int devid = piece->pipe->devid;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if (dev_m == NULL) goto error;
 
@@ -186,8 +191,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 2, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 3, sizeof(cl_mem), (void *)&dev_coeffs);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 4, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 5, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve, sizes);
 
   if(err != CL_SUCCESS) goto error;

@@ -26,6 +26,8 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE(1)
@@ -90,14 +92,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
   dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->data;
   const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
   cl_int err = -999;
   const int P = ceilf(3 * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
 
   if(P <= 1)
   {
-    size_t origin[] = {0, 0, 0};
-    size_t region[] = {roi_in->width, roi_in->height, 1};
+    size_t origin[] = { 0, 0, 0};
+    size_t region[] = { width, height, 1};
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if (err != CL_SUCCESS) goto error;
     return TRUE;
@@ -105,13 +110,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float max_L = 100.0f, max_C = 256.0f;
   float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
   nL *= nL; nC *= nC;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 2, sizeof(int32_t), (void *)&P);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 3, sizeof(int32_t), (void *)&K);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 4, sizeof(float), (void *)&nL);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 5, sizeof(float), (void *)&nC);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 4, sizeof(int32_t), (void *)&P);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 5, sizeof(int32_t), (void *)&K);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 6, sizeof(float), (void *)&nL);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans, 7, sizeof(float), (void *)&nC);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans, sizes);
   if(err != CL_SUCCESS) goto error;
   return TRUE;

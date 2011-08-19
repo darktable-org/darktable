@@ -49,8 +49,18 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
   TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
   TIFFGetField(image, TIFFTAG_SAMPLESPERPIXEL, &spp);
 
-  img->width = width;
-  img->height = height;
+  const int orientation = dt_image_orientation(img);
+
+  if(orientation & 4)
+  {
+    img->width = height;
+    img->height = width;
+  }
+  else
+  {
+    img->width = width;
+    img->height = height;
+  }
 
   if(dt_image_alloc(img, DT_IMAGE_FULL))
   {
@@ -68,7 +78,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename)
   uint8_t *buf8 = (uint8_t *)buf;
   uint32_t row;
 
-  const int orientation = dt_image_orientation(img);
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = orientation & 4 ? img->height : img->width;
   TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
@@ -125,8 +134,18 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
   TIFFGetField(image, TIFFTAG_SAMPLESPERPIXEL, &spp);
 
-  img->width = width;
-  img->height = height;
+  const int orientation = dt_image_orientation(img);
+
+  if(orientation & 4)
+  {
+    img->width = height;
+    img->height = width;
+  }
+  else
+  {
+    img->width = width;
+    img->height = height;
+  }
 
   uint32_t imagelength;
   int32_t scanlinesize = TIFFScanlineSize(image);
@@ -139,7 +158,6 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
   uint16_t *buf16 = (uint16_t *)buf, *tmp16 = (uint16_t *)tmp;
   uint8_t  *buf8  = (uint8_t *)buf,  *tmp8  = (uint8_t *)tmp;
 
-  const int orientation = dt_image_orientation(img);
   TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
   TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
   if (config != PLANARCONFIG_CONTIG)

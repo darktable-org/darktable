@@ -728,29 +728,25 @@ static void slider_reset_callback(GtkAccelGroup *accel_group,
 
 void dtgtk_slider_set_accel(GtkDarktableSlider *slider, GtkAccelGroup *accel_group, const gchar *accel_path)
 {
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"increase");
-  if(0) _("increase"); // to have it in gettext
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,NC_("accel", "increase"));
   dt_accel_group_connect_by_path(accel_group,
                                  accel_name_builder,
                                  g_cclosure_new(
                                      G_CALLBACK(slider_increase_callback),
                                      (gpointer)slider, NULL));
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"reduce");
-  if(0) _("reduce"); // to have it in gettext
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,NC_("accel", "reduce"));
   dt_accel_group_connect_by_path(accel_group,
                                  accel_name_builder,
                                  g_cclosure_new(
                                      G_CALLBACK(slider_decrease_callback),
                                      (gpointer)slider, NULL));
-	
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"reset");
-  if(0) _("reset"); // to have it in gettext
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,NC_("accel", "reset"));
   dt_accel_group_connect_by_path(accel_group,
                                  accel_name_builder,
                                  g_cclosure_new(
                                      G_CALLBACK(slider_reset_callback),
                                      (gpointer)slider, NULL));
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"edit");
+  snprintf(accel_name_builder,1024,"%s/%s",accel_path,NC_("accel", "edit"));
   dt_accel_group_connect_by_path(accel_group,
                                  accel_name_builder,
                                  g_cclosure_new(

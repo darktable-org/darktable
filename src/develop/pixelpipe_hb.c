@@ -17,6 +17,7 @@
 */
 #include "develop/pixelpipe.h"
 #include "develop/blend.h"
+#include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "control/control.h"
 #include "control/signal.h"
@@ -513,6 +514,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 
+    dt_develop_tiling_t tiling = { 0 };
+
+    /* get tiling requirement of module */
+    module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
+
+    assert(tiling.factor > 0.0f && tiling.factor < 100.0f);      
+
 #ifdef HAVE_OPENCL
     /* do we have opencl at all? did user tell us to use it? did we get a resource? */
     if (dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)
@@ -531,20 +539,13 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       /* try to enter opencl path after checking some module specific pre-requisites */
       if(module->process_cl && piece->process_cl_ready)
       {
-        float factor;
-        unsigned overhead;
-        unsigned overlap; // not used
 
-        /* get memory requirement of module */
-        module->tiling_callback(module, piece, &roi_in, roi_out, &factor, &overhead, &overlap);
-
-
-        // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, memory %d, width %d, height %d, bpp %d\n", (double)factor, overhead, memory, roi_in.width, roi_in.height, bpp);
+        // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, width %d, height %d, bpp %d\n", (double)tiling.factor, tiling.overhead, roi_in.width, roi_in.height, bpp);
 
         // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
         // fprintf(stderr, "[opencl_pixelpipe 1] module '%s'\n", module->op);
 
-        if(dt_opencl_image_fits_device(pipe->devid, max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), max(in_bpp, bpp), factor, overhead))
+        if(dt_opencl_image_fits_device(pipe->devid, max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), max(in_bpp, bpp), tiling.factor, tiling.overhead))
         {
           /* image is small enough -> try to directly process entire image with opencl */
 
@@ -673,8 +674,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             valid_input_on_gpu_only = FALSE;
           }
 
-          /* process module on cpu */
-          module->process(module, piece, input, *output, &roi_in, roi_out);
+          /* process module on cpu. use tiling if needed and possible. */
+          if((module->flags() & IOP_FLAGS_ALLOW_TILING) && 
+                !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
+                max(in_bpp, bpp), tiling.factor, tiling.overhead))
+            module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+          else
+            module->process(module, piece, input, *output, &roi_in, roi_out);
+
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
         }
@@ -707,8 +714,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           valid_input_on_gpu_only = FALSE;
         }
 
-        /* process module on cpu */
-        module->process(module, piece, input, *output, &roi_in, roi_out);
+        /* process module on cpu. use tiling if needed and possible. */
+        if((module->flags() & IOP_FLAGS_ALLOW_TILING) && 
+              !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
+              max(in_bpp, bpp), tiling.factor, tiling.overhead))
+          module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+        else
+          module->process(module, piece, input, *output, &roi_in, roi_out);
+
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
       }
@@ -720,14 +733,26 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     {
       /* opencl is not inited or not enabled or we got no resource/device -> everything runs on cpu */
 
-      /* process module on cpu */
-      module->process(module, piece, input, *output, &roi_in, roi_out);
+      /* process module on cpu. use tiling if needed and possible. */
+      if((module->flags() & IOP_FLAGS_ALLOW_TILING) && 
+            !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
+            max(in_bpp, bpp), tiling.factor, tiling.overhead))
+        module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+      else
+        module->process(module, piece, input, *output, &roi_in, roi_out);
+
       /* process blending */
       dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
     } 
 #else
-    /* process module on cpu */
-    module->process(module, piece, input, *output, &roi_in, roi_out);
+    /* process module on cpu. use tiling if needed and possible. */
+    if((module->flags() & IOP_FLAGS_ALLOW_TILING) && 
+          !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), 
+          max(in_bpp, bpp), tiling.factor, tiling.overhead))
+      module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+    else
+      module->process(module, piece, input, *output, &roi_in, roi_out);
+
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
 #endif
@@ -1204,14 +1229,15 @@ restart:
   {
     // Well, there were error -> we might need to free an invalid opencl memory object
     if (cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
+    dt_opencl_unlock_device(pipe->devid); // release opencl resource
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     pipe->opencl_enabled = 0;             // disable opencl for this pipe
     pipe->opencl_error = 0;               // reset error status
-    dt_opencl_unlock_device(pipe->devid); // release opencl resource
     pipe->devid = -1;
+    dt_pthread_mutex_unlock(&pipe->busy_mutex);
     dt_dev_pixelpipe_flush_caches(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
-    dt_pthread_mutex_unlock(&pipe->busy_mutex);
+    dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"));
     goto restart;  // try again (this time without opencl)
   }
 

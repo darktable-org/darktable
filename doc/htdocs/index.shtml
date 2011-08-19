@@ -10,6 +10,12 @@
     <div class="page">
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline">news</div>
+    	
+      <div class="listtext"><img src="images/sun2.jpg" class="img" alt="dreggn"><h1>darktable book final draft release</h1>
+      <em>(2011-08-17)</em> we are excited to announce we released the first final draft of the book <em>darktable</em>.
+      check out the <a href="http://api.ge.tt/0/91QAcs6/0/blob/download">pdf</a> or <a href="http://api.ge.tt/0/91QAcs6/1/blob/download">packaged</a> version and send your comments and 
+      feedback to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-users">darktable user list</a>.
+      </div>
 
       <div class="listtext"><img src="images/crowrock.jpg" class="img" alt="dreggn" /><h1>released 0.9.1</h1>
       <em>(2011-07-31)</em> we <a href="http://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.1.tar.gz/download">released version 0.9.1</a>, with a few bugfixes on top of release 0.9. and 184 patches, among them
