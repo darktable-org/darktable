@@ -205,7 +205,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
                                        coeffsi[FC(j+roi_out->y, roi_out->x+i  , filters)]);
 
       // process aligned pixels with SSE
-      for( ; i < (roi_out->width & ~3) ; i+=4,out+=4,in+=4)
+      for( ; i < roi_out->width - 3 ; i+=4,out+=4,in+=4)
       {
         _mm_stream_ps(out,_mm_mul_ps(coeffs,_mm_set_ps(in[3],in[2],in[1],in[0])));
       }
