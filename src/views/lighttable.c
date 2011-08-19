@@ -1188,7 +1188,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
 	  if(zoom > 2*DT_LIBRARY_MAX_ZOOM)
 	    zoom = 2*DT_LIBRARY_MAX_ZOOM;
 	}
-      //      gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
+      dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
     }
   return 0;
 }

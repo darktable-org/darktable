@@ -143,6 +143,13 @@ typedef struct dt_view_manager_t
       int32_t (*activated_image)(struct dt_lib_module_t *);
     } filmstrip;
 
+    /* lighttable view proxy object */
+    struct {
+      struct dt_lib_module_t *module;
+      void (*set_zoom)(struct dt_lib_module_t *module, gint zoom);
+    } lighttable;
+
+
   } proxy;
 
 
@@ -194,6 +201,9 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
 void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid);
 /** get the imageid from last filmstrip activate request */
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
+
+/** sets the lighttable image in row zoom */
+void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 
 /** set active image */
 void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid);

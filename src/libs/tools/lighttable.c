@@ -29,6 +29,9 @@ typedef struct dt_lib_tool_lighttable_t
 }
 dt_lib_tool_lighttable_t;
 
+/* set zoom proxy function */
+static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom);
+
 /* lightable layout changed */
 static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_data);
 /* zoom spinbutton change callback */
@@ -104,6 +107,9 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom, TRUE, TRUE, 0);
 
+  darktable.view_manager->proxy.lighttable.module = self;
+  darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
+
 }
 
 
@@ -162,7 +168,11 @@ static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_d
 }
 
 #define DT_LIBRARY_MAX_ZOOM 13
-
+static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
+{
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
+}
 
 static void _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 							guint keyval, GdkModifierType modifier, gpointer data)
