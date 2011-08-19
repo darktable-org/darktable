@@ -19,6 +19,7 @@
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
 
+#define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 float gh(const float f)
 {
@@ -53,14 +54,14 @@ nlmeans (read_only image2d_t in, write_only image2d_t out, const int width, cons
   {
     for(int ki=-K;ki<=K;ki++)
     {
-      const float4 p2  = read_imagef(in, sampleri, (int2)(clamp(x+ki, 0, maxx), clamp(y+kj, 0, maxy)));
+      const float4 p2  = read_imagef(in, sampleri, (int2)(ICLAMP(x+ki, 0, maxx), ICLAMP(y+kj, 0, maxy)));
       const float4 tmp = (p1 - p2)*norm2;
       const float dist = tmp.x + tmp.y + tmp.z;
       for(int pj=-P;pj<=P;pj++)
       {
         for(int pi=-P;pi<=P;pi++)
         {
-          float4 p2 = read_imagef(in, sampleri, (int2)(clamp(x+pi+ki, 0, maxx), clamp(y+pj+kj, 0, maxy)));
+          float4 p2 = read_imagef(in, sampleri, (int2)(ICLAMP(x+pi+ki, 0, maxx), ICLAMP(y+pj+kj, 0, maxy)));
           p2.w = dist;
           const int i = get_local_id(0) + pi, j = get_local_id(1) + pj;
           if(i >= 0 && i < get_local_size(0) && j >= 0 && j < get_local_size(1))
@@ -100,13 +101,13 @@ nlmeans (read_only image2d_t in, write_only image2d_t out, const int width, cons
       {
         for(int pi=-P;pi<=P;pi++)
         {
-          float4 p1  = read_imagef(in, sampleri, (int2)(clamp(x+pi, 0, maxx), clamp(y+pj, 0, maxy)));
-          float4 p2  = read_imagef(in, sampleri, (int2)(clamp(x+pi+ki, 0, maxx), clamp(y+pj+kj, 0, maxy)));
+          float4 p1  = read_imagef(in, sampleri, (int2)(ICLAMP(x+pi, 0, maxx), ICLAMP(y+pj, 0, maxy)));
+          float4 p2  = read_imagef(in, sampleri, (int2)(ICLAMP(x+pi+ki, 0, maxx), ICLAMP(y+pj+kj, 0, maxy)));
           float4 tmp = (p1 - p2)*norm2;
           dist += tmp.x + tmp.y + tmp.z;
         }
       }
-      float4 pin = read_imagef(in, sampleri, (int2)(clamp(x+ki, 0, maxx), clamp(y+kj, 0, maxy)));
+      float4 pin = read_imagef(in, sampleri, (int2)(ICLAMP(x+ki, 0, maxx), ICLAMP(y+kj, 0, maxy)));
       dist = gh(dist);
       acc.x += dist * pin.x;
       acc.y += dist * pin.y;
