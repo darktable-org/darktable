@@ -23,6 +23,7 @@
 #include "develop/develop.h"
 #include "develop/blend.h"
 #include "develop/tiling.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/iop_modulegroups.h"
 #include "gui/presets.h"
@@ -492,17 +493,9 @@ void dt_iop_load_modules_so()
 //    }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-//      // Adding the optional show accelerator to the table (blank)
-//      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show plugin",
-//               (module->op));
-//      gtk_accel_map_add_entry(accelpath, 0, 0);
-//      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
-//                                     NULL);
-//      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/enable plugin",
-//               (module->op));
-//      gtk_accel_map_add_entry(accelpath, 0, 0);
-//      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
-//                                     NULL);
+      // Adding the optional show accelerator to the table (blank)
+      dt_accel_register_iop(module, FALSE, NC_("accel", "show plugin"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "enable plugin"), 0, 0);
 //      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
 //      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
 //      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
