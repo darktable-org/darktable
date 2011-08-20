@@ -114,8 +114,19 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
     const float scale = (float)singlebuffer/(width*height*max(in_bpp, out_bpp));
 
     /* TODO: can we make this more efficient to minimize total overlap between tiles? */
-    width = floorf(width * sqrt(scale));  
-    height = floorf(height * sqrt(scale));
+    if(width < height && scale >= 0.333f)                  /* don't touch width if tile spans whole image width ... */
+    { 
+      height = floorf(height * scale);
+    }
+    else if(height <= width && scale >= 0.333f)            /* ... else, don't touch height if tile spans whole image height ... */
+    {
+      width = floorf(width * scale);
+    }
+    else                                                   /* ... else, shrink width and height proportionally. */
+    {
+      width = floorf(width * sqrt(scale));
+      height = floorf(height * sqrt(scale));
+    }
   }
 
   /* make sure we have a reasonably effective tile size */
@@ -330,15 +341,15 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   {
     const float scale = (float)singlebuffer/(width*height*max(in_bpp, out_bpp));
 
-    if(width == roi_out->width)           /* don't touch width if tile spans whole image width ... */
+    if(width == roi_out->width && scale >= 0.333f)         /* don't touch width if tile spans whole image width ... */
     { 
       height = floorf(height * scale);
     }
-    else if(height == roi_out->height)    /* ... else, don't touch height if tile spans whole image height ... */
+    else if(height == roi_out->height && scale >= 0.333f)  /* ... else, don't touch height if tile spans whole image height ... */
     {
       width = floorf(width * scale);
     }
-    else                                  /* ... else, shrink width and height proportionally. */
+    else                                                   /* ... else, shrink width and height proportionally. */
     {
       width = floorf(width * sqrt(scale));
       height = floorf(height * sqrt(scale));
