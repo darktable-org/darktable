@@ -3,6 +3,7 @@
 #include "gui/accelerators.h"
 #include "common/darktable.h"
 #include "control/control.h"
+#include "dtgtk/slider.h"
 
 void dt_accel_path_global(char *s, size_t n, const char* path)
 {
@@ -154,6 +155,25 @@ void dt_accel_register_lib(dt_lib_module_t *self, gboolean local,
       g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
+void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
+                           const gchar *path)
+{
+  gchar accel_path[256];
+  snprintf(accel_path,256,"%s/%s",path,"increase");
+  dt_accel_register_iop(so,local,accel_path, 0, 0);
+
+  snprintf(accel_path,256,"%s/%s",path,"reduce");
+  dt_accel_register_iop(so,local,accel_path, 0, 0);
+
+  snprintf(accel_path,256,"%s/%s",path,"reset");
+  dt_accel_register_iop(so,local,accel_path, 0, 0);
+
+  snprintf(accel_path,256,"%s/%s",path,"edit");
+  dt_accel_register_iop(so,local,accel_path, 0, 0);
+
+}
+
+
 void dt_accel_connect_global(const gchar *path, GClosure *closure)
 {
   gchar accel_path[256];
@@ -232,3 +252,83 @@ void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path,
   dt_accel_connect_lib(module, path, closure);
 }
 
+
+static void slider_edit_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+	char sv[32]= {0};
+	slider->is_entry_active=TRUE;
+	gdouble value = gtk_adjustment_get_value(slider->adjustment);
+	sprintf(sv,"%.*f",slider->digits,value);
+	gtk_entry_set_text (GTK_ENTRY(slider->entry),sv);
+	gtk_widget_show (GTK_WIDGET(slider->entry));
+	gtk_widget_grab_focus (GTK_WIDGET(slider->entry));
+	gtk_widget_queue_draw (GTK_WIDGET(slider));
+}
+static void slider_increase_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+	float value = gtk_adjustment_get_value(slider->adjustment);
+	value += gtk_adjustment_get_step_increment(slider->adjustment);
+	if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+
+	gtk_adjustment_set_value(slider->adjustment, value);
+	gtk_widget_draw(GTK_WIDGET(slider),NULL);
+	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+}
+static void slider_decrease_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+	float value = gtk_adjustment_get_value(slider->adjustment);
+	value -= gtk_adjustment_get_step_increment(slider->adjustment);
+	if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
+
+	gtk_adjustment_set_value(slider->adjustment, value);
+	gtk_widget_draw(GTK_WIDGET(slider),NULL);
+	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+}
+
+static void slider_reset_callback(GtkAccelGroup *accel_group,
+                                    GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, gpointer data)
+{
+	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
+	gtk_adjustment_set_value(slider->adjustment, slider->default_value);
+	gtk_widget_draw(GTK_WIDGET(slider),NULL);
+	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+}
+void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
+                                 GtkWidget *slider)
+{
+	gchar accel_path[256];
+	snprintf(accel_path,256,"%s/%s",path,NC_("accel", "increase"));
+	dt_accel_connect_iop(module,
+			accel_path,
+			g_cclosure_new(
+				G_CALLBACK(slider_increase_callback),
+				(gpointer)slider, NULL));
+	snprintf(accel_path,256,"%s/%s",path,NC_("accel", "reduce"));
+	dt_accel_connect_iop(module,
+			accel_path,
+			g_cclosure_new(
+				G_CALLBACK(slider_decrease_callback),
+				(gpointer)slider, NULL));
+	snprintf(accel_path,256,"%s/%s",path,NC_("accel", "reset"));
+	dt_accel_connect_iop(module,
+			accel_path,
+			g_cclosure_new(
+				G_CALLBACK(slider_reset_callback),
+				(gpointer)slider, NULL));
+	snprintf(accel_path,256,"%s/%s",path,NC_("accel", "edit"));
+	dt_accel_connect_iop(module,
+			accel_path,
+			g_cclosure_new(
+				G_CALLBACK(slider_edit_callback),
+				(gpointer)slider, NULL));
+}
