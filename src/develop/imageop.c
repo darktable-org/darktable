@@ -482,10 +482,6 @@ void dt_iop_load_modules_so()
     if(module->init_key_accels)
       (module->init_key_accels)(module);
 
-//    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-//    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
-//    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-//    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
 //    if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
 //    {
 //      snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
@@ -496,10 +492,11 @@ void dt_iop_load_modules_so()
       // Adding the optional show accelerator to the table (blank)
       dt_accel_register_iop(module, FALSE, NC_("accel", "show plugin"), 0, 0);
       dt_accel_register_iop(module, FALSE, NC_("accel", "enable plugin"), 0, 0);
-//      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-//      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
-//      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-//      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
+
+      dt_accel_register_iop(module, FALSE,
+                            NC_("accel", "reset plugin parameters"), 0, 0);
+      dt_accel_register_iop(module, FALSE,
+                            NC_("accel", "show preset menu"), 0, 0);
     }
   }
   g_dir_close(dir);
@@ -865,11 +862,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-//  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-//  dtgtk_button_set_accel(resetbutton,darktable.control->accels_darkroom,name);
+  module->reset_button = GTK_WIDGET(resetbutton);
   GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-//  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-//  dtgtk_button_set_accel(presetsbutton,darktable.control->accels_darkroom,name);
+  module->presets_button = GTK_WIDGET(presetsbutton);
   gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);

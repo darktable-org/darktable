@@ -176,6 +176,10 @@ typedef struct dt_iop_module_t
   GtkWidget *showhide;
   /** expander containing the widget. */
   GtkExpander *expander;
+  /** reset parameters button */
+  GtkWidget *reset_button;
+  /** show preset menu button */
+  GtkWidget *presets_button;
   /** list of closures: show, enable/disable */
   GSList* accel_closures;
 

@@ -399,6 +399,58 @@ select_this_image(const int imgid)
   }
 }
 
+static void show_module_callback(GtkAccelGroup *accel_group,
+                                 GObject *acceleratable,
+                                 guint keyval, GdkModifierType modifier,
+                                 gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+
+  // Showing the module, if it isn't already visible
+  if(!dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))
+  {
+    dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), 1);
+    gtk_widget_queue_draw(module->showhide);
+  }
+
+  dt_gui_iop_modulegroups_switch(module->groups());
+  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
+  dt_iop_request_focus(module);
+}
+
+static void enable_module_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+  gboolean active= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
+}
+
+static void connect_common_accels(dt_iop_module_t *module)
+{
+  GClosure* closure = NULL;
+
+  // Connecting the (optional) module show accelerator
+  closure = g_cclosure_new(G_CALLBACK(show_module_callback),
+                           module, NULL);
+  dt_accel_connect_iop(module, "show plugin", closure);
+
+  // Connecting the (optional) module switch accelerator
+  closure = g_cclosure_new(G_CALLBACK(enable_module_callback),
+                           module, NULL);
+  dt_accel_connect_iop(module, "enable plugin", closure);
+
+  // Connecting the reset and preset buttons
+  dt_accel_connect_button_iop(module, "reset plugin parameters",
+                              module->reset_button);
+  dt_accel_connect_button_iop(module, "show preset menu",
+                              module->presets_button);
+}
+
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
@@ -448,6 +500,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       GtkWidget *top = GTK_WIDGET(module->topwidget);
       GtkWidget *exp = GTK_WIDGET(module->expander);
       GtkWidget *shh = GTK_WIDGET(module->showhide);
+      GtkWidget *rsb = GTK_WIDGET(module->reset_button);
+      GtkWidget *psb = GTK_WIDGET(module->presets_button);
       GtkWidget *parent = NULL;
       g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
       // re-init and re-gui_init
@@ -463,6 +517,9 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       module->topwidget = top;
       module->expander = GTK_EXPANDER(exp);
       module->showhide = shh;
+      module->reset_button = rsb;
+      module->presets_button = psb;
+      connect_common_accels(module);
       // reparent
       gtk_container_add(GTK_CONTAINER(parent), module->widget);
       gtk_widget_show_all(module->topwidget);
@@ -672,42 +729,8 @@ static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
   dt_dev_jump_image((dt_develop_t*)data, -1);
 }
 
-
-static void show_module_callback(GtkAccelGroup *accel_group,
-                                 GObject *acceleratable,
-                                 guint keyval, GdkModifierType modifier,
-                                 gpointer data)
-
-{
-  dt_iop_module_t *module = (dt_iop_module_t*)data;
-
-  // Showing the module, if it isn't already visible
-  if(!dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))
-  {
-    dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), 1);
-    gtk_widget_queue_draw(module->showhide);
-  }
-
-  dt_gui_iop_modulegroups_switch(module->groups());
-  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
-  dt_iop_request_focus(module);
-}
-
-static void enable_module_callback(GtkAccelGroup *accel_group,
-                                   GObject *acceleratable,
-                                   guint keyval, GdkModifierType modifier,
-                                   gpointer data)
-
-{
-  dt_iop_module_t *module = (dt_iop_module_t*)data;
-  gboolean active= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
-}
-
 void enter(dt_view_t *self)
 {
-//  char accelpath[256];
-
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
@@ -762,22 +785,11 @@ void enter(dt_view_t *self)
     module->topwidget = GTK_WIDGET(expander);
     gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     module->accel_closures = NULL;
+    connect_common_accels(module);
     if(module->connect_key_accels)
       module->connect_key_accels(module);
     if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
-      GClosure* closure = NULL;
-
-      // Connecting the (optional) module show accelerator
-      closure = g_cclosure_new(G_CALLBACK(show_module_callback),
-                               module, NULL);
-      dt_accel_connect_iop(module, "show plugin", closure);
-
-      // Connecting the (optional) module switch accelerator
-      closure = g_cclosure_new(G_CALLBACK(enable_module_callback),
-                               module, NULL);
-      dt_accel_connect_iop(module, "enable plugin", closure);
-
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
       char filename[1024], datadir[1024];
       dt_util_get_datadir(datadir, 1024);
