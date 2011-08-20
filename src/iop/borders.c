@@ -34,6 +34,7 @@
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/button.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -54,6 +55,7 @@ typedef struct dt_iop_borders_gui_data_t
   GtkComboBoxEntry *aspect;
   GtkDarktableButton *colorpick;
   float aspect_ratios[8];
+  GtkWidget *swap_button;
 }
 dt_iop_borders_gui_data_t;
 
@@ -78,10 +80,19 @@ operation_tags ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
+  dt_accel_register_iop(self, FALSE, NC_("accel", "swap aspect ratio"),
+                        0, 0);
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/border size");
-//  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/swap the aspect ratio");
 //  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/pick gui color from image");
 }
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t*)self->gui_data;
+  dt_accel_connect_button_iop(self, "swap aspect ratio",
+                              g->swap_button);
+}
+
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
 void
@@ -387,6 +398,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->aspect), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_aspectflip, CPF_STYLE_FLAT);
+  g->swap_button = button;
   // TODO: what about this?
   //g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
   g_object_set(G_OBJECT(button), "tooltip-text", _("swap the aspect ratio"), (char *)NULL);

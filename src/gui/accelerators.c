@@ -204,3 +204,31 @@ void dt_accel_disconnect_list(GSList *list)
     list = g_slist_delete_link(list, list);
   }
 }
+
+static void _press_button_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+{
+  if(!(GTK_IS_BUTTON(data)))
+    return;
+
+  g_signal_emit_by_name(G_OBJECT(data),"activate");
+}
+
+void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path,
+                                 GtkWidget *button)
+{
+  GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback),
+                                     button, NULL);
+  dt_accel_connect_iop(module, path, closure);
+}
+
+void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path,
+                                 GtkWidget *button)
+{
+  GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback),
+                                     (gpointer)button, NULL);
+  dt_accel_connect_lib(module, path, closure);
+}
+

@@ -47,6 +47,10 @@ void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path,
                           GClosure *closure);
 void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path,
                           GClosure *closure);
+void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path,
+                                 GtkWidget *button);
+void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path,
+                                 GtkWidget *button);
 
 // Disconnect function
 void dt_accel_disconnect_list(GSList *accels);
