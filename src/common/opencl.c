@@ -960,6 +960,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
   int *numevents = &(cl->dev[devid].numevents);
   int *eventsconsolidated = &(cl->dev[devid].eventsconsolidated);
+  int *lostevents = &(cl->dev[devid].lostevents);
   cl_int *summary = &(cl->dev[devid].summary);
 
   if (*eventlist==NULL || *numevents==0) return CL_COMPLETE; // nothing to do, no news is good news
@@ -991,7 +992,15 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
     cl_ulong end;
     cl_int errs = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)((*eventlist)[k], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
     cl_int erre = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)((*eventlist)[k], CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
-    if (errs == CL_SUCCESS && erre == CL_SUCCESS) (*eventtags)[k].timelapsed = end - start;
+    if (errs == CL_SUCCESS && erre == CL_SUCCESS)
+    {
+      (*eventtags)[k].timelapsed = end - start;
+    }
+    else
+    {
+      (*eventtags)[k].timelapsed = 0;
+      (*lostevents)++;
+    }
 
     // finally release event to be re-used by driver
     (cl->dlocl->symbols->dt_clReleaseEvent)((*eventlist)[k]);
