@@ -32,6 +32,23 @@ void dt_accel_path_lib(char *s, size_t n, char *module,
            NC_("accel", "plugins"), module, path);
 }
 
+void dt_accel_paths_slider_iop(char *s[], size_t n, char *module,
+                               const char* path)
+{
+  snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s",
+           NC_("accel", "image operations"), module, path,
+           NC_("accel", "increase"));
+  snprintf(s[1], n, "<Darktable>/%s/%s/%s/%s",
+           NC_("accel", "image operations"), module, path,
+           NC_("accel", "decrease"));
+  snprintf(s[2], n, "<Darktable>/%s/%s/%s/%s",
+           NC_("accel", "image operations"), module, path,
+           NC_("accel", "reset"));
+  snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s",
+           NC_("accel", "image operations"), module, path,
+           NC_("accel", "edit"));
+}
+
 static void dt_accel_path_global_translated(char *s, size_t n, const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s",
@@ -62,6 +79,33 @@ static void dt_accel_path_lib_translated(char *s, size_t n,
   snprintf(s, n, "<Darktable>/%s/%s/%s",
            C_("accel", "plugins"), module->name(),
            g_dpgettext2(NULL, "accel", path));
+}
+
+static void dt_accel_paths_slider_iop_translated(char *s[], size_t n,
+                                                 dt_iop_module_so_t *module,
+                                                 const char* path)
+{
+  snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s",
+           C_("accel", "image operations"),
+           module->name(),
+           g_dpgettext2(NULL, "accel", path),
+           C_("accel", "increase"));
+  snprintf(s[1], n, "<Darktable>/%s/%s/%s/%s",
+           C_("accel", "image operations"),
+           module->name(),
+           g_dpgettext2(NULL, "accel", path),
+           C_("accel", "decrease"));
+  snprintf(s[2], n, "<Darktable>/%s/%s/%s/%s",
+           C_("accel", "image operations"),
+           module->name(),
+           g_dpgettext2(NULL, "accel", path),
+           C_("accel", "reset"));
+  snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s",
+           C_("accel", "image operations"),
+           module->name(),
+           g_dpgettext2(NULL, "accel", path),
+           C_("accel", "edit"));
+
 }
 
 void dt_accel_register_global(const gchar *path, guint accel_key,
@@ -158,19 +202,39 @@ void dt_accel_register_lib(dt_lib_module_t *self, gboolean local,
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
                            const gchar *path)
 {
-  gchar accel_path[256];
-  snprintf(accel_path,256,"%s/%s",path,"increase");
-  dt_accel_register_iop(so,local,accel_path, 0, 0);
+  gchar increase_path[256];
+  gchar decrease_path[256];
+  gchar reset_path[256];
+  gchar edit_path[256];
+  gchar increase_path_trans[256];
+  gchar decrease_path_trans[256];
+  gchar reset_path_trans[256];
+  gchar edit_path_trans[256];
 
-  snprintf(accel_path,256,"%s/%s",path,"reduce");
-  dt_accel_register_iop(so,local,accel_path, 0, 0);
+  char *paths[] = {increase_path, decrease_path, reset_path, edit_path};
+  char *paths_trans[] = {increase_path_trans, decrease_path_trans,
+                         reset_path_trans, edit_path_trans};
 
-  snprintf(accel_path,256,"%s/%s",path,"reset");
-  dt_accel_register_iop(so,local,accel_path, 0, 0);
+  int i = 0;
+  dt_accel_t *accel = NULL;
 
-  snprintf(accel_path,256,"%s/%s",path,"edit");
-  dt_accel_register_iop(so,local,accel_path, 0, 0);
+  dt_accel_paths_slider_iop(paths, 256, so->op, path);
+  dt_accel_paths_slider_iop_translated(paths_trans, 256, so, path);
 
+  for(i = 0; i < 4; i++)
+  {
+    gtk_accel_map_add_entry(paths[i], 0, 0);
+    accel = (dt_accel_t*)malloc(sizeof(dt_accel_t));
+
+    strcpy(accel->path, paths[i]);
+    strcpy(accel->translated_path, paths_trans[i]);
+    strcpy(accel->module, so->op);
+    accel->local = local;
+    accel->views = DT_DARKTABLE_VIEW;
+
+    darktable.control->accelerator_list =
+        g_slist_prepend(darktable.control->accelerator_list, accel);
+  }
 }
 
 
@@ -212,17 +276,6 @@ void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path,
                                   closure);
 
   module->accel_closures = g_slist_prepend(module->accel_closures, closure);
-}
-
-void dt_accel_disconnect_list(GSList *list)
-{
-  GClosure *closure;
-  while(list)
-  {
-    closure = (GClosure*)(list->data);
-    gtk_accel_group_disconnect(darktable.control->accelerators, closure);
-    list = g_slist_delete_link(list, list);
-  }
 }
 
 static void _press_button_callback(GtkAccelGroup *accel_group,
@@ -332,3 +385,15 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
 				G_CALLBACK(slider_edit_callback),
 				(gpointer)slider, NULL));
 }
+
+void dt_accel_disconnect_list(GSList *list)
+{
+  GClosure *closure;
+  while(list)
+  {
+    closure = (GClosure*)(list->data);
+    gtk_accel_group_disconnect(darktable.control->accelerators, closure);
+    list = g_slist_delete_link(list, list);
+  }
+}
+

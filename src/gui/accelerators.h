@@ -26,6 +26,15 @@ void dt_accel_path_iop(char *s, size_t n, char *module,
                        const char *path);
 void dt_accel_path_lib(char *s, size_t n, char *module,
                        const char* path);
+/**
+  * Accepts an array of 4 char*, writes the following paths to them
+  * 0 - Slider increase path
+  * 1 - Slider decrease path
+  * 2 - Slider reset path
+  * 3 - Slider edit path
+  */
+void dt_accel_paths_slider_iop(char *s[], size_t n, char *module,
+                               const char *path);
 
 // Accelerator registration functions
 void dt_accel_register_global(const gchar *path, guint accel_key,
