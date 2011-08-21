@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-21 04:20+0400\n"
-"PO-Revision-Date: 2011-08-21 09:14+0400\n"
+"PO-Revision-Date: 2011-08-21 11:45+0400\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
 "Language: ru\n"
@@ -685,10 +685,9 @@ msgid "paste"
 msgstr "Вставить"
 
 #: ../build/src/accelstrings_gen.h:89
-#, fuzzy
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr "Взять цвет с фотографии"
+msgstr "Взять цвет плёнки с фотографии"
 
 #: ../build/src/accelstrings_gen.h:90
 msgctxt "accel"
@@ -1505,7 +1504,6 @@ msgid "cancel"
 msgstr "Отменить"
 
 #: ../src/gui/camera_import_dialog.c:267
-#, fuzzy
 msgctxt "camera import"
 msgid "import"
 msgstr "Импортировать"
@@ -2073,7 +2071,7 @@ msgstr "Избранные"
 
 #: ../src/gui/iop_modulegroups.c:223
 msgid "show modules explicit specified by user"
-msgstr ""
+msgstr "Только модули, явно указанные пользователем"
 
 #. gtk_box_pack_start (GTK_BOX (bbox),_iop_modulegroups_userdefined_widget,TRUE,TRUE,0);
 #. add button for basic plugins
@@ -2768,7 +2766,7 @@ msgstr "контрастное"
 
 #: ../src/iop/atrous.c:1141 ../src/iop/atrous.c:1145
 msgid "smooth"
-msgstr ""
+msgstr "плавное"
 
 #: ../src/iop/atrous.c:1146
 msgid "noisy"
@@ -2777,7 +2775,7 @@ msgstr "шумное"
 #. case atrous_s:
 #: ../src/iop/atrous.c:1149
 msgid "bold"
-msgstr ""
+msgstr "чёткое"
 
 #: ../src/iop/atrous.c:1150
 msgid "dull"
@@ -2790,7 +2788,7 @@ msgstr "Яркость"
 
 #: ../src/iop/atrous.c:1347
 msgid "change lightness at each feature size"
-msgstr ""
+msgstr "Менять яркость для каждого уровня детализации раздельно"
 
 #: ../src/iop/atrous.c:1348 ../src/iop/equalizer.c:344
 #: ../src/iop/nlmeans.c:476
@@ -2799,7 +2797,7 @@ msgstr "Цвет"
 
 #: ../src/iop/atrous.c:1349
 msgid "change color saturation at each feature size"
-msgstr ""
+msgstr "Менять насыщенность цвета для каждого уровня детализации раздельно"
 
 #: ../src/iop/atrous.c:1350 ../src/iop/highpass.c:489
 msgid "sharpness"
@@ -2807,7 +2805,7 @@ msgstr "Резкость"
 
 #: ../src/iop/atrous.c:1351
 msgid "sharpness of edges at each feature size"
-msgstr ""
+msgstr "Менять резкость краёв для каждого уровня детализации раздельно"
 
 #: ../src/iop/atrous.c:1387 ../src/iop/soften.c:359
 msgid "mix"
@@ -2885,7 +2883,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:74
 msgid "denoise (bilateral filter)"
-msgstr "Подавление шума (билатеральный фильтр)"
+msgstr "Подавление шума (билатеральное)"
 
 #: ../src/iop/bilateral.cc:350
 msgid "spatial extent of the gaussian"
@@ -3750,7 +3748,7 @@ msgstr "Смешивание h"
 
 #: ../src/iop/highpass.c:83
 msgid "highpass"
-msgstr "Частотный фильтр"
+msgstr "Высокочастотный фильтр"
 
 #: ../src/iop/highpass.c:491
 msgid "contrast boost"
@@ -3758,11 +3756,11 @@ msgstr "Усиление контраста"
 
 #: ../src/iop/highpass.c:498
 msgid "the sharpness of highpass filter"
-msgstr "Резкость частотного фильтра"
+msgstr "Резкость высокочастотного фильтра"
 
 #: ../src/iop/highpass.c:499
 msgid "the contrast of highpass filter"
-msgstr "Контраст частотного фильтра"
+msgstr "Контраст высокочастотного фильтра"
 
 #: ../src/iop/hotpixels.c:66
 msgid "hot pixels"
@@ -3791,27 +3789,23 @@ msgstr "Пометить исправленные"
 
 #: ../src/iop/invert.c:53
 msgid "invert"
-msgstr "Инвертировать"
+msgstr "Инвертация"
 
 #: ../src/iop/invert.c:126
-#, fuzzy
 msgid "select color of film material"
-msgstr "Выделить съёмку"
+msgstr "Выберите цвет плёнки"
 
 #: ../src/iop/invert.c:294
-#, fuzzy
 msgid "this doesn't work for raw/hdr images."
-msgstr "Каталог хранения захваченных снимков"
+msgstr "Этот модуль не работает с Raw и HDR"
 
 #: ../src/iop/invert.c:299
-#, fuzzy
 msgid "color of film material"
-msgstr "Цветовая метка"
+msgstr "Цвет плёнки"
 
 #: ../src/iop/invert.c:332
-#, fuzzy
 msgid "pick color of film material from image"
-msgstr "Взять цвет с фотографии"
+msgstr "Взять цвет плёнки с фотографии"
 
 #: ../src/iop/lens.c:45
 msgid "lens correction"
@@ -4013,7 +4007,7 @@ msgstr "Синева в тенях"
 
 #: ../src/iop/lowpass.c:96
 msgid "lowpass"
-msgstr ""
+msgstr "Низкочастотный фильтр"
 
 #: ../src/iop/lowpass.c:653
 msgid "local contrast mask"
@@ -4048,14 +4042,12 @@ msgid "the radius of gaussian blur"
 msgstr "Радиус гауссова размывания"
 
 #: ../src/iop/lowpass.c:717
-#, fuzzy
 msgid "the contrast of lowpass filter"
-msgstr "Контраст частотного фильтра"
+msgstr "Контраст низкочастотного фильтра"
 
 #: ../src/iop/lowpass.c:718
-#, fuzzy
 msgid "the color saturation of lowpass filter"
-msgstr "Контраст частотного фильтра"
+msgstr "Насыщенность низкочастотного фильтра"
 
 #: ../src/iop/monochrome.c:65
 msgid "monochrome"
@@ -4070,7 +4062,7 @@ msgstr ""
 
 #: ../src/iop/nlmeans.c:60
 msgid "denoise (non-local means)"
-msgstr "Подавление шума (нелокальные средние величины)"
+msgstr "Подавление шума (non-local means)"
 
 #: ../src/iop/nlmeans.c:480
 msgid "how much to smooth brightness"
@@ -5334,7 +5326,7 @@ msgstr "Показать модуль «%s»"
 #: ../src/views/darkroom.c:373
 #, c-format
 msgid "%s as favorite"
-msgstr "%s как избранный"
+msgstr "Модуль «%s» как избранный"
 
 #. construct tooltip text into option
 #: ../src/views/darkroom.c:388
