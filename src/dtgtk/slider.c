@@ -65,7 +65,7 @@ static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *
 // Slider entry events
 static gboolean _slider_entry_key_event(GtkWidget *widget,GdkEventKey *event, gpointer data);
 
-static guint _signals[LAST_SIGNAL] = { 0 };
+static guint _signals[SLIDER_LAST_SIGNAL] = { 0 };
 //static char accel_name_builder[1024];
 
 void _slider_get_value_area(GtkWidget *widget,GdkRectangle *rect)

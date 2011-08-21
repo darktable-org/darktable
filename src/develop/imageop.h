@@ -355,5 +355,7 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
   return coeff[0] * powf(x, coeff[1]);
 }
 
+/** Connects common accelerators to an iop module */
+void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
 #endif

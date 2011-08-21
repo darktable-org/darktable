@@ -20,7 +20,7 @@
 #include "tristatebutton.h"
 #include "button.h"
 
-static guint _tristatebutton_signals[LAST_SIGNAL] = { 0 };
+static guint _tristatebutton_signals[TRISTATEBUTTON_LAST_SIGNAL] = { 0 };
 
 static void _tristatebutton_class_init(GtkDarktableTriStateButtonClass *klass);
 static void _tristatebutton_init(GtkDarktableTriStateButton *slider);

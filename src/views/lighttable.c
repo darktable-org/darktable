@@ -881,6 +881,7 @@ void enter(dt_view_t *self)
         module->connect_key_accels(module);
       // add the widget created by gui_init to an expander and both to list.
       GtkWidget *expander = dt_lib_gui_get_expander(module);
+      dt_lib_connect_common_accels(module);
       if(module->views() & DT_LEFT_PANEL_VIEW) gtk_box_pack_start(box_left, expander, FALSE, FALSE, 0);
       else gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
     }

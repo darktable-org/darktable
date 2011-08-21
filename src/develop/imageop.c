@@ -29,7 +29,7 @@
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 #include "dtgtk/slider.h"
-// #include "dtgtk/tristatebutton.h" //FIXME
+#include "dtgtk/tristatebutton.h"
 
 #include <strings.h>
 #include <assert.h>
@@ -335,6 +335,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->disconnect_key_accels = so->disconnect_key_accels;
 
   module->accel_closures = NULL;
+  module->reset_button = NULL;
+  module->presets_button = NULL;
 
   // now init the instance:
   module->init(module);
@@ -1439,6 +1441,60 @@ void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a)
   float X_inv[4][4];
   mat4inv(X, X_inv);
   mat4mulv(a, X_inv, y);
+}
+
+static void show_module_callback(GtkAccelGroup *accel_group,
+                                 GObject *acceleratable,
+                                 guint keyval, GdkModifierType modifier,
+                                 gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+
+  // Showing the module, if it isn't already visible
+  if(!dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))
+  {
+    dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), 1);
+    gtk_widget_queue_draw(module->showhide);
+  }
+
+  dt_gui_iop_modulegroups_switch(module->groups());
+  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
+  dt_iop_request_focus(module);
+}
+
+static void enable_module_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+  gboolean active= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
+}
+
+void dt_iop_connect_common_accels(dt_iop_module_t *module)
+{
+  GClosure* closure = NULL;
+
+  // Connecting the (optional) module show accelerator
+  closure = g_cclosure_new(G_CALLBACK(show_module_callback),
+                           module, NULL);
+  dt_accel_connect_iop(module, "show plugin", closure);
+
+  // Connecting the (optional) module switch accelerator
+  closure = g_cclosure_new(G_CALLBACK(enable_module_callback),
+                           module, NULL);
+  dt_accel_connect_iop(module, "enable plugin", closure);
+
+  // Connecting the reset and preset buttons
+  if(module->reset_button)
+    dt_accel_connect_button_iop(module, "reset plugin parameters",
+                                module->reset_button);
+  if(module->presets_button)
+    dt_accel_connect_button_iop(module, "show preset menu",
+                                module->presets_button);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

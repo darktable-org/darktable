@@ -384,9 +384,13 @@ void enter(dt_view_t *self)
       if( !( strcmp(module->name(),"tethered shoot")==0 && lib->mode != DT_CAPTURE_MODE_TETHERED ) )
       {
         module->gui_init(module);
+        module->accel_closures = NULL;
+        if(module->connect_key_accels)
+          module->connect_key_accels(module);
         // add the widget created by gui_init to an expander and both to list.
         GtkWidget *expander = dt_lib_gui_get_expander(module);
         gtk_box_pack_start(box, expander, FALSE, FALSE, 0);
+        dt_lib_connect_common_accels(module);
       }
     }
     modules = g_list_previous(modules);
