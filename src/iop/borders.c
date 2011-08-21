@@ -82,6 +82,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE, NC_("accel", "swap aspect ratio"),
                         0, 0);
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "border size"));
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/border size");
 //  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/borders/pick gui color from image");
 }

@@ -359,31 +359,33 @@ static void slider_reset_callback(GtkAccelGroup *accel_group,
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                                  GtkWidget *slider)
 {
-	gchar accel_path[256];
-	snprintf(accel_path,256,"%s/%s",path,NC_("accel", "increase"));
+  gchar increase_path[256];
+  gchar decrease_path[256];
+  gchar reset_path[256];
+  gchar edit_path[256];
+  char *paths[] = {increase_path, decrease_path, reset_path, edit_path};
+  dt_accel_paths_slider_iop(paths, 256, module->op, path);
+
 	dt_accel_connect_iop(module,
-			accel_path,
-			g_cclosure_new(
-				G_CALLBACK(slider_increase_callback),
-				(gpointer)slider, NULL));
-	snprintf(accel_path,256,"%s/%s",path,NC_("accel", "reduce"));
+                       increase_path,
+                       g_cclosure_new(
+                           G_CALLBACK(slider_increase_callback),
+                           (gpointer)slider, NULL));
 	dt_accel_connect_iop(module,
-			accel_path,
-			g_cclosure_new(
-				G_CALLBACK(slider_decrease_callback),
-				(gpointer)slider, NULL));
-	snprintf(accel_path,256,"%s/%s",path,NC_("accel", "reset"));
+                       decrease_path,
+                       g_cclosure_new(
+                           G_CALLBACK(slider_decrease_callback),
+                           (gpointer)slider, NULL));
 	dt_accel_connect_iop(module,
-			accel_path,
-			g_cclosure_new(
-				G_CALLBACK(slider_reset_callback),
-				(gpointer)slider, NULL));
-	snprintf(accel_path,256,"%s/%s",path,NC_("accel", "edit"));
+                       reset_path,
+                       g_cclosure_new(
+                           G_CALLBACK(slider_reset_callback),
+                           (gpointer)slider, NULL));
 	dt_accel_connect_iop(module,
-			accel_path,
-			g_cclosure_new(
-				G_CALLBACK(slider_edit_callback),
-				(gpointer)slider, NULL));
+                       edit_path,
+                       g_cclosure_new(
+                           G_CALLBACK(slider_edit_callback),
+                           (gpointer)slider, NULL));
 }
 
 void dt_accel_disconnect_list(GSList *list)
