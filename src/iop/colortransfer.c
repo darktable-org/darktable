@@ -32,6 +32,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/points.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 
@@ -116,6 +117,11 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
 //  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/acquire");
 //  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/apply");
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+
 }
 
 static void

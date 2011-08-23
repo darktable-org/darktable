@@ -20,6 +20,7 @@
 #include "common/opencl.h"
 #include "common/debug.h"
 #include "control/conf.h"
+#include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "gui/gtk.h"
@@ -131,7 +132,13 @@ flags ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/atrous/mix");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_accel_connect_slider_iop(self ,"mix",
+                              ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
 }
 
 static __m128
@@ -1385,7 +1392,6 @@ void gui_init (struct dt_iop_module_t *self)
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
   dtgtk_slider_set_label(DTGTK_SLIDER(c->mix), _("mix"));
-//  dtgtk_slider_set_accel(DTGTK_SLIDER(c->mix),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/atrous/mix");
   g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);

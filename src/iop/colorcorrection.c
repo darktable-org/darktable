@@ -29,6 +29,7 @@
 #include "iop/colorcorrection.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "develop/imageop.h"
 #include "dtgtk/resetlabel.h"
@@ -54,9 +55,16 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-void init_key_accels(dt_iop_module_t *self)
+void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcorrection/saturation");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_colorcorrection_gui_data_t *g =
+      (dt_iop_colorcorrection_gui_data_t*)self->gui_data;
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale5));
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -195,7 +203,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-3.0, 3.0, 0.01, p->saturation,2));
   g_object_set (GTK_OBJECT(g->scale5), "tooltip-text", _("set the global saturation"), (char *)NULL);
   dtgtk_slider_set_label(g->scale5,_("saturation"));
-//  dtgtk_slider_set_accel(g->scale5,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcorrection/saturation");
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
 
 

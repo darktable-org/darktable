@@ -23,6 +23,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -98,10 +99,21 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-void init_key_accels(dt_iop_module_t *self)
+void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/green vs magenta");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/blue vs yellow");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green vs magenta"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue vs yellow"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_colorcontrast_gui_data_t *g =
+      (dt_iop_colorcontrast_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "green vs magenta",
+                              GTK_WIDGET(g->a_scale));
+  dt_accel_connect_slider_iop(self, "blue vs yellow",
+                              GTK_WIDGET(g->b_scale));
 }
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
@@ -251,10 +263,8 @@ void gui_init     (dt_iop_module_t *self)
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
   g->a_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 5.0, 0.01, p->a_steepness, 2));
   dtgtk_slider_set_label(g->a_scale,_("green vs magenta"));
-//  dtgtk_slider_set_accel(g->a_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/green vs magenta");
   g->b_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 5.0, 0.01, p->b_steepness, 2));
   dtgtk_slider_set_label(g->b_scale,_("blue vs yellow"));
-//  dtgtk_slider_set_accel(g->b_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorcontrast/blue vs yellow");
   
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
