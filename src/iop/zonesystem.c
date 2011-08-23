@@ -232,27 +232,27 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     /* remap lightness into zonemap and apply lightness */
     const float *inp = in + ch*k;
+    float *outp = out + ch*k;
+
     const float lightness=inp[0]/100.0;
     const float rzw = (1.0/(size-1));                       // real zone width
     const int rz = CLAMPS((lightness/rzw), 0, size-2);      // real zone for lightness
     const float zw = (zonemap[rz+1]-zonemap[rz]);           // mapped zone width
     const float zs = zw/rzw ;                               // mapped zone scale
-    const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
-    float *outp = out + ch*k;
 
-    float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );
-    outp[0] = 100.0*l;
-    outp[1] = inp[1];
-    outp[2] = inp[2];
-    if (inp[0] > 0.01f)
+    if (rz > 0)
     {
-      outp[1] *= outp[0] / inp[0];
-      outp[2] *= outp[0] / inp[0];
+      const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
+      float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );
+      outp[0] = 100.0*l;
+      outp[1] = inp[1] * outp[0] / inp[0];
+      outp[2] = inp[2] * outp[0] / inp[0];
     }
     else
     {
-      outp[1] *= outp[0] / 0.01f;
-      outp[2] *= outp[0] / 0.01f;
+        outp[0] = 100.0*lightness*zs;
+        outp[1] = inp[1] * zs;
+        outp[2] = inp[2] * zs;
     }
   }
 
