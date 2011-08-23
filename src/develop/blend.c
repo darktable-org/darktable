@@ -73,6 +73,113 @@ static inline void _blend_Lab_rescale(const float *i, float *o)
 }
 
 
+static inline void _RGB_2_HSL(const float *RGB, float *HSL)
+{
+  float H, S, L;
+
+  float R = RGB[0];
+  float G = RGB[1];
+  float B = RGB[2];
+
+  float var_Min = fminf(R, fminf(G, B));
+  float var_Max = fmaxf(R, fmaxf(G, B));
+  float del_Max = var_Max - var_Min;
+
+  L = (var_Max + var_Min) / 2.0f;
+
+  if (del_Max == 0.0f)
+  {
+    H = 0.0f;
+    S = 0.0f;
+  }
+  else
+  {
+    if (L < 0.5f) S = del_Max / (var_Max + var_Min);
+    else          S = del_Max / (2.0f - var_Max - var_Min);
+
+    float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+
+    if      (R == var_Max) H = del_B - del_G;
+    else if (G == var_Max) H = (1.0f / 3.0f) + del_R - del_B;
+    else if (B == var_Max) H = (2.0f / 3.0f) + del_G - del_R;
+
+    if (H < 0.0f) H += 1.0f;
+    if (H > 1.0f) H -= 1.0f;
+  }
+
+  HSL[0] = H;
+  HSL[1] = S;
+  HSL[2] = L;
+}
+
+
+static inline float _Hue_2_RGB(float v1, float v2, float vH)
+{
+  if (vH < 0.0f) vH += 1.0f;
+  if (vH > 1.0f) vH -= 1.0f;
+  if ((6.0f * vH) < 1.0f) return (v1 + (v2 - v1) * 6.0f * vH);
+  if ((2.0f * vH) < 1.0f) return (v2);
+  if ((3.0f * vH) < 2.0f) return (v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6.0f);
+  return (v1);
+}
+
+
+static inline void _HSL_2_RGB(const float *HSL, float *RGB)
+{
+  float H = HSL[0];
+  float S = HSL[1];
+  float L = HSL[2];
+
+  float var_1, var_2;
+
+  if (S == 0.0f)
+  {
+    RGB[0] = RGB[1] = RGB[2] = L;
+  }
+  else
+  {
+    if (L < 0.5f) var_2 = L * (1.0f + S);
+    else          var_2 = (L + S) - (S * L);
+
+    var_1 = 2 * L - var_2;
+
+    RGB[0] = _Hue_2_RGB(var_1, var_2, H + (1.0f / 3.0f)); 
+    RGB[1] = _Hue_2_RGB(var_1, var_2, H);
+    RGB[2] = _Hue_2_RGB(var_1, var_2, H - (1.0f / 3.0f));
+  } 
+}
+
+
+static void _Lab_2_LCH(const float *Lab, float *LCH)
+{
+  float var_H = atan2f(Lab[2], Lab[1]);
+
+  if (var_H > 0.0f) var_H = (var_H / M_PI) * 180.0f;
+  else              var_H = 360.0f - (fabs(var_H) / M_PI) * 180.0f;
+
+  LCH[0] = Lab[0];
+  LCH[1] = sqrtf(Lab[1]*Lab[1] + Lab[2]*Lab[2]);
+  LCH[2] = var_H;
+}
+
+
+static inline float _degree_2_radian(float deg)
+{
+  return(deg/180.0f * M_PI);
+}
+
+
+static inline void _LCH_2_Lab(const float *LCH, float *Lab)
+{
+  Lab[0] = LCH[0];
+  Lab[1] = cosf(_degree_2_radian(LCH[2])) * LCH[1];
+  Lab[2] = sinf(_degree_2_radian(LCH[2])) * LCH[1];
+}
+
+
+
 /* normal blend */
 static void _blend_normal(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
 {
@@ -867,6 +974,120 @@ static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float opacity,con
   */
 }
 
+
+/* lightness blend */
+static void _blend_lightness(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+{
+  float ta[3], tb[3];
+  float tta[3], ttb[3];
+  int channels = _blend_colorspace_channels(cst);
+  for(int j=0;j<stride;j+=4)
+  {
+    if(cst==iop_cs_Lab)
+    {
+       _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
+
+       // no need to transfer to LCH as L is the same as in Lab, and C and H remain unchanged
+       tb[0] = (ta[0] * (1.0 - opacity)) + tb[0] * opacity;
+       tb[1] = ta[1];
+       tb[2] = ta[2];
+
+       _blend_Lab_rescale(tb, &b[j]);
+    }
+    else if(cst==iop_cs_rgb)
+    {
+      _RGB_2_HSL(&a[j], tta); _RGB_2_HSL(&b[j], ttb);
+
+      ttb[0] = tta[0];
+      ttb[1] = tta[1];
+      ttb[2] = (tta[2] * (1.0 - opacity)) + ttb[2] * opacity;
+
+      _HSL_2_RGB(ttb, &b[j]);
+    }
+    else
+      for(int k=0;k<channels;k++)
+        b[j+k] =  a[j+k];		// Noop for Raw
+  }
+}
+
+
+/* chroma blend */
+static void _blend_chroma(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+{
+  float ta[3], tb[3];
+  float tta[3], ttb[3];
+  int channels = _blend_colorspace_channels(cst);
+  for(int j=0;j<stride;j+=4)
+  {
+    if(cst==iop_cs_Lab)
+    {
+       _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
+       _Lab_2_LCH(ta, tta); _Lab_2_LCH(tb, ttb);
+
+       ttb[0] = tta[0];
+       ttb[1] = (tta[1] * (1.0 - opacity)) + ttb[1] * opacity;
+       ttb[2] = tta[2];
+        
+       _LCH_2_Lab(ttb, tb);
+       _blend_Lab_rescale(tb, &b[j]);
+    }
+    else if(cst==iop_cs_rgb)
+    {
+      _RGB_2_HSL(&a[j], tta); _RGB_2_HSL(&b[j], ttb);
+
+      ttb[0] = tta[0];
+      ttb[1] = (tta[1] * (1.0 - opacity)) + ttb[1] * opacity;
+      ttb[2] = tta[2];
+
+      _HSL_2_RGB(ttb, &b[j]);
+    }
+    else
+      for(int k=0;k<channels;k++)
+        b[j+k] =  a[j+k];		// Noop for Raw
+  }
+}
+
+
+/* hue blend */
+static void _blend_hue(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+{
+  float ta[3], tb[3];
+  float tta[3], ttb[3];
+  int channels = _blend_colorspace_channels(cst);
+  for(int j=0;j<stride;j+=4)
+  {
+    if(cst==iop_cs_Lab)
+    {
+       _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
+
+       _Lab_2_LCH(ta, tta); _Lab_2_LCH(tb, ttb);
+
+       ttb[0] = tta[0];
+       ttb[1] = tta[1];
+       ttb[2] = (tta[2] * (1.0 - opacity)) + ttb[2] * opacity;
+        
+       _LCH_2_Lab(ttb, tb);
+       _blend_Lab_rescale(tb, &b[j]);
+    }
+    else if(cst==iop_cs_rgb)
+    {
+      _RGB_2_HSL(&a[j], tta); _RGB_2_HSL(&b[j], ttb);
+
+      ttb[0] = (tta[0] * (1.0 - opacity)) + ttb[0] * opacity;
+      ttb[1] = tta[1];
+      ttb[2] = tta[2];
+
+      _HSL_2_RGB(ttb, &b[j]);
+    }
+    else
+      for(int k=0;k<channels;k++)
+        b[j+k] =  a[j+k];		// Noop for Raw
+  }
+}
+
+
+
+
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
   float *in =(float *)i;
@@ -922,6 +1143,15 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       break;
     case DEVELOP_BLEND_PINLIGHT:
       blend = _blend_pinlight;
+      break;
+    case DEVELOP_BLEND_LIGHTNESS:
+      blend = _blend_lightness;
+      break;
+    case DEVELOP_BLEND_CHROMA:
+      blend = _blend_chroma;
+      break;
+    case DEVELOP_BLEND_HUE:
+      blend = _blend_hue;
       break;
 
       /* fallback to normal blend */
@@ -1001,6 +1231,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int devid = piece->pipe->devid;
   const float opacity = fmin(fmax(0,(d->opacity/100.0)),1.0);
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
+  const int mode = d->mode;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
@@ -1010,7 +1241,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&(d->mode));
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&mode);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), (void *)&opacity);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
