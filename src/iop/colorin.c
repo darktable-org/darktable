@@ -322,14 +322,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!strcmp(p->iccprofile, "cmatrix"))
   {
     // color matrix
-    dt_image_full_path(self->dev->image->id, filename, 1024);
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
     float cam_xyz[12];
+    cam_xyz[0] = -666.0f;
     dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-    d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
+    if(cam_xyz[0] == -666.0f) sprintf(p->iccprofile, "linear_rgb");
+    else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
-  else if(!strcmp(p->iccprofile, "sRGB"))
+  if(!strcmp(p->iccprofile, "sRGB"))
   {
     d->input = dt_colorspaces_create_srgb_profile();
   }
@@ -499,16 +500,24 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_colorin_params_t *p   = (dt_iop_colorin_params_t *)self->params;
 
   g->profiles = NULL;
+  dt_iop_color_profile_t *prof;
+  int pos = -1;
 
   // get color matrix from raw image:
-  dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));
-  g_strlcpy(prof->name, "cmatrix", sizeof(prof->name));
-  g->profiles = g_list_append(g->profiles, prof);
-  int pos = prof->pos = 0;
-
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+  float cam_xyz[12];
+  cam_xyz[0] = -666.0f;
+  dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+  if(cam_xyz[0] != -666.0f)
+  {
+    prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+    g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));
+    g_strlcpy(prof->name, "cmatrix", sizeof(prof->name));
+    g->profiles = g_list_append(g->profiles, prof);
+    prof->pos = ++pos;
+  }
+
   // darktable built-in, if applicable
   for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
