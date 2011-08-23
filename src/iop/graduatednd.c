@@ -33,6 +33,7 @@
 #include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
@@ -148,11 +149,23 @@ groups ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/density");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/compression");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/rotation");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/split");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compression"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "split"));
 }
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_graduatednd_gui_data_t *g =
+      (dt_iop_graduatednd_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "compression", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "split", GTK_WIDGET(g->scale4));
+}
+
 static inline float
 f (const float t, const float c, const float x)
 {
@@ -541,11 +554,6 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale3,"°");
   dtgtk_slider_set_label(g->scale4,_("split"));
   dtgtk_slider_set_unit(g->scale4,"%");
-
-//  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/density");
-//  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/compression");
-//  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/rotation");
-//  dtgtk_slider_set_accel(g->scale4,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/graduatednd/split");
 
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);

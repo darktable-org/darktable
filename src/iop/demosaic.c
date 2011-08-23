@@ -19,6 +19,7 @@
 #include "common/opencl.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
 #include "control/control.h"
@@ -111,7 +112,14 @@ flags ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/demosaic/edge threshold");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge threshold"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_accel_connect_slider_iop(self, "edge threshold",
+                              GTK_WIDGET(((dt_iop_demosaic_gui_data_t*)
+                                          self->gui_data)->scale1));
 }
 
 int
@@ -1060,7 +1068,6 @@ void gui_init     (struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 1.000, 0.001, p->median_thrs, 3));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
   dtgtk_slider_set_label(g->scale1,_("edge threshold"));
-//  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/demosaic/edge threshold");
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->scale1), 0, 2, 1, 2, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 
   GtkWidget *widget;

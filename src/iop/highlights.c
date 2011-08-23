@@ -3,7 +3,7 @@
 		copyright (c) 2009--2010 johannes hanika.
 
 		darktable is free software: you can redistribute it and/or modify
-		it under the terms of the GNU General Public License as published by
+                it under the terms of the GNU General Public License as published by
 		the Free Software Foundation, either version 3 of the License, or
 		(at your option) any later version.
 
@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
@@ -95,9 +96,17 @@ flags ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend L"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend C"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend h"));
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+
 }
 
 static const float xyz_rgb[3][3] =    /* XYZ from RGB */

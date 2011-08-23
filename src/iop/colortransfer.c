@@ -83,6 +83,7 @@ typedef struct dt_iop_colortransfer_gui_data_t
   int flowback_set;
   dt_iop_colortransfer_params_t flowback;
   GtkWidget *apply_button;
+  GtkWidget *acquire_button;
   GtkSpinButton *spinbutton;
   GtkWidget *area;
   cmsHPROFILE hsRGB;
@@ -115,13 +116,17 @@ groups ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/acquire");
-//  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/apply");
+  dt_accel_register_iop(self, FALSE, NC_("accel", "acquire"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "apply"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
+  dt_iop_colortransfer_gui_data_t *g =
+      (dt_iop_colortransfer_gui_data_t*)self->gui_data;
 
+  dt_accel_connect_button_iop(self, "acquire", g->acquire_button);
+  dt_accel_connect_button_iop(self, "apply", g->apply_button);
 }
 
 static void
@@ -655,13 +660,12 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->spinbutton), "value-changed", G_CALLBACK(spinbutton_changed), (gpointer)self);
 
   button = gtk_button_new_with_label(_("acquire"));
+  g->acquire_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("analyze this image"), (char *)NULL);
-//  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/acquire");
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_button_pressed), (gpointer)self);
 
   g->apply_button = gtk_button_new_with_label(_("apply"));
-//  gtk_button_set_accel(GTK_BUTTON(g->apply_button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colortransfer/apply");
   g_object_set(G_OBJECT(g->apply_button), "tooltip-text", _("apply previously analyzed image look to this image"), (char *)NULL);
   gtk_box_pack_start(box, g->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->apply_button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);

@@ -28,6 +28,7 @@
 #include "iop/gamma.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 
 DT_MODULE(1)
@@ -46,10 +47,17 @@ groups ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/gamma/linear");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/gamma/gamma");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gamma"));
 }
 
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_gamma_gui_data_t* g = (dt_iop_gamma_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "linear", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->scale2));
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -181,8 +189,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox1), GTK_WIDGET(g->label2), TRUE, TRUE, 0);
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->linear,2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01,p->gamma,2));
-//  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/gamma/linear");
-//  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/gamma/gamma");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
