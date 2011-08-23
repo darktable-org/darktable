@@ -270,7 +270,6 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
   params->title = caption;
   params->description = description;
 
-  //TODO: handle tags with two or more words
   if (tags)
   {
 
@@ -289,7 +288,7 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
         dt_tag_t *t = g_list_nth_data(tags,i);
         if (t)
         {
-          array[i] = g_strdup (t->tag);
+          array[i] = g_strconcat ("\"", t->tag, "\"", NULL);
         }
 
       }
