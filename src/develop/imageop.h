@@ -180,6 +180,8 @@ typedef struct dt_iop_module_t
   GtkWidget *reset_button;
   /** show preset menu button */
   GtkWidget *presets_button;
+  /** fusion slider */
+  GtkWidget *fusion_slider;
   /** list of closures: show, enable/disable */
   GSList* accel_closures;
 

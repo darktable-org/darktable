@@ -337,6 +337,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->accel_closures = NULL;
   module->reset_button = NULL;
   module->presets_button = NULL;
+  module->fusion_slider = NULL;
 
   // now init the instance:
   module->init(module);
@@ -484,11 +485,10 @@ void dt_iop_load_modules_so()
     if(module->init_key_accels)
       (module->init_key_accels)(module);
 
-//    if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
-//    {
-//      snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
-//      dtgtk_slider_init_accel(darktable.control->accels_darkroom,name);
-//    }
+    if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
+    {
+      dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
+    }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Adding the optional show accelerator to the table (blank)
@@ -898,8 +898,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     GtkWidget *label = gtk_label_new(_("mode"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
     bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, 100.0, 0));
-//    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
-//    dtgtk_slider_set_accel(DTGTK_SLIDER(bd->opacity_slider),darktable.control->accels_darkroom,name);
+    module->fusion_slider = bd->opacity_slider;
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
@@ -1495,6 +1494,9 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   if(module->presets_button)
     dt_accel_connect_button_iop(module, "show preset menu",
                                 module->presets_button);
+
+  if(module->fusion_slider)
+    dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

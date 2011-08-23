@@ -363,29 +363,34 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   gchar decrease_path[256];
   gchar reset_path[256];
   gchar edit_path[256];
+  GClosure *closure;
   char *paths[] = {increase_path, decrease_path, reset_path, edit_path};
   dt_accel_paths_slider_iop(paths, 256, module->op, path);
 
-	dt_accel_connect_iop(module,
-                       increase_path,
-                       g_cclosure_new(
-                           G_CALLBACK(slider_increase_callback),
-                           (gpointer)slider, NULL));
-	dt_accel_connect_iop(module,
-                       decrease_path,
-                       g_cclosure_new(
-                           G_CALLBACK(slider_decrease_callback),
-                           (gpointer)slider, NULL));
-	dt_accel_connect_iop(module,
-                       reset_path,
-                       g_cclosure_new(
-                           G_CALLBACK(slider_reset_callback),
-                           (gpointer)slider, NULL));
-	dt_accel_connect_iop(module,
-                       edit_path,
-                       g_cclosure_new(
-                           G_CALLBACK(slider_edit_callback),
-                           (gpointer)slider, NULL));
+  closure =  g_cclosure_new(G_CALLBACK(slider_increase_callback),
+                            (gpointer)slider, NULL);
+  gtk_accel_group_connect_by_path(darktable.control->accelerators,
+                                  increase_path, closure);
+  module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+
+  closure = g_cclosure_new(G_CALLBACK(slider_decrease_callback),
+                           (gpointer)slider, NULL);
+  gtk_accel_group_connect_by_path(darktable.control->accelerators,
+                                  decrease_path, closure);
+  module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+
+  closure = g_cclosure_new(G_CALLBACK(slider_reset_callback),
+                           (gpointer)slider, NULL);
+  gtk_accel_group_connect_by_path(darktable.control->accelerators,
+                                  reset_path, closure);
+  module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+
+  closure = g_cclosure_new(G_CALLBACK(slider_edit_callback),
+                           (gpointer)slider, NULL);
+  gtk_accel_group_connect_by_path(darktable.control->accelerators,
+                                  edit_path, closure);
+  module->accel_closures = g_slist_prepend(module->accel_closures, closure);
+
 }
 
 void dt_accel_disconnect_list(GSList *list)
