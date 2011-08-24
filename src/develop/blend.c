@@ -152,7 +152,7 @@ static inline void _HSL_2_RGB(const float *HSL, float *RGB)
 }
 
 
-static void _Lab_2_LCH(const float *Lab, float *LCH)
+static inline void _Lab_2_LCH(const float *Lab, float *LCH)
 {
   float var_H = atan2f(Lab[2], Lab[1]);
 
