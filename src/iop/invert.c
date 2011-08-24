@@ -26,6 +26,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/button.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -61,7 +62,17 @@ groups ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/invert/pick color of film material from image");
+  dt_accel_register_iop(self, FALSE,
+                        NC_("accel", "pick color of film material from image"),
+                        0, 0);
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_button_iop(self, "pick color of film material from image",
+                              GTK_WIDGET(g->colorpicker));
 }
 
 int
@@ -323,7 +334,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
   g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE));
-//  dtgtk_button_set_accel(g->colorpicker,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/invert/pick color of film material from image");
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), 75, 24);
   g_signal_connect (G_OBJECT (g->colorpicker), "clicked", G_CALLBACK (colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);

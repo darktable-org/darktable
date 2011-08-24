@@ -31,6 +31,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -84,10 +85,20 @@ groups ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/soften/size");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/soften/saturation");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/soften/brightness");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/soften/mix");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "mix", GTK_WIDGET(g->scale4));
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -358,10 +369,6 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_force_sign(g->scale3, TRUE);
   dtgtk_slider_set_label(g->scale4,_("mix"));
   dtgtk_slider_set_unit(g->scale4,"%");
-//  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/soften/size");
-//  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/soften/saturation");
-//  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/soften/brightness");
-//  dtgtk_slider_set_accel(g->scale4,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/soften/mix");
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_format_type(g->scale4,DARKTABLE_SLIDER_FORMAT_PERCENT);

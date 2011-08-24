@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 
 DT_MODULE(1)
@@ -65,8 +66,17 @@ int groups()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/lower threshold");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/upper threshold");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lower threshold"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "upper threshold"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_overexposed_gui_data_t *g =
+      (dt_iop_overexposed_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "lower threshold", GTK_WIDGET(g->lower));
+  dt_accel_connect_slider_iop(self, "upper threshold", GTK_WIDGET(g->upper));
 }
 
 // FIXME: I'm not sure if this is the best test (all >= / <= threshold), but it seems to work.
@@ -263,12 +273,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
   g->lower = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->lower, 2));
-//  dtgtk_slider_set_accel(g->lower,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/lower threshold");
   dtgtk_slider_set_format_type(g->lower,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->lower,_("lower threshold"));
   dtgtk_slider_set_unit(g->lower,"%");
   g->upper = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->upper, 2));
-//  dtgtk_slider_set_accel(g->upper,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/overexposed/upper threshold");
   dtgtk_slider_set_format_type(g->upper,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->upper,_("upper threshold"));
   dtgtk_slider_set_unit(g->upper,"%");
