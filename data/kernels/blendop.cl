@@ -130,14 +130,13 @@ float4 HSL_2_RGB(const float4 HSL)
 
 float4 Lab_2_LCH(const float4 Lab)
 {
-  float var_H = atan2(Lab.z, Lab.y);
+  float H = atan2(Lab.z, Lab.y);
 
-  if (var_H > 0.0f) var_H = (var_H / M_PI) * 180.0f;
-  else              var_H = 360.0f - (fabs(var_H) / M_PI) * 180.0f;
+  if (H > 0.0f) H = (H / M_PI) * 180.0f;
+  else          H = 360.0f - (fabs(H) / M_PI) * 180.0f;
 
   float L = Lab.x;
   float C = sqrt(Lab.y*Lab.y + Lab.z*Lab.z);
-  float H = var_H;
 
   return (float4)(L, C, H, Lab.w);
 }
