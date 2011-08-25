@@ -104,6 +104,7 @@ static inline void _RGB_2_HSL(const float *RGB, float *HSL)
     if      (R == var_Max) H = del_B - del_G;
     else if (G == var_Max) H = (1.0f / 3.0f) + del_R - del_B;
     else if (B == var_Max) H = (2.0f / 3.0f) + del_G - del_R;
+    else H = 0.0f;   // make GCC happy
 
     if (H < 0.0f) H += 1.0f;
     if (H > 1.0f) H -= 1.0f;
