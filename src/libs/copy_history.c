@@ -20,6 +20,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include <stdlib.h>
@@ -34,6 +35,7 @@ typedef struct dt_lib_copy_history_t
   int32_t imageid;
   GtkComboBox *pastemode;
   GtkButton *paste;
+  GtkWidget *copy_button, *delete_button, *load_button, *write_button;
 }
 dt_lib_copy_history_t;
 
@@ -185,12 +187,12 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
-//  gtk_button_set_accel(GTK_BUTTON(copy),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/copy");
+  d->copy_button = copy;
   g_object_set(G_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"), (char *)NULL);
   gtk_box_pack_start(hbox, copy, TRUE, TRUE, 0);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
-//  gtk_button_set_accel(GTK_BUTTON(delete),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/discard");
+  d->delete_button = delete;
   g_object_set(G_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, delete, TRUE, TRUE, 0);
 
@@ -205,7 +207,6 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
-//  gtk_button_set_accel(GTK_BUTTON(d->paste),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/paste");
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), (char *)NULL);
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
@@ -215,12 +216,12 @@ gui_init (dt_lib_module_t *self)
 
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
-//  gtk_button_set_accel(GTK_BUTTON(loadbutton),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/load sidecar file");
+  d->load_button = loadbutton;
   g_object_set(G_OBJECT(loadbutton), "tooltip-text", _("open an xmp sidecar file\nand apply it to selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
-//  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/write sidecar files");
+  d->write_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
@@ -250,9 +251,22 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/copy");
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/discard");
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/paste");
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/load sidecar file");
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/copy_history/write sidecar files");
+  dt_accel_register_lib(self, FALSE, NC_("accel", "copy"), 0, 0);
+  dt_accel_register_lib(self, FALSE, NC_("accel", "discard"), 0, 0);
+  dt_accel_register_lib(self, FALSE, NC_("accel", "paste"), 0, 0);
+  dt_accel_register_lib(self, FALSE, NC_("accel", "load sidecar file"), 0, 0);
+  dt_accel_register_lib(self, FALSE, NC_("accel", "write sidecar files"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_button));
+  dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
+  dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste));
+  dt_accel_connect_button_lib(self, "load sidecar files",
+                              GTK_WIDGET(d->load_button));
+  dt_accel_connect_button_lib(self, "write sidecar files",
+                              GTK_WIDGET(d->write_button));
 }

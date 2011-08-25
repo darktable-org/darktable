@@ -22,6 +22,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/label.h"
 #include <gdk/gdkkeysyms.h>
@@ -98,8 +99,17 @@ position ()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-//  gtk_button_init_accel(darktable.control->accels_capture,"<Darktable>/capture/plugins/camera/capture image(s)");
+  dt_accel_register_lib(self, FALSE, NC_("accel", "capture image(s)"), 0, 0);
 }
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_camera_t *lib = (dt_lib_camera_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "capture image(s)",
+                              GTK_WIDGET(lib->gui.button1));
+}
+
 /** Property changed*/
 void property_changed_callback(GtkComboBox *cb,gpointer data)
 {
@@ -457,7 +467,6 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
   lib->gui.button1=gtk_button_new_with_label(_("capture image(s)"));
-//  gtk_button_set_accel(GTK_BUTTON(lib->gui.button1),darktable.control->accels_capture,"<Darktable>/capture/plugins/camera/capture image(s)");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), FALSE, FALSE, 5);
 
   g_object_set(G_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);

@@ -26,6 +26,7 @@
 #include "dtgtk/slider.h"
 #include "dtgtk/label.h"
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/presets.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
@@ -42,6 +43,7 @@ typedef struct dt_lib_export_t
   GtkContainer *storage_box, *format_box;
   GtkComboBox *profile, *intent;
   GList *profiles;
+  GtkButton *export_button;
 }
 dt_lib_export_t;
 
@@ -553,7 +555,7 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)d);
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
-//  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/export/export");
+  d->export_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
@@ -749,7 +751,15 @@ set_params (dt_lib_module_t *self, const void *params, int size)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/export/export");
+  dt_accel_register_lib(self, FALSE, NC_("accel", "export"),
+                        GDK_e, GDK_CONTROL_MASK);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_export_t *d = (dt_lib_export_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "export", GTK_WIDGET(d->export_button));
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
