@@ -31,6 +31,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -122,14 +123,36 @@ groups ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/scale");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/fall-off strength");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/brightness");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/saturation");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/horizontal center");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/vertical center");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/shape");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/width-height ration");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "fall-off strength"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "horizontal center"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vertical center"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shape"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "width-height ratio"));
+  }
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "scale",
+                              GTK_WIDGET(g->scale));
+  dt_accel_connect_slider_iop(self, "fall-off strength",
+                              GTK_WIDGET(g->falloff_scale));
+  dt_accel_connect_slider_iop(self, "brightness",
+                              GTK_WIDGET(g->brightness));
+  dt_accel_connect_slider_iop(self, "saturation",
+                              GTK_WIDGET(g->saturation));
+  dt_accel_connect_slider_iop(self, "horizontal center",
+                              GTK_WIDGET(g->center_x));
+  dt_accel_connect_slider_iop(self, "vertical center",
+                              GTK_WIDGET(g->center_y));
+  dt_accel_connect_slider_iop(self, "shape",
+                              GTK_WIDGET(g->shape));
+  dt_accel_connect_slider_iop(self, "width-height ratio",
+                              GTK_WIDGET(g->whratio));
 }
 
 int
@@ -858,23 +881,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->whratio = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0, 0.01, p->shape, 3));
 
   dtgtk_slider_set_label(g->scale,_("scale"));
-//  dtgtk_slider_set_accel(g->scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/scale");
   dtgtk_slider_set_unit(g->scale,"%");
   dtgtk_slider_set_label(g->falloff_scale,_("fall-off strength"));
-//  dtgtk_slider_set_accel(g->falloff_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/fall-off strength");
   dtgtk_slider_set_unit(g->falloff_scale,"%");
   dtgtk_slider_set_label(g->brightness,_("brightness"));
-//  dtgtk_slider_set_accel(g->brightness,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/brightness");
   dtgtk_slider_set_label(g->saturation,_("saturation"));
-//  dtgtk_slider_set_accel(g->saturation,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/saturation");
   dtgtk_slider_set_label(g->center_x,_("horizontal center"));
-//  dtgtk_slider_set_accel(g->center_x,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/horizontal center");
   dtgtk_slider_set_label(g->center_y,_("vertical center"));
-//  dtgtk_slider_set_accel(g->center_y,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/vertical center");
   dtgtk_slider_set_label(g->shape,_("shape"));
-//  dtgtk_slider_set_accel(g->shape,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/shape");
   dtgtk_slider_set_label(g->whratio,_("width/height ratio"));
-//  dtgtk_slider_set_accel(g->whratio,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/vignette/width-height ration");
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 

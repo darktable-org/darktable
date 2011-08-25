@@ -29,6 +29,7 @@
 #include "control/control.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
@@ -103,13 +104,28 @@ flags ()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/tint");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/temperature in");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/temperature out");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/red");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/green");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/blue");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature in"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature out"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
 }
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_temperature_gui_data_t *g =
+     (dt_iop_temperature_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "tint", GTK_WIDGET(g->scale_tint));
+  dt_accel_connect_slider_iop(self, "temperature in", GTK_WIDGET(g->scale_k));
+  dt_accel_connect_slider_iop(self, "temperature out",
+                              GTK_WIDGET(g->scale_k_out));
+  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_r));
+  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
+  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
+}
+
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -491,13 +507,6 @@ void gui_init (struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->scale_r,_("red"));
   dtgtk_slider_set_label(g->scale_g,_("green"));
   dtgtk_slider_set_label(g->scale_b,_("blue"));
-
-//  dtgtk_slider_set_accel(g->scale_tint,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/tint");
-//  dtgtk_slider_set_accel(g->scale_k,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/temperature in");
-//  dtgtk_slider_set_accel(g->scale_k_out,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/temperature out");
-//  dtgtk_slider_set_accel(g->scale_r,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/red");
-//  dtgtk_slider_set_accel(g->scale_g,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/green");
-//  dtgtk_slider_set_accel(g->scale_b,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/temperature/blue");
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale_tint), TRUE, TRUE, 0);

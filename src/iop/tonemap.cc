@@ -42,6 +42,7 @@ extern "C"
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -91,8 +92,20 @@ extern "C"
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tonemap/contrast compression");
-//  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tonemap/spatial extent");
+  dt_accel_register_slider_iop(self, FALSE,
+                               NC_("accel", "contrast compression"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_tonemapping_gui_data_t *g =
+      (dt_iop_tonemapping_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "contrast compression",
+                              GTK_WIDGET(g->contrast));
+  dt_accel_connect_slider_iop(self, "spatial extent",
+                              GTK_WIDGET(g->Fsize));
 }
 
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -294,13 +307,11 @@ void init_key_accels(dt_iop_module_so_t *self)
     g->contrast = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,1.0, 5.0000, 0.1, p->contrast, 3));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
     dtgtk_slider_set_label(g->contrast,_("contrast compression"));
-//    dtgtk_slider_set_accel(g->contrast,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tonemap/contrast compression");
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",G_CALLBACK (contrast_callback), self);
 
     g->Fsize = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0,100.0, 1.0, p->Fsize*100.0, 1));
     dtgtk_slider_set_format_type(g->Fsize, DARKTABLE_SLIDER_FORMAT_PERCENT);
     dtgtk_slider_set_label(g->Fsize,_("spatial extent"));
-//    dtgtk_slider_set_accel(g->Fsize,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tonemap/spatial extent");
     dtgtk_slider_set_unit(g->Fsize,(gchar *)"%");
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
     g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);
