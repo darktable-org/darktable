@@ -19,6 +19,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
 #include "libs/lib.h"
@@ -34,6 +35,7 @@ typedef struct dt_lib_styles_t
   GtkEntry *entry;
   GtkWidget *duplicate;
   GtkTreeView *list;
+  GtkWidget *delete_button, *import_button, *export_button;
 }
 dt_lib_styles_t;
 
@@ -64,10 +66,20 @@ position ()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/delete");
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/export");
-//  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/import");
+  dt_accel_register_lib(self, FALSE, NC_("accel", "delete"), 0, 0);
+  dt_accel_register_lib(self, FALSE, NC_("accel", "export"), 0, 0);
+  dt_accel_register_lib(self, FALSE, NC_("accel", "import"), 0, 0);
 }
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "delete", d->delete_button);
+  dt_accel_connect_button_lib(self, "export", d->export_button);
+  dt_accel_connect_button_lib(self, "import", d->import_button);
+}
+
 typedef enum _styles_columns_t
 {
   DT_STYLES_COL_NAME=0,
@@ -347,20 +359,20 @@ gui_init (dt_lib_module_t *self)
 #endif
 
   widget=gtk_button_new_with_label(_("delete"));
-//  gtk_button_set_accel(GTK_BUTTON(widget),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/delete");
+  d->delete_button = widget;
   g_signal_connect (widget, "clicked", G_CALLBACK(delete_clicked),d);
   g_object_set (widget, "tooltip-text", _("deletes the selected style in list above"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX (self->widget),hbox,TRUE,FALSE,0);
   // Export Button
   GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
-//  gtk_button_set_accel(GTK_BUTTON(exportButton),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/export");
+  d->export_button = exportButton;
   g_object_set (exportButton, "tooltip-text", _("export the selected style into a style file"), (char *)NULL);
   g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),exportButton,TRUE,TRUE,0);
   // Import Button
   GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import"));
-//  gtk_button_set_accel(GTK_BUTTON(importButton),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/styles/import");
+  d->import_button = importButton;
   g_object_set (importButton, "tooltip-text", _("import style from a style file"), (char *)NULL);
   g_signal_connect (importButton, "clicked", G_CALLBACK(import_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),importButton,TRUE,TRUE,0);
