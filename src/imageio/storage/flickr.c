@@ -277,24 +277,24 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
     int i, length;
 
     length = g_list_length(tags);
-    if (length > 1)
+    if (length > 0)
     {
       array = g_malloc(sizeof(gchar*)*(length+1));
 
-      array[0] = "";
-
-      for (i=1; i<length; i++)
+      for (i=0; i<length; i++)
       {
         dt_tag_t *t = g_list_nth_data(tags,i);
+
         if (t)
-        {
+        
+	{
           array[i] = g_strconcat ("\"", t->tag, "\"", NULL);
         }
 
       }
       array[length] = NULL;
       params->tags = g_strjoinv(" ",array);
-//TODO      g_strfreev(array);
+      g_strfreev(array);
     }
   }
   params->photo_file = fname; //fname should be the URI of temp file
