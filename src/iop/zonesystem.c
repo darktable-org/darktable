@@ -100,10 +100,10 @@ groups ()
 static inline int
 _iop_zonesystem_zone_index_from_lightness (float lightness,float *zonemap,int size)
 {
-  for (int k=0; k<size; k++)
-    if (zonemap[k]<=lightness && zonemap[k+1]>=lightness)
+  for (int k=0; k<size-1; k++)
+    if (zonemap[k+1] >= lightness)
       return k;
-  return 0;
+  return size-1;
 }
 
 /* calculate a zonemap with scale values for each zone based on controlpoints from param */
@@ -216,7 +216,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for (int k=0; k<roi_out->width*roi_out->height; k++)
     {
-      buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[ch*k]/100.0), zonemap, size);
+      buffer[k] = _iop_zonesystem_zone_index_from_lightness (out[ch*k]/100.0f, zonemap, size);
     }
 
     dt_pthread_mutex_unlock(&g->lock);
@@ -225,6 +225,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   /* process the image */
   in  = (float *)ivoid;
   out = (float *)ovoid;
+
+  const float scale = (size-1)/100.0f;
+
+  // scale zonemap to L range
+  for (int k=0; k < MAX_ZONE_SYSTEM_SIZE; k++) zonemap[k] *= 100.0f;
+
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap) schedule(static)
 #endif
@@ -235,14 +241,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float *inp = in + ch*(j*roi_out->width+i);
     float *outp = out + ch*(j*roi_out->width+i);
 
-    const float lightness=inp[0]/100.0;
-    const float rzf = lightness * (size-1); // real zone scale position
+    const float rzf = inp[0] * scale; // real zone scale position
     const int rz = CLAMPS(rzf, 0, size-2);  // real zone index
     const float zw = zonemap[rz+1]-zonemap[rz];
 
     if (rz > 0)
     {
-      outp[0] = 100.0 * CLIP ( zonemap[rz] + zw*(rzf - rz));
+      outp[0] = zonemap[rz] + zw*(rzf - rz);
       outp[1] = inp[1] * outp[0] / inp[0];
       outp[2] = inp[2] * outp[0] / inp[0];
     }
@@ -253,9 +258,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // zonemap[0] == 0 and rz == 0, hence outp[0] == 100.0f * zw * rzf == 100.0f zw * lightness * (size-1);
       // also outp[0]/inp[0] will be zw * (size-1)
       // so calculate common zs (zone 0 scale)
-      const float zs = zw*(size-1) ;  // zone 0 scale
+      const float zs = zw*scale ;  // zone 0 scale
 
-      outp[0] = 100.0*lightness*zs;
+      outp[0] = inp[0] * zs;
       outp[1] = inp[1] * zs;
       outp[2] = inp[2] * zs;
     }
