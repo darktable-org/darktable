@@ -228,11 +228,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap) schedule(static)
 #endif
-  for (int k=0; k<roi_out->width*roi_out->height; k++)
+  for (int j=0; j<roi_out->height; j++)
+  for (int i=0; i<roi_out->width; i++)
   {
     /* remap lightness into zonemap and apply lightness */
-    const float *inp = in + ch*k;
-    float *outp = out + ch*k;
+    const float *inp = in + ch*(j*roi_out->width+i);
+    float *outp = out + ch*(j*roi_out->width+i);
 
     const float lightness=inp[0]/100.0;
     const float rzf = lightness * (size-1); // real zone scale position
