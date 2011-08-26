@@ -222,7 +222,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     dt_pthread_mutex_unlock(&g->lock);
   }
 
-  /* proces the image */
+  /* process the image */
   in  = (float *)ivoid;
   out = (float *)ovoid;
 #ifdef _OPENMP
@@ -235,24 +235,28 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *outp = out + ch*k;
 
     const float lightness=inp[0]/100.0;
-    const float rzw = (1.0/(size-1));                       // real zone width
-    const int rz = CLAMPS((lightness/rzw), 0, size-2);      // real zone for lightness
-    const float zw = (zonemap[rz+1]-zonemap[rz]);           // mapped zone width
-    const float zs = zw/rzw ;                               // mapped zone scale
+    const float rzf = lightness * (size-1); // real zone scale position
+    const int rz = CLAMPS(rzf, 0, size-2);  // real zone index
+    const float zw = zonemap[rz+1]-zonemap[rz];
 
     if (rz > 0)
     {
-      const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
-      float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );
-      outp[0] = 100.0*l;
+      outp[0] = 100.0 * CLIP ( zonemap[rz] + zw*(rzf - rz));
       outp[1] = inp[1] * outp[0] / inp[0];
       outp[2] = inp[2] * outp[0] / inp[0];
     }
     else
     {
-        outp[0] = 100.0*lightness*zs;
-        outp[1] = inp[1] * zs;
-        outp[2] = inp[2] * zs;
+      // special case for zone 0
+      // because L can be < 0, we don't want to CLIP
+      // zonemap[0] == 0 and rz == 0, hence outp[0] == 100.0f * zw * rzf == 100.0f zw * lightness * (size-1);
+      // also outp[0]/inp[0] will be zw * (size-1)
+      // so calculate common zs (zone 0 scale)
+      const float zs = zw*(size-1) ;  // zone 0 scale
+
+      outp[0] = 100.0*lightness*zs;
+      outp[1] = inp[1] * zs;
+      outp[2] = inp[2] * zs;
     }
   }
 
