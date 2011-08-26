@@ -35,6 +35,7 @@
 #include "dtgtk/gradientslider.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include <xmmintrin.h>
 
 
 #define CLIP(x) (((x)>=0)?((x)<=1.0?(x):1.0):0.0)
@@ -226,13 +227,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   in  = (float *)ivoid;
   out = (float *)ovoid;
 
-  const float scale = (size-1)/100.0f;
+  const float rzscale = (size-1)/100.0f;
 
-  // scale zonemap to L range
-  for (int k=0; k < MAX_ZONE_SYSTEM_SIZE; k++) zonemap[k] *= 100.0f;
+  float zonemap_offset[MAX_ZONE_SYSTEM_SIZE]= {-1};
+  float zonemap_scale[MAX_ZONE_SYSTEM_SIZE]= {-1};
+
+  // precompute scale and offset
+  for (int k=0; k < size-1; k++) zonemap_scale[k]  = (zonemap[k+1]-zonemap[k])*(size-1);
+  for (int k=0; k < size-1; k++) zonemap_offset[k] = 100.0f * ((k+1)*zonemap[k] - k*zonemap[k+1]) ;
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap_scale,zonemap_offset) schedule(static)
 #endif
   for (int j=0; j<roi_out->height; j++)
   for (int i=0; i<roi_out->width; i++)
@@ -241,30 +246,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float *inp = in + ch*(j*roi_out->width+i);
     float *outp = out + ch*(j*roi_out->width+i);
 
-    const float rzf = inp[0] * scale; // real zone scale position
-    const int rz = CLAMPS(rzf, 0, size-2);  // real zone index
-    const float zw = zonemap[rz+1]-zonemap[rz];
+    const int rz = CLAMPS(inp[0]*rzscale, 0, size-2);  // zone index
 
-    if (rz > 0)
-    {
-      outp[0] = zonemap[rz] + zw*(rzf - rz);
-      outp[1] = inp[1] * outp[0] / inp[0];
-      outp[2] = inp[2] * outp[0] / inp[0];
-    }
-    else
-    {
-      // special case for zone 0
-      // because L can be < 0, we don't want to CLIP
-      // zonemap[0] == 0 and rz == 0, hence outp[0] == 100.0f * zw * rzf == 100.0f zw * lightness * (size-1);
-      // also outp[0]/inp[0] will be zw * (size-1)
-      // so calculate common zs (zone 0 scale)
-      const float zs = zw*scale ;  // zone 0 scale
+    const float zs = ((rz > 0) ? (zonemap_offset[rz]/inp[0]) : 0) + zonemap_scale[rz];
 
-      outp[0] = inp[0] * zs;
-      outp[1] = inp[1] * zs;
-      outp[2] = inp[2] * zs;
-    }
+    _mm_stream_ps(outp,_mm_mul_ps(_mm_load_ps(inp),_mm_set1_ps(zs)));
   }
+
+  _mm_sfence();
 
   /* thread-safe redraw */
   if(  self->dev->gui_attached && g && buffer )
