@@ -286,9 +286,12 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
         dt_tag_t *t = g_list_nth_data(tags,i);
 
         if (t)
-        
 	{
-          array[i] = g_strconcat ("\"", t->tag, "\"", NULL);
+          if (!g_ascii_strncasecmp(t->tag, "darktable|", 10))
+          {
+            array[i] = g_strdup("darktable");
+          } else
+            array[i] = g_strconcat ("\"", t->tag, "\"", NULL);
         }
 
       }
