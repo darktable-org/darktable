@@ -349,6 +349,45 @@ void init_presets (dt_iop_module_t *self)
   p.equalizer_y[2][5] = 0.500000;
   dt_gui_presets_add_generic(_("natural skin tones"), self->op, &p, sizeof(p), 1);
 
+  p.channel = 2;
+  p.equalizer_x[0][0] = 0.000000;
+  p.equalizer_y[0][0] = 0.613040;
+  p.equalizer_x[0][1] = 0.245283;
+  p.equalizer_y[0][1] = 0.447962;
+  p.equalizer_x[0][2] = 0.498113;
+  p.equalizer_y[0][2] = 0.529201;
+  p.equalizer_x[0][3] = 0.641509;
+  p.equalizer_y[0][3] = 0.664967;
+  p.equalizer_x[0][4] = 0.879245;
+  p.equalizer_y[0][4] = 0.777294;
+  p.equalizer_x[0][5] = 1.000000;
+  p.equalizer_y[0][5] = 0.613040;
+  p.equalizer_x[1][0] = 0.000000;
+  p.equalizer_y[1][0] = 0.000000;
+  p.equalizer_x[1][1] = 0.200000;
+  p.equalizer_y[1][1] = 0.000000;
+  p.equalizer_x[1][2] = 0.400000;
+  p.equalizer_y[1][2] = 0.000000;
+  p.equalizer_x[1][3] = 0.600000;
+  p.equalizer_y[1][3] = 0.000000;
+  p.equalizer_x[1][4] = 0.800000;
+  p.equalizer_y[1][4] = 0.000000;
+  p.equalizer_x[1][5] = 1.000000;
+  p.equalizer_y[1][5] = 0.000000;
+  p.equalizer_x[2][0] = 0.000000;
+  p.equalizer_y[2][0] = 0.500000;
+  p.equalizer_x[2][1] = 0.200000;
+  p.equalizer_y[2][1] = 0.500000;
+  p.equalizer_x[2][2] = 0.400000;
+  p.equalizer_y[2][2] = 0.500000;
+  p.equalizer_x[2][3] = 0.600000;
+  p.equalizer_y[2][3] = 0.500000;
+  p.equalizer_x[2][4] = 0.800000;
+  p.equalizer_y[2][4] = 0.500000;
+  p.equalizer_x[2][5] = 1.000000;
+  p.equalizer_y[2][5] = 0.500000;
+  dt_gui_presets_add_generic(_("black & white film"), self->op, &p, sizeof(p), 1);
+
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 
