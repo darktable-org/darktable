@@ -234,7 +234,6 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   return;
 }
 
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
@@ -246,10 +245,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     return;
   }
 
-  float *const tmp = dt_alloc_align(16, sizeof(float)*ch*roi_out->width*roi_out->height);
+  float *const tmp = dt_alloc_align(16, sizeof(float)*roi_out->width*roi_out->height);
+  if (tmp == NULL)
+  {
+    fprintf(stderr,"[sharpen] failed to allocate temporary buffer\n");
+    return;
+  }
 
   const int wd = 2*rad+1;
-  float mat[wd];
+  const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
+  __attribute__((aligned(16))) float mat[wd4*4];
+
+  bzero(mat,sizeof(mat));
+
   const float sigma2 = (1.0f/(2.5*2.5))*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
 
@@ -266,31 +274,78 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=0; j<roi_out->height; j++)
   {
     const float *in = ((float *)ivoid) + ch*(j*roi_in->width + rad);
-    float *out = tmp + ch*(j*roi_out->width + rad);
-    for(int i=rad; i<roi_out->width-rad; i++)
+    float *out = tmp + j*roi_out->width + rad;
+    int i;
+    for(i=rad; i<roi_out->width-wd4*4+rad; i++)
+    {
+      const float *inp = in - ch*rad;
+      __attribute__((aligned(16))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      __m128 msum = _mm_setzero_ps();
+
+      for(int k=0; k < wd4*4; k+=4,inp+=4*ch)
+      {
+        msum = _mm_add_ps(msum,_mm_mul_ps(_mm_load_ps(mat+k),_mm_set_ps(inp[0],inp[ch],inp[2*ch],inp[3*ch])));
+      }
+      _mm_store_ps(sum,msum);
+      *out = sum[0]+sum[1]+sum[2]+sum[3];
+      out++;
+      in += ch;
+    }
+    for(; i<roi_out->width-rad; i++)
     {
       const float *inp = in - ch*rad;
       const float *m = mat;
       float sum = 0.0f;
-      for(int k=-rad; k<=rad; k++,m++,inp+=ch)
+      for(int k=-rad; k <=rad; k++,m++,inp+=ch)
+      {
         sum += *m * *inp;
+      }
       *out = sum;
-      out += ch;
+      out++;
       in += ch;
     }
   }
+  _mm_sfence();
 
-  // gauss blur the image horizontally
+// gauss blur the image vertically
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
-  for(int j=rad; j<roi_out->height-rad; j++)
+  for(int j=rad; j<roi_out->height-wd4*4+rad; j++)
   {
-    const float *in = tmp + ch*(j*roi_in->width + rad);
-    float *out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
-    for(int i=rad; i<roi_out->width-rad; i++)
+    const float *in = tmp + j*roi_in->width;
+    float *out = ((float *)ovoid) + ch*j*roi_out->width;
+
+    const int step = roi_in->width;
+
+    __attribute__((aligned(16))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    for(int i = 0; i<roi_out->width; i++)
     {
-      const int step = ch*roi_in->width;
+      const float *inp = in - step*rad;
+      __m128 msum = _mm_setzero_ps();
+
+      for(int k=0; k < wd4*4; k+=4,inp+=step*4)
+      {
+        msum = _mm_add_ps(msum,_mm_mul_ps(_mm_load_ps(mat+k),_mm_set_ps(inp[0],inp[step],inp[step*2],inp[step*3])));
+      }
+      _mm_store_ps(sum,msum);
+      *out = sum[0]+sum[1]+sum[2]+sum[3];
+      out += ch;
+      in ++;
+    }
+  }
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(mat, ivoid, ovoid, roi_out, roi_in) schedule(static)
+#endif
+  for(int j=roi_out->height-wd4*4+rad; j<roi_out->height-rad; j++)
+  {
+    const float *in = tmp + j*roi_in->width;
+    float *out = ((float *)ovoid) + ch*j*roi_out->width;
+    const int step = roi_in->width;
+
+    for(int i = 0; i<roi_out->width; i++)
+    {
       const float *inp = in - step*rad;
       const float *m = mat;
       float sum = 0.0f;
@@ -298,9 +353,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         sum += *m * *inp;
       *out = sum;
       out += ch;
-      in += ch;
+      in ++;
     }
   }
+
+  _mm_sfence();
 
   // fill unsharpened border
   for(int j=0; j<rad; j++)
@@ -322,6 +379,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=roi_out->width-rad; i<roi_out->width; i++)
       out[ch*i] = in[ch*i];
   }
+
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
@@ -336,7 +394,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[1] = in[1];
       out[2] = in[2];
       const float diff = in[0] - out[0];
-      if(fabsf(diff) > data->threshold)
+      if (fabsf(diff) > data->threshold)
       {
         const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
         out[0] = fmaxf(0.0, in[0] + detail*data->amount);
@@ -347,7 +405,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 }
-
+    
 static void
 radius_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
