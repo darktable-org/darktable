@@ -62,13 +62,13 @@ typedef struct _flickr_api_context_t
 typedef struct dt_storage_flickr_gui_data_t
 {
 
-  GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7;                           // username, password, albums, status, albumtitle, albumsummary, albumrights
-  GtkEntry *entry1,*entry2,*entry3,*entry4;                          // username, password, albumtitle,albumsummary
-  GtkComboBox *comboBox1;                                 // album box
-  GtkCheckButton *checkButton1,*checkButton2;                         // public album, export tags
-  GtkDarktableButton *dtbutton1;                        // refresh albums and login in Flickr. Actually both buttons call the same function
-  GtkButton *button;
-  GtkBox *hbox1;                                                    // Create album options...
+  GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7; // username, password, albums, status, albumtitle, albumsummary, albumrights
+  GtkEntry *entry1,*entry2,*entry3,*entry4;        // username, password, albumtitle,albumsummary
+  GtkComboBox *comboBox1;                          // album box
+  GtkCheckButton *checkButton1,*checkButton2;      // public album, export tags
+  GtkDarktableButton *dtbutton1;                   // refresh albums
+  GtkButton *button;				   // login button. These buttons call the same functions
+  GtkBox *hbox1;                                   // Create album options...
 
   char *user_token;
 
@@ -498,7 +498,6 @@ gui_init (dt_imageio_module_storage_t *self)
   GtkWidget *vbox2=gtk_vbox_new(FALSE,0);
 
   ui->label1 = GTK_LABEL(  gtk_label_new( _("flickr user") ) );
-//  ui->label2 = GTK_LABEL(  gtk_label_new( _("F_password") ) );
   ui->label3 = GTK_LABEL(  gtk_label_new( _("photosets") ) );
   ui->label4 = GTK_LABEL(  gtk_label_new( NULL ) );
 
@@ -506,21 +505,16 @@ gui_init (dt_imageio_module_storage_t *self)
   
   ui->label5 = GTK_LABEL(  gtk_label_new( _("title") ) );
   ui->label6 = GTK_LABEL(  gtk_label_new( _("summary") ) );
-//  ui->label7 = GTK_LABEL(  gtk_label_new( _("F_rights") ) );
   gtk_misc_set_alignment(GTK_MISC(ui->label1), 0.0, 0.5);
-//  gtk_misc_set_alignment(GTK_MISC(ui->label2), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label3), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label5), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label6), 0.0, 0.5);
-//  gtk_misc_set_alignment(GTK_MISC(ui->label7), 0.0, 0.5);
 
   ui->entry1 = GTK_ENTRY( gtk_entry_new() );
-//  ui->entry2 = GTK_ENTRY( gtk_entry_new() );
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
   ui->entry4 = GTK_ENTRY( gtk_entry_new() );  // Album summary
 
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry1));
-//  dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry2));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry3));
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (ui->entry4));
 
@@ -541,14 +535,10 @@ gui_init (dt_imageio_module_storage_t *self)
   */
   GHashTable* table = dt_pwstorage_get("flickr");
   gchar* _username = g_strdup( g_hash_table_lookup(table, "username"));
-  //gchar* _password = g_strdup( g_hash_table_lookup(table, "token"));
   g_hash_table_destroy(table);
   gtk_entry_set_text( ui->entry1,  _username == NULL?"":_username );
-//  gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
   gtk_entry_set_text( ui->entry3, _("my new photoset") );
   gtk_entry_set_text( ui->entry4, _("exported from darktable") );
-
-//  gtk_entry_set_visibility(ui->entry2, FALSE);
 
   GtkWidget *albumlist=gtk_hbox_new(FALSE,0);
   ui->comboBox1=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Available albums
@@ -576,21 +566,18 @@ gui_init (dt_imageio_module_storage_t *self)
 
   ui->checkButton1 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("make images public")) );
   ui->checkButton2 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("export tags")) );
-//  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON( ui->checkButton1 ),TRUE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON( ui->checkButton2 ),TRUE);
-  // Auth
-  gtk_box_pack_start(GTK_BOX(hbox1), vbox1, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox1), vbox2, TRUE, TRUE, 0);
+  
   gtk_box_pack_start(GTK_BOX(self->widget), hbox0, TRUE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( hbox0 ), GTK_WIDGET( ui->label1 ), TRUE, TRUE, 0);
-//  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label2 ), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX( hbox0 ), GTK_WIDGET( ui->entry1 ), TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX( hbox0 ), GTK_WIDGET( ui->button ), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX( hbox1 ), vbox1, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX( hbox1 ), vbox2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label3 ), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( hbox0 ), GTK_WIDGET( ui->entry1 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( hbox0 ), GTK_WIDGET( ui->button ), FALSE, FALSE, 0);
-//  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry2 ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->label4 ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton1 ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton2 ), TRUE, FALSE, 0);
@@ -607,7 +594,6 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(ui->hbox1), TRUE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label5 ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label6 ), TRUE, TRUE, 0);
-//  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label7 ), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry3 ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->entry4 ), TRUE, FALSE, 0);
@@ -618,7 +604,6 @@ gui_init (dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(ui->dtbutton1), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
   g_signal_connect(G_OBJECT(ui->button), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
   g_signal_connect(G_OBJECT(ui->entry1), "changed", G_CALLBACK(flickr_entry_changed), (gpointer)ui);
-//  g_signal_connect(G_OBJECT(ui->entry2), "changed", G_CALLBACK(flickr_entry_changed), (gpointer)ui);
   g_signal_connect(G_OBJECT(ui->comboBox1), "changed", G_CALLBACK(flickr_album_changed), (gpointer)ui);
 
   /**
