@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-21 16:37+0200\n"
-"PO-Revision-Date: 2011-08-21 16:45+0100\n"
+"POT-Creation-Date: 2011-08-27 10:55+0200\n"
+"PO-Revision-Date: 2011-08-27 10:58+0100\n"
 "Last-Translator: Jose Carlos Garcia Sogo <jcsogo@gmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -182,8 +182,8 @@ msgid "activate OpenCL support (experimental)"
 msgstr "activar el soporte de OpenCL (experimental)"
 
 #: ../build/src/preferences_gen.h:664
-msgid "if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. expect random crashes."
-msgstr "si se encuentra, usar OpenCL en su sistema para merjorar la velocidad de proceso. este código es aún experimental y no está completo; espere cuelgues aleatorios."
+msgid "if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to forum darktable-devel at sourceforge.net"
+msgstr "si está disponible, usar OpenCL en su sistema para mejorar la velocidad de proceso. este código es aún experimental y no está completo. por favor envíe cualquier error a la lista darktable-devel@lists.sourceforge.net"
 
 #: ../build/src/preferences_gen.h:669
 msgid "always use lcms2 during export"
@@ -216,854 +216,793 @@ msgstr "adquirir"
 
 #: ../build/src/accelstrings_gen.h:3
 msgctxt "accel"
-msgid "add sample"
-msgstr ""
-
-#: ../build/src/accelstrings_gen.h:4
-msgctxt "accel"
 msgid "amount"
 msgstr "cantidad"
 
-#: ../build/src/accelstrings_gen.h:5
+#: ../build/src/accelstrings_gen.h:4
 msgctxt "accel"
 msgid "angle"
 msgstr "ángulo"
 
-#: ../build/src/accelstrings_gen.h:6
-msgctxt "accel"
-msgid "applies a style selected from popup menu"
-msgstr "aplica un estilo seleccionado de un menu emergente"
-
-#: ../build/src/accelstrings_gen.h:7
+#: ../build/src/accelstrings_gen.h:5
 msgctxt "accel"
 msgid "apply"
 msgstr "aplicar"
 
-#: ../build/src/accelstrings_gen.h:8
-msgctxt "accel"
-msgid "attach"
-msgstr "añadir"
-
-#: ../build/src/accelstrings_gen.h:9
+#: ../build/src/accelstrings_gen.h:6
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "exposición automática"
 
-#: ../build/src/accelstrings_gen.h:10
+#: ../build/src/accelstrings_gen.h:7
 msgctxt "accel"
 msgid "auto scale"
 msgstr "auto escalar"
 
-#: ../build/src/accelstrings_gen.h:11
+#: ../build/src/accelstrings_gen.h:8
 msgctxt "accel"
 msgid "balance"
 msgstr "balance"
 
-#: ../build/src/accelstrings_gen.h:12
+#: ../build/src/accelstrings_gen.h:9
 msgctxt "accel"
 msgid "black"
 msgstr "negro"
 
-#: ../build/src/accelstrings_gen.h:13
+#: ../build/src/accelstrings_gen.h:10
 msgctxt "accel"
 msgid "blend C"
 msgstr "mezcla C"
 
-#: ../build/src/accelstrings_gen.h:14
+#: ../build/src/accelstrings_gen.h:11
 msgctxt "accel"
 msgid "blend h"
 msgstr "mezcla h"
 
-#: ../build/src/accelstrings_gen.h:15
+#: ../build/src/accelstrings_gen.h:12
 msgctxt "accel"
 msgid "blend L"
 msgstr "mezcla L"
 
-#: ../build/src/accelstrings_gen.h:16
+#: ../build/src/accelstrings_gen.h:13
 msgctxt "accel"
 msgid "blue"
 msgstr "azul"
 
-#: ../build/src/accelstrings_gen.h:17
+#: ../build/src/accelstrings_gen.h:14
 msgctxt "accel"
 msgid "blue shift"
 msgstr "levantar azules"
 
-#: ../build/src/accelstrings_gen.h:18
+#: ../build/src/accelstrings_gen.h:15
 msgctxt "accel"
 msgid "blue vs yellow"
 msgstr "azul - amarillo"
 
-#: ../build/src/accelstrings_gen.h:19
+#: ../build/src/accelstrings_gen.h:16
 msgctxt "accel"
 msgid "border size"
 msgstr "tamaño de borde"
 
-#: ../build/src/accelstrings_gen.h:20
+#: ../build/src/accelstrings_gen.h:17
 msgctxt "accel"
 msgid "brightness"
 msgstr "brillo"
 
-#: ../build/src/accelstrings_gen.h:21
+#: ../build/src/accelstrings_gen.h:18
 msgctxt "accel"
 msgid "camera model"
 msgstr "modelo de cámara"
 
-#: ../build/src/accelstrings_gen.h:22
+#: ../build/src/accelstrings_gen.h:19
 msgctxt "accel"
 msgid "capture image(s)"
 msgstr "capturar imagen(es)"
 
-#: ../build/src/accelstrings_gen.h:23
+#: ../build/src/accelstrings_gen.h:20
 msgctxt "accel"
 msgid "capture view"
 msgstr "vista de captura"
 
-#: ../build/src/accelstrings_gen.h:24
+#: ../build/src/accelstrings_gen.h:21
 msgctxt "accel"
 msgid "center"
 msgstr "centro"
 
-#: ../build/src/accelstrings_gen.h:25
+#: ../build/src/accelstrings_gen.h:22
 msgctxt "accel"
 msgid "chroma"
 msgstr "croma"
 
-#: ../build/src/accelstrings_gen.h:26
+#: ../build/src/accelstrings_gen.h:23
 msgctxt "accel"
 msgid "clear"
 msgstr "eliminar"
 
-#: ../build/src/accelstrings_gen.h:27
+#: ../build/src/accelstrings_gen.h:24
 msgctxt "accel"
 msgid "close-up"
 msgstr "acercar"
 
-#: ../build/src/accelstrings_gen.h:28
+#: ../build/src/accelstrings_gen.h:25
 msgctxt "accel"
 msgid "coarseness"
 msgstr "tosquedad"
 
-#: ../build/src/accelstrings_gen.h:29
+#: ../build/src/accelstrings_gen.h:26
 msgctxt "accel"
 msgid "color"
 msgstr "color"
 
-#: ../build/src/accelstrings_gen.h:30
+#: ../build/src/accelstrings_gen.h:27
 msgctxt "accel"
 msgid "commit"
 msgstr ""
 
-#: ../build/src/accelstrings_gen.h:31
+#: ../build/src/accelstrings_gen.h:28
 msgctxt "accel"
 msgid "compress"
 msgstr "comprimir"
 
-#: ../build/src/accelstrings_gen.h:32
-msgctxt "accel"
-msgid "compress history stack"
-msgstr "comprimir histórico de acciones"
-
-#: ../build/src/accelstrings_gen.h:33
+#: ../build/src/accelstrings_gen.h:29
 msgctxt "accel"
 msgid "compression"
 msgstr "compresión"
 
-#: ../build/src/accelstrings_gen.h:34
+#: ../build/src/accelstrings_gen.h:30
 msgctxt "accel"
 msgid "contrast"
 msgstr "contraste"
 
-#: ../build/src/accelstrings_gen.h:35
+#: ../build/src/accelstrings_gen.h:31
 msgctxt "accel"
 msgid "contrast boost"
 msgstr "incremento de contraste"
 
-#: ../build/src/accelstrings_gen.h:36
+#: ../build/src/accelstrings_gen.h:32
 msgctxt "accel"
 msgid "contrast compression"
 msgstr "compresión del contraste"
 
-#: ../build/src/accelstrings_gen.h:37
-msgctxt "accel"
-msgid "create a style from the current history stack"
-msgstr "crear un estilo usando su histórico de acciones actual"
-
-#: ../build/src/accelstrings_gen.h:38
+#: ../build/src/accelstrings_gen.h:33
 msgctxt "accel"
 msgid "create hdr"
 msgstr "crear hdr"
 
-#: ../build/src/accelstrings_gen.h:39
+#: ../build/src/accelstrings_gen.h:34
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "cuarto oscuro"
 
-#: ../build/src/accelstrings_gen.h:40
+#: ../build/src/accelstrings_gen.h:35
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "reducir brillo"
 
-#: ../build/src/accelstrings_gen.h:41
+#: ../build/src/accelstrings_gen.h:36
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "reducir contraste"
 
-#: ../build/src/accelstrings_gen.h:42
+#: ../build/src/accelstrings_gen.h:37
 msgctxt "accel"
 msgid "delete"
 msgstr "borrar"
 
-#: ../build/src/accelstrings_gen.h:43
+#: ../build/src/accelstrings_gen.h:38
 msgctxt "accel"
 msgid "delete from disk"
 msgstr "borrar físicamente del disco"
 
-#: ../build/src/accelstrings_gen.h:44
+#: ../build/src/accelstrings_gen.h:39
 msgctxt "accel"
 msgid "density"
 msgstr "densidad"
 
-#: ../build/src/accelstrings_gen.h:45
+#: ../build/src/accelstrings_gen.h:40
 msgctxt "accel"
 msgid "desert"
 msgstr "desierto"
 
-#: ../build/src/accelstrings_gen.h:46
-msgctxt "accel"
-msgid "detach"
-msgstr "quitar"
-
-#: ../build/src/accelstrings_gen.h:47
+#: ../build/src/accelstrings_gen.h:41
 msgctxt "accel"
 msgid "discard"
 msgstr "descartar"
 
-#: ../build/src/accelstrings_gen.h:48
+#: ../build/src/accelstrings_gen.h:42
 msgctxt "accel"
 msgid "down"
 msgstr "abajo"
 
-#: ../build/src/accelstrings_gen.h:49
+#: ../build/src/accelstrings_gen.h:43
 msgctxt "accel"
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../build/src/accelstrings_gen.h:50
+#: ../build/src/accelstrings_gen.h:44
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "umbral de borde"
 
-#: ../build/src/accelstrings_gen.h:51
-#: ../src/dtgtk/slider.c:740
-msgctxt "accel"
-msgid "edit"
-msgstr "editar"
-
-#: ../build/src/accelstrings_gen.h:52
+#: ../build/src/accelstrings_gen.h:45
 msgctxt "accel"
 msgid "enable plugin"
 msgstr "activar módulo"
 
-#: ../build/src/accelstrings_gen.h:53
+#: ../build/src/accelstrings_gen.h:46
 msgctxt "accel"
 msgid "fall-off strength"
 msgstr "fuerza del difuminado"
 
-#: ../build/src/accelstrings_gen.h:54
+#: ../build/src/accelstrings_gen.h:47
 msgctxt "accel"
 msgid "fill"
 msgstr "rellenar"
 
-#: ../build/src/accelstrings_gen.h:55
+#: ../build/src/accelstrings_gen.h:48
 msgctxt "accel"
 msgid "film strip"
 msgstr "tira de imagenes"
 
-#: ../build/src/accelstrings_gen.h:56
+#: ../build/src/accelstrings_gen.h:49
 msgctxt "accel"
 msgid "find camera"
 msgstr "encontrar cámara"
 
-#: ../build/src/accelstrings_gen.h:57
+#: ../build/src/accelstrings_gen.h:50
 msgctxt "accel"
 msgid "find lens"
 msgstr "encontrar lente"
 
-#: ../build/src/accelstrings_gen.h:58
+#: ../build/src/accelstrings_gen.h:51
 msgctxt "accel"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/src/accelstrings_gen.h:59
+#: ../build/src/accelstrings_gen.h:52
 msgctxt "accel"
 msgid "fusion opacity"
 msgstr "opacidad"
 
-#: ../build/src/accelstrings_gen.h:60
+#: ../build/src/accelstrings_gen.h:53
 msgctxt "accel"
 msgid "gamma exponential part"
 msgstr "factor exponencial gamma"
 
-#: ../build/src/accelstrings_gen.h:61
+#: ../build/src/accelstrings_gen.h:54
 msgctxt "accel"
 msgid "global"
 msgstr "opciones globales"
 
-#: ../build/src/accelstrings_gen.h:62
+#: ../build/src/accelstrings_gen.h:55
 msgctxt "accel"
 msgid "green"
 msgstr "verde"
 
-#: ../build/src/accelstrings_gen.h:63
+#: ../build/src/accelstrings_gen.h:56
 msgctxt "accel"
 msgid "green vs magenta"
 msgstr "verde - magenta"
 
-#: ../build/src/accelstrings_gen.h:64
+#: ../build/src/accelstrings_gen.h:57
+msgctxt "accel"
+msgid "history"
+msgstr "historia"
+
+#: ../build/src/accelstrings_gen.h:58
 msgctxt "accel"
 msgid "horizontal center"
 msgstr "centro horizontal"
 
-#: ../build/src/accelstrings_gen.h:65
+#: ../build/src/accelstrings_gen.h:59
 msgctxt "accel"
 msgid "image back"
 msgstr "imagen anterior"
 
-#: ../build/src/accelstrings_gen.h:66
+#: ../build/src/accelstrings_gen.h:60
 msgctxt "accel"
 msgid "image forward"
 msgstr "siguiente imagen"
 
-#: ../build/src/accelstrings_gen.h:67
+#: ../build/src/accelstrings_gen.h:61
 msgctxt "accel"
-msgid "import folder"
-msgstr "importar sesión"
+msgid "import"
+msgstr "importar"
 
-#: ../build/src/accelstrings_gen.h:68
-msgctxt "accel"
-msgid "import from camera"
-msgstr "importar desde cámara"
-
-#: ../build/src/accelstrings_gen.h:69
-msgctxt "accel"
-msgid "import image"
-msgstr "importar imagen"
-
-#: ../build/src/accelstrings_gen.h:70
+#: ../build/src/accelstrings_gen.h:62
 msgctxt "accel"
 msgid "in"
 msgstr "dentro"
 
-#: ../build/src/accelstrings_gen.h:71
+#: ../build/src/accelstrings_gen.h:63
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "incrementar brillo"
 
-#: ../build/src/accelstrings_gen.h:72
+#: ../build/src/accelstrings_gen.h:64
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "incrementar contraste"
 
-#: ../build/src/accelstrings_gen.h:73
+#: ../build/src/accelstrings_gen.h:65
 msgctxt "accel"
 msgid "invert selection"
 msgstr "invertir selección"
 
-#: ../build/src/accelstrings_gen.h:74
+#: ../build/src/accelstrings_gen.h:66
 msgctxt "accel"
 msgid "keystone h"
 msgstr "trapezoide h"
 
-#: ../build/src/accelstrings_gen.h:75
+#: ../build/src/accelstrings_gen.h:67
 msgctxt "accel"
 msgid "keystone v"
 msgstr "trapezoide v"
 
-#: ../build/src/accelstrings_gen.h:76
+#: ../build/src/accelstrings_gen.h:68
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "salir de pantalla completa"
 
-#: ../build/src/accelstrings_gen.h:77
+#: ../build/src/accelstrings_gen.h:69
 msgctxt "accel"
 msgid "left"
 msgstr "izquierda"
 
-#: ../build/src/accelstrings_gen.h:78
+#: ../build/src/accelstrings_gen.h:70
 msgctxt "accel"
 msgid "lens model"
 msgstr "modelo de lente"
 
-#: ../build/src/accelstrings_gen.h:79
-msgctxt "accel"
-msgid "lightness"
-msgstr "luminosidad"
-
-#: ../build/src/accelstrings_gen.h:80
+#: ../build/src/accelstrings_gen.h:71
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "caja de luz"
 
-#: ../build/src/accelstrings_gen.h:81
+#: ../build/src/accelstrings_gen.h:72
 msgctxt "accel"
 msgid "linear"
 msgstr "lineal"
 
-#: ../build/src/accelstrings_gen.h:82
+#: ../build/src/accelstrings_gen.h:73
 msgctxt "accel"
 msgid "linear part"
 msgstr "parte lineal"
 
-#: ../build/src/accelstrings_gen.h:83
+#: ../build/src/accelstrings_gen.h:74
 msgctxt "accel"
 msgid "load sidecar file"
 msgstr "carga archivo asociado"
 
-#: ../build/src/accelstrings_gen.h:84
+#: ../build/src/accelstrings_gen.h:75
 msgctxt "accel"
 msgid "local_contrast_2"
 msgstr "contraste local 2"
 
-#: ../build/src/accelstrings_gen.h:85
+#: ../build/src/accelstrings_gen.h:76
 msgctxt "accel"
 msgid "lower threshold"
 msgstr "umbral por abajo"
 
-#: ../build/src/accelstrings_gen.h:86
+#: ../build/src/accelstrings_gen.h:77
 msgctxt "accel"
 msgid "luma"
 msgstr "luma"
 
-#: ../build/src/accelstrings_gen.h:87
+#: ../build/src/accelstrings_gen.h:78
 msgctxt "accel"
 msgid "max"
 msgstr "max"
 
-#: ../build/src/accelstrings_gen.h:88
+#: ../build/src/accelstrings_gen.h:79
 msgctxt "accel"
 msgid "mid-tones bias"
 msgstr "desviación medios tonos"
 
-#: ../build/src/accelstrings_gen.h:89
+#: ../build/src/accelstrings_gen.h:80
 msgctxt "accel"
 msgid "min"
 msgstr "min"
 
-#: ../build/src/accelstrings_gen.h:90
+#: ../build/src/accelstrings_gen.h:81
 msgctxt "accel"
 msgid "mix"
 msgstr "mix"
 
-#: ../build/src/accelstrings_gen.h:91
+#: ../build/src/accelstrings_gen.h:82
 msgctxt "accel"
 msgid "navigate"
 msgstr "navegar"
 
-#: ../build/src/accelstrings_gen.h:92
-msgctxt "accel"
-msgid "new"
-msgstr "nueva"
-
-#: ../build/src/accelstrings_gen.h:93
+#: ../build/src/accelstrings_gen.h:83
 msgctxt "accel"
 msgid "noise threshold"
 msgstr "umbral de ruido"
 
-#: ../build/src/accelstrings_gen.h:94
+#: ../build/src/accelstrings_gen.h:84
 msgctxt "accel"
 msgid "opacity"
 msgstr "opacidad"
 
-#: ../build/src/accelstrings_gen.h:95
+#: ../build/src/accelstrings_gen.h:85
 msgctxt "accel"
 msgid "out"
 msgstr "alejar"
 
-#: ../build/src/accelstrings_gen.h:96
+#: ../build/src/accelstrings_gen.h:86
 msgctxt "accel"
 msgid "page down"
 msgstr "página abajo"
 
-#: ../build/src/accelstrings_gen.h:97
+#: ../build/src/accelstrings_gen.h:87
 msgctxt "accel"
 msgid "page up"
 msgstr "página arriba"
 
-#: ../build/src/accelstrings_gen.h:98
+#: ../build/src/accelstrings_gen.h:88
 msgctxt "accel"
 msgid "paste"
 msgstr "pegar"
 
-#: ../build/src/accelstrings_gen.h:99
-msgctxt "accel"
-msgid "pick color"
-msgstr "seleccionar color"
-
-#: ../build/src/accelstrings_gen.h:100
+#: ../build/src/accelstrings_gen.h:89
 msgctxt "accel"
 msgid "pick color of film material from image"
 msgstr "seleccionar color de la película desde la imagen"
 
-#: ../build/src/accelstrings_gen.h:101
+#: ../build/src/accelstrings_gen.h:90
 msgctxt "accel"
 msgid "pick gui color from image"
 msgstr "seleccionar color en el gráfico"
 
-#: ../build/src/accelstrings_gen.h:102
+#: ../build/src/accelstrings_gen.h:91
 msgctxt "accel"
 msgid "pick primary color"
 msgstr "color principal"
 
-#: ../build/src/accelstrings_gen.h:103
+#: ../build/src/accelstrings_gen.h:92
 msgctxt "accel"
 msgid "pick secondary color"
 msgstr "color secundario"
 
-#: ../build/src/accelstrings_gen.h:104
+#: ../build/src/accelstrings_gen.h:93
 msgctxt "accel"
 msgid "plugins"
 msgstr "módulos"
 
-#: ../build/src/accelstrings_gen.h:105
+#: ../build/src/accelstrings_gen.h:94
 msgctxt "accel"
 msgid "preview"
 msgstr "previsualizar"
 
-#: ../build/src/accelstrings_gen.h:106
+#: ../build/src/accelstrings_gen.h:95
 msgctxt "accel"
 msgid "purple"
 msgstr "púrpura"
 
-#: ../build/src/accelstrings_gen.h:107
+#: ../build/src/accelstrings_gen.h:96
 msgctxt "accel"
 msgid "quit"
 msgstr "salir"
 
-#: ../build/src/accelstrings_gen.h:108
+#: ../build/src/accelstrings_gen.h:97
 msgctxt "accel"
 msgid "radius"
 msgstr "radio"
 
-#: ../build/src/accelstrings_gen.h:109
+#: ../build/src/accelstrings_gen.h:98
 msgctxt "accel"
 msgid "rating"
 msgstr "valoración"
 
-#: ../build/src/accelstrings_gen.h:110
+#: ../build/src/accelstrings_gen.h:99
 msgctxt "accel"
 msgid "red"
 msgstr "rojo"
 
-#: ../build/src/accelstrings_gen.h:111
+#: ../build/src/accelstrings_gen.h:100
 msgctxt "accel"
 msgid "refresh"
 msgstr "refrescar"
 
-#: ../build/src/accelstrings_gen.h:112
+#: ../build/src/accelstrings_gen.h:101
 msgctxt "accel"
 msgid "reject"
 msgstr "rechazar"
 
-#: ../build/src/accelstrings_gen.h:113
+#: ../build/src/accelstrings_gen.h:102
 msgctxt "accel"
 msgid "remove"
 msgstr "eliminar"
 
-#: ../build/src/accelstrings_gen.h:114
+#: ../build/src/accelstrings_gen.h:103
 msgctxt "accel"
 msgid "remove from collection"
 msgstr "eliminar de la colección"
 
-#: ../build/src/accelstrings_gen.h:115
+#: ../build/src/accelstrings_gen.h:104
 msgctxt "accel"
 msgid "reset camera from exif data"
 msgstr "reinicializar cámara desde los datos exif"
 
-#: ../build/src/accelstrings_gen.h:116
+#: ../build/src/accelstrings_gen.h:105
 msgctxt "accel"
 msgid "reset distance from exif data"
 msgstr "reinicializar distancia desde los datos exif"
 
-#: ../build/src/accelstrings_gen.h:117
+#: ../build/src/accelstrings_gen.h:106
 msgctxt "accel"
 msgid "reset lens from exif data"
 msgstr "reinicializar lente desde los datos exif"
 
-#: ../build/src/accelstrings_gen.h:118
+#: ../build/src/accelstrings_gen.h:107
 msgctxt "accel"
 msgid "reset plugin parameters"
 msgstr "reinicializar los parámetros"
 
-#: ../build/src/accelstrings_gen.h:119
+#: ../build/src/accelstrings_gen.h:108
 msgctxt "accel"
 msgid "reset rotation"
 msgstr "reinicializar rotación"
 
-#: ../build/src/accelstrings_gen.h:120
+#: ../build/src/accelstrings_gen.h:109
 msgctxt "accel"
 msgid "right"
 msgstr "derecha"
 
-#: ../build/src/accelstrings_gen.h:121
+#: ../build/src/accelstrings_gen.h:110
 msgctxt "accel"
 msgid "rotate selected images 90 degrees ccw"
 msgstr "rotar imágenes seleccionadas 90 grados en sentido antihorario"
 
-#: ../build/src/accelstrings_gen.h:122
+#: ../build/src/accelstrings_gen.h:111
 msgctxt "accel"
 msgid "rotate selected images 90 degrees cw"
 msgstr "rotar imágenes seleccionadas 90 grados en sentido horario"
 
-#: ../build/src/accelstrings_gen.h:123
+#: ../build/src/accelstrings_gen.h:112
 msgctxt "accel"
 msgid "rotation"
 msgstr "rotación"
 
-#: ../build/src/accelstrings_gen.h:124
+#: ../build/src/accelstrings_gen.h:113
 msgctxt "accel"
 msgid "saturation"
 msgstr "saturación"
 
-#: ../build/src/accelstrings_gen.h:125
+#: ../build/src/accelstrings_gen.h:114
 msgctxt "accel"
 msgid "scale"
 msgstr "escala"
 
-#: ../build/src/accelstrings_gen.h:126
-msgctxt "accel"
-msgid "scan for devices"
-msgstr "escanear periféricos"
-
-#: ../build/src/accelstrings_gen.h:127
+#: ../build/src/accelstrings_gen.h:115
 msgctxt "accel"
 msgid "scroll"
 msgstr "desplazamiento"
 
-#: ../build/src/accelstrings_gen.h:128
+#: ../build/src/accelstrings_gen.h:116
 msgctxt "accel"
 msgid "scroll back"
 msgstr "desplazar atrás"
 
-#: ../build/src/accelstrings_gen.h:129
+#: ../build/src/accelstrings_gen.h:117
 msgctxt "accel"
 msgid "scroll forward"
 msgstr "desplazar adelante"
 
-#: ../build/src/accelstrings_gen.h:130
+#: ../build/src/accelstrings_gen.h:118
 msgctxt "accel"
 msgid "select all"
 msgstr "seleccionar todo"
 
-#: ../build/src/accelstrings_gen.h:131
+#: ../build/src/accelstrings_gen.h:119
 msgctxt "accel"
 msgid "select film roll"
 msgstr "seleccionar sesión"
 
-#: ../build/src/accelstrings_gen.h:132
+#: ../build/src/accelstrings_gen.h:120
 msgctxt "accel"
 msgid "select none"
 msgstr "no seleccionar"
 
-#: ../build/src/accelstrings_gen.h:133
+#: ../build/src/accelstrings_gen.h:121
 msgctxt "accel"
 msgid "select untouched"
 msgstr "seleccionar no tocadas"
 
-#: ../build/src/accelstrings_gen.h:134
+#: ../build/src/accelstrings_gen.h:122
 msgctxt "accel"
 msgid "sensitivity"
 msgstr "sensibilidad"
 
-#: ../build/src/accelstrings_gen.h:135
+#: ../build/src/accelstrings_gen.h:123
 msgctxt "accel"
 msgid "shape"
 msgstr "forma"
 
-#: ../build/src/accelstrings_gen.h:136
+#: ../build/src/accelstrings_gen.h:124
 msgctxt "accel"
 msgid "sharpness"
 msgstr "enfoque"
 
-#: ../build/src/accelstrings_gen.h:137
+#: ../build/src/accelstrings_gen.h:125
 msgctxt "accel"
 msgid "show"
 msgstr "mostrar"
 
-#: ../build/src/accelstrings_gen.h:138
+#: ../build/src/accelstrings_gen.h:126
 msgctxt "accel"
 msgid "show plugin"
 msgstr "mostrar añadidos"
 
-#: ../build/src/accelstrings_gen.h:139
+#: ../build/src/accelstrings_gen.h:127
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "mostrar menú de pre establecidos"
 
-#: ../build/src/accelstrings_gen.h:140
+#: ../build/src/accelstrings_gen.h:128
 msgctxt "accel"
 msgid "size"
 msgstr "tamaño"
 
-#: ../build/src/accelstrings_gen.h:141
-msgctxt "accel"
-msgid "source mix"
-msgstr ""
-
-#: ../build/src/accelstrings_gen.h:142
+#: ../build/src/accelstrings_gen.h:129
 msgctxt "accel"
 msgid "spatial extent"
 msgstr "extensión espacial"
 
-#: ../build/src/accelstrings_gen.h:143
+#: ../build/src/accelstrings_gen.h:130
 msgctxt "accel"
 msgid "split"
 msgstr "dividir"
 
-#: ../build/src/accelstrings_gen.h:144
+#: ../build/src/accelstrings_gen.h:131
 msgctxt "accel"
 msgid "strength"
 msgstr "fuerza"
 
-#: ../build/src/accelstrings_gen.h:145
+#: ../build/src/accelstrings_gen.h:132
 msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "intercambiar el aspecto de la proporción"
 
-#: ../build/src/accelstrings_gen.h:146
+#: ../build/src/accelstrings_gen.h:133
 msgctxt "accel"
 msgid "switch view"
 msgstr "cambiar vista"
 
-#: ../build/src/accelstrings_gen.h:147
-msgctxt "accel"
-msgid "take snapshot"
-msgstr "tomar una instantánea"
-
-#: ../build/src/accelstrings_gen.h:148
+#: ../build/src/accelstrings_gen.h:134
 msgctxt "accel"
 msgid "tca B"
 msgstr "tca B"
 
-#: ../build/src/accelstrings_gen.h:149
+#: ../build/src/accelstrings_gen.h:135
 msgctxt "accel"
 msgid "tca R"
 msgstr "tca R"
 
-#: ../build/src/accelstrings_gen.h:150
+#: ../build/src/accelstrings_gen.h:136
 msgctxt "accel"
 msgid "temperature in"
 msgstr "temperatura D50"
 
-#: ../build/src/accelstrings_gen.h:151
+#: ../build/src/accelstrings_gen.h:137
 msgctxt "accel"
 msgid "temperature out"
 msgstr "temperatura  K"
 
-#: ../build/src/accelstrings_gen.h:152
-msgctxt "accel"
-msgid "tethered shoot"
-msgstr "disparo conectado"
-
-#: ../build/src/accelstrings_gen.h:153
+#: ../build/src/accelstrings_gen.h:138
 msgctxt "accel"
 msgid "threshold"
 msgstr "umbral"
 
-#: ../build/src/accelstrings_gen.h:154
+#: ../build/src/accelstrings_gen.h:139
 msgctxt "accel"
 msgid "tint"
 msgstr "tinte"
 
-#: ../build/src/accelstrings_gen.h:155
+#: ../build/src/accelstrings_gen.h:140
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "tira de imágenes"
 
-#: ../build/src/accelstrings_gen.h:156
+#: ../build/src/accelstrings_gen.h:141
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activar pantalla completa"
 
-#: ../build/src/accelstrings_gen.h:157
-msgctxt "accel"
-msgid "toggle header"
-msgstr "activar paneles lateriales"
-
-#: ../build/src/accelstrings_gen.h:158
+#: ../build/src/accelstrings_gen.h:142
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activar paneles lateriales"
 
-#: ../build/src/accelstrings_gen.h:159
+#: ../build/src/accelstrings_gen.h:143
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "activar prueba impresión"
 
-#: ../build/src/accelstrings_gen.h:160
+#: ../build/src/accelstrings_gen.h:144
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../build/src/accelstrings_gen.h:161
+#: ../build/src/accelstrings_gen.h:145
 msgctxt "accel"
 msgid "up"
 msgstr "arriba"
 
-#: ../build/src/accelstrings_gen.h:162
+#: ../build/src/accelstrings_gen.h:146
 msgctxt "accel"
 msgid "upper threshold"
 msgstr "umbral por arriba"
 
-#: ../build/src/accelstrings_gen.h:163
+#: ../build/src/accelstrings_gen.h:147
 msgctxt "accel"
 msgid "useless"
 msgstr "seleccionar"
 
-#: ../build/src/accelstrings_gen.h:164
+#: ../build/src/accelstrings_gen.h:148
 msgctxt "accel"
 msgid "vertical center"
 msgstr "centro vertical"
 
-#: ../build/src/accelstrings_gen.h:165
+#: ../build/src/accelstrings_gen.h:149
 msgctxt "accel"
 msgid "vibrance"
 msgstr "intensidad"
 
-#: ../build/src/accelstrings_gen.h:166
+#: ../build/src/accelstrings_gen.h:150
 msgctxt "accel"
 msgid "width"
 msgstr "ancho"
 
-#: ../build/src/accelstrings_gen.h:167
+#: ../build/src/accelstrings_gen.h:151
 msgctxt "accel"
 msgid "width-height ration"
 msgstr "proporción anchura/altura"
 
-#: ../build/src/accelstrings_gen.h:168
+#: ../build/src/accelstrings_gen.h:152
 msgctxt "accel"
 msgid "write sidecar files"
 msgstr "escribir archivos xmp"
 
-#: ../build/src/accelstrings_gen.h:169
+#: ../build/src/accelstrings_gen.h:153
 msgctxt "accel"
 msgid "x offset"
 msgstr "desplazamiento x"
 
-#: ../build/src/accelstrings_gen.h:170
+#: ../build/src/accelstrings_gen.h:154
 msgctxt "accel"
 msgid "yellow"
 msgstr "amarillo"
 
-#: ../build/src/accelstrings_gen.h:171
+#: ../build/src/accelstrings_gen.h:155
 msgctxt "accel"
 msgid "y offset"
 msgstr "desplazamiento y"
 
-#: ../build/src/accelstrings_gen.h:172
+#: ../build/src/accelstrings_gen.h:156
 msgctxt "accel"
 msgid "zoom"
 msgstr "zoom"
+
+#: ../build/src/accelstrings_gen.h:157
+msgctxt "accel"
+msgid "darkroom"
+msgstr "cuarto oscuro"
+
+#: ../build/src/accelstrings_gen.h:158
+msgctxt "accel"
+msgid "lighttable"
+msgstr "mesa de luz"
+
+#: ../build/src/accelstrings_gen.h:159
+msgctxt "accel"
+msgid "export"
+msgstr "exportar"
+
+#: ../build/src/accelstrings_gen.h:160
+msgctxt "accel"
+msgid "copy"
+msgstr "copiar"
 
 #: ../src/common/collection.c:319
 #: ../src/iop/bilateral.cc:356
@@ -1505,6 +1444,11 @@ msgctxt "accel"
 msgid "reset"
 msgstr "reinicializar"
 
+#: ../src/dtgtk/slider.c:740
+msgctxt "accel"
+msgid "edit"
+msgstr "editar"
+
 #: ../src/gui/background_jobs.c:33
 msgid "background jobs"
 msgstr "trabajos en segundo plano"
@@ -1917,7 +1861,7 @@ msgid "film roll"
 msgstr "sesión"
 
 #: ../src/gui/gtk.c:1994
-#: ../src/imageio/storage/flickr.c:500
+#: ../src/imageio/storage/flickr.c:507
 #: ../src/imageio/storage/gallery.c:154
 #: ../src/imageio/storage/picasa.c:767
 #: ../src/libs/collect.h:35
@@ -2517,98 +2461,110 @@ msgstr "%d/%d exportado a `%s%s'"
 msgid "send as email"
 msgstr "enviar como correo electrónico"
 
-#: ../src/imageio/storage/flickr.c:113
+#: ../src/imageio/storage/flickr.c:114
 #, c-format
 msgid "flickr authentication: %s"
 msgstr "autenticación flickr: %s"
 
-#: ../src/imageio/storage/flickr.c:188
+#: ../src/imageio/storage/flickr.c:189
 msgid "step 1: a new window or tab of your browser should have been loaded. you have to login into your flickr account there and authorize darktable to upload photos before continuing."
 msgstr "paso 1: una nueva ventana o pestaña de su navegador debe estar cargada. debe entrar en su cuenta flickr y autorizar a darktable a subir las fotos antes de continuar."
 
-#: ../src/imageio/storage/flickr.c:189
+#: ../src/imageio/storage/flickr.c:190
 msgid "step 2: click the ok button once you are done."
 msgstr "paso 2: click en el botón ok una vez hecho."
 
-#: ../src/imageio/storage/flickr.c:196
+#: ../src/imageio/storage/flickr.c:197
 msgid "flickr authentication"
 msgstr "autenticación flickr"
 
-#: ../src/imageio/storage/flickr.c:332
+#: ../src/imageio/storage/flickr.c:335
 msgid "flickr webalbum"
-msgstr "albumweb flickr"
+msgstr "álbum flickr"
 
-#: ../src/imageio/storage/flickr.c:356
-#: ../src/imageio/storage/flickr.c:396
-#: ../src/imageio/storage/flickr.c:817
-#: ../src/imageio/storage/flickr.c:823
+#: ../src/imageio/storage/flickr.c:359
+#: ../src/imageio/storage/flickr.c:399
+#: ../src/imageio/storage/flickr.c:830
+#: ../src/imageio/storage/flickr.c:836
 msgid "not authenticated"
 msgstr "no autenticado"
 
-#: ../src/imageio/storage/flickr.c:392
-#: ../src/imageio/storage/flickr.c:813
+#: ../src/imageio/storage/flickr.c:395
+#: ../src/imageio/storage/flickr.c:826
 #: ../src/imageio/storage/picasa.c:643
 msgid "authenticated"
 msgstr "autenticado"
 
 #. Add standard action
-#: ../src/imageio/storage/flickr.c:411
+#: ../src/imageio/storage/flickr.c:414
 msgid "without album"
 msgstr "sin album"
 
 #. Add standard action
-#: ../src/imageio/storage/flickr.c:412
-#: ../src/imageio/storage/flickr.c:440
+#: ../src/imageio/storage/flickr.c:415
+#: ../src/imageio/storage/flickr.c:443
 #: ../src/imageio/storage/picasa.c:666
 #: ../src/imageio/storage/picasa.c:707
 msgid "create new album"
 msgstr "crear album nuevo"
 
-#: ../src/imageio/storage/flickr.c:496
+#: ../src/imageio/storage/flickr.c:500
 msgid "flickr user"
 msgstr "usuario flickr"
 
 #. ui->label2 = GTK_LABEL(  gtk_label_new( _("F_password") ) );
-#: ../src/imageio/storage/flickr.c:498
+#: ../src/imageio/storage/flickr.c:502
 msgid "photosets"
-msgstr "ajustes fotográficos"
+msgstr "álbumes"
 
-#: ../src/imageio/storage/flickr.c:501
+#: ../src/imageio/storage/flickr.c:505
+msgid "click login button to start"
+msgstr "pulse el botón acceder"
+
+#: ../src/imageio/storage/flickr.c:508
 #: ../src/imageio/storage/picasa.c:768
 msgid "summary"
 msgstr "sumario"
 
 #. gtk_entry_set_text( ui->entry2,  _password == NULL?"":_password );
-#: ../src/imageio/storage/flickr.c:541
+#: ../src/imageio/storage/flickr.c:548
 msgid "my new photoset"
 msgstr "mi nuevo photoset"
 
-#: ../src/imageio/storage/flickr.c:542
+#: ../src/imageio/storage/flickr.c:549
 #: ../src/imageio/storage/picasa.c:809
 msgid "exported from darktable"
 msgstr "exportado desde darktable"
 
-#: ../src/imageio/storage/flickr.c:560
+#: ../src/imageio/storage/flickr.c:567
 #: ../src/imageio/storage/picasa.c:827
 msgid "refresh album list"
 msgstr "refrescar lista de album"
 
-#: ../src/imageio/storage/flickr.c:566
-msgid "public images"
-msgstr "imágenes publicas"
+#: ../src/imageio/storage/flickr.c:569
+msgid "login"
+msgstr "acceder"
 
-#: ../src/imageio/storage/flickr.c:567
+#: ../src/imageio/storage/flickr.c:570
+msgid "Flickr login"
+msgstr "acceso a Flickr"
+
+#: ../src/imageio/storage/flickr.c:577
+msgid "make images public"
+msgstr "hacer las imágenes públicas"
+
+#: ../src/imageio/storage/flickr.c:578
 #: ../src/imageio/storage/picasa.c:834
 msgid "export tags"
 msgstr "exportar etiquetas"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:750
+#: ../src/imageio/storage/flickr.c:763
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgstr "%d/%d exportado al album web flickr"
 
-#: ../src/imageio/storage/flickr.c:825
+#: ../src/imageio/storage/flickr.c:838
 msgid "Flickr account not authenticated"
 msgstr "cuenta flickr no autenticada"
 
@@ -3367,28 +3323,28 @@ msgstr "establece la saturación global"
 msgid "input color profile"
 msgstr "perfil de color de entrada"
 
-#: ../src/iop/colorin.c:384
+#: ../src/iop/colorin.c:385
 msgid "unsupported input profile has been replaced by linear rgb!"
 msgstr "perfil de entrada no soportado reemplazado por rgb lineal!"
 
-#: ../src/iop/colorin.c:602
+#: ../src/iop/colorin.c:611
 #: ../src/libs/export.c:513
 msgid "profile"
 msgstr "perfil"
 
-#: ../src/iop/colorin.c:610
+#: ../src/iop/colorin.c:619
 msgid "standard color matrix"
 msgstr "matriz de color standard"
 
-#: ../src/iop/colorin.c:612
+#: ../src/iop/colorin.c:621
 msgid "enhanced color matrix"
 msgstr "matriz de color mejorada"
 
-#: ../src/iop/colorin.c:614
+#: ../src/iop/colorin.c:623
 msgid "sRGB (e.g. jpg)"
 msgstr "sRGB (e.g. jpg)"
 
-#: ../src/iop/colorin.c:616
+#: ../src/iop/colorin.c:625
 #: ../src/iop/colorout.c:764
 #: ../src/iop/colorout.c:765
 #: ../src/iop/colorout.c:766
@@ -3396,7 +3352,7 @@ msgstr "sRGB (e.g. jpg)"
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/iop/colorin.c:618
+#: ../src/iop/colorin.c:627
 #: ../src/iop/colorout.c:752
 #: ../src/iop/colorout.c:753
 #: ../src/iop/colorout.c:754
@@ -3404,15 +3360,15 @@ msgstr "Adobe RGB"
 msgid "linear RGB"
 msgstr "RGB lineal"
 
-#: ../src/iop/colorin.c:620
+#: ../src/iop/colorin.c:629
 msgid "linear infrared BGR"
 msgstr "RGB lineal infrarrojo"
 
-#: ../src/iop/colorin.c:622
+#: ../src/iop/colorin.c:631
 msgid "linear XYZ"
 msgstr "lineal XYZ"
 
-#: ../src/iop/colorin.c:631
+#: ../src/iop/colorin.c:640
 #, c-format
 msgid "icc profiles in %s/color/in or %s/color/in"
 msgstr "perfiles icc en %s/color/entrada o %s/color/entrada"
@@ -4972,7 +4928,7 @@ msgstr "guardar en"
 
 #: ../src/libs/export.c:399
 msgid "file format"
-msgstr "formato archivo"
+msgstr "formato de archivo"
 
 #: ../src/libs/export.c:414
 msgid "global options"
@@ -5461,6 +5417,70 @@ msgstr "intenter relajar las condiciones del filtro en el panel superior"
 #: ../src/views/lighttable.c:408
 msgid "or in the collection plugin in the left panel."
 msgstr "o en la zona de colecciones del panel izquierdo."
+
+#~ msgctxt "accel"
+
+#~ msgid "applies a style selected from popup menu"
+#~ msgstr "aplica un estilo seleccionado de un menu emergente"
+#~ msgctxt "accel"
+
+#~ msgid "attach"
+#~ msgstr "añadir"
+#~ msgctxt "accel"
+
+#~ msgid "compress history stack"
+#~ msgstr "comprimir histórico de acciones"
+#~ msgctxt "accel"
+
+#~ msgid "create a style from the current history stack"
+#~ msgstr "crear un estilo usando su histórico de acciones actual"
+#~ msgctxt "accel"
+
+#~ msgid "detach"
+#~ msgstr "quitar"
+#~ msgctxt "accel"
+
+#~ msgid "import folder"
+#~ msgstr "importar sesión"
+#~ msgctxt "accel"
+
+#~ msgid "import from camera"
+#~ msgstr "importar desde cámara"
+#~ msgctxt "accel"
+
+#~ msgid "import image"
+#~ msgstr "importar imagen"
+#~ msgctxt "accel"
+
+#~ msgid "lightness"
+#~ msgstr "luminosidad"
+#~ msgctxt "accel"
+
+#~ msgid "new"
+#~ msgstr "nueva"
+#~ msgctxt "accel"
+
+#~ msgid "pick color"
+#~ msgstr "seleccionar color"
+#~ msgctxt "accel"
+
+#~ msgid "scan for devices"
+#~ msgstr "escanear periféricos"
+#~ msgctxt "accel"
+
+#~ msgid "take snapshot"
+#~ msgstr "tomar una instantánea"
+#~ msgctxt "accel"
+
+#~ msgid "tethered shoot"
+#~ msgstr "disparo conectado"
+#~ msgctxt "accel"
+
+#~ msgid "toggle header"
+#~ msgstr "activar paneles lateriales"
+
+#~ msgid "public images"
+#~ msgstr "imágenes publicas"
 
 #~ msgid "export selected images"
 #~ msgstr "exportar seleccionadas"
