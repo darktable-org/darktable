@@ -37,7 +37,7 @@
 #include "gui/presets.h"
 #include <xmmintrin.h>
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x) ((x<0.0f)?0.0f:(x>1.0f)?1.0f:x)
 DT_MODULE(1)
 
 typedef struct dt_iop_graduatednd_params_t
@@ -333,7 +333,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
       // use exp2f approximation to calculate e^(ln2*x/8)
       // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-      const float t = 0.693147181f /* ln2 */ * (data->density * CLIP( 0.5+length )/8.0f);
+      const float t = 0.693147181f /* ln2 */ * (data->density * CLIP( 0.5f+length )/8.0f);
       float d1 = t*t*0.5f;
       float d2 = d1*t*0.333333333f;
       float d3 = d2*t*0.25f;
@@ -344,11 +344,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       density = _mm_mul_ps(density,density);
 #else
       // use fair exp2f
-      __m128 density = _mm_set1_ps(exp2f(data->density * CLIP( 0.5+length )));
+      __m128 density = _mm_set1_ps(exp2f(data->density * CLIP( 0.5f+length )));
 #endif
       
       /* max(0,in / (c + (1-c)*density)) */
-      _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0),_mm_div_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+      _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0f),_mm_div_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
     }
   }
   }
@@ -363,7 +363,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float *in = (float*)ivoid + k;
     float *out = (float*)ovoid + k;
 
-    float length = (sinv * (-1.0+ix*hw_inv) - cosv * (-1.0+(iy+y)*hh_inv) - 1.0 + offset) * filter_compression;
+    float length = (sinv * (-1.0f+ix*hw_inv) - cosv * (-1.0f+(iy+y)*hh_inv) - 1.0f + offset) * filter_compression;
     const float length_inc = sinv * hw_inv * filter_compression;
 
     __m128 c = _mm_set_ps(0,color[2],color[1],color[0]); 
@@ -378,7 +378,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
       // use exp2f approximation to calculate e^(ln2*x/8)
       // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-      const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP( 0.5-length )/8.0f);
+      const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP( 0.5f-length )/8.0f);
       float d1 = t*t*0.5f;
       float d2 = d1*t*0.333333333f;
       float d3 = d2*t*0.25f;
@@ -388,11 +388,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       density = _mm_mul_ps(density,density);
       density = _mm_mul_ps(density,density);
 #else
-      __m128 density = _mm_set1_ps(exp2f(-data->density * CLIP( 0.5-length )));
+      __m128 density = _mm_set1_ps(exp2f(-data->density * CLIP( 0.5f-length )));
 #endif
 
       /* max(0,in * (c + (1-c)*density)) */
-      _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0),_mm_mul_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+      _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0f),_mm_mul_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
     }
   }
   }
