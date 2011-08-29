@@ -88,22 +88,23 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are */
-  if(tiling.factor < 2.5f && tiling.overhead < 0.5f * roi_out->width * roi_out->height * max(in_bpp, out_bpp))
+  if(tiling.factor < 2.2f && tiling.overhead < 0.2f * roi_out->width * roi_out->height * max(in_bpp, out_bpp))
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling] don't use tiling for module '%s'. no real memory saving could be reached\n", self->op);
     goto fallback;
   }
 
   /* calculate optimal size of tiles */
-  long available = dt_conf_get_int("host_memory_limit")*1024*1024;
+  float available = dt_conf_get_int("host_memory_limit")*1024*1024;
+  float singlebuffer = dt_conf_get_int("singlebuffer_limit")*1024*1024;
   assert(available >= 500*1024*1024);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
-  available -= roi_out->width * roi_out->height * (in_bpp + out_bpp) + tiling.overhead;
+  available = max(available - roi_out->width * roi_out->height * (in_bpp + out_bpp) - tiling.overhead, 0);
 
-  /* we violate the above calculation if that's the only reasonable way to get tiling running.
-     so let's offer a reasonable sized singlebuffer in any case. better this way than giving
-     up tiling and let the module's standard process() take whatever huge amount of memory it wants. */
-  const long singlebuffer = max((float)available / tiling.factor, 64*1024*1024);
+  /* we ignore the above value if singlebuffer_limit is (defined and is) higher than available/tiling.factor.
+     this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
+     reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
+  singlebuffer = max(available / tiling.factor, singlebuffer);
 
   int width = roi_out->width;
   int height = roi_out->height;
@@ -111,7 +112,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   /* shrink tile size in case it would exceed singlebuffer size */
   if(width*height*max(in_bpp, out_bpp) > singlebuffer)
   {
-    const float scale = (float)singlebuffer/(width*height*max(in_bpp, out_bpp));
+    const float scale = singlebuffer/(width*height*max(in_bpp, out_bpp));
 
     /* TODO: can we make this more efficient to minimize total overlap between tiles? */
     if(width < height && scale >= 0.333f)                  /* don't touch width if tile spans whole image width ... */
@@ -137,9 +138,11 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
     goto error;
   }
 
+#if 0
   /* we might want to grow dimensions a bit */
   width = max(4*tiling.overlap, width);
   height = max(4*tiling.overlap, height);
+#endif
 
   /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
      Modules will report alignment requirements via xalign and yalign within tiling_callback().

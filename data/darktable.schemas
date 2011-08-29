@@ -118,6 +118,19 @@
       </locale>
     </schema>
 
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/singlebuffer_limit</key>
+      <applyto>/apps/darktable/singlebuffer_limit</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>16</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>minimum amount of memory (in MB) for a single buffer in tiling</short>
+        <long>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit. needs a restart.</long>
+      </locale>
+    </schema>
+
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/never_use_embedded_thumb</key>
       <applyto>/apps/darktable/never_use_embedded_thumb</applyto>
