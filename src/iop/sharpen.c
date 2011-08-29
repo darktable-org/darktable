@@ -284,7 +284,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       for(int k=0; k < wd4*4; k+=4,inp+=4*ch)
       {
-        msum = _mm_add_ps(msum,_mm_mul_ps(_mm_load_ps(mat+k),_mm_set_ps(inp[0],inp[ch],inp[2*ch],inp[3*ch])));
+        msum = _mm_add_ps(msum,_mm_mul_ps(_mm_load_ps(mat+k),_mm_set_ps(inp[3*ch],inp[2*ch],inp[ch],inp[0])));
       }
       _mm_store_ps(sum,msum);
       *out = sum[0]+sum[1]+sum[2]+sum[3];
@@ -327,7 +327,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       for(int k=0; k < wd4*4; k+=4,inp+=step*4)
       {
-        msum = _mm_add_ps(msum,_mm_mul_ps(_mm_load_ps(mat+k),_mm_set_ps(inp[0],inp[step],inp[step*2],inp[step*3])));
+        msum = _mm_add_ps(msum,_mm_mul_ps(_mm_load_ps(mat+k),_mm_set_ps(inp[3*step],inp[2*step],inp[step],inp[0])));
       }
       _mm_store_ps(sum,msum);
       *out = sum[0]+sum[1]+sum[2]+sum[3];
