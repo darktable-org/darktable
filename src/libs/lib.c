@@ -381,12 +381,12 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
 
   if (module->gui_reset)
   {
-    dt_accel_register_lib(module, FALSE,
+    dt_accel_register_lib(module,
                           NC_("accel", "reset plugin parameters"), 0, 0);
   }
   if(module->get_params)
   {
-    dt_accel_register_lib(module, FALSE,
+    dt_accel_register_lib(module,
                           NC_("accel", "show preset menu"), 0, 0);
   }
 

@@ -252,8 +252,8 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, FALSE, NC_("accel", "clear"), 0, 0);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "apply"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "clear"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "apply"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

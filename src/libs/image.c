@@ -147,18 +147,18 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, FALSE, NC_("accel", "remove from collection"),
+  dt_accel_register_lib(self, NC_("accel", "remove from collection"),
                         GDK_Delete, 0);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "delete from disk"), 0, 0);
-  dt_accel_register_lib(self, FALSE,
+  dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
+  dt_accel_register_lib(self,
                         NC_("accel", "rotate selected images 90 degrees cw"),
                         0, 0);
-  dt_accel_register_lib(self, FALSE,
+  dt_accel_register_lib(self,
                         NC_("accel", "rotate selected images 90 degrees ccw"),
                         0, 0);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "create hdr"), 0, 0);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "duplicate"), 0, 0);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "reset rotation"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "create hdr"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "duplicate"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

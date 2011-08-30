@@ -66,9 +66,9 @@ position ()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, FALSE, NC_("accel", "delete"), 0, 0);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "export"), 0, 0);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "import"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "export"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "import"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

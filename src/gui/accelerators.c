@@ -179,9 +179,8 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local,
       g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
-void dt_accel_register_lib(dt_lib_module_t *self, gboolean local,
-                           const gchar *path, guint accel_key,
-                           GdkModifierType mods)
+void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path,
+                           guint accel_key, GdkModifierType mods)
 {
   gchar accel_path[256];
   dt_accel_t *accel = (dt_accel_t*)malloc(sizeof(dt_accel_t));
@@ -193,7 +192,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, gboolean local,
   strcpy(accel->translated_path, accel_path);
 
   strcpy(accel->module, self->plugin_name);
-  accel->local = local;
+  accel->local = FALSE;
   accel->views = self->views();
   darktable.control->accelerator_list =
       g_slist_prepend(darktable.control->accelerator_list, accel);

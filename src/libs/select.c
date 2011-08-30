@@ -168,14 +168,14 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, FALSE, NC_("accel", "select all"),
+  dt_accel_register_lib(self, NC_("accel", "select all"),
                         GDK_a, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "select none"),
+  dt_accel_register_lib(self, NC_("accel", "select none"),
                         GDK_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "invert selection"),
+  dt_accel_register_lib(self, NC_("accel", "invert selection"),
                         GDK_i, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "select film roll"), 0, 0);
-  dt_accel_register_lib(self, FALSE, NC_("accel", "select untouched"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "select film roll"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "select untouched"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
