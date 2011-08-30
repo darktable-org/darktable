@@ -335,6 +335,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->disconnect_key_accels = so->disconnect_key_accels;
 
   module->accel_closures = NULL;
+  module->accel_closures_local = NULL;
+  module->local_closures_connected = FALSE;
   module->reset_button = NULL;
   module->presets_button = NULL;
   module->fusion_slider = NULL;
@@ -782,6 +784,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
     if (darktable.develop->gui_module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
+    dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
   }
   darktable.develop->gui_module = module;
   if(module)
@@ -792,6 +795,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
     if (module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
+    dt_accel_connect_locals_iop(module);
   }
   dt_control_change_cursor(GDK_LEFT_PTR);
 }

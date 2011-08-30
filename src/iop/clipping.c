@@ -1527,11 +1527,11 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "commit"),
+  dt_accel_register_iop(self, TRUE, NC_("accel", "commit"),
                         GDK_Return, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "undo"),
+  dt_accel_register_iop(self, TRUE, NC_("accel", "undo"),
                         GDK_z, GDK_CONTROL_MASK);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "swap the aspect ratio"),
+  dt_accel_register_iop(self, TRUE, NC_("accel", "swap the aspect ratio"),
                         GDK_x, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "angle"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "keystone h"));

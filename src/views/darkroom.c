@@ -402,6 +402,7 @@ select_this_image(const int imgid)
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 {
   dt_accel_disconnect_list(module->accel_closures);
+  dt_accel_cleanup_locals_iop(module);
 }
 
 static void
