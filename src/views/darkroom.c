@@ -399,6 +399,11 @@ select_this_image(const int imgid)
   }
 }
 
+static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
+{
+  dt_accel_disconnect_list(module->accel_closures);
+}
+
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
@@ -454,7 +459,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
       // re-init and re-gui_init
       module->gui_cleanup(module);
-      dt_accel_disconnect_list(module->accel_closures);
+      dt_dev_cleanup_module_accels(module);
       gtk_widget_destroy(GTK_WIDGET(module->widget));
       dt_iop_reload_defaults(module);
       module->gui_init(module);
@@ -934,17 +939,8 @@ void leave(dt_view_t *self)
     snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
     dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
 
-//    // disconnect module closures
-//    // could use this starting from gtk 2.28
-//    // g_list_free_full(module->closures, dt_disconnect_accel_closure);
-//    while(module->closures)
-//    {
-//      dt_disconnect_accel_closure(module->closures->data);
-//      module->closures = g_list_delete_link(module->closures, module->closures);
-//    }
-
     module->gui_cleanup(module);
-    dt_accel_disconnect_list(module->accel_closures);
+    dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;
     dt_iop_cleanup_module(module) ;
     free(module);
