@@ -86,9 +86,9 @@ FC(const int row, const int col, const unsigned int filters)
 }
 #endif
 
-
+// transposes image, it is faster to read columns than to write them.
 static void
-hat_transform_v(float *temp, const float *const base, int stride, int size, int scale)
+hat_transform(float *temp, const float *const base, int stride, int size, int scale)
 {
   int i;
   const float *basep0;
@@ -101,41 +101,15 @@ hat_transform_v(float *temp, const float *const base, int stride, int size, int 
   basep2 = base + stxsc;
 
   for (i=0; i < scale; i++, basep0+=stride, basep1-=stride, basep2+=stride)
-    temp[i*stride] = (*basep0 + *basep0 + *basep1 + *basep2)*0.25f;
+    temp[i] = (*basep0 + *basep0 + *basep1 + *basep2)*0.25f;
 
   for (; i < size-scale; i++, basep0+=stride)
-    temp[i*stride] = ((*basep0)*2 + *(basep0-stxsc) + *(basep0+stxsc))*0.25f;
+    temp[i] = ((*basep0)*2 + *(basep0-stxsc) + *(basep0+stxsc))*0.25f;
 
   basep1 = basep0 - stxsc;
   basep2 = base + stride*(size-2);
 
   for (; i < size; i++, basep0+=stride, basep1+=stride, basep2-=stride)
-    temp[i*stride] = (*basep0 + *basep0 + *basep1 + *basep2)*0.25f;
-}
-
-/* same as hat_transform_v, but stride is 1 */
-static void
-hat_transform_h(float *temp, const float *const base, int size, int scale)
-{
-  int i;
-  const float *basep0;
-  const float *basep1;
-  const float *basep2;
-
-  basep0 = base;
-  basep1 = base + scale;
-  basep2 = base + scale;
-
-  for (i=0; i < scale; i++, basep0++, basep1--, basep2++)
-    temp[i] = (*basep0 + *basep0 + *basep1 + *basep2)*0.25f;
-
-  for (; i < size-scale; i++, basep0++)
-    temp[i] = ((*basep0)*2 + *(basep0-scale) + *(basep0+scale))*0.25f;
-
-  basep1 = basep0 - scale;
-  basep2 = base + size-2;
-
-  for (; i < size; i++, basep0++, basep1++, basep2--)
     temp[i] = (*basep0 + *basep0 + *basep1 + *basep2)*0.25f;
 }
 
@@ -189,19 +163,21 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       const int pass2 = 2*size;
       const int pass3 = 4*size - pass1;
 
-#ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(lev) schedule(static)
-#endif
-      for (int row=0; row < halfheight; row++)
-      {
-        hat_transform_h(fimg+pass2+row*halfwidth, fimg+pass1+row*halfwidth, halfwidth, 1 << lev);
-      }
+      // filter horizontally and transpose
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(lev) schedule(static)
 #endif
       for (int col=0; col < halfwidth; col++)
       {
-        hat_transform_v(fimg+pass3+col, fimg+pass2+col, halfwidth, halfheight, 1 << lev);
+        hat_transform(fimg+pass2+col*halfheight, fimg+pass1+col, halfwidth, halfheight, 1 << lev);
+      }
+      // filter vertically and transpose back
+#ifdef _OPENMP
+      #pragma omp parallel for default(none) shared(lev) schedule(static)
+#endif
+      for (int row=0; row < halfheight; row++)
+      {
+        hat_transform(fimg+pass3+row*halfwidth, fimg+pass2+row, halfheight, halfwidth, 1 << lev);
       }
 
       const float thold = threshold * noise[lev];
