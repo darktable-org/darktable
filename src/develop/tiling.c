@@ -96,14 +96,16 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
 
   /* calculate optimal size of tiles */
   float available = dt_conf_get_int("host_memory_limit")*1024*1024;
-  float singlebuffer = dt_conf_get_int("singlebuffer_limit")*1024*1024;
   assert(available >= 500*1024*1024);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
   available = max(available - roi_out->width * roi_out->height * (in_bpp + out_bpp) - tiling.overhead, 0);
 
-  /* we ignore the above value if singlebuffer_limit is (defined and is) higher than available/tiling.factor.
+  /* we ignore the above value if singlebuffer_limit (is defined and) is higher than available/tiling.factor.
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
+  float singlebuffer = dt_conf_get_int("singlebuffer_limit")*1024*1024;
+  singlebuffer = max(singlebuffer, 1024*1024);
+  assert(tiling.factor > 1.0f);
   singlebuffer = max(available / tiling.factor, singlebuffer);
 
   int width = roi_out->width;
