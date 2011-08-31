@@ -1476,7 +1476,7 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   // loose focus, continue with other plugins?
-  darktable.develop->gui_module = NULL;
+  dt_iop_request_focus(NULL);
 }
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
