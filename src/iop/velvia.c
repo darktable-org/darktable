@@ -36,30 +36,37 @@
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x) (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef struct dt_iop_velvia_params_t
+{
+  float strength;
+  float bias;
+}
+dt_iop_velvia_params_t;
+
+/* legacy version 1 params */
+typedef struct dt_iop_velvia_params1_t
 {
   float saturation;
   float vibrance;
   float luminance;
   float clarity;
 }
-dt_iop_velvia_params_t;
+dt_iop_velvia_params1_t;
 
 typedef struct dt_iop_velvia_gui_data_t
 {
   GtkVBox   *vbox;
-  GtkWidget  *label1,*label2,*label3;
-  GtkDarktableSlider *scale1,*scale2,*scale3;       // saturation, vibrance, luminance
+  GtkDarktableSlider *strength_scale;
+  GtkDarktableSlider *bias_scale;
 }
 dt_iop_velvia_gui_data_t;
 
 typedef struct dt_iop_velvia_data_t
 {
-  float saturation;
-  float vibrance;
-  float luminance;
+  float strength;
+  float bias;
 }
 dt_iop_velvia_data_t;
 
@@ -82,11 +89,23 @@ groups ()
 
 void init_key_accels()
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/saturation");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/vibrance");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/mid-tones bias");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/strength");
+  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/bias");
 }
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if (old_version == 1 && new_version == 2)
+  {
+    const dt_iop_velvia_params1_t *old = old_params;
+    dt_iop_velvia_params_t *new = new_params;
+    new->strength = old->saturation*old->vibrance/100.0f;
+    new->bias = old->luminance;
+    return 0;
+  }
+  return 1;
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -94,9 +113,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
+  const float strength = data->strength/100.0f;
 
   // Apply velvia saturation
-  if(data->saturation <= 0.0)
+  if(strength <= 0.0)
     memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
   else
   {
@@ -107,14 +127,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       float *inp = in + ch*k;
       float *outp = out + ch*k;
-      // calculate vibrance, and apply boost velvia saturation at least saturated pixles
+      // calculate vibrance, and apply boost velvia saturation at least saturated pixels
       float pmax=fmaxf(inp[0],fmaxf(inp[1],inp[2]));			// max value in RGB set
       float pmin=fminf(inp[0],fminf(inp[1],inp[2]));			// min value in RGB set
       float plum = (pmax+pmin)/2.0f;					        // pixel luminocity
       float psat =(plum<=0.5f) ? (pmax-pmin)/(1e-5f + pmax+pmin): (pmax-pmin)/(1e-5f + MAX(0.0f, 2.0f-pmax-pmin));
 
-      float pweight=CLAMPS(((1.0f- (1.5f*psat)) + ((1.0f+(fabsf(plum-0.5f)*2.0f))*(1.0f-data->luminance))) / (1.0f+(1.0f-data->luminance)), 0.0f, 1.0f);		// The weight of pixel
-      float saturation = ((data->saturation/100.0f)*pweight)*(data->vibrance/100.0f);			// So lets calculate the final affection of filter on pixel
+      float pweight=CLAMPS(((1.0f- (1.5f*psat)) + ((1.0f+(fabsf(plum-0.5f)*2.0f))*(1.0f-data->bias))) / (1.0f+(1.0f-data->bias)), 0.0f, 1.0f);		// The weight of pixel
+      float saturation = strength*pweight;			// So lets calculate the final affection of filter on pixel
 
       // Apply velvia saturation values
       float sba=1.0f+saturation;
@@ -127,32 +147,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 static void
-saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
+strength_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
-  p->saturation = dtgtk_slider_get_value(slider);
+  p->strength = dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-vibrance_callback (GtkDarktableSlider *slider, gpointer user_data)
+bias_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
-  p->vibrance = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void
-luminance_callback (GtkDarktableSlider *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
-  p->luminance= dtgtk_slider_get_value(slider);
+  p->bias= dtgtk_slider_get_value(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -165,9 +175,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
 #else
   dt_iop_velvia_data_t *d = (dt_iop_velvia_data_t *)piece->data;
-  d->saturation = p->saturation;
-  d->vibrance = p->vibrance;
-  d->luminance = p->luminance;
+  d->strength = p->strength;
+  d->bias = p->bias;
 #endif
 }
 
@@ -199,9 +208,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->saturation);
-  dtgtk_slider_set_value(g->scale2, p->vibrance);
-  dtgtk_slider_set_value(g->scale3, p->luminance);
+  dtgtk_slider_set_value(g->strength_scale, p->strength);
+  dtgtk_slider_set_value(g->bias_scale, p->bias);
 }
 
 void init(dt_iop_module_t *module)
@@ -214,7 +222,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_velvia_params_t tmp = (dt_iop_velvia_params_t)
   {
-    50,50,.5
+    25,.5
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_velvia_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_velvia_params_t));
@@ -238,34 +246,25 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, p->saturation, 0));
-  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/saturation");
-  dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale1,_("saturation"));
-  dtgtk_slider_set_unit(g->scale1,"%");
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, p->vibrance, 0));
-  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/vibrance");
-  dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_label(g->scale2,_("vibrance"));
-  dtgtk_slider_set_unit(g->scale2,"%");
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->luminance, 2));
-  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/mid-tones bias");
-  dtgtk_slider_set_format_type(g->scale3,DARKTABLE_SLIDER_FORMAT_RATIO);
-  dtgtk_slider_set_label(g->scale3,_("mid-tones bias"));
+  g->strength_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, p->strength, 0));
+  dtgtk_slider_set_accel(g->strength_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/strength");
+  dtgtk_slider_set_format_type(g->strength_scale,DARKTABLE_SLIDER_FORMAT_PERCENT);
+  dtgtk_slider_set_label(g->strength_scale,_("strength"));
+  dtgtk_slider_set_unit(g->strength_scale,"%");
+  g->bias_scale = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->bias, 2));
+  dtgtk_slider_set_accel(g->bias_scale,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/velvia/mid-tones bias");
+  dtgtk_slider_set_format_type(g->bias_scale,DARKTABLE_SLIDER_FORMAT_RATIO);
+  dtgtk_slider_set_label(g->bias_scale,_("mid-tones bias"));
 
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the amount of saturation to apply"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the vibrance amount"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("how much to spare highlights and shadows"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->strength_scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->bias_scale), TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->strength_scale), "tooltip-text", _("the strength of saturation boost"), (char *)NULL);
+  g_object_set(G_OBJECT(g->bias_scale), "tooltip-text", _("how much to spare highlights and shadows"), (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (saturation_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (vibrance_callback), self);
-  g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    G_CALLBACK (luminance_callback), self);
+  g_signal_connect (G_OBJECT (g->strength_scale), "value-changed",
+                    G_CALLBACK (strength_callback), self);
+  g_signal_connect (G_OBJECT (g->bias_scale), "value-changed",
+                    G_CALLBACK (bias_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
