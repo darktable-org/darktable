@@ -108,20 +108,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *inp = in + ch*k;
       float *outp = out + ch*k;
       // calculate vibrance, and apply boost velvia saturation at least saturated pixles
-      double pmax=fmax(inp[0],fmax(inp[1],inp[2]));			// max value in RGB set
-      double pmin=fmin(inp[0],fmin(inp[1],inp[2]));			// min value in RGB set
-      double plum = (pmax+pmin)/2.0;					        // pixel luminocity
-      double psat =(plum<=0.5) ? (pmax-pmin)/(1e-5 + pmax+pmin): (pmax-pmin)/(1e-5 + MAX(0.0, 2.0-pmax-pmin));
+      float pmax=fmaxf(inp[0],fmaxf(inp[1],inp[2]));			// max value in RGB set
+      float pmin=fminf(inp[0],fminf(inp[1],inp[2]));			// min value in RGB set
+      float plum = (pmax+pmin)/2.0f;					        // pixel luminocity
+      float psat =(plum<=0.5f) ? (pmax-pmin)/(1e-5f + pmax+pmin): (pmax-pmin)/(1e-5f + MAX(0.0f, 2.0f-pmax-pmin));
 
-      double pweight=CLAMPS(((1.0- (1.5*psat)) + ((1+(fabs(plum-0.5)*2.0))*(1.0-data->luminance))) / (1.0+(1.0-data->luminance)), 0.0, 1.0);		// The weight of pixel
-      double saturation = ((data->saturation/100.0)*pweight)*(data->vibrance/100.0);			// So lets calculate the final affection of filter on pixel
+      float pweight=CLAMPS(((1.0f- (1.5f*psat)) + ((1.0f+(fabsf(plum-0.5f)*2.0f))*(1.0f-data->luminance))) / (1.0f+(1.0f-data->luminance)), 0.0f, 1.0f);		// The weight of pixel
+      float saturation = ((data->saturation/100.0f)*pweight)*(data->vibrance/100.0f);			// So lets calculate the final affection of filter on pixel
 
       // Apply velvia saturation values
-      double sba=1.0+saturation;
-      double sda=(sba/2.0)-0.5;
-      outp[0]=CLAMPS((inp[0]*(sba))-(inp[1]*(sda))-(inp[2]*(sda)), 0, 1);
-      outp[1]=CLAMPS((inp[1]*(sba))-(inp[0]*(sda))-(inp[2]*(sda)), 0, 1);
-      outp[2]=CLAMPS((inp[2]*(sba))-(inp[0]*(sda))-(inp[1]*(sda)), 0, 1);
+      float sba=1.0f+saturation;
+      float sda=(sba/2.0f)-0.5f;
+      outp[0]=CLAMPS((inp[0]*(sba))-(inp[1]*(sda))-(inp[2]*(sda)), 0.0f, 1.0f);
+      outp[1]=CLAMPS((inp[1]*(sba))-(inp[0]*(sda))-(inp[2]*(sda)), 0.0f, 1.0f);
+      outp[2]=CLAMPS((inp[2]*(sba))-(inp[0]*(sda))-(inp[1]*(sda)), 0.0f, 1.0f);
     }
   }
 }
