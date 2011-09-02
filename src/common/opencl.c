@@ -731,7 +731,19 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
 {
+  static float headroom = -1.0f;
+
   if(!darktable.opencl->inited || devid < 0) return FALSE;
+
+  /* first time run */
+  if(headroom < 0.0f)
+  {
+    headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
+
+    /* don't let the user play games with us */
+    headroom = fmin((float)darktable.opencl->dev[devid].max_global_mem, fmax(headroom, 0.0f));
+    dt_conf_set_int("opencl_memory_headroom", headroom/1024/1024);
+  }
 
   float singlebuffer = (float)width * height * bpp;
   float total = factor * singlebuffer + overhead;
@@ -740,10 +752,11 @@ int dt_opencl_image_fits_device(const int devid, const size_t width, const size_
 
   if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
 
-  if(darktable.opencl->dev[devid].max_global_mem < total + DT_OPENCL_MEMORY_HEADROOM) return FALSE;
+  if(darktable.opencl->dev[devid].max_global_mem < total + headroom) return FALSE;
 
   return TRUE;
 }
+
 
 
 /** check if opencl is inited */
