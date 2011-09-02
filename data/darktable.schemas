@@ -131,6 +131,20 @@
       </locale>
     </schema>
 
+    <schema>
+      <key>/schemas/apps/darktable/opencl_memory_headroom</key>
+      <applyto>/apps/darktable/opencl_memory_headroom</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>300</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>amount of opencl memory (in MB) which we assume as being reserved for the driver</short>
+        <long>this amount of memory (in MB) will be substracted from total gpu memory in order to calculate the available opencl memory. too low values will lead to out-of-memory situations in opencl processing. too high values will lead to unnecessary tiling. needs a restart.</long>
+      </locale>
+    </schema>
+
+
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/never_use_embedded_thumb</key>
       <applyto>/apps/darktable/never_use_embedded_thumb</applyto>

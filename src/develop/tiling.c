@@ -117,27 +117,25 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
     const float scale = singlebuffer/(width*height*max(in_bpp, out_bpp));
 
     /* TODO: can we make this more efficient to minimize total overlap between tiles? */
-    if(width < height && scale >= 0.333f)                  /* don't touch width if tile spans whole image width ... */
+    if(width < height && scale >= 0.333f)
     { 
       height = floorf(height * scale);
     }
-    else if(height <= width && scale >= 0.333f)            /* ... else, don't touch height if tile spans whole image height ... */
+    else if(height <= width && scale >= 0.333f)
     {
       width = floorf(width * scale);
     }
-    else                                                   /* ... else, shrink width and height proportionally. */
+    else
     {
       width = floorf(width * sqrt(scale));
       height = floorf(height * sqrt(scale));
     }
   }
 
-  /* make sure we have a reasonably effective tile size */
+  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
   if(3*tiling.overlap > width || 3*tiling.overlap > height)
   {
-    /* really hopeless */
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. too small effective tiles\n", self->op);
-    goto error;
+    width = height = floorf(sqrtf((float)width*height));
   }
 
 #if 0
@@ -336,31 +334,38 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
 
   /* calculate optimal size of tiles */
-  const size_t available = darktable.opencl->dev[devid].max_global_mem - DT_OPENCL_MEMORY_HEADROOM;
-  const size_t singlebuffer = min(((float)(available - tiling.overhead)) / tiling.factor, darktable.opencl->dev[devid].max_mem_alloc);
+  float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
+  headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
+  const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
+  const float singlebuffer = fmin(fmax((available - tiling.overhead) / tiling.factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
   int width = min(roi_out->width, darktable.opencl->dev[devid].max_image_width);
   int height = min(roi_out->height, darktable.opencl->dev[devid].max_image_height);
 
   /* shrink tile size in case it would exceed singlebuffer size */
-  if(width*height*max(in_bpp, out_bpp) > singlebuffer)
+  if((float)width*height*max(in_bpp, out_bpp) > singlebuffer)
   {
-    const float scale = (float)singlebuffer/(width*height*max(in_bpp, out_bpp));
+    const float scale = singlebuffer/(width*height*max(in_bpp, out_bpp));
 
-    if(width == roi_out->width && scale >= 0.333f)         /* don't touch width if tile spans whole image width ... */
+    if(width < height && scale >= 0.333f)
     { 
       height = floorf(height * scale);
     }
-    else if(height == roi_out->height && scale >= 0.333f)  /* ... else, don't touch height if tile spans whole image height ... */
+    else if(height <= width && scale >= 0.333f)
     {
       width = floorf(width * scale);
     }
-    else                                                   /* ... else, shrink width and height proportionally. */
+    else
     {
       width = floorf(width * sqrt(scale));
       height = floorf(height * sqrt(scale));
     }
   }
 
+  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
+  if(3*tiling.overlap > width || 3*tiling.overlap > height)
+  {
+    width = height = floorf(sqrtf((float)width*height));
+  }
 
 
   /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
@@ -392,12 +397,14 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   const int tile_wd = width - 2*overlap;
   const int tile_ht = height - 2*overlap;
 
+#if 0 // moved upwards
   /* make sure we have a reasonably effective tile size, else return FALSE and leave it to CPU path */
   if(2*tile_wd < width || 2*tile_ht < height)
   {
     dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] aborted tiling for module '%s'. too small effective tiles: %d x %d.\n", self->op, tile_wd, tile_ht);
     return FALSE;
   }
+#endif
 
 
   /* calculate number of tiles */
