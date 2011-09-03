@@ -163,8 +163,8 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   const int overlap = tiling.overlap % xyalign != 0 ? (tiling.overlap / xyalign + 1) * xyalign : tiling.overlap;
 
   /* calculate effective tile size */
-  const int tile_wd = width - 2*overlap;
-  const int tile_ht = height - 2*overlap;
+  const int tile_wd = width - 2*overlap > 0 ? width - 2*overlap : 1;
+  const int tile_ht = height - 2*overlap > 0 ? width - 2*overlap : 1;
 
 
   /* calculate number of tiles */
@@ -394,8 +394,8 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
 
   /* calculate effective tile size */
-  const int tile_wd = width - 2*overlap;
-  const int tile_ht = height - 2*overlap;
+  const int tile_wd = width - 2*overlap > 0 ? width - 2*overlap : 1;
+  const int tile_ht = height - 2*overlap > 0 ? width - 2*overlap : 1;
 
 #if 0 // moved upwards
   /* make sure we have a reasonably effective tile size, else return FALSE and leave it to CPU path */
