@@ -33,6 +33,7 @@
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <xmmintrin.h>
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x) (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
@@ -137,13 +138,24 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float saturation = strength*pweight;			// So lets calculate the final affection of filter on pixel
 
       // Apply velvia saturation values
-      float sba=1.0f+saturation;
-      float sda=(sba/2.0f)-0.5f;
-      outp[0]=CLAMPS((inp[0]*(sba))-(inp[1]*(sda))-(inp[2]*(sda)), 0.0f, 1.0f);
-      outp[1]=CLAMPS((inp[1]*(sba))-(inp[0]*(sda))-(inp[2]*(sda)), 0.0f, 1.0f);
-      outp[2]=CLAMPS((inp[2]*(sba))-(inp[0]*(sda))-(inp[1]*(sda)), 0.0f, 1.0f);
+      const __m128 inp_m  = _mm_load_ps(inp);
+      const __m128 boost  = _mm_set1_ps(saturation);
+      const __m128 min_m  = _mm_set1_ps(0.0f);
+      const __m128 max_m  = _mm_set1_ps(1.0f);
+
+      const __m128 inp_shuffled = _mm_mul_ps(_mm_add_ps(_mm_shuffle_ps(inp_m,inp_m,_MM_SHUFFLE(3,0,2,1)),_mm_shuffle_ps(inp_m,inp_m,_MM_SHUFFLE(3,1,0,2))),_mm_set1_ps(0.5f));
+
+      _mm_stream_ps( outp, _mm_min_ps(max_m,_mm_max_ps(min_m, _mm_add_ps(inp_m, _mm_mul_ps(boost,_mm_sub_ps(inp_m,inp_shuffled))))));
+
+      // equivalent to:
+      /*
+       outp[0]=CLAMPS(inp[0] + saturation*(inp[0]-0.5f*(inp[1]+inp[2])), 0.0f, 1.0f);
+       outp[1]=CLAMPS(inp[1] + saturation*(inp[1]-0.5f*(inp[2]+inp[0])), 0.0f, 1.0f);
+       outp[2]=CLAMPS(inp[2] + saturation*(inp[2]-0.5f*(inp[0]+inp[1])), 0.0f, 1.0f);
+      */
     }
   }
+  _mm_sfence();
 }
 
 static void
