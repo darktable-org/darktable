@@ -20,7 +20,8 @@ function checkLink {
 	done
 }
 
-APP=DarkTable.app
+PROGN=Darktable
+APP=${PROGN}.app
 CONTENTS=${APP}/Contents
 RESOURCES=${CONTENTS}/Resources
 MACOS=${CONTENTS}/MacOS
@@ -29,7 +30,7 @@ ETC=${MACOS}/etc
 LIB=${MACOS}/lib
 SHARE=${MACOS}/share
 RELEASE=build/release
-DMG=${RELEASE}/DarkTable.dmg
+DMG=${RELEASE}/${PROGN}.dmg
 EXECUTABLE=bin/darktable
 BUILD_FOLDER=./packaging/macosx
 
@@ -93,9 +94,51 @@ checkLink "${MACOS}/${EXECUTABLE}"
 
 
 #Make a .dmg for distribution and delete the .app
-echo "Creating distribution .dmg..."
-hdiutil create -srcdir ${APP} ${DMG}
+echo "Creating distribution .dmg ..."
+
+# Creating temporary rw image
+SIZE=$(( $(du -sm "${APP}"| awk '{print $1}') + 3 ))
+hdiutil create -srcfolder "${APP}" -volname "${PROGN}" -fs HFS+ \
+      -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${SIZE}M pack.temp.dmg
+
+# mounting image without autoopen to create window style params
+device=$(hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | \
+         egrep '^/dev/' | sed 1q | awk '{print $1}')
+echo '
+ tell application "Finder"
+	tell disk "'${PROGN}'"
+		open
+		set current view of container window to icon view
+		set toolbar visible of container window to false
+		set statusbar visible of container window to false
+		set the bounds of container window to {400, 100, 885, 330}
+		set theViewOptions to the icon view options of container window
+		set arrangement of theViewOptions to not arranged
+		set icon size of theViewOptions to 72
+		#   set background picture of theViewOptions to file ".backgroundimage:darktable.svg"
+		make new alias file at container window to POSIX file "/Applications" with properties {name:"Applications"}
+		set position of item "'${PROGN}'" of container window to {100, 100}
+		set position of item "Applications" of container window to {375, 100}
+		update without registering applications
+		close
+		open
+		delay 5
+	end tell
+ end tell
+' | osascript
+
+# Finalizing creation 
+chmod -Rf go-w /Volumes/"${PROGN}"
+sync
+sync
+hdiutil detach ${device}
+if [ -f build/"${PROGN}".dmg ]
+   then echo "removing old .dmg file" && rm -if build/"${PROGN}".dmg
+fi
+
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o build/"${PROGN}"
+rm -f pack.temp.dmg 
 echo "Cleaning up..."
 rm -rf ${APP}
-
+du -sh build/"${PROGN}".dmg
 echo "All done!"

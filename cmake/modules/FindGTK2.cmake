@@ -170,6 +170,8 @@ function(_GTK2_FIND_INCLUDE_DIR _var _hdr)
  /usr/lib/i386-linux-gnu/
  /usr/lib/x86_64-linux-gnu/
  # end fix for Ubuntu >= 11.04 (Natty Narwhal)
+        # look in debian/ubuntu multi-arch path (needs cmake >= 2.85~rc2)
+        /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
             /usr/local/lib64
             /usr/local/lib
             /usr/lib64
