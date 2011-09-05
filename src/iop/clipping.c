@@ -452,8 +452,9 @@ static void
 apply_box_aspect(dt_iop_module_t *self, int grab)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  float wd = self->dev->preview_pipe->backbuf_width;
-  float ht = self->dev->preview_pipe->backbuf_height;
+  int iwd, iht;
+  dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
+  float wd = iwd, ht = iht;
   // enforce aspect ratio.
   const float aspect = g->current_aspect;
   // const float aspect = gtk_spin_button_get_value(g->aspect);
