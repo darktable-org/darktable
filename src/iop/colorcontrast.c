@@ -199,7 +199,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   d->a_steepness = p->a_steepness;
   d->a_offset = p->a_offset;
   d->b_steepness = p->b_steepness;
-  d->a_offset = p->a_offset;
+  d->b_offset = p->b_offset;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
