@@ -28,6 +28,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <xmmintrin.h>
 
 DT_MODULE(1)
 
@@ -136,20 +137,24 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
+
     float *in  = ((float *)i) + ch*roi_in->width *j;
     float *out = ((float *)o) + ch*roi_out->width*j;
+
+    const __m128 scale = _mm_set_ps(0.0f,d->b_steepness,d->a_steepness,1.0f);
+    const __m128 offset = _mm_set_ps(0.0f,d->b_offset,d->a_offset,0.0f);
+    const __m128 min = _mm_set_ps(0.0f,-128.0f,-128.0f, -INFINITY);
+    const __m128 max = _mm_set_ps(0.0f, 128.0f, 128.0f,  INFINITY);
+
+
     for(int i=0; i<roi_out->width; i++)
     {
-      float *pt_in = in + ch*i;
-      float *pt_out = out + ch*i;
-      float L_in = pt_in[0];
-      float a_in = pt_in[1];
-      float b_in = pt_in[2];
-      pt_out[0] = L_in;
-      pt_out[1] = CLAMPS(a_in*(d->a_steepness) + (d->a_offset), -128.0, 128.0);
-      pt_out[2] = CLAMPS(b_in*(d->b_steepness) + (d->b_offset), -128.0, 128.0);
+      _mm_stream_ps(out,_mm_min_ps(max,_mm_max_ps(min,_mm_add_ps(offset,_mm_mul_ps(scale,_mm_load_ps(in))))));
+      in+=ch;
+      out+=ch;
     }
   }
+  _mm_sfence();
 }
 
 /** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip mode. */
@@ -206,7 +211,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   d->a_steepness = p->a_steepness;
   d->a_offset = p->a_offset;
   d->b_steepness = p->b_steepness;
-  d->a_offset = p->a_offset;
+  d->b_offset = p->b_offset;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
