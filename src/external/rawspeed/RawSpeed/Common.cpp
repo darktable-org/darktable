@@ -22,7 +22,7 @@
     http://www.klauspost.com
 */
 
-#if defined(__unix__) || defined(__MINGW32__)
+#if defined(__unix__) || defined(__APPLE__) || defined(__MINGW32__) 
 
 void* _aligned_malloc(size_t bytes, size_t alignment) {
   void* ret= NULL;

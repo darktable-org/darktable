@@ -30,7 +30,7 @@
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #include <stdio.h>
-#ifndef __unix__
+#if !defined(__unix__) && !defined(__APPLE__) 
 #include <tchar.h>
 #include <io.h>
 #include <Windows.h>

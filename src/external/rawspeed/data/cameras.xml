@@ -1126,6 +1126,19 @@
 		<Vertical x="4097" width="2"/>
 	</BlackAreas>
   </Camera>
+  <Camera make="OLYMPUS IMAGING CORP." model="E-PL3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-30" height="0"/>
+    <Sensor black="45" white="4095"/>
+	<BlackAreas>
+		<Vertical x="4064" width="6"/>
+	</BlackAreas>
+  </Camera>
   <Camera make="OLYMPUS IMAGING CORP." model="E-P2">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -1573,6 +1586,9 @@
     </CFA>
     <Crop x="0" y="0" width="-44" height="-2"/>
     <Sensor black="41" white="4095"/>
+	<BlackAreas>
+	    <Vertical x="4310" width="40"/>
+	</BlackAreas>
   </Camera>
   <Camera make="PENTAX" model="PENTAX K-r">
     <CFA width="2" height="2">
@@ -1836,7 +1852,8 @@
     </CFA>
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="520" white="16360"/>
-  </Camera>  <Camera make="SONY" model="NEX-5" supported="yes">
+  </Camera>  
+  <Camera make="SONY" model="NEX-5" supported="yes">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -1846,6 +1863,26 @@
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="520" white="16383"/>
   </Camera>
+  <Camera make="SONY" model="NEX-5N" supported="yes">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-12" height="0"/>
+    <Sensor black="520" white="16596"/>
+  </Camera>
+  <Camera make="SONY" model="NEX-C3" supported="yes">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="545" white="16596"/>
+  </Camera>   
   <Camera make="SONY" model="SLT-A33">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -1856,6 +1893,16 @@
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="520" white="16596"/>
   </Camera>
+  <Camera make="SONY" model="SLT-A35">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="545" white="16596"/>
+  </Camera>
   <Camera make="SONY" model="SLT-A55V">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -1864,6 +1911,16 @@
       <Color x="1" y="1">BLUE</Color>
     </CFA>
     <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="520" white="16596"/>
+  </Camera>
+  <Camera make="SONY" model="SLT-A77V">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-28" height="0"/>
     <Sensor black="520" white="16596"/>
   </Camera>
 </Cameras>
