@@ -18,6 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <xmmintrin.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
