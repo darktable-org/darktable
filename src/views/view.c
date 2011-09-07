@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "views/view.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -142,8 +143,13 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "configure",       (gpointer)&(view->configure)))       view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled",        (gpointer)&(view->scrolled)))        view->scrolled = NULL;
   if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
+  if(!g_module_symbol(view->module, "init_key_accels", (gpointer)&(view->init_key_accels))) view->init_key_accels = NULL;
+  if(!g_module_symbol(view->module, "connect_key_accels", (gpointer)&(view->connect_key_accels))) view->connect_key_accels = NULL;
+
+  view->accel_closures = NULL;
 
   if(view->init) view->init(view);
+  if(view->init_key_accels) view->init_key_accels(view);
 
   /* success */
   retval = 0;
@@ -193,8 +199,15 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   if(!error)
   {
     if(vm->current_view >= 0 && v->leave) v->leave(v);
+    if(vm->current_view >= 0)
+    {
+      dt_accel_disconnect_list(v->accel_closures);
+      v->accel_closures = NULL;
+    }
     vm->current_view = newv;
     if(newv >= 0 && nv->enter) nv->enter(nv);
+    if(newv >= 0 && nv->connect_key_accels)
+      nv->connect_key_accels(nv);
   }
   return error;
 }
@@ -883,6 +896,8 @@ void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int 
   vm->film_strip_data = data;
   vm->film_strip_on = 1;
   if(vm->film_strip.enter) vm->film_strip.enter(&vm->film_strip);
+  if(vm->film_strip.connect_key_accels)
+    vm->film_strip.connect_key_accels(&vm->film_strip);
   const int tb = darktable.control->tabborder;
   const int wd = darktable.control->width  - 2*tb;
   const int ht = darktable.control->height - 2*tb;
@@ -895,6 +910,8 @@ void dt_view_film_strip_open(dt_view_manager_t *vm, void (*activated)(const int 
 void dt_view_film_strip_close(dt_view_manager_t *vm)
 {
   if(vm->film_strip.leave) vm->film_strip.leave(&vm->film_strip);
+  dt_accel_disconnect_list(vm->film_strip.accel_closures);
+  vm->film_strip.accel_closures = NULL;
 
   dt_conf_set_float("plugins/filmstrip/size", vm->film_strip_size);
 

@@ -28,6 +28,7 @@
 #include "common/collection.h"
 #include "common/history.h"
 #include "common/debug.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
@@ -77,9 +78,6 @@ typedef struct dt_film_strip_t
   int32_t offset;
   dt_view_image_over_t image_over;
   int32_t history_copy_imgid;
-
-  // Accel closure list
-  GSList *closures;
 }
 dt_film_strip_t;
 
@@ -95,96 +93,7 @@ void init(dt_view_t *self)
   strip->last_selected_id = -1;
   strip->offset = 0;
   strip->history_copy_imgid=-1;
-  strip->closures = NULL;
 
-  // Registering keyboard accelerators
-  gtk_accel_map_add_entry("<Darktable>/film strip/rating/desert", GDK_0, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/rating/1", GDK_1, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/rating/2", GDK_2, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/rating/3", GDK_3, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/rating/4", GDK_4, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/rating/5", GDK_5, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/rating/reject", GDK_r,
-                          0);
-
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/desert",
-                                 NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/1",
-                                 NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/2",
-                                 NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/3",
-                                 NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/4",
-                                 NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/5",
-                                 NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/reject",
-                                 NULL);
-
-  gtk_accel_map_add_entry("<Darktable>/film strip/history/copy",
-                          GDK_c, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/film strip/history/paste",
-                          GDK_v, GDK_CONTROL_MASK);
-  gtk_accel_map_add_entry("<Darktable>/film strip/history/discard",
-                          GDK_d, GDK_CONTROL_MASK);
-
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/history/copy",
-      NULL);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/history/paste",
-      NULL);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/history/discard",
-      NULL);
-
-  gtk_accel_map_add_entry("<Darktable>/film strip/color/red", GDK_F1, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/color/yellow", GDK_F2, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/color/green", GDK_F3, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/color/blue", GDK_F4, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/color/purple", GDK_F5, 0);
-
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/red",
-      NULL);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/yellow",
-      NULL);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/green",
-      NULL);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/blue",
-      NULL);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/purple",
-      NULL);
-
-  gtk_accel_map_add_entry("<Darktable>/film strip/scroll forward",
-                          GDK_Right, 0);
-  gtk_accel_map_add_entry("<Darktable>/film strip/scroll back",
-                          GDK_Left, 0);
-
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/scroll forward", NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/scroll back", NULL);
 }
 
 void cleanup(dt_view_t *self)
@@ -398,137 +307,8 @@ void mouse_leave(dt_view_t *self)
 {
 }
 
-static void connect_closures(dt_view_t *self)
-{
-  dt_film_strip_t *strip = (dt_film_strip_t*)self->data;
-  GClosure *closure;
-
-  // Registering keyboard accelerators
-
-  closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_DESERT, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/desert",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_1, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/1",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_2, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/2",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_3, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/3",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_4, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/4",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_5, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/5",
-                                 closure);
-  closure = g_cclosure_new(
-      G_CALLBACK(star_key_accel_callback),
-      (gpointer)DT_VIEW_REJECT, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/rating/reject",
-                                 closure);
-
-  closure = g_cclosure_new(G_CALLBACK(copy_history_key_accel_callback),
-                           (gpointer)strip, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/history/copy",
-      closure);
-  closure = g_cclosure_new(G_CALLBACK(paste_history_key_accel_callback),
-                           (gpointer)strip, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/history/paste",
-      closure);
-  closure = g_cclosure_new(G_CALLBACK(discard_history_key_accel_callback),
-                           (gpointer)strip, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/history/discard",
-      closure);
-
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)0, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/red",
-      closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)1, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/yellow",
-      closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)2, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/green",
-      closure);
-  closure =  g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                            (gpointer)3, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/blue",
-      closure);
-  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)4, NULL);
-  strip->closures = g_slist_prepend(strip->closures, closure);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_filmstrip,
-      "<Darktable>/film strip/color/purple",
-      closure);
-
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/scroll forward", NULL);
-  dt_accel_group_connect_by_path(darktable.control->accels_filmstrip,
-                                 "<Darktable>/film strip/scroll back", NULL);
-
-}
-
 void enter(dt_view_t *self)
 {
-  // Attaching accel group
-  gtk_window_add_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                             darktable.control->accels_filmstrip);
-
-  // Connecting the closures
-  connect_closures(self);
-
   // scroll to opened image.
   scroll_to_image(self);
 }
@@ -536,19 +316,7 @@ void enter(dt_view_t *self)
 void leave(dt_view_t *self)
 {
   dt_film_strip_t *strip = (dt_film_strip_t *)self->data;
-  GSList *c = strip->closures;
   strip->history_copy_imgid=-1;
-
-  while(c)
-  {
-    dt_accel_group_disconnect(darktable.control->accels_filmstrip, c->data);
-    c = g_slist_next(c);
-  }
-  g_slist_free(strip->closures);
-  strip->closures = NULL;
-
-  gtk_window_remove_accel_group(GTK_WINDOW(darktable.gui->widgets.main_window),
-                                darktable.control->accels_filmstrip);
 }
 
 // TODO: go to currently selected image in sister view (lt/tethered/darkroom)
@@ -643,6 +411,118 @@ void scrolled(dt_view_t *view, double x, double y, int up, int state)
   darktable.view_manager->film_strip_scroll_to = -1;
   // expose will take care of bounds checking
   dt_control_queue_draw_all();
+}
+
+void init_key_accels(dt_view_t *self)
+{
+  // Registering keyboard accelerators
+
+  // Ratings
+  dt_accel_register_view(self, NC_("accel", "rate desert"), GDK_0, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 1"), GDK_1, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 2"), GDK_2, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 3"), GDK_3, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 4"), GDK_4, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 5"), GDK_5, 0);
+  dt_accel_register_view(self, NC_("accel", "rate reject"), GDK_r, 0);
+
+  // History
+  dt_accel_register_view(self, NC_("accel", "history copy"),
+                         GDK_c, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "history paste"),
+                         GDK_v, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "history discard"),
+                         GDK_d, GDK_CONTROL_MASK);
+
+  // Coloring
+  dt_accel_register_view(self, NC_("accel", "color red"), GDK_F1, 0);
+  dt_accel_register_view(self, NC_("accel", "color yellow"), GDK_F2, 0);
+  dt_accel_register_view(self, NC_("accel", "color green"), GDK_F3, 0);
+  dt_accel_register_view(self, NC_("accel", "color blue"), GDK_F4, 0);
+  dt_accel_register_view(self, NC_("accel", "color purple"), GDK_F5, 0);
+
+  // Scrolling
+  dt_accel_register_view(self, NC_("accel", "scroll forward"), GDK_Right, 0);
+  dt_accel_register_view(self, NC_("accel", "scroll back"), GDK_Left, 0);
+}
+
+void connect_key_accels(dt_view_t *self)
+{
+  dt_film_strip_t *strip = (dt_film_strip_t*)self->data;
+  GClosure *closure;
+
+  // Registering keyboard accelerators
+
+  // Rating keys
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_DESERT, NULL);
+  dt_accel_connect_view(self, "rate desert", closure);
+
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_1, NULL);
+  dt_accel_connect_view(self, "rate 1", closure);
+
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_2, NULL);
+  dt_accel_connect_view(self, "rate 2", closure);
+
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_3, NULL);
+  dt_accel_connect_view(self, "rate 3", closure);
+
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_4, NULL);
+  dt_accel_connect_view(self, "rate 4", closure);
+
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_STAR_5, NULL);
+  dt_accel_connect_view(self, "rate 5", closure);
+
+  closure = g_cclosure_new(
+      G_CALLBACK(star_key_accel_callback),
+      (gpointer)DT_VIEW_REJECT, NULL);
+  dt_accel_connect_view(self, "rate reject", closure);
+
+  // History keys
+  closure = g_cclosure_new(G_CALLBACK(copy_history_key_accel_callback),
+                           (gpointer)strip, NULL);
+  dt_accel_connect_view(self, "history copy", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(paste_history_key_accel_callback),
+                           (gpointer)strip, NULL);
+  dt_accel_connect_view(self, "history paste", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(discard_history_key_accel_callback),
+                           (gpointer)strip, NULL);
+  dt_accel_connect_view(self, "history discard", closure);
+
+  // Color keys
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)0, NULL);
+  dt_accel_connect_view(self, "color red", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)1, NULL);
+  dt_accel_connect_view(self, "color yellow", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)2, NULL);
+  dt_accel_connect_view(self, "color green", closure);
+
+  closure =  g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                            (gpointer)3, NULL);
+  dt_accel_connect_view(self, "color blue", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
+                           (gpointer)4, NULL);
+  dt_accel_connect_view(self, "color purple", closure);
+
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

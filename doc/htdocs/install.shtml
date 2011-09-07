@@ -117,7 +117,7 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
     	<div class="listtext">
       <img src="images/macosx.jpg" alt="release" class="img" /><h1>experimental release for mac osx</h1>
       <ul>
-        <li>download the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.9/Darktable-0.9.2.dmg/download">experimental 0.9.2 disk image</a></li>
+        <li>download the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.9/Darktable-0.9.2.dmg/download">experimental 0.9.2 disk image</a> (64bit only)</li>
         <li>mount the thing</li>
         <li>pull the darktable icon into your applications folder</li>
         <li>good luck :)</li>

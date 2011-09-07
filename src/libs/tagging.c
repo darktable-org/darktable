@@ -322,8 +322,6 @@ position ()
   return 500;
 }
 
-
-
 void
 gui_init (dt_lib_module_t *self)
 {

@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "OrfDecoder.h"
 #include "TiffParserOlympus.h"
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__) 
 #include <stdlib.h>
 #endif
 /*
@@ -128,6 +128,8 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
     memset(acarry0, 0, sizeof acarry0);
     memset(acarry1, 0, sizeof acarry1);
     ushort16* dest = (ushort16*) & data[y*pitch];
+    bool y_border = y < 2;
+    bool border = TRUE;
     for (uint32 x = 0; x < w; x++) {
       bits.checkPos();
       bits.fill();
@@ -149,10 +151,10 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
       acarry0[1] = (diff * 3 + acarry0[1]) >> 5;
       acarry0[2] = acarry0[0] > 16 ? 0 : acarry0[2] + 1;
 
-      if (y < 2 || x < 2) {
-        if (y < 2 && x < 2)  
+      if (border) {
+        if (y_border && x < 2)  
           pred = 0;
-        else if (y < 2) 
+        else if (y_border) 
           pred = left0;
         else { 
           pred = dest[-pitch+((int)x)];
@@ -166,13 +168,13 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         int leftMinusNw = left0 - nw0;
         int upMinusNw = up - nw0;
         // Check if sign is different, and one is not zero
-        if (((leftMinusNw) ^ (upMinusNw)) < 0 && (upMinusNw * leftMinusNw)) {
-          if (abs(leftMinusNw) > 32 || abs(upMinusNw) > 32)
+        if (leftMinusNw * upMinusNw < 0) {
+          if (other_abs(leftMinusNw) > 32 || other_abs(upMinusNw) > 32)
             pred = left0 + upMinusNw;
           else 
             pred = (left0 + up) >> 1;
         } else 
-          pred = abs(leftMinusNw) > abs(upMinusNw) ? left0 : up;
+          pred = other_abs(leftMinusNw) > other_abs(upMinusNw) ? left0 : up;
 
         dest[x] = pred + ((diff << 2) | low);
         // Set predictors
@@ -201,10 +203,10 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
       acarry1[1] = (diff * 3 + acarry1[1]) >> 5;
       acarry1[2] = acarry1[0] > 16 ? 0 : acarry1[2] + 1;
 
-      if (y < 2 || x < 2) {
-        if (y < 2 && x < 2)  
+      if (border) {
+        if (y_border && x < 2)  
           pred = 0;
-        else if (y < 2) 
+        else if (y_border) 
           pred = left1;
         else { 
           pred = dest[-pitch+((int)x)];
@@ -219,13 +221,13 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         int upMinusNw = up - nw1;
 
         // Check if sign is different, and one is not zero
-        if (((leftMinusNw) ^ (upMinusNw)) < 0 && (upMinusNw * leftMinusNw)) {
-          if (abs(leftMinusNw) > 32 || abs(upMinusNw) > 32)
+        if (leftMinusNw * upMinusNw < 0) {
+          if (other_abs(leftMinusNw) > 32 || other_abs(upMinusNw) > 32)
             pred = left1 + upMinusNw;
           else 
             pred = (left1 + up) >> 1;
         } else 
-          pred = abs(leftMinusNw) > abs(upMinusNw) ? left1 : up;
+          pred = other_abs(leftMinusNw) > other_abs(upMinusNw) ? left1 : up;
 
         dest[x] = pred + ((diff << 2) | low);
 
@@ -233,6 +235,7 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         left1 = dest[x];
         nw1 = up;
       }
+	  border = y_border;
     }
   }
 }

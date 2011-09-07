@@ -100,7 +100,9 @@ typedef struct dt_iop_module_so_t
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
   /** Optional callback for keyboard accelerators */
-  void (*init_key_accels)();
+  void (*init_key_accels)(struct dt_iop_module_so_t *so);
+  void (*connect_key_accels)(struct dt_iop_module_t *self);
+  void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 
   int  (*mouse_leave)     (struct dt_iop_module_t *self);
   int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
@@ -174,8 +176,16 @@ typedef struct dt_iop_module_t
   GtkWidget *showhide;
   /** expander containing the widget. */
   GtkExpander *expander;
+  /** reset parameters button */
+  GtkWidget *reset_button;
+  /** show preset menu button */
+  GtkWidget *presets_button;
+  /** fusion slider */
+  GtkWidget *fusion_slider;
   /** list of closures: show, enable/disable */
-  GList* closures;
+  GSList *accel_closures;
+  GSList *accel_closures_local;
+  gboolean local_closures_connected;
 
 
   /** version of the parameters in the database. */
@@ -240,6 +250,10 @@ typedef struct dt_iop_module_t
   int (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   /** a tiling variant of process_cl(). */
   int (*process_tiling_cl)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+
+  /** Key accelerator registration callbacks */
+  void (*connect_key_accels)(struct dt_iop_module_t *self);
+  void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 }
 dt_iop_module_t;
 
@@ -345,5 +359,7 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
   return coeff[0] * powf(x, coeff[1]);
 }
 
+/** Connects common accelerators to an iop module */
+void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
 #endif

@@ -166,7 +166,6 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   const int tile_wd = width - 2*overlap > 0 ? width - 2*overlap : 1;
   const int tile_ht = height - 2*overlap > 0 ? height - 2*overlap : 1;
 
-
   /* calculate number of tiles */
   const int tiles_x = width < roi_out->width ? ceilf(roi_out->width /(float)tile_wd) : 1;
   const int tiles_y = height < roi_out->height ? ceilf(roi_out->height/(float)tile_ht) : 1;

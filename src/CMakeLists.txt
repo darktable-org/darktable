@@ -37,15 +37,16 @@ FILE(GLOB SOURCE_FILES
   "control/control.c"  
   "control/jobs/control_jobs.c"  
   "control/jobs/develop_jobs.c"  
-  "control/jobs/film_jobs.c"  
-  "control/jobs/image_jobs.c"  
+  "control/jobs/film_jobs.c"
+  "control/jobs/image_jobs.c"
   "develop/develop.c"
   "develop/imageop.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
   "develop/tiling.c"
-  "dtgtk/*.c" 
-  "gui/background_jobs.c"  
+  "dtgtk/*.c"
+  "gui/accelerators.c"
+  "gui/background_jobs.c"
   "gui/contrast.c"  
   "gui/gtk.c"  
   "gui/histogram.c"  
@@ -61,16 +62,6 @@ FILE(GLOB SOURCE_FILES
   "views/view.c"
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
-
-# Files that could conceivable contain accelerator definitions
-FILE(GLOB ACCEL_SOURCES
-  "create_accel_strings.sh"
-  "develop/imageop.c"
-  "gui/gtk.c"
-  "iop/*.c"
-  "libs/*.c"
-  "views/*.c"
-)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -278,16 +269,6 @@ add_custom_command(
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPERTIES GENERATED 1)
 
 #
-# Generation of the accels translation strings file
-#
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_accel_strings.sh ${CMAKE_CURRENT_SOURCE_DIR} > ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h
-    DEPENDS ${ACCEL_SOURCES}
-)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h PROPERTIES GENERATED 1)
-
-#
 # Generate mapping of key strings to internal metadata id
 #
 add_custom_command(
@@ -303,7 +284,7 @@ add_library(metadata_dummy ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CU
 #
 # build libdarktable
 #
-add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${CMAKE_CURRENT_BINARY_DIR}/accelstrings_gen.h ${SOURCES})
+add_library(lib_darktable STATIC SHARED ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.h ${CMAKE_CURRENT_BINARY_DIR}/metadata_gen.c ${SOURCES})
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES INSTALL_NAME_DIR "@executable_path/../lib/darktable")
 endif(APPLE)

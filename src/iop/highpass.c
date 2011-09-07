@@ -32,6 +32,7 @@
 #include "common/opencl.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -94,12 +95,20 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highpass/sharpness");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highpass/contrast boost");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "sharpness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast boost"));
 }
 
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_highpass_gui_data_t *g =
+      (dt_iop_highpass_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->scale2));
+}
 
 void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
@@ -490,8 +499,6 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale1,"%");
   dtgtk_slider_set_label(g->scale2,_("contrast boost"));
   dtgtk_slider_set_unit(g->scale2,"%");
-  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highpass/sharpness");
-  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highpass/contrast boost");
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);

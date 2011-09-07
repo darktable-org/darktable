@@ -1,5 +1,4 @@
 build/src/preferences_gen.h
-build/src/accelstrings_gen.h
 data/darktable.schemas
 src/common/collection.c
 src/common/darktable.h

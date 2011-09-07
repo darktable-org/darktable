@@ -55,6 +55,9 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkDarktableSlider *tca_r;
   GtkDarktableSlider *tca_b;
   GtkDarktableSlider *scale;
+  GtkWidget *auto_scale_button;
+  GtkWidget *find_lens_button;
+  GtkWidget *find_camera_button;
 }
 dt_iop_lensfun_gui_data_t;
 

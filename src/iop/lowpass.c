@@ -34,6 +34,7 @@
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include <gtk/gtk.h>
@@ -108,11 +109,20 @@ groups ()
 }
 
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowpass/radius");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowpass/contrast");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowpass/saturation");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale3));
 }
 
 static 
@@ -705,10 +715,6 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_label(g->scale1,_("radius"));
   dtgtk_slider_set_label(g->scale2,_("contrast"));
   dtgtk_slider_set_label(g->scale3,_("saturation"));
-  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowpass/radius");
-  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowpass/contrast");
-  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowpass/saturation");
-
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
