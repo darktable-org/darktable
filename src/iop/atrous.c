@@ -185,57 +185,169 @@ weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
   return exp;
 }
 
+#define SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj) \
+  do { \
+    const __m128 f = _mm_set1_ps(filter[(ii)]*filter[(jj)]); \
+    const __m128 wp = weight_sse(px, px2, sharpen); \
+    const __m128 w = _mm_mul_ps(f, wp); \
+    const __m128 pd = _mm_mul_ps(w, *px2); \
+    sum = _mm_add_ps(sum, pd); \
+    wgt = _mm_add_ps(wgt, w); \
+  } while (0)
+
+#define SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj) \
+  do { \
+    const int iii = (ii)-2; \
+    const int jjj = (jj)-2; \
+    int x = i + mult*iii; \
+    int y = j + mult*jjj; \
+    \
+    if(x < 0)       x = 0; \
+    if(x >= width)  x = width  - 1; \
+    if(y < 0)       y = 0; \
+    if(y >= height) y = height - 1; \
+    \
+    px2 = ((__m128 *)in) + x + y*width; \
+    \
+    SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj); \
+  } while (0)
+
+#define ROW_PROLOGUE \
+  const __m128 *px = ((__m128 *)in) + j*width; \
+  const __m128 *px2; \
+  float *pdetail = detail + 4*j*width; \
+  float *pcoarse = out + 4*j*width;
+
+#define SUM_PIXEL_PROLOGUE \
+  __m128 sum = _mm_setzero_ps(); \
+  __m128 wgt = _mm_setzero_ps();
+
+#define SUM_PIXEL_EPILOGUE \
+  sum = _mm_mul_ps(sum, _mm_rcp_ps(wgt)); \
+  \
+  _mm_stream_ps(pdetail, _mm_sub_ps(*px, sum)); \
+  _mm_stream_ps(pcoarse, sum); \
+  px++; \
+  pdetail+=4; \
+  pcoarse+=4;
+
 static void
 eaw_decompose (float *const out, const float *const in, float *const detail, const int scale,
                const float sharpen, const int32_t width, const int32_t height)
 {
   const int mult = 1<<scale;
-  const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+  static const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+
+  /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
+   * requires nearest pixel interpolation for at least a pixel in the sum */
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
+  for (int j=0; j<2*mult; j++)
+  {
+    ROW_PROLOGUE
+
+    for(int i=0; i<width; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj);
+        }
+      }
+      SUM_PIXEL_EPILOGUE
+    }
+  }
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static)
 #endif
-  for(int j=0; j<height; j++)
+  for(int j=2*mult; j<height-2*mult; j++)
   {
-    const __m128 *px = ((__m128 *)in) + j*width;
-    float *pdetail = detail + 4*j*width;
-    float *pcoarse = out + 4*j*width;
-    for(int i=0; i<width; i++)
-    {
-      // TODO: prefetch? _mm_prefetch()
-      __m128 sum = _mm_setzero_ps(), wgt = _mm_setzero_ps();
-      for(int jj=0; jj<5; jj++) for(int ii=0; ii<5; ii++)
-        {
-          const int iii = ii-2;
-          const int jjj = jj-2;
-          int x = i + mult*iii, y = j + mult*jjj;
-          // if(x < 0 || x >= width || y < 0 || y >= height) continue;
-          // clamp to edge
-          if(x < 0)       x = 0;
-          if(x >= width)  x = width  - 1;
-          if(y < 0)       y = 0;
-          if(y >= height) y = height - 1;
-          const __m128 *px2 = ((__m128 *)in) + x + y*width;
-          const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight_sse(px, px2, sharpen));
-          sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
-          wgt = _mm_add_ps(wgt, w);
-        }
-      // sum = _mm_div_ps(sum, wgt);
-      sum = _mm_mul_ps(sum, _mm_rcp_ps(wgt)); // less precise, but faster
+    ROW_PROLOGUE
 
-      // memcpy is a tad slower than writing without updating caches:
-      // const __m128 d = _mm_sub_ps(*px, sum);
-      // memcpy(pdetail, &d, sizeof(float)*4);
-      // memcpy(pcoarse, &sum, sizeof(float)*4);
-      _mm_stream_ps(pdetail, _mm_sub_ps(*px, sum));
-      _mm_stream_ps(pcoarse, sum);
-      px++;
-      pdetail+=4;
-      pcoarse+=4;
+    /* The first "2*mult" pixels use the macro with tests because the 5x5 kernel
+     * requires nearest pixel interpolation for at least a pixel in the sum */
+    for (int i=0; i<2*mult; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj);
+        }
+      }
+      SUM_PIXEL_EPILOGUE
+    }
+
+    /* For pixels [2*mult, width-2*mult], we can safely use macro w/o tests
+     * to avoid uneeded branching in the inner loops */
+    px2 = ((__m128*)in) + (j-2*mult)*width;
+    for(int i=2*mult; i<width-2*mult; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj);
+          px2 += mult;
+        }
+        px2 += (width-5)*mult;
+      }
+      px2 -= 5*width*mult - 1;
+      SUM_PIXEL_EPILOGUE
+    }
+
+    /* Last two pixels in the row require a slow variant... blablabla */
+    for (int i=width-2*mult; i<width; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj);
+        }
+      }
+      SUM_PIXEL_EPILOGUE
     }
   }
+
+  /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
+   * requires nearest pixel interpolation for at least a pixel in the sum */
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
+  for (int j=height-2*mult; j<height; j++)
+  {
+    ROW_PROLOGUE
+
+    for(int i=0; i<width; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj);
+        }
+      }
+      SUM_PIXEL_EPILOGUE
+    }
+  }
+
   _mm_sfence();
 }
+
+#undef SUM_PIXEL_CONTRIBUTION_COMMON
+#undef SUM_PIXEL_CONTRIBUTION_WITH_TEST
+#undef ROW_PROLOGUE
+#undef SUM_PIXEL_PROLOGUE
+#undef SUM_PIXEL_EPILOGUE
 
 static void
 eaw_synthesize (float *const out, const float *const in, const float *const detail,
