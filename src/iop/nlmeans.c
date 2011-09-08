@@ -161,12 +161,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
   const float norm2[4] = { nL*nL, nC*nC, nC*nC, 1.0f };
 
-#define SLIDING_WINDOW // brings down time from 15 secs to 3 secs on a core2 duo
-#ifdef SLIDING_WINDOW
   float *Sa = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
-#else
-  float *S = dt_alloc_align(64, sizeof(float)*roi_out->width*roi_out->height);
-#endif
   // we want to sum up weights in col[3], so need to init to 0:
   memset(o, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
 
@@ -175,7 +170,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     for(int ki=-K;ki<=K;ki++)
     {
-#ifdef SLIDING_WINDOW
       int inited_slide = 0;
       // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
       // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more memory
@@ -253,95 +247,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         }
         else inited_slide = 0;
       }
-#else
-      // construct summed area table of weights:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(i,S,roi_in,roi_out,kj,ki)
-#endif
-      for(int j=0; j<roi_out->height; j++)
-      {
-        const float *in  = ((float *)i) + 4* roi_in->width * j;
-        const float *ins = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
-        float *out = ((float *)S) + roi_out->width*j;
-        if(j+kj < 0 || j+kj >= roi_out->height) memset(out, 0x0, sizeof(float)*roi_out->width);
-        else for(int i=0; i<roi_out->width; i++)
-        {
-          if(i+ki < 0 || i+ki >= roi_out->width) out[0] = 0.0f;
-          else
-          {
-            out[0]  = (in[0] - ins[0])*(in[0] - ins[0]) * norm2[0];
-            out[0] += (in[1] - ins[1])*(in[1] - ins[1]) * norm2[1];
-            out[0] += (in[2] - ins[2])*(in[2] - ins[2]) * norm2[2];
-          }
-          in  += 4;
-          ins += 4;
-          out ++;
-        }
-      }
-      // now sum up:
-      // horizontal phase:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(S,roi_out)
-#endif
-      for(int j=0; j<roi_out->height; j++)
-      {
-        int stride = 1;
-        while(stride < roi_out->width)
-        {
-          float *out = ((float *)S) + roi_out->width*j;
-          for(int i=0;i<roi_out->width-stride;i++)
-          {
-            out[0] += out[stride];
-            out ++;
-          }
-          stride <<= 1;
-        }
-      }
-      // vertical phase:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(S,roi_out)
-#endif
-      for(int i=0; i<roi_out->width; i++)
-      {
-        int stride = 1;
-        while(stride < roi_out->height)
-        {
-          float *out = S + i;
-          for(int j=0;j<roi_out->height-stride;j++)
-          {
-            out[0] += out[roi_out->width*stride];
-            out += roi_out->width;
-          }
-          stride <<= 1;
-        }
-      }
-      // now the denoising loop:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(i,o,S,kj,ki,roi_in,roi_out)
-#endif
-      for(int j=0; j<roi_out->height; j++)
-      {
-        if(j+kj < 0 || j+kj >= roi_out->height) continue;
-        const float *in  = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
-        float *out = ((float *)o) + 4*roi_out->width*j;
-        const float *s = S + roi_out->width*j;
-        const int offy = MIN(j, MIN(roi_out->height - j - 1, P)) * roi_out->width;
-        for(int i=0; i<roi_out->width; i++)
-        {
-          if(i+ki >= 0 && i+ki < roi_out->width)
-          {
-            const int offx = MIN(i, MIN(roi_out->width - i - 1, P));
-            const float m1 = s[offx - offy], m2 = s[- offx + offy], p1 = s[offx + offy], p2 = s[- offx - offy];
-            const float w = gh(p1 + p2 - m1 - m2);
-            for(int k=0;k<3;k++) out[k] += in[k] * w;
-            out[3] += w;
-          }
-          s   ++;
-          in  += 4;
-          out += 4;
-        }
-      }
-#endif
     }
   }
   // normalize:
@@ -357,13 +262,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out += 4;
     }
   }
-#ifdef SLIDING_WINDOW
   // free shared tmp memory:
   free(Sa);
-#else
-  // free the summed area table:
-  free(S);
-#endif
 }
 
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
