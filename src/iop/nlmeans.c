@@ -196,12 +196,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             float *s = S;
             const float *inp  = ((float *)i) + 4* roi_in->width *(j+jj);
             const float *inps = ((float *)i) + 4*(roi_in->width *(j+jj+kj) + ki);
-            for(int i=0; i<roi_out->width; i++)
+            for(int i=0; i<roi_out->width; i++, inp+=4, inps+=4)
             {
               if(i+ki >= 0 && i+ki < roi_out->width)
               {
                 for(int k=0;k<3;k++)
-                  s[0] += (inp[4*i + k] - inps[4*i + k])*(inp[4*i + k] - inps[4*i + k]) * norm2[k];
+                  s[0] += (inp[k] - inps[k])*(inp[k] - inps[k]) * norm2[k];
               }
               s++;
             }
@@ -221,9 +221,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             slide += s[P] - s[-P-1];
           if(i+ki >= 0 && i+ki < roi_out->width)
           {
-            const float w = gh(slide);
-            for(int k=0;k<3;k++) out[k] += ins[k] * w;
-            out[3] += w;
+            const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
+            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(gh(slide)));
           }
           s   ++;
           ins += 4;
@@ -237,11 +236,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           const float *inps = ((float *)i) + 4*(roi_in->width *(j+P+1+kj) + ki);
           const float *inm  = ((float *)i) + 4* roi_in->width *(j-P);
           const float *inms = ((float *)i) + 4*(roi_in->width *(j-P+kj) + ki);
-          for(int i=0; i<roi_out->width; i++)
+          for(int i=0; i<roi_out->width; i++, inp+=4, inps+=4, inm+=4, inms+=4)
           {
             if(i+ki >= 0 && i+ki < roi_out->width) for(int k=0;k<3;k++)
-              s[0] += ((inp[4*i + k] - inps[4*i + k])*(inp[4*i + k] - inps[4*i + k])
-                    -  (inm[4*i + k] - inms[4*i + k])*(inm[4*i + k] - inms[4*i + k])) * norm2[k];
+              s[0] += ((inp[k] - inps[k])*(inp[k] - inps[k])
+                    -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
             s++;
           }
         }
@@ -258,7 +257,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + 4*roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
-      for(int k=0;k<3;k++) out[k] *= 1.0f/out[3];
+      _mm_store_ps(out, _mm_load_ps(out) * _mm_set1_ps(1.0f/out[3]));
       out += 4;
     }
   }
