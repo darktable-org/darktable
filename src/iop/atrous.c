@@ -141,12 +141,48 @@ void connect_key_accels(dt_iop_module_t *self)
                               ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
 }
 
-static __m128
-weight (const float *c1, const float *c2, const float sharpen)
+#define ALIGNED(a) __attribute__((aligned(a)))
+#define VEC4(a) {(a), (a), (a), (a)}
+
+static const __m128 fone ALIGNED(16) = VEC4(0x3f800000u);
+static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
+static const __m128 ooo1 ALIGNED(16) = {0.f, 0.f, 0.f, 1.f};
+
+/* SSE intrinsics version of dt_fast_expf defined in darktable.h */
+static __m128  inline
+dt_fast_expf_sse(const __m128 x)
 {
-  const float wc = dt_fast_expf(-((c1[1] - c2[1])*(c1[1] - c2[1]) + (c1[2] - c2[2])*(c1[2] - c2[2])) * sharpen);
-  const float wl = dt_fast_expf(-(c1[0] - c2[0])*(c1[0] - c2[0]) * sharpen);
-  return _mm_set_ps(1.0f, wc, wc, wl);
+  __m128  f = _mm_add_ps(fone, _mm_mul_ps(x, femo)); // f(n) = i1 + x(n)*(i2-i1)
+  __m128i i = _mm_cvtps_epi32(f);                    // i(n) = int(f(n))
+  __m128i mask = _mm_srai_epi32(i, 31);              // mask(n) = 0xffffffff if i(n) < 0
+  i = _mm_andnot_si128(mask, i);                     // i(n) = 0 if i(n) < 0
+  return _mm_castsi128_ps(i);                        // return *(float*)&i
+}
+
+/* Computes the vector
+ * (wl, wc, wc, 1)
+ *
+ * where:
+ * wl = exp(-sharpen*SQR(c1[0] - c2[0]))
+ *    = exp(-s*d1) (as noted in code comments below)
+ * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
+ *    = exp(-s*(d2+d3)) (as noted in code comments below)
+ */
+static __m128  inline
+weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
+{
+  const __m128 vsharpen = _mm_set1_ps(-sharpen);  // (-s, -s, -s, -s)
+  __m128 diff = _mm_sub_ps(*c1, *c2);
+  __m128 square = _mm_mul_ps(diff, diff);         // (?, d3, d2, d1)
+  __m128 square2 = _mm_shuffle_ps(square, square, _MM_SHUFFLE(3, 1, 2, 0)); // (?, d2, d3, d1)
+  __m128 added = _mm_add_ps(square, square2);     // (?, d2+d3, d2+d3, 2*d1)
+  added = _mm_sub_ss(added, square);              // (?, d2+d3, d2+d3, d1)
+  __m128 sharpened = _mm_mul_ps(added, vsharpen); // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
+  __m128 exp = dt_fast_expf_sse(sharpened);       // (?, wc, wc, wl)
+  exp = _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(exp), 4)); // (wc, wc, wl, 0)
+  exp = _mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(exp), 4)); // (0, wc, wc, wl)
+  exp = _mm_or_ps(exp, ooo1); // (1, wc, wc, wl)
+  return exp;
 }
 
 static void
@@ -180,7 +216,7 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
           if(y < 0)       y = 0;
           if(y >= height) y = height - 1;
           const __m128 *px2 = ((__m128 *)in) + x + y*width;
-          const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight((float *)px, (float *)px2, sharpen));
+          const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight_sse(px, px2, sharpen));
           sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
           wgt = _mm_add_ps(wgt, w);
         }
