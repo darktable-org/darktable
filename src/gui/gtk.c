@@ -237,8 +237,8 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 
     case 2: // top border
     {
-      gboolean show = !dt_conf_get_bool(key);
       g_snprintf(key, 512, "%s/ui/%s_visible", cv->module_name, _ui_panel_config_names[DT_UI_PANEL_CENTER_TOP]);
+      gboolean show = !dt_conf_get_bool(key);
       dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, show);
       
       /* special case show header */
