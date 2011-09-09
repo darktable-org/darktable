@@ -35,8 +35,6 @@
 #define INSET 5
 #define INFL .3f
 
-#define GLOBAL_TILING		// undef to use atrous-specific tiling instead (only for non-opencl)
-
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
@@ -438,7 +436,6 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
   return i;
 }
 
-#ifdef GLOBAL_TILING
 /* just process the supplied image buffer, upstream default_process_tiling() does the rest */
 void
 process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -512,144 +509,6 @@ error:
   if(tmp != NULL) free(tmp);
   return;
 }
-#else
-/* if we don't use global tiling, we will in all cases use our own tiling approach, even if tiling is not requested explicitely */
-void
-process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  return self->process_tiling(self, piece, i, o, roi_in, roi_out, 4*sizeof(float));
-}
-#endif
-
-#ifndef GLOBAL_TILING
-/* this defines atrous' own tiling routine (non-opencl) */
-void
-process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
-{
-  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
-  float thrs [MAX_NUM_SCALES][4];
-  float boost[MAX_NUM_SCALES][4];
-  float sharp[MAX_NUM_SCALES];
-  const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
-
-  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
-  {
-    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
-    g->num_samples = get_samples (g->sample, d, roi_in, piece);
-    // tries to acquire gdk lock and this prone to deadlock:
-    // dt_control_queue_draw(GTK_WIDGET(g->area));
-  }
-
-  float *detail = NULL;
-  float *tmp    = NULL;
-  float *tmp2   = NULL;
-  float *buf2   = NULL;
-  float *buf1   = NULL;
-
-  // should be >= DT_IMAGE_WINDOW_SIZE, as dr mode won't use tiling then.
-  // border is with MAX_NUM_SCALES=8 502 pixels, the ratio (tile_wd_full-border)/tile_wd_full*(same for y) is directly proportional to the slowdown.
-  // int tile_wd_full = DT_IMAGE_WINDOW_SIZE, tile_ht_full = DT_IMAGE_WINDOW_SIZE;
-  // results in 3x2 for 5D mk II 21MPix images (24s 1300^2 -> 20s full export)
-  // and        2x1 for 12MPix (14s -> 7s)
-  int tile_wd_full = 2390, tile_ht_full = 2390;
-  // int tile_wd_full = 3350, tile_ht_full = 3350; // results in 2x2 for 5D mk II 21MPix images (24s 1300^2 -> 19s full export)
-  const int need_tiles = roi_in->width > tile_wd_full || roi_out->height > tile_ht_full;
-
-  if(need_tiles)
-  {
-    tmp2 = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
-    buf1 = tmp2;
-  }
-  else
-  {
-    tile_wd_full = roi_out->width;
-    tile_ht_full = roi_out->height;
-    buf1   = (float *)i;
-  }
-  detail = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full*max_scale);
-  tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
-  buf2   = tmp;
-  if(!detail || !tmp || !buf1)
-  {
-    fprintf(stderr, "[atrous] failed to allocate buffers!\n");
-    return;
-  }
-
-  const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
-  const int width = roi_out->width, height = roi_out->height;
-  const int tile_wd = tile_wd_full - 2*max_filter_radius, tile_ht = tile_ht_full - 2*max_filter_radius;
-  const int tiles_x = need_tiles ? ceilf(width /(float)tile_wd) : 1;
-  const int tiles_y = need_tiles ? ceilf(height/(float)tile_ht) : 1;
-
-  // printf("need %d x %d tiles with %d x %d (%d x %d) resolution\n", tiles_x, tiles_y, tile_wd, tile_ht, tile_wd_full, tile_ht_full);
-
-  // for all tiles:
-  for(int tx=0; tx<tiles_x; tx++)
-    for(int ty=0; ty<tiles_y; ty++)
-    {
-      // size_t orig0[3] = {0, 0, 0};
-      // size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
-      int orig0_x = 0, orig0_y = 0;
-      int origin_x = tx*tile_wd, origin_y = ty*tile_ht;
-      int wd = origin_x + tile_wd_full > width  ? width  - origin_x : tile_wd_full;
-      int ht = origin_y + tile_ht_full > height ? height - origin_y : tile_ht_full;
-      int vwd = wd, vht = ht; // valid region
-      // size_t region[3] = {wd, ht, 1};
-
-      if(need_tiles)
-      {
-        for(int j=0; j<ht; j++)
-          memcpy(tmp2 + j*4*wd, ((float *)i) + ((origin_y + j)*roi_in->width + origin_x)*4, sizeof(float)*4*wd);
-        buf1 = tmp2;
-        buf2 = tmp;
-      }
-      if(tx > 0)
-      {
-        origin_x += max_filter_radius;
-        orig0_x += max_filter_radius;
-        vwd -= max_filter_radius;
-      }
-      if(ty > 0)
-      {
-        origin_y += max_filter_radius;
-        orig0_y += max_filter_radius;
-        vht -= max_filter_radius;
-      }
-
-      // FIXME: can vwd/vht be < 0?
-      if(vwd <= 0 || vht <= 0) continue;
-
-      for(int scale=0; scale<max_scale; scale++)
-      {
-        eaw_decompose (buf2, buf1, detail + 4*wd*ht*scale, scale, sharp[scale], wd, ht);
-        if(!need_tiles && scale == 0) buf1 = (float *)o;
-        float *buf3 = buf2;
-        buf2 = buf1;
-        buf1 = buf3;
-      }
-
-      for(int scale=max_scale-1; scale>=0; scale--)
-      {
-        eaw_synthesize (buf2, buf1, detail + 4*wd*ht*scale,
-                        thrs[scale], boost[scale], wd, ht);
-        float *buf3 = buf2;
-        buf2 = buf1;
-        buf1 = buf3;
-      }
-
-      if(need_tiles)
-      {
-        for(int j=0; j<vht; j++)
-          memcpy(((float *)o) + ((origin_y + j)*roi_out->width + origin_x)*4, buf1 + 4*(orig0_x + (orig0_y + j)*wd), sizeof(float)*4*vwd);
-      }
-    }
-
-  free(detail);
-  free(tmp);
-  free(tmp2);
-}
-#endif
-
 
 #ifdef HAVE_OPENCL
 /* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */
