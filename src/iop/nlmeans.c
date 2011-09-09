@@ -193,17 +193,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           memset(S, 0x0, sizeof(float)*roi_out->width);
           for(int jj=-Pm;jj<=PM;jj++)
           {
-            float *s = S;
-            const float *inp  = ((float *)ivoid) + 4* roi_in->width *(j+jj);
-            const float *inps = ((float *)ivoid) + 4*(roi_in->width *(j+jj+kj) + ki);
-            for(int i=0; i<roi_out->width; i++, inp+=4, inps+=4)
+            int i = MAX(0, -ki);
+            float *s = S + i;
+            const float *inp  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j+jj);
+            const float *inps = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j+jj+kj) + ki);
+            const int last = roi_out->width + MIN(0, -ki);
+            for(; i<last; i++, inp+=4, inps+=4, s++)
             {
-              if(i+ki >= 0 && i+ki < roi_out->width)
-              {
-                for(int k=0;k<3;k++)
-                  s[0] += (inp[k] - inps[k])*(inp[k] - inps[k]) * norm2[k];
-              }
-              s++;
+              for(int k=0;k<3;k++)
+                s[0] += (inp[k] - inps[k])*(inp[k] - inps[k]) * norm2[k];
             }
           }
           // only reuse this if we had a full stripe
@@ -231,17 +229,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         if(inited_slide && j+P+1+MAX(0,kj) < roi_out->height)
         {
           // sliding window in j direction:
-          float *s = S;
-          const float *inp  = ((float *)ivoid) + 4* roi_in->width *(j+P+1);
-          const float *inps = ((float *)ivoid) + 4*(roi_in->width *(j+P+1+kj) + ki);
-          const float *inm  = ((float *)ivoid) + 4* roi_in->width *(j-P);
-          const float *inms = ((float *)ivoid) + 4*(roi_in->width *(j-P+kj) + ki);
-          for(int i=0; i<roi_out->width; i++, inp+=4, inps+=4, inm+=4, inms+=4)
+          int i = MAX(0, -ki);
+          float *s = S + i;
+          const float *inp  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j+P+1);
+          const float *inps = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j+P+1+kj) + ki);
+          const float *inm  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j-P);
+          const float *inms = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
+          const int last = roi_out->width + MIN(0, -ki);
+          for(; i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
-            if(i+ki >= 0 && i+ki < roi_out->width) for(int k=0;k<3;k++)
+            for(int k=0;k<3;k++)
               s[0] += ((inp[k] - inps[k])*(inp[k] - inps[k])
                     -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
-            s++;
           }
         }
         else inited_slide = 0;
