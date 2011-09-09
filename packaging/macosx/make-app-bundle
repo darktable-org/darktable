@@ -33,6 +33,7 @@ RELEASE=build/release
 DMG=${RELEASE}/${PROGN}.dmg
 EXECUTABLE=bin/darktable
 BUILD_FOLDER=./packaging/macosx
+DTVER=`git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;'`
 
 #Find where MacPorts is installed.  We take a known binary (port), which is in <MacPorts>/bin, and 
 # go up a level to get the main install folder.
@@ -85,6 +86,7 @@ cp -R ${RELEASE}/* ${MACOS}
 #Copy application-specific stuff like icons and startup script
 echo "Creating required application bundle files..."
 cp ${BUILD_FOLDER}/Info.plist ${CONTENTS}
+sed -i -e 's/VERSION/'${DTVER}'/g' ${CONTENTS}/Info.plist
 cp cmake/macosx/darktable.icns ${RESOURCES}
 cp ${BUILD_FOLDER}/start ${MACOS}
 
