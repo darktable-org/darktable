@@ -236,11 +236,65 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           const float *inm  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j-P);
           const float *inms = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
+          for(; ((unsigned long)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
+          {
+            float stmp = s[0];
+            for(int k=0;k<3;k++)
+              stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
+                    -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+            s[0] = stmp;
+          }
+          /* Process most of the line 4 pixels at a time */
+          for(; i<last-16; i+=4, inp+=16, inps+=16, inm+=16, inms+=16, s+=4)
+          {
+            __m128 sv = _mm_load_ps(s);
+            const __m128 inp1 = _mm_load_ps(inp)    - _mm_load_ps(inps);
+            const __m128 inp2 = _mm_load_ps(inp+4)  - _mm_load_ps(inps+4);
+            const __m128 inp3 = _mm_load_ps(inp+8)  - _mm_load_ps(inps+8);
+            const __m128 inp4 = _mm_load_ps(inp+12) - _mm_load_ps(inps+12);
+
+            const __m128 inp12lo = _mm_unpacklo_ps(inp1,inp2);
+            const __m128 inp34lo = _mm_unpacklo_ps(inp3,inp4);
+            const __m128 inp12hi = _mm_unpackhi_ps(inp1,inp2);
+            const __m128 inp34hi = _mm_unpackhi_ps(inp3,inp4);
+
+            const __m128 inpv0 = _mm_movelh_ps(inp12lo,inp34lo);
+            sv += inpv0*inpv0 * _mm_set1_ps(norm2[0]);
+
+            const __m128 inpv1 = _mm_movehl_ps(inp34lo,inp12lo);
+            sv += inpv1*inpv1 * _mm_set1_ps(norm2[1]);
+
+            const __m128 inpv2 = _mm_movelh_ps(inp12hi,inp34hi);
+            sv += inpv2*inpv2 * _mm_set1_ps(norm2[2]);
+
+            const __m128 inm1 = _mm_load_ps(inm)    - _mm_load_ps(inms);
+            const __m128 inm2 = _mm_load_ps(inm+4)  - _mm_load_ps(inms+4);
+            const __m128 inm3 = _mm_load_ps(inm+8)  - _mm_load_ps(inms+8);
+            const __m128 inm4 = _mm_load_ps(inm+12) - _mm_load_ps(inms+12);
+
+            const __m128 inm12lo = _mm_unpacklo_ps(inm1,inm2);
+            const __m128 inm34lo = _mm_unpacklo_ps(inm3,inm4);
+            const __m128 inm12hi = _mm_unpackhi_ps(inm1,inm2);
+            const __m128 inm34hi = _mm_unpackhi_ps(inm3,inm4);
+
+            const __m128 inmv0 = _mm_movelh_ps(inm12lo,inm34lo);
+            sv -= inmv0*inmv0 * _mm_set1_ps(norm2[0]);
+
+            const __m128 inmv1 = _mm_movehl_ps(inm34lo,inm12lo);
+            sv -= inmv1*inmv1 * _mm_set1_ps(norm2[1]);
+
+            const __m128 inmv2 = _mm_movelh_ps(inm12hi,inm34hi);
+            sv -= inmv2*inmv2 * _mm_set1_ps(norm2[2]);
+
+            _mm_store_ps(s, sv);
+          }
           for(; i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
+            float stmp = s[0];
             for(int k=0;k<3;k++)
-              s[0] += ((inp[k] - inps[k])*(inp[k] - inps[k])
+              stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
                     -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+            s[0] = stmp;
           }
         }
         else inited_slide = 0;
