@@ -234,6 +234,9 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     /* change current view to the new view */
     vm->current_view = newv;
 
+    /* restore visible stat of panels for the new view */
+    dt_ui_restore_panels(darktable.gui->ui);
+
     /* lets add plugins related to new view into panels */
     plugins = g_list_last(darktable.lib->plugins);
     while (plugins)

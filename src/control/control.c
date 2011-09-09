@@ -1283,20 +1283,31 @@ int dt_control_key_pressed_override(guint key, guint state)
   if(key == accels->global_sideborders.accel_key
      && state == accels->global_sideborders.accel_mods)
   {
-    gboolean visible = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, !visible);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, !visible);
-    /*
-	  dt_ui_panel_show(DT_UI_PANEL_TOP, !visible);
-	  dt_ui_panel_show(DT_UI_PANEL_BOTTOM, !visible);
-	*/
-
+    /* toggle panel viewstate */
+    dt_ui_toggle_panels_visibility(darktable.gui->ui);
+    
+    /* trigger invalidation of centerview to reprocess pipe */
     dt_dev_invalidate(darktable.develop);
+
   } else if (key == accels->global_header.accel_key &&
 	     state == accels->global_header.accel_mods)
   {
-    gboolean visible = dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, !visible); 
+    char key[512];
+    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+    /* do nothing if in collaps panel state 
+       TODO: reconsider adding this check to ui api */
+    g_snprintf(key, 512, "%s/ui/panel_collaps_state",cv->module_name);
+    if (dt_conf_get_int(key))
+      return 0;
+
+    /* toggle the header visibility state */
+    g_snprintf(key, 512, "%s/ui/show_header", cv->module_name);
+    gboolean header = !dt_conf_get_bool(key);
+    dt_conf_set_bool(key, header);
+    
+    /* show/hide the actual header panel */
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, header); 
   }
  
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));

@@ -171,6 +171,10 @@ void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c,
 void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c);
 /** \brief shows/hide a panel */
 void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show);
+/** \brief restore saved state of panel visibility for current view */
+void dt_ui_restore_panels(struct dt_ui_t *ui);
+/** \brief toggle view of panels eg. collaps/expands to previous view state */
+void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
 /** \brief get visible state of panel */
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui,const dt_ui_panel_t);
 /** \brief get the center drawable widget */
