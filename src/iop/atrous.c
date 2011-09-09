@@ -285,10 +285,10 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
 
     /* For pixels [2*mult, width-2*mult], we can safely use macro w/o tests
      * to avoid uneeded branching in the inner loops */
-    px2 = ((__m128*)in) + (j-2*mult)*width;
     for(int i=2*mult; i<width-2*mult; i++)
     {
       SUM_PIXEL_PROLOGUE
+      px2 = ((__m128*)in) + i-2*mult + (j-2*mult)*width;
       for (int jj=0; jj<5; jj++)
       {
         for (int ii=0; ii<5; ii++)
@@ -298,7 +298,6 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
         }
         px2 += (width-5)*mult;
       }
-      px2 -= 5*width*mult - 1;
       SUM_PIXEL_EPILOGUE
     }
 
