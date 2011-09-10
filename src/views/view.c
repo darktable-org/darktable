@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "views/view.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -128,8 +129,13 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   if(!g_module_symbol(view->module, "configure",       (gpointer)&(view->configure)))       view->configure = NULL;
   if(!g_module_symbol(view->module, "scrolled",        (gpointer)&(view->scrolled)))        view->scrolled = NULL;
   if(!g_module_symbol(view->module, "border_scrolled", (gpointer)&(view->border_scrolled))) view->border_scrolled = NULL;
+  if(!g_module_symbol(view->module, "init_key_accels", (gpointer)&(view->init_key_accels))) view->init_key_accels = NULL;
+  if(!g_module_symbol(view->module, "connect_key_accels", (gpointer)&(view->connect_key_accels))) view->connect_key_accels = NULL;
+
+  view->accel_closures = NULL;
 
   if(view->init) view->init(view);
+  if(view->init_key_accels) view->init_key_accels(view);
 
   /* success */
   retval = 0;
@@ -167,19 +173,23 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     /* iterator plugins and cleanup plugins in current view */
     GList *plugins = g_list_last(darktable.lib->plugins);
     while (plugins)
+    {
+      dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
+
+      if (!plugin && !plugin->views)
+        fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
+
+      /* does this module belong to current view ?*/
+      if (plugin->views() & v->view(v) )
       {
-	dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-
-	if (!plugin && !plugin->views)
-	  fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
-
-	/* does this module belong to current view ?*/
-	if (plugin->views() & v->view(v) )
-	  plugin->gui_cleanup(plugin);
-
-	/* get next plugin */
-	plugins = g_list_previous(plugins);
+        plugin->gui_cleanup(plugin);
+        dt_accel_disconnect_list(plugin->accel_closures);
+        plugin->accel_closures = NULL;
       }
+
+      /* get next plugin */
+      plugins = g_list_previous(plugins);
+    }
 
     /* leave the current view*/
     if(vm->current_view >= 0 && v->leave) v->leave(v);
@@ -201,34 +211,40 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   if (!error)
   {
-     GList *plugins;
+    GList *plugins;
     
     /* cleanup current view before initialization of new  */
     if (vm->current_view >=0)
     {
       /* leave current view */
       if(v->leave) v->leave(v);
-   
+      dt_accel_disconnect_list(v->accel_closures);
+      v->accel_closures = NULL;
+
       /* iterator plugins and cleanup plugins in current view */
       plugins = g_list_last(darktable.lib->plugins);
       while (plugins)
       {
-	  dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-	  
-	  if (!plugin && !plugin->views)
-	    fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
-	  
-	  /* does this module belong to current view ?*/
-	  if (plugin->views() & v->view(v) )
-	    plugin->gui_cleanup(plugin);
+        dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-	  /* get next plugin */
-	  plugins = g_list_previous(plugins);
+        if (!plugin && !plugin->views)
+          fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
+
+        /* does this module belong to current view ?*/
+        if (plugin->views() & v->view(v) )
+        {
+          plugin->gui_cleanup(plugin);
+          dt_accel_disconnect_list(plugin->accel_closures);
+          plugin->accel_closures = NULL;
+        }
+
+        /* get next plugin */
+        plugins = g_list_previous(plugins);
       }
 
       /* remove all widets in all containers */
       for(int l=0;l<DT_UI_CONTAINER_SIZE;l++)
-	dt_ui_container_clear(darktable.gui->ui, l);
+        dt_ui_container_clear(darktable.gui->ui, l);
     }
 
     /* change current view to the new view */
@@ -244,19 +260,23 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
       if( plugin->views() & nv->view(v) )
       {
-	/* module should be in this view, lets initialize */        
-	plugin->gui_init(plugin);
-	
-	/* try get the module expander  */
-	GtkWidget *w = NULL;
-	w = dt_lib_gui_get_expander(plugin);
+        /* module should be in this view, lets initialize */
+        plugin->gui_init(plugin);
 
-	/* if we dont got an expander lets add the widget */
-	if (!w)
-	  w = plugin->widget;
+        /* try get the module expander  */
+        GtkWidget *w = NULL;
+        w = dt_lib_gui_get_expander(plugin);
 
-	/* add module to it's container */
-	dt_ui_container_add_widget(darktable.gui->ui, plugin->container(), w);
+        if(plugin->connect_key_accels)
+          plugin->connect_key_accels(plugin);
+        dt_lib_connect_common_accels(plugin);
+
+        /* if we dont got an expander lets add the widget */
+        if (!w)
+          w = plugin->widget;
+
+        /* add module to it's container */
+        dt_ui_container_add_widget(darktable.gui->ui, plugin->container(), w);
 
       }
 
@@ -271,55 +291,58 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
       if(plugin->views() & nv->view(v))
       {
-	/* set expanded if last mode was that */
-	char var[1024];
-	gboolean expanded = FALSE;
-	if (plugin->expandable())
-	{
-	  snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
-	  expanded = dt_conf_get_bool(var);
-	  gtk_expander_set_expanded (plugin->expander, expanded);
-	
-	  /* show expander if visible  */
-	  if(dt_lib_is_visible(plugin))
-	    gtk_widget_show_all(GTK_WIDGET(plugin->expander));
-	  else
-	    gtk_widget_hide(GTK_WIDGET(plugin->expander));
-	}
+        /* set expanded if last mode was that */
+        char var[1024];
+        gboolean expanded = FALSE;
+        if (plugin->expandable())
+        {
+          snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
+          expanded = dt_conf_get_bool(var);
+          gtk_expander_set_expanded (plugin->expander, expanded);
 
-	/* show/hide plugin widget depending on expanded flag or if plugin
+          /* show expander if visible  */
+          if(dt_lib_is_visible(plugin))
+            gtk_widget_show_all(GTK_WIDGET(plugin->expander));
+          else
+            gtk_widget_hide(GTK_WIDGET(plugin->expander));
+        }
+
+        /* show/hide plugin widget depending on expanded flag or if plugin
 	   not is expandeable() */
-	if(dt_lib_is_visible(plugin) && (expanded || !plugin->expandable())) 
-	  gtk_widget_show_all(plugin->widget);
-	else         
-	  gtk_widget_hide_all(plugin->widget);	
+        if(dt_lib_is_visible(plugin) && (expanded || !plugin->expandable()))
+          gtk_widget_show_all(plugin->widget);
+        else
+          gtk_widget_hide_all(plugin->widget);
       }
 
       /* lets get next plugin */
       plugins = g_list_previous(plugins); 
     }
-  
- 
-   /* enter view */
-   if(newv >= 0 && nv->enter) nv->enter(nv);
- 
-   /* raise view changed signal */
+
+
+    /* enter view */
+    if(newv >= 0 && nv->enter) nv->enter(nv);
+    if(newv >= 0 && nv->connect_key_accels)
+      nv->connect_key_accels(nv);
+
+
+    /* raise view changed signal */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
- 
-   /* add endmarkers to left and right center containers */
-   GtkWidget *endmarker = gtk_drawing_area_new();
-   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
-   g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                     G_CALLBACK (dt_control_expose_endmarker), 0);
-   gtk_widget_set_size_request(endmarker, -1, 50);
-   gtk_widget_show(endmarker);
-   
-   endmarker = gtk_drawing_area_new();
-   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
-   g_signal_connect (G_OBJECT (endmarker), "expose-event",
-		     G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
-   gtk_widget_set_size_request(endmarker, -1, 50);
-   gtk_widget_show(endmarker);   
+
+    /* add endmarkers to left and right center containers */
+    GtkWidget *endmarker = gtk_drawing_area_new();
+    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
+    g_signal_connect (G_OBJECT (endmarker), "expose-event",
+                      G_CALLBACK (dt_control_expose_endmarker), 0);
+    gtk_widget_set_size_request(endmarker, -1, 50);
+    gtk_widget_show(endmarker);
+
+    endmarker = gtk_drawing_area_new();
+    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
+    g_signal_connect (G_OBJECT (endmarker), "expose-event",
+                      G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+    gtk_widget_set_size_request(endmarker, -1, 50);
+    gtk_widget_show(endmarker);
   }
 
   return error;

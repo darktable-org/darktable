@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -90,10 +91,19 @@ groups ()
 }
 
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowlight/blue shift");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue shift"));
 }
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_lowlight_gui_data_t *g =
+      (dt_iop_lowlight_gui_data_t*)self->gui_data;
+  dt_accel_connect_slider_iop(self, "blue shift",
+                              GTK_WIDGET(g->scale_blueness));
+}
+
 static float
 lookup(const float *lut, const float i)
 {
@@ -721,7 +731,6 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_label(c->scale_blueness,_("blue shift"));
   dtgtk_slider_set_unit(c->scale_blueness,"%");
   dtgtk_slider_set_format_type(c->scale_blueness,DARKTABLE_SLIDER_FORMAT_PERCENT);
-  dtgtk_slider_set_accel(c->scale_blueness,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/lowlight/blue shift");
   g_object_set(G_OBJECT(c->scale_blueness), "tooltip-text", _("blueness in shadows"), (char *)NULL);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 5);

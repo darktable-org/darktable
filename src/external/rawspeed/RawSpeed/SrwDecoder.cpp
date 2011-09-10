@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "SrwDecoder.h"
 #include "TiffParserOlympus.h"
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__) 
 #include <stdlib.h>
 #endif
 /*

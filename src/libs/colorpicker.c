@@ -24,12 +24,12 @@
 #include "dtgtk/label.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/button.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/colorpicker.h"
 
 DT_MODULE(1);
-
 
 const char *name()
 {
@@ -56,9 +56,15 @@ int position()
   return 800;
 }
 
-void init_key_accels()
+void init_key_accels(dt_lib_module_t *self)
 {
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorpicker/add sample");
+  dt_accel_register_lib(self, NC_("accel", "add sample"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t*)self->data;
+  dt_accel_connect_button_lib(self, "add sample", d->add_sample_button);
 }
 
 // GUI callbacks
@@ -562,7 +568,6 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_samples_mode_changed), self);
 
   data->add_sample_button = gtk_button_new_from_stock(GTK_STOCK_ADD);
-  gtk_button_set_accel(GTK_BUTTON(data->add_sample_button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/colorpicker/add sample");
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
   gtk_box_pack_start(GTK_BOX(samples_options_row), data->add_sample_button,
                      FALSE, FALSE, 0);

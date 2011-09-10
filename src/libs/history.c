@@ -23,6 +23,7 @@
 #include "common/styles.h"
 #include "develop/develop.h"
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
 #include "dtgtk/button.h"
@@ -34,6 +35,9 @@ typedef struct dt_lib_history_t
 {
   /* vbox with managed history items */
   GtkWidget *history_box;
+  GtkWidget *create_button;
+  GtkWidget *apply_button;
+  GtkWidget *compress_button;
 }
 dt_lib_history_t;
 
@@ -68,11 +72,25 @@ int position()
   return 900;
 }
 
-void init_key_accels()
+void init_key_accels(dt_lib_module_t *self)
 {
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/create a style from the current history stack");
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/applies a style selected from popup menu");
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/compress history stack");
+  dt_accel_register_lib(self, NC_("accel", "create style from history"),
+                        0, 0);
+  dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"),
+                        0, 0);
+  dt_accel_register_lib(self, NC_("accel", "compress history stack"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_history_t *d = (dt_lib_history_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "create style from history",
+                              d->create_button);
+  dt_accel_connect_button_lib(self, "apply style from popup menu",
+                              d->apply_button);
+  dt_accel_connect_button_lib(self, "compress history stack",
+                              d->compress_button);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -88,7 +106,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hhbox = gtk_hbox_new (FALSE,2);
 
   GtkWidget *hbutton = gtk_button_new_with_label (_("compress history stack"));
-  gtk_button_set_accel(GTK_BUTTON(hbutton),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/compress history stack");
+  d->compress_button = hbutton;
   g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a minimal history stack which produces the same image"), (char *)NULL);
   
   g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (_lib_history_compress_clicked_callback),(gpointer)0);
@@ -98,14 +116,14 @@ void gui_init(dt_lib_module_t *self)
   //gtk_widget_set_size_request (hbutton,24,-1);
   g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (_lib_history_create_style_button_clicked_callback),(gpointer)0);
   g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from the current history stack"), (char *)NULL);
-  dtgtk_button_set_accel(DTGTK_BUTTON(hbutton2),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/create a style from the current history stack");
+  d->create_button = hbutton2;
 
   /* add toolbar button for applying a style */
   GtkWidget *hbutton3 = dtgtk_button_new (dtgtk_cairo_paint_styles,1);
   //gtk_widget_set_size_request (hbutton,24,-1);
   g_signal_connect (G_OBJECT (hbutton3), "button-press-event", G_CALLBACK (_lib_history_apply_style_button_press_callback),(gpointer)0);
   g_object_set (G_OBJECT (hbutton3), "tooltip-text", _("applies a style selected from popup menu"), (char *)NULL);
-  dtgtk_button_set_accel(DTGTK_BUTTON(hbutton3),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/history/applies a style selected from popup menu");
+  d->apply_button = hbutton3;
 
   /* add buttons to buttonbox */
   gtk_box_pack_start (GTK_BOX (hhbox),hbutton,TRUE,TRUE,0);

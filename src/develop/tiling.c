@@ -88,22 +88,25 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are */
-  if(tiling.factor < 2.5f && tiling.overhead < 0.5f * roi_out->width * roi_out->height * max(in_bpp, out_bpp))
+  if(tiling.factor < 2.2f && tiling.overhead < 0.2f * roi_out->width * roi_out->height * max(in_bpp, out_bpp))
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling] don't use tiling for module '%s'. no real memory saving could be reached\n", self->op);
     goto fallback;
   }
 
   /* calculate optimal size of tiles */
-  long available = dt_conf_get_int("host_memory_limit")*1024*1024;
+  float available = dt_conf_get_int("host_memory_limit")*1024*1024;
   assert(available >= 500*1024*1024);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
-  available -= roi_out->width * roi_out->height * (in_bpp + out_bpp) + tiling.overhead;
+  available = max(available - roi_out->width * roi_out->height * (in_bpp + out_bpp) - tiling.overhead, 0);
 
-  /* we violate the above calculation if that's the only reasonable way to get tiling running.
-     so let's offer a reasonable sized singlebuffer in any case. better this way than giving
-     up tiling and let the module's standard process() take whatever huge amount of memory it wants. */
-  const long singlebuffer = max((float)available / tiling.factor, 64*1024*1024);
+  /* we ignore the above value if singlebuffer_limit (is defined and) is higher than available/tiling.factor.
+     this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
+     reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
+  float singlebuffer = dt_conf_get_int("singlebuffer_limit")*1024*1024;
+  singlebuffer = max(singlebuffer, 1024*1024);
+  assert(tiling.factor > 1.0f);
+  singlebuffer = max(available / tiling.factor, singlebuffer);
 
   int width = roi_out->width;
   int height = roi_out->height;
@@ -111,24 +114,35 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   /* shrink tile size in case it would exceed singlebuffer size */
   if(width*height*max(in_bpp, out_bpp) > singlebuffer)
   {
-    const float scale = (float)singlebuffer/(width*height*max(in_bpp, out_bpp));
+    const float scale = singlebuffer/(width*height*max(in_bpp, out_bpp));
 
     /* TODO: can we make this more efficient to minimize total overlap between tiles? */
-    width = floorf(width * sqrt(scale));  
-    height = floorf(height * sqrt(scale));
+    if(width < height && scale >= 0.333f)
+    { 
+      height = floorf(height * scale);
+    }
+    else if(height <= width && scale >= 0.333f)
+    {
+      width = floorf(width * scale);
+    }
+    else
+    {
+      width = floorf(width * sqrt(scale));
+      height = floorf(height * sqrt(scale));
+    }
   }
 
-  /* make sure we have a reasonably effective tile size */
+  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
   if(3*tiling.overlap > width || 3*tiling.overlap > height)
   {
-    /* really hopeless */
-    dt_print(DT_DEBUG_DEV, "[default_process_tiling] gave up tiling for module '%s'. too small effective tiles\n", self->op);
-    goto error;
+    width = height = floorf(sqrtf((float)width*height));
   }
 
+#if 0
   /* we might want to grow dimensions a bit */
   width = max(4*tiling.overlap, width);
   height = max(4*tiling.overlap, height);
+#endif
 
   /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
      Modules will report alignment requirements via xalign and yalign within tiling_callback().
@@ -149,9 +163,8 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   const int overlap = tiling.overlap % xyalign != 0 ? (tiling.overlap / xyalign + 1) * xyalign : tiling.overlap;
 
   /* calculate effective tile size */
-  const int tile_wd = width - 2*overlap;
-  const int tile_ht = height - 2*overlap;
-
+  const int tile_wd = width - 2*overlap > 0 ? width - 2*overlap : 1;
+  const int tile_ht = height - 2*overlap > 0 ? height - 2*overlap : 1;
 
   /* calculate number of tiles */
   const int tiles_x = width < roi_out->width ? ceilf(roi_out->width /(float)tile_wd) : 1;
@@ -186,7 +199,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
   float processed_maximum_saved[3];
   float processed_maximum_new[3] = { 1.0f };
   for(int k=0; k<3; k++)
-    processed_maximum_saved[k] = piece->processed_maximum[k];
+    processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
 
 
   /* iterate over tiles */
@@ -222,7 +235,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
 
     /* take original processed_maximum as starting point */
     for(int k=0; k<3; k++)
-      piece->processed_maximum[k] = processed_maximum_saved[k];
+      piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
 
     /* call process() of module */
     self->process(self, piece, input, output, &iroi, &oroi);
@@ -232,9 +245,9 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
              appropriate action (calculate minimum, maximum, average, ...?) */
     for(int k=0; k<3; k++)
     {
-      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->processed_maximum[k]) > 1.0e-6f)
+      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
         dt_print(DT_DEBUG_DEV, "[default_process_tiling] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
-      processed_maximum_new[k] = piece->processed_maximum[k];
+      processed_maximum_new[k] = piece->pipe->processed_maximum[k];
     }
 
     /* correct origin and region of tile for overlap.
@@ -262,7 +275,7 @@ default_process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_io
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
-    piece->processed_maximum[k] = processed_maximum_new[k];
+    piece->pipe->processed_maximum[k] = processed_maximum_new[k];
 
   if(input != NULL) free(input);
   if(output != NULL) free(output);
@@ -320,31 +333,38 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
 
   /* calculate optimal size of tiles */
-  const size_t available = darktable.opencl->dev[devid].max_global_mem - DT_OPENCL_MEMORY_HEADROOM;
-  const size_t singlebuffer = min(((float)(available - tiling.overhead)) / tiling.factor, darktable.opencl->dev[devid].max_mem_alloc);
+  float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
+  headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
+  const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
+  const float singlebuffer = fmin(fmax((available - tiling.overhead) / tiling.factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
   int width = min(roi_out->width, darktable.opencl->dev[devid].max_image_width);
   int height = min(roi_out->height, darktable.opencl->dev[devid].max_image_height);
 
   /* shrink tile size in case it would exceed singlebuffer size */
-  if(width*height*max(in_bpp, out_bpp) > singlebuffer)
+  if((float)width*height*max(in_bpp, out_bpp) > singlebuffer)
   {
-    const float scale = (float)singlebuffer/(width*height*max(in_bpp, out_bpp));
+    const float scale = singlebuffer/(width*height*max(in_bpp, out_bpp));
 
-    if(width == roi_out->width)           /* don't touch width if tile spans whole image width ... */
+    if(width < height && scale >= 0.333f)
     { 
       height = floorf(height * scale);
     }
-    else if(height == roi_out->height)    /* ... else, don't touch height if tile spans whole image height ... */
+    else if(height <= width && scale >= 0.333f)
     {
       width = floorf(width * scale);
     }
-    else                                  /* ... else, shrink width and height proportionally. */
+    else
     {
       width = floorf(width * sqrt(scale));
       height = floorf(height * sqrt(scale));
     }
   }
 
+  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
+  if(3*tiling.overlap > width || 3*tiling.overlap > height)
+  {
+    width = height = floorf(sqrtf((float)width*height));
+  }
 
 
   /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
@@ -373,16 +393,17 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
 
   /* calculate effective tile size */
-  const int tile_wd = width - 2*overlap;
-  const int tile_ht = height - 2*overlap;
+  const int tile_wd = width - 2*overlap > 0 ? width - 2*overlap : 1;
+  const int tile_ht = height - 2*overlap > 0 ? height - 2*overlap : 1;
 
+#if 0 // moved upwards
   /* make sure we have a reasonably effective tile size, else return FALSE and leave it to CPU path */
   if(2*tile_wd < width || 2*tile_ht < height)
   {
     dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] aborted tiling for module '%s'. too small effective tiles: %d x %d.\n", self->op, tile_wd, tile_ht);
     return FALSE;
   }
-
+#endif
 
   /* calculate number of tiles */
   const int tiles_x = width < roi_out->width ? ceilf(roi_out->width /(float)tile_wd) : 1;
@@ -404,7 +425,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
   float processed_maximum_saved[3];
   float processed_maximum_new[3] = { 1.0f };
   for(int k=0; k<3; k++)
-    processed_maximum_saved[k] = piece->processed_maximum[k];
+    processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
 
 
   /* get opencl input and output buffers, to be re-used for all tiles.
@@ -449,7 +470,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
     /* take original processed_maximum as starting point */
     for(int k=0; k<3; k++)
-      piece->processed_maximum[k] = processed_maximum_saved[k];
+      piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
 
     /* call process_cl of module */
     if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
@@ -459,9 +480,9 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
              appropriate action (calculate minimum, maximum, average, ...?) */
     for(int k=0; k<3; k++)
     {
-      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->processed_maximum[k]) > 1.0e-6f)
+      if(tx+ty > 0 && fabs(processed_maximum_new[k] - piece->pipe->processed_maximum[k]) > 1.0e-6f)
         dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl] processed_maximum[%d] differs between tiles in module '%s'\n", k, self->op);
-      processed_maximum_new[k] = piece->processed_maximum[k];
+      processed_maximum_new[k] = piece->pipe->processed_maximum[k];
     }
 
     /* correct origin and region of tile for overlap.
@@ -489,7 +510,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
-    piece->processed_maximum[k] = processed_maximum_new[k];
+    piece->pipe->processed_maximum[k] = processed_maximum_new[k];
 
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
@@ -498,7 +519,7 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
 error:
   /* copy back stored processed_maximum */
   for(int k=0; k<3; k++)
-    piece->processed_maximum[k] = processed_maximum_saved[k];
+    piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_opencl] couldn't run process_cl() for module '%s' in tiling mode: %d\n", self->op, err);

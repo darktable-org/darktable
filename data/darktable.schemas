@@ -105,7 +105,7 @@
       </locale>
     </schema>
 
-    <schema>
+    <schema><!--tab:core-->
       <key>/schemas/apps/darktable/host_memory_limit</key>
       <applyto>/apps/darktable/host_memory_limit</applyto>
       <owner>darktable</owner>
@@ -113,10 +113,37 @@
       <default>1500</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>define memory limit (in MB) below which modules should use tiling</short>
-        <long>this variable controls the maximum amount of memory (in MB) that a module should use at once during image processing. reducing this value will prevent thrashing by using a tiling approach at the cost of slower processing speed. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart.</long>
+        <short>host memory limit (in MB) for tiling</short>
+        <long>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart.</long>
       </locale>
     </schema>
+
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/singlebuffer_limit</key>
+      <applyto>/apps/darktable/singlebuffer_limit</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>16</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>minimum amount of memory (in MB) for a single buffer in tiling</short>
+        <long>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit. needs a restart.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/opencl_memory_headroom</key>
+      <applyto>/apps/darktable/opencl_memory_headroom</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>300</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>amount of opencl memory (in MB) which we assume as being reserved for the driver</short>
+        <long>this amount of memory (in MB) will be substracted from total gpu memory in order to calculate the available opencl memory. too low values will lead to out-of-memory situations in opencl processing. too high values will lead to unnecessary tiling. needs a restart.</long>
+      </locale>
+    </schema>
+
 
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/never_use_embedded_thumb</key>

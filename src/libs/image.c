@@ -17,6 +17,7 @@
 */
 #include "common/darktable.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
@@ -30,6 +31,9 @@ DT_MODULE(1)
 
 typedef struct dt_lib_image_t
 {
+  GtkWidget
+      *rotate_cw_button, *rotate_ccw_button, *remove_button,
+      *delete_button, *create_hdr_button, *duplicate_button, *reset_button;
 }
 dt_lib_image_t;
 
@@ -70,13 +74,6 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void key_accel_callback(GtkAccelGroup *accel_group,
-                               GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, gpointer data)
-{
-  button_clicked(NULL, data);
-}
-
 int
 position ()
 {
@@ -86,21 +83,21 @@ position ()
 void
 gui_init (dt_lib_module_t *self)
 {
-  // dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
-  // self->data = (void *)d;
+   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
+   self->data = (void *)d;
   self->widget = gtk_vbox_new(TRUE, 5);
   GtkBox *hbox;
   GtkWidget *button;
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("remove"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/remove");
+  d->remove_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("remove from the collection"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)0);
 
   button = gtk_button_new_with_label(_("delete"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/delete");
+  d->delete_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("physically delete from disk"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)1);
@@ -109,13 +106,13 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("create hdr"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/create hdr");
+  d->create_hdr_button = button;
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)7);
   g_object_set(G_OBJECT(button), "tooltip-text", _("create a high dynamic range image from selected shots"), (char *)NULL);
 
   button = gtk_button_new_with_label(_("duplicate"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/duplicate");
+  d->duplicate_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("add a duplicate to the collection"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)3);
@@ -125,20 +122,20 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox2 = GTK_BOX(gtk_hbox_new(TRUE, 5));
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
-  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees ccw");
+  d->rotate_ccw_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
-  dtgtk_button_set_accel(DTGTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees cw");
+  d->rotate_cw_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)5);
   gtk_box_pack_start(hbox, GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   button = gtk_button_new_with_label(_("reset rotation"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/reset rotation");
+  d->reset_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("reset rotation to exif data"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
@@ -155,26 +152,31 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  gtk_accel_map_add_entry(
-      "<Darktable>/lighttable/plugins/image/remove from collection",
-      GDK_Delete, 0);
-  gtk_accel_map_add_entry(
-      "<Darktable>/lighttable/plugins/image/delete from disk",
-      0, 0);
+  dt_accel_register_lib(self, NC_("accel", "remove from collection"),
+                        GDK_Delete, 0);
+  dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
+  dt_accel_register_lib(self,
+                        NC_("accel", "rotate selected images 90 degrees cw"),
+                        0, 0);
+  dt_accel_register_lib(self,
+                        NC_("accel", "rotate selected images 90 degrees ccw"),
+                        0, 0);
+  dt_accel_register_lib(self, NC_("accel", "create hdr"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "duplicate"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
+}
 
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_lighttable,
-      "<Darktable>/lighttable/plugins/image/remove from collection",
-      g_cclosure_new(G_CALLBACK(key_accel_callback), (gpointer)0, NULL));
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_lighttable,
-      "<Darktable>/lighttable/plugins/image/delete from disk",
-      g_cclosure_new(G_CALLBACK(key_accel_callback), (gpointer)1, NULL));
-  dtgtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees cw");
-  dtgtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/rotate selected images 90 degrees ccw");
-  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/remove");
-  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/delete");
-  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/create hdr");
-  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/duplicate");
-  gtk_button_init_accel(darktable.control->accels_lighttable,"<Darktable>/lighttable/plugins/image/reset rotation");
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_image_t *d = (dt_lib_image_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
+  dt_accel_connect_button_lib(self, "delete from disk", d->delete_button);
+  dt_accel_connect_button_lib(self, "rotate selected images 90 degrees cw",
+                              d->rotate_cw_button);
+  dt_accel_connect_button_lib(self, "rotate selected images 90 degrees ccw",
+                              d->rotate_ccw_button);
+  dt_accel_connect_button_lib(self, "create hdr", d->create_hdr_button);
+  dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);
+  dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
 }

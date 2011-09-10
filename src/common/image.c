@@ -1170,13 +1170,8 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   // garbage collect, free enough space for new buffer:
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
   // max memory: user supplied number of bytes, evenly distributed among mip levels.
-  // clamped between 50MB -- 4GB
-#if defined(__APPLE__) || defined(__MACH__)
-  // apple's size_t sucks
+  // clamped to a min of 50MB
   size_t max_mem = (size_t)(MAX(52428800, (size_t)dt_conf_get_int("cache_memory"))/(float)DT_IMAGE_FULL);
-#else
-  size_t max_mem = (size_t)(MIN(4294967295, MAX(52428800, (size_t)dt_conf_get_int("cache_memory")))/(float)DT_IMAGE_FULL);
-#endif
   dt_print(DT_DEBUG_CACHE, "[image_alloc] mip %d uses %.3f/%.3f MB, alloc %.3f MB\n", mip,
            cache->total_size[mip]/(1024.0*1024.0), max_mem/(1024.0*1024.0), size/(1024.0*1024.0));
   if(cache->total_size[mip] > 0 && cache->total_size[mip]+size > max_mem)

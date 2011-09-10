@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "FileReader.h"
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__) 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -35,7 +35,7 @@ FileReader::FileReader(LPCWSTR _filename) : mFilename(_filename) {
 }
 
 FileMap* FileReader::readFile() {
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__) 
   int bytes_read = 0;
   FILE *file;
   char *dest;

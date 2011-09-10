@@ -731,7 +731,19 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
 /** check if image size fit into limits given by OpenCL runtime */
 int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
 {
+  static float headroom = -1.0f;
+
   if(!darktable.opencl->inited || devid < 0) return FALSE;
+
+  /* first time run */
+  if(headroom < 0.0f)
+  {
+    headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
+
+    /* don't let the user play games with us */
+    headroom = fmin((float)darktable.opencl->dev[devid].max_global_mem, fmax(headroom, 0.0f));
+    dt_conf_set_int("opencl_memory_headroom", headroom/1024/1024);
+  }
 
   float singlebuffer = (float)width * height * bpp;
   float total = factor * singlebuffer + overhead;
@@ -740,10 +752,11 @@ int dt_opencl_image_fits_device(const int devid, const size_t width, const size_
 
   if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
 
-  if(darktable.opencl->dev[devid].max_global_mem < total + DT_OPENCL_MEMORY_HEADROOM) return FALSE;
+  if(darktable.opencl->dev[devid].max_global_mem < total + headroom) return FALSE;
 
   return TRUE;
 }
+
 
 
 /** check if opencl is inited */
@@ -960,6 +973,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
   int *numevents = &(cl->dev[devid].numevents);
   int *eventsconsolidated = &(cl->dev[devid].eventsconsolidated);
+  int *lostevents = &(cl->dev[devid].lostevents);
   cl_int *summary = &(cl->dev[devid].summary);
 
   if (*eventlist==NULL || *numevents==0) return CL_COMPLETE; // nothing to do, no news is good news
@@ -991,7 +1005,15 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
     cl_ulong end;
     cl_int errs = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)((*eventlist)[k], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
     cl_int erre = (cl->dlocl->symbols->dt_clGetEventProfilingInfo)((*eventlist)[k], CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
-    if (errs == CL_SUCCESS && erre == CL_SUCCESS) (*eventtags)[k].timelapsed = end - start;
+    if (errs == CL_SUCCESS && erre == CL_SUCCESS)
+    {
+      (*eventtags)[k].timelapsed = end - start;
+    }
+    else
+    {
+      (*eventtags)[k].timelapsed = 0;
+      (*lostevents)++;
+    }
 
     // finally release event to be re-used by driver
     (cl->dlocl->symbols->dt_clReleaseEvent)((*eventlist)[k]);

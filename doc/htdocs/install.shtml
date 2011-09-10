@@ -87,8 +87,8 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
     	<div class="listtext">
     	<img src="images/leaves.jpg" alt="release" class="img" /><h1>current release from source</h1>
       <ul>
-        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.1.tar.gz/download">0.9.1 source .gz</a></li>
-        <li>$ tar xvjf darktable-0.9.1.tar.gz &amp;&amp; cd darktable-0.9.1</li>
+        <li>grab the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.2.tar.gz/download">0.9.2 source .gz</a></li>
+        <li>$ tar xvjf darktable-0.9.2.tar.gz &amp;&amp; cd darktable-0.9.2</li>
         <li>then either do</li>
         <li>$ ./build.sh</li>
         <li>or, manually:</li>
@@ -115,14 +115,12 @@ libdbus-glib-1-dev libgnome-keyring-dev fop librsvg2-dev libflickcurl-dev</li>
       </ul>
     	</div>
     	<div class="listtext">
-      <img src="images/macosx.jpg" alt="release" class="img" /><h1>outdated release for mac osx</h1>
+      <img src="images/macosx.jpg" alt="release" class="img" /><h1>experimental release for mac osx</h1>
       <ul>
-        <li><b>the mac bundle is currently unmaintained and terribly (terribly, terribly, ..) outdated!</b></li>
-        <li>download the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.4/darktable-0.4.dmg/download">0.4 disk image</a></li>
+        <li>download the <a href="https://sourceforge.net/projects/darktable/files/darktable/0.9/Darktable-0.9.2.dmg/download">experimental 0.9.2 disk image</a> (64bit only)</li>
         <li>mount the thing</li>
         <li>pull the darktable icon into your applications folder</li>
-        <li>it worked on a few macs (100%) so far, good luck :)</li>
-        <li>thx to u3dreal for going through all the pain for this mac bundle!</li>
+        <li>good luck :)</li>
         <li>problems with gconf? try:<br/>
         sudo launchctl load -w /Library/LaunchAgents/org.freedesktop.dbus-session.plist</li>
       </ul>

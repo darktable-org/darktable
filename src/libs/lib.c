@@ -17,6 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "control/conf.h"
@@ -339,7 +340,7 @@ static int _lib_default_expandable() { return 1; };
 static int
 dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *plugin_name)
 {
-  char name[1024];
+//  char name[1024];
   module->dt = &darktable;
   module->widget = NULL;
   g_strlcpy(module->plugin_name, plugin_name, 20);
@@ -378,20 +379,22 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
     module->get_params   = NULL;
     module->init_presets = NULL;
   }
+  if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
+  if(!g_module_symbol(module->module, "connect_key_accels", (gpointer)&(module->connect_key_accels)))        module->connect_key_accels = NULL;
 
-  if(!g_module_symbol(module->module, "init_key_accels",          
-		      (gpointer)&(module->init_key_accels)))        
-    module->init_key_accels = NULL;
+  module->accel_closures = NULL;
+  module->reset_button = NULL;
+  module->presets_button = NULL;
 
   if (module->gui_reset)
   {
-    snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/reset plugin parameters",module->plugin_name);
-    dtgtk_button_init_accel(darktable.control->accels_lighttable,name);
+    dt_accel_register_lib(module,
+                          NC_("accel", "reset plugin parameters"), 0, 0);
   }
   if(module->get_params)
   {
-    snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/show preset menu",module->plugin_name);
-    dtgtk_button_init_accel(darktable.control->accels_lighttable,name);
+    dt_accel_register_lib(module,
+                          NC_("accel", "show preset menu"), 0, 0);
   }
 
   return 0;
@@ -551,8 +554,6 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
     module->expander = NULL;
     return NULL;
   }
-
-  char name[1024];
   GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
   module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
@@ -563,10 +564,9 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   if (module->gui_reset) 
   {
     GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+    module->reset_button = GTK_WIDGET(resetbutton);
     gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
     g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
-    snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/reset plugin parameters",module->plugin_name);
-    dtgtk_button_set_accel(resetbutton,darktable.control->accels_lighttable,name);
     gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
 
     g_signal_connect (G_OBJECT (resetbutton), "clicked",
@@ -578,8 +578,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
     GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
     gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
     g_object_set(G_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
-    snprintf(name, 1024, "<Darktable>/lighttable/plugins/%s/show preset menu",module->plugin_name);
-    dtgtk_button_set_accel(presetsbutton,darktable.control->accels_lighttable,name);
+    module->presets_button = GTK_WIDGET(presetsbutton);
     gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (presetsbutton), "clicked", G_CALLBACK (popup_callback), module);
   }
@@ -660,7 +659,17 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
   if (module->expander)
     gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);  
   else if (module->widget)
-    gtk_widget_set_visible(GTK_WIDGET(module->widget), visible);  
+    gtk_widget_set_visible(GTK_WIDGET(module->widget), visible);
+}
+
+void dt_lib_connect_common_accels(dt_lib_module_t *module)
+{
+  if(module->reset_button)
+    dt_accel_connect_button_lib(module, "reset plugin parameters",
+                                module->reset_button);
+  if(module->presets_button)
+    dt_accel_connect_button_lib(module, "show preset menu",
+                                module->presets_button);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

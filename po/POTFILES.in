@@ -1,5 +1,4 @@
 build/src/preferences_gen.h
-build/src/accelstrings_gen.h
 data/darktable.schemas
 src/common/collection.c
 src/common/darktable.h
@@ -20,6 +19,7 @@ src/develop/develop.c
 src/develop/imageop.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
+src/gui/accelerators.c
 src/gui/background_jobs.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c

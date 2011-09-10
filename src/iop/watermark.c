@@ -32,6 +32,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -99,13 +100,29 @@ int groups()
   return IOP_GROUP_EFFECT;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/refresh");
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/opacity");
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/scale");
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/x offset");
-  dtgtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/y offset");
+  dt_accel_register_iop(self, FALSE, NC_("accel", "refresh"), 0, 0);
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "opacity"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_watermark_gui_data_t *g =
+      (dt_iop_watermark_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_button_iop(self, "refresh", GTK_WIDGET(g->dtbutton1));
+  dt_accel_connect_slider_iop(self, "opacity",
+                              GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "scale",
+                              GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "x offset",
+                              GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "y offset",
+                              GTK_WIDGET(g->scale4));
 }
 
 static gboolean _combo_box_set_active_text(GtkComboBox *cb,gchar *text)
@@ -669,7 +686,6 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *hbox= gtk_hbox_new(FALSE,0);
   g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
   g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
-  dtgtk_button_set_accel(g->dtbutton1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/refresh");
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
@@ -684,8 +700,6 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale1,"%");
   dtgtk_slider_set_label(g->scale2,_("scale"));
   dtgtk_slider_set_unit(g->scale2,"%");
-  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/opacity");
-  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/scale");
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -708,8 +722,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_VALUE,-1.0, 1.0,0.001, p->yoffset, 3));
   dtgtk_slider_set_label(g->scale3,_("x offset"));
   dtgtk_slider_set_label(g->scale4,_("y offset"));
-  dtgtk_slider_set_accel(g->scale3,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/x offset");
-  dtgtk_slider_set_accel(g->scale4,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/watermark/y offset");
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 

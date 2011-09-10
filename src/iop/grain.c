@@ -30,6 +30,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -334,13 +335,19 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/grain/coarseness");
-  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/grain/strength");
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
 }
 
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t*)self->gui_data;
 
+  dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale2));
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -516,8 +523,6 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale1,"ISO");
   dtgtk_slider_set_label(g->scale2,_("strength"));
   dtgtk_slider_set_unit(g->scale2,"%");
-  dtgtk_slider_set_accel(g->scale1,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/grain/coarseness");
-  dtgtk_slider_set_accel(g->scale2,darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/grain/strength");
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);

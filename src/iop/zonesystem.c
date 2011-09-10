@@ -35,6 +35,7 @@
 #include "dtgtk/gradientslider.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include <xmmintrin.h>
 
 
 #define CLIP(x) (((x)>=0)?((x)<=1.0?(x):1.0):0.0)
@@ -100,10 +101,10 @@ groups ()
 static inline int
 _iop_zonesystem_zone_index_from_lightness (float lightness,float *zonemap,int size)
 {
-  for (int k=0; k<size; k++)
-    if (zonemap[k]<=lightness && zonemap[k+1]>=lightness)
+  for (int k=0; k<size-1; k++)
+    if (zonemap[k+1] >= lightness)
       return k;
-  return 0;
+  return size-1;
 }
 
 /* calculate a zonemap with scale values for each zone based on controlpoints from param */
@@ -216,45 +217,43 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for (int k=0; k<roi_out->width*roi_out->height; k++)
     {
-      buffer[k] = _iop_zonesystem_zone_index_from_lightness (CLIP (out[ch*k]/100.0), zonemap, size);
+      buffer[k] = _iop_zonesystem_zone_index_from_lightness (out[ch*k]/100.0f, zonemap, size);
     }
 
     dt_pthread_mutex_unlock(&g->lock);
   }
 
-  /* proces the image */
+  /* process the image */
   in  = (float *)ivoid;
   out = (float *)ovoid;
+
+  const float rzscale = (size-1)/100.0f;
+
+  float zonemap_offset[MAX_ZONE_SYSTEM_SIZE]= {-1};
+  float zonemap_scale[MAX_ZONE_SYSTEM_SIZE]= {-1};
+
+  // precompute scale and offset
+  for (int k=0; k < size-1; k++) zonemap_scale[k]  = (zonemap[k+1]-zonemap[k])*(size-1);
+  for (int k=0; k < size-1; k++) zonemap_offset[k] = 100.0f * ((k+1)*zonemap[k] - k*zonemap[k+1]) ;
+
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap) schedule(static)
+  #pragma omp parallel for default(none) shared(roi_out, in, out, zonemap_scale,zonemap_offset) schedule(static)
 #endif
-  for (int k=0; k<roi_out->width*roi_out->height; k++)
+  for (int j=0; j<roi_out->height; j++)
+  for (int i=0; i<roi_out->width; i++)
   {
     /* remap lightness into zonemap and apply lightness */
-    const float *inp = in + ch*k;
-    const float lightness=inp[0]/100.0;
-    const float rzw = (1.0/(size-1));                       // real zone width
-    const int rz = CLAMPS((lightness/rzw), 0, size-2);      // real zone for lightness
-    const float zw = (zonemap[rz+1]-zonemap[rz]);           // mapped zone width
-    const float zs = zw/rzw ;                               // mapped zone scale
-    const float sl = (lightness-(rzw*rz)-(rzw*0.5))*zs;
-    float *outp = out + ch*k;
+    const float *inp = in + ch*(j*roi_out->width+i);
+    float *outp = out + ch*(j*roi_out->width+i);
 
-    float l = CLIP ( zonemap[rz]+(zw/2.0)+sl );
-    outp[0] = 100.0*l;
-    outp[1] = inp[1];
-    outp[2] = inp[2];
-    if (inp[0] > 0.01f)
-    {
-      outp[1] *= outp[0] / inp[0];
-      outp[2] *= outp[0] / inp[0];
-    }
-    else
-    {
-      outp[1] *= outp[0] / 0.01f;
-      outp[2] *= outp[0] / 0.01f;
-    }
+    const int rz = CLAMPS(inp[0]*rzscale, 0, size-2);  // zone index
+
+    const float zs = ((rz > 0) ? (zonemap_offset[rz]/inp[0]) : 0) + zonemap_scale[rz];
+
+    _mm_stream_ps(outp,_mm_mul_ps(_mm_load_ps(inp),_mm_set1_ps(zs)));
   }
+
+  _mm_sfence();
 
   /* thread-safe redraw */
   if(  self->dev->gui_attached && g && buffer )

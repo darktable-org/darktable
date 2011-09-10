@@ -10,6 +10,7 @@ optionally, you might need for special features:
 
  - gconf (for gconf backend)
  - gphoto2 (for camera support, recommended)
+ - librsvg2 (for watermark plugin)
  - flickcurl (for Flickr support)
  - libGL/sdl12 (to build slideshow viewer)
  - dbus-glib, gnome-keyring (kwallet/gnome keyring support)

@@ -23,13 +23,14 @@
 #include "develop/develop.h"
 #include "develop/blend.h"
 #include "develop/tiling.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 //#include "gui/iop_modulegroups.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 #include "dtgtk/tristatebutton.h"
 #include "dtgtk/slider.h"
-// #include "dtgtk/tristatebutton.h" //FIXME
+#include "dtgtk/tristatebutton.h"
 
 #include <strings.h>
 #include <assert.h>
@@ -236,6 +237,8 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
   if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
+  if(!g_module_symbol(module->module, "connect_key_accels", (gpointer)&(module->connect_key_accels)))        module->connect_key_accels = NULL;
+  if(!g_module_symbol(module->module, "disconnect_key_accels", (gpointer)&(module->disconnect_key_accels)))        module->disconnect_key_accels = NULL;
   if(!g_module_symbol(module->module, "mouse_leave",            (gpointer)&(module->mouse_leave)))            module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved",            (gpointer)&(module->mouse_moved)))            module->mouse_moved = NULL;
   if(!g_module_symbol(module->module, "button_released",        (gpointer)&(module->button_released)))        module->button_released = NULL;
@@ -329,6 +332,16 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->modify_roi_in   = so->modify_roi_in;
   module->modify_roi_out  = so->modify_roi_out;
   module->legacy_params   = so->legacy_params;
+
+  module->connect_key_accels = so->connect_key_accels;
+  module->disconnect_key_accels = so->disconnect_key_accels;
+
+  module->accel_closures = NULL;
+  module->accel_closures_local = NULL;
+  module->local_closures_connected = FALSE;
+  module->reset_button = NULL;
+  module->presets_button = NULL;
+  module->fusion_slider = NULL;
 
   // now init the instance:
   module->init(module);
@@ -448,12 +461,11 @@ void dt_iop_load_modules_so()
   GList *res = NULL;
   dt_iop_module_so_t *module;
   darktable.iop = NULL;
-  char plugindir[1024], op[20], accelpath[1024];
+  char plugindir[1024], op[20];
   const gchar *d_name;
   dt_util_get_plugindir(plugindir, 1024);
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
-  char name[1024];
   if(!dir) return;
   while((d_name = g_dir_read_name(dir)))
   {
@@ -475,34 +487,22 @@ void dt_iop_load_modules_so()
     init_presets(module);
     // Calling the accelerator initialization callback, if present
     if(module->init_key_accels)
-      (module->init_key_accels)();
+      (module->init_key_accels)(module);
 
-    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
-    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-    dtgtk_button_init_accel(darktable.control->accels_darkroom,name);
     if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
     {
-	    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
-	    dtgtk_slider_init_accel(darktable.control->accels_darkroom,name);
+      dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
     }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       // Adding the optional show accelerator to the table (blank)
-      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/show plugin",
-               (module->op));
-      gtk_accel_map_add_entry(accelpath, 0, 0);
-      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
-                                     NULL);
-      snprintf(accelpath, 256, "<Darktable>/darkroom/plugins/%s/enable plugin",
-               (module->op));
-      gtk_accel_map_add_entry(accelpath, 0, 0);
-      dt_accel_group_connect_by_path(darktable.control->accels_darkroom, accelpath,
-                                     NULL);
-      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
-      snprintf(accelpath, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-      dtgtk_button_init_accel(darktable.control->accels_darkroom,accelpath);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "show plugin"), 0, 0);
+      dt_accel_register_iop(module, FALSE, NC_("accel", "enable plugin"), 0, 0);
+
+      dt_accel_register_iop(module, FALSE,
+                            NC_("accel", "reset plugin parameters"), 0, 0);
+      dt_accel_register_iop(module, FALSE,
+                            NC_("accel", "show preset menu"), 0, 0);
     }
   }
   g_dir_close(dir);
@@ -797,6 +797,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
     if (darktable.develop->gui_module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
+    dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
   }
   darktable.develop->gui_module = module;
   if(module)
@@ -807,6 +808,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
     if (module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
+    dt_accel_connect_locals_iop(module);
   }
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
@@ -879,11 +881,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
   GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/reset plugin parameters",module->op);
-  dtgtk_button_set_accel(resetbutton,darktable.control->accels_darkroom,name);
+  module->reset_button = GTK_WIDGET(resetbutton);
   GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/show preset menu",module->op);
-  dtgtk_button_set_accel(presetsbutton,darktable.control->accels_darkroom,name);
+  module->presets_button = GTK_WIDGET(presetsbutton);
   gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
   gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
   g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
@@ -915,8 +915,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     GtkWidget *label = gtk_label_new(_("mode"));
     bd->blend_modes_combo = GTK_COMBO_BOX(gtk_combo_box_new_text());
     bd->opacity_slider = GTK_WIDGET(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1, 100.0, 0));
-    snprintf(name, 1024, "<Darktable>/darkroom/plugins/%s/fusion opacity",module->op);
-    dtgtk_slider_set_accel(DTGTK_SLIDER(bd->opacity_slider),darktable.control->accels_darkroom,name);
+    module->fusion_slider = bd->opacity_slider;
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
@@ -934,6 +933,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("vividlight"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("linearlight"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("pinlight"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("lightness"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("chroma"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("hue"));
 
     gtk_combo_box_set_active(bd->blend_modes_combo,0);
     gtk_object_set(GTK_OBJECT(bd->enable), "tooltip-text", _("enable blending"), (char *)NULL);
@@ -1470,6 +1472,64 @@ void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a)
   float X_inv[4][4];
   mat4inv(X, X_inv);
   mat4mulv(a, X_inv, y);
+}
+
+static void show_module_callback(GtkAccelGroup *accel_group,
+                                 GObject *acceleratable,
+                                 guint keyval, GdkModifierType modifier,
+                                 gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+
+  // Showing the module, if it isn't already visible
+  if(!dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))
+  {
+    dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), 1);
+    gtk_widget_queue_draw(module->showhide);
+  }
+
+  // FIXME
+  //dt_gui_iop_modulegroups_switch(module->groups());
+  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
+  dt_iop_request_focus(module);
+}
+
+static void enable_module_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+
+{
+  dt_iop_module_t *module = (dt_iop_module_t*)data;
+  gboolean active= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
+}
+
+void dt_iop_connect_common_accels(dt_iop_module_t *module)
+{
+  GClosure* closure = NULL;
+
+  // Connecting the (optional) module show accelerator
+  closure = g_cclosure_new(G_CALLBACK(show_module_callback),
+                           module, NULL);
+  dt_accel_connect_iop(module, "show plugin", closure);
+
+  // Connecting the (optional) module switch accelerator
+  closure = g_cclosure_new(G_CALLBACK(enable_module_callback),
+                           module, NULL);
+  dt_accel_connect_iop(module, "enable plugin", closure);
+
+  // Connecting the reset and preset buttons
+  if(module->reset_button)
+    dt_accel_connect_button_iop(module, "reset plugin parameters",
+                                module->reset_button);
+  if(module->presets_button)
+    dt_accel_connect_button_iop(module, "show preset menu",
+                                module->presets_button);
+
+  if(module->fusion_slider)
+    dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

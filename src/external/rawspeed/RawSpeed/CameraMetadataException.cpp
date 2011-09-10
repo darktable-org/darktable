@@ -28,7 +28,7 @@ void ThrowCME(const char* fmt, ...) {
   va_list val;
   va_start(val, fmt);
   char buf[8192];
-#if defined(__unix__) || defined(__MINGW32__)
+#if defined(__unix__) || defined(__APPLE__) || defined(__MINGW32__)
   vsnprintf(buf, 8192, fmt, val);
 #else
   vsprintf_s(buf, 8192, fmt, val);

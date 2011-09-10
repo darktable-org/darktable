@@ -61,7 +61,7 @@
 #endif
 
 darktable_t darktable;
-const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,sti,tif,tiff,x3f";
+const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,jpg,jpeg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,srw,sti,tif,tiff,x3f";
 
 static int usage(const char *argv0)
 {
@@ -374,11 +374,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
     }
 #endif
     darktable.control->running = 0;
-    darktable.control->accels_global = NULL;
-    darktable.control->accels_lighttable = NULL;
-    darktable.control->accels_darkroom = NULL;
-    darktable.control->accels_filmstrip = NULL;
-    darktable.control->accels_capture = NULL;
+    darktable.control->accelerators = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
   }
 

@@ -28,10 +28,12 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 #include "dtgtk/resetlabel.h"
+#include <xmmintrin.h>
 
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
@@ -283,42 +285,90 @@ error:
 }
 #endif
 
+static inline __m128
+lab_f_inv_m(const __m128 x)
+{
+  const __m128 epsilon = _mm_set1_ps(0.20689655172413796f); // cbrtf(216.0f/24389.0f);
+  const __m128 kappa_rcp_x16   = _mm_set1_ps(16.0f*27.0f/24389.0f);
+  const __m128 kappa_rcp_x116   = _mm_set1_ps(116.0f*27.0f/24389.0f);
+
+  // x > epsilon
+  const __m128 res_big   = _mm_mul_ps(_mm_mul_ps(x,x),x);
+  // x <= epsilon
+  const __m128 res_small = _mm_sub_ps(_mm_mul_ps(kappa_rcp_x116,x),kappa_rcp_x16);
+
+  // blend results according to whether each component is > epsilon or not
+  const __m128 mask = _mm_cmpgt_ps(x,epsilon);
+  return _mm_or_ps(_mm_and_ps(mask,res_big),_mm_andnot_ps(mask,res_small));
+}
+
+static inline __m128
+dt_Lab_to_XYZ_SSE(const __m128 Lab)
+{
+  const __m128 d50    = _mm_set_ps(0.0f, 0.8249f, 1.0f, 0.9642f);
+  const __m128 coef   = _mm_set_ps(0.0f,-1.0f/200.0f,1.0f/116.0f,1.0f/500.0f);
+  const __m128 offset = _mm_set1_ps(0.137931034f);
+
+  const __m128 f = _mm_mul_ps(_mm_shuffle_ps(Lab,Lab,_MM_SHUFFLE(3,2,0,1)),coef);
+
+  return _mm_mul_ps(d50,lab_f_inv_m(_mm_add_ps(_mm_add_ps(f,_mm_shuffle_ps(f,f,_MM_SHUFFLE(1,1,3,1))),offset)));
+}
+
 void
-process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-  float *in  = (float *)i;
-  float *out = (float *)o;
   const int ch = piece->colors;
 
   if(d->cmatrix[0] != -0.666f)
   {
     //fprintf(stderr,"Using cmatrix codepath\n");
+    // convert to rgb using matrix
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in, i, o)
+    #pragma omp parallel for schedule(static) default(none) shared(roi_in,roi_out, ivoid, ovoid)
 #endif
-    for (int k=0; k<roi_out->width*roi_out->height; k++)
+    for(int j=0; j<roi_out->height; j++)
     {
-      const float *const in = ((float *)i) + ch*k;
-      float *const out = ((float *)o) + ch*k;
-      float Lab[3], XYZ[3], rgb[3];
-      Lab[0] = in[0];
-      Lab[1] = in[1];
-      Lab[2] = in[2];
-      dt_Lab_to_XYZ(Lab, XYZ);
-      for(int i=0; i<3; i++)
+
+      float *in  = (float*)ivoid + ch*roi_in->width *j;
+      float *out = (float*)ovoid + ch*roi_out->width*j;
+      const __m128 m0 = _mm_set_ps(0.0f,d->cmatrix[6],d->cmatrix[3],d->cmatrix[0]);
+      const __m128 m1 = _mm_set_ps(0.0f,d->cmatrix[7],d->cmatrix[4],d->cmatrix[1]);
+      const __m128 m2 = _mm_set_ps(0.0f,d->cmatrix[8],d->cmatrix[5],d->cmatrix[2]);
+  
+      for(int i=0; i<roi_out->width; i++, in+=ch, out+=ch )
       {
-        rgb[i] = 0.0f;
-        for(int j=0; j<3; j++) rgb[i] += d->cmatrix[3*i+j]*XYZ[j];
+        const __m128 xyz = dt_Lab_to_XYZ_SSE(_mm_load_ps(in));
+        const __m128 t = _mm_add_ps(_mm_mul_ps(m0,_mm_shuffle_ps(xyz,xyz,_MM_SHUFFLE(0,0,0,0))),_mm_add_ps(_mm_mul_ps(m1,_mm_shuffle_ps(xyz,xyz,_MM_SHUFFLE(1,1,1,1))),_mm_mul_ps(m2,_mm_shuffle_ps(xyz,xyz,_MM_SHUFFLE(2,2,2,2)))));
+
+        _mm_stream_ps(out,t);
       }
-      for(int i=0; i<3; i++) out[i] = (d->lut[i][0] >= 0.0f) ?
-        ((rgb[i] < 1.0f) ? lerp_lut(d->lut[i], rgb[i])
-        : dt_iop_eval_exp(d->unbounded_coeffs[i], rgb[i]))
-        : rgb[i];
+    }
+    _mm_sfence();
+    // apply profile
+#ifdef _OPENMP
+    #pragma omp parallel for schedule(static) default(none) shared(roi_in,roi_out, ivoid, ovoid)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+
+      float *in  = (float*)ivoid + ch*roi_in->width *j;
+      float *out = (float*)ovoid + ch*roi_out->width*j;
+  
+      for(int i=0; i<roi_out->width; i++, in+=ch, out+=ch )
+      {
+        for(int i=0; i<3; i++) 
+          if (d->lut[i][0] >= 0.0f)
+          {
+            out[i] = (out[i] < 1.0f) ? lerp_lut(d->lut[i], out[i]) : dt_iop_eval_exp(d->unbounded_coeffs[i], out[i]);
+          }
+      }
     }
   }
   else
   {
+    float *in  = (float*)ivoid;
+    float *out = (float*)ovoid;
     //fprintf(stderr,"Using xform codepath\n");
 
     // lcms2 fallback, slow:
@@ -809,16 +859,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->cbox5), "changed",
                     G_CALLBACK (softproof_profile_changed),
                     (gpointer)self);
-
-
-  // Connecting the accelerator
-  g->softproof_callback = g_cclosure_new(G_CALLBACK(key_softproof_callback),
-                                         (gpointer)self, NULL);
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_darkroom,
-      "<Darktable>/darkroom/plugins/colorout/toggle softproofing",
-      g->softproof_callback);
-
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -829,22 +869,22 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->profiles->data);
     g->profiles = g_list_delete_link(g->profiles, g->profiles);
   }
-  dt_accel_group_disconnect(darktable.control->accels_darkroom,
-                             ((dt_iop_colorout_gui_data_t*)(self->gui_data))->
-                             softproof_callback);
   free(self->gui_data);
   self->gui_data = NULL;
 }
 
-void init_key_accels()
+void init_key_accels(dt_iop_module_so_t *self)
 {
-  gtk_accel_map_add_entry("<Darktable>/darkroom/plugins/colorout/toggle softproofing",
-                          GDK_s, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "toggle softproofing"),
+                        GDK_s, 0);
+}
 
-  dt_accel_group_connect_by_path(
-      darktable.control->accels_darkroom,
-      "<Darktable>/darkroom/plugins/colorout/toggle softproofing",
-      NULL);
+void connect_key_accels(dt_iop_module_t *self)
+{
+  GClosure *closure = g_cclosure_new(G_CALLBACK(key_softproof_callback),
+                                     (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "toggle softproofing", closure);
+
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

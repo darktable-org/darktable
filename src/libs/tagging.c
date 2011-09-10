@@ -21,6 +21,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include <gdk/gdkkeysyms.h>
@@ -34,6 +35,8 @@ typedef struct dt_lib_tagging_t
   GtkEntry *entry;
   GtkTreeView *current, *related;
   int imgsel;
+
+  GtkWidget *attach_button, *detach_button, *new_button, *delete_button;
 }
 dt_lib_tagging_t;
 
@@ -61,12 +64,22 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-void init_key_accels()
+void init_key_accels(dt_lib_module_t *self)
 {
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tagging/attach");
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tagging/detach");
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tagging/new");
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tagging/delete");
+  dt_accel_register_lib(self, NC_("accel", "attach"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "attach", d->attach_button);
+  dt_accel_connect_button_lib(self, "detach", d->detach_button);
+  dt_accel_connect_button_lib(self, "new", d->new_button);
+  dt_accel_connect_button_lib(self, "delete", d->delete_button);
 }
 
 static void
@@ -325,7 +338,6 @@ position ()
   return 500;
 }
 
-
 static void _lib_tagging_redraw_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self =(dt_lib_module_t *)user_data;
@@ -376,15 +388,14 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("attach"));
-
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tagging/attach");
+  d->attach_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("attach tag to all selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (attach_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("detach"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tagging/detach");
+  d->detach_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("detach tag from all selected images"), (char *)NULL);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (detach_button_clicked), (gpointer)self);
@@ -433,14 +444,14 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("new"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tagging/new");
+  d->new_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (new_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("delete"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/tagging/delete");
+  d->delete_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("delete selected tag"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",

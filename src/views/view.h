@@ -73,6 +73,12 @@ typedef struct dt_view_t
   void (*configure)       (struct dt_view_t *self, int width, int height);
   void (*scrolled)        (struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
   void (*border_scrolled) (struct dt_view_t *self, double x, double y, int which, int up); // mouse scrolled on left/right/top/bottom border (which 0123).
+
+  // keyboard accel callbacks
+  void (*init_key_accels)(struct dt_view_t *self);
+  void (*connect_key_accels)(struct dt_view_t *self);
+
+  GSList *accel_closures;
 }
 dt_view_t;
 

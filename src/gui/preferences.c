@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/preferences.h"
 #include "develop/imageop.h"
@@ -34,18 +35,16 @@
 #define N_COLUMNS 3
 
 static void init_tab_accels(GtkWidget *book);
-static void tree_insert_accel(gpointer data, const gchar *accel_path,
-                              guint accel_key, GdkModifierType accel_mods,
-                              gboolean changed);
+static void tree_insert_accel(gpointer accel_struct, gpointer model_link);
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
-                            const gchar *accel_path, guint accel_key,
-                            GdkModifierType accel_mods, gboolean changed);
+                            const gchar *accel_path,
+                            const gchar *translated_path,
+                            guint accel_key, GdkModifierType accel_mods);
 static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str);
 static void update_accels_model(gpointer widget, gpointer data);
 static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
                                     gchar *path);
 static void delete_matching_accels(gpointer path, gpointer key_event);
-static gint _strcmp(gconstpointer a, gconstpointer b);
 static void import_export(GtkButton *button, gpointer data);
 static void restore_defaults(GtkButton *button, gpointer data);
 static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
@@ -118,7 +117,8 @@ static void init_tab_accels(GtkWidget *book)
                            gtk_label_new(_("shortcuts")));
 
   // Building the accelerator tree
-  gtk_accel_map_foreach((gpointer)model, tree_insert_accel);
+  g_slist_foreach(darktable.control->accelerator_list, tree_insert_accel,
+                  (gpointer)model);
 
   // Seting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(
@@ -202,28 +202,37 @@ static void init_tab_accels(GtkWidget *book)
 
 }
 
-static void tree_insert_accel(gpointer data, const gchar *accel_path,
-                              guint accel_key, GdkModifierType accel_mods,
-                              gboolean changed)
+static void tree_insert_accel(gpointer accel_struct, gpointer model_link)
 {
-  char *lap = (char *)accel_path;
+  GtkTreeStore *model = (GtkTreeStore*)model_link;
+  dt_accel_t *accel = (dt_accel_t*)accel_struct;
+  GtkAccelKey key;
+
+  // Getting the first significant parts of the paths
+  char *accel_path = accel->path;
+  char *translated_path = accel->translated_path;
   
   /* if prefixed lets forward pointer */
-  if (!strncmp(lap,"<Darktable>",strlen("<Darktable>")))
-    lap += strlen("<Darktable>") + 1;
+  if (!strncmp(accel_path,"<Darktable>",strlen("<Darktable>")))
+  {
+    accel_path += strlen("<Darktable>") + 1;
+    translated_path += strlen("<Darktable>") + 1;
+  }
+
+  // Getting the accelerator keys
+  gtk_accel_map_lookup_entry(accel->path, &key);
 
   /* lets recurse path */
-  tree_insert_rec((GtkTreeStore*)data, NULL, lap, accel_key,
-                  accel_mods, changed);
+  tree_insert_rec(model, NULL, accel_path, translated_path,
+                  key.accel_key,
+                  key.accel_mods);
 }
 
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
-                            const gchar *accel_path, guint accel_key,
-                            GdkModifierType accel_mods, gboolean changed)
+                            const gchar *accel_path,
+                            const gchar *translated_path, guint accel_key,
+                            GdkModifierType accel_mods)
 {
-  const gchar *translation = NULL;
-  GList *iops = darktable.iop;
-  GList *libs = darktable.lib->plugins;
 
   int i;
   gboolean found = FALSE;
@@ -241,19 +250,25 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     gtk_tree_store_append(model, &iter, parent);
     gtk_tree_store_set(model, &iter,
                        ACCEL_COLUMN, accel_path,
-                       BINDING_COLUMN, g_dpgettext2("gtk20", "keyboard label", name),
-                       TRANS_COLUMN, g_dpgettext2(NULL, "accel", accel_path),
+                       BINDING_COLUMN, g_dpgettext2("gtk20",
+                                                    "keyboard label",
+                                                    name),
+                       TRANS_COLUMN, translated_path,
                        -1);
     g_free(name);    
   } 
   else
   {
     /* we are on a branch let's get the node name */
-    gchar *eon = g_strstr_len(accel_path,strlen(accel_path),"/");
-    gchar *node = g_strndup(accel_path,eon-accel_path);
+    gchar *end = g_strstr_len(accel_path,strlen(accel_path),"/");
+    gchar *node = g_strndup(accel_path,end-accel_path);
+    gchar *trans_end = g_strstr_len(translated_path,
+                                    strlen(translated_path), "/");
+    gchar *trans_node = g_strndup(translated_path, trans_end-translated_path);
 
     /* search the tree if we alread have an sibiling with node name */
-    int sibilings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent);
+    int sibilings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model),
+                                                   parent);
     for (i = 0; i < sibilings; i++)
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, parent, i);
@@ -272,55 +287,23 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
 
     /* if not found let's add a branch */
     if(!found)
-    {
-      /* check if current branch is a iop then get translation */
-      gchar *opname;
-      while(iops)
-      {
-        opname = ((dt_iop_module_so_t*)iops->data)->op;
-
-        /* if iop module found, lets get translated name */
-        if (!strcmp(opname, node))
-        {
-          translation = ((dt_iop_module_so_t*)iops->data)->name();
-          break;
-        }
-
-        iops = g_list_next(iops);
-      }
-
-      /* Check for libs as well */
-      
-      while(libs)
-      {
-        opname = ((dt_lib_module_t*)libs->data)->plugin_name;
-
-        if(!strcmp(opname, node))
-        {
-          translation = ((dt_lib_module_t*)libs->data)->name();
-          break;
-        }
-
-        libs = g_list_next(libs);
-      }
-
-      /* not an iop or lib, do a translation.. */
-      if(!translation)
-        translation = g_dpgettext2(NULL, "accel",node);
-      
+    {      
       gtk_tree_store_append(model, &iter, parent);
       gtk_tree_store_set(model, &iter,
                          ACCEL_COLUMN, node,
                          BINDING_COLUMN, "",
-                         TRANS_COLUMN, translation,
+                         TRANS_COLUMN, trans_node,
                          -1);
     }
 
     /* recurse further down the path */
-    tree_insert_rec(model, &iter, accel_path + strlen(node) + 1, accel_key, accel_mods, changed);
+    tree_insert_rec(model, &iter, accel_path + strlen(node) + 1,
+                    translated_path + strlen(trans_node) + 1,
+                    accel_key, accel_mods);
     
     /* free up data */
     g_free(node);
+    g_free(trans_node);
   }
 }
 
@@ -412,26 +395,34 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
   }
 }
 
-static void delete_matching_accels(gpointer path, gpointer key_event)
+static void delete_matching_accels(gpointer current, gpointer mapped)
 {
-  GtkAccelKey key;
-  GdkEventKey *event = (GdkEventKey*)key_event;
+  dt_accel_t *current_accel = (dt_accel_t*)current;
+  dt_accel_t *mapped_accel = (dt_accel_t*)mapped;
+  GtkAccelKey current_key;
+  GtkAccelKey mapped_key;
 
   // Make sure we're not deleting the key we just remapped
-  if(!strcmp(path, darktable.control->accel_remap_str))
+  if(!strcmp(current_accel->path, mapped_accel->path))
     return;
 
-  gtk_accel_map_lookup_entry(path, &key);
+  // Finding the relevant keyboard shortcuts
+  gtk_accel_map_lookup_entry(current_accel->path, &current_key);
+  gtk_accel_map_lookup_entry(mapped_accel->path, &mapped_key);
 
-  if(key.accel_key == event->keyval
-     && key.accel_mods == (event->state & KEY_STATE_MASK))
-    gtk_accel_map_change_entry(path, 0, 0, TRUE);
+  if(current_key.accel_key == mapped_key.accel_key // Key code matches
+     && current_key.accel_mods == mapped_key.accel_mods // Key state matches
+     && current_accel->views & mapped_accel->views // Conflicting views
+     && !(current_accel->local && mapped_accel->local  // Not both local to
+          && strcmp(current_accel->module, mapped_accel->module))) // diff mods
+    gtk_accel_map_change_entry(current_accel->path, 0, 0, TRUE);
 
 }
 
-static gint _strcmp(gconstpointer a, gconstpointer b)
+static gint _accelcmp(gconstpointer a, gconstpointer b)
 {
-  return (gint)strcmp((const char*)b, (const char*)a);
+  return (gint)(strcmp(((dt_accel_t*)a)->path,
+                       ((dt_accel_t*)b)->path));
 }
 
 static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
@@ -505,7 +496,8 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   GtkTreeSelection *selection =
       gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
   GtkTreePath *path;
-  gboolean global;
+  GSList *remapped;
+  dt_accel_t query;
 
   gchar accel[256];
   gchar datadir[1024];
@@ -521,74 +513,21 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   // Otherwise, determine whether we're in remap mode or not
   if(darktable.control->accel_remap_str)
   {
-    // First delete any conflicting accelerators
-
-    // If a global accel is changed, modify _every_ group
-    global =
-        g_slist_find_custom(darktable.control->accels_list_global,
-                            darktable.control->accel_remap_str, _strcmp) != NULL;
-
-    // Global is always active, so anything that matches there must go
-    g_slist_foreach(darktable.control->accels_list_global, delete_matching_accels,
-                    (gpointer)event);
-
-    // Now check for any matching accels in the same group
-    if(g_slist_find_custom(darktable.control->accels_list_lighttable,
-                           darktable.control->accel_remap_str, _strcmp) || global)
-      g_slist_foreach(darktable.control->accels_list_lighttable,
-                      delete_matching_accels, (gpointer)event);
-    if(g_slist_find_custom(darktable.control->accels_list_darkroom,
-                           darktable.control->accel_remap_str, _strcmp) || global)
-    {
-      g_slist_foreach(darktable.control->accels_list_darkroom,
-                      delete_matching_accels, (gpointer)event);
-      g_slist_foreach(darktable.control->accels_list_filmstrip,
-                      delete_matching_accels, (gpointer)event);
-    }
-    if(g_slist_find_custom(darktable.control->accels_list_capture,
-                           darktable.control->accel_remap_str, _strcmp) || global)
-    {
-      g_slist_foreach(darktable.control->accels_list_capture,
-                      delete_matching_accels, (gpointer)event);
-      g_slist_foreach(darktable.control->accels_list_filmstrip,
-                      delete_matching_accels, (gpointer)event);
-    }
-    if(g_slist_find_custom(darktable.control->accels_list_filmstrip,
-                           darktable.control->accel_remap_str, _strcmp) || global)
-    {
-      g_slist_foreach(darktable.control->accels_list_darkroom,
-                      delete_matching_accels, (gpointer)event);
-      g_slist_foreach(darktable.control->accels_list_capture,
-                      delete_matching_accels, (gpointer)event);
-    }
     // Change the accel map entry
-    if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, event->keyval,
+    if(gtk_accel_map_change_entry(darktable.control->accel_remap_str,
+                                  event->keyval,
                                   event->state & KEY_STATE_MASK, TRUE))
     {
       // If it succeeded delete any conflicting accelerators
+      // First locate the accel list entry
+      strcpy(query.path, darktable.control->accel_remap_str);
+      remapped = g_slist_find_custom(darktable.control->accelerator_list,
+                                     (gpointer)&query, _accelcmp);
 
-      // If a global accel is changed, modify _every_ group
-      global =
-          g_slist_find_custom(darktable.control->accels_list_global,
-                              darktable.control->accel_remap_str, _strcmp) != NULL;
-
-      // Global is always active, so anything that matches there must go
-      g_slist_foreach(darktable.control->accels_list_global, delete_matching_accels,
-                      (gpointer)event);
-
-      // Now check for any matching accels in the same group
-      if(g_slist_find_custom(darktable.control->accels_list_lighttable,
-                             darktable.control->accel_remap_str, _strcmp) || global)
-        g_slist_foreach(darktable.control->accels_list_lighttable,
-                        delete_matching_accels, (gpointer)event);
-      if(g_slist_find_custom(darktable.control->accels_list_darkroom,
-                             darktable.control->accel_remap_str, _strcmp) || global)
-        g_slist_foreach(darktable.control->accels_list_darkroom,
-                        delete_matching_accels, (gpointer)event);
-      if(g_slist_find_custom(darktable.control->accels_list_capture,
-                             darktable.control->accel_remap_str, _strcmp) || global)
-        g_slist_foreach(darktable.control->accels_list_capture,
-                        delete_matching_accels, (gpointer)event);
+      // Then remove conflicts
+      g_slist_foreach(darktable.control->accelerator_list,
+                      delete_matching_accels,
+                      (gpointer)(remapped->data));
 
     }
 

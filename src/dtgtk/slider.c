@@ -65,13 +65,7 @@ static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *
 // Slider entry events
 static gboolean _slider_entry_key_event(GtkWidget *widget,GdkEventKey *event, gpointer data);
 
-enum {
-  VALUE_CHANGED,
-  LAST_SIGNAL
-};
-
-static guint _slider_signals[LAST_SIGNAL] = { 0 };
-static char accel_name_builder[1024];
+static guint _slider_signals[SLIDER_LAST_SIGNAL] = { 0 };
 
 void _slider_get_value_area(GtkWidget *widget,GdkRectangle *rect)
 {
@@ -675,101 +669,4 @@ GtkType dtgtk_slider_get_type()
   return dtgtk_slider_type;
 }
 
-static void slider_edit_callback(GtkAccelGroup *accel_group,
-                                    GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
-	char sv[32]= {0};
-	slider->is_entry_active=TRUE;
-	gdouble value = gtk_adjustment_get_value(slider->adjustment);
-	sprintf(sv,"%.*f",slider->digits,value);
-	gtk_entry_set_text (GTK_ENTRY(slider->entry),sv);
-	gtk_widget_show (GTK_WIDGET(slider->entry));
-	gtk_widget_grab_focus (GTK_WIDGET(slider->entry));
-	gtk_widget_queue_draw (GTK_WIDGET(slider));
-}
-static void slider_increase_callback(GtkAccelGroup *accel_group,
-                                    GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
-	float value = gtk_adjustment_get_value(slider->adjustment);
-	value += gtk_adjustment_get_step_increment(slider->adjustment);
-	if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
-
-	gtk_adjustment_set_value(slider->adjustment, value);
-	gtk_widget_draw(GTK_WIDGET(slider),NULL);
-	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
-}
-static void slider_decrease_callback(GtkAccelGroup *accel_group,
-                                    GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
-	float value = gtk_adjustment_get_value(slider->adjustment);
-	value -= gtk_adjustment_get_step_increment(slider->adjustment);
-	if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
-
-	gtk_adjustment_set_value(slider->adjustment, value);
-	gtk_widget_draw(GTK_WIDGET(slider),NULL);
-	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
-}
-
-static void slider_reset_callback(GtkAccelGroup *accel_group,
-                                    GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-	GtkDarktableSlider *slider=DTGTK_SLIDER(data);
-	gtk_adjustment_set_value(slider->adjustment, slider->default_value);
-	gtk_widget_draw(GTK_WIDGET(slider),NULL);
-	g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
-}
-
-void dtgtk_slider_set_accel(GtkDarktableSlider *slider, GtkAccelGroup *accel_group, const gchar *accel_path)
-{
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,NC_("accel", "increase"));
-  dt_accel_group_connect_by_path(accel_group,
-                                 accel_name_builder,
-                                 g_cclosure_new(
-                                     G_CALLBACK(slider_increase_callback),
-                                     (gpointer)slider, NULL));
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,NC_("accel", "reduce"));
-  dt_accel_group_connect_by_path(accel_group,
-                                 accel_name_builder,
-                                 g_cclosure_new(
-                                     G_CALLBACK(slider_decrease_callback),
-                                     (gpointer)slider, NULL));
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,NC_("accel", "reset"));
-  dt_accel_group_connect_by_path(accel_group,
-                                 accel_name_builder,
-                                 g_cclosure_new(
-                                     G_CALLBACK(slider_reset_callback),
-                                     (gpointer)slider, NULL));
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,NC_("accel", "edit"));
-  dt_accel_group_connect_by_path(accel_group,
-                                 accel_name_builder,
-                                 g_cclosure_new(
-                                     G_CALLBACK(slider_edit_callback),
-                                     (gpointer)slider, NULL));
-}
-void dtgtk_slider_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path)
-{
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"increase");
-  gtk_accel_map_add_entry(accel_name_builder, 0, 0);
-  dt_accel_group_connect_by_path(accel_group, accel_name_builder,NULL);
-
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"reduce");
-  gtk_accel_map_add_entry(accel_name_builder, 0, 0);
-  dt_accel_group_connect_by_path(accel_group, accel_name_builder,NULL);
-
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"reset");
-  gtk_accel_map_add_entry(accel_name_builder, 0, 0);
-  dt_accel_group_connect_by_path(accel_group, accel_name_builder,NULL);
-
-  snprintf(accel_name_builder,1024,"%s/%s",accel_path,"edit");
-  gtk_accel_map_add_entry(accel_name_builder, 0, 0);
-  dt_accel_group_connect_by_path(accel_group, accel_name_builder,NULL);
-
-}
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

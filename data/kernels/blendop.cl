@@ -34,11 +34,122 @@
 #define DEVELOP_BLEND_VIVIDLIGHT			0x0D
 #define DEVELOP_BLEND_LINEARLIGHT			0x0E
 #define DEVELOP_BLEND_PINLIGHT				0x0F
+#define DEVELOP_BLEND_LIGHTNESS				0x10
+#define DEVELOP_BLEND_CHROMA				0x11
+#define DEVELOP_BLEND_HUE				0x12
 
 #define BLEND_ONLY_LIGHTNESS				8
 
 
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+
+
+
+float4 RGB_2_HSL(const float4 RGB)
+{
+  float H, S, L;
+
+  // assumes that each channel is scaled to [0; 1]
+  float R = RGB.x;
+  float G = RGB.y;
+  float B = RGB.z;
+
+  float var_Min = fmin(R, fmin(G, B));
+  float var_Max = fmax(R, fmax(G, B));
+  float del_Max = var_Max - var_Min;
+
+  L = (var_Max + var_Min) / 2.0f;
+
+  if (del_Max == 0.0f)
+  {
+    H = 0.0f;
+    S = 0.0f;
+  }
+  else
+  {
+    if (L < 0.5f) S = del_Max / (var_Max + var_Min);
+    else          S = del_Max / (2.0f - var_Max - var_Min);
+
+    float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+
+    if      (R == var_Max) H = del_B - del_G;
+    else if (G == var_Max) H = (1.0f / 3.0f) + del_R - del_B;
+    else if (B == var_Max) H = (2.0f / 3.0f) + del_G - del_R;
+
+    if (H < 0.0f) H += 1.0f;
+    if (H > 1.0f) H -= 1.0f;
+  }
+
+  return (float4)(H, S, L, RGB.w);
+}
+
+
+float Hue_2_RGB(float v1, float v2, float vH)
+{
+  if (vH < 0.0f) vH += 1.0f;
+  if (vH > 1.0f) vH -= 1.0f;
+  if ((6.0f * vH) < 1.0f) return (v1 + (v2 - v1) * 6.0f * vH);
+  if ((2.0f * vH) < 1.0f) return (v2);
+  if ((3.0f * vH) < 2.0f) return (v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6.0f);
+  return (v1);
+}
+
+
+float4 HSL_2_RGB(const float4 HSL)
+{
+  float R, G, B;
+
+  float H = HSL.x;
+  float S = HSL.y;
+  float L = HSL.z;
+
+  float var_1, var_2;
+
+  if (S == 0.0f)
+  {
+    R = B = G = L;
+  }
+  else
+  {
+    if (L < 0.5f) var_2 = L * (1.0f + S);
+    else          var_2 = (L + S) - (S * L);
+
+    var_1 = 2.0f * L - var_2;
+
+    R = Hue_2_RGB(var_1, var_2, H + (1.0f / 3.0f)); 
+    G = Hue_2_RGB(var_1, var_2, H);
+    B = Hue_2_RGB(var_1, var_2, H - (1.0f / 3.0f));
+  } 
+
+  // returns RGB scaled to [0; 1] for each channel
+  return (float4)(R, G, B, HSL.w);
+}
+
+
+float4 Lab_2_LCH(const float4 Lab)
+{
+  float H = atan2(Lab.z, Lab.y);
+
+  if (H > 0.0f) H = (H / M_PI) * 180.0f;
+  else          H = 360.0f - (fabs(H) / M_PI) * 180.0f;
+
+  float L = Lab.x;
+  float C = sqrt(Lab.y*Lab.y + Lab.z*Lab.z);
+
+  return (float4)(L, C, H, Lab.w);
+}
+
+
+float4 LCH_2_Lab(const float4 LCH)
+{
+  float L = LCH.x;
+  float a = cos(radians(LCH.z)) * LCH.y;
+  float b = sin(radians(LCH.z)) * LCH.y;
+
+  return (float4)(L, a, b, LCH.w);
+}
 
 
 __kernel void
@@ -50,6 +161,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
   if(x >= width || y >= height) return;
 
   float4 o;
+  float4 ta, tb, to;
 
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
@@ -73,7 +185,6 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
   float4 la = clamp(a + fabs(min), lmin, lmax);
   float4 lb = clamp(b + fabs(min), lmin, lmax);
-
 
 
   /* select the blend operator */
@@ -211,6 +322,31 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       o.z = a.z;
       break;
 
+    case DEVELOP_BLEND_LIGHTNESS:
+      // no need to transfer to LCH as we only work on L, which is the same as in Lab
+      o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
+      o.y = a.y;
+      o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_CHROMA:
+      ta = Lab_2_LCH(clamp(a, min, max));
+      tb = Lab_2_LCH(clamp(b, min, max));
+      to.x = ta.x;
+      to.y = (ta.y * (1.0f - opacity)) + (tb.y * opacity);
+      to.z = ta.z;
+      o = LCH_2_Lab(to);
+      break;
+
+    case DEVELOP_BLEND_HUE:
+      ta = Lab_2_LCH(clamp(a, min, max));
+      tb = Lab_2_LCH(clamp(b, min, max));
+      to.x = ta.x;
+      to.y = ta.y;
+      to.z = (ta.z * (1.0f - opacity)) + (tb.z * opacity);
+      o = LCH_2_Lab(to);
+      break;
+
 
     /* fallback to normal blend */
     case DEVELOP_BLEND_NORMAL:
@@ -316,6 +452,18 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? fmax(la, doublemax * (lb - halfmax)) : fmin(la, doublemax * lb)) * opacity2, lmin, lmax) - fabs(min);
       break;
 
+    case DEVELOP_BLEND_LIGHTNESS:
+      o = a;		// Noop for Raw
+      break;
+
+    case DEVELOP_BLEND_CHROMA:
+      o = a;		// Noop for Raw
+      break;
+
+    case DEVELOP_BLEND_HUE:
+      o = a;		// Noop for Raw
+      break;
+
 
     /* fallback to normal blend */
     case DEVELOP_BLEND_NORMAL:
@@ -335,6 +483,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
   const int y = get_global_id(1);
 
   float4 o;
+  float4 ta, tb, to;
 
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
@@ -408,6 +557,33 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
     case DEVELOP_BLEND_PINLIGHT:
       o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? fmax(la, doublemax * (lb - halfmax)) : fmin(la, doublemax * lb)) * opacity2, lmin, lmax) - fabs(min);
+      break;
+
+    case DEVELOP_BLEND_LIGHTNESS:
+      ta = RGB_2_HSL(clamp(a, min, max));
+      tb = RGB_2_HSL(clamp(b, min, max));
+      to.x = ta.x;
+      to.y = ta.y;
+      to.z = (ta.z * (1.0f - opacity)) + (tb.z * opacity);
+      o = HSL_2_RGB(to);
+      break;
+
+    case DEVELOP_BLEND_CHROMA:
+      ta = RGB_2_HSL(clamp(a, min, max));
+      tb = RGB_2_HSL(clamp(b, min, max));
+      to.x = ta.x;
+      to.y = (ta.y * (1.0f - opacity)) + (tb.y * opacity);
+      to.z = ta.z;
+      o = HSL_2_RGB(to);
+      break;
+
+    case DEVELOP_BLEND_HUE:
+      ta = RGB_2_HSL(clamp(a, min, max));
+      tb = RGB_2_HSL(clamp(b, min, max));
+      to.x = (ta.x * (1.0f - opacity)) + (tb.x * opacity);
+      to.y = ta.y;
+      to.z = ta.z;
+      o = HSL_2_RGB(to);
       break;
 
 

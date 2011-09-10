@@ -30,11 +30,11 @@
             read the short instructions in the file <a href="http://darktable.git.sourceforge.net/git/gitweb.cgi?p=darktable/darktable;a=blob;f=TRANSLATORS;h=8b55a4f319d2a255eedd17b596f3fa4171ab58ff;hb=HEAD">TRANSLATORS</a> in git.
         </li>
         <li>produce <a href="http://blog.pcode.nl/2010/08/31/contributing-backtraces/">helpful stacktraces</a> for bugreports (minimal steps):<br/>
-            $ ./configure --prefix=/usr --enable-debug<br/>
+            $ cmake -DCMAKE_BUILD_TYPE=debug" ..<br/>
             $ make &amp;&amp; sudo make install<br/>
             $ gdb darktable<br/>
             ..crash dt here..<br/>
-            (gdb) bt<br/>
+            (gdb) thread apply all bt full<br/>
             and post the backtrace. even better: try a few prints and figure out
             what seems to be the problem. best: fix it and supply a patch!
         </li>

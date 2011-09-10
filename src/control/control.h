@@ -42,13 +42,6 @@
 #define DT_CTL_WORKER_5 4 // dev small prev
 #define DT_CTL_WORKER_6 5 // dev prefetch
 
-// Bit masks for the key_accels_saved bitfield
-#define ACCELS_GLOBAL      (1 << 0)
-#define ACCELS_LIGHTTABLE  (1 << 1)
-#define ACCELS_DARKROOM    (1 << 2)
-#define ACCELS_CAPTURE     (1 << 3)
-#define ACCELS_FILMSTRIP   (1 << 4)
-
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
 
@@ -200,14 +193,10 @@ typedef struct dt_control_accels_t
 typedef struct dt_control_t
 {
   // Keyboard accelerator groups
-  GtkAccelGroup
-      *accels_global, *accels_lighttable, *accels_darkroom, *accels_capture,
-      *accels_filmstrip;
+  GtkAccelGroup *accelerators;
 
   // Accelerator group path lists
-  GSList
-      *accels_list_global, *accels_list_lighttable, *accels_list_darkroom,
-      *accels_list_capture, *accels_list_filmstrip;
+  GSList *accelerator_list;
 
   // Cached accelerator keys for key_pressed shortcuts
   dt_control_accels_t accels;
@@ -237,7 +226,6 @@ typedef struct dt_control_t
   dt_pthread_mutex_t global_mutex, image_mutex;
   double last_expose_time;
   int key_accelerators_on;
-  guint key_accelerators_saved;
 
   // xatom color profile:
   uint8_t *xprofile_data;

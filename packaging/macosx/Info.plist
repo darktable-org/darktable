@@ -17,11 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>post0.8</string>
+	<string>VERSION</string>
 	<key>CFBundleSignature</key>
 	<string>APPL</string>
 	<key>CFBundleVersion</key>
-	<string>post0.8</string>
+	<string>VERSION</string>
 	<key>NSAppleScriptEnabled</key>
 	<string>NO</string>
 </dict>

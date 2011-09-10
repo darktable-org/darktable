@@ -106,22 +106,26 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float *in = ((float *)i) + k*ch*roi_out->width;
     float *out = ((float *)o) + k*ch*roi_out->width;
+
+    const float low_approximation = d->table[(int)(0.01f * 0xfffful)];
+
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
       // in Lab: correct compressed Luminance for saturation:
       const float L_in = in[0]/100.0f;
-      out[0] = (L_in < 1.0f) ? d->table[CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
-        dt_iop_eval_exp(d->unbounded_coeffs, L_in);
-        
-      if(in[0] > 0.01f)
+      if(in[0] > 1.0f)
       {
-        out[1] = in[1] * out[0]/in[0];
-        out[2] = in[2] * out[0]/in[0];
+        out[0] = (L_in < 1.0f) ? d->table[CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
+          dt_iop_eval_exp(d->unbounded_coeffs, L_in);
+        
+          out[1] = in[1] * out[0]/in[0];
+          out[2] = in[2] * out[0]/in[0];
       }
       else
       {
-        out[1] = in[1] * out[0]/0.01f;
-        out[2] = in[2] * out[0]/0.01f;
+        out[0] = in[0] * low_approximation;
+        out[1] = in[1] * low_approximation;
+        out[2] = in[2] * low_approximation;
       }
     }
   }

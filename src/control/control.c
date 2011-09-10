@@ -464,61 +464,24 @@ create_tables:
 
 void dt_control_key_accelerators_on(struct dt_control_t *s)
 {
-  guint state = darktable.control->key_accelerators_saved;
+  gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
+                             darktable.control->accelerators);
   if(!s->key_accelerators_on)
-  {
     s->key_accelerators_on = 1;
-    GtkWindow *mw = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-    if(state & ACCELS_GLOBAL)
-      gtk_window_add_accel_group(mw, darktable.control->accels_global);
-    if(state & ACCELS_LIGHTTABLE)
-      gtk_window_add_accel_group(mw, darktable.control->accels_lighttable);
-    if(state & ACCELS_DARKROOM)
-      gtk_window_add_accel_group(mw, darktable.control->accels_darkroom);
-    if(state & ACCELS_CAPTURE)
-      gtk_window_add_accel_group(mw, darktable.control->accels_capture);
-    if(state & ACCELS_FILMSTRIP)
-      gtk_window_add_accel_group(mw, darktable.control->accels_filmstrip);
-  }
-}
-
-static void state_from_accels(gpointer data, gpointer state)
-{
-  guint* s = (guint*)state;
-  if(data == (gpointer)darktable.control->accels_global)
-    *s |= ACCELS_GLOBAL;
-  else if(data == (gpointer)darktable.control->accels_lighttable)
-    *s |= ACCELS_LIGHTTABLE;
-  else if(data == (gpointer)darktable.control->accels_darkroom)
-    *s |= ACCELS_DARKROOM;
-  else if(data == (gpointer)darktable.control->accels_capture)
-    *s |= ACCELS_CAPTURE;
-  else if(data == (gpointer)darktable.control->accels_filmstrip)
-    *s |= ACCELS_FILMSTRIP;
-
-  gtk_window_remove_accel_group(
-      GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
-      (GtkAccelGroup*)data);
 }
 
 void dt_control_key_accelerators_off(struct dt_control_t *s)
 {
-  GSList *g = gtk_accel_groups_from_object(
-    G_OBJECT(dt_ui_main_window(darktable.gui->ui)));
- 
-  guint state = 0;
-
-  // Setting the apropriate bits for currently active accel groups
-  g_slist_foreach(g, state_from_accels, &state);
-
+  gtk_window_remove_accel_group(
+      GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
+      darktable.control->accelerators);
   s->key_accelerators_on = 0;
-  s->key_accelerators_saved = state;
 }
 
 
 int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 {
-  return  s->key_accelerators_on == 1?1:0;
+  return  s->key_accelerators_on;
 }
 
 void dt_control_change_cursor(dt_cursor_t curs)

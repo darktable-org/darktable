@@ -23,6 +23,7 @@
 #include "develop/develop.h"
 #include "dtgtk/button.h"
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 
 DT_MODULE(1)
@@ -65,6 +66,8 @@ typedef struct dt_lib_snapshots_t
   gboolean dragging,vertical,inverted;
   double vp_width,vp_height,vp_xpointer,vp_ypointer;
 
+  GtkWidget *take_button;
+
 }
 dt_lib_snapshots_t;
 
@@ -93,11 +96,17 @@ int position()
   return 1000;
 }
 
-void init_key_accels()
+void init_key_accels(dt_lib_module_t *self)
 {
-  gtk_button_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/snapshots/take snapshot");
+  dt_accel_register_lib(self, NC_("accel", "take snapshot"), 0, 0);
 }
 
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "take snapshot", d->take_button);
+}
 
 /* expose snapshot over center viewport */
 void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
@@ -276,7 +285,7 @@ void gui_init(dt_lib_module_t *self)
   
   /* create take snapshot button */
   GtkWidget *button = gtk_button_new_with_label(_("take snapshot"));
-  gtk_button_set_accel(GTK_BUTTON(button),darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/snapshots/take snapshot");
+  d->take_button = button;
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
   g_object_set(button, "tooltip-text", 
 		_("take snapshot to compare with another image or the same image at another stage of development"), 
