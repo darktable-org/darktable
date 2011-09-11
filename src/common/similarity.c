@@ -45,7 +45,7 @@ static float _similarity_match_histogram_rgb(dt_similarity_t *data, const dt_sim
     
   score/=DT_SIMILARITY_HISTOGRAM_BUCKETS;
   
-  return CLIP(score * data->histogram_weight);
+  return 1.0 - score;
 }
 
 /* scoring match of lightmap */
@@ -61,7 +61,7 @@ static float _similarity_match_lightmap(dt_similarity_t *data, const dt_similari
   /* scale down score */
   score /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
   
-   return CLIP(score * data->lightmap_weight);
+   return 1.0 - score;
 }
 
 /* scoring match of colormap */
@@ -85,14 +85,14 @@ static float _similarity_match_colormap(dt_similarity_t *data, const dt_similari
   greenscore  /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
   bluescore   /= (DT_SIMILARITY_LIGHTMAP_SIZE * DT_SIMILARITY_LIGHTMAP_SIZE);
   
-  fprintf(stderr,"weight: %f\n",data->redmap_weight+data->bluemap_weight+data->greenmap_weight);
+  //  fprintf(stderr,"weight: %f\n",data->redmap_weight+data->bluemap_weight+data->greenmap_weight);
   score = ((redscore*data->redmap_weight) + (greenscore * data->greenmap_weight) + (bluescore*data->bluemap_weight)) / 3.0;
 
   /* now we have each score for r,g and b channel, lets weight them and calculate 
       a main score for the match. */
-  fprintf(stderr,"Color score %f,%f,%f total weighted score = %f\n",redscore,greenscore,bluescore,score);  
+  // fprintf(stderr,"Color score %f,%f,%f total weighted score = %f\n",redscore,greenscore,bluescore,score);  
   
-  return CLIP(score);
+  return 1.0 - score;
 }
 
 void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
@@ -187,16 +187,15 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
         score_colormap = _similarity_match_colormap(data, &orginal_lightmap, &test_lightmap);
        
         
-       
-        fprintf(stderr,"histo: %f, light: %f, color: %f\n",score_histogram,score_lightmap,score_colormap);
-
         /* 
          * calculate the similarity score
          */
-       float score = 1.0;
-       score -= score_histogram;
-       score -= score_lightmap;
-       score -= score_colormap;
+	float score =  (pow(score_histogram, data->histogram_weight) *
+			     pow(score_lightmap, data->lightmap_weight) *
+			     pow(score_colormap, data->redmap_weight));
+       
+        // fprintf(stderr,"score: %f, histo: %f, light: %f, color: %f\n",score,score_histogram,score_lightmap,score_colormap);
+
         
         /* 
          * If current images scored, lets add it to similar_images table 
