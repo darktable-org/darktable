@@ -117,7 +117,7 @@ dt_collection_update (const dt_collection_t *collection)
       g_snprintf (wq+strlen(wq),2048-strlen(wq)," %s %s",(need_operator)?"and":"", collection->where_ext);
   }
   else
-    g_snprintf (wq,512,"%s",collection->where_ext);
+    g_snprintf (wq,2048,"%s",collection->where_ext);
 
 
 
@@ -143,7 +143,12 @@ dt_collection_update (const dt_collection_t *collection)
   /* store the new query */
   g_snprintf (query,MAX_QUERY_STRING_LENGTH,"%s %s%s", selq, sq, (collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT)?" "LIMIT_QUERY:"");
   result = _dt_collection_store (collection,query);
+
   g_free (query);
+
+  /* raise signal of collection change */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+
   return result;
 }
 
@@ -450,9 +455,6 @@ dt_collection_update_query(const dt_collection_t *collection)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-
-  /* raise signal of collection change */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 
 }
 
