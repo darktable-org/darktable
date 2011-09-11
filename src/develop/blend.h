@@ -20,6 +20,7 @@
 #define DT_DEVELOP_BLEND_H
 
 #include "develop/pixelpipe.h"
+#include "common/opencl.h"
 
 #define DEVELOP_BLEND_MASK_FLAG				0x80
 #define DEVELOP_BLEND_DISABLED				0x00
@@ -38,20 +39,42 @@
 #define DEVELOP_BLEND_VIVIDLIGHT			0x0D
 #define DEVELOP_BLEND_LINEARLIGHT			0x0E
 #define DEVELOP_BLEND_PINLIGHT				0x0F
+#define DEVELOP_BLEND_LIGHTNESS				0x10
+#define DEVELOP_BLEND_CHROMA				0x11
+#define DEVELOP_BLEND_HUE				0x12
 
 typedef struct dt_develop_blend_params_t
 {
   /** blending mode */
-  unsigned char mode;
+  uint32_t mode;
   /** mixing opacity */
   float opacity;
   /** id of mask in current pipeline */
-  unsigned int mask_id;
+  uint32_t mask_id;
 } dt_develop_blend_params_t;
 
+
+typedef struct dt_blendop_t
+{
+  int kernel_blendop_Lab;
+  int kernel_blendop_RAW;
+  int kernel_blendop_rgb;
+}
+dt_blendop_t;
+
+
 #define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)
+
+/** global init of blendops */
+void dt_develop_blend_init(dt_blendop_t *gd);
 
 /** apply blend */
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 
+#ifdef HAVE_OPENCL
+/** apply blend for opencl modules*/
+int dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
 #endif
+
+#endif
+

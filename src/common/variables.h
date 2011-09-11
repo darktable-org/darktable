@@ -46,6 +46,8 @@ typedef struct dt_variables_params_t
 void dt_variables_params_init(dt_variables_params_t **params);
 /** destroys an initialized dt_variables_params_t, pointer is garbage after this call. */
 void dt_variables_params_destroy(dt_variables_params_t *params);
+/** set the time in a dt_variables_params_t. */
+void dt_variables_set_time(dt_variables_params_t *params, time_t time);
 
 /** expands variables in string, this free's previous expanding result */
 gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);

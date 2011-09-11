@@ -39,11 +39,11 @@
 
 typedef struct dt_conf_t
 {
+  dt_pthread_mutex_t mutex;
 #ifdef HAVE_GCONF
   GConfClient *gconf;
 #else
   char filename[1024];
-  dt_pthread_mutex_t mutex;
   int  num;
   char varname[DT_CONF_MAX_VARS][DT_CONF_MAX_VAR_BUF];
   char varval [DT_CONF_MAX_VARS][DT_CONF_MAX_VAR_BUF];
@@ -68,68 +68,69 @@ static inline int dt_conf_get_var_pos(const char *name)
 
 static inline void dt_conf_set_int(const char *name, int val)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, name);
   gconf_client_set_int (darktable.conf->gconf, var, val, NULL);
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   snprintf(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, "%d", val);
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 #endif
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
 static inline void dt_conf_set_float(const char *name, float val)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, name);
   gconf_client_set_float (darktable.conf->gconf, var, val, NULL);
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   snprintf(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, "%f", val);
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 #endif
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
 static inline void dt_conf_set_bool(const char *name, int val)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, name);
   gconf_client_set_bool (darktable.conf->gconf, var, val, NULL);
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   snprintf(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, "%s", val ? "TRUE" : "FALSE");
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 #endif
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
 static inline void dt_conf_set_string(const char *name, const char *val)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, name);
   gconf_client_set_string (darktable.conf->gconf, var, val, NULL);
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   snprintf(darktable.conf->varval[num], DT_CONF_MAX_VAR_BUF, "%s", val);
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 #endif
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
 static inline int dt_conf_get_int(const char *name)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, name);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return gconf_client_get_int (darktable.conf->gconf, var, NULL);
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   const int val = atol(darktable.conf->varval[num]);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
@@ -139,12 +140,13 @@ static inline int dt_conf_get_int(const char *name)
 
 static inline float dt_conf_get_float(const char *name)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, name);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return gconf_client_get_float (darktable.conf->gconf, var, NULL);
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   const float val = atof(darktable.conf->varval[num]);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
@@ -154,12 +156,13 @@ static inline float dt_conf_get_float(const char *name)
 
 static inline int dt_conf_get_bool(const char *name)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, name);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return gconf_client_get_bool (darktable.conf->gconf, var, NULL);
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   const int val = darktable.conf->varval[num][0] == 'T';
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
@@ -169,12 +172,13 @@ static inline int dt_conf_get_bool(const char *name)
 
 static inline gchar *dt_conf_get_string(const char *name)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf(var, 1024, "%s/%s", DT_GCONF_DIR, name);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return gconf_client_get_string (darktable.conf->gconf, var, NULL);
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const int num = dt_conf_get_var_pos(name);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return g_strdup(darktable.conf->varval[num]);
@@ -192,6 +196,7 @@ static inline GSList *dt_conf_all_string_entries (const char *dir)
 {
   GSList *result = NULL;
 
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
 #ifdef HAVE_GCONF
   char var[1024];
   snprintf (var, 1024, "%s/%s", DT_GCONF_DIR, dir);
@@ -222,7 +227,6 @@ static inline GSList *dt_conf_all_string_entries (const char *dir)
     while ((item=g_slist_next (item))!=NULL);
 
 #else
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   for (int i=0; i<DT_CONF_MAX_VARS; i++)
   {
     if (strcmp(darktable.conf->varname[i],dir)==0)
@@ -241,14 +245,15 @@ static inline GSList *dt_conf_all_string_entries (const char *dir)
       result = g_slist_append (result,nv);
     }
   }
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
 
 #endif
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return result;
 }
 
 static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
 {
+  dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
 #ifdef HAVE_GCONF
   g_type_init();
   cf->gconf = gconf_client_get_default();
@@ -256,7 +261,6 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
 #else
   memset(cf->varname,0, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
   memset(cf->varval, 0, DT_CONF_MAX_VARS*DT_CONF_MAX_VAR_BUF);
-  dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
   snprintf(darktable.conf->filename, 1024, "%s", filename);
   darktable.conf->num = 0;
   FILE *f = fopen(filename, "rb");
@@ -265,7 +269,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   if(!f)
   {
     char buf[1024], defaultrc[1024];
-    dt_get_datadir(buf, 1024);
+    dt_util_get_datadir(buf, 1024);
     snprintf(defaultrc, 1024, "%s/darktablerc", buf);
     f = fopen(defaultrc, "rb");
   }
@@ -273,12 +277,15 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   while(!feof(f))
   {
     read = fscanf(f, "%[^\n]\n", line);
-    char *c = line;
-    while(*c != '=' && c < line + strlen(line)) c++;
-    if(*c == '=')
+    if(read > 0)
     {
-      *c = '\0';
-      dt_conf_set_string(line, c+1);
+      char *c = line;
+      while(*c != '=' && c < line + strlen(line)) c++;
+      if(*c == '=')
+	{
+	  *c = '\0';
+	  dt_conf_set_string(line, c+1);
+	}
     }
   }
   fclose(f);
@@ -298,21 +305,24 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
     fprintf(f, "%s=%s\n", cf->varname[i], cf->varval[i]);
   }
   fclose(f);
-  dt_pthread_mutex_destroy(&darktable.conf->mutex);
 #endif
+  dt_pthread_mutex_destroy(&darktable.conf->mutex);
 }
 
 /** check if key exists, return 1 if lookup successed, 0 if failed..*/
 static inline int dt_conf_key_exists (const char *key)
 {
+  dt_pthread_mutex_lock (&darktable.conf->mutex);
   int res = 0;
 #ifdef HAVE_GCONF
   GError *error=NULL;
-  GConfValue *value = gconf_client_get (darktable.conf->gconf,key,&error);
+  char var[1024];
+  snprintf(var,1024,"%s/%s", DT_GCONF_DIR, key);
+  GConfValue *value = gconf_client_get (darktable.conf->gconf,var,&error);
   if( value != NULL && error == NULL ) res = 1;
+  if (error) fprintf(stderr,"%s\n", error->message);
 #else
   /* lookup in stringtable for match of key name */
-  dt_pthread_mutex_lock (&darktable.conf->mutex);
   for (int i=0; i<darktable.conf->num; i++)
   {
     if (!strncmp (key, darktable.conf->varname[i], DT_CONF_MAX_VAR_BUF))
@@ -321,8 +331,8 @@ static inline int dt_conf_key_exists (const char *key)
       break;
     }
   }
-  dt_pthread_mutex_unlock (&darktable.conf->mutex);
 #endif
+  dt_pthread_mutex_unlock (&darktable.conf->mutex);
   return res;
 }
 

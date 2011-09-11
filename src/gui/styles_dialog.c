@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/styles.h"
 #include "common/history.h"
+#include "develop/imageop.h"
 #include "control/control.h"
 #include "gui/styles.h"
 #include "gui/gtk.h"
@@ -186,7 +187,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
     sd->imgid = imgid;
     sprintf (title,"%s",_("create new style"));
   }
-  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *dialog = GTK_DIALOG (gtk_dialog_new_with_buttons (title,
                                   GTK_WINDOW(window),
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -319,10 +320,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
         }
 
         gchar name[256]= {0};
-        if (module)
-          g_snprintf(name,256,"%s (%s)",module->name(),enabled?_("on"):_("off"));
-        else
-          g_snprintf(name,256,"%s",item->name);
+        g_snprintf(name,256,"%s",item->name);
 
         gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,

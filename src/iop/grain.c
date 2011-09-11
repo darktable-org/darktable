@@ -30,6 +30,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -334,8 +335,19 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
+}
 
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t*)self->gui_data;
 
+  dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale2));
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -470,7 +482,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 855;
+  module->priority = 749; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp = (dt_iop_grain_params_t)

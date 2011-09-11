@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,11 +29,16 @@ extern "C"
 #endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/slider.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
+}
 #include "iop/Permutohedral.h"
+extern "C"
+{
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -67,7 +72,7 @@ extern "C"
 
   const char *name()
   {
-    return _("denoise");
+    return _("denoise (bilateral filter)");
   }
 
   int
@@ -78,8 +83,26 @@ extern "C"
 
   int flags()
   {
-    return IOP_FLAGS_DEPRECATED;
+    return IOP_FLAGS_ALLOW_TILING;
   }
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t*)self->gui_data;
+  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale4));
+  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale5));
+}
+
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
     dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
@@ -171,29 +194,47 @@ extern "C"
     else
     {
       for(int k=0; k<5; k++) sigma[k] = 1.0f/sigma[k];
-      PermutohedralLattice lattice(5, 4, roi_in->width*roi_in->height);
+      PermutohedralLattice<5,4> lattice(roi_in->width*roi_in->height, omp_get_max_threads());
 
       // splat into the lattice
-      for(int j=0; j<roi_in->height; j++) for(int i=0; i<roi_in->width; i++)
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+      for(int j=0; j<roi_in->height; j++)
+      {
+	const float *in = (const float*)ivoid + j*roi_in->width*ch;
+	const int thread = omp_get_thread_num();
+	int index = j * roi_in->width;
+	for(int i=0; i<roi_in->width; i++, index++)
         {
           float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
           float val[4] = {in[0], in[1], in[2], 1.0};
-          lattice.splat(pos, val);
+          lattice.splat(pos, val, index, thread);
           in += ch;
         }
+      }
+
+      lattice.merge_splat_threads();
 
       // blur the lattice
       lattice.blur();
 
       // slice from the lattice
-      lattice.beginSlice();
-      for(int j=0; j<roi_in->height; j++) for(int i=0; i<roi_in->width; i++)
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+      for(int j=0; j<roi_in->height; j++)
+      {
+	float *out = (float*)ovoid + j*roi_in->width*ch;
+	int index = j * roi_in->width;
+	for(int i=0; i<roi_in->width; i++, index++)
         {
           float val[4];
-          lattice.slice(val);
+          lattice.slice(val, index);
           for(int k=0; k<3; k++) out[k] = val[k]/val[3];
           out += ch;
         }
+      }
     }
   }
 
@@ -260,13 +301,28 @@ extern "C"
     dtgtk_slider_set_value(g->scale5, p->sigma[4]);
   }
 
+  void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+  {
+    dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
+    float sigma[5];
+    sigma[0] = data->sigma[0] * roi_in->scale / piece->iscale;
+    sigma[1] = data->sigma[1] * roi_in->scale / piece->iscale;
+    const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
+    tiling->factor = 2 + 50;
+    tiling->overhead = 0;
+    tiling->overlap = rad;
+    tiling->xalign = 1;
+    tiling->yalign = 1;
+    return;
+  }
+
   void init(dt_iop_module_t *module)
   {
     // module->data = malloc(sizeof(dt_iop_bilateral_data_t));
     module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_enabled = 0;
-    module->priority = 270;
+  module->priority = 312; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_bilateral_params_t);
     module->gui_data = NULL;
     dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t)

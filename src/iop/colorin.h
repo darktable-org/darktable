@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,6 +68,7 @@ typedef struct dt_iop_colorin_data_t
   cmsHTRANSFORM *xform;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
+  float unbounded_coeffs[3][2];       // approximation for extrapolation of shaper curves
 }
 dt_iop_colorin_data_t;
 

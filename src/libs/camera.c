@@ -22,9 +22,11 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/label.h"
 #include <gdk/gdkkeysyms.h>
+#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -80,7 +82,12 @@ name ()
 
 uint32_t views()
 {
-  return DT_CAPTURE_VIEW;
+  return DT_VIEW_TETHERING;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 
@@ -93,6 +100,19 @@ int
 position ()
 {
   return 998;
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "capture image(s)"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_camera_t *lib = (dt_lib_camera_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "capture image(s)",
+                              GTK_WIDGET(lib->gui.button1));
 }
 
 /** Property changed*/
@@ -169,7 +189,7 @@ static void _camera_property_value_changed(const dt_camera_t *camera,const char 
       }
       while( gtk_tree_model_iter_next(model,&iter) == TRUE);
   }
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
 }
 
 /** Invoked when accesibility of a property is changed. */
@@ -238,7 +258,7 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void _osd_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
 }
 
 static void _property_choice_callback(GtkMenuItem *item, gpointer user_data)

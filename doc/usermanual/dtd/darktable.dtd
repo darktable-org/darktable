@@ -3,3 +3,6 @@
 <!ENTITY chapter_overview SYSTEM "../overview/overview.xml">
 <!ENTITY chapter_lighttable SYSTEM "../lighttable/lighttable.xml">
 <!ENTITY chapter_darkroom SYSTEM "../darkroom/darkroom.xml">
+
+<!ENTITY addendum SYSTEM "../addendum/addendum.xml">
+<!ENTITY addendum_keyaccelerators SYSTEM "../addendum/keymappings.xml">

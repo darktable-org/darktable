@@ -30,6 +30,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -78,6 +79,21 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t*)self->gui_data;
+  dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale3));
+}
 
 #define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 
@@ -288,7 +304,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_bloom_params_t));
   module->default_params = malloc(sizeof(dt_iop_bloom_params_t));
   module->default_enabled = 0;
-  module->priority = 301;
+  module->priority = 437; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bloom_params_t);
   module->gui_data = NULL;
   dt_iop_bloom_params_t tmp = (dt_iop_bloom_params_t)

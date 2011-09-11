@@ -10,6 +10,74 @@
     <div class="page">
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline">news</div>
+    	
+      <div class="listtext"><img src="images/crowrock.jpg" class="img" alt="dreggn" /><h1>released 0.9.2</h1>
+      <em>(2011-08-27)</em> we <a href="http://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.2.tar.gz/download">released version 0.9.2</a>, with a few bugfixes on top of release 0.9.1. this is a new point release in the stable branch thus
+      there are no new features, just
+      <ul>
+        <li>updated translations</li>
+        <li>tiling for memory hungry operations and as workaround for old opencl 1.0 drivers</li>
+        <li>new color matrices and white balance presets</li>
+        <li>a lot of stability issues have been resolved</li>
+        <li>a lot of performance improvements (more sse code, better opencl code)</li>
+      </ul>
+      new packages are available,
+	check the <a href="http://darktable.sourceforge.net/install.shtml">installation instructions</a> for more infos!<br>
+      </div>
+
+      <div class="listtext"><img src="images/sun2.jpg" class="img" alt="dreggn"><h1>darktable book final draft release</h1>
+      <em>(2011-08-17)</em> we are excited to announce we released the first final draft of the book <em>darktable</em>.
+      check out the <a href="http://sourceforge.net/projects/darktable/files/darktable/book/20110822/darktable.pdf/download">pdf</a> or <a href="http://sourceforge.net/projects/darktable/files/darktable/book/20110822/darktable-book.zip/download">packaged</a> version and send your comments and 
+      feedback to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-users">darktable user list</a>.
+      </div>
+
+      <div class="listtext"><img src="images/crowrock.jpg" class="img" alt="dreggn" /><h1>released 0.9.1</h1>
+      <em>(2011-07-31)</em> we <a href="http://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.1.tar.gz/download">released version 0.9.1</a>, with a few bugfixes on top of release 0.9. and 184 patches, among them
+      <ul>
+        <li>new rawspeed, dcraw, libraw</li>
+        <li>fixed various segfaults and deadlocks</li>
+        <li>the pipeline is now more real HDR (unbounded color management, no more gamut clipping in between)</li>
+        <li>fixed a nasty bug which could cause complete loss of history for an image</li>
+        <li>darktable-faster now plays nicely with darktablerc (non-gconf)</li>
+        <li>lots of opencl improvements</li>
+        <li>updated translations</li>
+        <li>second part of our GSoC: customizable keyboard shortcuts!</li>
+      </ul>
+	check the <a href="http://darktable.sourceforge.net/install.shtml">installation instructions</a> for more infos!<br>
+
+	as always, thanks to our awesome community! you all make this possible, especially when our core devs have little time. 
+	this is one of a couple of stable releases we plan to do before publishing cool new features in our unstable development branches, so there is more to come soon.<br>
+
+	enjoy, and let us know if you run into any issues!
+      </div>
+      <div class="listtext">
+    	<img src="images/sun2.jpg" class="img" alt="dreggn"><h1>darktable book draft v0.6 available</h1>
+      <em>(2011-07-12)</em> we released draft 0.6 of the book <em>darktable</em>.
+ this is meant to be a comprehensive guide to the use of darktable for 
+the most common development workflows. this is a book for beginners who 
+do not want just to know how to develop an image, but looking for more
+information on digital photography and how it applies to darktable. 
+check out the <a href="http://api.ge.tt/0/2OZkBP1/2/blob/download">pdf</a> or <a href="http://api.ge.tt/0/2OZkBP1/1/blob/download">packaged</a> version and send your comments and feedback to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-users">darktable user list</a>.
+      </div>
+
+      <div class="listtext">
+    	<img src="images/bay.jpg" class="img" alt="dreggn" /><h1>released 0.9</h1>
+      <em>(2011-06-01)</em> we <a href="http://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.tar.gz/download">released version 0.9</a>, with many new features:
+      <ul>
+        <li>run-time switchable opencl to exploit all the power of your GPU whenever you decide to install the driver</li>
+        <li>many new plugins, including a spot removal tool, better denoising (on raw pixels and non-local means) and many more</li>
+        <li>blend operations, overlay your plugin only 20 percent if you want</li>
+        <li>spot removal tool</li>
+        <li>low light vision tool</li>
+        <li>non-local-means denoising (relatively fast for nlmeans, but still slow)</li>
+        <li>first part of the google summer of code project already merged</li>
+        <li>framing plugin (adds postcard borders to match given aspect ratio)</li>
+        <li>tonemapping a lot faster now (probably the fastest high-dimensional bilateral filter available today)</li>
+        <li>changed images come with the darktable|changed tag</li>
+      </ul>
+      more updates to the page/install instructions to come, but you should be good by just extracting the tarball and typing <code>./build.sh</code>.
+      enjoy! and thanks to all our many contributors!
+      </div>
 
       <div class="listtext">
     	<img src="images/donau.jpg" class="img" alt="dreggn" /><h1>released 0.8</h1>

@@ -35,47 +35,37 @@ typedef struct dt_iop_colorout_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   char displayprofile[DT_IOP_COLOR_ICC_LEN];
+
   dt_iop_color_intent_t intent;
   dt_iop_color_intent_t displayintent;
-  unsigned char seq;		/// FIXME: Ugly hack to change hash of param to force softproof processing
+
+  char softproof_enabled;
+  char softproofprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t softproofintent; /// NOTE: Not used for now but reserved for future use
 }
 dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
 {
+  gboolean softproof_enabled;
   GtkVBox *vbox1, *vbox2;
   GtkComboBox *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
   GList *profiles;
 
-  gboolean softproofing;
-  gchar *softproofprofile;
 }
 dt_iop_colorout_gui_data_t;
 
 typedef struct dt_iop_colorout_data_t
 {
-  gboolean softproofing;
+  gboolean softproof_enabled;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
   cmsHPROFILE softproof;
   cmsHPROFILE output;
   cmsHPROFILE Lab;
   cmsHTRANSFORM *xform;
+  float unbounded_coeffs[3][2];       // for extrapolation of shaper curves
 }
 dt_iop_colorout_data_t;
-
-void init(dt_iop_module_t *module);
-void cleanup(dt_iop_module_t *module);
-
-void gui_update    (struct dt_iop_module_t *self);
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
-void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
-void reset_params  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
-void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
-
-void gui_init     (struct dt_iop_module_t *self);
-void gui_cleanup  (struct dt_iop_module_t *self);
-
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
 
 #endif

@@ -55,11 +55,11 @@ dtgtk_reset_label_new (const gchar *text, dt_iop_module_t *module, void *param, 
   label->offset = param - (void *)module->params;
   label->size = param_size;
 
-  GtkWidget *lb = gtk_label_new(text);
-  gtk_misc_set_alignment(GTK_MISC(lb), 0.0, 0.5);
+  label->lb = GTK_LABEL(gtk_label_new(text));
+  gtk_misc_set_alignment(GTK_MISC(label->lb), 0.0, 0.5);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(label), FALSE);
   g_object_set(G_OBJECT(label), "tooltip-text", _("double-click to reset"), (char *)NULL);
-  gtk_container_add(GTK_CONTAINER(label), lb);
+  gtk_container_add(GTK_CONTAINER(label), GTK_WIDGET(label->lb));
   gtk_widget_add_events(GTK_WIDGET(label), GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(label), "button-press-event", G_CALLBACK(_reset_label_callback), (gpointer)NULL);
 
@@ -86,3 +86,11 @@ GtkType dtgtk_reset_label_get_type()
   }
   return dtgtk_reset_label_type;
 }
+
+void
+dtgtk_reset_label_set_text(GtkDarktableResetLabel *label, const gchar *str)
+{
+  gtk_label_set_text(label->lb, str);
+}
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -921,7 +921,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   /* construct a temporary file name */
   char fname[4096]= {0};
-  dt_get_user_local_dir (fname,4096);
+  dt_util_get_user_local_dir (fname,4096);
   g_strlcat (fname,"/tmp",4096);
   g_mkdir_with_parents(fname,0700);
   g_strlcat (fname,"/darktable.XXXXXX.",4096);
@@ -1044,13 +1044,6 @@ set_params(dt_imageio_module_format_t *self, void *params, int size)
   // gui stuff not updated, as sensitive user data is not stored in the preset.
   // TODO: store name/hash in kwallet/etc module and get encrypted stuff from there!
   return 0;
-}
-
-int dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
-{
-  *width=4000;
-  *height=4000;
-  return 1;
 }
 
 int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format)

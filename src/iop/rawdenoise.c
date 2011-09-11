@@ -19,11 +19,14 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
+#include "control/control.h"
 #include "develop/imageop.h"
 #include "dtgtk/slider.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <strings.h>
 
 DT_MODULE(1)
 
@@ -72,6 +75,20 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
   return sizeof(float);
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "noise threshold"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_rawdenoise_gui_data_t *g =
+      (dt_iop_rawdenoise_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "noise threshold",
+                              GTK_WIDGET(g->threshold));
+}
+
 #if 0
 static int
 FC(const int row, const int col, const unsigned int filters)
@@ -80,41 +97,42 @@ FC(const int row, const int col, const unsigned int filters)
 }
 #endif
 
+// transposes image, it is faster to read columns than to write them.
 static void
 hat_transform(float *temp, const float *const base, int stride, int size, int scale)
 {
   int i;
-  const float *basep0 = base;
+  const float *basep0;
   const float *basep1;
   const float *basep2;
   const int stxsc = stride*scale;
 
+  basep0 = base;
   basep1 = base + stxsc;
   basep2 = base + stxsc;
+
   for (i=0; i < scale; i++, basep0+=stride, basep1-=stride, basep2+=stride)
-    temp[i] = *basep0*2 + *basep1 + *basep2;
+    temp[i] = (*basep0 + *basep0 + *basep1 + *basep2)*0.25f;
 
-  basep1 = base - stxsc + stride*i;
-  for (; i < size-scale; i++, basep0+=stride, basep1+=stride, basep2+=stride)
-    temp[i] = *basep0*2 + *basep1 + *basep2;
+  for (; i < size-scale; i++, basep0+=stride)
+    temp[i] = ((*basep0)*2 + *(basep0-stxsc) + *(basep0+stxsc))*0.25f;
 
-  basep2 = base + stride*(2*size-2-(i+scale));
+  basep1 = basep0 - stxsc;
+  basep2 = base + stride*(size-2);
+
   for (; i < size; i++, basep0+=stride, basep1+=stride, basep2-=stride)
-    temp[i] = *basep0*2 + *basep1 + *basep2;
+    temp[i] = (*basep0 + *basep0 + *basep1 + *basep2)*0.25f;
 }
 
 #define BIT16 65536.0
 
 static void wavelet_denoise(const float *const in, float *const out, const dt_iop_roi_t *const roi, float threshold, uint32_t filters)
 {
-  int lev, hpass, lpass;
+  int lev;
   static const float noise[] =
   { 0.8002,0.2735,0.1202,0.0585,0.0291,0.0152,0.0080,0.0044 };
 
-  const int halfwidth = roi->width / 2;
-  const int halfheight = roi->height / 2;
-  const int size = halfwidth * halfheight;
-  const int tempsize = MAX(halfwidth, halfheight);
+  const int size = (roi->width/2+1) * (roi->height/2+1);
 #if 0
   float maximum = 1.0;		/* FIXME */
   float black = 0.0;		/* FIXME */
@@ -123,63 +141,71 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   for (c=0; c<4; c++)
     cblack[c] *= BIT16;
 #endif
-  float *const fimg = malloc(size*3*sizeof *fimg);
+  float *const fimg = malloc(size*4*sizeof *fimg);
+
+
   const int nc = 4;
   for (int c=0; c<nc; c++)	/* denoise R,G1,B,G3 individually */
   {
+    // zero lowest quarter part
+    bzero(fimg,size*sizeof(float));
+
+    // adjust for odd width and height
+    const int halfwidth  = roi->width / 2  + (roi->width & (~(c >> 1)) & 1) ;
+    const int halfheight = roi->height / 2 + (roi->height & (~c) & 1) ;
+
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(c) schedule(static)
 #endif
     for (int row=c&1; row<roi->height; row+=2)
     {
-      float *fimgp = fimg + row/2 * halfwidth;
+      float *fimgp = fimg + size + row/2 * halfwidth;
       int col = (c&2)>>1;
       const float *inp = in + row*roi->width + col;
       for (; col<roi->width; col+=2, fimgp++, inp+=2)
         *fimgp = sqrt(*inp);
     }
-    for (hpass=lev=0; lev < 5; lev++)
+
+    int lastpass;
+
+    for (lev=0; lev < 5; lev++)
     {
-      lpass = size*((lev & 1)+1);
+      const int pass1 = size*((lev & 1)*2 + 1);
+      const int pass2 = 2*size;
+      const int pass3 = 4*size - pass1;
+
+      // filter horizontally and transpose
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(lev, lpass, hpass) schedule(static)
-#endif
-      for (int row=0; row < halfheight; row++)
-      {
-        float temp[tempsize];
-        hat_transform(temp, fimg+hpass+row*halfwidth, 1, halfwidth, 1 << lev);
-        float *fimgp = fimg + lpass + row*halfwidth;
-        for (int col=0; col < halfwidth; col++, fimgp++)
-          *fimgp = temp[col] * 0.25;
-      }
-#ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(lev, hpass, lpass) schedule(static)
+      #pragma omp parallel for default(none) shared(lev) schedule(static)
 #endif
       for (int col=0; col < halfwidth; col++)
       {
-        float temp[tempsize];
-        hat_transform(temp, fimg+lpass+col, halfwidth, halfheight, 1 << lev);
-        float *fimgp = fimg + lpass + col;
-        for (int row=0; row < halfheight; row++, fimgp+=halfwidth)
-          *fimgp = temp[row] * 0.25;
+        hat_transform(fimg+pass2+col*halfheight, fimg+pass1+col, halfwidth, halfheight, 1 << lev);
       }
+      // filter vertically and transpose back
+#ifdef _OPENMP
+      #pragma omp parallel for default(none) shared(lev) schedule(static)
+#endif
+      for (int row=0; row < halfheight; row++)
+      {
+        hat_transform(fimg+pass3+row*halfwidth, fimg+pass2+row, halfheight, halfwidth, 1 << lev);
+      }
+
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(lpass, hpass)
+      #pragma omp parallel for default(none) shared(lev) 
 #endif
-      for (int i=0; i < size; i++)
+      for (int i=0; i < halfwidth*halfheight; i++)
       {
         float *fimgp = fimg + i;
-        fimgp[hpass] -= fimgp[lpass];
-        if	(fimgp[hpass] < -thold) fimgp[hpass] += thold;
-        else if (fimgp[hpass] >  thold) fimgp[hpass] -= thold;
-        else	 fimgp[hpass] = 0;
-        if (hpass) fimgp[0] += fimgp[hpass];
+        const float diff = fimgp[pass1] - fimgp[pass3];
+        fimgp[0] += copysignf(fmaxf(fabsf(diff) - thold,0.0f),diff);
       }
-      hpass = lpass;
+
+      lastpass = pass3;
     }
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(c, lpass) schedule(static)
+    #pragma omp parallel for default(none) shared(c,lastpass) schedule(static)
 #endif
     for (int row=c&1; row<roi->height; row+=2)
     {
@@ -188,7 +214,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       float *outp = out + row*roi->width + col;
       for (; col<roi->width; col+=2, fimgp++, outp+=2)
       {
-        float d = fimgp[0] + fimgp[lpass];
+        float d = fimgp[0] + fimgp[lastpass];
         *outp = d * d;
       }
     }
@@ -266,7 +292,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 220;
+  module->priority = 83; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }

@@ -30,14 +30,19 @@
 	That order can not be changed by user, so modules are always applied following the same order.
 	</para>
 
-	<para>You can use middle-click to zoom 1:1. A double middle-click takes you to 2:1.
+	<para>You can use <emphasis>middle-click</emphasis>  to zoom 1:1. A double <emphasis>middle-click</emphasis>  takes you to 2:1.
 	</para>
+
+	<para>You can export directly from the darkroom by using <emphasis>ctrl-e</emphasis> shortcut. Parameters are those currently selected in lighttable.</para>
+
 </sect1>
 <sect1 status="draft"><title>Filmstrip</title>
 	<para>The filmstrip is used to quickly switch between image to develop in darkroom view, the images viewed are the same
 		as the ones in the lighttable view. 
 	</para>
 	<para>The filmstrip can be switch on and off using <emphasis>ctrl-f</emphasis> shortcut.</para>
+
+
 </sect1>
 <sect1><title>Panels</title>
 	<sect2 status="draft"><title>Navigation</title>

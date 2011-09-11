@@ -46,3 +46,4 @@
 <!ENTITY darkroom_module_lowlight SYSTEM "../darkroom/modules/lowlight.xml">
 <!ENTITY darkroom_module_rawdenoise SYSTEM "../darkroom/modules/rawdenoise.xml">
 <!ENTITY darkroom_module_highpass SYSTEM "../darkroom/modules/highpass.xml">
+<!ENTITY darkroom_module_framing SYSTEM "../darkroom/modules/framing.xml">

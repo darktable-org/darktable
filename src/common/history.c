@@ -17,6 +17,7 @@
 */
 
 #include "develop/develop.h"
+#include "control/control.h"
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/image_cache.h"
@@ -24,12 +25,13 @@
 #include "common/history.h"
 #include "common/debug.h"
 #include "common/utility.h"
+#include "common/tags.h"
 
 
 void dt_history_delete_on_image(int32_t imgid)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
@@ -54,13 +56,16 @@ void dt_history_delete_on_image(int32_t imgid)
 
   dt_image_cache_release (img, 'r');
 
+  /* remove darktable|style|* tags */
+  dt_tag_detach_by_string("darktable|style%",imgid);
+
 }
 
 void
 dt_history_delete_on_selection()
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int (stmt, 0);
@@ -74,7 +79,7 @@ dt_history_load_and_apply_on_selection (gchar *filename)
 {
   int res=0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
@@ -107,6 +112,12 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   sqlite3_stmt *stmt;
   if(imgid==dest_imgid) return 1;
 
+  if(imgid==-1)
+  {
+    dt_control_log(_("you need to copy history from an image before you paste it onto another"));
+    return 1;
+  }
+    
   dt_image_t *oimg = dt_image_cache_get (imgid, 'r');
 
   /* if merge onto history stack, lets find history offest in destination image */
@@ -114,21 +125,21 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   if (merge)
   {
     /* apply on top of history stack */
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
   }
   else
   {
     /* replace history stack */
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     sqlite3_step (stmt);
   }
   sqlite3_finalize (stmt);
 
   /* add the history items to stack offest */
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num, module, operation, op_params, enabled) select ?1, num+?2, module, operation, op_params, enabled from history where imgid = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params) select ?1, num+?2, module, operation, op_params, enabled, blendop_params from history where imgid = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
@@ -159,7 +170,7 @@ dt_history_get_items(int32_t imgid)
 {
   GList *result=NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num, operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -197,7 +208,7 @@ dt_history_get_items_as_string(int32_t imgid)
   const char *onoff[2] = {_("off"), _("on")};
   unsigned int count = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   // collect all the entries in the history from the db
@@ -218,7 +229,7 @@ dt_history_copy_and_paste_on_selection (int32_t imgid, gboolean merge)
 
   int res=0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images where imgid != ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images where imgid != ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if (sqlite3_step(stmt) == SQLITE_ROW)
   {

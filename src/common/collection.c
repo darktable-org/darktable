@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "common/debug.h"
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/image.h"
 
 #define SELECT_QUERY "select distinct * from %s"
 #define ORDER_BY_QUERY "order by %s"
@@ -36,13 +37,6 @@
 #define MAX_QUERY_STRING_LENGTH 4096
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
-
-typedef struct dt_collection_listener_t
-{
-  void (*callback)(void *);
-  void *data;
-}
-dt_collection_listener_t;
 
 const dt_collection_t *
 dt_collection_new (const dt_collection_t *clone)
@@ -259,6 +253,7 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   uint32_t count=1;
   const gchar *query = dt_collection_get_query(collection);
   char countquery[2048]= {0};
+
   query = strstr(query,"from");
   
   if ( !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT) )
@@ -266,7 +261,7 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   else  
     snprintf(countquery, 2048, "select count(images.id) %s", query);
   
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, countquery, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), countquery, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -275,6 +270,16 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   return count;
 }
 
+uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
+{
+  sqlite3_stmt *stmt = NULL;
+  uint32_t count=0;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct count(imgid) from selected_images", -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+  return count;
+}
 
 GList *dt_collection_get_selected (const dt_collection_t *collection)
 {
@@ -305,7 +310,7 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   else
     g_snprintf(query,512, "select distinct images.id from images where id in (select imgid from selected_images) %s",sq);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db,query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
@@ -371,36 +376,20 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
       snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
+    case 11: // lens
+      snprintf(query, 1024, "(lens like '%%%s%%')", escaped_text);
+      break;
+    case 12: // iso
+      snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
+      break;
+    case 13: // aperature
+      snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
+      break;
+
 
     default: // case 3: // day
       snprintf(query, 1024, "(datetime_taken like '%%%s%%')", escaped_text);
       break;
-  }
-}
-
-void
-dt_collection_listener_register(void (*callback)(void *), void *data)
-{
-  dt_collection_listener_t *a = (dt_collection_listener_t *)malloc(sizeof(dt_collection_listener_t));
-  a->callback = callback;
-  a->data = data;
-  darktable.collection_listeners = g_list_append(darktable.collection_listeners, a);
-}
-
-void
-dt_collection_listener_unregister(void (*callback)(void *))
-{
-  GList *i = darktable.collection_listeners;
-  while(i)
-  {
-    dt_collection_listener_t *a = (dt_collection_listener_t *)i->data;
-    GList *ii = g_list_next(i);
-    if(a->callback == callback)
-    {
-      free(a);
-      darktable.collection_listeners = g_list_delete_link(darktable.collection_listeners, i);
-    }
-    i = ii;
   }
 }
 
@@ -452,21 +441,19 @@ dt_collection_update_query(const dt_collection_t *collection)
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
   const gchar *cquery = dt_collection_get_query(collection);
-  snprintf(complete_query, 4096, "delete from selected_images where imgid not in (%s)", cquery);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, complete_query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  // notify our listeners:
-  GList *i = darktable.collection_listeners;
-  while(i)
+  if(cquery && cquery[0] != '\0')
   {
-    dt_collection_listener_t *a = (dt_collection_listener_t *)i->data;
-    a->callback(a->data);
-    i = g_list_next(i);
+    snprintf(complete_query, 4096, "delete from selected_images where imgid not in (%s)", cquery);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), complete_query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
+
+  /* raise signal of collection change */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

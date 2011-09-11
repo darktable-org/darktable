@@ -18,6 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <xmmintrin.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -25,12 +26,16 @@
 #include "common/darktable.h"
 #include "iop/temperature.h"
 #include "develop/develop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
+
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(2)
 
@@ -90,6 +95,36 @@ int
 groups ()
 {
   return IOP_GROUP_BASIC;
+}
+
+int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature in"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature out"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_temperature_gui_data_t *g =
+     (dt_iop_temperature_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "tint", GTK_WIDGET(g->scale_tint));
+  dt_accel_connect_slider_iop(self, "temperature in", GTK_WIDGET(g->scale_k));
+  dt_accel_connect_slider_iop(self, "temperature out",
+                              GTK_WIDGET(g->scale_k_out));
+  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_r));
+  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_g));
+  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_b));
 }
 
 int
@@ -173,11 +208,30 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t*)ivoid) + j*roi_out->width;
+      int i=0;
+      const uint16_t *in = ((uint16_t *)ivoid) + j*roi_out->width;
       float *out = ((float*)ovoid) + j*roi_out->width;
-      for(int i=0; i<roi_out->width; i++,out++,in++)
-        *out = *in * coeffsi[FC(j+roi_out->x, i+roi_out->y, filters)];
+
+      // process unaligned pixels
+      for ( ; i < ((4-(j*roi_out->width & 3)) & 3) ; i++,out++,in++)
+        *out = *in * coeffsi[FC(j+roi_out->y, i+roi_out->x, filters)];
+
+      const __m128 coeffs = _mm_set_ps(coeffsi[FC(j+roi_out->y, roi_out->x+i+3, filters)],
+                                       coeffsi[FC(j+roi_out->y, roi_out->x+i+2, filters)],
+                                       coeffsi[FC(j+roi_out->y, roi_out->x+i+1, filters)],
+                                       coeffsi[FC(j+roi_out->y, roi_out->x+i  , filters)]);
+
+      // process aligned pixels with SSE
+      for( ; i < roi_out->width - 3 ; i+=4,out+=4,in+=4)
+      {
+        _mm_stream_ps(out,_mm_mul_ps(coeffs,_mm_set_ps(in[3],in[2],in[1],in[0])));
+      }
+
+      // process the rest
+      for( ; i<roi_out->width; i++,out++,in++)
+        *out = *in * coeffsi[FC(j+roi_out->y, i+roi_out->x, filters)];
     }
+    _mm_sfence();
   }
   else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp == 4)
   {
@@ -211,7 +265,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
@@ -222,27 +276,53 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int ui = ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && filters);
   float coeffs[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
   if(ui) for(int k=0; k<3; k++) coeffs[k] /= 65535.0f;
-  cl_mem dev_coeffs = dt_opencl_copy_host_to_device_constant(sizeof(float)*3, devid, coeffs);
-  cl_int err;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
+  cl_mem dev_coeffs = NULL;
+  cl_int err = -999;
+
+
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, coeffs);
+  if (dev_coeffs == NULL) goto error;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
   const int kernel = ui ? gd->kernel_whitebalance_1ui : gd->kernel_whitebalance_4f;
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 2, sizeof(cl_mem), (void *)&dev_coeffs);
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_coeffs);
   if(ui)
   {
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 3, sizeof(uint32_t), (void *)&filters);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 4, sizeof(uint32_t), (void *)&roi_out->x);
-    dt_opencl_set_kernel_arg(darktable.opencl, devid, kernel, 5, sizeof(uint32_t), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&filters);
+    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
   }
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, kernel, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue white balance kernel! %d\n", err);
-  clFinish(darktable.opencl->dev[devid].cmd_queue);
-  clReleaseMemObject(dev_coeffs);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_finish(devid);
+  dt_opencl_release_mem_object(dev_coeffs);
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
+  return TRUE;
+
+error:
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_white_balance] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
+
+void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.0f; // in + out
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 2; // Bayer pattern
+  tiling->yalign = 2; // Bayer pattern
+  return;
+}
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -269,6 +349,7 @@ void gui_update (struct dt_iop_module_t *self)
   self->request_color_pick = 0;
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
+  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)module->params;
   dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)module->factory_params;
@@ -344,15 +425,15 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)malloc(sizeof(dt_iop_temperature_global_data_t));
   module->data = gd;
-  gd->kernel_whitebalance_1ui = dt_opencl_create_kernel(darktable.opencl, program, "whitebalance_1ui");
-  gd->kernel_whitebalance_4f  = dt_opencl_create_kernel(darktable.opencl, program, "whitebalance_4f");
+  gd->kernel_whitebalance_1ui = dt_opencl_create_kernel(program, "whitebalance_1ui");
+  gd->kernel_whitebalance_4f  = dt_opencl_create_kernel(program, "whitebalance_4f");
 }
 
 void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 150;
+  module->priority = 41; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
@@ -368,8 +449,8 @@ void cleanup (dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_whitebalance_1ui);
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_whitebalance_4f);
+  dt_opencl_free_kernel(gd->kernel_whitebalance_1ui);
+  dt_opencl_free_kernel(gd->kernel_whitebalance_4f);
   free(module->data);
   module->data = NULL;
 }
@@ -409,16 +490,12 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2]) return FALSE;
   for(int k=0; k<3; k++) old[k] = grayrgb[k];
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  for(int k=0; k<3; k++) p->coeffs[k] = 1.0/(0.01 + grayrgb[k]);
-  float len = 0.0, lenc = 0.0f;
-  for(int k=0; k<3; k++) len  += grayrgb[k]*grayrgb[k];
-  for(int k=0; k<3; k++) lenc += grayrgb[k]*grayrgb[k]*p->coeffs[k]*p->coeffs[k];
-  if(lenc > 0.0001f) for(int k=0; k<3; k++) p->coeffs[k] *= sqrtf(len/lenc);
+  for(int k=0; k<3; k++) p->coeffs[k] = (grayrgb[k] > 0.001f) ? 1.0f/grayrgb[k] : 1.0f;
   // normalize green:
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
   p->coeffs[1] = 1.0;
-  for(int k=0; k<3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(5.0, p->coeffs[k]));
+  for(int k=0; k<3; k++) p->coeffs[k] = fmaxf(0.0f, fminf(8.0f, p->coeffs[k]));
   gui_update_from_coeffs(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
@@ -437,12 +514,12 @@ void gui_init (struct dt_iop_module_t *self)
 
   GtkBox *vbox = GTK_BOX(gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
 
-  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 5.0, .001,1.0,3));
+  g->scale_tint  = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 8.0, .001,1.0,3));
   g->scale_k     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0));
   g->scale_k_out = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0));
-  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[0],3));
-  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[1],3));
-  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 5.0, .001,p->coeffs[2],3));
+  g->scale_r     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, .001,p->coeffs[0],3));
+  g->scale_g     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, .001,p->coeffs[1],3));
+  g->scale_b     = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0, .001,p->coeffs[2],3));
   dtgtk_slider_set_label(g->scale_tint,_("tint"));
   dtgtk_slider_set_label(g->scale_k,_("temperature in"));
   dtgtk_slider_set_unit(g->scale_k,"K");

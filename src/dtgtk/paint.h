@@ -73,10 +73,8 @@ void dtgtk_cairo_paint_cancel(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a color label icon */
 void dtgtk_cairo_paint_label(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
-/** paint a color picker icon - a rectangle for small buttons */
-void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint a color picker icon - a pipette for bigger buttons */
-void dtgtk_cairo_paint_colorpicker2(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint alignment icon */
 void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint styles icon */
@@ -93,4 +91,7 @@ void dtgtk_cairo_paint_andnot(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 void dtgtk_cairo_paint_dropdown(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint bracket capture */
 void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint lock icon */
+void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
+                            gint flags);
 #endif

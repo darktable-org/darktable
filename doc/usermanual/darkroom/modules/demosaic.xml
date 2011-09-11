@@ -18,7 +18,11 @@
 
 	<sect3><title>Usage</title>
 		<para>Demosaic is done on display only when zoom is greater than 50%.</para>
-    <sect4><title>edge threshold</title>
+                <sect4><title>method</title>
+			<para>Set the method to demosaic.</para>
+		</sect4>
+
+                <sect4><title>edge threshold</title>
 			<para>Set the threshold for the median pass.</para>
 		</sect4>	
 		  <sect4><title>color smoothing</title>

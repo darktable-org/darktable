@@ -83,7 +83,7 @@
       <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>30000</default>
+      <default>1000</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>small thumbnails to keep in main memory cache</short>
@@ -93,17 +93,57 @@
     </schema>
 
     <schema><!--tab:core-->
-      <key>/schemas/apps/darktable/mipmap_cache_full_images</key>
-      <applyto>/apps/darktable/mipmap_cache_full_images</applyto>
+      <key>/schemas/apps/darktable/parallel_export</key>
+      <applyto>/apps/darktable/parallel_export</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>2</default>
+      <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>full resolution image buffers to keep in main memory cache</short>
-        <long>how many full-resolution floating point buffers of loaded raw images to keep in main memory at maximum.  set this variable to num_threads + 1 if you want multithreaded export (keep one for darkroom mode).  be warned: every thread will need about 1GB of memory (needs a restart).</long>
+        <short>export multiple images in parallel</short>
+        <long>set this variable to num_threads if you want multithreaded export to process multiple images at a time. be warned: every thread will need about 1GB of memory. setting this to 1 switches on per-image parallelization.</long>
       </locale>
     </schema>
+
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/host_memory_limit</key>
+      <applyto>/apps/darktable/host_memory_limit</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1500</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>host memory limit (in MB) for tiling</short>
+        <long>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart.</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/singlebuffer_limit</key>
+      <applyto>/apps/darktable/singlebuffer_limit</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>16</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>minimum amount of memory (in MB) for a single buffer in tiling</short>
+        <long>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit. needs a restart.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/opencl_memory_headroom</key>
+      <applyto>/apps/darktable/opencl_memory_headroom</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>300</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>amount of opencl memory (in MB) which we assume as being reserved for the driver</short>
+        <long>this amount of memory (in MB) will be substracted from total gpu memory in order to calculate the available opencl memory. too low values will lead to out-of-memory situations in opencl processing. too high values will lead to unnecessary tiling. needs a restart.</long>
+      </locale>
+    </schema>
+
 
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/never_use_embedded_thumb</key>
@@ -128,6 +168,45 @@
       <locale name="C">
         <short>write a redundant sidecar file for each image</short>
         <long>these files can later be re-imported into a different database, preserving your changes to the image.</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/opencl</key>
+      <applyto>/apps/darktable/opencl</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>flase</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>activate OpenCL support (experimental)</short>
+        <long>if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to forum darktable-devel at sourceforge.net</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/opencl_library</key>
+      <applyto>/apps/darktable/opencl_runtime</applyto>
+      <owner>darktable</owner>
+      <type>string</type>
+      <default></default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>system library with opencl runtime</short>
+        <long>opencl runtime library is normally detected automatically by darktable. if your opencl runtime is at an unusual place and cannot be detected, enter the full pathname here. leave empty for default behavior.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/opencl_memory_requirement</key>
+      <applyto>/apps/darktable/opencl_memory_requirement</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>768</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>minmum amount of GPU memory (MB) required to activate opencl</short>
+        <long>opencl will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 256 will be treated as 256.</long>
       </locale>
     </schema>
 
@@ -1455,6 +1534,19 @@
       <locale name="C">
         <short></short>
         <long></long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/plugins/lighttable/export/force_lcms2</key>
+      <applyto>/apps/darktable/plugins/lighttable/export/force_lcms2</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>always use lcms2 during export</short>
+        <long>this is about 28x as slow as the default.</long>
       </locale>
     </schema>
 

@@ -33,6 +33,7 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "iop/lens.h"
@@ -49,6 +50,45 @@ int
 groups ()
 {
   return IOP_GROUP_CORRECT;
+}
+
+int
+operation_tags ()
+{
+  return IOP_TAG_DISTORT;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tca R"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tca B"));
+
+  dt_accel_register_iop(self, FALSE, NC_("accel", "find camera"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "find lens"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "auto scale"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "camera model"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "lens model"), 0, 0);
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_button_iop(self, "find lens",
+                              GTK_WIDGET(g->find_lens_button));
+  dt_accel_connect_button_iop(self, "lens model",
+                              GTK_WIDGET(g->lens_model));
+  dt_accel_connect_button_iop(self, "camera model",
+                              GTK_WIDGET(g->camera_model));
+  dt_accel_connect_button_iop(self, "find camera",
+                              GTK_WIDGET(g->find_camera_button));
+  dt_accel_connect_button_iop(self, "auto scale",
+                              GTK_WIDGET(g->auto_scale_button));
+
+  dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
+  dt_accel_connect_slider_iop(self, "tca R", GTK_WIDGET(g->tca_r));
+  dt_accel_connect_slider_iop(self, "tca B", GTK_WIDGET(g->tca_b));
 }
 
 void
@@ -392,7 +432,7 @@ void init_global(dt_iop_module_so_t *module)
 #endif
   {
     char path[1024];
-    dt_get_datadir(path, 1024);
+    dt_util_get_datadir(path, 1024);
     char *c = path + strlen(path);
     for(; c>path && *c != '/'; c--);
     sprintf(c, "/lensfun");
@@ -452,7 +492,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
-  module->priority = 275;
+  module->priority = 270; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -1291,6 +1331,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (camera_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->camera_model), TRUE, TRUE, 0);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  g->find_camera_button = button;
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("find camera"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -1306,6 +1347,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (lens_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->lens_model), TRUE, TRUE, 0);
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  g->find_lens_button = GTK_WIDGET(button);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("find lens"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
@@ -1360,6 +1402,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->scale), TRUE, TRUE, 0);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT);
+  g->auto_scale_button = GTK_WIDGET(button);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("auto scale"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",

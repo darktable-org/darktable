@@ -44,7 +44,7 @@ typedef struct dt_dev_pixelpipe_iop_t
   struct dt_iop_module_t *module;  // the module in the dev operation stack
   struct dt_dev_pixelpipe_t *pipe; // the pipe this piece belongs to
   void *data;                      // to be used by the module to store stuff per pipe piece
-  void *blendop_data;         // to be used by the module to store blendop per pipe piece
+  void *blendop_data;              // to be used by the module to store blendop per pipe piece
   int enabled;                     // used to disable parts of the pipe for export, independent on module itself.
   float iscale;                    // input actually just downscaled buffer? iscale*iwidth = actual width
   int iwidth, iheight;             // width and height of input buffer
@@ -109,6 +109,10 @@ typedef struct dt_dev_pixelpipe_t
   int processing;
   // shutting down?
   int shutdown;
+  // opencl enabled for this pixelpipe?
+  int opencl_enabled;
+  // opencl error detected?
+  int opencl_error;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;
@@ -120,11 +124,11 @@ dt_dev_pixelpipe_t;
 struct dt_develop_t;
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
-void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
+int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
-void dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
-void dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
+int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height, float iscale);
 

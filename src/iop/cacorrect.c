@@ -762,7 +762,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
       numpar=4;
       if (numblox[1]< 10)
       {
-        printf ("numblox = %d \n",numblox[1]);
+        // printf ("numblox = %d \n",numblox[1]);
         if(buffer) free(buffer);
         if(buffer1) free(buffer1);
         if(Gtmp) free(Gtmp);
@@ -1162,7 +1162,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // we come just before demosaicing.
-  module->priority = 230;
+  module->priority = 104; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
 }

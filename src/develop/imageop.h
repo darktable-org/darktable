@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2009--2010 johannes hanika.
+		copyright (c) 2009--2011 johannes hanika.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 struct dt_iop_roi_t;
 struct dt_develop_blend_params_t;
+struct dt_develop_tiling_t;
 
 #define	IOP_GROUP_BASIC    1
 #define	IOP_GROUP_COLOR    2
@@ -38,12 +39,21 @@ struct dt_develop_blend_params_t;
 #define	IOP_SPECIAL_GROUP_ACTIVE_PIPE 16
 #define	IOP_SPECIAL_GROUP_USER_DEFINED 32
 
+#define IOP_TAG_DISTORT     1
+// might be some other filters togglable by user?
+//#define IOP_TAG_SLOW        2
+//#define IOP_TAG_DETAIL_FIX  4
+//#define IOP_TAG_DECORATION  8
+
+
 #define	IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
 
 /** Flag for the iop module to be enabled/included by default when creating a style */
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
 #define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
 #define	IOP_FLAGS_DEPRECATED	4
+#define IOP_FLAGS_BLEND_ONLY_LIGHTNESS	8			// Does only blend with L-channel in Lab space. Keeps a, b of original image.
+#define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (currently only via opencl)
 
 typedef struct dt_iop_params_t
 {
@@ -78,18 +88,26 @@ typedef struct dt_iop_module_so_t
   const char* (*name)     ();
   int (*groups)           ();
   int (*flags)            ();
+
+  int (*operation_tags)         (); 
+  int (*operation_tags_filter)  (); 
+
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+  /** Optional callback for keyboard accelerators */
+  void (*init_key_accels)(struct dt_iop_module_so_t *so);
+  void (*connect_key_accels)(struct dt_iop_module_t *self);
+  void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 
   int  (*mouse_leave)     (struct dt_iop_module_t *self);
   int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
   int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
   int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
-  int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
   int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
@@ -104,7 +122,9 @@ typedef struct dt_iop_module_so_t
   int  (*legacy_params)   (struct dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
 
   void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
-  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  void (*process_tiling)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+  int  (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  int  (*process_tiling_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
 }
 dt_iop_module_so_t;
 
@@ -124,6 +144,8 @@ typedef struct dt_iop_module_t
   int32_t request_color_pick;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
+  /** single point to pick if in point mode */
+  float color_picker_point[2];
   /** place to store the picked color. */
   float picked_color[3], picked_color_min[3], picked_color_max[3];
   /** reference for dlopened libs. */
@@ -156,6 +178,17 @@ typedef struct dt_iop_module_t
   GtkWidget *showhide;
   /** expander containing the widget. */
   GtkExpander *expander;
+  /** reset parameters button */
+  GtkWidget *reset_button;
+  /** show preset menu button */
+  GtkWidget *presets_button;
+  /** fusion slider */
+  GtkWidget *fusion_slider;
+  /** list of closures: show, enable/disable */
+  GSList *accel_closures;
+  GSList *accel_closures_local;
+  gboolean local_closures_connected;
+
 
   /** version of the parameters in the database. */
   int (*version)          ();
@@ -165,8 +198,14 @@ typedef struct dt_iop_module_t
   int (*groups)           ();
   /** get the iop module flags. */
   int (*flags)            ();
+
+  int (*operation_tags)         (); 
+
+  int (*operation_tags_filter)  (); 
   /** how many bytes per pixel in the output. */
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  /** report back info for tiling: memory usage and overlap. Memory usage: factor * intput_size + overhead */
+  void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
@@ -207,8 +246,16 @@ typedef struct dt_iop_module_t
     * scaled to the same size width*height and contain a max of 3 floats. other color
     * formats may be filled by this callback, if the pipeline can handle it. */
   void (*process)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  /** a tiling variant of process(). */
+  void (*process_tiling)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
   /** the opencl equivalent of process(). */
-  void (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  int (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+  /** a tiling variant of process_cl(). */
+  int (*process_tiling_cl)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
+
+  /** Key accelerator registration callbacks */
+  void (*connect_key_accels)(struct dt_iop_module_t *self);
+  void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 }
 dt_iop_module_t;
 
@@ -263,5 +310,60 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
 
 void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);
+
+dt_iop_module_t *get_colorout_module();
+
+/** takes four points (x,y) in two arrays and fills the cubic coefficients a, such that y = [X] * a, where
+  * [X] is the matrix containing all x^3 x^2 x^1 x^0 lines for all four x. */
+void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a);
+
+/** evaluates the cubic fit, i.e. returns y = a^t [x^3 x^2 x^1 1] */
+static inline float dt_iop_eval_cubic(const float *const a, const float x)
+{
+  // could be sse4.1 _mm_dot_ps
+  const float x4[4] = {x*x*x, x*x, x, 1.0f};
+  return a[3]*x4[3] + a[2]*x4[2] + a[1]*x4[1] + a[0]*x4[0];
+}
+
+/** estimates an exponential form f(x) = a*x^g from a few (num) points (x, y).
+ *  the largest point should be (1.0, y) to really get good data. */
+static inline void dt_iop_estimate_exp(const float *const x, const float *const y, const int num, float *coeff)
+{
+  // first find normalization constant a:
+  float xm = 0.0f, ym = 1.0f;
+  for(int k=0;k<num;k++)
+  {
+    if(x[k] > xm)
+    {
+      xm = x[k];
+      ym = y[k];
+    }
+  }
+  const float a = ym;
+
+  // y = a*x^g => g = log(y/a)/log(x);
+  float g = 0.0f;
+  int cnt = 0;
+  for(int k=0;k<num;k++)
+  {
+    if(x[k] < 0.999f)
+    {
+      g += logf(y[k]/a)/logf(x[k]);
+      cnt ++;
+    }
+  }
+  g *= 1.0f/cnt;
+  coeff[0] = a;
+  coeff[1] = g;
+}
+
+/** evaluates the exp fit. */
+static inline float dt_iop_eval_exp(const float *const coeff, const float x)
+{
+  return coeff[0] * powf(x, coeff[1]);
+}
+
+/** Connects common accelerators to an iop module */
+void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
 #endif

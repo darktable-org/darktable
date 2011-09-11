@@ -621,10 +621,10 @@ static const uint8_t _imageio_ldr_magic[] =  {
     0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
 
     /* tiff image, intel */
-    0x4d, 0x4d, 0x00, 0x2a,
+    // 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,          // unfortunately fails because raw is similar
 
     /* tiff image, motorola */
-    0x49, 0x49, 0x2a, 0x00
+    // 0x00, 0x04, 0x49, 0x49, 0x2a, 0x00
 };
 
 gboolean dt_imageio_is_ldr(const char *filename)
@@ -632,14 +632,16 @@ gboolean dt_imageio_is_ldr(const char *filename)
   int offset=0;
   uint8_t block[16]={0};
   FILE *fin = fopen(filename,"rb");
-  if (fin) {
+  if (fin)
+  {
     /* read block from file */
     int s = fread(block,16,1,fin);
     fclose(fin);
     
     /* compare magic's */
-    while (s) {
-      if (memcmp((_imageio_ldr_magic+offset+2),block+(_imageio_ldr_magic+offset)[0],(_imageio_ldr_magic+offset)[1]) == 0)
+    while (s)
+    {
+      if (memcmp(_imageio_ldr_magic+offset+2, block + _imageio_ldr_magic[offset], _imageio_ldr_magic[offset+1]) == 0)
           return TRUE;
       offset += 2 + (_imageio_ldr_magic+offset)[1];
       
@@ -853,7 +855,13 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  dt_dev_pixelpipe_init_export(&pipe, wd, ht);
+  if(!dt_dev_pixelpipe_init_export(&pipe, wd, ht))
+  {
+    dt_control_log(_("failed to allocate memory for export, please lower the threads used for export or buy more memory."));
+    dt_dev_cleanup(&dev);
+    return 0;
+  }
+
   dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
@@ -890,7 +898,9 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   g_free(overprofile);
 
   // get only once at the beginning, in case the user changes it on the way:
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  const int high_quality_processing = ((format_params->max_width  == 0 || format_params->max_width  >= pipe.processed_width ) &&
+                                       (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)) ? 0 :
+                                        dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   const int width  = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
   const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
@@ -900,64 +910,63 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
   int processed_height = scale*pipe.processed_height;
   const int bpp = format->bpp(format_params);
 
-  // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
-  if(bpp == 8 && !high_quality_processing)
-    dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-  else
-    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-
-
   // downsampling done last, if high quality processing was requested:
   uint8_t *outbuf = pipe.backbuf;
+  uint8_t *moutbuf = NULL; // keep track of alloc'ed memory
   if(high_quality_processing)
   {
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     const float scalex = format_params->max_width  > 0 ? fminf(format_params->max_width /(float)pipe.processed_width,  1.0) : 1.0;
     const float scaley = format_params->max_height > 0 ? fminf(format_params->max_height/(float)pipe.processed_height, 1.0) : 1.0;
     const float scale = fminf(scalex, scaley);
-    if(scale < 1.0f)
-    {
-      processed_width  = scale*pipe.processed_width  + .5f;
-      processed_height = scale*pipe.processed_height + .5f;
-      outbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
-      // now downscale into the new buffer:
-      dt_iop_roi_t roi_in, roi_out;
-      roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
-      roi_in.scale = 1.0;
-      roi_out.scale = scale;
-      roi_in.width = pipe.processed_width;
-      roi_in.height = pipe.processed_height;
-      roi_out.width = processed_width;
-      roi_out.height = processed_height;
-      dt_iop_clip_and_zoom((float *)outbuf, (float *)pipe.backbuf, &roi_out, &roi_in, processed_width, pipe.processed_width);
-    }
+    processed_width  = scale*pipe.processed_width  + .5f;
+    processed_height = scale*pipe.processed_height + .5f;
+    moutbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
+    outbuf = moutbuf;
+    // now downscale into the new buffer:
+    dt_iop_roi_t roi_in, roi_out;
+    roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
+    roi_in.scale = 1.0;
+    roi_out.scale = scale;
+    roi_in.width = pipe.processed_width;
+    roi_in.height = pipe.processed_height;
+    roi_out.width = processed_width;
+    roi_out.height = processed_height;
+    dt_iop_clip_and_zoom((float *)outbuf, (float *)pipe.backbuf, &roi_out, &roi_in, processed_width, pipe.processed_width);
+  }
+  else
+  {
+    // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
+    if(bpp == 8)
+      dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    else
+      dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    outbuf = pipe.backbuf;
   }
 
   // downconversion to low-precision formats:
   if(bpp == 8)
   {
     // ldr output: char
-    uint8_t *buf8 = pipe.backbuf;
     if(high_quality_processing)
     {
-#ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(outbuf, buf8, processed_width, processed_height) schedule(static)
-#endif
+      const float *const inbuf = (float *)outbuf;
       for(int k=0; k<processed_width*processed_height; k++)
       {
-        // convert in place
-        const uint8_t r = CLAMP(((float *)outbuf)[4*k+0]*0xff, 0, 0xff);
-        const uint8_t g = CLAMP(((float *)outbuf)[4*k+1]*0xff, 0, 0xff);
-        const uint8_t b = CLAMP(((float *)outbuf)[4*k+2]*0xff, 0, 0xff);
-        buf8[4*k+0] = r;
-        buf8[4*k+1] = g;
-        buf8[4*k+2] = b;
+        // convert in place, this is unfortunately very serial.. 
+        const uint8_t r = CLAMP(inbuf[4*k+0]*0xff, 0, 0xff);
+        const uint8_t g = CLAMP(inbuf[4*k+1]*0xff, 0, 0xff);
+        const uint8_t b = CLAMP(inbuf[4*k+2]*0xff, 0, 0xff);
+        outbuf[4*k+0] = r;
+        outbuf[4*k+1] = g;
+        outbuf[4*k+2] = b;
       }
-      outbuf = buf8;
     }
     else
     {
+      uint8_t *const buf8 = pipe.backbuf;
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(buf8, processed_width, processed_height) schedule(static)
+  #pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
 #endif
       // just flip byte order
       for(int k=0; k<processed_width*processed_height; k++)
@@ -974,11 +983,11 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
     float    *buff  = (float *)   outbuf;
     uint16_t *buf16 = (uint16_t *)outbuf;
     for(int y=0; y<processed_height; y++) for(int x=0; x<processed_width ; x++)
-      {
-        // convert in place
-        const int k = x + processed_width*y;
-        for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
-      }
+    {
+      // convert in place
+      const int k = x + processed_width*y;
+      for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
+    }
   }
   // else output float, no further harm done to the pixels :)
 
@@ -994,7 +1003,7 @@ int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_f
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  if(high_quality_processing && bpp != 8) free(outbuf);
+  free(moutbuf);
   return res;
 }
 
@@ -1084,7 +1093,7 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
   sqlite3_stmt *stmt;
   int num = 0;
   size_t rd;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
@@ -1094,9 +1103,9 @@ int dt_imageio_dt_read (const int imgid, const char *filename)
   if(rd != 1 || magic != 0xd731337) goto delete_old_config;
 
   sqlite3_stmt *stmt_sel_num, *stmt_ins_hist, *stmt_upd_hist;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt_sel_num, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt_ins_hist, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1 and num = ?2", -1, &stmt_sel_num, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num) values (?1, ?2)", -1, &stmt_ins_hist, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
   while(!feof(f))
   {
     int32_t enabled, len, modversion;
@@ -1165,16 +1174,16 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
 
   // dt_image_t *img = dt_image_cache_get(imgid, 'w');
   sqlite3_stmt *stmt_upd_tagxtag, *stmt_del_tagged, *stmt_sel_id, *stmt_ins_tagxtag, *stmt_upd_tagxtag2, *stmt_ins_tags, *stmt_ins_tagged, *stmt_upd_tagxtag3;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count - 1 where "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = count - 1 where "
                               "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
                               "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt_del_tagged, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from tags where name = ?1", -1, &stmt_sel_id, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt_ins_tagxtag, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt_upd_tagxtag2, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt_ins_tags, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from tagged_images where imgid = ?1", -1, &stmt_del_tagged, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from tags where name = ?1", -1, &stmt_sel_id, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt_ins_tagxtag, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt_upd_tagxtag2, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tags (id, name) values (null, ?1)", -1, &stmt_ins_tags, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = count + 1 where "
                               "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
                               "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag3, NULL);
 

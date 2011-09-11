@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010--2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@
 
 
 #define COLLECTION_FILTER_FILM_ID               1             // use film_id in filter
-#define COLLECTION_FILTER_ATLEAST_RATING         2             // show all stars including and above selected star filter
-#define COLLECTION_FILTER_EQUAL_RATING            4             // show only selected star filter
+#define COLLECTION_FILTER_ATLEAST_RATING        2             // show all stars including and above selected star filter
+#define COLLECTION_FILTER_EQUAL_RATING          4             // show only selected star filter
 #define COLLECTION_FILTER_ALTERED               8             // show only altered images
 #define COLLECTION_FILTER_UNALTERED            16             // show only unaltered images
 
@@ -97,10 +97,10 @@ uint32_t dt_collection_get_count (const dt_collection_t *collection);
 
 /** get selected image ids order as current selection. */
 GList *dt_collection_get_selected (const dt_collection_t *collection);
+/** get the count of selected images */
+uint32_t dt_collection_get_selected_count (const dt_collection_t *collection);
 
 /** update query by gconf vars */
 void dt_collection_update_query(const dt_collection_t *collection);
-void dt_collection_listener_register(void (*callback)(void *), void *data);
-void dt_collection_listener_unregister(void (*callback)(void *));
 
 #endif

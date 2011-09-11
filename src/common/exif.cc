@@ -44,14 +44,15 @@ extern "C"
 #include <cassert>
 #include <glib.h>
 
-#define DT_XMP_KEYS_NUM 7 // the number of XmpBag XmpSeq keys that dt uses
+#define DT_XMP_KEYS_NUM 12 // the number of XmpBag XmpSeq keys that dt uses
 
 //this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
 {
   "Xmp.dc.subject", "Xmp.darktable.colorlabels",
   "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
-  "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params"
+  "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params",
+  "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights"
 };
 
 // inspired by ufraw_exiv2.cc:
@@ -81,7 +82,7 @@ static void dt_remove_known_keys(Exiv2::XmpData &xmp)
   for(int i=0; i<DT_XMP_KEYS_NUM; i++)
   {
     Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
-    xmp.erase(pos);
+    if(pos != xmp.end()) xmp.erase(pos);
   }
 }
 
@@ -263,6 +264,10 @@ int dt_exif_read(dt_image_t *img, const char* path)
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
     }
+
+    // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
+    // http://dev.exiv2.org/issues/779
+    if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");
 
     img->exif_inited = 1;
     img->dirty = 1;
@@ -615,7 +620,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     sqlite3_stmt *stmt;
 
     // get rid of old meta data
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from meta_data where id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from meta_data where id = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -743,7 +748,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
     {
       // consistency: strip all tags from image (tagged_image, tagxtag)
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count - 1 where "
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = count - 1 where "
                                   "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
                                   "(id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
@@ -751,7 +756,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       sqlite3_finalize(stmt);
 
       // remove from tagged_images
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
@@ -760,12 +765,12 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       const int cnt = pos->count();
 
       sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagxtag, *stmt_upd_tagxtag, *stmt_ins_tagged, *stmt_upd_tagxtag2;
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from tags where name = ?1", -1, &stmt_sel_id, NULL);
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tags (id, name) values (null, ?1)", -1, &stmt_ins_tags, NULL);
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt_ins_tagxtag, NULL);
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt_upd_tagxtag, NULL);
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from tags where name = ?1", -1, &stmt_sel_id, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tags (id, name) values (null, ?1)", -1, &stmt_ins_tags, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tagxtag select id, ?1, 0 from tags", -1, &stmt_ins_tagxtag, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1", -1, &stmt_upd_tagxtag, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tagged_images (tagid, imgid) values (?1, ?2)", -1, &stmt_ins_tagged, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = count + 1 where "
                                   "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2)) or "
                                   "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))", -1, &stmt_upd_tagxtag2, NULL);
       for(int i=0; i<cnt; i++)
@@ -851,14 +856,14 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       if(cnt == en->count() && cnt == op->count() && cnt == param->count())
       {
         // clear history
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
         sqlite3_step(stmt);
         sqlite3_finalize (stmt);
         sqlite3_stmt *stmt_sel_num, *stmt_ins_hist, *stmt_upd_hist;
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt_sel_num, NULL);
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt_ins_hist, NULL);
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, blendop_params = ?7, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1 and num = ?2", -1, &stmt_sel_num, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num) values (?1, ?2)", -1, &stmt_ins_hist, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, blendop_params = ?7, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
         for(int i=0; i<cnt; i++)
         {
           const int modversion = ver->toLong(i);
@@ -960,7 +965,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     int stars = 1, raw_params = 0;
     // get stars and raw params from db
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select flags, raw_parameters from images where id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select flags, raw_parameters from images where id = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -971,7 +976,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); //rejected image = -1, others = 0..5
 
     // the meta data
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select key, value from meta_data where id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select key, value from meta_data where id = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -1003,7 +1008,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
 
     // get tags from db, store in dublin core
     Exiv2::Value::AutoPtr v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name from tags join tagged_images on tagged_images.tagid = tags.id where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from tags join tagged_images on tagged_images.tagid = tags.id where imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
       v->read((char *)sqlite3_column_text(stmt, 0));
@@ -1013,7 +1018,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     // color labels
     char val[2048];
     v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select color from color_labels where imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -1039,7 +1044,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     // reset tv
     tv.setXmpArrayType(Exiv2::XmpValue::xaNone);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {

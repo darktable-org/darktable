@@ -92,20 +92,20 @@ void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
 
-  cairo_set_line_width(cr,0.1);
+  cairo_set_line_width(cr,0.15);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
   if( (flags&CPF_DIRECTION_UP) ) // Rotate -90 degrees
     cairo_transform(cr,&rotation_matrix);
 
-  cairo_move_to(cr,0.15,0.50);
-  cairo_line_to(cr,0.15,0);
-  cairo_line_to(cr,0.85,0.50);
+  cairo_move_to(cr,0.05,0.50);
+  cairo_line_to(cr,0.05,0);
+  cairo_line_to(cr,0.95,0.50);
   cairo_line_to(cr,0.2,0.50);
   cairo_stroke(cr);
-  cairo_set_line_width(cr,0.05);
-  cairo_move_to(cr,0.15,0.62);
-  cairo_line_to(cr,0.15,1.0);
-  cairo_line_to(cr,0.85,0.62);
+  cairo_set_line_width(cr,0.04);
+  cairo_move_to(cr,0.05,0.62);
+  cairo_line_to(cr,0.05,1.0);
+  cairo_line_to(cr,0.95,0.62);
   cairo_stroke(cr);
   cairo_identity_matrix(cr);
 }
@@ -408,18 +408,6 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale (cr,s,s);
 
-  /* draw outline */
-  cairo_set_line_width(cr, 0.2);
-  cairo_rectangle (cr, 0.01,0.01,0.99,0.99);
-  cairo_stroke (cr);
-}
-
-void dtgtk_cairo_paint_colorpicker2(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
-{
-  gint s = (w<h?w:h);
-  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
-  cairo_scale (cr,s,s);
-
   /* draw pipette */
 
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
@@ -600,6 +588,27 @@ void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
   cairo_stroke(cr);
   cairo_set_line_width(cr,0.1);
   cairo_rectangle(cr,0.55,0.55,0.45,0.45);
+  cairo_stroke(cr);
+
+}
+
+void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
+                            gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.)-(s/2.), y+(h/2.)-(s/2.));
+  cairo_scale(cr, s, s);
+
+  // Adding the lock body
+  cairo_rectangle(cr, 0.25, 0.5, .5, .45);
+  cairo_fill(cr);
+
+  // Adding the lock shank
+  cairo_set_line_width(cr, 0.2);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+  cairo_translate(cr, .5, .5);
+  cairo_scale(cr, .2, .4);
+  cairo_arc(cr, 0, 0, 1, M_PI, 0);
   cairo_stroke(cr);
 
 }

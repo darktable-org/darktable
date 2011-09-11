@@ -32,6 +32,7 @@
 #include "common/debug.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/label.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include <gtk/gtk.h>
@@ -120,6 +121,22 @@ groups ()
 {
   return IOP_GROUP_COLOR;
 }
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_channelmixer_gui_data_t *g =
+      (dt_iop_channelmixer_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale3));
+}
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -146,11 +163,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if( hmix != 0.0 || smix != 0.0 || lmix != 0.0 )
       {
         // mix into HSL output channels
-        rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+        rgb2hsl(in,&h,&s,&l);
         h = (hmix != 0.0 )  ? hmix : h;
         s = (smix != 0.0 )  ? smix : s;
         l = (lmix != 0.0 )  ? lmix : l;
-        hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
+        hsl2rgb(out,h,s,l);
       }
       else   // no HSL copt in[] to out[]
         for(int i=0; i<3; i++) out[i]=in[i];
@@ -176,11 +193,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       if( data->output_channel <= CHANNEL_LIGHTNESS ) {
         // mix into HSL output channels
-        rgb2hsl(in[0],in[1],in[2],&h,&s,&l);
+        rgb2hsl(in,&h,&s,&l);
         h = ( data->output_channel == CHANNEL_HUE )              ? mix : h;
         s = ( data->output_channel == CHANNEL_SATURATION )   ? mix : s;
         l = ( data->output_channel == CHANNEL_LIGHTNESS )     ?  mix : l;
-        hsl2rgb(&out[0],&out[1],&out[2],h,s,l);
+        hsl2rgb(out,h,s,l);
       } else  if( data->output_channel > CHANNEL_LIGHTNESS && data->output_channel  < CHANNEL_GRAY) {
         // mix into rgb output channels
         out[0] = ( data->output_channel == CHANNEL_RED )      ? mix : in[0];
@@ -302,7 +319,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 965;
+  module->priority = 812; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t)
@@ -378,7 +395,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void init_presets (dt_iop_module_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("swap R and B"), self->op, &(dt_iop_channelmixer_params_t)
   {
@@ -434,7 +451,7 @@ void init_presets (dt_iop_module_t *self)
       0,0,0,0,0,0,0.4
     }, {0,0,0,0,0,0,0.750}, {0,0,0,0,0,0,-0.15}
   } , sizeof(dt_iop_channelmixer_params_t), 1);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

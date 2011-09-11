@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,54 +25,36 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
-/* kernel for the sharpen plugin */
-kernel void
-sharpen (read_only image2d_t in, write_only image2d_t out, global float *m, const int rad,
-    const float sharpen, const float thrs)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  const int wd = 2*rad+1;
-
-  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  float sum = 0.0f;
-  for(int j=0;j<wd;j++) for(int i=0;i<wd;i++)
-  {
-    float px = read_imagef(in, sampleri, (float2)(x+(i - rad), y+(j - rad))).x;
-    const float w = m[j]*m[i];
-    sum += w*px;
-  }
-  float d = pixel.x - sum;
-  float amount = sharpen * copysign(max(0.0f, fabs(d) - thrs), d);
-  write_imagef (out, (int2)(x, y), (float4)(max(0.0f, pixel.x + amount), pixel.y, pixel.z, 1.0f));
-}
 
 kernel void
-whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, global float *coeffs,
+whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, constant float *coeffs,
     const unsigned int filters, const int rx, const int ry)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
   const uint4 pixel = read_imageui(in, sampleri, (int2)(x, y));
   write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[FC(ry+y, rx+x, filters)], 0.0f, 0.0f, 0.0f));
 }
 
 kernel void
-whitebalance_4f(read_only image2d_t in, write_only image2d_t out, global float *coeffs)
+whitebalance_4f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, constant float *coeffs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
   const float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[0], pixel.y * coeffs[1], pixel.z * coeffs[2], pixel.w));
 }
 
 /* kernel for the exposure plugin. should work transparently with float4 and float image2d. */
 kernel void
-exposure (read_only image2d_t in, write_only image2d_t out, const float black, const float scale)
+exposure (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float black, const float scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
+  if(x >= width || y >= height) return;
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   pixel = (pixel - black)*scale;
   write_imagef (out, (int2)(x, y), pixel);
@@ -136,11 +118,13 @@ lch_to_rgb(float *lch, float *rgb)
 
 /* kernel for the highlights plugin. */
 kernel void
-highlights (read_only image2d_t in, write_only image2d_t out, const int mode, const float clip,
-            const float blendL, const float blendC, const float blendh)
+highlights (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+            const int mode, const float clip, const float blendL, const float blendC, const float blendh)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float4 inc, lchi, lchc, lch;
@@ -167,23 +151,38 @@ highlights (read_only image2d_t in, write_only image2d_t out, const int mode, co
 }
 
 float
-lookup(read_only image2d_t lut, const float x)
+lookup_unbounded(read_only image2d_t lut, const float x, constant float *a)
 {
-  int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
-  int2 p = (int2)((xi & 0xff), (xi >> 8));
-  return read_imagef(lut, sampleri, p).x;
+  // in case the tone curve is marked as linear, return the fast
+  // path to linear unbounded (does not clip x at 1)
+  if(a[0] >= 0.0f)
+  {
+    if(x < 1.0f)
+    {
+      const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+      const int2 p = (int2)((xi & 0xff), (xi >> 8));
+      return read_imagef(lut, sampleri, p).x;
+    }
+    else return a[0] * native_powr(x, a[1]);
+  }
+  else return x;
 }
 
 /* kernel for the basecurve plugin. */
 kernel void
-basecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
+basecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+           read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel.x = lookup(table, pixel.x);
-  pixel.y = lookup(table, pixel.y);
-  pixel.z = lookup(table, pixel.z);
+  // use lut or extrapolation:
+  pixel.x = lookup_unbounded(table, pixel.x, a);
+  pixel.y = lookup_unbounded(table, pixel.y, a);
+  pixel.z = lookup_unbounded(table, pixel.z, a);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -202,41 +201,44 @@ XYZ_to_Lab(float *xyz, float *lab)
 
 /* kernel for the plugin colorin */
 kernel void
-colorin (read_only image2d_t in, write_only image2d_t out, global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb)
+colorin (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+         constant float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+         const int map_blues,
+         constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  // load to shared memory:
-  local float matrix[9];
-  if(get_local_id(0) == 0) for(int k=0;k<9;k++) matrix[k] = mat[k];
-  barrier(CLK_LOCAL_MEM_FENCE);
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], XYZ[3], Lab[3];
-  cam[0] = lookup(lutr, pixel.x);
-  cam[1] = lookup(lutg, pixel.y);
-  cam[2] = lookup(lutb, pixel.z);
+  cam[0] = lookup_unbounded(lutr, pixel.x, a);
+  cam[1] = lookup_unbounded(lutg, pixel.y, a+2);
+  cam[2] = lookup_unbounded(lutb, pixel.z, a+4);
 
-  // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-  const float YY = cam[0]+cam[1]+cam[2];
-  const float zz = cam[2]/YY;
-  // lower amount and higher bound_z make the effect smaller.
-  // the effect is weakened the darker input values are, saturating at bound_Y
-  const float bound_z = 0.5f, bound_Y = 0.5f;
-  const float amount = 0.11f;
-  if (zz > bound_z)
+  if(map_blues)
   {
-    const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
-    cam[1] += t*amount;
-    cam[2] -= t*amount;
+    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+    const float YY = cam[0]+cam[1]+cam[2];
+    const float zz = cam[2]/YY;
+    // lower amount and higher bound_z make the effect smaller.
+    // the effect is weakened the darker input values are, saturating at bound_Y
+    const float bound_z = 0.5f, bound_Y = 0.8f;
+    const float amount = 0.11f;
+    if (zz > bound_z)
+    {
+      const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
+      cam[1] += t*amount;
+      cam[2] -= t*amount;
+    }
   }
   // now convert camera to XYZ using the color matrix
   for(int j=0;j<3;j++)
   {
     XYZ[j] = 0.0f;
-    for(int i=0;i<3;i++) XYZ[j] += matrix[3*j+i] * cam[i];
+    for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
   }
   XYZ_to_Lab(XYZ, (float *)&pixel);
   write_imagef (out, (int2)(x, y), pixel);
@@ -244,17 +246,27 @@ colorin (read_only image2d_t in, write_only image2d_t out, global float *mat, re
 
 /* kernel for the tonecurve plugin. */
 kernel void
-tonecurve (read_only image2d_t in, write_only image2d_t out, read_only image2d_t table)
+tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+           read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
+  if(x >= width || y >= height) return;
+
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  const float L = lookup(table, pixel.x/100.0f);
+  const float L_in = pixel.x/100.0f;
+  // use lut or extrapolation:
+  const float L = lookup_unbounded(table, L_in, a);
   if(pixel.x > 0.01f)
   {
     pixel.y *= L/pixel.x;
     pixel.z *= L/pixel.x;
+  }
+  else
+  {
+    pixel.y *= L/0.01f;
+    pixel.z *= L/0.01f;
   }
   pixel.x = L;
   write_imagef (out, (int2)(x, y), pixel);
@@ -347,15 +359,14 @@ Lab_to_XYZ(float *Lab, float *XYZ)
 
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
-colorout (read_only image2d_t in, write_only image2d_t out, global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb)
+colorout (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+          constant float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+          constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  // load to shared memory:
-  local float matrix[9];
-  if(get_local_id(0) == 0) for(int k=0;k<9;k++) matrix[k] = mat[k];
-  barrier(CLK_LOCAL_MEM_FENCE);
+  if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float XYZ[3], rgb[3];
@@ -363,11 +374,11 @@ colorout (read_only image2d_t in, write_only image2d_t out, global float *mat, r
   for(int i=0;i<3;i++)
   {
     rgb[i] = 0.0f;
-    for(int j=0;j<3;j++) rgb[i] += matrix[3*i+j]*XYZ[j];
+    for(int j=0;j<3;j++) rgb[i] += mat[3*i+j]*XYZ[j];
   }
-  pixel.x = lookup(lutr, rgb[0]);
-  pixel.y = lookup(lutg, rgb[1]);
-  pixel.z = lookup(lutb, rgb[2]);
+  pixel.x = lookup_unbounded(lutr, rgb[0], a);
+  pixel.y = lookup_unbounded(lutg, rgb[1], a+2);
+  pixel.z = lookup_unbounded(lutb, rgb[2], a+4);
   write_imagef (out, (int2)(x, y), pixel);
 }
 

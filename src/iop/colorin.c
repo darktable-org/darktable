@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011 henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,11 +27,14 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
-#include "libraw/libraw.h"
 #include "common/colorspaces.h"
 #include "common/colormatrices.c"
 #include "common/opencl.h"
 #include "dtgtk/resetlabel.h"
+#include "external/adobe_coeff.c"
+#include <xmmintrin.h>
+
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -53,20 +57,27 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+
 void
 init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)malloc(sizeof(dt_iop_colorin_global_data_t));
   module->data = gd;
-  gd->kernel_colorin = dt_opencl_create_kernel(darktable.opencl, program, "colorin");
+  gd->kernel_colorin = dt_opencl_create_kernel(program, "colorin");
 }
 
 void
 cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_colorin);
+  dt_opencl_free_kernel(gd->kernel_colorin);
   free(module->data);
   module->data = NULL;
 }
@@ -121,79 +132,156 @@ lerp_lut(const float *const lut, const float v)
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   dt_iop_colorin_global_data_t *gd = (dt_iop_colorin_global_data_t *)self->data;
+  cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
-  cl_int err;
+  cl_int err = -999;
+  const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
   const int devid = piece->pipe->devid;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  cl_mem dev_m = dt_opencl_copy_host_to_device_constant(sizeof(float)*9, devid, d->cmatrix);
-  cl_mem dev_r = dt_opencl_copy_host_to_device(d->lut[0], 256, 256, devid, sizeof(float));
-  cl_mem dev_g = dt_opencl_copy_host_to_device(d->lut[1], 256, 256, devid, sizeof(float));
-  cl_mem dev_b = dt_opencl_copy_host_to_device(d->lut[2], 256, 256, devid, sizeof(float));
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 2, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 3, sizeof(cl_mem), (void *)&dev_r);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 4, sizeof(cl_mem), (void *)&dev_g);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_colorin, 5, sizeof(cl_mem), (void *)&dev_b);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_colorin, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue colorin kernel! %d\n", err);
-  clReleaseMemObject(dev_m);
-  clReleaseMemObject(dev_r);
-  clReleaseMemObject(dev_g);
-  clReleaseMemObject(dev_b);
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*9, d->cmatrix);
+  if (dev_m == NULL) goto error;
+  dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
+  if (dev_r == NULL) goto error;
+  dev_g = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
+  if (dev_g == NULL) goto error;
+  dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
+  if (dev_b == NULL) goto error;
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2*3, (float *)d->unbounded_coeffs);
+  if (dev_coeffs == NULL) goto error;
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 4, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 5, sizeof(cl_mem), (void *)&dev_r);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 6, sizeof(cl_mem), (void *)&dev_g);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 7, sizeof(cl_mem), (void *)&dev_b);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 8, sizeof(cl_int), (void *)&map_blues);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorin, 9, sizeof(cl_mem), (void *)&dev_coeffs);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorin, sizes);
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_r);
+  dt_opencl_release_mem_object(dev_g);
+  dt_opencl_release_mem_object(dev_b);
+  dt_opencl_release_mem_object(dev_coeffs);
+  return TRUE;
+
+error:
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_r != NULL) dt_opencl_release_mem_object(dev_r);
+  if (dev_g != NULL) dt_opencl_release_mem_object(dev_g);
+  if (dev_b != NULL) dt_opencl_release_mem_object(dev_b);
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorin] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 
+static inline __m128
+lab_f_m(const __m128 x)
+{
+  const __m128 epsilon = _mm_set1_ps(216.0f/24389.0f);
+  const __m128 kappa   = _mm_set1_ps(24389.0f/27.0f);
 
+  // calculate as if x > epsilon : result = cbrtf(x)
+  // approximate cbrtf(x):
+  const __m128 a = _mm_castsi128_ps(_mm_add_epi32(_mm_cvtps_epi32(_mm_div_ps(_mm_cvtepi32_ps(_mm_castps_si128(x)),_mm_set1_ps(3.0f))),_mm_set1_epi32(709921077)));
+  const __m128 a3 = _mm_mul_ps(_mm_mul_ps(a,a),a);
+  const __m128 res_big = _mm_div_ps(_mm_mul_ps(a,_mm_add_ps(a3,_mm_add_ps(x,x))),_mm_add_ps(_mm_add_ps(a3,a3),x));
+
+  // calculate as if x <= epsilon : result = (kappa*x+16)/116
+  const __m128 res_small = _mm_div_ps(_mm_add_ps(_mm_mul_ps(kappa,x),_mm_set1_ps(16.0f)),_mm_set1_ps(116.0f));
+
+  // blend results according to whether each component is > epsilon or not
+  const __m128 mask = _mm_cmpgt_ps(x,epsilon);
+  return _mm_or_ps(_mm_and_ps(mask,res_big),_mm_andnot_ps(mask,res_small));
+}
+
+static inline __m128
+dt_XYZ_to_Lab_SSE(const __m128 XYZ)
+{
+  const __m128 d50_inv  = _mm_set_ps(0.0f, 1.0f/0.8249f, 1.0f, 1.0f/0.9642f);
+  const __m128 coef = _mm_set_ps(0.0f,200.0f,500.0f,116.0f);
+  const __m128 f = lab_f_m(_mm_mul_ps(XYZ,d50_inv));
+  // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
+  return _mm_mul_ps(coef,_mm_sub_ps(_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,1,0,1)),_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,2,1,3))));
+}
+ 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
+  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const float *const mat = d->cmatrix;
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
+  const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
 
   if(mat[0] != -666.0f)
   {
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, out, in, d) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_in,roi_out, out, in) schedule(static)
 #endif
-    for(int k=0; k<roi_out->width*roi_out->height; k++)
+    for(int j=0; j<roi_out->height; j++)
     {
-      const float *const buf_in  = in  + ch*k;
-      float *const buf_out = out + ch*k;
-      float cam[3], XYZ[3], Lab[3];
-      // memcpy(cam, buf_in, sizeof(float)*3);
-      // TODO: avoid calling this for linear profiles? doesn't seem to impact performance much.
-      for(int i=0; i<3; i++) cam[i] = lerp_lut(d->lut[i], buf_in[i]);
-      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-      const float YY = cam[0]+cam[1]+cam[2];
-      const float zz = cam[2]/YY;
-      // lower amount and higher bound_z make the effect smaller.
-      // the effect is weakened the darker input values are, saturating at bound_Y
-      const float bound_z = 0.5f, bound_Y = 0.5f;
-      const float amount = 0.11f;
-      if (zz > bound_z)
+
+      float *buf_in  = in + ch*roi_in->width *j;
+      float *buf_out = out + ch*roi_out->width*j;
+      float cam[3];
+      const __m128 m0 = _mm_set_ps(0.0f,mat[6],mat[3],mat[0]);
+      const __m128 m1 = _mm_set_ps(0.0f,mat[7],mat[4],mat[1]);
+      const __m128 m2 = _mm_set_ps(0.0f,mat[8],mat[5],mat[2]);
+  
+      for(int i=0; i<roi_out->width; i++, buf_in+=ch, buf_out+=ch )
       {
-        const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-        cam[1] += t*amount;
-        cam[2] -= t*amount;
+  
+        // memcpy(cam, buf_in, sizeof(float)*3);
+        // avoid calling this for linear profiles (marked with negative entries), assures unbounded
+        // color management without extrapolation.
+        for(int i=0; i<3; i++) cam[i] = (d->lut[i][0] >= 0.0f) ?
+          ((buf_in[i] < 1.0f) ? lerp_lut(d->lut[i], buf_in[i])
+          : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
+          : buf_in[i];
+  
+        if(map_blues)
+        {
+          // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
+          // deeply saturated blues turn into purple fringes, so dampen them before conversion.
+          // this is off for non-raw images, which don't seem to have this problem.
+          // might be caused by too loose clipping bounds during highlight clipping?
+          const float YY = cam[0]+cam[1]+cam[2];
+          const float zz = cam[2]/YY;
+          // lower amount and higher bound_z make the effect smaller.
+          // the effect is weakened the darker input values are, saturating at bound_Y
+          const float bound_z = 0.5f, bound_Y = 0.8f;
+          const float amount = 0.11f;
+          if (zz > bound_z)
+          {
+            const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0f, YY/bound_Y);
+            cam[1] += t*amount;
+            cam[2] -= t*amount;
+          }
+        }
+  
+#if 0
+        __attribute__((aligned(16))) float XYZ[4];
+        _mm_store_ps(XYZ,_mm_add_ps(_mm_add_ps( _mm_mul_ps(m0,_mm_set1_ps(cam[0])), _mm_mul_ps(m1,_mm_set1_ps(cam[1]))), _mm_mul_ps(m2,_mm_set1_ps(cam[2]))));
+        dt_XYZ_to_Lab(XYZ, buf_out);
+#endif
+        __m128 xyz = _mm_add_ps(_mm_add_ps( _mm_mul_ps(m0,_mm_set1_ps(cam[0])), _mm_mul_ps(m1,_mm_set1_ps(cam[1]))), _mm_mul_ps(m2,_mm_set1_ps(cam[2])));
+        _mm_stream_ps(buf_out,dt_XYZ_to_Lab_SSE(xyz));
       }
-      // now convert camera to XYZ using the color matrix
-      for(int j=0; j<3; j++)
-      {
-        XYZ[j] = 0.0f;
-        for(int i=0; i<3; i++) XYZ[j] += mat[3*j+i] * cam[i];
-      }
-      dt_XYZ_to_Lab(XYZ, Lab);
-      memcpy(buf_out, Lab, sizeof(float)*3);
     }
+    _mm_sfence();
   }
   else
   {
@@ -246,12 +334,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // pthread_mutex_lock(&darktable.plugin_threadsafe);
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-#error "gegl version needs some more care!"
-#else
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   if(d->input) cmsCloseProfile(d->input);
   const int num_threads = dt_get_num_threads();
@@ -262,10 +345,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->xform[t] = NULL;
     }
   d->cmatrix[0] = -666.0f;
+  d->lut[0][0] = -1.0f;
+  d->lut[1][0] = -1.0f;
+  d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
   char datadir[1024];
   char filename[1024];
-  dt_get_datadir(datadir, 1024);
+  dt_util_get_datadir(datadir, 1024);
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
@@ -276,23 +362,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!strcmp(p->iccprofile, "cmatrix"))
   {
     // color matrix
-    int ret;
-    dt_image_full_path(self->dev->image->id, filename, 1024);
-    libraw_data_t *raw = libraw_init(0);
-    ret = libraw_open_file(raw, filename);
-    if(!ret)
-    {
-      float cmat[3][4];
-      for(int k=0; k<4; k++) for(int i=0; i<3; i++)
-        {
-          // d->cmatrix[i][k] = raw->color.rgb_cam[i][k];
-          cmat[i][k] = raw->color.rgb_cam[i][k];
-        }
-      d->input = dt_colorspaces_create_cmatrix_profile(cmat);
-    }
-    libraw_close(raw);
+    char makermodel[1024];
+    dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+    float cam_xyz[12];
+    cam_xyz[0] = -666.0f;
+    dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+    if(cam_xyz[0] == -666.0f) sprintf(p->iccprofile, "linear_rgb");
+    else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
-  else if(!strcmp(p->iccprofile, "sRGB"))
+  if(!strcmp(p->iccprofile, "sRGB"))
   {
     d->input = dt_colorspaces_create_srgb_profile();
   }
@@ -354,15 +432,29 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       for(int t=0; t<num_threads; t++) d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
     }
   }
-  // pthread_mutex_unlock(&darktable.plugin_threadsafe);
-#endif
+  
+  // now try to initialize unbounded mode:
+  // we do a extrapolation for input values above 1.0f.
+  // unfortunately we can only do this if we got the computation
+  // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
+  for(int k=0;k<3;k++)
+  {
+    // omit luts marked as linear (negative as marker)
+    if(d->lut[k][0] >= 0.0f)
+    {
+      const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+      const float y[4] = {lerp_lut(d->lut[k], x[0]),
+                          lerp_lut(d->lut[k], x[1]),
+                          lerp_lut(d->lut[k], x[2]),
+                          lerp_lut(d->lut[k], x[3])};
+      dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
+    }
+    else d->unbounded_coeffs[k][0] = -1.0f;
+  }
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-#else
   piece->data = malloc(sizeof(dt_iop_colorin_data_t));
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
@@ -370,7 +462,6 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   for(int t=0; t<dt_get_num_threads(); t++) d->xform[t] = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -429,7 +520,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 300;
+  module->priority = 333; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
 }
 
@@ -449,16 +540,24 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_colorin_params_t *p   = (dt_iop_colorin_params_t *)self->params;
 
   g->profiles = NULL;
+  dt_iop_color_profile_t *prof;
+  int pos = -1;
 
   // get color matrix from raw image:
-  dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));
-  g_strlcpy(prof->name, "cmatrix", sizeof(prof->name));
-  g->profiles = g_list_append(g->profiles, prof);
-  int pos = prof->pos = 0;
-
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+  float cam_xyz[12];
+  cam_xyz[0] = -666.0f;
+  dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+  if(cam_xyz[0] != -666.0f)
+  {
+    prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+    g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));
+    g_strlcpy(prof->name, "cmatrix", sizeof(prof->name));
+    g->profiles = g_list_append(g->profiles, prof);
+    prof->pos = ++pos;
+  }
+
   // darktable built-in, if applicable
   for(int k=0; k<dt_profiled_colormatrix_cnt; k++)
   {
@@ -510,8 +609,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
   char datadir[1024], confdir[1024], dirname[1024], filename[1024];
-  dt_get_user_config_dir(confdir, 1024);
-  dt_get_datadir(datadir, 1024);
+  dt_util_get_user_config_dir(confdir, 1024);
+  dt_util_get_datadir(datadir, 1024);
   snprintf(dirname, 1024, "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
     snprintf(dirname, 1024, "%s/color/in", datadir);
@@ -527,9 +626,12 @@ void gui_init(struct dt_iop_module_t *self)
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
+	char *lang = getenv("LANG");
+	if (!lang) lang = "en_US";
+
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
         char name[1024];
-        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, getenv("LANG"), getenv("LANG")+3, name, 1024);
+        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, lang, lang+3, name, 1024);
         g_strlcpy(prof->name, name, sizeof(prof->name));
 
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));

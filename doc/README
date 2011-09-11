@@ -1,8 +1,19 @@
-this is darktable, a free raw photo viewer and organiser.
+this is darktable, a free raw photo viewer and organizer.
 
 to build it, you need:
 
- - lcms gtk+-2.0 libglade-2.0 libgthread-2.0 cairo libjpeg libpng gconf lensfun tiff exiv2
+ - gtk+-2.0 (and dependencies, e.g. cairo, gdkpixbuf, etc.)
+ - png, jpeg, tiff libraries (should be pulled by gdkpixbuf)
+ - exiv2, OpenEXR, lensfun, lcms2, curl
+
+optionally, you might need for special features:
+
+ - gconf (for gconf backend)
+ - gphoto2 (for camera support, recommended)
+ - librsvg2 (for watermark plugin)
+ - flickcurl (for Flickr support)
+ - libGL/sdl12 (to build slideshow viewer)
+ - dbus-glib, gnome-keyring (kwallet/gnome keyring support)
 
 other used packages (supplied in the source tree):
 
@@ -11,13 +22,11 @@ other used packages (supplied in the source tree):
 then, type:
 $ mkdir build && cd build
 $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-# make install
+$ make install (or sudo make install)
 $ darktable
 
 (the first step is only necessary when building from git for the first time)
 and enjoy!
 
-
-send any bugreports to the mailing list: darktable-devel@lists.sf.net
+send any bug reports to the mailing list: darktable-devel@lists.sf.net
 find more information on the web: http://darktable.sf.net/
-

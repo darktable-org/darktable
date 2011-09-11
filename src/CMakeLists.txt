@@ -9,6 +9,7 @@ FILE(GLOB SOURCE_FILES
   "common/colormatrices.c" 
   "common/colorspaces.c" 
   "common/darktable.c" 
+  "common/database.c"
   "common/exif.cc" 
   "common/film.c" 
   "common/fswatch.c" 
@@ -32,38 +33,39 @@ FILE(GLOB SOURCE_FILES
   "common/variables.c" 
   "common/pwstorage/pwstorage.c" 
   "common/pwstorage/backend_gconf.c"
+  "common/opencl.c"
+  "common/dynload.c"
+  "common/dlopencl.c"
+  "common/ratings.c"
   "control/control.c"  
   "control/jobs/control_jobs.c"  
   "control/jobs/develop_jobs.c"  
   "control/jobs/film_jobs.c"  
-  "control/jobs/image_jobs.c"  
+  "control/jobs/image_jobs.c"
+  "control/signal.c"
   "develop/develop.c"
   "develop/imageop.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
-  "dtgtk/*.c" 
-  "gui/background_jobs.c"  
+  "develop/tiling.c"
+  "dtgtk/*.c"
+  "gui/accelerators.c"
   "gui/contrast.c"  
   "gui/gtk.c"  
-  "gui/histogram.c"  
-  "gui/iop_history.c"  
-  "gui/iop_modulegroups.c"  
-  "gui/metadata.c"  
-  "gui/navigation.c"  
   "gui/preferences.c"  
   "gui/presets.c"  
   "gui/styles_dialog.c"  
-  "gui/tool_colorlabels.c"  
   "libs/lib.c"
   "views/view.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/LibRaw)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -85,7 +87,7 @@ endif()
 #
 # Find all other required libraries for building
 #
-find_package(GTK2 2.6 REQUIRED gtk glade)
+find_package(GTK2 2.6 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
 add_definitions(${GTK2_DEFINITIONS})
@@ -115,63 +117,68 @@ if(USE_CAMERA_SUPPORT)
 endif(USE_CAMERA_SUPPORT)
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 INotify Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-find_package(Gettext)
-if(Gettext_FOUND)
-  include_directories(${Gettext_INCLUDE_DIRS})
-  list(APPEND LIBS ${Gettext_LIBRARIES})
-  add_definitions("-DUSE_GETTEXT")
-  message(STATUS "Internationalization: Enabled")
-else()
-  message(STATUS "Internationalization: Disabled (libintl not found)")
-endif()
+if(USE_NLS)
+  find_package(Gettext)
+  if(Gettext_FOUND)
+    include_directories(${Gettext_INCLUDE_DIRS})
+    list(APPEND LIBS ${Gettext_LIBRARIES})
+    add_definitions("-DUSE_GETTEXT")
+    message(STATUS "Internationalization: Enabled")
+  else()
+    message(STATUS "Internationalization: Disabled (libintl not found)")
+  endif()
+endif(USE_NLS)
 
-find_package(FLICKCURL)
-if(FLICKCURL_FOUND)
-  include_directories(${FLICKCURL_INCLUDE_DIRS})
-  list(APPEND LIBS ${FLICKCURL_LIBRARIES})
-  add_definitions(${FLICKCURL_DEFINITIONS})
-endif(FLICKCURL_FOUND)
+if(USE_FLICKR)
+  find_package(FLICKCURL)
+  if(FLICKCURL_FOUND)
+    include_directories(${FLICKCURL_INCLUDE_DIRS})
+    list(APPEND LIBS ${FLICKCURL_LIBRARIES})
+    add_definitions(${FLICKCURL_DEFINITIONS})
+  endif(FLICKCURL_FOUND)
+endif(USE_FLICKR)
 
 #
 # Detect compile of optional pwstorage backends
 #
+if(USE_KWALLET) 
 find_package(DBUSGLIB)
-if(DBUSGLIB_FOUND)
-  list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
-  include_directories(${DBUSGLIB_INCLUDE_DIRS})
-  list(APPEND LIBS ${DBUSGLIB_LIBRARIES})
-  add_definitions("-DHAVE_KWALLET")
-endif(DBUSGLIB_FOUND)
+  if(DBUSGLIB_FOUND)
+    list(APPEND SOURCES "common/pwstorage/backend_kwallet.c")
+    include_directories(${DBUSGLIB_INCLUDE_DIRS})
+    list(APPEND LIBS ${DBUSGLIB_LIBRARIES})
+    add_definitions("-DHAVE_KWALLET")
+  endif(DBUSGLIB_FOUND)
+endif(USE_KWALLET)
 
-find_package(GnomeKeyring)
-if(GNOMEKEYRING_FOUND)
-  set(SOURCES ${SOURCES} "common/pwstorage/backend_gkeyring.c")
-  include_directories(${GnomeKeyring_INCLUDE_DIRS})
-  list(APPEND LIBS ${GnomeKeyring_LIBRARIES})
-  add_definitions("-DHAVE_GKEYRING")
-endif(GNOMEKEYRING_FOUND)
+if(USE_GNOME_KEYRING)
+  find_package(GnomeKeyring)
+  if(GNOMEKEYRING_FOUND)
+    set(SOURCES ${SOURCES} "common/pwstorage/backend_gkeyring.c")
+    include_directories(${GnomeKeyring_INCLUDE_DIRS})
+    list(APPEND LIBS ${GnomeKeyring_LIBRARIES})
+    add_definitions("-DHAVE_GKEYRING")
+  endif(GNOMEKEYRING_FOUND)
+endif(USE_GNOME_KEYRING)
 
-find_package(OpenCL)
-if(OPENCL_FOUND)
-  include_directories(${OPENCL_INCLUDE_DIR})
-  list(APPEND LIBS ${OPENCL_LIBRARIES})
-  list(APPEND SOURCES "common/opencl.c")
-  add_definitions("-DHAVE_OPENCL")
-endif(OPENCL_FOUND)
+# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
+add_subdirectory(cltest)
 
 # build opengl slideshow viewer?
-find_package(SDL)
-find_package(OpenGL)
-if(SDL_FOUND AND OPENGL_FOUND)
-  add_subdirectory(dtview)
-endif(SDL_FOUND AND OPENGL_FOUND)
+if(BUILD_SLIDESHOW) 
+  find_package(SDL)
+  find_package(OpenGL)
+  if(SDL_FOUND AND OPENGL_FOUND)
+    add_subdirectory(dtview)
+  endif(SDL_FOUND AND OPENGL_FOUND)
+endif(BUILD_SLIDESHOW)
 
 # needed for the file manager
 if(APRIL_FOOLS)
@@ -201,9 +208,13 @@ if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
 endif(OPENEXR_FOUND)
 
+if(USE_OPENCL)
+  add_definitions("-DHAVE_OPENCL")
+endif(USE_OPENCL)
+
 
 if(GPHOTO2_FOUND)
-  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" "gui/devices.c" )
+  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" )
   add_definitions("-DHAVE_GPHOTO2")
 endif(GPHOTO2_FOUND)
 
@@ -250,7 +261,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 #
 add_custom_command(
    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/../create_preferences.sh ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktable.schemas > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
 )
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h PROPERTIES GENERATED 1)
 
@@ -286,7 +297,7 @@ set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 #
 add_dependencies(lib_darktable libraw_r)
 add_library(libraw_static STATIC IMPORTED)
-set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/LibRaw/liblibraw_r.a)
+set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LibRaw/liblibraw_r.a)
 target_link_libraries(lib_darktable ${LIBS} libraw_static)
 
 # same for librawspeed (can switch it off with -DDONT_USE_RAWSPEED, for macs):
@@ -294,17 +305,17 @@ if(NOT DONT_USE_RAWSPEED)
   add_definitions("-DHAVE_RAWSPEED")
   add_dependencies(lib_darktable rawspeed)
   add_library(rawspeed_static STATIC IMPORTED)
-  set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/rawspeed/librawspeed.a)
+  set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
   target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
   # compile rawspeed
-  add_subdirectory(rawspeed)
+  add_subdirectory(external/rawspeed)
 endif(NOT DONT_USE_RAWSPEED)
 
-install(TARGETS lib_darktable DESTINATION ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL}/darktable)
+install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)
 
 # Compile libraw modules
-add_subdirectory(LibRaw)
+add_subdirectory(external/LibRaw)
 
 # Compile views modules
 add_subdirectory(views)

@@ -25,7 +25,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "gui/histogram.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -109,8 +108,8 @@ groups ()
 static float
 lookup(const float *lut, const float i)
 {
-  const int bin0 = MIN(0xffff, MAX(0, DT_IOP_COLORZONES_LUT_RES *  i));
-  const int bin1 = MIN(0xffff, MAX(0, DT_IOP_COLORZONES_LUT_RES *  i + 1));
+  const int bin0 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i)));
+  const int bin1 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i) + 1));
   const float f = DT_IOP_COLORZONES_LUT_RES * i - bin0;
   return lut[bin1]*f + lut[bin0]*(1.-f);
 }
@@ -149,7 +148,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     const float Lm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[0], select)) - .5f;
     const float hm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[2], select)) - .5f;
     blend *= blend; // saturation isn't as prone to artifacts:
-    const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
+    // const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
+    const float Cm = 2.0 * lookup(d->lut[1], select);
     const float L = in[0] * powf(2.0f, 4.0f*Lm);
     out[0] = L;
     out[1] = cosf(2.0*M_PI*(h + hm)) * Cm * C;
@@ -234,7 +234,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 525;
+  module->priority = 499; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;
@@ -260,7 +260,7 @@ void init_presets (dt_iop_module_t *self)
 {
   dt_iop_colorzones_params_t p;
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   p.channel = DT_IOP_COLORZONES_h;
   for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
   {
@@ -348,7 +348,7 @@ void init_presets (dt_iop_module_t *self)
   p.equalizer_y[2][5] = 0.500000;
   dt_gui_presets_add_generic(_("natural skin tones"), self->op, &p, sizeof(p), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -602,7 +602,7 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_set_source_rgba(cr, .7, .7, .7, .6);
     cairo_move_to(cr, 0, - height*c->draw_min_ys[0]);
     for(int k=1; k<DT_IOP_COLORZONES_RES; k++)    cairo_line_to(cr, k*width/(float)(DT_IOP_COLORZONES_RES-1), - height*c->draw_min_ys[k]);
-    for(int k=DT_IOP_COLORZONES_RES-2; k>=0; k--) cairo_line_to(cr, k*width/(float)(DT_IOP_COLORZONES_RES-1), - height*c->draw_max_ys[k]);
+    for(int k=DT_IOP_COLORZONES_RES-1; k>=0; k--) cairo_line_to(cr, k*width/(float)(DT_IOP_COLORZONES_RES-1), - height*c->draw_max_ys[k]);
     cairo_close_path(cr);
     cairo_fill(cr);
     // draw mouse focus circle
@@ -683,10 +683,24 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
 static gboolean
 colorzones_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  if(event->button == 1)
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    // reset current curve
+    dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+    dt_iop_colorzones_params_t *d = (dt_iop_colorzones_params_t *)self->factory_params;
     dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+    for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
+    {
+      p->equalizer_x[c->channel][k] = d->equalizer_x[c->channel][k];
+      p->equalizer_y[c->channel][k] = d->equalizer_y[c->channel][k];
+    }
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(self->widget);
+  }
+  else if(event->button == 1)
+  {
     c->drag_params = *(dt_iop_colorzones_params_t *)self->params;
     const int inset = DT_IOP_COLORZONES_INSET;
     int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
@@ -794,7 +808,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), c->select_by, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->select_by), "changed", G_CALLBACK (select_by_changed), (gpointer)self);
 
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker2, CPF_STYLE_FLAT);
+  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);

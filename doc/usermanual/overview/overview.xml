@@ -12,8 +12,11 @@
 			Most of the actions on the pixelpipe are done in CIELab.</para>
 
 	<sect1 status="final"><title>Preferences</title>
-		<para> A recently introduced button located at the upper panel allows you to define various parameters.
+		<para> A button located at the upper panel (displaying a wheel) allows you to define various parameters.
 		</para>
+		<para> The options are quite self-explaining. In case you need more information, just let your mouse hover text and/or entry box to display more information.
+		</para>
+
 	</sect1>
 
 	<sect1 status="final"><title>User interface</title>
@@ -56,6 +59,10 @@
 				<para>The lighttable view is where you manage your images and filmrolls; it's in that view that you rate, add tags, add colorlabels, export images among other
 					actions.
 				</para>
+
+				<para>You can perform, on image under the mouse pointer, some actions using key accelerators; see "Lighttable" chapter.
+				</para>
+
 			</sect3>
 			<sect3 status="final"><title>Darkroom</title>
 				<para>In the darkroom view you develop a specific image using the available modules.
@@ -65,55 +72,105 @@
 				<para>This view is where you do camera tethering.
 				</para>
 			</sect3>
+
+			<sect3 status="final"><title>Filmstrip</title>
+				<para>The filmstrip shows the same images as lighttable with respect to filter and sort orders; it is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
+			  	You can navigate along the filmstrip by wheel scrolling.
+				The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image, 
+				switch to another image to develop by double clicking the thumb in the filmstrip. You can also rate the images as you do in lighttable, copy/paste historystack, etc.
+				</para>
+				<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+				
+			</sect3>
 		</sect2>		
 		
-		<sect2 status="final"><title>Filmstrip</title>
-			<para>The filmstrip shows the same images as lighttable with respect to filter and sort orders and are turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
-			  You can navigate along the filmstrip by wheel scrolling.
-				The filmstrip allows you to interact with images when you are not in lighttable mode. For example you can, while being in darkroom mode and developing an image, 
-				switch to another image to develop by double clicking the thumb in the filmstrip.
-			</para>
-			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
-			<para>The filmstrip also provides some actions to be performed on image under the mouse pointer and here follows a table of available key accelerators
-				for specific actions.
-				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-						<colspec colwidth='3cm'/>
-						<tbody>
-							<row>
-								<entry><emphasis>1 - 4</emphasis></entry>
-								<entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key the image will be unrated
-								</entry>
-							</row>
-							<row>
-								<entry><emphasis>F1 - F3</emphasis></entry><entry>set a color label for the image</entry>
-							</row>
-							<row>
-								<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the historystack of the image</entry>
-							</row>
-							<row>
-								<entry><emphasis>ctrl-v</emphasis></entry><entry>apply the copied historystack onto the image</entry>
-							</row>
-						</tbody>
-					</tgroup></informaltable>
-			</para>
-		</sect2>
+
 	</sect1>
 	
-	<sect1 status="final"><title>Darktable workflow</title>
+	<sect1 status="final"><title>Darktable basic workflow</title>
 		<sect2 status="draft"><title>Importing images</title>
 			<para>To begin with Darktable, you first need to import images. You can either import
 					from your filesystem or from your camera if supported.</para>
-			<para>You can add a picture to filmroll by simply cliking again on "import filmroll", then selecting the folder matching your filmroll.
-			Darktable will analyse its content, detect the images already imported and import only the new pictures.
+			<para>In the left panel you will find the import module, here you have the choice to import either a single image or a folder,
+					Darktable will analyse its content, detect images that is already imported and only import new images.
 			</para>
 		</sect2>
-		
+				
 		<sect2 status="draft"><title>Importing from camera</title>
-			<para></para>
+			<sect3><title>Introduction</title>
+				<para>Connect your camera to your system and if you distribution tries to automount it, select the option to abort the mount operation
+					otherwise the camera will be locked and not accessible from within Darktable.</para>
+
+				<para>In the left panel of lighttable view you have the import pane and if your don't see your camera there you need to hit the
+					scan for devices button. Your camera will then appear in same pane with additional actions: import and tethering.</para>
+			</sect3>
+			
+			<sect3 status="draft"><title>Settings</title>
+			</sect3>
 		</sect2>
 		
+		<sect2 status="draft"><title>Basic correction</title>
+			<sect3><title>Introduction</title>
+				<para>This section will guide you thru the basics about developing your image which includes most common changes to an image like
+					noise reduction, temparature, exposure etc.
+				</para>
+				
+				<para>To begin you need to open an image in Darkroom mode which you will do by double clicking an image thumbnail on the lighttable,
+					it's in the darkroom mode you do the actual adjustments for an image and you have an arsenal of modules at your hand to help you 
+					reach your goal.
+				</para>
+				
+				<para>Each change you make on a module when developing your image is turned into a history stackitem, the history is stored in database
+					and in an XMP sidecar file for the specific image.
+				</para>
+				
+				<para>
+					On the left panel in darkroom mode you have the history stack showing changes starting from bottom and building up with each change 
+					you have made to the image, you can select a point in this history to show how the image looked in that point for comparisation of changes.
+					The stack can be compressed and will discard changes during the development but will make it optimized, when you think you are done
+					and have a good feeling of what you have done, just compress the history stack.
+				</para>
+				
+				<para>
+					Darktables ships with a bunch of modules and each of them is arranged into groups named modules groups, these module groups are accessed
+					as toggle buttons in the right panel just under the histogram.
+					There are also to special module groups named active and favorites, were active will show only modules enabled in history for the current image and
+					favorites will only show modules selected as favorite by you, this is done in the "more plugins" at bottom of left panel, just click your favorite module
+					until it gets an red tinted background and you have choosed your favorite.
+				</para>
+			</sect3>
+			
+			<sect3 status="draft"><title>Whitebalance</title>
+				<para>This module controls the whitebalance of the image, its always enabled and reads its default
+					values from metadata embedded in the image which will be set by your camera.
+					The most common change here will be finetuning the whitebalance and this is done using the
+					temperature in slider.
+					Taking it down would make the color balance cooder and steering it up will make it warmer.
+				</para>
+			</sect3>
+			
+			<sect3 status="draft"><title>Exposure</title>
+				<para>This might be the simplest plugin of them all, fine tune your exposure and use the histogram to guide you if you dont know what you are doing,
+						you can also boost black level by increasing the black but be careful, use small amount like 0.005 steps.
+						If you feel lucky use the auto correction feature, this might fail of several technical reasons...
+				</para>
+			</sect3>
+			
+			<sect3 status="draft"><title>Noise reduction</title>
+				<para></para>
+			</sect3>
+			
+			
+		</sect2>
+
 		<sect2 status="draft"><title>Exporting images</title>
-			<para></para>
+			<para>Images are exported from lighttable and is done using the export module in right panel, export means in general, save my developed RAW image as an jpeg.</para>
+			<para>The export is also modularized into storage and format. Darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more, 
+				format modules is the actual image formats such as jpeg,png,tiff,openexr and more.
+			</para>
+			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image size leave 
+				them as zero if you want orginal resolution and hit the export button.
+			</para>
 		</sect2>
 	</sect1>
 </chapter>

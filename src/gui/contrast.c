@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 Henrik Andersson.
+    copyright (c) 2009--2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 
 #define CONTRAST_STEP 0.1
 #define CONTRAST_AMOUNT 0.4
+#define BRIGHTNESS_STEP 0.1
+#define BRIGHTNESS_AMOUNT 1.0
 
 GtkStyle *_main_window_orginal_style;
 GtkStyle *_module_orginal_style;
@@ -33,10 +35,14 @@ GtkStyle *_module_orginal_style;
 void
 _gui_contrast_apply ()
 {
+  /* calculate contrast multipliers */
   float contrast = dt_conf_get_float ("ui_contrast");
-  float amount=contrast*CONTRAST_AMOUNT;
-  float increase = 1.0+amount;
-  float decrease = 1.0-amount;
+  float contrast_amount = contrast*CONTRAST_AMOUNT;
+  float contrast_increase = 1.0+contrast_amount;
+  float contrast_decrease = 1.0-contrast_amount;
+
+  /* calculate a brightness multiplier */
+  float brightness = (1.0 + ((-0.2 + dt_conf_get_float ("ui_brightness")) * BRIGHTNESS_AMOUNT) );
 
   gchar rc[4096]= {0};
   g_snprintf (rc,4096,"\
@@ -65,52 +71,50 @@ style \"clearlooks-vbrightbg\" = \"clearlooks-default\" \
 ",
               /* clearlooks-default */
               //text[NORMAL]
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].red * increase)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].green * increase)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].blue * increase)/65535.0)),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].red * contrast_increase)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].green * contrast_increase)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_NORMAL].blue * contrast_increase)/65535.0)*brightness),0,255),
               //text[ACTIVE]
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].red * increase)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].green * increase)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].blue * increase)/65535.0)),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].red * contrast_increase)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].green * contrast_increase)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_ACTIVE].blue * contrast_increase)/65535.0)*brightness),0,255),
               //text[INSENSITIVE]
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].red * increase)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].green * increase)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].blue * increase)/65535.0)),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].red * contrast_increase)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].green * contrast_increase)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->text[GTK_STATE_INSENSITIVE].blue * contrast_increase)/65535.0)*brightness),0,255),
               // bg[NORMAL]
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].red * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].green * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].blue * decrease)/65535.0)),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].red * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].green * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_NORMAL].blue * contrast_decrease)/65535.0)*brightness),0,255),
               // bg[ACTIVE[
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].red * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].green * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].blue * decrease)/65535.0)),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].red * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].green * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_ACTIVE].blue * contrast_decrease)/65535.0)*brightness),0,255),
               // bg[SELECTED]
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].red * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].green * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].blue * decrease)/65535.0)),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].red * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].green * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->bg[GTK_STATE_SELECTED].blue * contrast_decrease)/65535.0)*brightness),0,255),
 
               // base[NORMAL]
-              (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].red * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].green * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].blue * decrease)/65535.0)),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].red * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].green * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->base[GTK_STATE_NORMAL].blue * contrast_decrease)/65535.0)*brightness),0,255),
               // base[ACTIVE]
-              (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].red * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].green * decrease)/65535.0)),
-              (int)(255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].blue * decrease)/65535.0)),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].red * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].green * contrast_decrease)/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_main_window_orginal_style->base[GTK_STATE_ACTIVE].blue * contrast_decrease)/65535.0)*brightness),0,255),
 
               /* clearlooks-brightbg */
-              (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].red * (1.0+(amount*0.1)) )/65535.0)),
-              (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].green * (1.0+(amount*0.1)) )/65535.0)),
-              (int)(255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].blue * (1.0+(amount*0.1)) )/65535.0))
+              (int)CLAMP((255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].red * (1.0+(contrast_amount*0.1)) )/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].green * (1.0+(contrast_amount*0.1)) )/65535.0)*brightness),0,255),
+              (int)CLAMP((255*CLIP ((_module_orginal_style->bg[GTK_STATE_NORMAL].blue * (1.0+(contrast_amount*0.1)) )/65535.0)*brightness),0,255)
 
 
              );
 
-// fprintf(stderr,"RC: %s\n",rc);
-
   gtk_rc_parse_string (rc);
 
-  //  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  /* apply newly parsed colors */
   gtk_rc_reset_styles (gtk_settings_get_default());
 }
 
@@ -118,18 +122,21 @@ void
 dt_gui_contrast_init ()
 {
   /* create a copy of orginal style of window */
-  GtkWidget *window = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   /* realize window to enshure style is applied before copy */
   gtk_widget_realize(window);
   _main_window_orginal_style = gtk_style_copy (window->style);
 
-
   /* get clearlooks-brightbg orginal style */
-  window = glade_xml_get_widget (darktable.gui->main_window, "import_eventbox");
-  gtk_widget_realize(window);
-  _module_orginal_style = gtk_style_copy (window->style);
 
+  /* create a eventbox and add to */
+  GtkWidget *ev = gtk_event_box_new();
+  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER,ev);
+  gtk_widget_realize(ev);
+  _module_orginal_style = gtk_style_copy (ev->style);
+
+  gtk_widget_destroy(ev);
 
   /* apply current contrast value */
   _gui_contrast_apply ();
@@ -163,3 +170,29 @@ dt_gui_contrast_decrease ()
   }
 }
 
+
+void dt_gui_brightness_increase()
+{
+  float brightness = dt_conf_get_float ("ui_brightness");
+  if (brightness < 1.0)
+  {
+    /* calculate new brightness and store value */
+    brightness = fmin (1.0,brightness+BRIGHTNESS_STEP);
+    dt_conf_set_float ("ui_brightness",brightness);
+    /* apply new brightness setting */
+    _gui_contrast_apply ();
+  }
+}
+
+void dt_gui_brightness_decrease()
+{
+  float brightness = dt_conf_get_float ("ui_brightness");
+  if (brightness > 0.0)
+  {
+    /* calculate new brightness and store value */
+    brightness = fmax (0.0,brightness-BRIGHTNESS_STEP);
+    dt_conf_set_float ("ui_brightness",brightness);
+    /* apply new brightness setting */
+    _gui_contrast_apply ();
+  }
+}

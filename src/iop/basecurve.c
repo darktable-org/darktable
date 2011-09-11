@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include "gui/histogram.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -37,6 +36,8 @@
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 #define DT_IOP_TONECURVE_RES 64
+
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -58,6 +59,7 @@ static const char panasonic[] = N_("panasonic like");
 static const char leica[] = N_("leica like");
 static const char kodak_easyshare[] = N_("kodak easyshare like");
 static const char konica_minolta[] = N_("konica minolta like");
+static const char samsung[] = N_("samsung like");
 static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
 static const char fotogenetic_v42[] = N_("fotogenetic (EV3)");
 
@@ -93,6 +95,8 @@ static const basecurve_preset_t basecurve_presets[] =
   {kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, 51200, {{0.000000, 0.044355, 0.133065, 0.209677, 0.572581, 1.000000}, {0.000000, 0.020967, 0.154322, 0.300301, 0.753477, 1.000000}, 0}, 1},
   // pascals minolta curve
   {konica_minolta, "MINOLTA", "", 0, 51200, {{0.000000, 0.020161, 0.112903, 0.500000, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
+  // pascals samsung curve (needs testing):
+  {samsung, "SAMSUNG", "", 0, 51200, {{0.000000, 0.044355, 0.149194, 0.487903, 0.891129, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // Fotogenetic - Point and shoot v4.1
   {fotogenetic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
   // Fotogenetic - EV3 v4.2
@@ -118,6 +122,7 @@ typedef struct dt_iop_basecurve_data_t
 {
   dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
   float table[0x10000];        // precomputed look-up table for tone curve
+  float unbounded_coeffs[2];   // approximation for extrapolation
 }
 dt_iop_basecurve_data_t;
 
@@ -140,11 +145,18 @@ groups ()
 }
 
 
+int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+
 void init_presets (dt_iop_module_so_t *self)
 {
   // transform presets above to db entries.
   // sql begin
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   for(int k=0; k<basecurve_presets_cnt; k++)
   {
     // add the preset.
@@ -157,26 +169,47 @@ void init_presets (dt_iop_module_so_t *self)
     dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, basecurve_presets[k].autoapply);
   }
   // sql commit
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->data;
 
-  cl_int err;
+  cl_mem dev_m = NULL;
+  cl_mem dev_coeffs = NULL;
+  cl_int err = -999;
   const int devid = piece->pipe->devid;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  cl_mem dev_m = dt_opencl_copy_host_to_device(d->table, 256, 256, devid, sizeof(float));
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_basecurve, 2, sizeof(cl_mem), (void *)&dev_m);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_basecurve, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue basecurve kernel! %d\n", err);
-  clReleaseMemObject(dev_m);
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
+  if (dev_m == NULL) goto error;
+
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*2, d->unbounded_coeffs);
+  if (dev_coeffs == NULL) goto error;
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 4, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve, 5, sizeof(cl_mem), (void *)&dev_coeffs);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve, sizes);
+
+  if(err != CL_SUCCESS) goto error;
+  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_coeffs);
+  return TRUE;
+
+error:
+  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 
@@ -193,9 +226,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
-    outp[0] = d->table[CLAMP((int)(inp[0]*0x10000ul), 0, 0xffff)];
-    outp[1] = d->table[CLAMP((int)(inp[1]*0x10000ul), 0, 0xffff)];
-    outp[2] = d->table[CLAMP((int)(inp[2]*0x10000ul), 0, 0xffff)];
+    for(int i=0;i<3;i++)
+    {
+      // use base curve for values < 1, else use extrapolation.
+      if(inp[i] < 1.0f) outp[i] = d->table[CLAMP((int)(inp[i]*0x10000ul), 0, 0xffff)];
+      else              outp[i] = dt_iop_eval_exp(d->unbounded_coeffs, inp[i]);
+    }
   }
 }
 
@@ -204,11 +240,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)p1;
-#ifdef HAVE_GEGL
-  for(int k=0; k<6; k++) dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
-  gegl_node_set(piece->input, "curve", d->curve, NULL);
-#else
-  // printf("committing params:\n");
   for(int k=0; k<6; k++)
   {
     // printf("tmp.tonecurve_x[%d] = %f;\n", k, p->tonecurve_x[k]);
@@ -216,7 +247,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_draw_curve_set_point(d->curve, k, p->tonecurve_x[k], p->tonecurve_y[k]);
   }
   dt_draw_curve_calc_values(d->curve, 0.0f, 1.0f, 0x10000, NULL, d->table);
-#endif
+
+  // now the extrapolation stuff:
+  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
+                      d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]};
+  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -259,7 +297,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 260;
+  module->priority = 229; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t)
@@ -287,13 +325,13 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)malloc(sizeof(dt_iop_basecurve_global_data_t));
   module->data = gd;
-  gd->kernel_basecurve = dt_opencl_create_kernel(darktable.opencl, program, "basecurve");
+  gd->kernel_basecurve = dt_opencl_create_kernel(program, "basecurve");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_basecurve);
+  dt_opencl_free_kernel(gd->kernel_basecurve);
   free(module->data);
   module->data = NULL;
 }
@@ -398,8 +436,8 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   // draw lum h istogram in background
   dt_develop_t *dev = darktable.develop;
   float *hist, hist_max;
-  hist = dev->histogram_pre;
-  hist_max = dev->histogram_pre_max;
+  hist = dev->histogram_pre_tonecurve;
+  hist_max = dev->histogram_pre_tonecurve_max;
   if(hist_max > 0)
   {
     cairo_save(cr);

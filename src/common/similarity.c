@@ -103,13 +103,13 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
   dt_similarity_lightmap_t orginal_lightmap,test_lightmap;
  
   /* create temporary mem table for matches */
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "create temporary table if not exists similar_images (id integer,score real)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from similar_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create temporary table if not exists similar_images (id integer,score real)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from similar_images", NULL, NULL, NULL);
   
   /* 
    * get the histogram and lightmap data for image to match against 
    */
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select histogram,lightmap from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select histogram,lightmap from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if (sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -153,11 +153,11 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
     
     /* add target image with 100.0 in score into result to ensure it always shown in top */
     sprintf(query,"insert into similar_images(id,score) values(%d,%f)",imgid,100.0);
-    DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
-    dt_control_queue_draw_all();
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+    dt_control_queue_redraw_center();
     
     /* loop thru images and generate score table */
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id,histogram,lightmap from images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id,histogram,lightmap from images", -1, &stmt, NULL);
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
       float score_histogram=0, score_lightmap=0, score_colormap=0;
@@ -204,10 +204,10 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
         if(score >= 0.92)
         {
           sprintf(query,"insert into similar_images(id,score) values(%d,%f)",sqlite3_column_int(stmt, 0),score);
-          DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+          DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
                     
           /* lets redraw the view */
-          dt_control_queue_draw_all();
+          dt_control_queue_redraw_center();
         }
       } else
         fprintf(stderr,"Image has inconsisten similarity matching data..\n");
@@ -226,7 +226,7 @@ void dt_similarity_image_dirty(uint32_t imgid)
 void dt_similarity_histogram_dirty(uint32_t imgid)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set histogram = NULL where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set histogram = NULL where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
@@ -235,7 +235,7 @@ void dt_similarity_histogram_dirty(uint32_t imgid)
 void dt_similarity_histogram_store(uint32_t imgid, const dt_similarity_histogram_t *histogram)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set histogram =?1 where id = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set histogram =?1 where id = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, histogram,sizeof(dt_similarity_histogram_t),SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
@@ -248,7 +248,7 @@ void dt_similarity_histogram_store(uint32_t imgid, const dt_similarity_histogram
 void dt_similarity_lightmap_store(uint32_t imgid, const dt_similarity_lightmap_t *lightmap)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set lightmap =?1 where id = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set lightmap =?1 where id = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, lightmap,sizeof(dt_similarity_lightmap_t),SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
@@ -258,7 +258,7 @@ void dt_similarity_lightmap_store(uint32_t imgid, const dt_similarity_lightmap_t
 void dt_similarity_lightmap_dirty(uint32_t imgid)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update images set lightmap = NULL where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set lightmap = NULL where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);

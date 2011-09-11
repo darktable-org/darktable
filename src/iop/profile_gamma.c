@@ -28,6 +28,7 @@
 #include "iop/profile_gamma.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 
 DT_MODULE(1)
@@ -41,6 +42,23 @@ int
 groups ()
 {
   return IOP_GROUP_COLOR;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear part"));
+  dt_accel_register_slider_iop(self, FALSE,
+                               NC_("accel", "gamma exponential part"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_profile_gamma_gui_data_t *g =
+      (dt_iop_profile_gamma_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "linear part", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "gamma exponential part",
+                              GTK_WIDGET(g->scale2));
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -149,7 +167,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_profile_gamma_params_t);
   module->gui_data = NULL;
-  module->priority = 299; // colorin module->priority - 1
+  module->priority = 291; // module order created by iop_dependencies.py, do not edit!
   dt_iop_profile_gamma_params_t tmp = (dt_iop_profile_gamma_params_t)
   {
     1.0, 1.0

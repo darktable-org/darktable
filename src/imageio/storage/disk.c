@@ -21,6 +21,7 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/utility.h"
 #include "common/variables.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -29,7 +30,6 @@
 #include "dtgtk/paint.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <glade/glade.h>
 
 DT_MODULE(1)
 
@@ -59,7 +59,7 @@ static void
 button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -174,6 +174,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
       snprintf(d->filename+strlen(d->filename), 1024-strlen(d->filename), "_$(SEQUENCE)");
     }
 
+    gchar* fixed_path = dt_util_fix_path(d->filename);
+    g_strlcpy(d->filename, fixed_path, 1024);
+    g_free(fixed_path);
 
     d->vp->filename = dirname;
     d->vp->jobcode = "export";

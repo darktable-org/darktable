@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 #define DT_GUI_GTK_H
 
 #include <gtk/gtk.h>
-#include <glade/glade.h>
-#include "gui/navigation.h"
-#include "gui/histogram.h"
+#include <stdint.h>
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
@@ -29,46 +27,37 @@
 #define DT_GUI_VIEW_SWITCH_TO_LIBRARY   2
 #define DT_GUI_VIEW_SWITCH_TO_DARKROOM  3
 
-typedef struct dt_gui_key_accel_t
+typedef struct dt_gui_widgets_t
 {
-  guint   state;
-  guint   keyval;
-  guint16 hardware_keycode;
-  void (*callback)(void *);
-  void *data;
-}
-dt_gui_key_accel_t;
 
-typedef struct dt_gui_snapshot_t
-{
-  float zoom_x, zoom_y, zoom_scale;
-  int32_t zoom, closeup;
-  char filename[30];
+  // Borders
+  GtkWidget *left_border;
+  GtkWidget *right_border;
+  GtkWidget *bottom_border;
+  GtkWidget *top_border;
+
+  /* left panel */
+  GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and fille on center
+  GtkTable *panel_right;               
+
 }
-dt_gui_snapshot_t;
+dt_gui_widgets_t;
 
 typedef struct dt_gui_gtk_t
 {
-  GladeXML *main_window;
+
+  struct dt_ui_t *ui;
+
+  dt_gui_widgets_t widgets;
+
   GdkPixmap *pixmap;
-  GList *redraw_widgets;
-  GList *key_accels;
   GtkMenu *presets_popup_menu;
-  dt_gui_navigation_t navigation;
-  dt_gui_histogram_t histogram;
-
-  int32_t num_snapshots, request_snapshot, selected_snapshot;
-  dt_gui_snapshot_t snapshot[4];
-  cairo_surface_t *snapshot_image;
-
+  
   int32_t reset;
   float bgcolor[3];
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
-  float picked_color_output_cs[3];
-  float picked_color_output_cs_min[3];
-  float picked_color_output_cs_max[3];
 }
 dt_gui_gtk_t;
 
@@ -79,8 +68,109 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus (GtkWidget *w);
 
-/** register an accel callback for the whole window. data is not freed on unregister. */
-void dt_gui_key_accel_register(guint state, guint keyval, void (*callback)(void *), void *data);
-void dt_gui_key_accel_unregister(void (*callback)(void *));
+/*
+ * new ui api 
+ */
+
+
+typedef enum dt_ui_container_t
+{
+  /* the top container of left panel, the top container
+     disables the module expander and does not scroll with other modules 
+  */
+  DT_UI_CONTAINER_PANEL_LEFT_TOP,
+
+  /* the center container of left panel, the center container
+     contains the scrollable area that all plugins are placed within and last
+     widget is the end marker. 
+     This container will always expand|fill empty veritcal space
+  */
+  DT_UI_CONTAINER_PANEL_LEFT_CENTER,
+
+  /* the bottom container of left panel, this container works just like
+     the top container but will be attached to bottom in the panel, such as
+     plugins like background jobs module in lighttable and the plugin selection 
+     module in darkroom,
+  */
+  DT_UI_CONTAINER_PANEL_LEFT_BOTTOM,
+
+  DT_UI_CONTAINER_PANEL_RIGHT_TOP,
+  DT_UI_CONTAINER_PANEL_RIGHT_CENTER,
+  DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM,
+
+
+  /* the top header bar, left slot where darktable name is placed */
+  DT_UI_CONTAINER_PANEL_TOP_LEFT,
+  /* center which is expanded as wide it can */
+  DT_UI_CONTAINER_PANEL_TOP_CENTER,
+  /* right side were the different views are accessed */
+  DT_UI_CONTAINER_PANEL_TOP_RIGHT,
+
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT,
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER,
+  DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT,
+
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT,
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER,
+  DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT,
+
+  /* this panel is placed at bottom of ui 
+     only used by the filmstrip if shown */
+  DT_UI_CONTAINER_PANEL_BOTTOM,
+
+  /* Count of containers */
+  DT_UI_CONTAINER_SIZE
+} dt_ui_container_t;
+
+typedef enum dt_ui_panel_t
+{
+  /* the header panel */
+  DT_UI_PANEL_TOP,
+  /* center top toolbar panel */
+  DT_UI_PANEL_CENTER_TOP,
+  /* center bottom toolbar panel */
+  DT_UI_PANEL_CENTER_BOTTOM,
+  /* left panel */
+  DT_UI_PANEL_LEFT,
+  /* right panel */
+  DT_UI_PANEL_RIGHT,
+  /* bottom panel */
+  DT_UI_PANEL_BOTTOM,
+
+  DT_UI_PANEL_SIZE
+} dt_ui_panel_t;
+
+typedef enum dt_ui_border_t
+{
+  DT_UI_BORDER_TOP,
+  DT_UI_BORDER_BOTTOM,
+  DT_UI_BORDER_LEFT,
+  DT_UI_BORDER_RIGHT,
+
+  DT_UI_BORDER_SIZE
+} dt_ui_border_t;
+
+/** \brief initialize the ui context */
+struct dt_ui_t *dt_ui_initialize(int argc, char **argv);
+/** \brief destroys the context and frees resources */
+void dt_ui_destroy(struct dt_ui_t *ui);
+/** \brief add's a widget to a defined container */
+void dt_ui_container_add_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
+/** \brief gives a widget focus in the container */
+void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c, GtkWidget *w);
+/** \brief removes all child widgets from container */
+void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c);
+/** \brief shows/hide a panel */
+void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show);
+/** \brief restore saved state of panel visibility for current view */
+void dt_ui_restore_panels(struct dt_ui_t *ui);
+/** \brief toggle view of panels eg. collaps/expands to previous view state */
+void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
+/** \brief get visible state of panel */
+gboolean dt_ui_panel_visible(struct dt_ui_t *ui,const dt_ui_panel_t);
+/** \brief get the center drawable widget */
+GtkWidget *dt_ui_center(struct dt_ui_t *ui);
+/** \brief get the main window widget */
+GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 
 #endif

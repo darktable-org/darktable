@@ -19,6 +19,7 @@
 #define DT_CONTROL_H
 
 #include <inttypes.h>
+#include <gtk/gtk.h>
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
@@ -26,7 +27,7 @@
 #include "common/dtpthread.h"
 #include "control/settings.h"
 #include <gtk/gtk.h>
-#include "gui/background_jobs.h"
+#include "libs/lib.h"
 // #include "control/job.def"
 
 #define DT_CONTROL_MAX_JOBS 30
@@ -42,84 +43,8 @@
 #define DT_CTL_WORKER_6 5 // dev prefetch
 #define DT_CTL_WORKER_7 6 // scheduled jobs nice level
 
-// keycodes mapped to dvorak keyboard layout for easier usage
-#if defined(__APPLE__) || defined(__MACH__)
-#if 0
-#define KEYCODE_a            8   // mac keycodes X11 :(
-#define KEYCODE_o            9
-#define KEYCODE_e           10
-#define KEYCODE_z           0xff // TODO: should be z 
-#define KEYCODE_apostrophe  20
-#define KEYCODE_comma       21
-#define KEYCODE_period      22
-#define KEYCODE_1           26
-#define KEYCODE_2           27
-#define KEYCODE_3           28
-#define KEYCODE_4           29
-#define KEYCODE_Escape      61
-#define KEYCODE_Caps        -1
-#define KEYCODE_F7        107
-#define KEYCODE_F8        108
-#define KEYCODE_F11        111
-#define KEYCODE_Up         134
-#define KEYCODE_Down       133
-#define KEYCODE_Left        78
-#define KEYCODE_Right       74
-#define KEYCODE_Tab         56
-#define KEYCODE_Return      36
-#define KEYCODE_BackSpace   22
-#else
-#define KEYCODE_a           0   // mac keycodes carbon :)
-#define KEYCODE_o           1   // s
-#define KEYCODE_e           2   // d
-#define KEYCODE_z           0xff // TODO: should be z 
-#define KEYCODE_apostrophe  12  // q
-#define KEYCODE_comma       13  // w
-#define KEYCODE_period      14  // e .. in qwerty :)
-#define KEYCODE_1           18
-#define KEYCODE_2           19
-#define KEYCODE_3           20
-#define KEYCODE_4           21
-#define KEYCODE_Escape      53
-#define KEYCODE_Caps        57
-#define KEYCODE_F7        98
-#define KEYCODE_F8        99
-#define KEYCODE_F11        103
-#define KEYCODE_Up         126
-#define KEYCODE_Down       125
-#define KEYCODE_Left       123
-#define KEYCODE_Right      124
-#define KEYCODE_Tab         48
-#define KEYCODE_Space       49
-#define KEYCODE_Return      36
-#define KEYCODE_BackSpace   22
-#endif
-#else
-#define KEYCODE_a           38
-#define KEYCODE_o           39
-#define KEYCODE_e           40
-#define KEYCODE_z           52
-#define KEYCODE_apostrophe  24
-#define KEYCODE_comma       25
-#define KEYCODE_period      26
-#define KEYCODE_1           10
-#define KEYCODE_2           11
-#define KEYCODE_3           12
-#define KEYCODE_4           13
-#define KEYCODE_Escape       9
-#define KEYCODE_Caps        66
-#define KEYCODE_F7        73
-#define KEYCODE_F8        74
-#define KEYCODE_F11         95
-#define KEYCODE_Up         111
-#define KEYCODE_Down       116
-#define KEYCODE_Left       113
-#define KEYCODE_Right      114
-#define KEYCODE_Tab         23
-#define KEYCODE_Space       65
-#define KEYCODE_Return      36
-#define KEYCODE_BackSpace   22
-#endif
+// A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
+#define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
 
 typedef GdkCursorType dt_cursor_t;
 
@@ -131,11 +56,10 @@ void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, int which);
 void dt_control_mouse_leave();
 void dt_control_mouse_enter();
-int  dt_control_key_pressed(uint16_t which);
-int  dt_control_key_released(uint16_t which);
-int  dt_control_key_pressed_override(uint16_t which);
+int  dt_control_key_pressed(guint key, guint state);
+int  dt_control_key_released(guint key, guint state);
+int  dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
-void dt_control_gui_queue_draw();
 void dt_control_log(const char* msg, ...);
 void dt_control_log_busy_enter();
 void dt_control_log_busy_leave();
@@ -144,19 +68,61 @@ void dt_control_write_sidecar_files();
 void dt_control_delete_images();
 void dt_ctl_get_display_profile(GtkWidget *widget, guint8 **buffer, gint *buffer_size);
 
-// called from core
-void dt_control_add_history_item(int32_t num, const char *label);
-void dt_control_clear_history_items(int32_t num);
+/** \brief request redraw of the workspace.
+    This redraws the whole workspace within a gdk critical 
+    section to prevent several threads to carry out a redraw
+    which will end up in crashes.
+ */
+void dt_control_queue_redraw();
 
-// could be both
-void dt_control_queue_draw_all();
-void dt_control_queue_draw(GtkWidget *widget);
+/** \brief request redraw of center window.
+    This redraws the center view within a gdk critical section
+    to prevent several thrads to carry out the redraw.
+*/
+void dt_control_queue_redraw_center();
+
+/** \brief threadsafe request of redraw of specific widget.
+    Use this function if you need to redraw a specific widget
+    if your current thread context is not gtk main thread.
+*/
+void dt_control_queue_redraw_widget(GtkWidget *widget);
+
+/** \brief smart wrapper for entering gdk critical section.
+    This wrapper check is current thread context already have
+    entered a gdk criical section to prevent entering the critical
+    section that will reduce a application lock.
+
+    \return true if current call have the lock, see usage in note.
+
+    \note It's very importent that dt_control_gdk_unlock()
+    not is called if its locked on current thread in another place
+    so its very important to use the following code semantics:
+    \code
+    gboolean i_have_lock = dt_control_gdk_lock();
+    gtk_widget_queue_redraw();
+    if(i_have_lock) dt_control_gdk_unlock();
+    \endcode
+*/
+gboolean dt_control_gdk_lock();
+
+/** \brief smart wrapper for leaving a gdk critical section */
+void dt_control_gdk_unlock();
+
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 
-void dt_control_save_gui_settings(dt_ctl_gui_mode_t mode);
-void dt_control_restore_gui_settings(dt_ctl_gui_mode_t mode);
 struct dt_control_t;
+struct dt_job_t;
+
+/* backgroundjobs proxy funcs */
+/** creates a background job and returns hash id reference */
+guint dt_control_backgroundjobs_create(const struct dt_control_t *s,guint type,const gchar *message);
+/** destroys a backgroundjob using hash id reference */
+void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, guint id);
+/** sets the progress of a backgroundjob using hash id reference */
+void dt_control_backgroundjobs_progress(const struct dt_control_t *s, guint id, double progress);
+/** assign a dt_job_t to a bgjob which makes it cancellable thru ui interaction */
+void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, guint id,struct dt_job_t *job);
 
 /** turn the use of key accelerators on */
 void dt_control_key_accelerators_on(struct dt_control_t *s);
@@ -212,6 +178,17 @@ int dt_control_job_get_state(dt_job_t *j);
 /** wait for a job to finish execution. */
 void dt_control_job_wait(dt_job_t *j);
 
+//z All the accelerator keys for the key_pressed style shortcuts
+typedef struct dt_control_accels_t
+{
+  GtkAccelKey
+    filmstrip_forward, filmstrip_back,
+    lighttable_up, lighttable_down, lighttable_right,
+    lighttable_left, lighttable_center, lighttable_preview,
+    global_sideborders, global_header;
+
+} dt_control_accels_t;
+
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 20000
@@ -222,6 +199,19 @@ void dt_control_job_wait(dt_job_t *j);
  */
 typedef struct dt_control_t
 {
+  // Keyboard accelerator groups
+  GtkAccelGroup *accelerators;
+
+  // Accelerator group path lists
+  GSList *accelerator_list;
+
+  // Cached accelerator keys for key_pressed shortcuts
+  dt_control_accels_t accels;
+
+  // Accel remapping data
+  gchar *accel_remap_str;
+  GtkTreePath *accel_remap_path;
+
   // gui related stuff
   double tabborder;
   int32_t width, height;
@@ -258,10 +248,24 @@ typedef struct dt_control_t
   dt_job_t job_res[DT_CTL_WORKER_RESERVED];
   uint8_t new_res[DT_CTL_WORKER_RESERVED];
   pthread_t thread_res[DT_CTL_WORKER_RESERVED];
+
+  /* proxy */
+  struct {
+    /* proxy functions for backgroundjobs ui*/
+    struct {
+      dt_lib_module_t *module;
+      guint (*create)(dt_lib_module_t *self, int type, const gchar *message);
+      void (*destroy)(dt_lib_module_t *self, guint id);
+      void (*progress)(dt_lib_module_t *self, guint id, double progress);
+      void (*set_cancellable)(dt_lib_module_t *self, guint id, dt_job_t *job);
+    } backgroundjobs;
+  } proxy;
+
 }
 dt_control_t;
 
 void dt_control_init(dt_control_t *s);
+void dt_control_create_database_schema();
 // join all worker threads.
 void dt_control_shutdown(dt_control_t *s);
 void dt_control_cleanup(dt_control_t *s);

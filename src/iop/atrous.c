@@ -16,9 +16,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "common/opencl.h"
 #include "common/debug.h"
 #include "control/conf.h"
+#include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "gui/gtk.h"
@@ -32,6 +34,10 @@
 
 #define INSET 5
 #define INFL .3f
+
+#define GLOBAL_TILING		// undef to use atrous-specific tiling instead (only for non-opencl)
+
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
 
@@ -48,7 +54,7 @@ DT_MODULE(1)
 													cairo_move_to (cr, .5*(width-ext.width), .98*height);\
 													cairo_show_text(cr, text);
 
-
+#define min(a,b)	((a) < (b) ? (a) : (b))
 
 typedef enum atrous_channel_t
 {
@@ -116,6 +122,23 @@ int
 groups ()
 {
   return IOP_GROUP_CORRECT;
+}
+
+int
+flags ()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_accel_connect_slider_iop(self ,"mix",
+                              ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
 }
 
 static __m128
@@ -268,8 +291,10 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
   return i;
 }
 
+#ifdef GLOBAL_TILING
+/* just process the supplied image buffer, upstream default_process_tiling() does the rest */
 void
-process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs [MAX_NUM_SCALES][4];
@@ -281,7 +306,90 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples (g->sample, d, roi_in, piece);
-    dt_control_queue_draw(GTK_WIDGET(g->area));
+    // tries to acquire gdk lock and this prone to deadlock:
+    // dt_control_queue_draw(GTK_WIDGET(g->area));
+  }
+
+  float *detail[MAX_NUM_SCALES] = { NULL };
+  float *tmp = NULL;
+  float *buf2 = NULL;
+  float *buf1 = NULL;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  tmp = (float *)dt_alloc_align(64, sizeof(float)*4*width*height);
+  if(tmp == NULL)
+  {
+    fprintf(stderr, "[atrous] failed to allocate coarse buffer!\n");
+    goto error;
+  }
+
+  for(int k=0; k<max_scale; k++)
+  {
+    detail[k] = (float *)dt_alloc_align(64, sizeof(float)*4*width*height);
+    if(detail[k] == NULL)
+    {
+      fprintf(stderr, "[atrous] failed to allocate one of the detail buffers!\n");
+      goto error;
+    }
+  }
+
+  buf1 = (float *)i;
+  buf2 = tmp;
+
+  for(int scale=0; scale<max_scale; scale++)
+  {
+    eaw_decompose (buf2, buf1, detail[scale], scale, sharp[scale], width, height);
+    if(scale == 0) buf1 = (float *)o;  // now switch to (float *)o for buffer ping-pong between buf1 and buf2
+    float *buf3 = buf2;
+    buf2 = buf1;
+    buf1 = buf3;
+  }
+
+  for(int scale=max_scale-1; scale>=0; scale--)
+  {
+    eaw_synthesize (buf2, buf1, detail[scale], thrs[scale], boost[scale], width, height);
+    float *buf3 = buf2;
+    buf2 = buf1;
+    buf1 = buf3;
+  }
+  /* due to symmetric processing, output will be left in (float *)o */
+ 
+  for(int k=0; k<max_scale; k++) free(detail[k]);
+  free(tmp);
+  return;
+
+error:
+  for(int k=0; k<max_scale; k++) if(detail[k] != NULL) free(detail[k]);
+  if(tmp != NULL) free(tmp);
+  return;
+}
+#else
+/* if we don't use global tiling, we will in all cases use our own tiling approach, even if tiling is not requested explicitely */
+void
+process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  return self->process_tiling(self, piece, i, o, roi_in, roi_out, 4*sizeof(float));
+}
+#endif
+
+#ifndef GLOBAL_TILING
+/* this defines atrous' own tiling routine (non-opencl) */
+void
+process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
+{
+  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  float thrs [MAX_NUM_SCALES][4];
+  float boost[MAX_NUM_SCALES][4];
+  float sharp[MAX_NUM_SCALES];
+  const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+
+  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  {
+    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    g->num_samples = get_samples (g->sample, d, roi_in, piece);
+    dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
   }
 
   float *detail = NULL;
@@ -313,6 +421,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   detail = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full*max_scale);
   tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
   buf2   = tmp;
+  if(!detail || !tmp || !buf1)
+  {
+    fprintf(stderr, "[atrous] failed to allocate buffers!\n");
+    return;
+  }
 
   const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
   const int width = roi_out->width, height = roi_out->height;
@@ -387,10 +500,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   free(tmp);
   free(tmp2);
 }
+#endif
+
 
 #ifdef HAVE_OPENCL
-void
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem _dev_in, cl_mem _dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+/* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
   float thrs [MAX_NUM_SCALES][4];
@@ -402,163 +518,133 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples (g->sample, d, roi_in, piece);
-    dt_control_queue_draw(GTK_WIDGET(g->area));
+    dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
+    // tries to acquire gdk lock and this prone to deadlock:
+    // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
-  // global scale is roi scale and pipe input prescale
 
   const int devid = piece->pipe->devid;
-  cl_int err;
-  size_t sizes[3];
-  // err = dt_opencl_get_max_work_item_sizes(darktable.opencl, devid, sizes);
-  // if(err != CL_SUCCESS) fprintf(stderr, "could not get max size! %d\n", err);
-  // use WINDOW_SIZE instead of max threads (in, out, 7 detail = 232 MB GPU mem)
-  sizes[0] = sizes[1] = DT_IMAGE_WINDOW_SIZE;
-  sizes[2] = 1;
-
-  // allocate device memory, if needed. else use input from pipe directly.
-  const int need_tiles = roi_in->width > sizes[0] || roi_out->height > sizes[1];
-  cl_mem dev_in = _dev_in, dev_out = _dev_out;
-  if(need_tiles)
-  {
-    dev_in  = dt_opencl_alloc_device(sizes[0], sizes[1], devid, 4*sizeof(float));
-    dev_out = dt_opencl_alloc_device(sizes[0], sizes[1], devid, 4*sizeof(float));
-  }
-  else
-  {
-    sizes[0] = roi_in->width;
-    sizes[1] = roi_in->height;
-  }
-
-  const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
-  const int width = roi_out->width, height = roi_out->height;
-  const int tile_wd = sizes[0] - 2*max_filter_radius, tile_ht = sizes[1] - 2*max_filter_radius;
-  const int tiles_x = need_tiles ? ceilf(width /(float)tile_wd) : 1;
-  const int tiles_y = need_tiles ? ceilf(height/(float)tile_ht) : 1;
-
-  // details for local contrast enhancement:
+  cl_int err = -999;
+  cl_mem dev_tmp = NULL;
   cl_mem dev_detail[max_scale];
+  for(int k=0; k<max_scale; k++) dev_detail[k] = NULL;
+
+  /* allocate space for a temporary buffer. we don't want to use dev_in in the buffer ping-pong below, as we
+     need to keep it for blendops */
+  dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4*sizeof(float));
+  if (dev_tmp == NULL) goto error;
+
+  /* allocate space to store detail information. Requires a number of additional buffers, each with full image size */
   for(int k=0; k<max_scale; k++)
-    dev_detail[k] = dt_opencl_alloc_device(sizes[0], sizes[1], devid, 4*sizeof(float));
+  {
+    dev_detail[k] = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4*sizeof(float));
+    if (dev_detail[k] == NULL) goto error;
+  }
 
-  // FIXME: boundary handling inside tiles!
-  // FIXME: tiles > 1x1 => infinite loop (dim: 7x1024)
-  // for all tiles:
-  for(int tx=0; tx<tiles_x; tx++)
-    for(int ty=0; ty<tiles_y; ty++)
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  size_t origin[] = { 0, 0, 0};
+  size_t region[] = { width, height, 1};
+
+  // copy original input from dev_in -> dev_out as starting point
+  err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+  if(err != CL_SUCCESS) goto error;
+
+  /* decompose image into detail scales and coarse (the latter is left in dev_tmp or dev_out) */
+  for(int s=0; s<max_scale; s++)
+  {
+    const int scale = s;
+
+    if(s & 1)
     {
-      size_t orig0[3] = {0, 0, 0};
-      size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
-      size_t wd = origin[0] + sizes[0] > width  ? width  - origin[0] : sizes[0];
-      size_t ht = origin[1] + sizes[1] > height ? height - origin[1] : sizes[1];
-      size_t region[3] = {wd, ht, 1};
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
+    }
+    else
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_tmp);
+    }
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 5, sizeof(unsigned int), (void *)&scale);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 6, sizeof(float), (void *)&sharp[s]);
 
-      // printf("tile extents: %zd %zd -- %zd %zd\n", origin[0], origin[1], region[0], region[1]);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
 
-      err = CL_SUCCESS;
-      if(need_tiles) err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, _dev_in, dev_in, origin, orig0, region, 0, NULL, NULL);
-      if(err != CL_SUCCESS) fprintf(stderr, "trouble copying image: %d\n", err);
-      clFinish(darktable.opencl->dev[devid].cmd_queue);
-
-
-      if(tx > 0)
-      {
-        origin[0] += max_filter_radius;
-        orig0[0] += max_filter_radius;
-        region[0] = region[0] > max_filter_radius ? region[0] - max_filter_radius : 0;
-      }
-      if(ty > 0)
-      {
-        origin[1] += max_filter_radius;
-        orig0[1] += max_filter_radius;
-        region[1] = region[1] > max_filter_radius ? region[1] - max_filter_radius : 0;
-      }
-
-      if(region[0] == 0 || region[1] == 0) continue;
-
-      for(int s=0; s<max_scale; s++)
-      {
-        const int scale = s;
-        err = dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 2, sizeof(cl_mem), (void *)&dev_detail[s]);
-        if(err != CL_SUCCESS) fprintf(stderr, "couldn't set kernel arg! %d\n", err);
-        if(s & 1)
-        {
-          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_out);
-          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_in);
-        }
-        else
-        {
-          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 1, sizeof(cl_mem), (void *)&dev_out);
-          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 0, sizeof(cl_mem), (void *)&dev_in);
-        }
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 3, sizeof(unsigned int), (void *)&scale);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_decompose, 4, sizeof(float), (void *)&sharp[s]);
-
-        // printf("equeueing kernel with %lu %lu threads\n", local[0], global[0]);
-        err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_decompose, sizes);
-        if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue analysis kernel! %d\n", err);
-        // else fprintf(stderr, "successfully enqueued analysis kernel!\n");
-        clFinish(darktable.opencl->dev[devid].cmd_queue);
-      }
-
-      // now synthesize again:
-      for(int scale=max_scale-1; scale>=0; scale--)
-      {
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  3, sizeof(float), (void *)&thrs[scale][0]);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  4, sizeof(float), (void *)&thrs[scale][1]);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][2]);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][3]);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&boost[scale][0]);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&boost[scale][1]);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][2]);
-        dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][3]);
-        if(scale & 1)
-        {
-          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
-          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_in);
-        }
-        else
-        {
-          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
-          dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_in);
-        }
-
-        err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_synthesize, sizes);
-        if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue synth kernel! %d\n", err);
-        clFinish(darktable.opencl->dev[devid].cmd_queue);
-      }
-      if(need_tiles)
-      {
-        err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, _dev_out, orig0, origin, region, 0, NULL, NULL);
-        if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
-      }
-      else
-      {
-        err = clEnqueueCopyImage(darktable.opencl->dev[devid].cmd_queue, dev_in, dev_out, orig0, orig0, region, 0, NULL, NULL);
-        if(err != CL_SUCCESS) fprintf(stderr, "problem copying back the buffer: %d\n", err);
-      }
-      // clEnqueueReadImage(darktable.opencl->dev[devid].cmd_queue, dev_in, CL_FALSE, orig0, region, 4*width*sizeof(float), 0, out + 4*(width*origin[1] + origin[0]), 0, NULL, NULL);
-      clFinish(darktable.opencl->dev[devid].cmd_queue);
+  /* now synthesize again */
+  for(int scale=max_scale-1; scale>=0; scale--)
+  {
+    if(scale & 1)
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_tmp);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_out);
+    }
+    else
+    {
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 0, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 1, sizeof(cl_mem), (void *)&dev_tmp);
     }
 
-  // free device mem
-  if(need_tiles)
-  {
-    clReleaseMemObject(dev_in);
-    clReleaseMemObject(dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  2, sizeof(cl_mem), (void *)&dev_detail[scale]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  5, sizeof(float), (void *)&thrs[scale][0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  6, sizeof(float), (void *)&thrs[scale][1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  7, sizeof(float), (void *)&thrs[scale][2]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  8, sizeof(float), (void *)&thrs[scale][3]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize,  9, sizeof(float), (void *)&boost[scale][0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 10, sizeof(float), (void *)&boost[scale][1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 11, sizeof(float), (void *)&boost[scale][2]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_synthesize, 12, sizeof(float), (void *)&boost[scale][3]);
+
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
+    if(err != CL_SUCCESS) goto error;
   }
-  for(int k=0; k<max_scale; k++) clReleaseMemObject(dev_detail[k]);
+
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  for(int k=0; k<max_scale; k++)
+    if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  return TRUE;
+
+error:
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  for(int k=0; k<max_scale; k++)
+    if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
+
+void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+  float thrs [MAX_NUM_SCALES][4];
+  float boost[MAX_NUM_SCALES][4];
+  float sharp[MAX_NUM_SCALES];
+  const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
+  const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
+
+  tiling->factor = 2 + 1 + max_scale;
+  tiling->overhead = 0;
+  tiling->overlap = max_filter_radius;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
 
 void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 370;
+  module->priority = 479; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -579,8 +665,8 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 1; // from programs.conf
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)malloc(sizeof(dt_iop_atrous_global_data_t));
   module->data = gd;
-  gd->kernel_decompose  = dt_opencl_create_kernel(darktable.opencl, program, "eaw_decompose");
-  gd->kernel_synthesize = dt_opencl_create_kernel(darktable.opencl, program, "eaw_synthesize");
+  gd->kernel_decompose  = dt_opencl_create_kernel(program, "eaw_decompose");
+  gd->kernel_synthesize = dt_opencl_create_kernel(program, "eaw_synthesize");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -594,8 +680,8 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_decompose);
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_synthesize);
+  dt_opencl_free_kernel(gd->kernel_decompose);
+  dt_opencl_free_kernel(gd->kernel_synthesize);
   free(module->data);
   module->data = NULL;
 }
@@ -647,7 +733,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;
   p.octaves = 7;
 
@@ -794,7 +880,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity"), self->op, &p, sizeof(p), 1);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 static void
@@ -1157,10 +1243,25 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 static gboolean
 area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  // set active point
-  if(event->button == 1)
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+    // reset current curve
+    dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
+    dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+    reset_mix(self);
+    for(int k=0; k<BANDS; k++)
+    {
+        p->x[c->channel2][k] = d->x[c->channel2][k];
+        p->y[c->channel2][k] = d->y[c->channel2][k];
+    }
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(self->widget);
+  }
+  else if(event->button == 1)
+  {
+    // set active point
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     const int inset = INSET;

@@ -30,11 +30,11 @@
             read the short instructions in the file <a href="http://darktable.git.sourceforge.net/git/gitweb.cgi?p=darktable/darktable;a=blob;f=TRANSLATORS;h=8b55a4f319d2a255eedd17b596f3fa4171ab58ff;hb=HEAD">TRANSLATORS</a> in git.
         </li>
         <li>produce <a href="http://blog.pcode.nl/2010/08/31/contributing-backtraces/">helpful stacktraces</a> for bugreports (minimal steps):<br/>
-            $ ./configure --prefix=/usr --enable-debug<br/>
+            $ cmake -DCMAKE_BUILD_TYPE=debug" ..<br/>
             $ make &amp;&amp; sudo make install<br/>
             $ gdb darktable<br/>
             ..crash dt here..<br/>
-            (gdb) bt<br/>
+            (gdb) thread apply all bt full<br/>
             and post the backtrace. even better: try a few prints and figure out
             what seems to be the problem. best: fix it and supply a patch!
         </li>
@@ -86,7 +86,7 @@
       <tr class="odd"><td><img width="52" src="images/avatar.jpg" alt="jo" /></td>
           <td>hanatos</td><td>johannes hanika</td>
           <td>project founder / developer</td>
-          <td><a href="http://www.uni-ulm.de/in/mi/mitarbeiter/johannes-hanika.html">homepage</a></td><td></td></tr>
+          <td><a href="http://www.uni-ulm.de/in/mi/mitarbeiter/ehemalige-mitarbeiter/dr-johannes-hanika.html">homepage</a></td><td></td></tr>
   <tr class="even"><td><img width="52" src="images/avatar_houz.jpg" alt="houz" /></td>
           <td>houz</td><td>tobias ellinghaus</td>
           <td>developer / translator</td>

@@ -14,6 +14,7 @@ Options:
     -d {cache,control,dev,fswatch,perf,all}
     --library override.db
     --disable-opencl
+    -t num_threads
 
 =head1 DESCRIPTION
 
@@ -70,6 +71,10 @@ Uses override.db instead of the gconf/darktablerc specified library file. Should
 
 For opencl builds only. Disables GPU computing at runtime. Useful to check
 for bugs in our opencl code and to avoid buggy drivers on certain machines.
+
+=item B<-t num_threads>
+
+For openmp builds only. Overrides the default number of threads (= number of cores).
 
 =back
 
@@ -166,6 +171,16 @@ show/hide film strip
 =item while cropping: B<Enter/Backspace>
 
 apply/revert currently selected cropping frame
+
+=back
+
+=head1 RELATED
+
+=over
+
+=item B<darktable-faster> first copies the library to ram and then starts dt. On close, it is copied back, so even in case of crashes no data loss is anticipated.
+
+=item B<darktable-viewer> screensaver version of dt. Shows the last active collection in full screen as a slideshow.
 
 =back
 

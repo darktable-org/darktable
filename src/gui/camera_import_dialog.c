@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _XOPEN_SOURCE // for strptime
+
+#include <time.h>
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -23,6 +26,7 @@
 #include "common/exif.h"
 #include "common/variables.h"
 #include "common/camera_control.h"
+#include "common/utility.h"
 #include "dtgtk/button.h"
 #include "dtgtk/label.h"
 #include "gui/camera_import_dialog.h"
@@ -164,7 +168,9 @@ _update_example(_camera_import_dialog_t *dialog)
 {
   // create path/filename and execute a expand..
   gchar *path=g_build_path(G_DIR_SEPARATOR_S,dialog->settings.basedirectory->value,dialog->settings.subdirectory->value,"/",(char *)NULL);
-  dt_variables_expand( dialog->vp, path, FALSE);
+  gchar *fixed_path=dt_util_fix_path(path);
+  dt_variables_expand( dialog->vp, fixed_path, FALSE);
+
   gchar *ep=g_strdup(dt_variables_get_result(dialog->vp));
   dt_variables_expand( dialog->vp, dialog->settings.namepattern->value, TRUE);
   gchar *ef=g_strdup(dt_variables_get_result(dialog->vp));
@@ -175,6 +181,7 @@ _update_example(_camera_import_dialog_t *dialog)
   gtk_label_set_text(GTK_LABEL(dialog->settings.example),str);
   // Clenaup
   g_free(path);
+  g_free(fixed_path);
   g_free(ep);
   g_free(ef);
   g_free(str);
@@ -215,10 +222,12 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
   gcw->dialog=dlg;
 
   gcw->entry=gtk_entry_new();
-  if( dt_conf_get_string (confstring) )
+  char* value = NULL;
+  if((value = dt_conf_get_string (confstring)))
   {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ),dt_conf_get_string (confstring));
-    gcw->value=g_strdup(dt_conf_get_string (confstring));
+    gcw->value=g_strdup(value);
+    g_free(value);
   }
 
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);
@@ -255,7 +264,7 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
 
 void _camera_import_dialog_new(_camera_import_dialog_t *data)
 {
-  data->dialog=gtk_dialog_new_with_buttons(_("import images from camera"),NULL,GTK_DIALOG_MODAL,_("cancel"),GTK_RESPONSE_NONE,_("import"),GTK_RESPONSE_ACCEPT,NULL);
+  data->dialog=gtk_dialog_new_with_buttons(_("import images from camera"),NULL,GTK_DIALOG_MODAL,_("cancel"),GTK_RESPONSE_NONE,C_("camera import", "import"),GTK_RESPONSE_ACCEPT,NULL);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (data->dialog));
 
   // List - setup store
@@ -334,6 +343,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   g_object_set(data->settings.general.date_override,"tooltip-text",_("check this, if you want to override the timestamp used when expanding variables:\n$(YEAR), $(MONTH), $(DAY),\n$(HOUR), $(MINUTE), $(SECONDS)"),(char *)NULL);
 
   data->settings.general.date_entry=gtk_entry_new();
+  gtk_widget_set_sensitive( data->settings.general.date_entry, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)));
   gtk_box_pack_start(GTK_BOX(hbox),data->settings.general.date_entry,TRUE,TRUE,0);
 
   g_signal_connect (G_OBJECT (data->settings.general.date_override), "clicked",G_CALLBACK (_check_button_callback),data);
@@ -427,7 +437,7 @@ int _camera_storage_image_filename(const dt_camera_t *camera,const char *filenam
     return 0;
 
 
-  gdk_threads_enter();
+  gboolean i_own_lock = dt_control_gdk_lock();
   char exif_info[1024]= {0};
   char file_info[4096]= {0};
 
@@ -477,7 +487,8 @@ int _camera_storage_image_filename(const dt_camera_t *camera,const char *filenam
   if(pixbuf) g_object_unref(pixbuf);
   if(thumb) g_object_ref(thumb);
 
-  gdk_threads_leave();
+  if (i_own_lock) dt_control_gdk_unlock();
+
   return 1;
 }
 
@@ -535,6 +546,20 @@ static gboolean _dialog_close(GtkWidget *window, GdkEvent  *event,gpointer   use
     dt_control_job_wait (data->preview_job);
   }
   return FALSE;
+}
+
+static time_t parse_date_time(const char* date_time_text)
+{
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+
+  const char* end = NULL;
+  if((end = strptime(date_time_text, "%Y-%m-%dT%T", &t)) && *end == 0)
+    return mktime(&t);
+  if((end = strptime(date_time_text, "%Y-%m-%d", &t)) && *end == 0)
+    return mktime(&t);
+
+  return 0;
 }
 
 void _camera_import_dialog_run(_camera_import_dialog_t *data)
@@ -598,6 +623,10 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
       data->params->subdirectory = data->settings.subdirectory->value;
       data->params->filenamepattern = data->settings.namepattern->value;
 
+      data->params->time_override = 0;
+      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)))
+        data->params->time_override = parse_date_time(gtk_entry_get_text(GTK_ENTRY(data->settings.general.date_entry)));
+
       if( data->params->jobcode == NULL || strlen(data->params->jobcode) <=0 )
         data->params->jobcode = dt_conf_get_string("plugins/capture/camera/import/jobcode");
 
@@ -618,6 +647,13 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
       else if( data->params->filenamepattern == NULL || strlen( data->params->filenamepattern ) <= 0 )
       {
         GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the filenamepattern settings before importing"));
+        g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
+        gtk_dialog_run (GTK_DIALOG (dialog));
+        all_good=FALSE;
+      }
+      else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)) && data->params->time_override == 0)
+      {
+        GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please use YYYY-MM-DD format for date override"));
         g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
         gtk_dialog_run (GTK_DIALOG (dialog));
         all_good=FALSE;

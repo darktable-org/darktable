@@ -26,6 +26,7 @@ style "clearlooks-default"
   #GtkOptionMenu::indicator_spacing = { 4, 5, 2, 2 }
   GtkTreeView::expander_size = 14
   GtkTreeView::odd_row_color = "#1E1E1E"
+  GtkTreeView::even_row_color = "#1E1E1E"
   GtkExpander::expander_size = 0 #12
   GtkExpander::focus-padding = 2
   GtkProgressBar::min-horizontal-bar-height = 12
@@ -273,7 +274,7 @@ widget "*.left.GtkEventBox" style "clearlooks-brightbg"
 # class "GtkEntry" style "clearlooks-entry"
 # class "GtkTreeView" style "clearlooks-entry"
 
-#widget "*.background_job_eventbox" style "clearlooks-brightbg"
+widget "*.background_job_eventbox" style "clearlooks-brightbg"
 #widget_class "*.GtkMenuItem.*" style "clearlooks-menu-item"
 #widget_class "*.GtkAccelMenuItem.*" style "clearlooks-menu-item"
 #widget_class "*.GtkRadioMenuItem.*" style "clearlooks-menu-item"

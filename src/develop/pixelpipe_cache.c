@@ -18,19 +18,23 @@
 
 #include "develop/pixelpipe_cache.h"
 #include "develop/pixelpipe_hb.h"
+#include "libs/lib.h"
 #include <stdlib.h>
 
 
-void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size)
+int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size)
 {
   cache->entries = entries;
   cache->data = (void **)malloc(sizeof(void *)*entries);
   cache->size = (size_t *)malloc(sizeof(size_t)*entries);
   cache->hash = (uint64_t *)malloc(sizeof(uint64_t)*entries);
   cache->used = (int32_t *)malloc(sizeof(int32_t)*entries);
+  memset(cache->data,0,sizeof(void *)*entries);
   for(int k=0; k<entries; k++)
   {
     cache->data[k] = (void *)dt_alloc_align(16, size);
+    if(!cache->data[k])
+      goto alloc_memory_fail;
     cache->size[k] = size;
 #ifdef _DEBUG
     memset(cache->data[k], 0x5d, size);
@@ -39,6 +43,22 @@ void dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, i
     cache->used[k] = 0;
   }
   cache->queries = cache->misses = 0;
+  return 1;
+  
+alloc_memory_fail:
+  for(int k=0; k<entries; k++)
+  {
+    if(cache->data[k])
+      free(cache->data[k]);
+  }
+  
+  free(cache->data);
+  free(cache->size);
+  free(cache->hash);
+  free(cache->used);
+  
+  return 0;
+  
 }
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
@@ -59,11 +79,23 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
   for(int k=0; k<module&&pieces; k++)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
-    hash = ((hash << 5) + hash) ^ piece->hash;
-    if(piece->module->request_color_pick)
+    dt_develop_t *dev = piece->module->dev;
+    if(!(dev->gui_module && (dev->gui_module->operation_tags_filter() &  piece->module->operation_tags())))
     {
-      const char *str = (const char *)piece->module->color_picker_box;
-      for(int i=0; i<sizeof(float)*4; i++) hash = ((hash << 5) + hash) ^ str[i];
+      hash = ((hash << 5) + hash) ^ piece->hash;
+      if(piece->module->request_color_pick)
+      {
+        if(darktable.lib->proxy.colorpicker.size)
+        {
+          const char *str = (const char *)piece->module->color_picker_box;
+          for(int i=0; i<sizeof(float)*4; i++) hash = ((hash << 5) + hash) ^ str[i];
+        }
+        else
+        {
+          const char *str = (const char *)piece->module->color_picker_point;
+          for(int i=0; i<sizeof(float)*2; i++) hash = ((hash << 5) + hash) ^ str[i];
+        }
+      }
     }
     pieces = g_list_next(pieces);
   }

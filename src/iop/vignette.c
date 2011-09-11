@@ -31,6 +31,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -118,6 +119,40 @@ int
 groups ()
 {
   return IOP_GROUP_EFFECT;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "fall-off strength"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "horizontal center"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vertical center"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shape"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "width-height ratio"));
+  }
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "scale",
+                              GTK_WIDGET(g->scale));
+  dt_accel_connect_slider_iop(self, "fall-off strength",
+                              GTK_WIDGET(g->falloff_scale));
+  dt_accel_connect_slider_iop(self, "brightness",
+                              GTK_WIDGET(g->brightness));
+  dt_accel_connect_slider_iop(self, "saturation",
+                              GTK_WIDGET(g->saturation));
+  dt_accel_connect_slider_iop(self, "horizontal center",
+                              GTK_WIDGET(g->center_x));
+  dt_accel_connect_slider_iop(self, "vertical center",
+                              GTK_WIDGET(g->center_y));
+  dt_accel_connect_slider_iop(self, "shape",
+                              GTK_WIDGET(g->shape));
+  dt_accel_connect_slider_iop(self, "width-height ratio",
+                              GTK_WIDGET(g->whratio));
 }
 
 int
@@ -492,7 +527,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       float new_falloff = 100.0 * delta_y / max;
       dtgtk_slider_set_value(g->falloff_scale, new_falloff);
     }
-    dt_control_gui_queue_draw();
+    dt_control_queue_redraw_center();
     return 1;
 
   }
@@ -509,7 +544,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     if(old_grab != grab) dt_control_change_cursor(GDK_LEFT_PTR);
   }
   old_grab = grab;
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -621,7 +656,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         else if (weight <= 0.0)
           weight = 0.0;
         else
-          weight=0.5 - cos( M_PI*weight )/2.0;
+          weight=0.5 - cosf( M_PI*weight )/2.0;
       }
 
       // Let's apply weighted effect on brightness and desaturation
@@ -646,10 +681,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[2]=col2;
     }
   }
-
-  /* lets blend if used */
-  dt_develop_blend_process (self, piece, ivoid, ovoid, roi_in, roi_out);
-
 }
 
 static void
@@ -807,7 +838,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_enabled = 0;
-  module->priority = 997;
+  module->priority = 874; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vignette_params_t);
   module->gui_data = NULL;
   dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t)

@@ -28,7 +28,6 @@
 #include "dtgtk/paint.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <glade/glade.h>
 
 DT_MODULE(1)
 
@@ -91,7 +90,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   /* construct a temporary file name */
   char tmpdir[4096]= {0};
-  dt_get_user_local_dir (tmpdir,4096);
+  dt_util_get_user_local_dir (tmpdir,4096);
   g_strlcat (tmpdir,"/tmp",4096);
   g_mkdir_with_parents(tmpdir,0700);
 

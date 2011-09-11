@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ typedef struct dt_iop_tonecurve_data_t
 {
   dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
   float table[0x10000];        // precomputed look-up table for tone curve
+  float unbounded_coeffs[2];   // approximation for extrapolation
 }
 dt_iop_tonecurve_data_t;
 

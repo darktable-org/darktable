@@ -32,12 +32,17 @@ DT_MODULE(1)
 const char*
 name ()
 {
-  return _("similar image(s)");
+  return _("similar images");
 }
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW;
+  return DT_VIEW_LIGHTTABLE;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
 void gui_reset (dt_lib_module_t *self)

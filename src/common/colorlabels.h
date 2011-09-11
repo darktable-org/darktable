@@ -1,6 +1,8 @@
 #ifndef DT_COMMON_COLORLABELS_H
 #define DT_COMMON_COLORLABELS_H
 
+#include <gtk/gtk.h>
+
 /** remove assigned colorlabels of selected images*/
 void dt_colorlabels_remove_labels_selection ();
 /** remove labels associated to imgid */
@@ -16,8 +18,8 @@ void dt_colorlabels_remove_label (const int imgid, const int color);
 /** get the name of the color for a given number (could be replaced by an array) */
 const char* dt_colorlabels_to_string(int label);
 
-void dt_colorlabels_key_accel_callback(void *user_data);
-void dt_colorlabels_register_key_accels();
-void dt_colorlabels_unregister_key_accels();
+void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
+                                       GObject *acceleratable, guint keyval,
+                                       GdkModifierType modifier, gpointer data);
 
 #endif

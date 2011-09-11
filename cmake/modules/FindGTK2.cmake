@@ -166,6 +166,12 @@ function(_GTK2_FIND_INCLUDE_DIR _var _hdr)
 
     find_path(${_var} ${_hdr}
         PATHS
+ # fix for Ubuntu >= 11.04 (Natty Narwhal)
+ /usr/lib/i386-linux-gnu/
+ /usr/lib/x86_64-linux-gnu/
+ # end fix for Ubuntu >= 11.04 (Natty Narwhal)
+        # look in debian/ubuntu multi-arch path (needs cmake >= 2.85~rc2)
+        /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
             /usr/local/lib64
             /usr/local/lib
             /usr/lib64
@@ -178,7 +184,6 @@ function(_GTK2_FIND_INCLUDE_DIR _var _hdr)
             /usr/openwin/lib
             /sw/include
             /sw/lib
-            /usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-gnu/
             $ENV{GTKMM_BASEPATH}/include
             $ENV{GTKMM_BASEPATH}/lib
             [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]/include

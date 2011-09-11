@@ -20,12 +20,13 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
+#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -34,6 +35,7 @@ typedef struct dt_lib_copy_history_t
   int32_t imageid;
   GtkComboBox *pastemode;
   GtkButton *paste;
+  GtkWidget *copy_button, *delete_button, *load_button, *write_button;
 }
 dt_lib_copy_history_t;
 
@@ -46,7 +48,12 @@ name ()
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW;
+  return DT_VIEW_LIGHTTABLE;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 static void
@@ -58,7 +65,7 @@ write_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 static void
 load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
-  GtkWidget *win = glade_xml_get_widget (darktable.gui->main_window, "main_window");
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open sidecar file"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -97,8 +104,7 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
     g_free (dtfilename);
   }
   gtk_widget_destroy (filechooser);
-  win = glade_xml_get_widget (darktable.gui->main_window, "center");
-  gtk_widget_queue_draw(win);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void
@@ -109,7 +115,7 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
 
   /* get imageid for source if history past */
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* copy history of first image in selection */
@@ -132,7 +138,7 @@ static void
 delete_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   dt_history_delete_on_selection ();
-  dt_control_gui_queue_draw ();
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -159,7 +165,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   }
 
   /* redraw */
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
 }
 
 void
@@ -168,20 +174,6 @@ gui_reset (dt_lib_module_t *self)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
-}
-
-static void
-key_accel_copy_callback(void *user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  copy_button_clicked(NULL, self);
-}
-
-static void
-key_accel_paste_callback(void *user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  paste_button_clicked(NULL, self);
 }
 
 int
@@ -199,11 +191,12 @@ gui_init (dt_lib_module_t *self)
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *copy = gtk_button_new_with_label(_("copy"));
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_c, key_accel_copy_callback, (void *)self);
+  d->copy_button = copy;
   g_object_set(G_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"), (char *)NULL);
   gtk_box_pack_start(hbox, copy, TRUE, TRUE, 0);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
+  d->delete_button = delete;
   g_object_set(G_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, delete, TRUE, TRUE, 0);
 
@@ -218,7 +211,6 @@ gui_init (dt_lib_module_t *self)
   gtk_combo_box_set_active(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
-  dt_gui_key_accel_register(GDK_CONTROL_MASK, GDK_v, key_accel_paste_callback, (void *)self);
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"), (char *)NULL);
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
@@ -228,10 +220,12 @@ gui_init (dt_lib_module_t *self)
 
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
+  d->load_button = loadbutton;
   g_object_set(G_OBJECT(loadbutton), "tooltip-text", _("open an xmp sidecar file\nand apply it to selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
+  d->write_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
@@ -255,10 +249,28 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_gui_key_accel_unregister(key_accel_copy_callback);
-  dt_gui_key_accel_unregister(key_accel_paste_callback);
   free(self->data);
   self->data = NULL;
 }
 
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "copy"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "paste"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "load sidecar file"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "write sidecar files"), 0, 0);
+}
 
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_button));
+  dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
+  dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste));
+  dt_accel_connect_button_lib(self, "load sidecar files",
+                              GTK_WIDGET(d->load_button));
+  dt_accel_connect_button_lib(self, "write sidecar files",
+                              GTK_WIDGET(d->write_button));
+}

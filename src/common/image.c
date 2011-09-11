@@ -32,7 +32,8 @@
 #include <strings.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#include <glob.h>
+#include <glib/gstdio.h>
 
 static int64_t dt_image_debug_malloc_size = 0;
 
@@ -75,9 +76,9 @@ void dt_image_write_sidecar_file(int imgid)
   // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
-    char filename[520];
-    dt_image_full_path(imgid, filename, 512);
-    dt_image_path_append_version(imgid, filename, 512);
+    char filename[DT_MAX_PATH+8];
+    dt_image_full_path(imgid, filename, DT_MAX_PATH);
+    dt_image_path_append_version(imgid, filename, DT_MAX_PATH);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, filename);
@@ -93,13 +94,57 @@ void dt_image_synch_xmp(const int selected)
   else if(dt_conf_get_bool("write_sidecar_files"))
   {
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const int imgid = sqlite3_column_int(stmt, 0);
       dt_image_write_sidecar_file(imgid);
     }
     sqlite3_finalize(stmt);
+  }
+}
+
+void dt_image_synch_all_xmp(const gchar *pathname)
+{
+  if(dt_conf_get_bool("write_sidecar_files"))
+  {
+    // Delete all existing .xmp files.
+    glob_t *globbuf = malloc(sizeof(glob_t));
+    
+    gchar *fname = g_strdup(pathname);
+    gchar pattern[1024];
+    g_snprintf(pattern, 1024, "%s", pathname);
+    char *c1 = pattern + strlen(pattern);
+    while(*c1 != '.' && c1 > pattern) c1--;
+    g_snprintf(c1, pattern + 1024 - c1, "_*");
+    char *c2 = fname + strlen(fname);
+    while(*c2 != '.' && c2 > fname) c2--;
+    g_snprintf(c1+2, pattern + 1024 - c1 - 2, "%s.xmp", c2);
+
+    if (!glob(pattern, 0, NULL, globbuf))
+    {
+      for (int i=0; i < globbuf->gl_pathc; i++)
+      {
+        (void)g_unlink(globbuf->gl_pathv[i]);
+      }
+      globfree(globbuf);
+    }
+     
+    sqlite3_stmt *stmt;
+    gchar *imgfname = g_path_get_basename(pathname);
+    gchar *imgpath = g_path_get_dirname(pathname);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where film_id in (select id from film_rolls where folder = ?1) and filename = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgpath, strlen(imgpath), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      dt_image_write_sidecar_file(imgid);
+    }
+    sqlite3_finalize(stmt);
+    g_free(fname);
+    g_free(imgfname);
+    g_free(imgpath);
   }
 }
 
@@ -135,7 +180,7 @@ dt_image_film_roll_name(const char *path)
 void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->film_id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -154,7 +199,7 @@ void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
 void dt_image_full_path(const int imgid, char *pathname, int len)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -168,7 +213,7 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len)
   // get duplicate suffix
   int version = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1) and id < ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1) and id < ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     version = sqlite3_column_int(stmt, 0);
@@ -233,8 +278,9 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
     wd = img->width;
     ht = img->height;
     const float scale = fminf(darktable.thumbnail_size/(float)img->width, darktable.thumbnail_size/(float)img->height);
-    wd *= scale;
-    ht *= scale;
+    // actually we need to be a bit conservative, because of NaN etc out of the bounding box:
+    wd = wd*scale - 1;
+    ht = ht*scale - 1;
   }
   else if((int)mip < (int)DT_IMAGE_FULL)
   {
@@ -391,40 +437,40 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
 int32_t dt_image_duplicate(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into images "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into images "
                               "(id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
-                              "focal_length, datetime_taken, flags, output_width, output_height, crop, "
+                              "focal_length, focus_distance, datetime_taken, flags, output_width, output_height, crop, "
                               "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
                               "select null, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
-                              "focal_length, datetime_taken, flags, width, height, crop, "
+                              "focal_length, focus_distance, datetime_taken, flags, width, height, crop, "
                               "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
                               "from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select a.id from images as a join images as b where a.film_id = b.film_id and a.filename = b.filename and b.id = ?1 order by a.id desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select a.id from images as a join images as b where a.film_id = b.film_id and a.filename = b.filename and b.id = ?1 order by a.id desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   int32_t newid = -1;
   if(sqlite3_step(stmt) == SQLITE_ROW) newid = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   if(newid != -1)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into color_labels (imgid, color) select ?1, color from color_labels where imgid = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into color_labels (imgid, color) select ?1, color from color_labels where imgid = ?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into meta_data (id, key, value) select ?1, key, value from meta_data where id = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into meta_data (id, key, value) select ?1, key, value from meta_data where id = ?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into tagged_images (imgid, tagid) select ?1, tagid from tagged_images where imgid = ?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into tagged_images (imgid, tagid) select ?1, tagid from tagged_images where imgid = ?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count + 1 where "
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = count + 1 where "
                                 "(id1 in (select tagid from tagged_images where imgid = ?1)) or "
                                 "(id2 in (select tagid from tagged_images where imgid = ?1))", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
@@ -437,33 +483,33 @@ int32_t dt_image_duplicate(const int32_t imgid)
 void dt_image_remove(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update tagxtag set count = count - 1 where "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update tagxtag set count = count - 1 where "
                               "(id2 in (select tagid from tagged_images where imgid = ?1)) or "
                               "(id1 in (select tagid from tagged_images where imgid = ?1))", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from tagged_images where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from color_labels where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from color_labels where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from meta_data where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from meta_data where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -474,7 +520,7 @@ int dt_image_altered(const dt_image_t *img)
 {
   int altered = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
   if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
   sqlite3_finalize(stmt);
@@ -535,7 +581,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 
   // fprintf(stderr, "[image_reimport] loading `%s' to fill mip %d!\n", filename, mip);
 
-  int altered = 0;//(img->raw_params.user_flip != -1) && img->force_reimport;
+  int altered = img->force_reimport;
   img->force_reimport = 0;
   if(dt_image_altered(img)) altered = 1;
 
@@ -599,7 +645,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   gchar *imgfname;
   imgfname = g_path_get_basename((const gchar*)filename);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images where film_id = ?1 and filename = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where film_id = ?1 and filename = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -615,14 +661,14 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   sqlite3_finalize(stmt);
 
   // insert dummy image entry in database
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into images (id, film_id, filename, caption, description, license, sha1sum) values (null, ?1, ?2, '', '', '', '')", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into images (id, film_id, filename, caption, description, license, sha1sum) values (null, ?1, ?2, '', '', '', '')", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images where film_id = ?1 and filename = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where film_id = ?1 and filename = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
@@ -630,16 +676,16 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
   dt_image_t *img = dt_image_cache_get_uninited(id, 'w');
-  g_strlcpy(img->filename, imgfname, 256);
+  g_strlcpy(img->filename, imgfname, DT_MAX_PATH);
   img->id = id;
   img->film_id = film_id;
   img->dirty = 1;
 
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
-  char dtfilename[1024];
-  g_strlcpy(dtfilename, filename, 1024);
-  dt_image_path_append_version(img->id, dtfilename, 1024);
+  char dtfilename[DT_MAX_PATH];
+  g_strlcpy(dtfilename, filename, DT_MAX_PATH);
+  dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH);
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
   (void)dt_exif_xmp_read(img, dtfilename, 0);
@@ -654,9 +700,41 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
   dt_image_cache_flush_no_sidecars(img);
 
-  g_free(imgfname);
-
   dt_image_cache_release(img, 'w');
+
+  // Search for sidecar files and import them if found.
+  glob_t *globbuf = malloc(sizeof(glob_t));
+
+  // Add version wildcard
+  gchar *fname = g_strdup(filename);
+  gchar pattern[DT_MAX_PATH];
+  g_snprintf(pattern, DT_MAX_PATH, "%s", filename);
+  char *c1 = pattern + strlen(pattern);
+  while(*c1 != '.' && c1 > pattern) c1--;
+  snprintf(c1, pattern + DT_MAX_PATH - c1, "_*");
+  char *c2 = fname + strlen(fname);
+  while(*c2 != '.' && c2 > fname) c2--;
+  snprintf(c1+2, pattern + DT_MAX_PATH - c1 - 2, "%s.xmp", c2);
+
+  if (!glob(pattern, 0, NULL, globbuf))
+  {
+    for (int i=0; i < globbuf->gl_pathc; i++)
+    {
+      int newid = -1;
+      newid = dt_image_duplicate(id);
+
+      dt_image_t *newimg = dt_image_cache_get(newid, 'w');
+      (void)dt_exif_xmp_read(newimg, globbuf->gl_pathv[i], 0);
+
+      dt_image_cache_flush_no_sidecars(newimg);
+      dt_image_cache_release(newimg, 'w');
+    }
+    globfree(globbuf);
+  }
+
+  g_free(imgfname);
+  g_free(fname);
+
   return id;
 }
 
@@ -740,7 +818,7 @@ void dt_image_init(dt_image_t *img)
 
   // try to get default raw parameters from db:
   sqlite3_stmt *stmt;
-  sqlite3_prepare_v2(darktable.db, "select op_params from presets where operation = 'rawimport' and def=1", -1, &stmt, NULL);
+  sqlite3_prepare_v2(dt_database_get(darktable.db), "select op_params from presets where operation = 'rawimport' and def=1", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const void *blob = sqlite3_column_blob(stmt, 0);
@@ -789,7 +867,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
   int rc, ret = 1;
   char *str;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation, focus_distance from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   // DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -829,7 +907,7 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
 
     ret = 0;
   }
-  else fprintf(stderr, "[image_open2] failed to open image from database: %s\n", sqlite3_errmsg(darktable.db));
+  else fprintf(stderr, "[image_open2] failed to open image from database: %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
   rc = sqlite3_finalize(stmt);
   if(ret) return ret;
   return rc;
@@ -847,8 +925,8 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
 {
   if(!img) return 1;
   int ret = 0;
-  char filename[1024];
-  dt_image_full_path(img->id, filename, 1024);
+  char filename[DT_MAX_PATH];
+  dt_image_full_path(img->id, filename, DT_MAX_PATH);
   // reimport forced?
   if(mip != DT_IMAGE_FULL &&
       (img->force_reimport || img->width == 0 || img->height == 0))
@@ -900,8 +978,7 @@ int dt_image_load(dt_image_t *img, dt_image_buffer_t mip)
     }
   }
   if(!ret) dt_image_validate(img, mip);
-  // TODO: insert abstract hook here?
-  dt_control_queue_draw_all();
+
   return ret;
 }
 
@@ -1095,13 +1172,8 @@ int dt_image_alloc(dt_image_t *img, dt_image_buffer_t mip)
   // garbage collect, free enough space for new buffer:
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
   // max memory: user supplied number of bytes, evenly distributed among mip levels.
-  // clamped between 50MB -- 4GB
-#if defined(__APPLE__) || defined(__MACH__)
-  // apple's size_t sucks
+  // clamped to a min of 50MB
   size_t max_mem = (size_t)(MAX(52428800, (size_t)dt_conf_get_int("cache_memory"))/(float)DT_IMAGE_FULL);
-#else
-  size_t max_mem = (size_t)(MIN(4294967295, MAX(52428800, (size_t)dt_conf_get_int("cache_memory")))/(float)DT_IMAGE_FULL);
-#endif
   dt_print(DT_DEBUG_CACHE, "[image_alloc] mip %d uses %.3f/%.3f MB, alloc %.3f MB\n", mip,
            cache->total_size[mip]/(1024.0*1024.0), max_mem/(1024.0*1024.0), size/(1024.0*1024.0));
   if(cache->total_size[mip] > 0 && cache->total_size[mip]+size > max_mem)
@@ -1170,6 +1242,7 @@ void dt_image_free(dt_image_t *img, dt_image_buffer_t mip)
     img->pixels = NULL;
   }
   else return;
+  // FIXME: for some reason this takes a looong time: (says perf)
   for(int k=0; k<darktable.mipmap_cache->num_entries[mip]; k++)
     if(darktable.mipmap_cache->mip_lru[mip][k] == img) darktable.mipmap_cache->mip_lru[mip][k] = NULL;
   darktable.mipmap_cache->total_size[mip] -= img->mip_buf_size[mip];

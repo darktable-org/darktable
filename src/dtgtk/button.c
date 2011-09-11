@@ -17,6 +17,7 @@
 */
 #include <string.h>
 #include "button.h"
+#include "gui/gtk.h"
 
 static void _button_class_init (GtkDarktableButtonClass *klass);
 static void _button_init (GtkDarktableButton *button);
@@ -179,6 +180,14 @@ GtkType dtgtk_button_get_type()
     dtgtk_button_type = gtk_type_unique (GTK_TYPE_BUTTON, &dtgtk_button_info);
   }
   return dtgtk_button_type;
+}
+
+void dtgtk_button_set_paint(GtkDarktableButton *button,
+                            DTGTKCairoPaintIconFunc paint,
+                            gint paintflags)
+{
+  button->icon = paint;
+  button->icon_flags = paintflags;
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -71,14 +71,56 @@ typedef struct dt_develop_t
   dt_pthread_mutex_t history_mutex;
   int32_t history_end;
   GList *history;
+
   // operations pipeline
   int32_t iop_instance;
   GList *iop;
 
   // histogram for display.
-  float *histogram, *histogram_pre;
-  float histogram_max, histogram_pre_max;
+  float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
+  float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
   uint8_t gamma[0x100];
+
+  /* proxy for communication between plugins and develop/darkroom */
+  struct {
+
+    /* 
+     * exposure plugin hooks, used by histogram dragging functions 
+     */
+    struct {
+      struct dt_iop_module_t *module;
+      void  (*set_white)(struct dt_iop_module_t *exp, const float white);
+      float (*get_white)(struct dt_iop_module_t *exp);
+      void  (*set_black)(struct dt_iop_module_t *exp, const float black);
+      float (*get_black)(struct dt_iop_module_t *exp);
+    } exposure;
+
+    /*
+     * modulegroups plugin hooks
+     */
+    struct {
+      struct dt_lib_module_t *module;
+      /* switch module group */
+      void (*set)(struct dt_lib_module_t *self, uint32_t group);
+      /* get current module group */
+      uint32_t (*get)(struct dt_lib_module_t *self);
+      /* test if iop group flags matches modulegroup */
+      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+    } modulegroups;
+
+    /* 
+     * snapshots plugin hooks 
+     */
+    struct {
+      /* this flag is set by snapshot plugin to signal that expose of darkroom
+	 should store cairo surface as snapshot to disk using filename.
+      */
+      gboolean request;
+      const gchar *filename;
+    } snapshot;
+
+  } proxy;
+
 }
 dt_develop_t;
 
@@ -121,5 +163,38 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
+void dt_dev_invalidate_from_gui (dt_develop_t *dev);
+
+/* 
+ * exposure plugin hook, set the white level 
+ */
+
+/** check if exposure iop hooks are available */
+gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
+/** reset exposure to defaults */
+void dt_dev_exposure_reset_defaults(dt_develop_t *dev);
+/** set exposure white level */
+void dt_dev_exposure_set_white(dt_develop_t *dev, const float white);
+/** get exposure white level */
+float dt_dev_exposure_get_white(dt_develop_t *dev);
+/** set exposure black level */
+void dt_dev_exposure_set_black(dt_develop_t *dev, const float black);
+/** get exposure black level */
+float dt_dev_exposure_get_black(dt_develop_t *dev);
+
+/*
+ * modulegroups plugin hooks
+ */
+/** check if modulegroups hooks are available */
+gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
+/** set the active modulegroup */
+void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
+/** get the active modulegroup */
+uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
+/** test if iop group flags matches modulegroup */
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group);
+
+/** request snapshot */
+void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
 
 #endif

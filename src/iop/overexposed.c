@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 
 DT_MODULE(1)
@@ -63,6 +64,21 @@ int groups()
   return IOP_GROUP_COLOR;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lower threshold"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "upper threshold"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_overexposed_gui_data_t *g =
+      (dt_iop_overexposed_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "lower threshold", GTK_WIDGET(g->lower));
+  dt_accel_connect_slider_iop(self, "upper threshold", GTK_WIDGET(g->upper));
+}
+
 // FIXME: I'm not sure if this is the best test (all >= / <= threshold), but it seems to work.
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -94,7 +110,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *outp = out + ch*k;
 // 		int x=k%roi_out->width;
 // 		int y=k/roi_out->width;
-    if(inp[0] >= upper && inp[1] >= upper && inp[2] >= upper)
+    if(inp[0] >= upper || inp[1] >= upper || inp[2] >= upper)
     {
 // 			mask[y*stride+x] = 255;
       outp[0] = 1;
@@ -220,7 +236,7 @@ void init(dt_iop_module_t *module)
   module->params                  = malloc(sizeof(dt_iop_overexposed_params_t));
   module->default_params          = malloc(sizeof(dt_iop_overexposed_params_t));
   module->default_enabled         = 0;
-  module->priority                = 999;
+  module->priority = 958; // module order created by iop_dependencies.py, do not edit!
   module->params_size             = sizeof(dt_iop_overexposed_params_t);
   module->gui_data                = NULL;
   dt_iop_overexposed_params_t tmp = (dt_iop_overexposed_params_t)

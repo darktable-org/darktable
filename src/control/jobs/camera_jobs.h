@@ -69,7 +69,7 @@ typedef struct dt_camera_import_t
 {
   GList *images;
   struct dt_camera_t *camera;
-  const dt_gui_job_t *bgj;
+  guint bgj;
   double fraction;
   dt_variables_params_t *vp;
   dt_film_t *film;
@@ -79,7 +79,7 @@ typedef struct dt_camera_import_t
 }
 dt_camera_import_t;
 int32_t dt_camera_import_job_run(dt_job_t *job);
-void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera);
+void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera, time_t time_override);
 
 /** Camera image import backup job initiated upon import job for each image*/
 typedef struct dt_camera_import_backup_t

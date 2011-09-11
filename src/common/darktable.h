@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 #include "config.h"
 #endif
 #include "common/dtpthread.h"
+#include "common/database.h"
+#include "common/utility.h"
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -35,9 +37,12 @@
 #include <math.h>
 #ifdef _OPENMP
 #include <omp.h>
+#else
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
 #endif
 
-#define DT_MODULE_VERSION 3   // version of dt's module interface
+#define DT_MODULE_VERSION 4   // version of dt's module interface
 #define DT_VERSION 36         // version of dt's database tables
 #define DT_CONFIG_VERSION 34  // dt gconf var version
 
@@ -106,8 +111,15 @@ typedef enum dt_debug_thread_t
 }
 dt_debug_thread_t;
 
+#define DT_CPU_FLAG_SSE		1
+#define DT_CPU_FLAG_SSE2		2
+#define DT_CPU_FLAG_SSE3		4
+
 typedef struct darktable_t
 {
+  uint32_t cpu_flags;
+  int32_t num_openmp_threads;
+	
   int32_t thumbnail_size;
   int32_t unmuted;
   GList                          *iop;
@@ -117,10 +129,11 @@ typedef struct darktable_t
   struct dt_lib_t                *lib;
   struct dt_view_manager_t       *view_manager;
   struct dt_control_t            *control;
+  struct dt_control_signal_t     *signals;
   struct dt_gui_gtk_t            *gui;
   struct dt_mipmap_cache_t       *mipmap_cache;
   struct dt_image_cache_t        *image_cache;
-  sqlite3                        *db;
+  const struct dt_database_t     *db;
   const struct dt_fswatch_t	     *fswatch;
   const struct dt_pwstorage_t    *pwstorage;
   const struct dt_camctl_t       *camctl;
@@ -128,6 +141,7 @@ typedef struct darktable_t
   struct dt_points_t             *points;
   struct dt_imageio_t            *imageio;
   struct dt_opencl_t             *opencl;
+  struct dt_blendop_t            *blendop;
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   char *progname;
@@ -150,14 +164,6 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...);
 void dt_gettime_t(char *datetime, time_t t);
 void dt_gettime(char *datetime);
 void *dt_alloc_align(size_t alignment, size_t size);
-void dt_get_datadir(char *datadir, size_t bufsize);
-void dt_get_plugindir(char *datadir, size_t bufsize);
-/** get the user directory of darktable, ~/.config/darktable */
-void dt_get_user_config_dir(char *data, size_t bufsize);
-/** get the user directory of darktable, ~/.cache/darktable */
-void dt_get_user_cache_dir(char *data, size_t bufsize);
-/** get the user local directory , ~/.local */
-void dt_get_user_local_dir(char *data, size_t bufsize);
 
 static inline double dt_get_wtime(void)
 {
@@ -178,6 +184,9 @@ static inline void dt_get_times(dt_times_t *t)
 }
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...);
+
+/** \brief check if file is a supported image */
+gboolean dt_supported_image(const gchar *filename);
 
 static inline int dt_get_num_threads()
 {

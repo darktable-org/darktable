@@ -30,6 +30,7 @@ void srand48(long int);
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "control/conf.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL/SDL.h>
@@ -112,8 +113,8 @@ int init(int argc, char *arg[])
 static void
 shutdown()
 {
-  // TODO:
   // close all dt related stuff.
+  dt_cleanup();
 }
 
 static void
@@ -232,7 +233,7 @@ process_next_image()
   const gchar *query = dt_collection_get_query (darktable.collection);
   if(!query) return 1;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rand);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, rand+1);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -251,6 +252,7 @@ process_next_image()
 
 int main(int argc, char *arg[])
 {
+  gtk_init (&argc, &arg);
   random_state = use_random = 0;
   for(int k=1; k<argc; k++)
   {
@@ -263,6 +265,10 @@ int main(int argc, char *arg[])
   }
   // init dt without gui:
   if(dt_init(argc, arg, 0)) exit(1);
+  // use system color profile, if we can:
+  const gchar *oldprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  const gchar *overprofile = "X profile";
+  dt_conf_set_string("plugins/lighttable/export/iccprofile", overprofile);
   running = init(argc, arg);
   srand48(SDL_GetTicks());
   if(use_random) random_state = drand48() * INT_MAX;
@@ -278,6 +284,7 @@ int main(int argc, char *arg[])
     }
     usleep(3000000);
   }
+  if(oldprofile) dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
   shutdown();
 }
 

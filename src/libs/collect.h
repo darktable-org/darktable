@@ -36,8 +36,11 @@ const char *dt_lib_collect_string[] =
   N_("description"),
   N_("creator"),
   N_("publisher"),
-  N_("rights")
+  N_("rights"),
+  N_("lens"),
+  N_("iso"),
+  N_("aperature") 
 };
-const int dt_lib_collect_string_cnt = 11;
+const int dt_lib_collect_string_cnt = 14;
 
 

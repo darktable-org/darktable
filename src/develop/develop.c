@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/tags.h"
 #include "common/debug.h"
 #include "common/similarity.h"
 #include "gui/gtk.h"
@@ -67,6 +68,7 @@ void dt_dev_set_gamma_array(dt_develop_t *dev, const float linear, const float g
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
+  memset(dev,0,sizeof(dt_develop_t));
   float downsampling = dt_conf_get_float ("preview_subsample");
   dev->preview_downsampling = downsampling <= 1.0 && downsampling >= 0.1 ? downsampling : .5;
   dev->gui_module = NULL;
@@ -89,7 +91,9 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->preview_input_changed = 0;
 
   dev->pipe = dev->preview_pipe = NULL;
-  dev->histogram = dev->histogram_pre = NULL;
+  dev->histogram
+      = dev->histogram_pre_tonecurve
+        = dev->histogram_pre_levels = NULL;
 
   if(dev->gui_attached)
   {
@@ -99,11 +103,14 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->preview_pipe);
 
     dev->histogram = (float *)malloc(sizeof(float)*4*256);
-    dev->histogram_pre = (float *)malloc(sizeof(float)*4*256);
+    dev->histogram_pre_tonecurve = (float *)malloc(sizeof(float)*4*256);
+    dev->histogram_pre_levels = (float*)malloc(sizeof(float) * 4 * 256);
     memset(dev->histogram, 0, sizeof(float)*256*4);
-    memset(dev->histogram_pre, 0, sizeof(float)*256*4);
+    memset(dev->histogram_pre_tonecurve, 0, sizeof(float)*256*4);
+    memset(dev->histogram_pre_levels, 0, sizeof(float)*256*4);
     dev->histogram_max = -1;
-    dev->histogram_pre_max = -1;
+    dev->histogram_pre_tonecurve_max = -1;
+    dev->histogram_pre_levels_max = -1;
 
 #if 0 // this prints out a correction curve, to better understand the tonecurve.
     dt_dev_set_gamma_array(dev, 0.04045, 0.41, dt_dev_default_gamma);
@@ -165,6 +172,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   while(dev->history)
   {
     free(((dt_dev_history_item_t *)dev->history->data)->params);
+    free(((dt_dev_history_item_t *)dev->history->data)->blend_params);
     free( (dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
@@ -176,7 +184,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
   free(dev->histogram);
-  free(dev->histogram_pre);
+  free(dev->histogram_pre_tonecurve);
+  free(dev->histogram_pre_levels);
 }
 
 void dt_dev_process_image(dt_develop_t *dev)
@@ -293,7 +302,6 @@ restart:
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing", NULL);
 
   dev->preview_dirty = 0;
-  dt_control_queue_draw_all();
   dt_control_log_busy_leave();
   dev->mipf = NULL;
   dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
@@ -360,6 +368,9 @@ void dt_dev_process_to_mip(dt_develop_t *dev)
   dt_image_cache_flush(dev->image); // write new output size to db.
   dt_image_release(dev->image, DT_IMAGE_MIP4, 'r');
   dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+
+  /* raise signal that mipmaps has been flushed to cache */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
@@ -416,7 +427,7 @@ restart:
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
   dev->image_dirty = 0;
 
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw_center();
   dt_control_log_busy_leave();
 }
 
@@ -566,20 +577,20 @@ int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32
 {
   if(!image) return 1;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1 and num = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   if(sqlite3_step(stmt) != SQLITE_ROW)
   {
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num) values (?1, ?2)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, image->id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
     sqlite3_step (stmt);
   }
   // printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op, *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize (stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blendop_params = ?7 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blendop_params = ?7 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, h->module->version());
@@ -599,10 +610,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   dt_pthread_mutex_lock(&dev->history_mutex);
   if(dev->gui_attached)
   {
-    // if gui_attached pop all operations down to dev->history_end
-    dt_control_clear_history_items (dev->history_end-1);
-
-    // remove unused history items:
     GList *history = g_list_nth (dev->history, dev->history_end);
     while(history)
     {
@@ -610,6 +617,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
       // printf("removing obsoleted history item: %s\n", hist->module->op);
       free(hist->params);
+      free(hist->blend_params);
       free(history->data);
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
@@ -644,12 +652,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
-      if(dev->gui_attached)
-      {
-        char label[512]; // print on/off
-        dt_dev_get_history_item_label(hist, label, 512);
-        dt_control_add_history_item(dev->history_end-1, label);
-      }
       dev->history = g_list_append(dev->history, hist);
       dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
@@ -706,16 +708,17 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
   if(dev->gui_attached)
   {
-    // update history (on) (off) annotation
-    dt_control_clear_history_items(dev->history_end);
-    dt_control_queue_draw_all();
+    /* signal that history has changed */
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+
+    /* redraw */
+    dt_control_queue_redraw_center();
   }
 }
 
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dt_dev_pop_history_items(dev, 0);
-  dt_control_clear_history_items(dev->history_end-1);
   // remove unused history items:
   GList *history = g_list_nth(dev->history, dev->history_end);
   while(history)
@@ -772,13 +775,15 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   darktable.gui->reset = 0;
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw_center();
 }
 
 void dt_dev_write_history(dt_develop_t *dev)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+
+  gboolean changed = FALSE;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image->id);
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
@@ -788,15 +793,24 @@ void dt_dev_write_history(dt_develop_t *dev)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(dev->image, hist, i);
     history = g_list_next(history);
+    changed = TRUE;
   }
+  
+  /* attach / detach changed tag reflecting actual change */
+  guint tagid = 0;
+  dt_tag_new("darktable|changed",&tagid); 
+  if(changed)
+    dt_tag_attach(tagid, dev->image->id);
+  else
+    dt_tag_detach(tagid, dev->image->id);
+
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  if(dev->gui_attached) dt_control_clear_history_items(-1);
   if(!dev->image) return;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image->id);
   dev->history_end = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -808,6 +822,7 @@ void dt_dev_read_history(dt_develop_t *dev)
 
     GList *modules = dev->iop;
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
+   
     hist->module = NULL;
     while(opname && modules)
     {
@@ -836,6 +851,7 @@ void dt_dev_read_history(dt_develop_t *dev)
           hist->module->legacy_params(hist->module, sqlite3_column_blob(stmt, 4), labs(modversion), hist->params, labs(hist->module->version())))
       {
         free(hist->params);
+        free(hist->blend_params);
         fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
         const char *fname = dev->image->filename + strlen(dev->image->filename);
         while(fname > dev->image->filename && *fname != '/') fname --;
@@ -861,18 +877,16 @@ void dt_dev_read_history(dt_develop_t *dev)
     dev->history = g_list_append(dev->history, hist);
     dev->history_end ++;
 
-    if(dev->gui_attached)
-    {
-      char label[256];
-      dt_dev_get_history_item_label(hist, label, 256);
-      dt_control_add_history_item(dev->history_end-1, label);
-    }
   }
+
   if(dev->gui_attached)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
     dt_dev_invalidate_all(dev);
+
+    /* signal history changed */
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   sqlite3_finalize (stmt);
 }
@@ -956,6 +970,98 @@ int
 dt_dev_is_current_image (dt_develop_t *dev, int imgid)
 {
   return (dev->image && dev->image->id==imgid)?1:0;
+}
+
+gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
+{
+  /* check if exposure iop module has registered its hooks */
+  if( dev->proxy.exposure.module && 
+      dev->proxy.exposure.set_black && dev->proxy.exposure.get_black &&
+      dev->proxy.exposure.set_white && dev->proxy.exposure.get_white)
+    return TRUE;
+
+  return FALSE;
+}
+
+void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
+{
+  if (!dev->proxy.exposure.module) return;
+
+  dt_iop_module_t *exposure = dev->proxy.exposure.module;
+  memcpy(exposure->params, exposure->default_params, exposure->params_size);
+  exposure->gui_update(exposure);
+  dt_dev_add_history_item(exposure->dev, exposure, TRUE);
+
+}
+
+void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
+{
+   if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+     dev->proxy.exposure.set_white(dev->proxy.exposure.module, white);
+}
+
+float dt_dev_exposure_get_white(dt_develop_t *dev)
+{
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+     return dev->proxy.exposure.get_white(dev->proxy.exposure.module);
+
+  return 0.0;
+}
+
+void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
+{
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_black)
+     dev->proxy.exposure.set_black(dev->proxy.exposure.module, black);
+}
+
+float dt_dev_exposure_get_black(dt_develop_t *dev)
+{
+  if (dev->proxy.exposure.module && dev->proxy.exposure.set_black)
+     return dev->proxy.exposure.get_black(dev->proxy.exposure.module);
+
+  return 0.0;
+}
+
+gboolean dt_dev_modulegroups_available(dt_develop_t *dev) 
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set && dev->proxy.modulegroups.get)
+    return TRUE;
+
+  return FALSE;
+}
+
+void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.set)
+    dev->proxy.modulegroups.set(dev->proxy.modulegroups.module, group);
+}
+
+uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.get)
+    return dev->proxy.modulegroups.get(dev->proxy.modulegroups.module);
+
+  return 0;
+}
+
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test)
+    return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, iop_group); 
+  return FALSE;
+}
+
+
+void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
+{
+  dev->proxy.snapshot.filename = filename;
+  dev->proxy.snapshot.request = TRUE;
+  dt_control_queue_redraw_center();
+}
+
+void dt_dev_invalidate_from_gui (dt_develop_t *dev)
+{
+  dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

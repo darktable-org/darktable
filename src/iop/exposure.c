@@ -29,11 +29,14 @@
 #include "common/opencl.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/resetlabel.h"
 
 #define exposure2white(x)	exp2f(-(x))
 #define white2exposure(x)	-dt_log2f(fmaxf(0.001, x))
+#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
+
 
 DT_MODULE(2)
 
@@ -49,31 +52,63 @@ groups ()
 }
 
 int
+flags ()
+{
+  return IOP_FLAGS_ALLOW_TILING;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposure"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "auto-exposure"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_exposure_gui_data_t* g = (dt_iop_exposure_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "black", GTK_WIDGET(g->black));
+  dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->exposure));
+  dt_accel_connect_slider_iop(self, "auto-exposure", GTK_WIDGET(g->autoexpp));
+}
+
+int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return 4*sizeof(float);
 }
 
 #ifdef HAVE_OPENCL
-void
+int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
 
-  cl_int err;
+  cl_int err = -999;
   const float black = d->black;
   const float white = exposure2white(d->exposure);
   const float scale = 1.0/(white - black);
   const int devid = piece->pipe->devid;
-  size_t sizes[] = {roi_in->width, roi_in->height, 1};
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 2, sizeof(float), (void *)&black);
-  dt_opencl_set_kernel_arg(darktable.opencl, devid, gd->kernel_exposure, 3, sizeof(float), (void *)&scale);
-  err = dt_opencl_enqueue_kernel_2d(darktable.opencl, devid, gd->kernel_exposure, sizes);
-  if(err != CL_SUCCESS) fprintf(stderr, "couldn't enqueue exposure kernel! %d\n", err);
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&black);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&scale);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
+  if(err != CL_SUCCESS) goto error;
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_exposure] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
 #endif
 
@@ -93,7 +128,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + ch*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
       for(int i=0; i<3; i++)
-        out[i] = fmaxf(0.0f, (in[i]-black)*scale);
+        out[i] = (in[i]-black)*scale;
   }
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
@@ -134,7 +169,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 255;
+  module->priority = 187; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t)
@@ -154,7 +189,7 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // from programs.conf: basic.cl
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)malloc(sizeof(dt_iop_exposure_global_data_t));
   module->data = gd;
-  gd->kernel_exposure = dt_opencl_create_kernel(darktable.opencl, program, "exposure");
+  gd->kernel_exposure = dt_opencl_create_kernel(program, "exposure");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -168,7 +203,7 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)module->data;
-  dt_opencl_free_kernel(darktable.opencl, gd->kernel_exposure);
+  dt_opencl_free_kernel(gd->kernel_exposure);
   free(module->data);
   module->data = NULL;
 }
@@ -210,7 +245,7 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  float b = fmaxf(0.0f, black);
+  float b = black;
   if (p->black == b) return;
 
   p->black = b;
@@ -277,10 +312,8 @@ exposure_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
 
-  printf("disabling autoexp\n");
   autoexp_disable(self);
   const float exposure = dtgtk_slider_get_value(slider);
-  printf("disabling autoexp, setting to %f\n", exposure);
   dt_iop_exposure_set_white(self, exposure2white(exposure));
 }
 
@@ -329,12 +362,14 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  // register with histogram
-  darktable.gui->histogram.exposure = self;
-  darktable.gui->histogram.set_white = dt_iop_exposure_set_white;
-  darktable.gui->histogram.get_white = dt_iop_exposure_get_white;
-  darktable.gui->histogram.set_black = dt_iop_exposure_set_black;
-  darktable.gui->histogram.get_black = dt_iop_exposure_get_black;
+  /* register hooks with current dev so that  histogram 
+     can interact with this module.
+   */
+  darktable.develop->proxy.exposure.module = self;
+  darktable.develop->proxy.exposure.set_white = dt_iop_exposure_set_white;
+  darktable.develop->proxy.exposure.get_white = dt_iop_exposure_get_white;
+  darktable.develop->proxy.exposure.set_black = dt_iop_exposure_set_black;
+  darktable.develop->proxy.exposure.get_black = dt_iop_exposure_get_black;
 
   self->request_color_pick = 0;
 
@@ -386,9 +421,6 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  darktable.gui->histogram.exposure  = NULL;
-  darktable.gui->histogram.set_white = NULL;
-  darktable.gui->histogram.get_white = NULL;
   free(self->gui_data);
   self->gui_data = NULL;
 }
