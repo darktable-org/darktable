@@ -441,6 +441,8 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     free( (dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
+  // make sure no signals propagate here:
+  darktable.gui->reset = 1;
   GList *modules = g_list_last(dev->iop);
   while(modules)
   {
@@ -517,6 +519,9 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
+
+  // make signals work again:
+  darktable.gui->reset = 0;
 
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
@@ -699,6 +704,9 @@ void enter(dt_view_t *self)
   dev->gui_module = NULL;
   dt_dev_load_image(dev, dev->image);
 
+  // make sure no signals come from this initialization code:
+  darktable.gui->reset = 1;
+
   // adjust gui:
   GtkWidget *widget;
   gtk_widget_set_visible (darktable.gui->
@@ -831,6 +839,9 @@ void enter(dt_view_t *self)
 
   // switch on groups as they where last time:
   dt_gui_iop_modulegroups_switch(dt_conf_get_int("plugins/darkroom/groups"));
+
+  // make signals work again:
+  darktable.gui->reset = 0;
 
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
