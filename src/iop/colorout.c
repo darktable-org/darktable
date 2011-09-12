@@ -309,7 +309,8 @@ dt_Lab_to_XYZ_SSE(const __m128 Lab)
   const __m128 coef   = _mm_set_ps(0.0f,-1.0f/200.0f,1.0f/116.0f,1.0f/500.0f);
   const __m128 offset = _mm_set1_ps(0.137931034f);
 
-  const __m128 f = _mm_mul_ps(_mm_shuffle_ps(Lab,Lab,_MM_SHUFFLE(3,2,0,1)),coef);
+  // last component ins shuffle taken from 1st component of Lab to make sure it is not nan, so it will become 0.0f in f
+  const __m128 f = _mm_mul_ps(_mm_shuffle_ps(Lab,Lab,_MM_SHUFFLE(0,2,0,1)),coef);
 
   return _mm_mul_ps(d50,lab_f_inv_m(_mm_add_ps(_mm_add_ps(f,_mm_shuffle_ps(f,f,_MM_SHUFFLE(1,1,3,1))),offset)));
 }
