@@ -35,8 +35,6 @@
 #define INSET 5
 #define INFL .3f
 
-#define GLOBAL_TILING		// undef to use atrous-specific tiling instead (only for non-opencl)
-
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
 DT_MODULE(1)
@@ -141,65 +139,212 @@ void connect_key_accels(dt_iop_module_t *self)
                               ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
 }
 
-static __m128
-weight (const float *c1, const float *c2, const float sharpen)
+#define ALIGNED(a) __attribute__((aligned(a)))
+#define VEC4(a) {(a), (a), (a), (a)}
+
+static const __m128 fone ALIGNED(16) = VEC4(0x3f800000u);
+static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
+static const __m128 ooo1 ALIGNED(16) = {0.f, 0.f, 0.f, 1.f};
+
+/* SSE intrinsics version of dt_fast_expf defined in darktable.h */
+static __m128  inline
+dt_fast_expf_sse(const __m128 x)
 {
-  const float wc = dt_fast_expf(-((c1[1] - c2[1])*(c1[1] - c2[1]) + (c1[2] - c2[2])*(c1[2] - c2[2])) * sharpen);
-  const float wl = dt_fast_expf(-(c1[0] - c2[0])*(c1[0] - c2[0]) * sharpen);
-  return _mm_set_ps(1.0f, wc, wc, wl);
+  __m128  f = _mm_add_ps(fone, _mm_mul_ps(x, femo)); // f(n) = i1 + x(n)*(i2-i1)
+  __m128i i = _mm_cvtps_epi32(f);                    // i(n) = int(f(n))
+  __m128i mask = _mm_srai_epi32(i, 31);              // mask(n) = 0xffffffff if i(n) < 0
+  i = _mm_andnot_si128(mask, i);                     // i(n) = 0 if i(n) < 0
+  return _mm_castsi128_ps(i);                        // return *(float*)&i
 }
+
+/* Computes the vector
+ * (wl, wc, wc, 1)
+ *
+ * where:
+ * wl = exp(-sharpen*SQR(c1[0] - c2[0]))
+ *    = exp(-s*d1) (as noted in code comments below)
+ * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
+ *    = exp(-s*(d2+d3)) (as noted in code comments below)
+ */
+static __m128  inline
+weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
+{
+  const __m128 vsharpen = _mm_set1_ps(-sharpen);  // (-s, -s, -s, -s)
+  __m128 diff = _mm_sub_ps(*c1, *c2);
+  __m128 square = _mm_mul_ps(diff, diff);         // (?, d3, d2, d1)
+  __m128 square2 = _mm_shuffle_ps(square, square, _MM_SHUFFLE(3, 1, 2, 0)); // (?, d2, d3, d1)
+  __m128 added = _mm_add_ps(square, square2);     // (?, d2+d3, d2+d3, 2*d1)
+  added = _mm_sub_ss(added, square);              // (?, d2+d3, d2+d3, d1)
+  __m128 sharpened = _mm_mul_ps(added, vsharpen); // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
+  __m128 exp = dt_fast_expf_sse(sharpened);       // (?, wc, wc, wl)
+  exp = _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(exp), 4)); // (wc, wc, wl, 0)
+  exp = _mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(exp), 4)); // (0, wc, wc, wl)
+  exp = _mm_or_ps(exp, ooo1); // (1, wc, wc, wl)
+  return exp;
+}
+
+#define SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj) \
+  do { \
+    const __m128 f = _mm_set1_ps(filter[(ii)]*filter[(jj)]); \
+    const __m128 wp = weight_sse(px, px2, sharpen); \
+    const __m128 w = _mm_mul_ps(f, wp); \
+    const __m128 pd = _mm_mul_ps(w, *px2); \
+    sum = _mm_add_ps(sum, pd); \
+    wgt = _mm_add_ps(wgt, w); \
+  } while (0)
+
+#define SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj) \
+  do { \
+    const int iii = (ii)-2; \
+    const int jjj = (jj)-2; \
+    int x = i + mult*iii; \
+    int y = j + mult*jjj; \
+    \
+    if(x < 0)       x = 0; \
+    if(x >= width)  x = width  - 1; \
+    if(y < 0)       y = 0; \
+    if(y >= height) y = height - 1; \
+    \
+    px2 = ((__m128 *)in) + x + y*width; \
+    \
+    SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj); \
+  } while (0)
+
+#define ROW_PROLOGUE \
+  const __m128 *px = ((__m128 *)in) + j*width; \
+  const __m128 *px2; \
+  float *pdetail = detail + 4*j*width; \
+  float *pcoarse = out + 4*j*width;
+
+#define SUM_PIXEL_PROLOGUE \
+  __m128 sum = _mm_setzero_ps(); \
+  __m128 wgt = _mm_setzero_ps();
+
+#define SUM_PIXEL_EPILOGUE \
+  sum = _mm_mul_ps(sum, _mm_rcp_ps(wgt)); \
+  \
+  _mm_stream_ps(pdetail, _mm_sub_ps(*px, sum)); \
+  _mm_stream_ps(pcoarse, sum); \
+  px++; \
+  pdetail+=4; \
+  pcoarse+=4;
 
 static void
 eaw_decompose (float *const out, const float *const in, float *const detail, const int scale,
                const float sharpen, const int32_t width, const int32_t height)
 {
   const int mult = 1<<scale;
-  const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+  static const float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+
+  /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
+   * requires nearest pixel interpolation for at least a pixel in the sum */
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
+  for (int j=0; j<2*mult; j++)
+  {
+    ROW_PROLOGUE
+
+    for(int i=0; i<width; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj);
+        }
+      }
+      SUM_PIXEL_EPILOGUE
+    }
+  }
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static)
 #endif
-  for(int j=0; j<height; j++)
+  for(int j=2*mult; j<height-2*mult; j++)
   {
-    const __m128 *px = ((__m128 *)in) + j*width;
-    float *pdetail = detail + 4*j*width;
-    float *pcoarse = out + 4*j*width;
-    for(int i=0; i<width; i++)
-    {
-      // TODO: prefetch? _mm_prefetch()
-      __m128 sum = _mm_setzero_ps(), wgt = _mm_setzero_ps();
-      for(int jj=0; jj<5; jj++) for(int ii=0; ii<5; ii++)
-        {
-          const int iii = ii-2;
-          const int jjj = jj-2;
-          int x = i + mult*iii, y = j + mult*jjj;
-          // if(x < 0 || x >= width || y < 0 || y >= height) continue;
-          // clamp to edge
-          if(x < 0)       x = 0;
-          if(x >= width)  x = width  - 1;
-          if(y < 0)       y = 0;
-          if(y >= height) y = height - 1;
-          const __m128 *px2 = ((__m128 *)in) + x + y*width;
-          const __m128 w = _mm_mul_ps(_mm_set1_ps(filter[ii]*filter[jj]), weight((float *)px, (float *)px2, sharpen));
-          sum = _mm_add_ps(sum, _mm_mul_ps(w, *px2));
-          wgt = _mm_add_ps(wgt, w);
-        }
-      // sum = _mm_div_ps(sum, wgt);
-      sum = _mm_mul_ps(sum, _mm_rcp_ps(wgt)); // less precise, but faster
+    ROW_PROLOGUE
 
-      // memcpy is a tad slower than writing without updating caches:
-      // const __m128 d = _mm_sub_ps(*px, sum);
-      // memcpy(pdetail, &d, sizeof(float)*4);
-      // memcpy(pcoarse, &sum, sizeof(float)*4);
-      _mm_stream_ps(pdetail, _mm_sub_ps(*px, sum));
-      _mm_stream_ps(pcoarse, sum);
-      px++;
-      pdetail+=4;
-      pcoarse+=4;
+    /* The first "2*mult" pixels use the macro with tests because the 5x5 kernel
+     * requires nearest pixel interpolation for at least a pixel in the sum */
+    for (int i=0; i<2*mult; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj);
+        }
+      }
+      SUM_PIXEL_EPILOGUE
+    }
+
+    /* For pixels [2*mult, width-2*mult], we can safely use macro w/o tests
+     * to avoid uneeded branching in the inner loops */
+    for(int i=2*mult; i<width-2*mult; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      px2 = ((__m128*)in) + i-2*mult + (j-2*mult)*width;
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj);
+          px2 += mult;
+        }
+        px2 += (width-5)*mult;
+      }
+      SUM_PIXEL_EPILOGUE
+    }
+
+    /* Last two pixels in the row require a slow variant... blablabla */
+    for (int i=width-2*mult; i<width; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj);
+        }
+      }
+      SUM_PIXEL_EPILOGUE
     }
   }
+
+  /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
+   * requires nearest pixel interpolation for at least a pixel in the sum */
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
+  for (int j=height-2*mult; j<height; j++)
+  {
+    ROW_PROLOGUE
+
+    for(int i=0; i<width; i++)
+    {
+      SUM_PIXEL_PROLOGUE
+      for (int jj=0; jj<5; jj++)
+      {
+        for (int ii=0; ii<5; ii++)
+        {
+          SUM_PIXEL_CONTRIBUTION_WITH_TEST(ii, jj);
+        }
+      }
+      SUM_PIXEL_EPILOGUE
+    }
+  }
+
   _mm_sfence();
 }
+
+#undef SUM_PIXEL_CONTRIBUTION_COMMON
+#undef SUM_PIXEL_CONTRIBUTION_WITH_TEST
+#undef ROW_PROLOGUE
+#undef SUM_PIXEL_PROLOGUE
+#undef SUM_PIXEL_EPILOGUE
 
 static void
 eaw_synthesize (float *const out, const float *const in, const float *const detail,
@@ -291,7 +436,6 @@ get_scales (float (*thrs)[4], float (*boost)[4], float *sharp, const dt_iop_atro
   return i;
 }
 
-#ifdef GLOBAL_TILING
 /* just process the supplied image buffer, upstream default_process_tiling() does the rest */
 void
 process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -365,144 +509,6 @@ error:
   if(tmp != NULL) free(tmp);
   return;
 }
-#else
-/* if we don't use global tiling, we will in all cases use our own tiling approach, even if tiling is not requested explicitely */
-void
-process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  return self->process_tiling(self, piece, i, o, roi_in, roi_out, 4*sizeof(float));
-}
-#endif
-
-#ifndef GLOBAL_TILING
-/* this defines atrous' own tiling routine (non-opencl) */
-void
-process_tiling (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, const int in_bpp)
-{
-  dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
-  float thrs [MAX_NUM_SCALES][4];
-  float boost[MAX_NUM_SCALES][4];
-  float sharp[MAX_NUM_SCALES];
-  const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
-
-  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
-  {
-    dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
-    g->num_samples = get_samples (g->sample, d, roi_in, piece);
-    // tries to acquire gdk lock and this prone to deadlock:
-    // dt_control_queue_draw(GTK_WIDGET(g->area));
-  }
-
-  float *detail = NULL;
-  float *tmp    = NULL;
-  float *tmp2   = NULL;
-  float *buf2   = NULL;
-  float *buf1   = NULL;
-
-  // should be >= DT_IMAGE_WINDOW_SIZE, as dr mode won't use tiling then.
-  // border is with MAX_NUM_SCALES=8 502 pixels, the ratio (tile_wd_full-border)/tile_wd_full*(same for y) is directly proportional to the slowdown.
-  // int tile_wd_full = DT_IMAGE_WINDOW_SIZE, tile_ht_full = DT_IMAGE_WINDOW_SIZE;
-  // results in 3x2 for 5D mk II 21MPix images (24s 1300^2 -> 20s full export)
-  // and        2x1 for 12MPix (14s -> 7s)
-  int tile_wd_full = 2390, tile_ht_full = 2390;
-  // int tile_wd_full = 3350, tile_ht_full = 3350; // results in 2x2 for 5D mk II 21MPix images (24s 1300^2 -> 19s full export)
-  const int need_tiles = roi_in->width > tile_wd_full || roi_out->height > tile_ht_full;
-
-  if(need_tiles)
-  {
-    tmp2 = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
-    buf1 = tmp2;
-  }
-  else
-  {
-    tile_wd_full = roi_out->width;
-    tile_ht_full = roi_out->height;
-    buf1   = (float *)i;
-  }
-  detail = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full*max_scale);
-  tmp    = (float *)dt_alloc_align(64, sizeof(float)*4*tile_wd_full*tile_ht_full);
-  buf2   = tmp;
-  if(!detail || !tmp || !buf1)
-  {
-    fprintf(stderr, "[atrous] failed to allocate buffers!\n");
-    return;
-  }
-
-  const int max_filter_radius = (1<<max_scale); // 2 * 2^max_scale
-  const int width = roi_out->width, height = roi_out->height;
-  const int tile_wd = tile_wd_full - 2*max_filter_radius, tile_ht = tile_ht_full - 2*max_filter_radius;
-  const int tiles_x = need_tiles ? ceilf(width /(float)tile_wd) : 1;
-  const int tiles_y = need_tiles ? ceilf(height/(float)tile_ht) : 1;
-
-  // printf("need %d x %d tiles with %d x %d (%d x %d) resolution\n", tiles_x, tiles_y, tile_wd, tile_ht, tile_wd_full, tile_ht_full);
-
-  // for all tiles:
-  for(int tx=0; tx<tiles_x; tx++)
-    for(int ty=0; ty<tiles_y; ty++)
-    {
-      // size_t orig0[3] = {0, 0, 0};
-      // size_t origin[3] = {tx*tile_wd, ty*tile_ht, 0};
-      int orig0_x = 0, orig0_y = 0;
-      int origin_x = tx*tile_wd, origin_y = ty*tile_ht;
-      int wd = origin_x + tile_wd_full > width  ? width  - origin_x : tile_wd_full;
-      int ht = origin_y + tile_ht_full > height ? height - origin_y : tile_ht_full;
-      int vwd = wd, vht = ht; // valid region
-      // size_t region[3] = {wd, ht, 1};
-
-      if(need_tiles)
-      {
-        for(int j=0; j<ht; j++)
-          memcpy(tmp2 + j*4*wd, ((float *)i) + ((origin_y + j)*roi_in->width + origin_x)*4, sizeof(float)*4*wd);
-        buf1 = tmp2;
-        buf2 = tmp;
-      }
-      if(tx > 0)
-      {
-        origin_x += max_filter_radius;
-        orig0_x += max_filter_radius;
-        vwd -= max_filter_radius;
-      }
-      if(ty > 0)
-      {
-        origin_y += max_filter_radius;
-        orig0_y += max_filter_radius;
-        vht -= max_filter_radius;
-      }
-
-      // FIXME: can vwd/vht be < 0?
-      if(vwd <= 0 || vht <= 0) continue;
-
-      for(int scale=0; scale<max_scale; scale++)
-      {
-        eaw_decompose (buf2, buf1, detail + 4*wd*ht*scale, scale, sharp[scale], wd, ht);
-        if(!need_tiles && scale == 0) buf1 = (float *)o;
-        float *buf3 = buf2;
-        buf2 = buf1;
-        buf1 = buf3;
-      }
-
-      for(int scale=max_scale-1; scale>=0; scale--)
-      {
-        eaw_synthesize (buf2, buf1, detail + 4*wd*ht*scale,
-                        thrs[scale], boost[scale], wd, ht);
-        float *buf3 = buf2;
-        buf2 = buf1;
-        buf1 = buf3;
-      }
-
-      if(need_tiles)
-      {
-        for(int j=0; j<vht; j++)
-          memcpy(((float *)o) + ((origin_y + j)*roi_out->width + origin_x)*4, buf1 + 4*(orig0_x + (orig0_y + j)*wd), sizeof(float)*4*vwd);
-      }
-    }
-
-  free(detail);
-  free(tmp);
-  free(tmp2);
-}
-#endif
-
 
 #ifdef HAVE_OPENCL
 /* this version is adapted to the new global tiling mechanism. it no longer does tiling by itself. */
