@@ -26,6 +26,7 @@
 #include "common/opencl.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <xmmintrin.h>
 
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
