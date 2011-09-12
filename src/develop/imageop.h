@@ -40,10 +40,10 @@ struct dt_develop_tiling_t;
 #define	IOP_SPECIAL_GROUP_USER_DEFINED 32
 
 #define IOP_TAG_DISTORT       1
+#define IOP_TAG_DECORATION    2
 // might be some other filters togglable by user?
-//#define IOP_TAG_SLOW        2
-//#define IOP_TAG_DETAIL_FIX  4
-//#define IOP_TAG_DECORATION  8
+//#define IOP_TAG_SLOW        4
+//#define IOP_TAG_DETAIL_FIX  8
 
 
 #define	IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)

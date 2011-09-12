@@ -163,6 +163,14 @@ operation_tags ()
   return IOP_TAG_DISTORT;
 }
 
+int
+operation_tags_filter ()
+{
+  // switch off watermark, it gets confused.
+  return IOP_TAG_DECORATION;
+}
+
+
 static int
 gui_has_focus(struct dt_iop_module_t *self)
 {

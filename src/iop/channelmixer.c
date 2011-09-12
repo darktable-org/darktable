@@ -22,9 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
