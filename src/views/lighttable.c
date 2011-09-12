@@ -915,6 +915,11 @@ void enter(dt_view_t *self)
     }
     modules = g_list_next(modules);
   }
+
+  // clear some state variables
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->button = 0;
+  lib->pan = 0;
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -940,6 +945,11 @@ void leave(dt_view_t *self)
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
   box = GTK_BOX(darktable.gui->widgets.plugins_vbox_left);
   gtk_container_foreach(GTK_CONTAINER(box), (GtkCallback)dt_lib_remove_child, (gpointer)box);
+
+  // clear some state variables
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->button = 0;
+  lib->pan = 0;
 }
 
 void reset(dt_view_t *self)
