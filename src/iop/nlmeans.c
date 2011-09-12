@@ -246,7 +246,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             s[0] = stmp;
           }
           /* Process most of the line 4 pixels at a time */
-          for(; i<last-16; i+=4, inp+=16, inps+=16, inm+=16, inms+=16, s+=4)
+          for(; i<last-4; i+=4, inp+=16, inps+=16, inm+=16, inms+=16, s+=4)
           {
             __m128 sv = _mm_load_ps(s);
             const __m128 inp1 = _mm_load_ps(inp)    - _mm_load_ps(inps);
