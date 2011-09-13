@@ -525,6 +525,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, dt_iop_params_t *
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, image->exif_exposure);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_focal_length);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, dt_image_is_ldr(image));
   }
   else
   {
