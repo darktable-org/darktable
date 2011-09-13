@@ -433,9 +433,9 @@ void enter(dt_view_t *self)
   }
 
   // initialize a default session...
-  dt_capture_view_set_jobcode(self, dt_conf_get_string("plugins/capture/jobcode"));
-
-
+  char* tmp = dt_conf_get_string("plugins/capture/jobcode");
+  dt_capture_view_set_jobcode(self, tmp);
+  free(tmp);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
