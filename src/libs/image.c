@@ -53,12 +53,6 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-void
-gui_reset (dt_lib_module_t *self)
-{
-}
-
-
 static void
 button_clicked(GtkWidget *widget, gpointer user_data)
 {

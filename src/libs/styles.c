@@ -56,12 +56,6 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-void
-gui_reset (dt_lib_module_t *self)
-{
-// dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
-}
-
 int
 position ()
 {
