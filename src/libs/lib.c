@@ -1,8 +1,8 @@
-
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-
+    copyright (c) 2011 Henrik Andersson.
+    
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +20,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
+#include "dtgtk/icon.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/debug.h"
@@ -471,6 +472,8 @@ dt_lib_unload_module (dt_lib_module_t *module)
   if(module->module) g_module_close(module->module);
 }
 
+
+#if 0
 static void
 dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer user_data)
 {
@@ -504,6 +507,7 @@ dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer 
     gtk_widget_hide_all(module->widget);
   }
 }
+#endif
 
 static void
 dt_lib_gui_reset_callback (GtkButton *button, gpointer user_data)
@@ -545,6 +549,71 @@ popup_callback(GtkButton *button, dt_lib_module_t *module)
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 }
 
+void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
+{
+  if(!module->expander) return;
+
+  /* update expander arrow state */
+  GtkWidget *icon;
+  GtkWidget *header = gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),0)));
+  gint flags = CPF_DIRECTION_DOWN;
+  int c = module->container();
+  
+  if ( (c & DT_UI_CONTAINER_PANEL_LEFT_TOP || 
+		     c & DT_UI_CONTAINER_PANEL_LEFT_CENTER ||
+		     c & DT_UI_CONTAINER_PANEL_LEFT_BOTTOM) )
+  {
+
+    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(header)),0);
+    if(!expanded)
+      flags=CPF_DIRECTION_RIGHT;
+  } 
+  else
+  {
+    icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
+    if(!expanded)
+      flags=CPF_DIRECTION_LEFT;
+  }
+  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
+
+
+  /* show / hide plugin widget */
+  if(expanded)
+    gtk_widget_show_all(module->widget);
+  else
+    gtk_widget_hide_all(module->widget);
+
+  /* store expanded state of module */
+  char var[1024];
+  snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
+  dt_conf_set_bool(var, gtk_widget_get_visible(module->widget));
+  
+}
+
+static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_lib_module_t *module = (dt_lib_module_t *)user_data;
+
+
+  if (e->button == 1) 
+  {
+    /* bail out if module is static */
+    if(!module->expandable()) return FALSE;
+
+    /* toggle view of header */
+    dt_lib_gui_set_expanded(module, !gtk_widget_get_visible(module->widget));
+
+    return TRUE;
+  }
+  else if (e->button == 2)
+  {
+    /* show preset popup if any preset for module */
+
+    return TRUE;
+  }
+  return FALSE;
+}
+
 GtkWidget *
 dt_lib_gui_get_expander (dt_lib_module_t *module)
 {
@@ -554,51 +623,96 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
     module->expander = NULL;
     return NULL;
   }
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)(module->name())));
 
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
+  int bs = 12;
 
-  /* only add reset button if module has implemented the gui_reset function */
-  if (module->gui_reset) 
+  GtkWidget *expander = gtk_vbox_new(FALSE, 3);
+  GtkWidget *header_evb = gtk_event_box_new();
+  GtkWidget *header = gtk_hbox_new(FALSE, 0);
+  GtkWidget *pluginui_frame = gtk_frame_new(NULL);
+  GtkWidget *pluginui = gtk_event_box_new();
+
+  /* steup the header box */
+  gtk_container_add(GTK_CONTAINER(header_evb), header);
+  g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press), module);
+
+  /* setup plugin content frame */
+  gtk_frame_set_shadow_type(GTK_FRAME(pluginui_frame),GTK_SHADOW_IN);
+  gtk_container_add(GTK_CONTAINER(pluginui_frame),pluginui);
+
+  /* layout the main expander widget */
+  gtk_box_pack_start(GTK_BOX(expander), header_evb, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(expander), pluginui_frame, TRUE, FALSE,0);
+  
+  /* 
+   * initialize the header widgets 
+   */
+  int idx=0;
+  GtkWidget *hw[5]={NULL,NULL,NULL,NULL,NULL};
+
+  /* add the expand indicator icon */
+  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+  
+  /* add module label */
+  char label[128];
+  g_snprintf(label,128,"<span size=\"larger\">%s</span>",module->name());
+  hw[idx] = gtk_label_new("");
+  gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
+
+  /* add reset button if module has implementation */
+  if (module->gui_reset)
   {
-    GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-    module->reset_button = GTK_WIDGET(resetbutton);
-    gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-    g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
-    gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
+    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    module->reset_button = GTK_WIDGET(hw[idx]);
+    g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("reset parameters"), (char *)NULL);
+    g_signal_connect (G_OBJECT (hw[idx]), "clicked",
+		      G_CALLBACK (dt_lib_gui_reset_callback), module);
+  }
+  else
+    hw[idx] = gtk_fixed_new();
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
 
-    g_signal_connect (G_OBJECT (resetbutton), "clicked",
-                    G_CALLBACK (dt_lib_gui_reset_callback), module);
+  /* add preset button if module has implementation */
+  if (module->get_params)
+  {
+    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    module->presets_button = GTK_WIDGET(hw[idx]);
+    g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("presets"), (char *)NULL);
+    g_signal_connect (G_OBJECT (hw[idx]), "clicked", G_CALLBACK (popup_callback), module);
+  }
+  else
+    hw[idx] = gtk_fixed_new();
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
+  /* lets order header elements depending on left/right side panel placement */  
+  int c = module->container();
+  if ( c & DT_UI_CONTAINER_PANEL_LEFT_TOP || 
+       c & DT_UI_CONTAINER_PANEL_LEFT_CENTER ||
+       c & DT_UI_CONTAINER_PANEL_LEFT_BOTTOM )
+  {
+    for(int i=0;i<=3;i++)
+      if (hw[i])
+	gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
+    gtk_misc_set_alignment(GTK_MISC(hw[1]),0.0,0.5);
+  }
+  else
+  {
+    for(int i=3;i>=0;i--)
+       if (hw[i])
+	 gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
+    gtk_misc_set_alignment(GTK_MISC(hw[1]),1.0,0.5);
   }
 
-  if(module->get_params)
-  {
-    GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-    gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
-    g_object_set(G_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
-    module->presets_button = GTK_WIDGET(presetsbutton);
-    gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
-    g_signal_connect (G_OBJECT (presetsbutton), "clicked", G_CALLBACK (popup_callback), module);
-  }
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  /* add module widtget into an alignment */
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 8);
+  gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), module->widget);
+  gtk_widget_show_all(module->widget);
+  module->expander = expander;
 
-  g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
-                    G_CALLBACK (dt_lib_gui_expander_callback), module);
-  gtk_expander_set_spacing(module->expander, 10);
-  gtk_widget_hide_all(module->widget);
-  gtk_expander_set_expanded(module->expander, FALSE);
-  GtkWidget *evb = gtk_event_box_new();
-
-  gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
-  gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
-
-  return evb;
+  return module->expander;
 }
 
 void

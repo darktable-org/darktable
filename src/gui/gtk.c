@@ -54,7 +54,7 @@
  * NEW UI API                                                             
  */
 
-#define DT_UI_PANEL_MODULE_SPACING 10
+#define DT_UI_PANEL_MODULE_SPACING 3
 
 const char *_ui_panel_config_names[] = {
   "header",

@@ -202,6 +202,11 @@ style "clearlooks-header" = "clearlooks-default"
   font_name = "Sans bold 9"
 }
 
+style "clearlooks-plugin" = "clearlooks-default"
+{
+  bg[NORMAL]      = "#252525"
+}
+
 style "clearlooks-scrollbar" = "clearlooks-defaults"
 {
   xthickness = 0
@@ -265,14 +270,15 @@ widget "*.library_eventbox" style "clearlooks-brightbg"
 widget "*.snapshots_eventbox" style "clearlooks-brightbg"
 widget "*.metadata_eventbox" style "clearlooks-brightbg"
 widget "*.history_eventbox" style "clearlooks-brightbg"
-widget "*.module_list_eventbox" style "clearlooks-brightbg"
+#widget "*.module_list_eventbox" style "clearlooks-brightbg"
 
 widget "*.right.GtkEventBox" style "clearlooks-brightbg"
 widget "*.left.GtkEventBox" style "clearlooks-brightbg"
 
 # entry and tree
 # class "GtkEntry" style "clearlooks-entry"
-# class "GtkTreeView" style "clearlooks-entry"
+
+widget_class "*.GtkFrame.GtkEventBox" style "clearlooks-plugin"
 
 widget "*.background_job_eventbox" style "clearlooks-brightbg"
 #widget_class "*.GtkMenuItem.*" style "clearlooks-menu-item"

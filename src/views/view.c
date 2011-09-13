@@ -298,8 +298,9 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         {
           snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
-          gtk_expander_set_expanded (plugin->expander, expanded);
-
+	  
+	  dt_lib_gui_set_expanded(plugin, expanded);
+	
           /* show expander if visible  */
           if(dt_lib_is_visible(plugin))
             gtk_widget_show_all(GTK_WIDGET(plugin->expander));
