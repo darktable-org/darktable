@@ -171,7 +171,7 @@ gboolean dt_gui_histogram_motion_notify(GtkWidget *widget, GdkEventMotion *event
   else if(n->dragging && n->highlight == 1 && n->exposure && n->set_black)
   {
     float black = n->black - (event->x - n->button_down_x)*
-                  .2f/(float)widget->allocation.width;
+                  .1f/(float)widget->allocation.width;
     n->set_black(n->exposure, black);
   }
   else
