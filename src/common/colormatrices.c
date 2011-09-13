@@ -182,6 +182,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-LX5",            { 845215, 228226,  59219}, { 190109, 1297211, -543121}, { 42511, -433456, 1414032}, {761322, 790985, 642044}},
 
+  // Pascal de Bruijn, CMP Digital Target 3, strobe (PSEF15A), well lit
+  { "SAMSUNG NX100",                { 859955, 369919,  17136}, { 127045,  869888, -258362}, { 69351, -149155, 1121475}, {854538, 897888, 691147}},
+
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}},
 
