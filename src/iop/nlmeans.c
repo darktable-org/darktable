@@ -26,6 +26,7 @@
 #include "common/opencl.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <xmmintrin.h>
 
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
@@ -140,7 +141,7 @@ error:
 #endif
 
 /** process, all real work is done here. */
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -152,7 +153,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(P <= 1)
   {
     // nothing to do from this distance:
-    memcpy (o, i, sizeof(float)*4*roi_out->width*roi_out->height);
+    memcpy (ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
     return;
   }
 
@@ -161,33 +162,27 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
   const float norm2[4] = { nL*nL, nC*nC, nC*nC, 1.0f };
 
-#define SLIDING_WINDOW // brings down time from 15 secs to 3 secs on a core2 duo
-#ifdef SLIDING_WINDOW
   float *Sa = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
-#else
-  float *S = dt_alloc_align(64, sizeof(float)*roi_out->width*roi_out->height);
-#endif
   // we want to sum up weights in col[3], so need to init to 0:
-  memset(o, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
+  memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
 
   // for each shift vector
   for(int kj=-K;kj<=K;kj++)
   {
     for(int ki=-K;ki<=K;ki++)
     {
-#ifdef SLIDING_WINDOW
       int inited_slide = 0;
       // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
       // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more memory
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, i, o, Sa)
+#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, ivoid, ovoid, Sa)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
         if(j+kj < 0 || j+kj >= roi_out->height) continue;
         float *S = Sa + dt_get_thread_num() * roi_out->width;
-        const float *ins = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
-        float *out = ((float *)o) + 4*roi_out->width*j;
+        const float *ins = ((float *)ivoid) + 4*(roi_in->width *(j+kj) + ki);
+        float *out = ((float *)ovoid) + 4*roi_out->width*j;
 
         const int Pm = MIN(MIN(P, j+kj), j);
         const int PM = MIN(MIN(P, roi_out->height-1-j-kj), roi_out->height-1-j);
@@ -199,17 +194,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           memset(S, 0x0, sizeof(float)*roi_out->width);
           for(int jj=-Pm;jj<=PM;jj++)
           {
-            float *s = S;
-            const float *inp  = ((float *)i) + 4* roi_in->width *(j+jj);
-            const float *inps = ((float *)i) + 4*(roi_in->width *(j+jj+kj) + ki);
-            for(int i=0; i<roi_out->width; i++)
+            int i = MAX(0, -ki);
+            float *s = S + i;
+            const float *inp  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j+jj);
+            const float *inps = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j+jj+kj) + ki);
+            const int last = roi_out->width + MIN(0, -ki);
+            for(; i<last; i++, inp+=4, inps+=4, s++)
             {
-              if(i+ki >= 0 && i+ki < roi_out->width)
-              {
-                for(int k=0;k<3;k++)
-                  s[0] += (inp[4*i + k] - inps[4*i + k])*(inp[4*i + k] - inps[4*i + k]) * norm2[k];
-              }
-              s++;
+              for(int k=0;k<3;k++)
+                s[0] += (inp[k] - inps[k])*(inp[k] - inps[k]) * norm2[k];
             }
           }
           // only reuse this if we had a full stripe
@@ -227,9 +220,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             slide += s[P] - s[-P-1];
           if(i+ki >= 0 && i+ki < roi_out->width)
           {
-            const float w = gh(slide);
-            for(int k=0;k<3;k++) out[k] += ins[k] * w;
-            out[3] += w;
+            const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
+            _mm_store_ps(out, _mm_load_ps(out) + iv * _mm_set1_ps(gh(slide)));
           }
           s   ++;
           ins += 4;
@@ -238,132 +230,93 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         if(inited_slide && j+P+1+MAX(0,kj) < roi_out->height)
         {
           // sliding window in j direction:
-          float *s = S;
-          const float *inp  = ((float *)i) + 4* roi_in->width *(j+P+1);
-          const float *inps = ((float *)i) + 4*(roi_in->width *(j+P+1+kj) + ki);
-          const float *inm  = ((float *)i) + 4* roi_in->width *(j-P);
-          const float *inms = ((float *)i) + 4*(roi_in->width *(j-P+kj) + ki);
-          for(int i=0; i<roi_out->width; i++)
+          int i = MAX(0, -ki);
+          float *s = S + i;
+          const float *inp  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j+P+1);
+          const float *inps = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j+P+1+kj) + ki);
+          const float *inm  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j-P);
+          const float *inms = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
+          const int last = roi_out->width + MIN(0, -ki);
+          for(; ((unsigned long)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
-            if(i+ki >= 0 && i+ki < roi_out->width) for(int k=0;k<3;k++)
-              s[0] += ((inp[4*i + k] - inps[4*i + k])*(inp[4*i + k] - inps[4*i + k])
-                    -  (inm[4*i + k] - inms[4*i + k])*(inm[4*i + k] - inms[4*i + k])) * norm2[k];
-            s++;
+            float stmp = s[0];
+            for(int k=0;k<3;k++)
+              stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
+                    -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+            s[0] = stmp;
+          }
+          /* Process most of the line 4 pixels at a time */
+          for(; i<last-4; i+=4, inp+=16, inps+=16, inm+=16, inms+=16, s+=4)
+          {
+            __m128 sv = _mm_load_ps(s);
+            const __m128 inp1 = _mm_load_ps(inp)    - _mm_load_ps(inps);
+            const __m128 inp2 = _mm_load_ps(inp+4)  - _mm_load_ps(inps+4);
+            const __m128 inp3 = _mm_load_ps(inp+8)  - _mm_load_ps(inps+8);
+            const __m128 inp4 = _mm_load_ps(inp+12) - _mm_load_ps(inps+12);
+
+            const __m128 inp12lo = _mm_unpacklo_ps(inp1,inp2);
+            const __m128 inp34lo = _mm_unpacklo_ps(inp3,inp4);
+            const __m128 inp12hi = _mm_unpackhi_ps(inp1,inp2);
+            const __m128 inp34hi = _mm_unpackhi_ps(inp3,inp4);
+
+            const __m128 inpv0 = _mm_movelh_ps(inp12lo,inp34lo);
+            sv += inpv0*inpv0 * _mm_set1_ps(norm2[0]);
+
+            const __m128 inpv1 = _mm_movehl_ps(inp34lo,inp12lo);
+            sv += inpv1*inpv1 * _mm_set1_ps(norm2[1]);
+
+            const __m128 inpv2 = _mm_movelh_ps(inp12hi,inp34hi);
+            sv += inpv2*inpv2 * _mm_set1_ps(norm2[2]);
+
+            const __m128 inm1 = _mm_load_ps(inm)    - _mm_load_ps(inms);
+            const __m128 inm2 = _mm_load_ps(inm+4)  - _mm_load_ps(inms+4);
+            const __m128 inm3 = _mm_load_ps(inm+8)  - _mm_load_ps(inms+8);
+            const __m128 inm4 = _mm_load_ps(inm+12) - _mm_load_ps(inms+12);
+
+            const __m128 inm12lo = _mm_unpacklo_ps(inm1,inm2);
+            const __m128 inm34lo = _mm_unpacklo_ps(inm3,inm4);
+            const __m128 inm12hi = _mm_unpackhi_ps(inm1,inm2);
+            const __m128 inm34hi = _mm_unpackhi_ps(inm3,inm4);
+
+            const __m128 inmv0 = _mm_movelh_ps(inm12lo,inm34lo);
+            sv -= inmv0*inmv0 * _mm_set1_ps(norm2[0]);
+
+            const __m128 inmv1 = _mm_movehl_ps(inm34lo,inm12lo);
+            sv -= inmv1*inmv1 * _mm_set1_ps(norm2[1]);
+
+            const __m128 inmv2 = _mm_movelh_ps(inm12hi,inm34hi);
+            sv -= inmv2*inmv2 * _mm_set1_ps(norm2[2]);
+
+            _mm_store_ps(s, sv);
+          }
+          for(; i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
+          {
+            float stmp = s[0];
+            for(int k=0;k<3;k++)
+              stmp += ((inp[k] - inps[k])*(inp[k] - inps[k])
+                    -  (inm[k] - inms[k])*(inm[k] - inms[k])) * norm2[k];
+            s[0] = stmp;
           }
         }
         else inited_slide = 0;
       }
-#else
-      // construct summed area table of weights:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(i,S,roi_in,roi_out,kj,ki)
-#endif
-      for(int j=0; j<roi_out->height; j++)
-      {
-        const float *in  = ((float *)i) + 4* roi_in->width * j;
-        const float *ins = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
-        float *out = ((float *)S) + roi_out->width*j;
-        if(j+kj < 0 || j+kj >= roi_out->height) memset(out, 0x0, sizeof(float)*roi_out->width);
-        else for(int i=0; i<roi_out->width; i++)
-        {
-          if(i+ki < 0 || i+ki >= roi_out->width) out[0] = 0.0f;
-          else
-          {
-            out[0]  = (in[0] - ins[0])*(in[0] - ins[0]) * norm2[0];
-            out[0] += (in[1] - ins[1])*(in[1] - ins[1]) * norm2[1];
-            out[0] += (in[2] - ins[2])*(in[2] - ins[2]) * norm2[2];
-          }
-          in  += 4;
-          ins += 4;
-          out ++;
-        }
-      }
-      // now sum up:
-      // horizontal phase:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(S,roi_out)
-#endif
-      for(int j=0; j<roi_out->height; j++)
-      {
-        int stride = 1;
-        while(stride < roi_out->width)
-        {
-          float *out = ((float *)S) + roi_out->width*j;
-          for(int i=0;i<roi_out->width-stride;i++)
-          {
-            out[0] += out[stride];
-            out ++;
-          }
-          stride <<= 1;
-        }
-      }
-      // vertical phase:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(S,roi_out)
-#endif
-      for(int i=0; i<roi_out->width; i++)
-      {
-        int stride = 1;
-        while(stride < roi_out->height)
-        {
-          float *out = S + i;
-          for(int j=0;j<roi_out->height-stride;j++)
-          {
-            out[0] += out[roi_out->width*stride];
-            out += roi_out->width;
-          }
-          stride <<= 1;
-        }
-      }
-      // now the denoising loop:
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(i,o,S,kj,ki,roi_in,roi_out)
-#endif
-      for(int j=0; j<roi_out->height; j++)
-      {
-        if(j+kj < 0 || j+kj >= roi_out->height) continue;
-        const float *in  = ((float *)i) + 4*(roi_in->width *(j+kj) + ki);
-        float *out = ((float *)o) + 4*roi_out->width*j;
-        const float *s = S + roi_out->width*j;
-        const int offy = MIN(j, MIN(roi_out->height - j - 1, P)) * roi_out->width;
-        for(int i=0; i<roi_out->width; i++)
-        {
-          if(i+ki >= 0 && i+ki < roi_out->width)
-          {
-            const int offx = MIN(i, MIN(roi_out->width - i - 1, P));
-            const float m1 = s[offx - offy], m2 = s[- offx + offy], p1 = s[offx + offy], p2 = s[- offx - offy];
-            const float w = gh(p1 + p2 - m1 - m2);
-            for(int k=0;k<3;k++) out[k] += in[k] * w;
-            out[3] += w;
-          }
-          s   ++;
-          in  += 4;
-          out += 4;
-        }
-      }
-#endif
     }
   }
   // normalize:
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(o,roi_out)
+  #pragma omp parallel for default(none) schedule(static) shared(ovoid,roi_out)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    float *out = ((float *)o) + 4*roi_out->width*j;
+    float *out = ((float *)ovoid) + 4*roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
-      for(int k=0;k<3;k++) out[k] *= 1.0f/out[3];
+      _mm_store_ps(out, _mm_load_ps(out) * _mm_set1_ps(1.0f/out[3]));
       out += 4;
     }
   }
-#ifdef SLIDING_WINDOW
   // free shared tmp memory:
   free(Sa);
-#else
-  // free the summed area table:
-  free(S);
-#endif
 }
 
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */

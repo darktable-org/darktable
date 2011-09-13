@@ -236,6 +236,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
+  if(!g_module_symbol(module->module, "gui_focus",              (gpointer)&(module->gui_focus)))              module->gui_focus = NULL;
   if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
   if(!g_module_symbol(module->module, "connect_key_accels", (gpointer)&(module->connect_key_accels)))        module->connect_key_accels = NULL;
   if(!g_module_symbol(module->module, "disconnect_key_accels", (gpointer)&(module->disconnect_key_accels)))        module->disconnect_key_accels = NULL;
@@ -312,6 +313,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->gui_cleanup = so->gui_cleanup;
 
   module->gui_post_expose = so->gui_post_expose;
+  module->gui_focus       = so->gui_focus;
   module->mouse_leave     = so->mouse_leave;
   module->mouse_moved     = so->mouse_moved;
   module->button_released = so->button_released;
@@ -790,8 +792,10 @@ popup_callback(GtkButton *button, dt_iop_module_t *module)
 
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
+  if(darktable.gui->reset) return;
   if(darktable.develop->gui_module)
   {
+    if(darktable.develop->gui_module->gui_focus) darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
     gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
     if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
@@ -809,6 +813,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if (module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
     dt_accel_connect_locals_iop(module);
+    if(module->gui_focus) module->gui_focus(module, TRUE);
   }
   dt_control_change_cursor(GDK_LEFT_PTR);
 }

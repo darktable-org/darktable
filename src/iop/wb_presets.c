@@ -154,6 +154,14 @@ const wb_data wb_preset[] =
   { "Canon", "PowerShot G11", Flash, 0,		{ 1.985556, 1, 1.703333, 0 } },
   { "Canon", "PowerShot G11", Underwater, 0,	{ 2.225624, 1, 1.577098, 0 } },
 
+  { "Canon", "PowerShot G12", Daylight, 0,		{ 1.785877, 1, 2.042141, 0 } },
+  { "Canon", "PowerShot G12", Cloudy, 0,                { 1.804323, 1, 2.021615, 0 } },
+  { "Canon", "PowerShot G12", Tungsten, 0,              { 1.310127, 1, 3.170886, 0 } },
+  { "Canon", "PowerShot G12", Fluorescent, 0,           { 1.771139, 1, 2.064262, 0 } },
+  { "Canon", "PowerShot G12", DaylightFluorescent, 0,	{ 1.806122, 1, 2.03288, 0 } },
+  { "Canon", "PowerShot G12", Flash, 0,			{ 2.102157, 1, 1.706016, 0 } },
+  { "Canon", "PowerShot G12", Underwater, 0,		{ 1.80765, 1, 2.112568, 0 } },
+
   /* Canon PowerShot S3 IS does not support native WB presets. These are made
      as custom WB presets. */
   { "Canon", "PowerShot S3 IS", Daylight, 0,	{ 1.627271, 1, 1.823491, 0 } },
@@ -4047,6 +4055,32 @@ const wb_data wb_preset[] =
   { "RICOH", "Caplio GX100", Cloudy, 0,		{ 2.240003, 1, 1.530002, 0 } },
   { "RICOH", "Caplio GX100", Incandescent, 0,	{ 1.520002, 1, 2.520003, 0 } },
   { "RICOH", "Caplio GX100", Fluorescent, 0,	{ 1.840001, 1, 1.970001, 0 } },
+
+  // SAMSUNG NX100 (firmware 1.10) white balance presets with finetuning steps
+  { "SAMSUNG", "NX100", Daylight , -7,		{ 1.559003, 1, 1.529685, 0 } },
+  { "SAMSUNG", "NX100", Daylight, 0,		{ 1.751771, 1, 1.167115, 0 } },
+  { "SAMSUNG", "NX100", Daylight, 7,		{ 1.961884, 1, 0.968987, 0 } },
+  { "SAMSUNG", "NX100", Cloudy, -7,		{ 1.630833, 1, 1.449059, 0 } },
+  { "SAMSUNG", "NX100", Cloudy, 0,		{ 1.833333, 1, 1.106305, 0 } },
+  { "SAMSUNG", "NX100", Cloudy, 7,		{ 2.053387, 1, 0.918125, 0 } },
+  { "SAMSUNG", "NX100", WhiteFluorescent, -7,	{ 1.519306, 1, 2.321359, 0 } },
+  { "SAMSUNG", "NX100", WhiteFluorescent, 0,	{ 1.707234, 1, 1.771750, 0 } },
+  { "SAMSUNG", "NX100", WhiteFluorescent, 7,	{ 1.912268, 1, 1.470430, 0 } },
+  { "SAMSUNG", "NX100", NeutralFluorescent, -7,	{ 1.683362, 1, 1.888102, 0 } },
+  { "SAMSUNG", "NX100", NeutralFluorescent, 0,	{ 1.891984, 1, 1.441349, 0 } },
+  { "SAMSUNG", "NX100", NeutralFluorescent, 7,	{ 2.119013, 1, 1.196237, 0 } },
+  { "SAMSUNG", "NX100", DaylightFluorescent, -7,{ 1.986559, 1, 1.617058, 0 } },
+  { "SAMSUNG", "NX100", DaylightFluorescent, 0,	{ 2.232160, 1, 1.234115, 0 } },
+  { "SAMSUNG", "NX100", DaylightFluorescent, 7,	{ 2.500000, 1, 1.024194, 0 } },
+  { "SAMSUNG", "NX100", Tungsten, -7,		{ 0.947015, 1, 3.091393, 0 } },
+  { "SAMSUNG", "NX100", Tungsten, 0,		{ 1.063767, 1, 2.359394, 0 } },
+  { "SAMSUNG", "NX100", Tungsten, 7,		{ 1.191838, 1, 1.958456, 0 } },
+  { "SAMSUNG", "NX100", Flash, -7,		{ 1.655265, 1, 1.315172, 0 } },
+  { "SAMSUNG", "NX100", Flash, 0,		{ 1.860459, 1, 1.004154, 0 } },
+  { "SAMSUNG", "NX100", Flash, 7,		{ 2.083469, 1, 0.833265, 0 } },
+  { "SAMSUNG", "NX100", "5000K", 0,		{ 1.676277, 1, 1.097728, 0 } },
+  { "SAMSUNG", "NX100", "5500K", 0,		{ 1.683993, 1, 0.847587, 0 } },
+  { "SAMSUNG", "NX100", "6500K", 0,		{ 2.102913, 1, 0.883064, 0 } },
 
   { "SAMSUNG", "GX-1S", Daylight, 0,		{ 1.574219, 1, 1.109375, 0 } },
   { "SAMSUNG", "GX-1S", Shade, 0,		{ 1.855469, 1, 1.000000, 0 } },

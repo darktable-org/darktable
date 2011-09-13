@@ -39,11 +39,11 @@ struct dt_develop_tiling_t;
 #define	IOP_SPECIAL_GROUP_ACTIVE_PIPE 16
 #define	IOP_SPECIAL_GROUP_USER_DEFINED 32
 
-#define IOP_TAG_DISTORT     1
+#define IOP_TAG_DISTORT       1
+#define IOP_TAG_DECORATION    2
 // might be some other filters togglable by user?
-//#define IOP_TAG_SLOW        2
-//#define IOP_TAG_DETAIL_FIX  4
-//#define IOP_TAG_DECORATION  8
+//#define IOP_TAG_SLOW        4
+//#define IOP_TAG_DETAIL_FIX  8
 
 
 #define	IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
@@ -99,6 +99,7 @@ typedef struct dt_iop_module_so_t
   void (*gui_init)        (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+  void (*gui_focus)       (struct dt_iop_module_t *self, gboolean in);
   /** Optional callback for keyboard accelerators */
   void (*init_key_accels)(struct dt_iop_module_so_t *so);
   void (*connect_key_accels)(struct dt_iop_module_t *self);
@@ -216,6 +217,8 @@ typedef struct dt_iop_module_t
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
   void (*gui_post_expose) (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+  /** optional callback to be notified if the module acquires gui focus/loses it. */
+  void (*gui_focus)       (struct dt_iop_module_t *self, gboolean in);
 
   /** optional event callbacks */
   int  (*mouse_leave)     (struct dt_iop_module_t *self);

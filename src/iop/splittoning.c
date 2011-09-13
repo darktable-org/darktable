@@ -22,10 +22,8 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
+#include "common/debug.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -36,6 +34,7 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -89,6 +88,7 @@ groups ()
 {
   return IOP_GROUP_EFFECT;
 }
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE, NC_("accel", "pick primary color"),
@@ -113,6 +113,40 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "balance", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->scale2));
+}
+
+void init_presets (dt_iop_module_t *self)
+{
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+
+  // shadows: #ED7212
+  // highlights: #ECA413
+  // balance : 63
+  // compress : 0
+  dt_gui_presets_add_generic(_("authentic sepia"), self->op, &(dt_iop_splittoning_params_t)
+  {
+      26.0/360.0, 92.0/100.0, 40.0/360.0, 92.0/100.0, 0.63, 0.0
+  } , sizeof(dt_iop_splittoning_params_t), 1);
+
+  //shadows: #446CBB
+  //highlights: #446CBB
+  //balance : 0
+  //compress : 5.22
+  dt_gui_presets_add_generic(_("authentic cyanotype"), self->op, &(dt_iop_splittoning_params_t)
+  {
+      220.0/360.0, 64.0/100.0, 220.0/360.0, 64.0/100.0, 0.0, 5.22
+  } , sizeof(dt_iop_splittoning_params_t), 1);
+
+  // shadows : #A16C5E
+  // highlights : #A16C5E
+  // balance : 100
+  // compress : 0
+  dt_gui_presets_add_generic(_("authentic platinotype"), self->op, &(dt_iop_splittoning_params_t)
+  {
+      13.0/360.0, 42.0/100.0, 13.0/360.0, 42.0/100.0, 100.0, 0.0
+  } , sizeof(dt_iop_splittoning_params_t), 1);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)

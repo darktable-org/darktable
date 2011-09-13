@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ typedef struct dt_iop_clipping_gui_data_t
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
   float old_clip_x, old_clip_y, old_clip_w, old_clip_h;
-  int cropping, straightening;
+  int cropping, straightening, applied;
   float aspect_ratios[9];
   float current_aspect;
 }
@@ -161,6 +161,20 @@ int
 operation_tags ()
 {
   return IOP_TAG_DISTORT;
+}
+
+int
+operation_tags_filter ()
+{
+  // switch off watermark, it gets confused.
+  return IOP_TAG_DECORATION;
+}
+
+
+static int
+gui_has_focus(struct dt_iop_module_t *self)
+{
+  return self->dev->gui_module == self;
 }
 
 static void
@@ -407,10 +421,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)p1;
-#ifdef HAVE_GEGL
-  // pull in new params to gegl
-#error "clipping needs to be ported to GEGL!"
-#else
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   // pull in bit from weird p->k => d->keystone = 1
   d->all_off = 1;
@@ -421,31 +431,61 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(p->k_v >= -1.0 && p->k_v <= 1.0) d->ki_v = p->k_v;
   else d->ki_v = 0.0f;
   d->angle = M_PI/180.0 * p->angle;
-  d->cx = p->cx;
-  d->cy = p->cy;
-  d->cw = fabsf(p->cw);
-  d->ch = fabsf(p->ch);
+  if(gui_has_focus(self))
+  {
+    d->cx = 0.0f;
+    d->cy = 0.0f;
+    d->cw = 1.0f;
+    d->ch = 1.0f;
+  }
+  else
+  {
+    d->cx = p->cx;
+    d->cy = p->cy;
+    d->cw = fabsf(p->cw);
+    d->ch = fabsf(p->ch);
+  }
   d->flags = (p->ch < 0 ? FLAG_FLIP_VERTICAL : 0) | (p->cw < 0 ? FLAG_FLIP_HORIZONTAL : 0);
-#endif
+}
+
+void gui_focus (struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+  if(self->enabled)
+  {
+    if(in)
+    {
+      // got focus. make it redraw in full and grab stuff to gui:
+      // need to get gui stuff for the first time for this image,
+      // and advice the pipe to redraw in full:
+      g->clip_x = p->cx;
+      g->clip_w = p->cw - p->cx;
+      g->clip_y = p->cy;
+      g->clip_h = p->ch - p->cy;
+      // flip one bit to trigger the cache:
+      uint32_t hack = *(uint32_t*)&p->cy;
+      hack ++;
+      p->cy = *(float *)&hack;
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+    }
+    else
+    {
+      // lost focus, commit current params:
+      commit_box (self, g, p);
+    }
+  }
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-#error "clipping needs to be ported to GEGL!"
-#else
   piece->data = malloc(sizeof(dt_iop_clipping_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-#error "clipping needs to be ported to GEGL!"
-#else
   free(piece->data);
-#endif
 }
 
 static void
@@ -620,9 +660,10 @@ static void
 angle_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   p->angle = dtgtk_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  commit_box (self, g, p);
 }
 
 static void
@@ -633,7 +674,7 @@ keystone_callback_h (GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   // we need k to be abs(k) < 2, so the second bit will always be zero (except we set it:).
   p->k_h = fmaxf(-1.9, fminf(1.9, dtgtk_slider_get_value(g->keystone_h)));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  commit_box (self, g, p);
 }
 static void
 keystone_callback_v (GtkWidget *widget, dt_iop_module_t *self)
@@ -643,7 +684,7 @@ keystone_callback_v (GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   // we need k to be abs(k) < 2, so the second bit will always be zero (except we set it:).
   p->k_v = fmaxf(-1.9, fminf(1.9, dtgtk_slider_get_value(g->keystone_v)));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  commit_box (self, g, p);
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -658,6 +699,13 @@ void gui_update(struct dt_iop_module_t *self)
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act > 7) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
+
+  // reset gui draw box to what we have in the parameters:
+  g->applied = 1;
+  g->clip_x = p->cx;
+  g->clip_w = p->cw - p->cx;
+  g->clip_y = p->cy;
+  g->clip_h = p->ch - p->cy;
 }
 
 void init(dt_iop_module_t *module)
@@ -696,7 +744,7 @@ toggled_callback(GtkDarktableToggleButton *widget, dt_iop_module_t *self)
     else                                     p->ch = copysignf(p->ch,  1.0);
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  commit_box (self, g, p);
 }
 
 static void
@@ -741,6 +789,7 @@ static void key_undo_callback(GtkAccelGroup *accel_group,
   g->clip_y = g->old_clip_y;
   g->clip_w = g->old_clip_w;
   g->clip_h = g->old_clip_h;
+  g->applied = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   dt_control_queue_redraw_center();
 }
@@ -820,6 +869,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->old_clip_w = g->old_clip_h = 1.0;
   g->cropping = 0;
   g->straightening = 0;
+  g->applied = 1;
 
   self->widget = gtk_table_new(10, 6, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
@@ -1180,6 +1230,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 {
   dt_develop_t *dev = self->dev;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+
   int32_t zoom, closeup;
   float zoom_x, zoom_y;
   float wd = dev->preview_pipe->backbuf_width;
@@ -1202,7 +1253,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pzx += 0.5f;
   pzy += 0.5f;
   cairo_set_dash (cr, &dashes, 0, 0);
-  cairo_set_source_rgba(cr, 0, 0, 0, .8);
+  if(g->applied)
+    cairo_set_source_rgba(cr, .0, .0, .0, .8);
+  else
+    cairo_set_source_rgba(cr, .0, .0, .0, .5);
   cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_rectangle (cr, -1, -1, wd+2, ht+2);
   cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
@@ -1370,6 +1424,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   }
   else if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
+    // draw a light gray frame, to show it's not stored yet:
+    g->applied = 0;
     // first mouse button, adjust cropping frame, but what do we do?
     float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
     if(!g->cropping && !g->straightening)
@@ -1463,21 +1519,13 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
     p->cx = p->cy = 0.0f;
     p->cw = p->ch = 1.0f;
   }
-  const float cx = p->cx, cy = p->cy;
-  const float cw = fabsf(p->cw), ch = fabsf(p->ch);
-  p->cx += g->clip_x*(cw-cx);
-  p->cy += g->clip_y*(ch-cy);
-  p->cw = copysignf(p->cx + (cw - cx)*g->clip_w, p->cw);
-  p->ch = copysignf(p->cy + (ch - cy)*g->clip_h, p->ch);
-  g->clip_x = g->clip_y = 0.0f;
-  g->clip_w = g->clip_h = 1.0;
-  darktable.gui->reset = 1;
-  self->gui_update(self);
-  darktable.gui->reset = 0;
+  p->cx = g->clip_x;
+  p->cy = g->clip_y;
+  p->cw = copysignf(p->cx + g->clip_w, p->cw);
+  p->ch = copysignf(p->cy + g->clip_h, p->ch);
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+  g->applied = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  // loose focus, continue with other plugins?
-  dt_iop_request_focus(NULL);
 }
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
