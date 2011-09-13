@@ -656,11 +656,11 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_lowpass_mix = dt_opencl_create_kernel(program, "lowpass_mix");
 }
 
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
 
-  dt_gui_presets_add_generic(_("local contrast mask"), self->op, &(dt_iop_lowpass_params_t)
+  dt_gui_presets_add_generic(_("local contrast mask"), self->op, self->version(), &(dt_iop_lowpass_params_t)
   {
     0, 50.0f, -1.0f, 0.0f
   }, sizeof(dt_iop_lowpass_params_t), 1);

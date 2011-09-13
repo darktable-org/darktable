@@ -756,7 +756,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("enhance coarse"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("enhance coarse"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -770,7 +770,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
     p.y[atrous_ct][k] = .6f*k/(float)BANDS;
   }
-  dt_gui_presets_add_generic(_("sharpen and denoise (strong)"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("sharpen and denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -784,7 +784,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
-  dt_gui_presets_add_generic(_("sharpen and denoise"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("sharpen and denoise"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -798,7 +798,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -812,7 +812,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -826,7 +826,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
-  dt_gui_presets_add_generic(_("denoise"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -842,7 +842,7 @@ void init_presets (dt_iop_module_so_t *self)
   }
   p.y[atrous_s][BANDS-1] = 0.0f;
   p.y[atrous_s][BANDS-2] = 0.42f;
-  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -857,7 +857,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   p.y[atrous_L][0] = .5f;
-  dt_gui_presets_add_generic(_("bloom"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -871,7 +871,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("clarity (subtle)"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("clarity (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -885,7 +885,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("clarity"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("clarity"), self->op, self->version(), &p, sizeof(p), 1);
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 

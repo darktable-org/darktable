@@ -146,11 +146,11 @@ void init_presets (dt_iop_module_so_t *self)
   p.tonecurve_y[3] -= 0.03;
   for(int k=1; k<5; k++) p.tonecurve_y[k] = powf(p.tonecurve_y[k], 2.2f);
   for(int k=1; k<5; k++) p.tonecurve_x[k] = powf(p.tonecurve_x[k], 2.2f);
-  dt_gui_presets_add_generic(_("low contrast"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("low contrast"), self->op, self->version(), &p, sizeof(p), 1);
 
   for(int k=0; k<6; k++) p.tonecurve_x[k] = linear[k];
   for(int k=0; k<6; k++) p.tonecurve_y[k] = linear[k];
-  dt_gui_presets_add_generic(_("linear"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("linear"), self->op, self->version(), &p, sizeof(p), 1);
 
   for(int k=0; k<6; k++) p.tonecurve_x[k] = linear[k];
   for(int k=0; k<6; k++) p.tonecurve_y[k] = linear[k];
@@ -160,7 +160,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.tonecurve_y[3] += 0.03;
   for(int k=1; k<5; k++) p.tonecurve_y[k] = powf(p.tonecurve_y[k], 2.2f);
   for(int k=1; k<5; k++) p.tonecurve_x[k] = powf(p.tonecurve_x[k], 2.2f);
-  dt_gui_presets_add_generic(_("med contrast"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("med contrast"), self->op, self->version(), &p, sizeof(p), 1);
 
   for(int k=0; k<6; k++) p.tonecurve_x[k] = linear[k];
   for(int k=0; k<6; k++) p.tonecurve_y[k] = linear[k];
@@ -170,7 +170,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.tonecurve_y[3] += 0.10;
   for(int k=1; k<5; k++) p.tonecurve_y[k] = powf(p.tonecurve_y[k], 2.2f);
   for(int k=1; k<5; k++) p.tonecurve_x[k] = powf(p.tonecurve_x[k], 2.2f);
-  dt_gui_presets_add_generic(_("high contrast"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("high contrast"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

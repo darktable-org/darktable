@@ -243,7 +243,7 @@ void cleanup(dt_iop_module_t *module)
 }
 
 #if 0
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
   dt_iop_equalizer_params_t p;
@@ -257,7 +257,7 @@ void init_presets (dt_iop_module_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
   }
-  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++)
   {
     p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
@@ -267,13 +267,13 @@ void init_presets (dt_iop_module_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
   }
-  dt_gui_presets_add_generic(C_("equalizer", "sharpen"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("equalizer", "sharpen"), self->op, self->version(), &p, sizeof(p), 1);
   for(int ch=0; ch<3; ch++)
   {
     for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) p.equalizer_x[ch][k] = k/(float)(DT_IOP_EQUALIZER_BANDS-1);
     for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) p.equalizer_y[ch][k] = 0.5f;
   }
-  dt_gui_presets_add_generic(_("null"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("null"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++)
   {
     p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
@@ -283,7 +283,7 @@ void init_presets (dt_iop_module_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
   }
-  dt_gui_presets_add_generic(_("denoise"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++)
   {
     p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
@@ -293,7 +293,7 @@ void init_presets (dt_iop_module_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
   }
-  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 #endif

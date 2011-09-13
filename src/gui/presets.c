@@ -65,17 +65,21 @@ void dt_gui_presets_init()
   // so beware, don't use any darktable.gui stuff here .. (or change this behaviour it in darktable.c)
   // create table or fail if it is already there.
   sqlite3_exec(darktable.db, "create table presets "
-               "(name varchar, description varchar, operation varchar, op_params blob, enabled integer, "
+               "(name varchar, description varchar, operation varchar, op_version integer, op_params blob, enabled integer, "
                "blendop_params blob, "
                "model varchar, maker varchar, lens varchar, "
                "iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, "
                "focal_length_min real, focal_length_max real, "
                "writeprotect integer, autoapply integer, filter integer, def integer, isldr integer)", NULL, NULL, NULL);
+
+  // add the op_version field; fail silently if it's already there
+  sqlite3_exec(darktable.db, "alter table presets add column op_version integer", NULL, NULL, NULL);
+
   // remove auto generated presets from plugins, not the user included ones.
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "delete from presets where writeprotect=1", NULL, NULL, NULL);
 }
 
-void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const void *params, const int32_t params_size, const int32_t enabled)
+void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version, const void *params, const int32_t params_size, const int32_t enabled)
 {
   sqlite3_stmt *stmt;
   dt_develop_blend_params_t default_blendop_params = {DEVELOP_BLEND_DISABLED,100.0,0};
@@ -84,15 +88,16 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const v
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into presets (name, description ,operation, op_params, enabled, blendop_params, model, maker, lens, "
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into presets (name, description, operation, op_version, op_params, enabled, blendop_params, model, maker, lens, "
              "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, "
              "writeprotect, autoapply, filter, def, isldr) "
-             "values (?1, '', ?2, ?3, ?4, ?5, '%', '%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)", -1, &stmt, NULL);
+             "values (?1, '', ?2, ?3, ?4, ?5, ?6, '%', '%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, params, params_size, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, enabled);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, &default_blendop_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, params, params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, enabled);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &default_blendop_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 }

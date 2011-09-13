@@ -197,15 +197,15 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   free(piece->data);
 }
 
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_borders_params_t p = (dt_iop_borders_params_t)
   {
     {0.0f, 0.0f, 0.0f}, 3.0f/2.0f, 0.1f
   };
-  dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, self->version(), &p, sizeof(p), 1);
   p.color[0] = p.color[1] = p.color[2] = 1.0f;
-  dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 static void

@@ -257,7 +257,7 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_colorzones_params_t p;
 
@@ -277,7 +277,7 @@ void init_presets (dt_iop_module_t *self)
   p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.50;
   p.equalizer_x[DT_IOP_COLORZONES_C][3] = 0.51;
   p.equalizer_x[DT_IOP_COLORZONES_C][4] = 15./16.;
-  dt_gui_presets_add_generic(_("red black white"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("red black white"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.channel = DT_IOP_COLORZONES_h;
   for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
@@ -292,7 +292,7 @@ void init_presets (dt_iop_module_t *self)
   p.equalizer_y[DT_IOP_COLORZONES_C][0] = p.equalizer_y[DT_IOP_COLORZONES_C][DT_IOP_COLORZONES_BANDS-1] = 0.5;
   p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.25f;
   p.equalizer_y[DT_IOP_COLORZONES_C][1] = 0.3f;
-  dt_gui_presets_add_generic(_("black white and skin tones"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("black white and skin tones"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.channel = DT_IOP_COLORZONES_C;
   for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
@@ -308,7 +308,7 @@ void init_presets (dt_iop_module_t *self)
     p.equalizer_y[DT_IOP_COLORZONES_C][k] += (k-1.5)/(DT_IOP_COLORZONES_BANDS-2.0) * 0.25;
   for(int k=3; k<DT_IOP_COLORZONES_BANDS; k++)
     p.equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-2.5)/(DT_IOP_COLORZONES_BANDS-3.0) * 0.35;
-  dt_gui_presets_add_generic(_("polarizing filter"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("polarizing filter"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.channel = 2;
   p.equalizer_x[0][0] = 0.000000;
@@ -347,7 +347,7 @@ void init_presets (dt_iop_module_t *self)
   p.equalizer_y[2][4] = 0.500000;
   p.equalizer_x[2][5] = 1.000000;
   p.equalizer_y[2][5] = 0.500000;
-  dt_gui_presets_add_generic(_("natural skin tones"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("natural skin tones"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.channel = 2;
   p.equalizer_x[0][0] = 0.000000;
@@ -386,7 +386,7 @@ void init_presets (dt_iop_module_t *self)
   p.equalizer_y[2][4] = 0.500000;
   p.equalizer_x[2][5] = 1.000000;
   p.equalizer_y[2][5] = 0.500000;
-  dt_gui_presets_add_generic(_("black & white film"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("black & white film"), self->op, self->version(), &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }

@@ -6,7 +6,7 @@
 void dt_gui_presets_init();
 
 /** add or replace a generic (i.e. non-exif specific) preset for this operation. */
-void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const void *params, const int32_t params_size, const int32_t enabled);
+void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version, const void *params, const int32_t params_size, const int32_t enabled);
 
 /** update match strings for maker, model, lens. */
 void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const char *maker, const char *model, const char *lens);

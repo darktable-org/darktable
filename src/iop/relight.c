@@ -48,15 +48,15 @@ typedef struct dt_iop_relight_params_t
 }
 dt_iop_relight_params_t;
 
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
 
-  dt_gui_presets_add_generic(_("fill-light 0.25EV with 4 zones"), self->op, &(dt_iop_relight_params_t)
+  dt_gui_presets_add_generic(_("fill-light 0.25EV with 4 zones"), self->op, self->version(), &(dt_iop_relight_params_t)
   {
     0.25,0.25,4.0
   } , sizeof(dt_iop_relight_params_t), 1);
-  dt_gui_presets_add_generic(_("fill-shadow -0.25EV with 4 zones"), self->op, &(dt_iop_relight_params_t)
+  dt_gui_presets_add_generic(_("fill-shadow -0.25EV with 4 zones"), self->op, self->version(), &(dt_iop_relight_params_t)
   {
     -0.25,0.25,4.0
   } , sizeof(dt_iop_relight_params_t), 1);
