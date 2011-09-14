@@ -163,11 +163,11 @@ void init_presets (dt_iop_module_so_t *self)
     // add the preset.
     dt_gui_presets_add_generic(_(basecurve_presets[k].name), self->op, self->version(), &basecurve_presets[k].params, sizeof(dt_iop_basecurve_params_t), 1);
     // and restrict it to model, maker, iso, and raw images
-    dt_gui_presets_update_mml(_(basecurve_presets[k].name), self->op, basecurve_presets[k].maker, basecurve_presets[k].model, "");
-    dt_gui_presets_update_iso(_(basecurve_presets[k].name), self->op, basecurve_presets[k].iso_min, basecurve_presets[k].iso_max);
-    dt_gui_presets_update_ldr(_(basecurve_presets[k].name), self->op, 2);
+    dt_gui_presets_update_mml(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].maker, basecurve_presets[k].model, "");
+    dt_gui_presets_update_iso(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].iso_min, basecurve_presets[k].iso_max);
+    dt_gui_presets_update_ldr(_(basecurve_presets[k].name), self->op, self->version(), 2);
     // make it auto-apply for matching images:
-    dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, basecurve_presets[k].autoapply);
+    dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].autoapply);
   }
   // sql commit
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);

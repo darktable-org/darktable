@@ -62,24 +62,25 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
 
   // select matching default:
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and "
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and op_version = ?2 and "
                               "autoapply=1 and "
-                              "?2 like model and ?3 like maker and ?4 like lens and "
-                              "?5 between iso_min and iso_max and "
-                              "?6 between exposure_min and exposure_max and "
-                              "?7 between aperture_min and aperture_max and "
-                              "?8 between focal_length_min and focal_length_max and "
-                              "(isldr = 0 or isldr=?9) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
+                              "?3 like model and ?4 like maker and ?5 like lens and "
+                              "?6 between iso_min and iso_max and "
+                              "?7 between exposure_min and exposure_max and "
+                              "?8 between aperture_min and aperture_max and "
+                              "?9 between focal_length_min and focal_length_max and "
+                              "(isldr = 0 or isldr=?10) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, module->dev->image->exif_lens,  strlen(module->dev->image->exif_lens),  SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, module->dev->image->exif_lens,  strlen(module->dev->image->exif_lens),  SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, 2-dt_image_is_ldr(module->dev->image));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, 2-dt_image_is_ldr(module->dev->image));
 
 #if 0 // debug the query:
   printf("select op_params, enabled from presets where operation ='%s' and "
@@ -127,8 +128,9 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     // global default
     sqlite3_finalize(stmt);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, blendop_params from presets where operation = ?1 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, blendop_params from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -155,8 +157,9 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   if(op_params == (void *)1 || bl_params == (void *)1)
   {
     printf("[iop_load_defaults]: module param sizes have changed! removing default :(\n");
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from presets where operation = ?1 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }

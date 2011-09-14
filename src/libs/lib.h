@@ -55,6 +55,8 @@ typedef struct dt_lib_module_t
   /** expander containing the widget. */
   GtkExpander *expander;
 
+  /** version */
+  int (*version)          ();
   /** get name of the module, to be translated. */
   const char* (*name)     ();
   /** get the views which the module should be loaded in. */
@@ -108,6 +110,6 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module);
 /** preset stuff for lib */
 
 /** add or replace a preset for this operation. */
-void dt_lib_presets_add(const char *name, const char *plugin_name, const void *params, const int32_t params_size);
+void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params, const int32_t params_size);
 
 #endif

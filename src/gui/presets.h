@@ -9,21 +9,21 @@ void dt_gui_presets_init();
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version, const void *params, const int32_t params_size, const int32_t enabled);
 
 /** update match strings for maker, model, lens. */
-void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const char *maker, const char *model, const char *lens);
+void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const int32_t version, const char *maker, const char *model, const char *lens);
 /** update ranges for iso, aperture, exposure, and focal length, respectively. */
-void dt_gui_presets_update_iso(const char *name, dt_dev_operation_t op, const float min, const float max);
-void dt_gui_presets_update_av(const char *name, dt_dev_operation_t op, const float min, const float max);
-void dt_gui_presets_update_tv(const char *name, dt_dev_operation_t op, const float min, const float max);
-void dt_gui_presets_update_fl(const char *name, dt_dev_operation_t op, const float min, const float max);
+void dt_gui_presets_update_iso(const char *name, dt_dev_operation_t op, const int32_t version, const float min, const float max);
+void dt_gui_presets_update_av(const char *name, dt_dev_operation_t op, const int32_t version, const float min, const float max);
+void dt_gui_presets_update_tv(const char *name, dt_dev_operation_t op, const int32_t version, const float min, const float max);
+void dt_gui_presets_update_fl(const char *name, dt_dev_operation_t op, const int32_t version, const float min, const float max);
 /** update ldr flag: 0-dont care, 1-low dynamic range, 2-raw */
-void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const int ldrflag);
+void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const int32_t version, const int ldrflag);
 /** set auto apply property of preset. */
-void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int autoapply);
+void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int32_t version, const int autoapply);
 /** set filter mode. if 1, the preset will only show for matching images. */
-void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int filter);
+void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int32_t version, const int filter);
 
 /** show a popup menu without initialized module. */
-void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, void *params, int32_t params_size, void *blendop_params, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data);
+void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t version, void *params, int32_t params_size, void *blendop_params, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data);
 
 /** show the popup menu for the given module, with default behavior. */
 void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
