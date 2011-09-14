@@ -128,8 +128,9 @@ static gchar*
 get_active_preset_name(dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, op_params, blendop_params, writeprotect from presets where operation=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, op_params, blendop_params, writeprotect from presets where operation=?1 and op_version=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   gchar *name = NULL;
   // collect all presets for op from db
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -674,7 +675,7 @@ void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const in
 void dt_gui_presets_update_iso(const char *name, dt_dev_operation_t op, const int32_t version, const float min, const float max)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update presets set iso_min=?1, iso_max=?2 where operation=?3 and op_version=?4 name=?5", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update presets set iso_min=?1, iso_max=?2 where operation=?3 and op_version=?4 and name=?5", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, min);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, max);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, op, strlen(op), SQLITE_TRANSIENT);

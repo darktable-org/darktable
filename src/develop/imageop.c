@@ -454,9 +454,69 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
 }
 
 static void
-init_presets(dt_iop_module_so_t *module)
+init_presets(dt_iop_module_so_t *module_so)
 {
-  if(module->init_presets) module->init_presets(module);
+  if(module_so->init_presets) module_so->init_presets(module_so);
+
+  // this seems like a reasonable place to check for and update legacy
+  // presets.
+
+  int32_t module_version = module_so->version();
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, op_version, op_params from presets where operation = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *name = (char*)sqlite3_column_text(stmt, 0);
+    int32_t old_params_version = sqlite3_column_int(stmt, 1);
+    void *old_params = (void *)sqlite3_column_blob(stmt, 2);
+
+    if( old_params_version == 0 )
+    {
+        fprintf(stderr, "[imageop_inti_presets] WARNING: Module '%s' preset '%s' has no versioning information!\n(To make this message go away, please load an image that uses the preset.)\n", module_so->op, name );
+        continue;
+    }
+
+    if( module_version > old_params_version && module_so->legacy_params != NULL )
+    {
+      dt_print(DT_DEBUG_SQL, "[imageop_init_presets] updating op %s preset %s from version %d to version %d", module_so->op, name, old_params_version, module_version );
+
+      // we need a dt_iop_module_t for legacy_params()
+      dt_iop_module_t *module;
+      module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+      memset(module, 0, sizeof(dt_iop_module_t));
+      if( dt_iop_load_module_by_so(module, module_so, NULL) )
+      {
+        free(module);
+        continue;
+      }
+      
+      module->init(module);
+      int32_t new_params_size = module->params_size;
+      void *new_params = malloc(new_params_size);
+
+      // convert the old params to new
+      module->legacy_params(module, old_params, old_params_version, new_params, module_version );
+
+      // and write the new params back to the database
+      sqlite3_stmt *stmt2;
+      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update presets "
+              "set op_version=?1, op_params=?2 "
+              "where operation=?3 and name=?4", -1, &stmt2, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_params, new_params_size, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, strlen(module_so->op), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, strlen(name), SQLITE_TRANSIENT);
+
+      sqlite3_step(stmt2);
+      sqlite3_finalize(stmt2);
+
+      free(module);
+    }
+  }
+  sqlite3_finalize(stmt);
 }
 
 void dt_iop_load_modules_so()
