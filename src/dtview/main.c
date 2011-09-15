@@ -286,7 +286,7 @@ int main(int argc, char *arg[])
   }
   if(oldprofile) {
     dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
-    free(oldprofile);
+    g_free(oldprofile);
   }
   shutdown();
 }
