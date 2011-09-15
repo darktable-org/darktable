@@ -437,11 +437,22 @@ void dt_control_remove_images()
   {
     GtkWidget *dialog;
     GtkWidget *win = darktable.gui->widgets.main_window;
+    
+    sqlite3_stmt *stmt = NULL;
+    int number = 0;
+    
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      number = sqlite3_column_int(stmt, 0);
+    }
+
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
                                     GTK_BUTTONS_YES_NO,
-                                    _("do you really want to remove all selected images from the collection?"));
+                                    ngettext("do you really want to remove %d selected image from the collection?", 
+                                             "do you really want to remove %d selected images from the collection?", number), number);
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -458,11 +469,22 @@ void dt_control_delete_images()
   {
     GtkWidget *dialog;
     GtkWidget *win = darktable.gui->widgets.main_window;
+
+    sqlite3_stmt *stmt = NULL;
+    int number = 0;
+    
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      number = sqlite3_column_int(stmt, 0);
+    }
+
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
                                     GTK_BUTTONS_YES_NO,
-                                    _("do you really want to physically delete all selected images from disk?"));
+                                    ngettext("do you really want to PHYSICALLY delete %d selected image from disk?",
+                                             "do you really want to PHYSICALLY delete %d selected images from disk?", number), number);
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
