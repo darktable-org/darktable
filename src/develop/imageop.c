@@ -472,16 +472,48 @@ init_presets(dt_iop_module_so_t *module_so)
     const char *name = (char*)sqlite3_column_text(stmt, 0);
     int32_t old_params_version = sqlite3_column_int(stmt, 1);
     void *old_params = (void *)sqlite3_column_blob(stmt, 2);
+    int32_t old_params_size = sqlite3_column_bytes(stmt, 2);
 
     if( old_params_version == 0 )
     {
-        fprintf(stderr, "[imageop_inti_presets] WARNING: Module '%s' preset '%s' has no versioning information!\n(To make this message go away, please load an image that uses the preset.)\n", module_so->op, name );
-        continue;
+        // this preset doesn't have a version.  go digging through the database
+        // to find a history entry that matches the preset params, and get
+        // the module version from that.
+
+        sqlite3_stmt *stmt2;
+        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select module from history where operation = ?1 and op_params = ?2", -1, &stmt2, NULL);
+        DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 1, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT );
+        DT_DEBUG_SQLITE3_BIND_BLOB( stmt2, 2, old_params, old_params_size, SQLITE_TRANSIENT );
+
+        if( sqlite3_step(stmt2) == SQLITE_ROW) 
+        {
+          old_params_version = sqlite3_column_int(stmt2, 0);
+        }
+        else
+        {
+          fprintf(stderr, "[imageop_init_presets] WARNING: Could not find versioning information for '%s' preset '%s'\nUntil some is found, the preset will be unavailable.\n(To make it return, please load an image that uses the preset.)\n", module_so->op, name );
+          sqlite3_finalize(stmt2);
+          continue;
+        }
+
+        sqlite3_finalize(stmt2);
+
+        // we found an old params version.  Update the database with it.
+        
+        fprintf(stderr, "[imageop_init_presets] Found version %d for '%s' preset '%s'\n", old_params_version, module_so->op, name );
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update presets set op_version=?1 where operation=?2 and name=?3", -1, &stmt2, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT( stmt2, 1, old_params_version );
+        DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 2, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT );
+        DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 3, name, strlen(name), SQLITE_TRANSIENT );
+
+        sqlite3_step(stmt2);
+        sqlite3_finalize(stmt2);
     }
 
     if( module_version > old_params_version && module_so->legacy_params != NULL )
     {
-      dt_print(DT_DEBUG_SQL, "[imageop_init_presets] updating op %s preset %s from version %d to version %d", module_so->op, name, old_params_version, module_version );
+      fprintf(stderr, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\n", module_so->op, name, old_params_version, module_version );
 
       // we need a dt_iop_module_t for legacy_params()
       dt_iop_module_t *module;
@@ -514,6 +546,10 @@ init_presets(dt_iop_module_so_t *module_so)
       sqlite3_finalize(stmt2);
 
       free(module);
+    }
+    else if( module_version > old_params_version )
+    {
+      fprintf(stderr, "[imageop_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, no legacy_params() implemented \n", module_so->op, name, old_params_version, module_version );
     }
   }
   sqlite3_finalize(stmt);
