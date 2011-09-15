@@ -525,32 +525,30 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
   if(image)
   {
     // only matching if filter is on:
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, op_params, writeprotect, description, blendop_params from presets where operation=?1 and op_version=?2 and "
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, op_params, writeprotect, description, blendop_params, op_version from presets where operation=?1 and "
                                 "(filter=0 or ( "
-                                "?3 like model and ?4 like maker and ?5 like lens and "
-                                "?6 between iso_min and iso_max and "
-                                "?7 between exposure_min and exposure_max and "
-                                "?8 between aperture_min and aperture_max and "
-                                "?9 between focal_length_min and focal_length_max and "
-                                "(isldr = 0 or isldr=?10) ) )"
+                                "?2 like model and ?3 like maker and ?4 like lens and "
+                                "?5 between iso_min and iso_max and "
+                                "?6 between exposure_min and exposure_max and "
+                                "?7 between aperture_min and aperture_max and "
+                                "?8 between focal_length_min and focal_length_max and "
+                                "(isldr = 0 or isldr=?9) ) )"
                                 "order by writeprotect desc, rowid", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, version);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_model, strlen(image->exif_model), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->exif_maker, strlen(image->exif_maker), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->exif_lens,  strlen(image->exif_lens),  SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, image->exif_iso);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_exposure);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_aperture);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, image->exif_focal_length);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 10, dt_image_is_ldr(image));
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, strlen(image->exif_model), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, strlen(image->exif_maker), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->exif_lens,  strlen(image->exif_lens),  SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, image->exif_iso);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, image->exif_exposure);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_aperture);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_focal_length);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, dt_image_is_ldr(image));
   }
   else
   {
     // don't know for which image. show all we got:
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, op_params, writeprotect, description, blendop_params from presets where operation=?1 and op_version=?2 order by writeprotect desc, rowid", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, op_params, writeprotect, description, blendop_params, op_version from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, version);
   }
   // collect all presets for op from db
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -559,7 +557,9 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
     void *blendop_params = (void *)sqlite3_column_blob(stmt, 4);
     int32_t bl_params_size = sqlite3_column_bytes(stmt, 4);
+    int32_t preset_version = sqlite3_column_int(stmt, 5);
     int32_t isdefault = 0;
+    int32_t isdisabled = (preset_version == version ? 0 : 1);
     if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size)) && 
                  !memcmp(module->default_blendop_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))) isdefault = 1;
     if(!memcmp(params, op_params, MIN(op_params_size, params_size)) && 
@@ -591,9 +591,18 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       }
       else mi = gtk_menu_item_new_with_label((const char *)sqlite3_column_text(stmt, 0));
     }
-    if(module) g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), module);
-    else if(pick_callback) g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), callback_data);
-    g_object_set(G_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
+
+    if(isdisabled)
+    {
+      gtk_widget_set_sensitive(mi, 0);
+      g_object_set(G_OBJECT(mi), "tooltip-text", "Disabled: Wrong module version.", (char *)NULL);
+    }
+    else
+    {
+      if(module) g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), module);
+      else if(pick_callback) g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), callback_data);
+      g_object_set(G_OBJECT(mi), "tooltip-text", sqlite3_column_text(stmt, 3), (char *)NULL);
+    }
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt ++;
   }
