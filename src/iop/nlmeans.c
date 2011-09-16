@@ -68,6 +68,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma"));

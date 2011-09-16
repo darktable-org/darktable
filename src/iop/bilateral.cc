@@ -83,26 +83,26 @@ extern "C"
 
   int flags()
   {
-    return IOP_FLAGS_ALLOW_TILING;
+    return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORT_BLENDING;
   }
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t*)self->gui_data;
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale3));
-  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale4));
-  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale5));
-}
-
+ 
+  void init_key_accels(dt_iop_module_so_t *self)
+  {
+    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
+    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
+    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
+    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
+  }
+  
+  void connect_key_accels(dt_iop_module_t *self)
+  {
+    dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t*)self->gui_data;
+    dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale1));
+    dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale3));
+    dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale4));
+    dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale5));
+  }
+  
   void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
   {
     dt_iop_bilateral_data_t *data = (dt_iop_bilateral_data_t *)piece->data;
