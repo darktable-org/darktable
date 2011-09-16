@@ -436,8 +436,8 @@ void gui_init     (dt_iop_module_t *self)
   // TODO: adjust defaults:
   g->luma   = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 100.0f, 1., 50.f, 0));
   g->chroma = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 100.0f, 1., 50.f, 0));
-  dtgtk_slider_set_default_value(g->luma,   50.f);
-  dtgtk_slider_set_default_value(g->chroma, 50.f);
+  dtgtk_slider_set_default_value(g->luma,   10.f);
+  dtgtk_slider_set_default_value(g->chroma, 30.f);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->luma), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma), TRUE, TRUE, 0);
   dtgtk_slider_set_label(g->luma, _("luma"));
