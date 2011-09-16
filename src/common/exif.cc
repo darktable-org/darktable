@@ -906,6 +906,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           
           sqlite3_step (stmt_upd_hist);
           free(params);
+          free(blendop_params);
 
           sqlite3_reset(stmt_sel_num);
           sqlite3_clear_bindings(stmt_sel_num);
