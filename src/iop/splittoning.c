@@ -600,7 +600,7 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_slider_set_unit(g->scale1,"%/%");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->compress, 2));
+  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compress, 2));
   dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
   dtgtk_slider_set_label(g->scale2,_("compress"));
   dtgtk_slider_set_unit(g->scale2,"%");
