@@ -83,7 +83,7 @@ extern "C"
 
   int flags()
   {
-    return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORT_BLENDING;
+    return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORTS_BLENDING;
   }
  
   void init_key_accels(dt_iop_module_so_t *self)
