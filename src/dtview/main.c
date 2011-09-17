@@ -284,7 +284,10 @@ int main(int argc, char *arg[])
     }
     usleep(3000000);
   }
-  if(oldprofile) dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
+  if(oldprofile) {
+    dt_conf_set_string("plugins/lighttable/export/iccprofile", oldprofile);
+    free(oldprofile);
+  }
   shutdown();
 }
 

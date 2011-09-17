@@ -91,15 +91,16 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     dt_image_t *img = dt_image_cache_get(imgid, 'r');
+    dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
     if(img->filters == 0 || img->bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
+      dt_image_release(img, DT_IMAGE_FULL, 'r');
       dt_image_cache_release(img, 'r');
       free(pixels);
       free(weight);
       goto error;
     }
-    dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
     filter = dt_image_flipped_filter(img);
     if(mip != DT_IMAGE_FULL)
     {
@@ -132,8 +133,11 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in the system => f/22
     const float eap = img->exif_aperture > 0.0f ? img->exif_aperture : 22.0f;
     const float efl = img->exif_focal_length > 0.0f ? img->exif_focal_length : 8.0f;
-    const float aperture = M_PI * powf(efl / (2.0f * eap), 2.0f);
-    const float cal = 100.0f/(aperture*img->exif_exposure*img->exif_iso);
+    const float rad = .5f * efl/eap;
+    const float aperture = M_PI * rad * rad;
+    const float iso = img->exif_iso > 0.0f ? img->exif_iso : 100.0f;
+    const float exp = img->exif_exposure > 0.0f ? img->exif_exposure : 1.0f;
+    const float cal = 100.0f/(aperture*exp*iso);
     whitelevel = fmaxf(whitelevel, cal);
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
@@ -141,7 +145,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     for(int k=0; k<wd*ht; k++)
     {
       const uint16_t in = ((uint16_t *)img->pixels)[k];
-      const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : img->exif_exposure * 0.01f);
+      const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : exp * 0.01f);
       pixels[k] += w * in * cal;
       weight[k] += w;
     }
@@ -441,11 +445,22 @@ void dt_control_remove_images()
   {
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+    
+    sqlite3_stmt *stmt = NULL;
+    int number = 0;
+    
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      number = sqlite3_column_int(stmt, 0);
+    }
+
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
                                     GTK_BUTTONS_YES_NO,
-                                    _("do you really want to remove all selected images from the collection?"));
+                                    ngettext("do you really want to remove %d selected image from the collection?", 
+                                             "do you really want to remove %d selected images from the collection?", number), number);
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -461,12 +476,27 @@ void dt_control_delete_images()
   if(dt_conf_get_bool("ask_before_delete"))
   {
     GtkWidget *dialog;
+<<<<<<< HEAD
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+=======
+    GtkWidget *win = darktable.gui->widgets.main_window;
+
+    sqlite3_stmt *stmt = NULL;
+    int number = 0;
+    
+    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      number = sqlite3_column_int(stmt, 0);
+    }
+
+>>>>>>> origin/master
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
                                     GTK_BUTTONS_YES_NO,
-                                    _("do you really want to physically delete all selected images from disk?"));
+                                    ngettext("do you really want to PHYSICALLY delete %d selected image from disk?",
+                                             "do you really want to PHYSICALLY delete %d selected images from disk?", number), number);
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);

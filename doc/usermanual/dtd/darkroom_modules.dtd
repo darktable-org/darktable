@@ -5,7 +5,6 @@
 
 <!ENTITY darkroom_modules SYSTEM "../darkroom/modules/modules.xml">
 <!ENTITY darkroom_module_rawimport SYSTEM "../darkroom/modules/rawimport.xml">	
-<!ENTITY darkroom_module_stuck SYSTEM "../darkroom/modules/stuck.xml">
 <!ENTITY darkroom_module_chromatic SYSTEM "../darkroom/modules/chromatic.xml">
 <!ENTITY darkroom_module_demosaic SYSTEM "../darkroom/modules/demosaic.xml">
 <!ENTITY darkroom_module_tonemapping SYSTEM "../darkroom/modules/tonemapping.xml">

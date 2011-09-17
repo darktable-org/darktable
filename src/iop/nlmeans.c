@@ -68,6 +68,12 @@ groups ()
   return IOP_GROUP_CORRECT;
 }
 
+int
+flags ()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma"));
@@ -158,8 +164,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 
   // adjust to Lab, make L more important
-  float max_L = 100.0f, max_C = 256.0f;
-  float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
+  // float max_L = 100.0f, max_C = 256.0f;
+  // float nL = 1.0f/(d->luma*max_L), nC = 1.0f/(d->chroma*max_C);
+  float max_L = 120.0f, max_C = 512.0f;
+  float nL = 1.0f/max_L, nC = 1.0f/max_C;
   const float norm2[4] = { nL*nL, nC*nC, nC*nC, 1.0f };
 
   float *Sa = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
@@ -302,17 +310,24 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
     }
   }
-  // normalize:
+  // normalize and apply chroma/luma blending
+  // bias a bit towards higher values for low input values:
+  const __m128 weight = _mm_set_ps(1.0f, powf(d->chroma, 0.6), powf(d->chroma, 0.6), powf(d->luma, 0.6));
+  const __m128 invert = _mm_sub_ps(_mm_set1_ps(1.0f), weight);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(ovoid,roi_out)
+  #pragma omp parallel for default(none) schedule(static) shared(ovoid,ivoid,roi_out,d)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
     float *out = ((float *)ovoid) + 4*roi_out->width*j;
+    float *in  = ((float *)ivoid) + 4*roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
-      _mm_store_ps(out, _mm_load_ps(out) * _mm_set1_ps(1.0f/out[3]));
+      _mm_store_ps(out, _mm_add_ps(
+          _mm_mul_ps(_mm_load_ps(in),  invert),
+          _mm_mul_ps(_mm_load_ps(out), _mm_div_ps(weight, _mm_set1_ps(out[3])))));
       out += 4;
+      in  += 4;
     }
   }
   // free shared tmp memory:
@@ -327,7 +342,7 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
   {
-    0.5f, 0.5f
+    0.1f, 0.3f
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
@@ -430,8 +445,8 @@ void gui_init     (dt_iop_module_t *self)
   // TODO: adjust defaults:
   g->luma   = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 100.0f, 1., 50.f, 0));
   g->chroma = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 100.0f, 1., 50.f, 0));
-  dtgtk_slider_set_default_value(g->luma,   50.f);
-  dtgtk_slider_set_default_value(g->chroma, 50.f);
+  dtgtk_slider_set_default_value(g->luma,   10.f);
+  dtgtk_slider_set_default_value(g->chroma, 30.f);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->luma), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma), TRUE, TRUE, 0);
   dtgtk_slider_set_label(g->luma, _("luma"));
