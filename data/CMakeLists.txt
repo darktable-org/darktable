@@ -44,6 +44,11 @@ FILE(GLOB WATERMARKS "watermarks/*.svg")
 install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/watermarks)
 
 #
+# Install gdb command file for backtrace generation
+#
+install(FILES gdb_commands DESTINATION ${SHARE_INSTALL})
+
+#
 # Install gconf schema.
 #
 
