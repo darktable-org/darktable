@@ -37,6 +37,7 @@
 #define DEVELOP_BLEND_LIGHTNESS				0x10
 #define DEVELOP_BLEND_CHROMA				0x11
 #define DEVELOP_BLEND_HUE				0x12
+#define DEVELOP_BLEND_COLOR				0x13
 
 #define BLEND_ONLY_LIGHTNESS				8
 
@@ -132,8 +133,8 @@ float4 Lab_2_LCH(const float4 Lab)
 {
   float H = atan2(Lab.z, Lab.y);
 
-  if (H > 0.0f) H = (H / M_PI) * 180.0f;
-  else          H = 360.0f - (fabs(H) / M_PI) * 180.0f;
+  if (H > 0.0f) H = H / (2.0f*M_PI);
+  else          H = 1.0f - fabs(H) / (2.0f*M_PI);
 
   float L = Lab.x;
   float C = sqrt(Lab.y*Lab.y + Lab.z*Lab.z);
@@ -145,8 +146,8 @@ float4 Lab_2_LCH(const float4 Lab)
 float4 LCH_2_Lab(const float4 LCH)
 {
   float L = LCH.x;
-  float a = cos(radians(LCH.z)) * LCH.y;
-  float b = sin(radians(LCH.z)) * LCH.y;
+  float a = cos(2.0f*M_PI*LCH.z) * LCH.y;
+  float b = sin(2.0f*M_PI*LCH.z) * LCH.y;
 
   return (float4)(L, a, b, LCH.w);
 }
@@ -162,6 +163,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
   float4 o;
   float4 ta, tb, to;
+  float d, s;
 
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
@@ -343,9 +345,23 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       tb = Lab_2_LCH(clamp(b, min, max));
       to.x = ta.x;
       to.y = ta.y;
-      to.z = (ta.z * (1.0f - opacity)) + (tb.z * opacity);
+      d = fabs(ta.z - tb.z);
+      s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      to.z = fmod((ta.z * (1.0f - s)) + (tb.z * s) + 1.0f, 1.0f);
       o = LCH_2_Lab(to);
       break;
+
+    case DEVELOP_BLEND_COLOR:
+      ta = Lab_2_LCH(clamp(a, min, max));
+      tb = Lab_2_LCH(clamp(b, min, max));
+      to.x = ta.x;
+      to.y = (ta.y * (1.0f - opacity)) + (tb.y * opacity);
+      d = fabs(ta.z - tb.z);
+      s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      to.z = fmod((ta.z * (1.0f - s)) + (tb.z * s) + 1.0f, 1.0f);
+      o = LCH_2_Lab(to);
+      break;
+
 
 
     /* fallback to normal blend */
@@ -464,6 +480,9 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       o = a;		// Noop for Raw
       break;
 
+    case DEVELOP_BLEND_COLOR:
+      o = a;		// Noop for Raw
+      break;
 
     /* fallback to normal blend */
     case DEVELOP_BLEND_NORMAL:
@@ -484,6 +503,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
   float4 o;
   float4 ta, tb, to;
+  float d, s;
 
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
@@ -580,8 +600,21 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
     case DEVELOP_BLEND_HUE:
       ta = RGB_2_HSL(clamp(a, min, max));
       tb = RGB_2_HSL(clamp(b, min, max));
-      to.x = (ta.x * (1.0f - opacity)) + (tb.x * opacity);
+      d = fabs(ta.x - tb.x);
+      s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      to.x = fmod((ta.x * (1.0f - s)) + (tb.x * s) + 1.0f, 1.0f);
       to.y = ta.y;
+      to.z = ta.z;
+      o = HSL_2_RGB(to);
+      break;
+
+    case DEVELOP_BLEND_COLOR:
+      ta = RGB_2_HSL(clamp(a, min, max));
+      tb = RGB_2_HSL(clamp(b, min, max));
+      d = fabs(ta.x - tb.x);
+      s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      to.x = fmod((ta.x * (1.0f - s)) + (tb.x * s) + 1.0f, 1.0f);
+      to.y = (ta.y * (1.0f - opacity)) + (tb.y * opacity);
       to.z = ta.z;
       o = HSL_2_RGB(to);
       break;
