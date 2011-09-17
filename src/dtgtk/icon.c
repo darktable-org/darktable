@@ -88,7 +88,7 @@ _icon_expose (GtkWidget *widget, GdkEventExpose *event)
 
   /* draw icon */
   if (DTGTK_ICON(widget)->icon)
-      DTGTK_ICON(widget)->icon(cr, x+border, y+border, width-(border*2), height-(border*2), flags);
+      DTGTK_ICON(widget)->icon(cr, border, border, width-(border*2), height-(border*2), flags);
 
   cairo_destroy (cr);
 
