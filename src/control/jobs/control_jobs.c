@@ -476,10 +476,7 @@ void dt_control_delete_images()
   if(dt_conf_get_bool("ask_before_delete"))
   {
     GtkWidget *dialog;
-<<<<<<< HEAD
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-=======
-    GtkWidget *win = darktable.gui->widgets.main_window;
 
     sqlite3_stmt *stmt = NULL;
     int number = 0;
@@ -490,7 +487,6 @@ void dt_control_delete_images()
       number = sqlite3_column_int(stmt, 0);
     }
 
->>>>>>> origin/master
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
