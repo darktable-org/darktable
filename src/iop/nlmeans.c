@@ -333,7 +333,7 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_nlmeans_params_t tmp = (dt_iop_nlmeans_params_t)
   {
-    0.5f, 0.5f
+    0.1f, 0.3f
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_nlmeans_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_nlmeans_params_t));
