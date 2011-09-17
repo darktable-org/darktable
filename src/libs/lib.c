@@ -576,7 +576,6 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   }
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
 
-
   /* show / hide plugin widget */
   if(expanded)
     gtk_widget_show_all(module->widget);
@@ -593,7 +592,6 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
 static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_lib_module_t *module = (dt_lib_module_t *)user_data;
-
 
   if (e->button == 1) 
   {
@@ -695,6 +693,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
       if (hw[i])
 	gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
     gtk_misc_set_alignment(GTK_MISC(hw[1]),0.0,0.5);
+    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_RIGHT);    
   }
   else
   {
@@ -702,6 +701,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
        if (hw[i])
 	 gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
     gtk_misc_set_alignment(GTK_MISC(hw[1]),1.0,0.5);
+    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);    
   }
 
   /* add module widtget into an alignment */
