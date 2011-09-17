@@ -155,7 +155,7 @@ void init_presets (dt_iop_module_t *self)
       28.0/360.0, 39.0/100.0, 28.0/360.0, 8.0/100.0, 0.60, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
