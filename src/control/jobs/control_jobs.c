@@ -449,7 +449,7 @@ void dt_control_remove_images()
     sqlite3_stmt *stmt = NULL;
     int number = 0;
     
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(imgid) from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       number = sqlite3_column_int(stmt, 0);
@@ -481,7 +481,7 @@ void dt_control_delete_images()
     sqlite3_stmt *stmt = NULL;
     int number = 0;
     
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(imgid) from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       number = sqlite3_column_int(stmt, 0);
