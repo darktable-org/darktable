@@ -281,7 +281,8 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
 
   // can't be switched on for non-raw images:
-  module->hide_enable_button = !module->dev->image->filters;
+  if(module->dev->image->flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
+  else                                         module->hide_enable_button = 1;
 }
 
 void init(dt_iop_module_t *module)

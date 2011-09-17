@@ -72,7 +72,7 @@ typedef struct dt_lib_module_t
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** expander containing the widget. */
-  GtkExpander *expander;
+  GtkWidget *expander;
 
   /** get name of the module, to be translated. */
   const char* (*name)     ();
@@ -126,6 +126,9 @@ int dt_lib_load_modules();
 void dt_lib_unload_module(dt_lib_module_t *module);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
+/** set a expand/collaps plugin expander */
+void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded);
+
 /** connects the reset and presets shortcuts to a lib */
 void dt_lib_connect_common_accels(dt_lib_module_t *module);
 

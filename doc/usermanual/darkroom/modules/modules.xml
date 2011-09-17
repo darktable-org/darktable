@@ -195,7 +195,6 @@
 	<!--&darkroom_module_denoise;-->
 	
 	&darkroom_module_whitebalance;
-	&darkroom_module_stuck;
 	&darkroom_module_rawdenoise;
 	&darkroom_module_chromatic; 
 	&darkroom_module_demosaic;

@@ -42,6 +42,7 @@
 #define DEVELOP_BLEND_LIGHTNESS				0x10
 #define DEVELOP_BLEND_CHROMA				0x11
 #define DEVELOP_BLEND_HUE				0x12
+#define DEVELOP_BLEND_COLOR				0x13
 
 typedef struct dt_develop_blend_params_t
 {

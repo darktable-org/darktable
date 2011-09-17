@@ -102,12 +102,6 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-
-void
-gui_reset (dt_lib_module_t *self)
-{
-}
-
 int
 position ()
 {

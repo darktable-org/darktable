@@ -157,8 +157,8 @@ static inline void _Lab_2_LCH(const float *Lab, float *LCH)
 {
   float var_H = atan2f(Lab[2], Lab[1]);
 
-  if (var_H > 0.0f) var_H = (var_H / M_PI) * 180.0f;
-  else              var_H = 360.0f - (fabs(var_H) / M_PI) * 180.0f;
+  if (var_H > 0.0f) var_H = var_H / (2.0f*M_PI);
+  else              var_H = 1.0f - fabs(var_H) / (2.0f*M_PI);
 
   LCH[0] = Lab[0];
   LCH[1] = sqrtf(Lab[1]*Lab[1] + Lab[2]*Lab[2]);
@@ -166,17 +166,12 @@ static inline void _Lab_2_LCH(const float *Lab, float *LCH)
 }
 
 
-static inline float _degree_2_radian(float deg)
-{
-  return(deg/180.0f * M_PI);
-}
-
 
 static inline void _LCH_2_Lab(const float *LCH, float *Lab)
 {
   Lab[0] = LCH[0];
-  Lab[1] = cosf(_degree_2_radian(LCH[2])) * LCH[1];
-  Lab[2] = sinf(_degree_2_radian(LCH[2])) * LCH[1];
+  Lab[1] = cosf(2.0f*M_PI*LCH[2]) * LCH[1];
+  Lab[2] = sinf(2.0f*M_PI*LCH[2]) * LCH[1];
 }
 
 
@@ -1059,22 +1054,28 @@ static void _blend_hue(dt_iop_colorspace_type_t cst,const float opacity,const fl
   {
     if(cst==iop_cs_Lab)
     {
-       _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
+      _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
 
-       _Lab_2_LCH(ta, tta); _Lab_2_LCH(tb, ttb);
+      _Lab_2_LCH(ta, tta); _Lab_2_LCH(tb, ttb);
 
-       ttb[0] = tta[0];
-       ttb[1] = tta[1];
-       ttb[2] = (tta[2] * (1.0 - opacity)) + ttb[2] * opacity;
+      ttb[0] = tta[0];
+      ttb[1] = tta[1];
+      /* blend hue along shortest distance on color circle */
+      float d = fabs(tta[2] - ttb[2]);
+      float s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      ttb[2] = fmod((tta[2] * (1.0 - s)) + ttb[2] * s + 1.0f, 1.0f);
         
-       _LCH_2_Lab(ttb, tb);
-       _blend_Lab_rescale(tb, &b[j]);
+      _LCH_2_Lab(ttb, tb);
+      _blend_Lab_rescale(tb, &b[j]);
     }
     else if(cst==iop_cs_rgb)
     {
       _RGB_2_HSL(&a[j], tta); _RGB_2_HSL(&b[j], ttb);
 
-      ttb[0] = (tta[0] * (1.0 - opacity)) + ttb[0] * opacity;
+      /* blend hue along shortest distance on color circle */
+      float d = fabs(tta[0] - ttb[0]);
+      float s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      ttb[0] = fmod((tta[0] * (1.0 - s)) + ttb[0] * s + 1.0f, 1.0f);
       ttb[1] = tta[1];
       ttb[2] = tta[2];
 
@@ -1086,6 +1087,51 @@ static void _blend_hue(dt_iop_colorspace_type_t cst,const float opacity,const fl
   }
 }
 
+
+/* color blend; blend hue and chroma, but not lightness */
+static void _blend_color(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+{
+  float ta[3], tb[3];
+  float tta[3], ttb[3];
+  int channels = _blend_colorspace_channels(cst);
+  for(int j=0;j<stride;j+=4)
+  {
+    if(cst==iop_cs_Lab)
+    {
+      _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
+
+      _Lab_2_LCH(ta, tta); _Lab_2_LCH(tb, ttb);
+
+      ttb[0] = tta[0];
+      ttb[1] = (tta[1] * (1.0 - opacity)) + ttb[1] * opacity;
+
+      /* blend hue along shortest distance on color circle */
+      float d = fabs(tta[2] - ttb[2]);
+      float s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      ttb[2] = fmod((tta[2] * (1.0 - s)) + ttb[2] * s + 1.0f, 1.0f);
+        
+      _LCH_2_Lab(ttb, tb);
+      _blend_Lab_rescale(tb, &b[j]);
+    }
+    else if(cst==iop_cs_rgb)
+    {
+      _RGB_2_HSL(&a[j], tta); _RGB_2_HSL(&b[j], ttb);
+
+      /* blend hue along shortest distance on color circle */
+      float d = fabs(tta[0] - ttb[0]);
+      float s = d > 0.5f ? -opacity*(1.0f - d) / d : opacity;
+      ttb[0] = fmod((tta[0] * (1.0 - s)) + ttb[0] * s + 1.0f, 1.0f);
+
+      ttb[1] = (tta[1] * (1.0 - opacity)) + ttb[1] * opacity;
+      ttb[2] = tta[2];
+
+      _HSL_2_RGB(ttb, &b[j]);
+    }
+    else
+      for(int k=0;k<channels;k++)
+        b[j+k] =  a[j+k];		// Noop for Raw
+  }
+}
 
 
 
@@ -1153,6 +1199,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       break;
     case DEVELOP_BLEND_HUE:
       blend = _blend_hue;
+      break;
+    case DEVELOP_BLEND_COLOR:
+      blend = _blend_color;
       break;
 
       /* fallback to normal blend */
