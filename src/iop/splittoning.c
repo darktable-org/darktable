@@ -150,7 +150,7 @@ void init_presets (dt_iop_module_t *self)
   // highlights: #D9D0C7
   // balance : 60
   // compress : 0
-  dt_gui_presets_add_generic(_("chocolate"), self->op, &(dt_iop_splittoning_params_t)
+  dt_gui_presets_add_generic(_("chocolate brown"), self->op, &(dt_iop_splittoning_params_t)
   {
       28.0/360.0, 39.0/100.0, 28.0/360.0, 8.0/100.0, 0.60, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
