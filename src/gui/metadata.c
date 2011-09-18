@@ -57,7 +57,7 @@ void dt_gui_metadata_update()
     widget = darktable.gui->widgets.metadata_label_lens;
     snprintf(lbl, ll, "%s", img->exif_lens);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
-    gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
+    gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_END);
     g_object_set(G_OBJECT(widget), "tooltip-text", img->exif_lens, (char *)NULL);
     widget = darktable.gui->widgets.metadata_label_maker;
     snprintf(lbl, ll, "%s", img->exif_maker);
