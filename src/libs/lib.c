@@ -487,43 +487,6 @@ dt_lib_unload_module (dt_lib_module_t *module)
   if(module->module) g_module_close(module->module);
 }
 
-
-#if 0
-static void
-dt_lib_gui_expander_callback (GObject *object, GParamSpec *param_spec, gpointer user_data)
-{
-  GtkExpander *expander = GTK_EXPANDER (object);
-  dt_lib_module_t *module = (dt_lib_module_t *)user_data;
-
-  /* bail out if module is static */
-  if(!module->expandable()) return;
-
-  char var[1024];
-  snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
-  dt_conf_set_bool(var, gtk_expander_get_expanded (expander));
-
-  if (gtk_expander_get_expanded (expander))
-  {
-    gtk_widget_show_all(module->widget);
-    // register to receive draw events
-    darktable.lib->gui_module = module;
-    
-    /* focus the current module */
-    for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
-      dt_ui_container_focus_widget(darktable.gui->ui, k, GTK_WIDGET(module->expander));
-  }
-  else
-  {
-    if(darktable.lib->gui_module == module)
-    {
-      darktable.lib->gui_module = NULL;
-      dt_control_queue_redraw();
-    }
-    gtk_widget_hide_all(module->widget);
-  }
-}
-#endif
-
 static void
 dt_lib_gui_reset_callback (GtkButton *button, gpointer user_data)
 {
@@ -593,16 +556,33 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
 
   /* show / hide plugin widget */
-  if(expanded)
+  if(expanded) 
+  {
     gtk_widget_show_all(module->widget);
+
+    /* register to receive draw events */
+    darktable.lib->gui_module = module;
+
+    /* focus the current module */
+    for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
+      dt_ui_container_focus_widget(darktable.gui->ui, k, GTK_WIDGET(module->expander));
+  }
   else
+  {
     gtk_widget_hide_all(module->widget);
+
+    if(darktable.lib->gui_module == module)
+    {
+      darktable.lib->gui_module = NULL;
+      dt_control_queue_redraw();
+    }
+  }
 
   /* store expanded state of module */
   char var[1024];
   snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
   dt_conf_set_bool(var, gtk_widget_get_visible(module->widget));
-  
+
 }
 
 static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
