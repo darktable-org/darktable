@@ -150,7 +150,7 @@ void init_presets (dt_iop_module_so_t *self)
   // highlights: #D9D0C7
   // balance : 60
   // compress : 0
-  dt_gui_presets_add_generic(_("chocolate brown"), self->op, &(dt_iop_splittoning_params_t)
+  dt_gui_presets_add_generic(_("chocolate brown"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
       28.0/360.0, 39.0/100.0, 28.0/360.0, 8.0/100.0, 0.60, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
@@ -606,7 +606,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.010, p->balance, 2));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_RATIO);
   dtgtk_slider_set_label(g->scale1,_("balance"));
-  dtgtk_slider_set_unit(g->scale1,"%/%");
+  dtgtk_slider_set_unit(g->scale1,"");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compress, 2));
