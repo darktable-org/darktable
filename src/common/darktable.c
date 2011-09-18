@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
@@ -75,6 +76,59 @@ static int usage(const char *argv0)
 
 typedef void (dt_signal_handler_t)(int) ;
 static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
+static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
+
+static
+void _dt_sigsegv_handler(int param)
+{
+  FILE *fd;
+  gchar buf[PIPE_BUF];
+  gchar *name_used;
+  int fout;
+  gboolean delete_file = FALSE;
+
+  if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
+    fout = STDOUT_FILENO; // just print everything to stdout
+
+  dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
+  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, getpid(), DARKTABLE_DATADIR);
+
+  if((fd = popen(command, "r")) != NULL)
+  {
+    gboolean read_something = FALSE;
+    while((fgets(buf, PIPE_BUF, fd)) != NULL)
+    {
+      read_something = TRUE;
+      dprintf(fout, "%s", buf);
+    }
+    pclose(fd);
+    if(fout != STDOUT_FILENO)
+    {
+      if(read_something)
+        g_printerr("backtrace written to %s\n", name_used);
+      else
+      {
+        delete_file = TRUE;
+        g_printerr("an error occured while trying to execute gdb. please check if gdb is installed on your system.\n");
+      }
+    }
+  }
+  else
+  {
+    delete_file = TRUE;
+    g_printerr("an error occured while trying to execute gdb.\n");
+  }
+
+  if(fout != STDOUT_FILENO)
+    close(fout);
+  if(delete_file)
+    g_unlink(name_used);
+  g_free(command);
+  g_free(name_used);
+
+  /* pass it further to the old handler*/
+  _dt_sigsegv_old_handler(param);
+}
 
 static
 void _dt_sigill_handler(int param)
@@ -84,8 +138,8 @@ void _dt_sigill_handler(int param)
 an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
 the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."));
   gtk_dialog_run(GTK_DIALOG(dlg));
-  
-  /* pass it further the old handler*/
+
+  /* pass it further to the old handler*/
   _dt_sigill_old_handler(param);
 }
 
@@ -203,6 +257,7 @@ static void strip_semicolons_from_keymap(const char* path)
 
 int dt_init(int argc, char *argv[], const int init_gui)
 {
+  _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #ifndef __SSE2__
   fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
   fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");

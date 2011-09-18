@@ -327,7 +327,7 @@ get_params(dt_imageio_module_format_t *self, int *size)
 {
   *size = 5*sizeof(int);
   dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
-  bzero(d, sizeof(dt_imageio_png_t));
+  memset(d, 0, sizeof(dt_imageio_png_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
   if(d->bpp < 12) d->bpp = 8;
   else            d->bpp = 16;
