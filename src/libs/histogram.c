@@ -263,7 +263,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   else if(d->dragging && d->highlight == 1)
   {
     float black = d->black - (event->x - d->button_down_x)*
-                  .2f/(float)widget->allocation.width;
+                  .1f/(float)widget->allocation.width;
     dt_dev_exposure_set_black(darktable.develop, black);
   }
   else
