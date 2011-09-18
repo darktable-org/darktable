@@ -19,7 +19,7 @@
 #define DARKTABLE_H
 
 #ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 600 // for localtime_r
+#define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 #ifdef HAVE_CONFIG_H
 #include "config.h"

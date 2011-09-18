@@ -674,8 +674,6 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
     cairo_stroke(cr);
 
-#if defined(__MACH__) || defined(__APPLE__) // dreggn
-#else
     if(img)
     {
       const char *ext = img->filename + strlen(img->filename);
@@ -688,7 +686,6 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       cairo_move_to (cr, .01*width, .24*height);
       cairo_show_text (cr, ext);
     }
-#endif
   }
 
 #if 1
