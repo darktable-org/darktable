@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
 
-set(LIBRAW_SOURCES internal/dcraw_common.cpp src/libraw_cxx.cpp internal/dcraw_fileio.cpp internal/demosaic_packs.cpp src/libraw_c_api.cpp)
+set(LIBRAW_SOURCES 
+  internal/dcraw_common.cpp 
+  src/libraw_cxx.cpp 
+  internal/dcraw_fileio.cpp 
+  internal/demosaic_packs.cpp 
+  src/libraw_c_api.cpp
+  src/libraw_datastream.cpp)
 
 #
 # build liblibraw_r

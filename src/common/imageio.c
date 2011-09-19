@@ -547,7 +547,7 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   raw->params.threshold = 0;
   raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
-  raw->params.amaze_ca_refine = 0;
+  // raw->params.amaze_ca_refine = 0;
   raw->params.fbdd_noiserd    = 0;
 
   ret = libraw_open_file(raw, filename);
