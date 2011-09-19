@@ -65,6 +65,7 @@ mkdir -p "${SHARE}/mime"
 echo "Copying libraries from ${MACPORTS_PREFIX}..."
 cp -R ${MACPORTS_PREFIX}/lib/pango ${LIB}
 cp -R ${MACPORTS_PREFIX}/lib/gtk-2.0 ${LIB}
+cp -R ${MACPORTS_PREFIX}/lib/gdk-pixbuf-2.0 ${LIB}
 
 #Copy over mimes (if a mime is copied, and nobody hears, is it really copied?)
 echo "Copying shared files from ${MACPORTS_PREFIX}..."
