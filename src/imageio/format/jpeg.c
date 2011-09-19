@@ -480,6 +480,9 @@ write_image (dt_imageio_jpeg_t *jpg, const char *filename, const uint8_t *in, vo
   if(jpg->quality > 92) jpg->cinfo.comp_info[0].h_samp_factor = 1;
   if(jpg->quality > 95) jpg->cinfo.dct_method = JDCT_FLOAT;
   if(jpg->quality < 50) jpg->cinfo.dct_method = JDCT_IFAST;
+  if(jpg->quality < 80) jpg->cinfo.smoothing_factor = 20;
+  if(jpg->quality < 60) jpg->cinfo.smoothing_factor = 40;
+  if(jpg->quality < 40) jpg->cinfo.smoothing_factor = 60;
   jpg->cinfo.optimize_coding = 1;
 
   jpeg_start_compress(&(jpg->cinfo), TRUE);

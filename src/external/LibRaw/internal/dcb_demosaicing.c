@@ -576,6 +576,9 @@ g[3]=CLIP((23*image[indx+u][1]+23*image[indx+w][1]+2*image[indx+y][1]+8*(image[i
 void CLASS fbdd(int noiserd)
 { 
 	double (*image2)[3];
+        // safety net: disable for 4-color bayer or full-color images
+        if(colors!=3 || !filters)
+            return;
 	image2 = (double (*)[3]) calloc(width*height, sizeof *image2);
 
 	border_interpolate(4);
