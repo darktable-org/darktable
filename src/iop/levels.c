@@ -111,7 +111,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.levels[0] = 0;
   p.levels[1] = 0.5;
   p.levels[2] = 1;
-  dt_gui_presets_add_generic(_("unmodified"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("unmodified"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1,

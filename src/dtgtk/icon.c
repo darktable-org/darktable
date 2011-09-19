@@ -66,8 +66,6 @@ _icon_expose (GtkWidget *widget, GdkEventExpose *event)
   cairo_t *cr;
   cr = gdk_cairo_create (widget->window);
 
-  int x = widget->allocation.x;
-  int y = widget->allocation.y;
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 

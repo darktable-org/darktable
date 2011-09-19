@@ -33,6 +33,8 @@ it under the terms of the one of three licenses as you choose:
 
 //imgdata image
 #define image           (imgdata.image)
+#define raw_image       (imgdata.rawdata.raw_image)
+#define color_image       (imgdata.rawdata.color_image)
 
 // imgdata.sizes
 #define raw_height      (imgdata.sizes.raw_height)
@@ -172,6 +174,7 @@ it under the terms of the one of three licenses as you choose:
 #define kodak_cbpp      (libraw_internal_data.unpacker_data.kodak_cbpp)
 #define strip_offset    (libraw_internal_data.unpacker_data.strip_offset)
 #define data_offset     (libraw_internal_data.unpacker_data.data_offset)
+#define data_size     (libraw_internal_data.unpacker_data.data_size)
 #define meta_offset     (libraw_internal_data.unpacker_data.meta_offset)
 #define meta_length     (libraw_internal_data.unpacker_data.meta_length)
 #define thumb_misc      (libraw_internal_data.unpacker_data.thumb_misc)

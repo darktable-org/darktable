@@ -580,7 +580,7 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
   }
 }
 
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_clipping_params_t p = (dt_iop_clipping_params_t)
   {
@@ -588,11 +588,11 @@ void init_presets (dt_iop_module_t *self)
   };
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   p.angle = 90.0f;
-  dt_gui_presets_add_generic(_("rotate by  90"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by  90"), self->op, self->version(), &p, sizeof(p), 1);
   p.angle = -90.0f;
-  dt_gui_presets_add_generic(_("rotate by -90"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by -90"), self->op, self->version(), &p, sizeof(p), 1);
   p.angle = 180.0f;
-  dt_gui_presets_add_generic(_("rotate by 180"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by 180"), self->op, self->version(), &p, sizeof(p), 1);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 

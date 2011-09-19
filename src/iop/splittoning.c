@@ -115,7 +115,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->scale2));
 }
 
-void init_presets (dt_iop_module_t *self)
+void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
@@ -123,7 +123,7 @@ void init_presets (dt_iop_module_t *self)
   // highlights: #ECA413
   // balance : 63
   // compress : 0
-  dt_gui_presets_add_generic(_("authentic sepia"), self->op, &(dt_iop_splittoning_params_t)
+  dt_gui_presets_add_generic(_("authentic sepia"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
       26.0/360.0, 92.0/100.0, 40.0/360.0, 92.0/100.0, 0.63, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
@@ -132,7 +132,7 @@ void init_presets (dt_iop_module_t *self)
   //highlights: #446CBB
   //balance : 0
   //compress : 5.22
-  dt_gui_presets_add_generic(_("authentic cyanotype"), self->op, &(dt_iop_splittoning_params_t)
+  dt_gui_presets_add_generic(_("authentic cyanotype"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
       220.0/360.0, 64.0/100.0, 220.0/360.0, 64.0/100.0, 0.0, 5.22
   } , sizeof(dt_iop_splittoning_params_t), 1);
@@ -141,7 +141,7 @@ void init_presets (dt_iop_module_t *self)
   // highlights : #A16C5E
   // balance : 100
   // compress : 0
-  dt_gui_presets_add_generic(_("authentic platinotype"), self->op, &(dt_iop_splittoning_params_t)
+  dt_gui_presets_add_generic(_("authentic platinotype"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
       13.0/360.0, 42.0/100.0, 13.0/360.0, 42.0/100.0, 100.0, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
@@ -150,12 +150,12 @@ void init_presets (dt_iop_module_t *self)
   // highlights: #D9D0C7
   // balance : 60
   // compress : 0
-  dt_gui_presets_add_generic(_("chocolate"), self->op, &(dt_iop_splittoning_params_t)
+  dt_gui_presets_add_generic(_("chocolate brown"), self->op, self->version(), &(dt_iop_splittoning_params_t)
   {
       28.0/360.0, 39.0/100.0, 28.0/360.0, 8.0/100.0, 0.60, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -606,7 +606,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->balance*100.0, 2));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_RATIO);
   dtgtk_slider_set_label(g->scale1,_("balance"));
-  dtgtk_slider_set_unit(g->scale1,"%");
+  dtgtk_slider_set_unit(g->scale1,"");
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 1.0, p->compress, 2));

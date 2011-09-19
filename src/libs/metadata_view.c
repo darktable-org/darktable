@@ -248,6 +248,12 @@ void gui_init(dt_lib_module_t *self)
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, 
 			    G_CALLBACK(_mouse_over_image_callback), self);
+
+  /* signup for develop initialize to update info of current 
+     image in darkroom when enter */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
+			    G_CALLBACK(_mouse_over_image_callback), self);
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)

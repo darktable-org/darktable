@@ -58,8 +58,8 @@ class DllDef libraw_memmgr
         }
     void  free(void *ptr)
     {
-        ::free(ptr);
         forget_ptr(ptr);
+        ::free(ptr);
     }
     void cleanup(void)
     {

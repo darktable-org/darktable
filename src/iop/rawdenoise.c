@@ -148,7 +148,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   for (int c=0; c<nc; c++)	/* denoise R,G1,B,G3 individually */
   {
     // zero lowest quarter part
-    bzero(fimg,size*sizeof(float));
+    memset(fimg,0,size*sizeof(float));
 
     // adjust for odd width and height
     const int halfwidth  = roi->width / 2  + (roi->width & (~(c >> 1)) & 1) ;
