@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Darktable Photo Workflow Software
+Name=Darktable
 GenericName=Virtual Lighttable and Darkroom
 GenericName[ru]=Программа для отсмотра и проявки цифровых негативов
 GenericName[de]=Virtueller Leuchttisch und Dunkelkammer
@@ -17,6 +17,8 @@ Comment[nl]=Organiseer en ontwikkel beelden van digitale camera's
 Comment[fi]=Järjestele ja kehitä kuvia digitaalikameroista
 Comment[fr]=Organiser et développer les images d'un boîtier numérique
 Comment[cs]=Správa a vyvolávání snímků z digitálních fotoaparátů
+
+X-GNOME-FullName=Darktable Photo Workflow Software
 
 Version=1.0
 
