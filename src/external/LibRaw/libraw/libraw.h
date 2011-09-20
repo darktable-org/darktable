@@ -127,6 +127,10 @@ class DllDef LibRaw
     libraw_processed_image_t*   dcraw_make_mem_image(int *errcode=NULL);  
     libraw_processed_image_t*   dcraw_make_mem_thumb(int *errcode=NULL);
     static void                 dcraw_clear_mem(libraw_processed_image_t*);
+    
+    /* Additional calls for make_mem_image */
+    void get_mem_image_format(int* width, int* height, int* colors, int* bps) const;
+    int  copy_mem_image(void* scan0, int stride, int bgr);
 
     /* free all internal data structures */
     void         recycle(); 
@@ -209,7 +213,12 @@ class DllDef LibRaw
     void        fbdd(int noiserd);
     void        vcd_interpolate(int ahd_cutoff);
     void        amaze_demosaic_RT();
-    void        CA_correct_RT();
+    void	exp_bef(float expos, float preser);
+    void        CA_correct_RT(float cared, float cablue);
+    void        cfa_linedn(float linenoise);
+    void        cfa_impulse_gauss(float lclean, float cclean);
+    void        green_equilibrate(float thresh);
+	
     /* demosaic pack end */
 
     void        bad_pixels(const char*);
