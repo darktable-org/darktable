@@ -30,21 +30,11 @@ it under the terms of the one of three licenses as you choose:
 #include <stdio.h>
 
 #if defined (_OPENMP) 
-
-#if defined(WIN32) 
-# if defined (_MSC_VER) && (_MSC_VER >= 1600 || (_MSC_VER == 1500 && _MSC_FULL_VER >= 150030729) ) 
-/* VS2010+ : OpenMP works OK, VS2008: have tested by cgilles */
-#   define LIBRAW_USE_OPENMP
-#elif defined (__INTEL_COMPILER) && (__INTEL_COMPILER >=910)
-/*  Have not tested on 9.x and 10.x, but Intel documentation claims OpenMP 2.5 support in 9.1 */
-#   define LIBRAW_USE_OPENMP
-#else
+# if defined(_MSC_VER)
 #  undef LIBRAW_USE_OPENMP
-#endif
-/* Not Win32 */
 # elif (defined(__APPLE__) || defined(__MACOSX__)) && defined(_REENTRANT)
 #   undef LIBRAW_USE_OPENMP
-# else 
+# else /* OpenMP defined but not Mac/pthreads and not Windows */
 #   define LIBRAW_USE_OPENMP
 # endif
 #endif
@@ -94,21 +84,6 @@ typedef unsigned short ushort;
 #  define DllDef
 #endif
 
-typedef struct
-{
-    const char          *decoder_name;
-    unsigned             decoder_flags;
-}libraw_decoder_info_t;
-
-typedef struct
-{
-    unsigned    mix_green;
-    unsigned    raw_color;
-    unsigned    zero_is_bad;
-    ushort      shrink;
-    ushort      fuji_width;
-    ushort      fwidth,fheight;
-} libraw_internal_output_params_t;
 
 
 typedef void (* memory_callback)(void * data, const char *file, const char *where);
@@ -174,6 +149,8 @@ typedef struct
     double      pixel_aspect;
     int         flip;
 
+    ushort      right_margin,bottom_margin; 
+
 } libraw_image_sizes_t;
 
 struct ph1_t
@@ -213,7 +190,6 @@ typedef struct
     char        model2[64];
     void        *profile;
     unsigned    profile_length;
-    ushort  (*ph1_black)[2];
 }libraw_colordata_t;
 
 typedef struct
@@ -275,6 +251,7 @@ typedef struct
     int         no_auto_bright; /* -W */
     int         use_fuji_rotate;/* -j */
     int         green_matching;
+    enum LibRaw_filtering    filtering_mode; 
 #if 0
     /* AFD noise suppression parameters, disabled for now */
     int         afd_noise_att;
@@ -291,40 +268,24 @@ typedef struct
     int         eeci_refine;
     int         es_med_passes;
     /* AMaZE*/
-    int         ca_correc;
-    float       cared;
-    float	cablue;
-    int cfaline;
-    float linenoise;
-    int cfa_clean;
-    float lclean;
-    float cclean;
-    int cfa_green;
-    float green_thresh;
-    int exp_correc;
-    float exp_shift;
-    float exp_preser;
+    int         amaze_ca_refine;
+
+
 }libraw_output_params_t;
 
 typedef struct
 {
-    /* really allocated bitmap */
-    void        *raw_alloc;
-    /* alias to single_channel variant */
-    ushort                      *raw_image;
-    /* alias to 4-channel variant */
-    ushort                      (*color_image)[4] ;
-    
-    /* Phase One black level data; */
-    ushort  (*ph1_black)[2];
-    int         use_ph1_correct;
-    /* save color and sizes here, too.... */
-    libraw_iparams_t  iparams;
-    libraw_image_sizes_t sizes;
-    libraw_internal_output_params_t ioparams;
-    libraw_colordata_t color;
-} libraw_rawdata_t;
-
+    ushort  *buffer; 
+    ushort  *tl;     
+    ushort  *top;    
+    ushort  *tr;    
+    ushort  *left;  
+    ushort  *right; 
+    ushort  *bl;     
+    ushort  *bottom; 
+    ushort  *br;     
+    ushort  (*ph1_black)[2]; 
+}libraw_masked_t;
 
 typedef struct
 {
@@ -335,7 +296,7 @@ typedef struct
     libraw_colordata_t          color;
     libraw_imgother_t           other;
     libraw_thumbnail_t          thumbnail;
-    libraw_rawdata_t            rawdata;
+    libraw_masked_t             masked_pixels;
     ushort                      (*image)[4] ;
     libraw_output_params_t     params;
     void                *parent_class;      

@@ -10,13 +10,13 @@ LibRaw is free software; you can redistribute it and/or modify
 it under the terms of the one of three licenses as you choose:
 
 1. GNU LESSER GENERAL PUBLIC LICENSE version 2.1
-(See the file LICENSE.LGPL provided in LibRaw distribution archive for details).
+   (See the file LICENSE.LGPL provided in LibRaw distribution archive for details).
 
 2. COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
-(See the file LICENSE.CDDL provided in LibRaw distribution archive for details).
+   (See the file LICENSE.CDDL provided in LibRaw distribution archive for details).
 
 3. LibRaw Software License 27032010
-  (See the file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
+   (See the file LICENSE.LibRaw.pdf provided in LibRaw distribution archive for details).
 
  */
 
@@ -24,13 +24,9 @@ it under the terms of the one of three licenses as you choose:
 #define __VERSION_H
 
 #define LIBRAW_MAJOR_VERSION  0
-#define LIBRAW_MINOR_VERSION  14
+#define LIBRAW_MINOR_VERSION  12
 #define LIBRAW_PATCH_VERSION  0
-#define LIBRAW_VERSION_TAIL   Beta2
-
-#define LIBRAW_SHLIB_CURRENT  	4
-#define LIBRAW_SHLIB_REVISION 	0
-#define LIBRAW_SHLIB_AGE     	0
+#define LIBRAW_VERSION_TAIL   Release
 
 #define _LIBRAW_VERSION_MAKE(a,b,c,d) #a"."#b"."#c"-"#d
 #define LIBRAW_VERSION_MAKE(a,b,c,d) _LIBRAW_VERSION_MAKE(a,b,c,d)
@@ -45,18 +41,6 @@ it under the terms of the one of three licenses as you choose:
 
 #define LIBRAW_CHECK_VERSION(major,minor,patch) \
     ( LibRaw::versionNumber() >= LIBRAW_MAKE_VERSION(major,minor,patch) )
-
-#define LIBRAW_RUNTIME_CHECK_VERSION_EXACT() \
-    ( (LibRaw::versionNumber() & 0xffff00) == LIBRAW_MAKE_VERSION(LIBRAW_MAJOR_VERSION,LIBRAW_MINOR_VERSION,0) )
-
-#define LIBRAW_RUNTIME_CHECK_VERSION_NOTLESS() \
-    ( (LibRaw::versionNumber() & 0xffff00) >= LIBRAW_MAKE_VERSION(LIBRAW_MAJOR_VERSION,LIBRAW_MINOR_VERSION,0) )
-
-#define LIBRAW_COMPILE_CHECK_VERSION(major,minor) \
-    (LIBRAW_MAKE_VERSION(major,minor,0) == (LIBRAW_VERSION & 0xffff00))
-
-#define LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(major,minor) \
-    (LIBRAW_MAKE_VERSION(major,minor,0) <= (LIBRAW_VERSION & 0xffff00))
 
 
 #endif

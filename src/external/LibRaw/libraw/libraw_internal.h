@@ -25,10 +25,9 @@ it under the terms of the one of three licenses as you choose:
 #include <stdio.h>
 #ifdef __cplusplus
 
-#ifdef LIBRAW_LIBRARY_BUILD
+
 #ifndef CLASS
 #define CLASS LibRaw::
-#endif
 #endif
 
 #else
@@ -41,7 +40,6 @@ it under the terms of the one of three licenses as you choose:
 #ifdef __cplusplus
 
 #include "libraw_datastream.h"
-#include "libraw_types.h"
 
 class LibRaw_TLS
 {
@@ -100,6 +98,15 @@ typedef struct
 
 } internal_data_t;
 
+typedef struct
+{
+    unsigned    mix_green;
+    unsigned    raw_color;
+    unsigned    zero_is_bad;
+    ushort      shrink;
+    ushort      fuji_width;
+    ushort      fwidth,fheight;
+} internal_output_params_t;
 
 #define LIBRAW_HISTOGRAM_SIZE 0x2000
 typedef struct
@@ -123,7 +130,6 @@ typedef struct
     unsigned    kodak_cbpp;
     INT64       strip_offset, data_offset;
     INT64       meta_offset;
-    unsigned    data_size;
     unsigned     meta_length;
     unsigned    thumb_misc;
     unsigned    fuji_layout;
@@ -140,7 +146,7 @@ typedef struct
 typedef struct
 {
     internal_data_t internal_data;
-    libraw_internal_output_params_t internal_output_params;    
+    internal_output_params_t internal_output_params;    
     output_data_t output_data;
     identify_data_t identify_data;
     unpacker_data_t unpacker_data;
@@ -155,7 +161,7 @@ struct decode
 
 struct tiff_ifd_t 
 {
-    int t_width, t_height, bps, comp, phint, offset, t_flip, samples, bytes,tile_maxbytes;
+    int t_width, t_height, bps, comp, phint, offset, t_flip, samples, bytes;
 };
 
 

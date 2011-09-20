@@ -22,10 +22,7 @@ it under the terms of the one of three licenses as you choose:
 */
 
 #define NO_JPEG
-#ifndef USE_JASPER
-#define NO_JASPER
-#endif
-#define DCRAW_VERSION "9.10"
+#define VERSION "9.05"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -48,21 +45,8 @@ it under the terms of the one of three licenses as you choose:
    NO_JPEG disables decoding of compressed Kodak DC120 files.
    NO_LCMS disables the "-p" option.
  */
-#ifdef NODEPS
-#define NO_JASPER
-#define NO_JPEG
-#define NO_LCMS
-#endif
-#ifndef NO_JASPER
-#undef PACKAGE_BUGREPORT
-#undef PACKAGE_NAME
-#undef PACKAGE_STRING
-#undef PACKAGE_TARNAME
-#undef PACKAGE_VERSION
-#include <jasper/jasper.h>	/* Decode RED camera movies */
-#endif
 #ifndef NO_JPEG
-#include <jpeglib.h>		/* Decode compressed Kodak DC120 photos */
+#include <jpeglib.h>
 #endif
 #ifdef LOCALEDIR
 #include <libintl.h>
