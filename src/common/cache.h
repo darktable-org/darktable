@@ -64,7 +64,7 @@ dt_cache_set_allocate_callback(
 static inline void
 dt_cache_set_cleanup_callback(
     dt_cache_t *cache,
-    void* (*cleanup)(void*, const uint32_t, void*),
+    void (*cleanup)(void*, const uint32_t, void*),
     void *cleanup_data)
 {
   cache->cleanup = cleanup;

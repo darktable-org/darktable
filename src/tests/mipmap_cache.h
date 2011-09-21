@@ -27,35 +27,61 @@ typedef enum dt_mipmap_size_t
   DT_MIPMAP_1    = 1,
   DT_MIPMAP_2    = 2,
   DT_MIPMAP_4    = 3,
-  DT_MIPMAP_FULL = 4,
-  DT_MIPMAP_NONE = 5
+  DT_MIPMAP_F    = 4,
+  DT_MIPMAP_FULL = 5,
+  DT_MIPMAP_NONE = 6
 }
 dt_mipmap_size_t;
-
 
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
   int32_t width, height;
-  void *buf;
+  // TODO: also might need buffer type info:
+  // 4x float Lab etc.
+  uint8_t *buf;
 }
 dt_mipmap_buffer_t;
 
-typedef struct dt_mipmap_cache_t
+typedef struct dt_mipmap_cache_one_t
 {
+  // this cache is for which mipmap type?
+  dt_mipmap_size_t size;
+  // only usef for _F and _FULL buffers:
+  uint32_t buffer_cnt;
+  // size of an element inside buf
+  // note we're not storing width and height, because
+  // these are stored per element (could be smaller than the max for this mip level,
+  // due to aspect ratio)
+  uint32_t buffer_size;
+  // 1) no memory fragmentation:
+  //    - fixed slots with fixed size (could waste a few bytes for extreme
+  //      aspect ratios)
+  // 2) dynamically grow? (linux alloc on write)
+  // 3) downside: no crosstalk between mip0 and mip4
+
+  // only stores 4*uint8_t per pixel for thumbnails:
+  uint32_t *buf;
+
   // TODO: use this cache to dynamically allocate mipmap buffers
   //       (so it will grow slowly)
   // TODO: one cache per mipmap scale!
-  // TODO: implement our own garbage collection to free large buffers first!
   // TODO: need clever hashing img->mip (not just id..?)
   // TODO: say folder id + img filename hash
-  dt_cache_t cache[DT_MIPMAP_NONE];
+  dt_cache_t cache;
+}
+dt_mipmap_cache_one_t;
+
+typedef struct dt_mipmap_cache_t
+{
+  // one cache per mipmap level
+  dt_mipmap_cache_one_t mip[DT_MIPMAP_NONE];
 }
 dt_mipmap_cache_t;
 
-void dt_mipmap_cache_init   (dt_image_cache_t *cache);
-void dt_mipmap_cache_cleanup(dt_image_cache_t *cache);
-void dt_mipmap_cache_print  (dt_image_cache_t *cache);
+void dt_mipmap_cache_init   (dt_mipmap_cache_t *cache);
+void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
+void dt_mipmap_cache_print  (dt_mipmap_cache_t *cache);
 
 // get a buffer for reading. this has best effort/bad luck
 // semantics, so you'll get a smaller mipmap or NULL if

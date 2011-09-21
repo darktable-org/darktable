@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,119 +34,6 @@
 #include <assert.h>
 #include <glob.h>
 #include <glib/gstdio.h>
-
-static int64_t dt_image_debug_malloc_size = 0;
-
-static void *
-dt_image_debug_malloc(const void *ptr, const size_t size)
-{
-#ifdef _DEBUG
-  assert(ptr == NULL || ptr == (void *)1);
-  dt_pthread_mutex_lock(&darktable.db_insert);
-  dt_image_debug_malloc_size += size;
-  // dt_image_debug_malloc_size ++;
-  dt_pthread_mutex_unlock(&darktable.db_insert);
-#endif
-  return dt_alloc_align(64, size);
-}
-
-static void
-dt_image_debug_free(void *p, size_t size)
-{
-#ifdef _DEBUG
-  if(!p) return;
-  dt_pthread_mutex_lock(&darktable.db_insert);
-  dt_image_debug_malloc_size -= size;
-  // dt_image_debug_malloc_size --;
-  dt_pthread_mutex_unlock(&darktable.db_insert);
-#endif
-  free(p);
-}
-
-static int
-dt_image_single_user()
-{
-  return 0;
-  // if -d cache was given, allow only one reader at the time, to trace stale locks.
-  // return (darktable.unmuted & DT_DEBUG_CACHE) && img->lock[mip].users;
-}
-
-void dt_image_write_sidecar_file(int imgid)
-{
-  // write .xmp file
-  if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
-  {
-    char filename[DT_MAX_PATH+8];
-    dt_image_full_path(imgid, filename, DT_MAX_PATH);
-    dt_image_path_append_version(imgid, filename, DT_MAX_PATH);
-    char *c = filename + strlen(filename);
-    sprintf(c, ".xmp");
-    dt_exif_xmp_write(imgid, filename);
-  }
-}
-
-void dt_image_synch_xmp(const int selected)
-{
-  if(selected > 0)
-  {
-    dt_image_write_sidecar_file(selected);
-  }
-  else if(dt_conf_get_bool("write_sidecar_files"))
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const int imgid = sqlite3_column_int(stmt, 0);
-      dt_image_write_sidecar_file(imgid);
-    }
-    sqlite3_finalize(stmt);
-  }
-}
-
-void dt_image_synch_all_xmp(const gchar *pathname)
-{
-  if(dt_conf_get_bool("write_sidecar_files"))
-  {
-    // Delete all existing .xmp files.
-    glob_t *globbuf = malloc(sizeof(glob_t));
-    
-    gchar *fname = g_strdup(pathname);
-    gchar pattern[1024];
-    g_snprintf(pattern, 1024, "%s", pathname);
-    char *c1 = pattern + strlen(pattern);
-    while(*c1 != '.' && c1 > pattern) c1--;
-    g_snprintf(c1, pattern + 1024 - c1, "_*");
-    char *c2 = fname + strlen(fname);
-    while(*c2 != '.' && c2 > fname) c2--;
-    g_snprintf(c1+2, pattern + 1024 - c1 - 2, "%s.xmp", c2);
-
-    if (!glob(pattern, 0, NULL, globbuf))
-    {
-      for (int i=0; i < globbuf->gl_pathc; i++)
-      {
-        (void)g_unlink(globbuf->gl_pathv[i]);
-      }
-      globfree(globbuf);
-    }
-     
-    sqlite3_stmt *stmt;
-    gchar *imgfname = g_path_get_basename(pathname);
-    gchar *imgpath = g_path_get_dirname(pathname);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where film_id in (select id from film_rolls where folder = ?1) and filename = ?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgpath, strlen(imgpath), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const int imgid = sqlite3_column_int(stmt, 0);
-      dt_image_write_sidecar_file(imgid);
-    }
-    sqlite3_finalize(stmt);
-    g_free(fname);
-    g_free(imgfname);
-    g_free(imgpath);
-  }
-}
 
 int dt_image_is_ldr(const dt_image_t *img)
 {
@@ -240,6 +127,7 @@ void dt_image_print_exif(dt_image_t *img, char *line, int len)
     snprintf(line, len, "1/%.0f f/%.1f %dmm iso %d", 1.0/img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
+// TODO: rewrite to match new thumbnail strategy!
 dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const int32_t width, const int32_t height, int32_t *w, int32_t *h)
 {
   const float scale = fminf(darktable.thumbnail_size/(float)(img->width), darktable.thumbnail_size/(float)(img->height));
@@ -260,6 +148,7 @@ dt_image_buffer_t dt_image_get_matching_mip_size(const dt_image_t *img, const in
   return mip;
 }
 
+// TODO: remove completely
 void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, float *w, float *h)
 {
   float wd = img->output_width  ? img->output_width  : img->width,
@@ -296,6 +185,7 @@ void dt_image_get_exact_mip_size(const dt_image_t *img, dt_image_buffer_t mip, f
   *h = ht;
 }
 
+// TODO: rewrite to have fixed thumb size (and do so in the mipmap cache)
 void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t *w, int32_t *h)
 {
   int32_t wd = img->width, ht = img->height;
@@ -322,6 +212,7 @@ void dt_image_get_mip_size(const dt_image_t *img, dt_image_buffer_t mip, int32_t
   *h = ht;
 }
 
+// TODO: move to mipmap_cache
 dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
 {
   dt_image_buffer_t mip = dt_image_get(img, DT_IMAGE_MIP4, 'r');
@@ -366,6 +257,7 @@ dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img)
   return DT_IMAGEIO_OK;
 }
 
+// TODO: move to mipmap_cache
 dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw)
 {
   const int raw_wd = img->width;
@@ -480,6 +372,7 @@ int32_t dt_image_duplicate(const int32_t imgid)
   return newid;
 }
 
+// TODO: move to image cache?
 void dt_image_remove(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
@@ -527,6 +420,7 @@ int dt_image_altered(const dt_image_t *img)
   return altered;
 }
 
+// TODO: all the locking into the cache directly
 int dt_image_import_testlock(dt_image_t *img)
 {
   dt_pthread_mutex_lock(&darktable.db_insert);
@@ -543,6 +437,7 @@ void dt_image_import_unlock(dt_image_t *img)
   dt_pthread_mutex_unlock(&darktable.db_insert);
 }
 
+// TODO: get rid of it:
 int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t mip)
 {
   if(dt_image_import_testlock(img))
@@ -614,6 +509,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   return 0;
 }
 
+// TODO: move to mipmap_cache.c (at least the guts of it)
 int dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 0;
@@ -738,6 +634,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   return id;
 }
 
+// TODO: move to mipmap_cache.c
 dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
 {
   if(dt_image_lock_if_available(img, DT_IMAGE_MIP4, 'r')) return DT_IMAGEIO_CACHE_FULL;
@@ -816,6 +713,8 @@ void dt_image_init(dt_image_t *img)
   img->filters = 0;
   img->bpp = 0;
 
+  // FIXME: what does this do? remove it!
+#if 0
   // try to get default raw parameters from db:
   sqlite3_stmt *stmt;
   sqlite3_prepare_v2(dt_database_get(darktable.db), "select op_params from presets where operation = 'rawimport' and def=1", -1, &stmt, NULL);
@@ -827,6 +726,7 @@ void dt_image_init(dt_image_t *img)
       memcpy(&(img->raw_denoise_threshold), blob, length);
   }
   sqlite3_finalize(stmt);
+#endif
   img->film_id = -1;
   img->flags = dt_conf_get_int("ui_last/import_initial_rating");
   if(img->flags < 0 || img->flags > 4)
@@ -850,6 +750,19 @@ void dt_image_init(dt_image_t *img)
   for(int k=0; (int)k<(int)DT_IMAGE_NONE; k++) img->mip_buf_size[k] = 0;
   for(int k=0; (int)k<(int)DT_IMAGE_FULL; k++) img->mip_width[k] = img->mip_height[k] = 0;
 }
+
+
+
+
+
+
+
+
+
+
+// **************************************************************
+// TODO: rewrite/remove all functions from here on!
+// **************************************************************
 
 int dt_image_open(const int32_t id)
 {

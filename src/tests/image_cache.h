@@ -23,6 +23,7 @@
 typedef struct dt_image_cache_t
 {
   // TODO: one fat block of dt_image_t, to assign `dynamic' void* in cache to.
+  uint8_t *images;
   dt_cache_t cache;
 }
 dt_image_cache_t;
