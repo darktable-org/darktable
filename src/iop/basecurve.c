@@ -61,6 +61,7 @@ static const char leica[] = N_("leica like");
 static const char kodak_easyshare[] = N_("kodak easyshare like");
 static const char konica_minolta[] = N_("konica minolta like");
 static const char samsung[] = N_("samsung like");
+static const char fujifilm[] = N_("fujifilm like");
 static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
 static const char fotogenetic_v42[] = N_("fotogenetic (EV3)");
 
@@ -98,6 +99,8 @@ static const basecurve_preset_t basecurve_presets[] =
   {konica_minolta, "MINOLTA", "", 0, 51200, {{0.000000, 0.020161, 0.112903, 0.500000, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
   // pascals samsung curve (needs testing):
   {samsung, "SAMSUNG", "", 0, 51200, {{0.000000, 0.044355, 0.149194, 0.487903, 0.891129, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
+  // pascals fujifilm curve
+  {fujifilm, "FUJIFILM", "", 0, 51200, {{0.000000, 0.028226, 0.104839, 0.387097, 0.754032, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // Fotogenetic - Point and shoot v4.1
   {fotogenetic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
   // Fotogenetic - EV3 v4.2
