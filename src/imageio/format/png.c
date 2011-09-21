@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <png.h>
 #include <inttypes.h>
+#include <zlib.h>
 
 DT_MODULE(1)
 
