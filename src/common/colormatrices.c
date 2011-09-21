@@ -192,7 +192,7 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   { "FUJIFILM FinePix X100",        { 734619, 274628,  -6302}, { 325272, 1076035, -198608}, {-15366, -280670, 1061050}, {637207, 668228, 578690}},
 
   // Oleg Dzhimiev, ColorChecker Classic, office lighting, well lit
-  { "Elphel 353E",                 { 782623, 147903, -272369}, { 110016, 1115250, -729172}, {175949, -157227, 1930222}, {821899, 860794, 671768}}
+  { "Elphel 353E",                  {782623, 147903, -272369}, { 110016, 1115250, -729172}, {175949, -157227, 1930222}, {821899, 860794, 671768}}
 };
 
 static const int dt_profiled_colormatrix_cnt = sizeof(dt_profiled_colormatrices)/sizeof(dt_profiled_colormatrix_t);
