@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika, Tobias Ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "common/darktable.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -27,13 +28,32 @@
 #include "libs/lib.h"
 #include "preferences_gen.h"
 
+// FIXME: this is copypasta from gui/presets.c. better put these somewhere so that all places can access the same data.
+static const int   dt_gui_presets_exposure_value_cnt = 24;
+static const float dt_gui_presets_exposure_value[] =
+{
+  0., 1./8000, 1./4000, 1./2000, 1./1000, 1./1000, 1./500, 1./250, 1./125, 1./60, 1./30, 1./15,
+  1./15, 1./8, 1./4, 1./2, 1, 2, 4, 8, 15, 30, 60, FLT_MAX
+};
+static const char* dt_gui_presets_exposure_value_str[] =
+{
+  "0", "1/8000", "1/4000", "1/2000", "1/1000", "1/1000", "1/500", "1/250", "1/125", "1/60", "1/30", "1/15",
+  "1/15", "1/8", "1/4", "1/2", "1\"", "2\"", "4\"", "8\"", "15\"", "30\"", "60\"", "+"
+};
+static const int   dt_gui_presets_aperture_value_cnt = 19;
+static const float dt_gui_presets_aperture_value[] = {0, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 5.6, 8.0, 11.0, 16.0,
+    22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX
+                                                     };
+static const char* dt_gui_presets_aperture_value_str[] = {"f/0", "f/0.5", "f/0.7", "f/1.0", "f/1.4", "f/2",
+    "f/2.8", "f/4", "f/5.6", "f/8", "f/11", "f/16", "f/22", "f/32", "f/45", "f/64", "f/90", "f/128", "f/+"
+                                                         };
+
 // Values for the accelerators treeview
 
-#define ACCEL_COLUMN 0
-#define BINDING_COLUMN 1
-#define TRANS_COLUMN 2
-#define N_COLUMNS 3
+enum {A_ACCEL_COLUMN, A_BINDING_COLUMN, A_TRANS_COLUMN, A_N_COLUMNS};
+enum {P_MODULE_COLUMN, P_NAME_COLUMN, /*P_DESCRIPTION_COLUMN,*/ P_MODEL_COLUMN, P_MAKER_COLUMN, P_LENS_COLUMN, P_ISO_COLUMN, P_EXPOSURE_COLUMN, P_APERTURE_COLUMN, P_FOCAL_LENGTH_COLUMN, P_AUTOAPPLY_COLUMN, /*P_ENABLED_COLUMN,*/ P_N_COLUMNS};
 
+static void init_tab_presets(GtkWidget *book);
 static void init_tab_accels(GtkWidget *book);
 static void tree_insert_accel(gpointer accel_struct, gpointer model_link);
 static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
@@ -83,6 +103,7 @@ void dt_gui_preferences_show()
   init_tab_gui(notebook);
   init_tab_core(notebook);
   init_tab_accels(notebook);
+  init_tab_presets(notebook);
   gtk_widget_show_all(dialog);
   (void) gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
@@ -96,6 +117,251 @@ void dt_gui_preferences_show()
 
 }
 
+static void tree_insert_presets(GtkTreeStore *tree_model){
+  GtkTreeIter iter, parent;
+  sqlite3_stmt *stmt;
+  gchar *last_module = NULL;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description, operation, enabled, autoapply, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max from presets order by operation", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    gchar* name              = (gchar*) sqlite3_column_text(stmt, 0);
+//     gchar* description       = (gchar*) sqlite3_column_text(stmt, 1);
+    gchar* operation         = (gchar*) sqlite3_column_text(stmt, 2);
+//     const gboolean enabled   = (sqlite3_column_int(stmt, 3)==0 ? FALSE : TRUE);
+    const gboolean autoapply = (sqlite3_column_int(stmt, 4)==0 ? FALSE : TRUE);
+    gchar* model             = (gchar*) sqlite3_column_text(stmt, 5);
+    gchar* maker             = (gchar*) sqlite3_column_text(stmt, 6);
+    gchar* lens              = (gchar*) sqlite3_column_text(stmt, 7);
+    int iso_min              = sqlite3_column_double(stmt, 8);
+    int iso_max              = sqlite3_column_double(stmt, 9);
+    float exposure_min       = sqlite3_column_double(stmt, 10);
+    float exposure_max       = sqlite3_column_double(stmt, 11);
+    float aperture_min       = sqlite3_column_double(stmt, 12);
+    float aperture_max       = sqlite3_column_double(stmt, 13);
+    int focal_length_min     = sqlite3_column_double(stmt, 14);
+    int focal_length_max     = sqlite3_column_double(stmt, 15);
+
+    gchar *iso, *exposure, *aperture, *focal_length;
+    int min, max;
+
+    if(iso_min == 0.0 && iso_max == 51200.0)
+      iso = g_strdup("%");
+    else
+      iso = g_strdup_printf("%d – %d", iso_min, iso_max);
+
+    min=0, max=0;
+    for(; min<dt_gui_presets_exposure_value_cnt&&exposure_min>dt_gui_presets_exposure_value[min]; min++);
+    for(; max<dt_gui_presets_exposure_value_cnt&&exposure_max>dt_gui_presets_exposure_value[max]; max++);
+    if(min == 0 && max == dt_gui_presets_exposure_value_cnt-1)
+      exposure = g_strdup("%");
+    else
+      exposure = g_strdup_printf("%s – %s", dt_gui_presets_exposure_value_str[min], dt_gui_presets_exposure_value_str[max]);
+
+    min=0, max=0;
+    for(; min<dt_gui_presets_aperture_value_cnt&&aperture_min>dt_gui_presets_aperture_value[min]; min++);
+    for(; max<dt_gui_presets_aperture_value_cnt&&aperture_max>dt_gui_presets_aperture_value[max]; max++);
+    if(min == 0 && max == dt_gui_presets_aperture_value_cnt-1)
+      aperture = g_strdup("%");
+    else
+      aperture = g_strdup_printf("%s – %s", dt_gui_presets_aperture_value_str[min], dt_gui_presets_aperture_value_str[max]);
+
+    if(focal_length_min == 0.0 && focal_length_max == 1000.0)
+      focal_length = g_strdup("%");
+    else
+      focal_length = g_strdup_printf("%d – %d", focal_length_min, focal_length_max);
+
+    if(g_strcmp0(last_module, operation) != 0)
+    {
+      gtk_tree_store_append(tree_model, &iter, NULL);
+      gtk_tree_store_set(tree_model, &iter,
+                         P_MODULE_COLUMN, _(operation),
+                         P_NAME_COLUMN, "",
+//                          P_DESCRIPTION_COLUMN, "",
+                         P_MODEL_COLUMN, "",
+                         P_MAKER_COLUMN, "",
+                         P_LENS_COLUMN, "",
+                         P_ISO_COLUMN, "",
+                         P_EXPOSURE_COLUMN, "",
+                         P_APERTURE_COLUMN, "",
+                         P_FOCAL_LENGTH_COLUMN, "",
+                         P_AUTOAPPLY_COLUMN, "",
+//                          P_ENABLED_COLUMN, "",
+                         -1);
+      g_free(last_module);
+      last_module = g_strdup(operation);
+      parent = iter;
+    }
+
+    gtk_tree_store_append(tree_model, &iter, &parent);
+    gtk_tree_store_set(tree_model, &iter,
+                         P_MODULE_COLUMN, "",
+                         P_NAME_COLUMN, name,
+//                          P_DESCRIPTION_COLUMN, description,
+                         P_MODEL_COLUMN, model,
+                         P_MAKER_COLUMN, maker,
+                         P_LENS_COLUMN, lens,
+                         P_ISO_COLUMN, iso,
+                         P_EXPOSURE_COLUMN, exposure,
+                         P_APERTURE_COLUMN, aperture,
+                         P_FOCAL_LENGTH_COLUMN, focal_length,
+                         P_AUTOAPPLY_COLUMN, autoapply?"x":"",
+//                          P_ENABLED_COLUMN, enabled?"x":"",
+                      -1);
+
+  }
+  sqlite3_finalize(stmt);
+}
+
+//TODO: - add nice icons instead of the x's.
+//      - allow editing of presets (double clicking?).
+//      - get translatable module names.
+static void init_tab_presets(GtkWidget *book)
+{
+  GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 0.9, 1.0);
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget *tree = gtk_tree_view_new();
+  GtkTreeStore *model = gtk_tree_store_new(P_N_COLUMNS,
+                                           G_TYPE_STRING /*module*/, G_TYPE_STRING /*name*//*, G_TYPE_STRING *//*description*/,
+                                           G_TYPE_STRING /*model*/, G_TYPE_STRING /*maker*/, G_TYPE_STRING /*lens*/,
+                                           G_TYPE_STRING /*iso*/, G_TYPE_STRING /*exposure*/, G_TYPE_STRING /*aperture*/, G_TYPE_STRING /*focal length*/,
+                                           G_TYPE_STRING/*, G_TYPE_STRING *//* TODO: use a pixmap for these two. */);
+  GtkCellRenderer *renderer;
+  GtkTreeViewColumn *column;
+
+  // Adding the outer container
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 20, 20, 20, 20);
+  gtk_container_add(GTK_CONTAINER(alignment), scroll);
+  gtk_notebook_append_page(GTK_NOTEBOOK(book), alignment,
+                           gtk_label_new(_("presets")));
+
+  tree_insert_presets(model);
+
+  // Seting a custom sort functions so expandable groups rise to the top
+//   gtk_tree_sortable_set_sort_column_id(
+//       GTK_TREE_SORTABLE(model), TRANS_COLUMN, GTK_SORT_ASCENDING);
+//   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), TRANS_COLUMN,
+//                                   compare_rows, NULL, NULL);
+
+  // Setting up the cell renderers
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("module"), renderer,
+      "text", P_MODULE_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("name"), renderer,
+      "text", P_NAME_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+//   renderer = gtk_cell_renderer_text_new();
+//   column = gtk_tree_view_column_new_with_attributes(
+//       _("description"), renderer,
+//       "text", P_DESCRIPTION_COLUMN,
+//       NULL);
+//   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("model"), renderer,
+      "text", P_MODEL_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("maker"), renderer,
+      "text", P_MAKER_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("lens"), renderer,
+      "text", P_LENS_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("iso"), renderer,
+      "text", P_ISO_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("exposure"), renderer,
+      "text", P_EXPOSURE_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("aperture"), renderer,
+      "text", P_APERTURE_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("focal length"), renderer,
+      "text", P_FOCAL_LENGTH_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("auto"), renderer,
+      "text", P_AUTOAPPLY_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+//   renderer = gtk_cell_renderer_text_new();
+//   column = gtk_tree_view_column_new_with_attributes(
+//       _("enabled"), renderer,
+//       "text", P_ENABLED_COLUMN,
+//       NULL);
+//   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  // Attaching treeview signals
+
+  // row-activated either expands/collapses a row or activates remapping
+//   g_signal_connect(G_OBJECT(tree), "row-activated",
+//                    G_CALLBACK(tree_row_activated), NULL);
+
+  // A selection change will cancel a currently active remapping
+//   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(tree))),
+//                    "changed",
+//                    G_CALLBACK(tree_selection_changed), NULL);
+
+  // A keypress may remap an accel or delete one
+//   g_signal_connect(G_OBJECT(tree), "key-press-event",
+//                    G_CALLBACK(tree_key_press), (gpointer)model);
+
+  // Setting up the search functionality
+//   gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), TRANS_COLUMN);
+//   gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(tree), prefix_search,
+//                                       NULL, NULL);
+//   gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
+
+  // Attaching the model to the treeview
+  gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(model));
+
+  // Adding the treeview to its containers
+  gtk_container_add(GTK_CONTAINER(scroll), tree);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+                                 GTK_POLICY_AUTOMATIC,
+                                 GTK_POLICY_AUTOMATIC);
+
+  g_object_unref(G_OBJECT(model));
+
+}
+
 static void init_tab_accels(GtkWidget *book)
 {
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 0.9, 1.0);
@@ -104,7 +370,7 @@ static void init_tab_accels(GtkWidget *book)
   GtkWidget *tree = gtk_tree_view_new();
   GtkWidget *button;
   GtkWidget *hbox;
-  GtkTreeStore *model = gtk_tree_store_new(N_COLUMNS,
+  GtkTreeStore *model = gtk_tree_store_new(A_N_COLUMNS,
                                            G_TYPE_STRING, G_TYPE_STRING,
                                            G_TYPE_STRING);
   GtkCellRenderer *renderer;
@@ -122,22 +388,22 @@ static void init_tab_accels(GtkWidget *book)
 
   // Seting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(
-      GTK_TREE_SORTABLE(model), TRANS_COLUMN, GTK_SORT_ASCENDING);
-  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), TRANS_COLUMN,
+      GTK_TREE_SORTABLE(model), A_TRANS_COLUMN, GTK_SORT_ASCENDING);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), A_TRANS_COLUMN,
                                   compare_rows, NULL, NULL);
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
       _("shortcut"), renderer,
-      "text", TRANS_COLUMN,
+      "text", A_TRANS_COLUMN,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
       _("binding"), renderer,
-      "text", BINDING_COLUMN,
+      "text", A_BINDING_COLUMN,
       NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
@@ -157,7 +423,7 @@ static void init_tab_accels(GtkWidget *book)
                    G_CALLBACK(tree_key_press), (gpointer)model);
 
   // Setting up the search functionality
-  gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), TRANS_COLUMN);
+  gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), A_TRANS_COLUMN);
   gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(tree), prefix_search,
                                       NULL, NULL);
   gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
@@ -249,11 +515,11 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     gchar *name = gtk_accelerator_name(accel_key, accel_mods);
     gtk_tree_store_append(model, &iter, parent);
     gtk_tree_store_set(model, &iter,
-                       ACCEL_COLUMN, accel_path,
-                       BINDING_COLUMN, g_dpgettext2("gtk20",
+                       A_ACCEL_COLUMN, accel_path,
+                       A_BINDING_COLUMN, g_dpgettext2("gtk20",
                                                     "keyboard label",
                                                     name),
-                       TRANS_COLUMN, translated_path,
+                       A_TRANS_COLUMN, translated_path,
                        -1);
     g_free(name);    
   } 
@@ -273,7 +539,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, parent, i);
       gtk_tree_model_get(GTK_TREE_MODEL(model), &iter,
-                         ACCEL_COLUMN, &val_str,
+                         A_ACCEL_COLUMN, &val_str,
                          -1);
       
       /* do we match current sibiling */
@@ -290,9 +556,9 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
     {      
       gtk_tree_store_append(model, &iter, parent);
       gtk_tree_store_set(model, &iter,
-                         ACCEL_COLUMN, node,
-                         BINDING_COLUMN, "",
-                         TRANS_COLUMN, trans_node,
+                         A_ACCEL_COLUMN, node,
+                         A_BINDING_COLUMN, "",
+                         A_TRANS_COLUMN, trans_node,
                          -1);
     }
 
@@ -328,7 +594,7 @@ static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str)
     gtk_tree_model_iter_nth_child(model, &child,  i == 0 ? NULL : &parent,
                                   indices[i]);
     gtk_tree_model_get(model, &child,
-                       ACCEL_COLUMN, &data_str,
+                       A_ACCEL_COLUMN, &data_str,
                        -1);
     strcat(str, data_str);
     g_free(data_str);
@@ -367,7 +633,7 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
 
   // First concatenating this part of the key
   strcat(path, "/");
-  gtk_tree_model_get(model, parent, ACCEL_COLUMN, &str_data, -1);
+  gtk_tree_model_get(model, parent, A_ACCEL_COLUMN, &str_data, -1);
   strcat(path, str_data);
   g_free(str_data);
 
@@ -390,7 +656,7 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
     gtk_accel_map_lookup_entry(path, &key);
     gtk_tree_store_set(
         GTK_TREE_STORE(model), parent,
-        BINDING_COLUMN, gtk_accelerator_name(key.accel_key, key.accel_mods),
+        A_BINDING_COLUMN, gtk_accelerator_name(key.accel_key, key.accel_mods),
         -1);
   }
 }
@@ -452,7 +718,7 @@ static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
 
     // Setting the notification text
     gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
-                       BINDING_COLUMN, _("press key combination to remap..."),
+                       A_BINDING_COLUMN, _("press key combination to remap..."),
                        -1);
 
     // Activating remapping
@@ -475,10 +741,10 @@ static void tree_selection_changed(GtkTreeSelection *selection, gpointer data)
   model = gtk_tree_view_get_model(gtk_tree_selection_get_tree_view(selection));
   gtk_tree_model_get_iter(model, &iter, darktable.control->accel_remap_path);
 
-  // Restoring the BINDING_COLUMN text
+  // Restoring the A_BINDING_COLUMN text
   gtk_accel_map_lookup_entry(darktable.control->accel_remap_str, &key);
   gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
-                     BINDING_COLUMN,
+                     A_BINDING_COLUMN,
                      gtk_accelerator_name(key.accel_key, key.accel_mods), -1);
 
   // Cleaning up the darktable.gui info
@@ -533,7 +799,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
 
 
-    // Then update the text in the BINDING_COLUMN of each row
+    // Then update the text in the A_BINDING_COLUMN of each row
     update_accels_model(NULL, model);
 
     // Finally clear the remap state
@@ -691,7 +957,7 @@ static gboolean prefix_search(GtkTreeModel *model, gint column,
 {
   gchar *row_data;
 
-  gtk_tree_model_get(model, iter, TRANS_COLUMN, &row_data, -1);
+  gtk_tree_model_get(model, iter, A_TRANS_COLUMN, &row_data, -1);
   while(*key != '\0')
   {
     if(*row_data != *key)
@@ -719,12 +985,10 @@ static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
     return 1;
 
   // Otherwise just return alphabetical order
-  gtk_tree_model_get(model, a, TRANS_COLUMN, &a_text, -1);
-  gtk_tree_model_get(model, b, TRANS_COLUMN, &b_text, -1);
+  gtk_tree_model_get(model, a, A_TRANS_COLUMN, &a_text, -1);
+  gtk_tree_model_get(model, b, A_TRANS_COLUMN, &b_text, -1);
   return strcasecmp(a_text, b_text);
 
 }
 
-#undef ACCEL_COLUMN
-#undef BINDING_COLUMN
-#undef N_COLUMNS
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
