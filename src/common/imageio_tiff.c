@@ -253,11 +253,7 @@ dt_imageio_retval_t dt_imageio_open_tiff_preview(dt_image_t *img, const char *fi
 
   dt_image_release(img, mip, 'w');
   if(mip == DT_IMAGE_MIP4)
-  {
     dt_image_update_mipmaps(img);
-    // only try to fill mipf.
-    dt_image_preview_to_raw(img);
-  }
   dt_image_release(img, mip, 'r');
   return DT_IMAGEIO_OK;
 }

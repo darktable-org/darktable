@@ -750,11 +750,7 @@ dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *fil
   free(tmp);
   dt_image_release(img, mip, 'w');
   if(mip == DT_IMAGE_MIP4)
-  {
     dt_image_update_mipmaps(img);
-    // try to get mipf
-    dt_image_preview_to_raw(img);
-  }
   dt_image_release(img, mip, 'r');
 all_good:
   img->filters = 0;

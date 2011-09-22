@@ -32,7 +32,60 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
   // TODO: check cost and keep it below 80%!
   // TODO: *cost = 1; ?
   // TODO: if key = 0 or -1: insert dummy into sql
-  // TODO: get the image struct from sql.
+  // TODO: get the image struct from sql:
+
+  // load stuff from db and store in cache:
+  if(id <= 0) return 1;
+  int rc, ret = 1;
+  char *str;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation, focus_distance from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  // DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    img->id      = sqlite3_column_int(stmt, 0);
+    img->film_id = sqlite3_column_int(stmt, 1);
+    img->width   = sqlite3_column_int(stmt, 2);
+    img->height  = sqlite3_column_int(stmt, 3);
+    img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] =
+        img->exif_datetime_taken[0] = '\0';
+    str = (char *)sqlite3_column_text(stmt, 4);
+    if(str) g_strlcpy(img->filename,   str, 512);
+    str = (char *)sqlite3_column_text(stmt, 5);
+    if(str) g_strlcpy(img->exif_maker, str, 32);
+    str = (char *)sqlite3_column_text(stmt, 6);
+    if(str) g_strlcpy(img->exif_model, str, 32);
+    str = (char *)sqlite3_column_text(stmt, 7);
+    if(str) g_strlcpy(img->exif_lens,  str, 52);
+    img->exif_exposure = sqlite3_column_double(stmt, 8);
+    img->exif_aperture = sqlite3_column_double(stmt, 9);
+    img->exif_iso = sqlite3_column_double(stmt, 10);
+    img->exif_focal_length = sqlite3_column_double(stmt, 11);
+    str = (char *)sqlite3_column_text(stmt, 12);
+    if(str) g_strlcpy(img->exif_datetime_taken, str, 20);
+    img->flags = sqlite3_column_int(stmt, 13);
+    img->output_width  = sqlite3_column_int(stmt, 14);
+    img->output_height = sqlite3_column_int(stmt, 15);
+    img->exif_crop = sqlite3_column_double(stmt, 16);
+    *(int *)&img->raw_params = sqlite3_column_int(stmt, 17);
+    img->raw_denoise_threshold = sqlite3_column_double(stmt, 18);
+    img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 19);
+    img->black   = sqlite3_column_double(stmt, 20);
+    img->maximum = sqlite3_column_double(stmt, 21);
+    img->orientation = sqlite3_column_int(stmt, 22);
+    img->exif_focus_distance = sqlite3_column_double(stmt,23);
+    if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
+
+    ret = 0;
+  }
+  else fprintf(stderr, "[image_open2] failed to open image from database: %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+  rc = sqlite3_finalize(stmt);
+  if(ret) return ret;
+  return rc;
+
+
+
   // TODO: grab image * from static pool
 }
 

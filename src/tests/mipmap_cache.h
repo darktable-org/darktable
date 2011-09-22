@@ -21,6 +21,12 @@
 #include "common/cache.h"
 
 
+// sizes stored in the mipmap cache.
+// _4 can be a user-supplied size. down to _0,
+// sizes are divided by two.
+// so the range can be e.g. 1440..180 px.
+// it does not make sense to cache larger thumbnails, so if more is
+// wanted, a new pipe has to be initialized manually (e.g. in darkroom mode).
 typedef enum dt_mipmap_size_t
 {
   DT_MIPMAP_0    = 0,
@@ -37,8 +43,6 @@ typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
   int32_t width, height;
-  // TODO: also might need buffer type info:
-  // 4x float Lab etc.
   uint8_t *buf;
 }
 dt_mipmap_buffer_t;
@@ -49,10 +53,11 @@ typedef struct dt_mipmap_cache_one_t
   dt_mipmap_size_t size;
   // only usef for _F and _FULL buffers:
   uint32_t buffer_cnt;
-  // size of an element inside buf
-  // note we're not storing width and height, because
-  // these are stored per element (could be smaller than the max for this mip level,
+  // real width and height are stored per element
+  // (could be smaller than the max for this mip level,
   // due to aspect ratio)
+  uint32_t max_width, max_height;
+  // size of an element inside buf
   uint32_t buffer_size;
   // 1) no memory fragmentation:
   //    - fixed slots with fixed size (could waste a few bytes for extreme
