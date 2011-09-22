@@ -145,6 +145,9 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
     gchar *iso, *exposure, *aperture, *focal_length;
     int min, max;
 
+    gchar *module             = dt_iop_get_localized_name(operation);
+    if(module == NULL) module = dt_lib_get_localized_name(operation);
+
     if(iso_min == 0.0 && iso_max == 51200.0)
       iso = g_strdup("%");
     else
@@ -175,7 +178,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
     {
       gtk_tree_store_append(tree_model, &iter, NULL);
       gtk_tree_store_set(tree_model, &iter,
-                         P_MODULE_COLUMN, _(operation),
+                         P_MODULE_COLUMN, _(module),
                          P_NAME_COLUMN, "",
 //                          P_DESCRIPTION_COLUMN, "",
                          P_MODEL_COLUMN, "",
@@ -215,7 +218,6 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
 
 //TODO: - add nice icons instead of the x's.
 //      - allow editing of presets (double clicking?).
-//      - get translatable module names.
 static void init_tab_presets(GtkWidget *book)
 {
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 0.9, 1.0);
