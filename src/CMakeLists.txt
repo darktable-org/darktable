@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 # Add files for libdarktable
 #
 FILE(GLOB SOURCE_FILES
+  "common/cache.c"
   "common/collection.c" 
   "common/colorlabels.c" 
   "common/colormatrices.c" 
@@ -26,6 +27,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_tiff.c" 
   "common/imageio_rawspeed.cc" 
   "common/metadata.c" 
+  "common/mipmap_cache.c" 
   "common/styles.c" 
   "common/tags.c" 
   "common/utility.c" 
