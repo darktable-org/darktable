@@ -153,6 +153,51 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
   }
 }
 
+dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+{
+  const float scale = 1.0f/(white - black);
+  if(!orientation)
+  {
+#ifdef _OPENMP
+    #pragma omp parallel for schedule(static) default(none) shared(in, out)
+#endif
+    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
+    return;
+  }
+  int ii = 0, jj = 0;
+  int si = 4, sj = wd*4;
+  if(orientation & 4)
+  {
+    sj = 4;
+    si = ht*4;
+  }
+  if(orientation & 2)
+  {
+    jj = (int)fht - jj - 1;
+    sj = -sj;
+  }
+  if(orientation & 1)
+  {
+    ii = (int)fwd - ii - 1;
+    si = -si;
+  }
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+#endif
+  for(int j=0; j<ht; j++)
+  {
+    float *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
+    const uint16_t *in2  = in + stride*j;
+    for(int i=0; i<wd; i++)
+    {
+      for(int k=0; k<ch; k++) out2[k] = (in2[k] - black)*scale;
+      in2  += ch;
+      out2 += si;
+    }
+  }
+}
+void
+
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
 {
   int ii = i, jj = j, w = wd, fw = fwd, fh = fht;
@@ -169,57 +214,18 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
   return jj*w + ii;
 }
 
-
-dt_imageio_retval_t dt_imageio_open_hdr_preview(dt_image_t *img, const char *filename)
-{
-  int p_wd, p_ht;
-  dt_imageio_retval_t ret;
-  ret = dt_imageio_open_exr_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK) goto all_good;
-  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
-  ret = dt_imageio_open_rgbe_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK) goto all_good;
-  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
-  ret = dt_imageio_open_pfm_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK) goto all_good;
-  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
-
-  // no hdr file:
-  if(ret == DT_IMAGEIO_FILE_CORRUPTED) return ret;
-all_good:
-  img->filters = 0;
-  img->flags &= ~DT_IMAGE_LDR;
-  img->flags &= ~DT_IMAGE_RAW;
-  img->flags |=  DT_IMAGE_HDR;
-
-  // this updates mipf/mip4..0 from raw pixels.
-  dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
-  if(dt_image_alloc(img, DT_IMAGE_MIP4)) return DT_IMAGEIO_CACHE_FULL;
-  if(dt_image_get(img, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
-  {
-    dt_image_release(img, DT_IMAGE_MIP4, 'w');
-    dt_image_release(img, DT_IMAGE_MIP4, 'r');
-    return DT_IMAGEIO_CACHE_FULL;
-  }
-  dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-  dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
-  // FIXME: don't do mip4 business here at all!
-  // dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
-  dt_image_release(img, DT_IMAGE_MIP4, 'w');
-  ret = dt_image_update_mipmaps(img);
-  dt_image_release(img, DT_IMAGE_MIPF, 'r');
-  dt_image_release(img, DT_IMAGE_MIP4, 'r');
-  return ret;
-}
-
-dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename)
+dt_imageio_retval_t
+dt_imageio_open_hdr(
+    dt_image_t  *img,
+    const char  *filename,
+    void       **buf)
 {
   dt_imageio_retval_t ret;
-  ret = dt_imageio_open_exr(img, filename);
+  ret = dt_imageio_open_exr(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-  ret = dt_imageio_open_rgbe(img, filename);
+  ret = dt_imageio_open_rgbe(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-  ret = dt_imageio_open_pfm(img, filename);
+  ret = dt_imageio_open_pfm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 return_label:
   if(ret == DT_IMAGEIO_OK)
@@ -233,279 +239,12 @@ return_label:
   return ret;
 }
 
-// only set mip4..0 and mipf
-dt_imageio_retval_t dt_imageio_open_raw_preview(dt_image_t *img, const char *filename)
-{
-  if(!img->exif_inited)
-    (void) dt_exif_read(img, filename);
-  // init libraw stuff
-  dt_imageio_retval_t retval = DT_IMAGEIO_OK;
-  int ret;
-  libraw_data_t *raw = libraw_init(0);
-  libraw_processed_image_t *image = NULL;
-  raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = 0;
-  raw->params.use_auto_wb = 0;
-  raw->params.med_passes = 0;//img->raw_params.med_passes;
-  raw->params.no_auto_bright = 1;
-  raw->params.output_color = 0;
-  raw->params.output_bps = 16;
-  raw->params.user_flip = img->raw_params.user_flip;
-  raw->params.gamm[0] = 1.0;
-  raw->params.gamm[1] = 1.0;
-  raw->params.user_qual = 0; // linear
-  raw->params.four_color_rgb = 0;//img->raw_params.four_color_rgb;
-  raw->params.use_camera_matrix = 0;
-  raw->params.green_matching = 0;// img->raw_params.greeneq;
-  raw->params.highlight = 1;//img->raw_params.highlight; //0 clip, 1 unclip, 2 blend, 3+ rebuild
-  raw->params.threshold = 0;//img->raw_denoise_threshold;
-  raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
-
-  // are we going to need the image as input for a pixel pipe?
-  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
-  const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
-
-  // if we have a history stack, don't load preview buffer!
-  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
-  {
-    // no history stack: get thumbnail
-    ret = libraw_open_file(raw, filename);
-    HANDLE_ERRORS(ret, 0);
-    ret = libraw_unpack_thumb(raw);
-    if(ret) goto try_full_raw;
-    ret = libraw_adjust_sizes_info_only(raw);
-    ret = 0;
-    img->orientation = raw->sizes.flip;
-    img->width  = raw->sizes.iwidth;
-    img->height = raw->sizes.iheight;
-    img->exif_iso = raw->other.iso_speed;
-    img->exif_exposure = raw->other.shutter;
-    img->exif_aperture = raw->other.aperture;
-    img->exif_focal_length = raw->other.focal_len;
-    g_strlcpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
-    img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
-    g_strlcpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
-    img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
-    dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
-    image = libraw_dcraw_make_mem_thumb(raw, &ret);
-    if(!image) goto try_full_raw;
-    int p_wd, p_ht;
-    float f_wd, f_ht;
-    dt_image_get_mip_size(img, DT_IMAGE_MIP4, &p_wd, &p_ht);
-    dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &f_wd, &f_ht);
-    if(image && image->type == LIBRAW_IMAGE_JPEG)
-    {
-      // JPEG: decode (directly rescaled to mip4)
-      const int orientation = dt_image_orientation(img);
-      dt_imageio_jpeg_t jpg;
-      if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto error_raw_corrupted;
-      if(orientation & 4)
-      {
-        image->width  = jpg.height;
-        image->height = jpg.width;
-      }
-      else
-      {
-        image->width  = jpg.width;
-        image->height = jpg.height;
-      }
-      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-      if(dt_imageio_jpeg_decompress(&jpg, tmp))
-      {
-        free(tmp);
-        goto error_raw_corrupted;
-      }
-      if(dt_image_alloc(img, DT_IMAGE_MIP4))
-      {
-        free(tmp);
-        fprintf(stderr, "[raw_preview] could not alloc mip4 for img `%s'!\n", img->filename);
-        goto error_raw_cache_full;
-      }
-      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-      const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-      const int p_wd2 = orientation & 4 ? p_ht : p_wd;
-      const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
-      const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
-
-      if(image->width == p_wd && image->height == p_ht)
-      {
-        // use 1:1
-        for (int j=0; j < jpg.height; j++)
-          for (int i=0; i < jpg.width; i++)
-            for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
-      }
-      else
-      {
-        // scale to fit
-        memset(img->mip[DT_IMAGE_MIP4], 0, 4*p_wd*p_ht*sizeof(uint8_t));
-        const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
-        for(int j=0; j<p_ht2 && scale*j<jpg.height; j++) for(int i=0; i<p_wd2 && scale*i < jpg.width; i++)
-          {
-            uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-            for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
-          }
-      }
-      free(tmp);
-      dt_image_release(img, DT_IMAGE_MIP4, 'w');
-      retval = dt_image_update_mipmaps(img);
-
-      // clean up raw stuff.
-      libraw_recycle(raw);
-      libraw_close(raw);
-      free(image);
-      dt_image_release(img, DT_IMAGE_MIP4, 'r');
-      // dt_image_cache_release(img, 'r');
-      img->flags &= ~DT_IMAGE_LDR;
-      img->flags &= ~DT_IMAGE_HDR;
-      img->flags |= DT_IMAGE_RAW;
-      return retval;
-    }
-    else
-    {
-      // BMP: directly to mip4
-      if (dt_image_alloc(img, DT_IMAGE_MIP4)) goto error_raw_cache_full;
-      dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
-      const int orientation = dt_image_orientation(img);
-      const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-      const int p_wd2 = orientation & 4 ? p_ht : p_wd;
-      const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
-      const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
-      if(image->width == p_wd2 && image->height == p_ht2)
-      {
-        // use 1:1
-        for(int j=0; j<image->height; j++) for(int i=0; i<image->width; i++)
-          {
-            uint8_t *cam = image->data + 3*(j*image->width + i);
-            for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation) + 2-k] = cam[k];
-          }
-      }
-      else
-      {
-        // scale to fit
-        memset(img->mip[DT_IMAGE_MIP4], 0, 4*p_wd*p_ht*sizeof(uint8_t));
-        const float scale = fmaxf(image->width/f_wd, image->height/f_ht);
-        for(int j=0; j<p_ht2 && scale*j<image->height; j++) for(int i=0; i<p_wd2 && scale*i < image->width; i++)
-          {
-            uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
-            for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation) + 2-k] = cam[k];
-          }
-      }
-      dt_image_release(img, DT_IMAGE_MIP4, 'w');
-      if(retval == DT_IMAGEIO_OK)
-        retval = dt_image_update_mipmaps(img);
-      // clean up raw stuff.
-      libraw_recycle(raw);
-      libraw_close(raw);
-      free(image);
-      dt_image_release(img, DT_IMAGE_MIP4, 'r');
-      // dt_image_cache_release(img, 'r');
-      img->flags &= ~DT_IMAGE_LDR;
-      img->flags &= ~DT_IMAGE_HDR;
-      img->flags |= DT_IMAGE_RAW;
-      return retval;
-    }
-  }
-  else
-  {
-try_full_raw:
-    raw->params.half_size = 1; /* dcraw -h */
-    // raw->params.user_qual = 2;
-    raw->params.document_mode = 2;
-    ret = libraw_open_file(raw, filename);
-    HANDLE_ERRORS(ret, 0);
-    ret = libraw_unpack(raw);
-    img->black   = raw->color.black/65535.0;
-    img->maximum = raw->color.maximum/65535.0;
-    HANDLE_ERRORS(ret, 1);
-    ret = libraw_dcraw_process(raw);
-    // ret = libraw_dcraw_document_mode_processing(raw);
-    HANDLE_ERRORS(ret, 1);
-    image = libraw_dcraw_make_mem_image(raw, &ret);
-    HANDLE_ERRORS(ret, 1);
-
-    img->orientation = raw->sizes.flip;
-    img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
-    img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
-    img->exif_iso = raw->other.iso_speed;
-    img->exif_exposure = raw->other.shutter;
-    img->exif_aperture = raw->other.aperture;
-    img->exif_focal_length = raw->other.focal_len;
-    g_strlcpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
-    img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
-    g_strlcpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
-    img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
-    dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
-
-    const float m = 1.0f/(raw->color.maximum - raw->color.black);
-    const uint16_t (*rawpx)[3] = (const uint16_t (*)[3])image->data;
-    const int raw_wd = img->width;
-    const int raw_ht = img->height;
-    img->width  <<= 1;
-    img->height <<= 1;
-    int p_wd, p_ht;
-    float f_wd, f_ht;
-    dt_image_get_mip_size(img, DT_IMAGE_MIPF, &p_wd, &p_ht);
-    dt_image_get_exact_mip_size(img, DT_IMAGE_MIPF, &f_wd, &f_ht);
-
-    if(dt_image_alloc(img, DT_IMAGE_MIPF)) goto error_raw_cache_full;
-    dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
-
-    if(raw_wd == p_wd && raw_ht == p_ht)
-    {
-      // use 1:1
-#ifdef _OPENMP
-      #pragma omp parallel for default(none) schedule(static) shared(img, rawpx, raw, p_wd)
-#endif
-      for(int j=0; j<raw_ht; j++) for(int i=0; i<raw_wd; i++)
-        {
-          for(int k=0; k<3; k++) img->mipf[4*(j*p_wd + i) + k] = fmaxf(0.0f, (rawpx[j*raw_wd + i][k] - raw->color.black)*m);
-        }
-    }
-    else
-    {
-      // scale to fit
-      memset(img->mipf, 0, 4*p_wd*p_ht*sizeof(float));
-      const float scale = fmaxf(raw_wd/f_wd, raw_ht/f_ht);
-      for(int j=0; j<p_ht && (int)(scale*j)<raw_ht; j++) for(int i=0; i<p_wd && (int)(scale*i) < raw_wd; i++)
-        {
-          for(int k=0; k<3; k++) img->mipf[4*(j*p_wd + i) + k] = fmaxf(0.0f, (rawpx[(int)(scale*j)*raw_wd + (int)(scale*i)][k] - raw->color.black)*m);
-        }
-    }
-
-    // don't write mip4, it's shitty anyways (altered image has to be processed)
-
-    dt_image_release(img, DT_IMAGE_MIPF, 'w');
-    dt_image_release(img, DT_IMAGE_MIPF, 'r');
-    // clean up raw stuff.
-    libraw_recycle(raw);
-    libraw_close(raw);
-    free(image);
-    raw = NULL;
-    image = NULL;
-    // not a thumbnail!
-    img->flags &= ~DT_IMAGE_THUMBNAIL;
-    img->flags &= ~DT_IMAGE_LDR;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_RAW;
-    return DT_IMAGEIO_OK;
-  }
-
-error_raw_cache_full:
-  fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
-  libraw_recycle(raw);
-  libraw_close(raw);
-  free(image);
-  return DT_IMAGEIO_CACHE_FULL;
-
-error_raw_corrupted:
-  fprintf(stderr, "[imageio_open_raw_preview] could not get image from thumbnail!\n");
-  libraw_recycle(raw);
-  libraw_close(raw);
-  free(image);
-  return DT_IMAGEIO_FILE_CORRUPTED;
-}
-
-dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
+// open a raw file, libraw path:
+dt_imageio_retval_t
+dt_imageio_open_raw(
+    dt_image_t  *img,
+    const char  *filename,
+    void       **buf)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
@@ -570,26 +309,25 @@ dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename)
   img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
-  if(dt_image_alloc(img, DT_IMAGE_FULL))
+  *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL);
+  if(!*buf)
   {
     libraw_recycle(raw);
     libraw_close(raw);
     free(image);
     return DT_IMAGEIO_CACHE_FULL;
   }
-  dt_image_check_buffer(img, DT_IMAGE_FULL, (img->width)*(img->height)*sizeof(uint16_t));
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(img, image, raw)
 #endif
   for(int k=0; k<img->width*img->height; k++)
-    ((uint16_t *)img->pixels)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
+    ((uint16_t *)*buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);
   free(image);
   raw = NULL;
   image = NULL;
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
 
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_HDR;
@@ -641,118 +379,15 @@ gboolean dt_imageio_is_ldr(const char *filename)
   return FALSE;
 }
 
-dt_imageio_retval_t dt_imageio_open_ldr_preview(dt_image_t *img, const char *filename)
-{
-  dt_imageio_retval_t ret;
-  ret = dt_imageio_open_tiff_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK) goto all_good;
-  if(ret == DT_IMAGEIO_CACHE_FULL) return ret;
-
-  // jpeg stuff here:
-  if(!img->exif_inited)
-    (void) dt_exif_read(img, filename);
-  const int orientation = dt_image_orientation(img);
-
-  dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
-  if(orientation & 4)
-  {
-    img->width  = jpg.height;
-    img->height = jpg.width;
-  }
-  else
-  {
-    img->width  = jpg.width;
-    img->height = jpg.height;
-  }
-  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-  if(dt_imageio_jpeg_read(&jpg, tmp))
-  {
-    free(tmp);
-    return DT_IMAGEIO_FILE_CORRUPTED;
-  }
-  dt_image_buffer_t mip;
-  // the mip4 loading seems to lead to race conditions, so it's disabled here:
-  // dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
-  // const int altered = dt_image_altered(img) || (img == darktable.develop->image && mode == DT_DEVELOP);
-  if(1)//altered)
-  {
-    // the image has a history stack. we want mipf and process it!
-    mip = DT_IMAGE_MIPF;
-  }
-  else
-  {
-    // the image has no history stack. we want mip4 directly.
-    mip = DT_IMAGE_MIP4;
-  }
-
-  if(dt_image_alloc(img, mip))
-  {
-    free(tmp);
-    return DT_IMAGEIO_CACHE_FULL;
-  }
-
-  int p_wd, p_ht;
-  float f_wd, f_ht;
-  dt_image_get_mip_size(img, mip, &p_wd, &p_ht);
-  dt_image_get_exact_mip_size(img, mip, &f_wd, &f_ht);
-
-  // printf("mip sizes: %d %d -- %f %f\n", p_wd, p_ht, f_wd, f_ht);
-  // FIXME: there is a black border on the left side of a portrait image!
-
-  dt_image_check_buffer(img, mip, mip==DT_IMAGE_MIP4?4*p_wd*p_ht*sizeof(uint8_t):4*p_wd*p_ht*sizeof(float));
-  const int p_ht2 = orientation & 4 ? p_wd : p_ht; // pretend unrotated preview, rotate in write_pos
-  const int p_wd2 = orientation & 4 ? p_ht : p_wd;
-  const int f_ht2 = MIN(p_ht2, (orientation & 4 ? f_wd : f_ht) + 1.0);
-  const int f_wd2 = MIN(p_wd2, (orientation & 4 ? f_ht : f_wd) + 1.0);
-
-  if(img->width == p_wd && img->height == p_ht)
-  {
-    // use 1:1
-    if(mip == DT_IMAGE_MIP4)
-      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0; k<3; k++)
-            img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = tmp[4*jpg.width*j+4*i+k];
-    else
-      for (int j=0; j < jpg.height; j++) for (int i=0; i < jpg.width; i++) for(int k=0; k<3; k++)
-            img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = tmp[4*jpg.width*j+4*i+k]*(1.0/255.0);
-  }
-  else
-  {
-    // scale to fit
-    if(mip == DT_IMAGE_MIP4) memset(img->mip[mip], 0, 4*p_wd*p_ht*sizeof(uint8_t));
-    else                     memset(img->mipf, 0,     4*p_wd*p_ht*sizeof(float));
-    const float scale = fmaxf(img->width/f_wd, img->height/f_ht);
-    if(mip == DT_IMAGE_MIP4)
-      for(int j=0; j<p_ht2 && scale*j<jpg.height; j++) for(int i=0; i<p_wd2 && scale*i < jpg.width; i++)
-        {
-          uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-          for(int k=0; k<3; k++) img->mip[DT_IMAGE_MIP4][4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+2-k] = cam[k];
-        }
-    else
-      for(int j=0; j<p_ht2 && scale*j<jpg.height; j++) for(int i=0; i<p_wd2 && scale*i < jpg.width; i++)
-        {
-          uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-          for(int k=0; k<3; k++) img->mipf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, f_wd2, f_ht2, orientation)+k] = cam[k]*(1.0/255.0);
-        }
-  }
-  free(tmp);
-  dt_image_release(img, mip, 'w');
-  if(mip == DT_IMAGE_MIP4)
-    dt_image_update_mipmaps(img);
-  dt_image_release(img, mip, 'r');
-all_good:
-  img->filters = 0;
-  img->flags &= ~DT_IMAGE_RAW;
-  img->flags &= ~DT_IMAGE_HDR;
-  img->flags |= DT_IMAGE_LDR;
-  return DT_IMAGEIO_OK;
-}
-
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
-dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
+dt_imageio_retval_t
+dt_imageio_open_ldr(
+    dt_image_t  *img,
+    const char  *filename,
+    void       **buf)
 {
   dt_imageio_retval_t ret;
-  ret = dt_imageio_open_tiff(img, filename);
+  ret = dt_imageio_open_tiff(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
     img->filters = 0;
@@ -786,7 +421,9 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   img->bpp = 4*sizeof(float);
-  if(dt_image_alloc(img, DT_IMAGE_FULL))
+
+  *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL);
+  if(!*buf)
   {
     free(tmp);
     return DT_IMAGEIO_CACHE_FULL;
@@ -794,16 +431,10 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename)
 
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = orientation & 4 ? img->height : img->width;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
 
-  for(int j=0; j < jpg.height; j++)
-    for(int i=0; i < jpg.width; i++)
-      for(int k=0; k<3; k++) img->pixels[4*dt_imageio_write_pos(i, j, wd2, ht2, wd2, ht2, orientation)+k] = (1.0/255.0)*tmp[4*jpg.width*j+4*i+k];
+  dt_imageio_flip_buffers_ui8_to_float((float *)*buf, tmp, 0.0f, 255.0f, 4, wd2, ht2, wd2, ht2, wd2, orientation);
 
   free(tmp);
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
-  // try to fill mipf
-  dt_image_raw_to_preview(img, img->pixels);
 
   img->filters = 0;
   img->flags &= ~DT_IMAGE_RAW;
@@ -828,7 +459,7 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
-int dt_imageio_export(dt_image_t *img, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
+int dt_imageio_export(const dt_image_t *img, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -1011,54 +642,42 @@ has_ldr_extension(const char *filename)
   return ret;
 }
 
-dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename)
+// TODO: interface has to change! something like:
+dt_imageio_retval_t
+dt_imageio_open(
+    dt_image_t  *img,              // non-const * means you hold a write lock!
+    const char  *filename,         // full path
+    void       **buf)              // fill this buffer, allocate it via dt_mipmap_cache_alloc
 {
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
   
   /* check if file is ldr using magic's */
   if (dt_imageio_is_ldr(filename))
-    ret = dt_imageio_open_ldr(img, filename);
+    ret = dt_imageio_open_ldr(img, filename, buf);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
 #ifdef HAVE_RAWSPEED
-    ret = dt_imageio_open_rawspeed(img, filename);
+    ret = dt_imageio_open_rawspeed(img, filename, buf);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
 #endif
-    ret = dt_imageio_open_raw(img, filename);
+    ret = dt_imageio_open_raw(img, filename, buf);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_hdr(img, filename);
+    ret = dt_imageio_open_hdr(img, filename, buf);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // Failsafing, if ldr magic test fails..
-      ret = dt_imageio_open_ldr(img, filename);
-  if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
+      ret = dt_imageio_open_ldr(img, filename, buf);
+
+  // FIXME: flushing is done in image_cache_write_release(), which has to follow this function,
+  //        since we get a non-const image pointer!
+  // if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
   img->flags &= ~DT_IMAGE_THUMBNAIL;
   img->dirty = 1;
   return ret;
 }
 
-dt_imageio_retval_t dt_imageio_open_preview(dt_image_t *img, const char *filename)
-{
-  dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
-  
-  /* check if file is ldr using magic's */
-  if (dt_imageio_is_ldr(filename))
-    ret = dt_imageio_open_ldr_preview(img, filename);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
- #ifdef HAVE_RAWSPEED
-    ret = dt_imageio_open_rawspeed_preview(img, filename);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-#endif
-    ret = dt_imageio_open_raw_preview(img, filename);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_hdr_preview(img, filename);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // Failsafing, if ldr magic test fails..
-    ret = dt_imageio_open_ldr_preview(img, filename);
-  if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
-  img->dirty = 1;
-  return ret;
-}
 
-// =================================================
-//   dt-file synching
-// =================================================
+
+// =======================================================
+//   dt-file synching (legacy functions, replaced by xmp)
+// =======================================================
 
 int dt_imageio_dt_read (const int imgid, const char *filename)
 {
@@ -1137,7 +756,7 @@ delete_old_config:
 
 
 // =================================================
-// tags synching
+// tags synching (legacy function, replaced by xmp)
 // =================================================
 
 int dt_imageio_dttags_read (dt_image_t *img, const char *filename)

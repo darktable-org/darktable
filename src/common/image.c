@@ -318,16 +318,16 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
   // FIXME: this has to go away!
   dt_image_t *img = dt_image_cache_get_uninited(id, 'w');
-  g_strlcpy(img->filename, imgfname, DT_MAX_PATH);
+  g_strlcpy(img->filename, imgfname, DT_MAX_FILENAME_LEN);
   img->id = id;
   img->film_id = film_id;
   img->dirty = 1;
 
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
-  char dtfilename[DT_MAX_PATH];
-  g_strlcpy(dtfilename, filename, DT_MAX_PATH);
-  dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH);
+  char dtfilename[DT_MAX_PATH_LEN];
+  g_strlcpy(dtfilename, filename, DT_MAX_PATH_LEN);
+  dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH_LEN);
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
   (void)dt_exif_xmp_read(img, dtfilename, 0);
