@@ -22,11 +22,22 @@
 
 typedef struct dt_image_cache_t
 {
-  // TODO: one fat block of dt_image_t, to assign `dynamic' void* in cache to.
-  uint8_t *images;
+  // one fat block of dt_image_t, to assign `dynamic' void* in cache to.
+  dt_image_t *images;
   dt_cache_t cache;
 }
 dt_image_cache_t;
+
+// what to do if an image struct is
+// released after writing.
+typedef enum dt_image_cache_write_mode_t
+{
+  // always write to database and xmp
+  DT_IMAGE_CACHE_SAFE = 0,
+  // only write to db and do xmp only during shutdown
+  DT_IMAGE_CACHE_RELAXED = 1
+}
+dt_image_cache_write_mode_t;
 
 void dt_image_cache_init   (dt_image_cache_t *cache);
 void dt_image_cache_cleanup(dt_image_cache_t *cache);
@@ -39,16 +50,39 @@ void dt_image_cache_print  (dt_image_cache_t *cache);
 // cachelines to free up space if necessary.
 // if an entry is swapped out like this in the background, this is the latest
 // point where sql and xmp can be synched (unsafe setting).
-const dt_image_t *dt_image_cache_read_get(dt_image_cache_t *cache, const int32_t id);
+const dt_image_t*
+dt_image_cache_read_get(
+    dt_image_cache_t *cache,
+    const uint32_t imgid);
+
 // drops the read lock on an image struct
-void              dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img);
+void
+dt_image_cache_read_release(
+    dt_image_cache_t *cache,
+    const dt_image_t *img);
+
 // augments the already acquired read lock on an image to write the struct.
 // blocks until all readers have stepped back from this image (all but one,
 // which is assumed to be this thread)
-dt_image_t       *dt_image_cache_write_get(dt_image_cache_t *cache, const dt_image_t *img);
+dt_image_t*
+dt_image_cache_write_get(
+    dt_image_cache_t *cache,
+    const dt_image_t *img);
+
 // drops the write priviledges on an image struct.
 // thtis triggers a write-through to sql, and if the setting
 // is present, also to xmp sidecar files (safe setting).
-void              dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img);
+void
+dt_image_cache_write_release(
+    dt_image_cache_t *cache,
+    dt_image_t *img,
+    dt_image_cache_write_mode_t mode);
+
+// remove the image from the cache
+// and invalidate all resources (includes mipmaps)
+void
+dt_image_cache_remove(
+    const uint32_t imgid);
+
 
 #endif

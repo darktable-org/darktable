@@ -38,6 +38,9 @@ get_size(const uint32_t key)
   return key >> 29;
 }
 
+// TODO: cache read/write functions!
+// see old common/image_cache.c for backup file magic.
+
 void*
 dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost)
 {
@@ -79,6 +82,7 @@ dt_mipmap_cache_cleanup_dynamic(void *data, const uint32_t key, void *payload)
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
+  // TODO: un-serialize!
   const int32_t max_th = 1000000, min_th = 20;
   int32_t thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
   thumbnails = CLAMPS(thumbnails, min_th, max_th);
@@ -141,6 +145,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 {
+  // TODO: serialize
   for(int k=0;k<DT_MIPMAP_F;k++)
   {
     dt_cache_cleanup(&cache->mip[k].cache);
@@ -190,6 +195,23 @@ dt_mipmap_cache_read_get(
     dt_mipmap_size_t mip,
     dt_mipmap_get_flags_t flags)
 {
+#if 0 // and opposite: prefetch:
+  if(!img || mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
+  dt_pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  if(img->mip_buf_size[mip] > 0)
+  {
+    // already loaded.
+    dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+    return;
+  }
+  dt_job_t j;
+  dt_image_load_job_init(&j, img->id, mip);
+  // if the job already exists, make it high-priority, if not, add it:
+  if(dt_control_revive_job(darktable.control, &j) < 0)
+    dt_control_add_job(darktable.control, &j);
+  dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+#endif
+
   // TODO:
 #if 0
 // this should load and return with 'r' lock on mip buffer.
@@ -271,23 +293,6 @@ dt_mipmap_cache_write_get(
 }
 
 
-#if 0 // and opposite: prefetch:
-  if(!img || mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
-  dt_pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
-  if(img->mip_buf_size[mip] > 0)
-  {
-    // already loaded.
-    dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-    return;
-  }
-  dt_job_t j;
-  dt_image_load_job_init(&j, img->id, mip);
-  // if the job already exists, make it high-priority, if not, add it:
-  if(dt_control_revive_job(darktable.control, &j) < 0)
-    dt_control_add_job(darktable.control, &j);
-  dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-#endif
-
 
 // return the closest mipmap size
 // for the given window you wish to draw.
@@ -296,7 +301,10 @@ dt_mipmap_cache_write_get(
 // actual resolution depends on the image and is only known after
 // the thumbnail is loaded.
 dt_mipmap_size_t
-dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width, const int32_t height)
+dt_mipmap_cache_get_matching_size(
+    const dt_mipmap_cache_t *cache,
+    const int32_t width,
+    const int32_t height)
 {
   uint32_t error = 0xffffffff;
   dt_mipmap_size_t best = DT_MIPMAP_NONE;
@@ -313,6 +321,11 @@ dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t 
   return best;
 }
 
+
+// *************************************************************
+// TODO: some glue code down here. should be transparently
+//       incorporated into the rest.
+// *************************************************************
 
 
 // TODO: rewrite with new interface, move to imageio?

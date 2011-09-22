@@ -16,14 +16,21 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/image_cache.h"
+
 void dt_image_cache_init   (dt_image_cache_t *cache)
 {
+  // TODO: no serialization (unsafe. data should be in db/xmp, not
+  //       in any other additional cache)
 }
+
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
 {
 }
 void dt_image_cache_print  (dt_image_cache_t *cache)
 {
+  // TODO: 
+  // printf("image cache: fill: %d/%d, users: %d, writers: %d\n", entries, cache->num_lines, users, write);
 }
 
 void*
@@ -90,18 +97,28 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
 }
 
 const dt_image_t*
-dt_image_cache_read_get(dt_cache_image_t *cache, const int32_t id)
+dt_image_cache_read_get(
+    dt_image_cache_t *cache,
+    const uint32_t imgid)
 {
   return (const dt_image_t *)dt_cache_read_get(&cache->cache, id);
 }
 
 // drops the read lock on an image struct
-void              dt_image_cache_read_release(dt_cache_image_t *cache, const dt_image_t *img);
+void
+dt_image_cache_read_release(
+    dt_image_cache_t *cache,
+    const dt_image_t *img)
+{
+}
+
 // augments the already acquired read lock on an image to write the struct.
 // blocks until all readers have stepped back from this image (all but one,
 // which is assumed to be this thread)
-dt_image_t       *dt_image_cache_write_get(dt_cache_image_t *cache, const dt_image_t *img);
-
+dt_image_t*
+dt_image_cache_write_get(
+    dt_image_cache_t *cache,
+    const dt_image_t *img);
 
 
 // *******************************************************
@@ -191,9 +208,58 @@ void dt_image_synch_all_xmp(const gchar *pathname)
 // drops the write priviledges on an image struct.
 // thtis triggers a write-through to sql, and if the setting
 // is present, also to xmp sidecar files (safe setting).
-void              dt_image_cache_write_release(dt_cache_image_t *cache, dt_image_t *img)
+void
+dt_image_cache_write_release(
+    dt_image_cache_t *cache,
+    dt_image_t *img,
+    dt_image_cache_write_mode_t mode)
 {
-  // TODO: take care of sql and xmp dumping
+#if 0
+  // was: flush_no_sidecars:
+  if(img->id <= 0 || img->dirty == 0) return;
+  img->dirty = 0;
+  int rc;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, output_width = ?14, output_height = ?15, crop = ?16, raw_parameters = ?17, raw_denoise_threshold = ?18, raw_auto_bright_threshold = ?19, raw_black = ?20, raw_maximum = ?21, orientation = ?22 where id = ?23", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->exif_model, strlen(img->exif_model), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_lens,  strlen(img->exif_lens),  SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, img->exif_exposure);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, img->exif_aperture);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, img->exif_iso);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, img->exif_focal_length);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, img->exif_focus_distance);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, img->film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 12, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->flags);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, img->output_width);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->output_height);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 16, img->exif_crop);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, *(int32_t *)&(img->raw_params));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->raw_denoise_threshold);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->raw_auto_bright_threshold);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->black);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 21, img->maximum);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, img->orientation);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->id);
+  rc = sqlite3_step(stmt);
+  if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
+  sqlite3_finalize(stmt);
+  
+  // rest about sidecars:
+  // also synch dttags file:
+  dt_image_write_sidecar_file(img->id);
+#endif
 }
+
+
+// remove the image from the cache
+// and invalidate all resources (includes mipmaps)
+void
+dt_image_cache_remove(
+    const uint32_t imgid);
+
 
 
