@@ -187,23 +187,6 @@ dt_history_get_items(int32_t imgid)
 char *
 dt_history_get_items_as_string(int32_t imgid)
 {
-  // Prepare mapping op -> localized name
-  static GHashTable *module_names = NULL;
-  if(module_names == NULL)
-  {
-    module_names = g_hash_table_new(g_str_hash, g_str_equal);
-    GList *iop = g_list_first(darktable.iop);
-    if(iop != NULL)
-    {
-      do
-      {
-        dt_iop_module_so_t * module = (dt_iop_module_so_t *)iop->data;
-        g_hash_table_insert(module_names, module->op, _(module->name()));
-      }
-      while((iop=g_list_next(iop)) != NULL);
-    }
-  }
-
   GList *items = NULL;
   const char *onoff[2] = {_("off"), _("on")};
   unsigned int count = 0;
@@ -215,7 +198,7 @@ dt_history_get_items_as_string(int32_t imgid)
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     char name[512]= {0};
-    g_snprintf(name,512,"%s (%s)", (char*)g_hash_table_lookup(module_names, sqlite3_column_text(stmt, 0)), (sqlite3_column_int(stmt, 1)==0)?onoff[0]:onoff[1]);
+    g_snprintf(name,512,"%s (%s)", dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 0)), (sqlite3_column_int(stmt, 1)==0)?onoff[0]:onoff[1]);
     items = g_list_append(items, g_strdup(name));
     count++;
   }
