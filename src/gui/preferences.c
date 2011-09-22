@@ -28,6 +28,21 @@
 #include "libs/lib.h"
 #include "preferences_gen.h"
 
+typedef struct dt_gui_presets_edit_dialog_t
+{
+  GtkTreeView *tree; // CHANGED!
+  gint rowid; // CHANGED!
+  GtkEntry *name, *description;
+  GtkCheckButton *autoapply, *filter;
+  GtkBox *details;
+  GtkEntry *model, *maker, *lens;
+  GtkSpinButton *iso_min, *iso_max;
+  GtkComboBox *exposure_min, *exposure_max;
+  GtkComboBox *aperture_min, *aperture_max;
+  GtkSpinButton *focal_length_min, *focal_length_max;
+}
+dt_gui_presets_edit_dialog_t;
+
 // FIXME: this is copypasta from gui/presets.c. better put these somewhere so that all places can access the same data.
 static const int   dt_gui_presets_exposure_value_cnt = 24;
 static const float dt_gui_presets_exposure_value[] =
@@ -51,7 +66,7 @@ static const char* dt_gui_presets_aperture_value_str[] = {"f/0", "f/0.5", "f/0.7
 // Values for the accelerators/presets treeview
 
 enum {A_ACCEL_COLUMN, A_BINDING_COLUMN, A_TRANS_COLUMN, A_N_COLUMNS};
-enum {P_MODULE_COLUMN, P_NAME_COLUMN, /*P_DESCRIPTION_COLUMN,*/ P_MODEL_COLUMN, P_MAKER_COLUMN, P_LENS_COLUMN, P_ISO_COLUMN, P_EXPOSURE_COLUMN, P_APERTURE_COLUMN, P_FOCAL_LENGTH_COLUMN, P_AUTOAPPLY_COLUMN, /*P_ENABLED_COLUMN,*/ P_N_COLUMNS};
+enum {P_ROWID_COLUMN, P_OPERATION_COLUMN, P_MODULE_COLUMN, P_NAME_COLUMN, P_DESCRIPTION_COLUMN, P_MODEL_COLUMN, P_MAKER_COLUMN, P_LENS_COLUMN, P_ISO_COLUMN, P_EXPOSURE_COLUMN, P_APERTURE_COLUMN, P_FOCAL_LENGTH_COLUMN, P_AUTOAPPLY_COLUMN, P_ENABLED_COLUMN, P_EDITABLE_COLUMN, P_N_COLUMNS};
 
 static void init_tab_presets(GtkWidget *book);
 static void init_tab_accels(GtkWidget *book);
@@ -73,7 +88,9 @@ static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
                          gpointer data);
 
 // Signal handlers
-static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
+static void tree_row_activated_accels(GtkTreeView *tree, GtkTreePath *path,
+                               GtkTreeViewColumn *column, gpointer data);
+static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
                                GtkTreeViewColumn *column, gpointer data);
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
@@ -81,20 +98,23 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 static gboolean prefix_search(GtkTreeModel *model, gint column,
                               const gchar *key, GtkTreeIter *iter, gpointer d);
 
+static void edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gchar * module);
+static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g);
 
+static GtkWidget *_preferences_dialog;
 
 void dt_gui_preferences_show()
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(
+  _preferences_dialog = gtk_dialog_new_with_buttons(
       _("darktable preferences"), GTK_WINDOW (win),
-      GTK_DIALOG_MODAL,
+      GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL,
       _("close"),
       GTK_RESPONSE_ACCEPT,
       NULL);
-  gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
-  gtk_window_resize(GTK_WINDOW(dialog), 600, 300);
-  GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+  gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ALWAYS);
+  gtk_window_resize(GTK_WINDOW(_preferences_dialog), 600, 300);
+  GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (_preferences_dialog));
   GtkWidget *notebook = gtk_notebook_new();
   gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
 
@@ -106,9 +126,9 @@ void dt_gui_preferences_show()
   init_tab_core(notebook);
   init_tab_accels(notebook);
   init_tab_presets(notebook);
-  gtk_widget_show_all(dialog);
-  (void) gtk_dialog_run(GTK_DIALOG(dialog));
-  gtk_widget_destroy(dialog);
+  gtk_widget_show_all(_preferences_dialog);
+  (void) gtk_dialog_run(GTK_DIALOG(_preferences_dialog));
+  gtk_widget_destroy(_preferences_dialog);
 
   // Cleaning up any memory still allocated for remapping
   if(darktable.control->accel_remap_path)
@@ -124,25 +144,27 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
   sqlite3_stmt *stmt;
   gchar *last_module = NULL;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description, operation, enabled, autoapply, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max from presets order by operation,name", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, name, description, operation, enabled, autoapply, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, writeprotect from presets order by operation,name", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    gchar* name              = (gchar*) sqlite3_column_text(stmt, 0);
-//     gchar* description       = (gchar*) sqlite3_column_text(stmt, 1);
-    gchar* operation         = (gchar*) sqlite3_column_text(stmt, 2);
-//     const gboolean enabled   = (sqlite3_column_int(stmt, 3)==0 ? FALSE : TRUE);
-    const gboolean autoapply = (sqlite3_column_int(stmt, 4)==0 ? FALSE : TRUE);
-    gchar* model             = (gchar*) sqlite3_column_text(stmt, 5);
-    gchar* maker             = (gchar*) sqlite3_column_text(stmt, 6);
-    gchar* lens              = (gchar*) sqlite3_column_text(stmt, 7);
-    int iso_min              = sqlite3_column_double(stmt, 8);
-    int iso_max              = sqlite3_column_double(stmt, 9);
-    float exposure_min       = sqlite3_column_double(stmt, 10);
-    float exposure_max       = sqlite3_column_double(stmt, 11);
-    float aperture_min       = sqlite3_column_double(stmt, 12);
-    float aperture_max       = sqlite3_column_double(stmt, 13);
-    int focal_length_min     = sqlite3_column_double(stmt, 14);
-    int focal_length_max     = sqlite3_column_double(stmt, 15);
+    gint rowid                  = sqlite3_column_int(stmt, 0);
+    gchar* name                 = (gchar*) sqlite3_column_text(stmt, 1);
+    gchar* description          = (gchar*) sqlite3_column_text(stmt, 2);
+    gchar* operation            = (gchar*) sqlite3_column_text(stmt, 3);
+    const gboolean enabled      = (sqlite3_column_int(stmt, 4)==0 ? FALSE : TRUE);
+    const gboolean autoapply    = (sqlite3_column_int(stmt, 5)==0 ? FALSE : TRUE);
+    gchar* model                = (gchar*) sqlite3_column_text(stmt, 6);
+    gchar* maker                = (gchar*) sqlite3_column_text(stmt, 7);
+    gchar* lens                 = (gchar*) sqlite3_column_text(stmt, 8);
+    int iso_min                 = sqlite3_column_double(stmt, 9);
+    int iso_max                 = sqlite3_column_double(stmt, 10);
+    float exposure_min          = sqlite3_column_double(stmt, 11);
+    float exposure_max          = sqlite3_column_double(stmt, 12);
+    float aperture_min          = sqlite3_column_double(stmt, 13);
+    float aperture_max          = sqlite3_column_double(stmt, 14);
+    int focal_length_min        = sqlite3_column_double(stmt, 15);
+    int focal_length_max        = sqlite3_column_double(stmt, 16);
+    const gboolean writeprotect = (sqlite3_column_int(stmt, 17)==0 ? FALSE : TRUE);
 
     gchar *iso, *exposure, *aperture, *focal_length;
     int min, max;
@@ -180,9 +202,11 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
     {
       gtk_tree_store_append(tree_model, &iter, NULL);
       gtk_tree_store_set(tree_model, &iter,
+                         P_ROWID_COLUMN, 0,
+                         P_OPERATION_COLUMN, "",
                          P_MODULE_COLUMN, _(module),
                          P_NAME_COLUMN, "",
-//                          P_DESCRIPTION_COLUMN, "",
+                         P_DESCRIPTION_COLUMN, "",
                          P_MODEL_COLUMN, "",
                          P_MAKER_COLUMN, "",
                          P_LENS_COLUMN, "",
@@ -191,7 +215,8 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
                          P_APERTURE_COLUMN, "",
                          P_FOCAL_LENGTH_COLUMN, "",
                          P_AUTOAPPLY_COLUMN, "",
-//                          P_ENABLED_COLUMN, "",
+                         P_ENABLED_COLUMN, "",
+                         P_EDITABLE_COLUMN, "",
                          -1);
       g_free(last_module);
       last_module = g_strdup(operation);
@@ -200,9 +225,11 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
 
     gtk_tree_store_append(tree_model, &iter, &parent);
     gtk_tree_store_set(tree_model, &iter,
+                         P_ROWID_COLUMN, rowid,
+                         P_OPERATION_COLUMN, operation,
                          P_MODULE_COLUMN, "",
                          P_NAME_COLUMN, name,
-//                          P_DESCRIPTION_COLUMN, description,
+                         P_DESCRIPTION_COLUMN, description,
                          P_MODEL_COLUMN, model,
                          P_MAKER_COLUMN, maker,
                          P_LENS_COLUMN, lens,
@@ -211,7 +238,8 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
                          P_APERTURE_COLUMN, aperture,
                          P_FOCAL_LENGTH_COLUMN, focal_length,
                          P_AUTOAPPLY_COLUMN, autoapply?"x":"",
-//                          P_ENABLED_COLUMN, enabled?"x":"",
+                         P_ENABLED_COLUMN, enabled?"x":"",
+                         P_EDITABLE_COLUMN, writeprotect?"":"x",
                       -1);
 
   }
@@ -219,17 +247,18 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
 }
 
 //TODO: - add nice icons instead of the x's.
-//      - allow editing of presets (double clicking?).
 static void init_tab_presets(GtkWidget *book)
 {
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 0.9, 1.0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
-  GtkTreeStore *model = gtk_tree_store_new(P_N_COLUMNS,
-                                           G_TYPE_STRING /*module*/, G_TYPE_STRING /*name*//*, G_TYPE_STRING *//*description*/,
+  GtkTreeStore *model = gtk_tree_store_new(P_N_COLUMNS, G_TYPE_INT /*rowid*/, G_TYPE_STRING /*operation*/,
+                                           G_TYPE_STRING /*module*/, G_TYPE_STRING /*name*/, G_TYPE_STRING /*description*/,
                                            G_TYPE_STRING /*model*/, G_TYPE_STRING /*maker*/, G_TYPE_STRING /*lens*/,
                                            G_TYPE_STRING /*iso*/, G_TYPE_STRING /*exposure*/, G_TYPE_STRING /*aperture*/, G_TYPE_STRING /*focal length*/,
-                                           G_TYPE_STRING/*, G_TYPE_STRING *//* TODO: use a pixmap for these two. */);
+                                           G_TYPE_STRING /*auto*/,
+                                           G_TYPE_STRING /*enabled*/,
+                                           G_TYPE_STRING /*editable*//* TODO: use a pixmap for these three. */);
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
 
@@ -332,11 +361,18 @@ static void init_tab_presets(GtkWidget *book)
 //       NULL);
 //   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(
+      _("editable"), renderer,
+      "text", P_EDITABLE_COLUMN,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
   // Attaching treeview signals
 
-  // row-activated either expands/collapses a row or activates remapping
-//   g_signal_connect(G_OBJECT(tree), "row-activated",
-//                    G_CALLBACK(tree_row_activated), NULL);
+  // row-activated either expands/collapses a row or activates editing
+  g_signal_connect(G_OBJECT(tree), "row-activated",
+                   G_CALLBACK(tree_row_activated_presets), NULL);
 
   // A selection change will cancel a currently active remapping
 //   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(tree))),
@@ -348,10 +384,8 @@ static void init_tab_presets(GtkWidget *book)
 //                    G_CALLBACK(tree_key_press), (gpointer)model);
 
   // Setting up the search functionality
-//   gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), TRANS_COLUMN);
-//   gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(tree), prefix_search,
-//                                       NULL, NULL);
-//   gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
+  gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), P_NAME_COLUMN);
+  gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
 
   // Attaching the model to the treeview
   gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(model));
@@ -415,7 +449,7 @@ static void init_tab_accels(GtkWidget *book)
 
   // row-activated either expands/collapses a row or activates remapping
   g_signal_connect(G_OBJECT(tree), "row-activated",
-                   G_CALLBACK(tree_row_activated), NULL);
+                   G_CALLBACK(tree_row_activated_accels), NULL);
 
   // A selection change will cancel a currently active remapping
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(tree))),
@@ -695,7 +729,42 @@ static gint _accelcmp(gconstpointer a, gconstpointer b)
                        ((dt_accel_t*)b)->path));
 }
 
-static void tree_row_activated(GtkTreeView *tree, GtkTreePath *path,
+static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path,
+                               GtkTreeViewColumn *column, gpointer data)
+{
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_tree_view_get_model(tree);
+
+  gtk_tree_model_get_iter(model, &iter, path);
+
+  if(gtk_tree_model_iter_has_child(model, &iter))
+  {
+    // For branch nodes, toggle expansion on activation
+    if(gtk_tree_view_row_expanded(tree, path))
+      gtk_tree_view_collapse_row(tree, path);
+    else
+      gtk_tree_view_expand_row(tree, path, FALSE);
+  }
+  else
+  {
+    // For leaf nodes, open editing window if the preset is not writeprotected
+    gint rowid;
+    gchar *name, *operation, *editable;
+    gtk_tree_model_get(model, &iter,
+                       P_ROWID_COLUMN, &rowid,
+                       P_NAME_COLUMN, &name,
+                       P_OPERATION_COLUMN, &operation,
+                       P_EDITABLE_COLUMN, &editable,
+                       -1);
+    if(*editable != '\0')
+      edit_preset (tree, rowid, name, operation);
+    g_free(name);
+    g_free(operation);
+    g_free(editable);
+  }
+}
+
+static void tree_row_activated_accels(GtkTreeView *tree, GtkTreePath *path,
                                GtkTreeViewColumn *column, gpointer data)
 {
   GtkTreeIter iter;
@@ -1010,6 +1079,229 @@ static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
     gtk_tree_model_get(model, b, P_NAME_COLUMN, &b_text, -1);
   }
   return strcasecmp(a_text, b_text);
+}
+
+// FIXME: Mostly c&p from gui/presets.c
+static void
+check_buttons_activated (GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)
+{
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)) || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)))
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->details), TRUE);
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->details), FALSE);
+    gtk_widget_show_all (GTK_WIDGET(g->details));
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
+  }
+  else
+    gtk_widget_set_visible(GTK_WIDGET(g->details), FALSE);
+}
+
+static void
+edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gchar * module)
+{
+  GtkWidget *dialog;
+  /* Create the widgets */
+  char title[1024];
+  snprintf(title, 1024, _("edit `%s' for module `%s'"), name, module);
+  dialog = gtk_dialog_new_with_buttons (title,
+                                        GTK_WINDOW(_preferences_dialog),
+                                        GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL,
+                                        GTK_STOCK_OK,
+                                        GTK_RESPONSE_NONE,
+                                        NULL);
+  GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
+  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
+  gtk_container_add (content_area, alignment);
+  GtkBox *box = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(box));
+  GtkWidget *label;
+  // GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+
+  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  GtkBox *vbox3 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  GtkBox *vbox4 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+
+  dt_gui_presets_edit_dialog_t *g = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
+//   g->module = module;
+  g->rowid = rowid;
+  g->tree = tree;
+  g->name = GTK_ENTRY(gtk_entry_new());
+  gtk_entry_set_text(g->name, name);
+  gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
+  g_object_set(G_OBJECT(g->name), "tooltip-text", _("name of the preset"), (char *)NULL);
+
+  g->description = GTK_ENTRY(gtk_entry_new());
+  gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
+  g_object_set(G_OBJECT(g->description), "tooltip-text", _("description or further information"), (char *)NULL);
+
+  g->autoapply = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto apply this preset to matching images")));
+  gtk_box_pack_start(box, GTK_WIDGET(g->autoapply), FALSE, FALSE, 0);
+  g->filter = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("only show this preset for matching images")));
+  g_object_set(G_OBJECT(g->filter), "tooltip-text", _("be very careful with this option. this might be the last time you see your preset."), (char *)NULL);
+  gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
+  g_signal_connect(G_OBJECT(g->filter),    "toggled", G_CALLBACK(check_buttons_activated), g);
+
+  g->details   = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  gtk_box_pack_start(box,  GTK_WIDGET(g->details),  FALSE, FALSE, 0);
+  gtk_box_pack_start(g->details, GTK_WIDGET(hbox),  FALSE, FALSE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(vbox3), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(vbox4), TRUE, TRUE, 0);
+
+  // model, maker, lens
+  g->model = GTK_ENTRY(gtk_entry_new());
+  g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"), (char *)NULL);
+  label = gtk_label_new(_("model"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox3, GTK_WIDGET(g->model), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+  g->maker = GTK_ENTRY(gtk_entry_new());
+  g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"), (char *)NULL);
+  label = gtk_label_new(_("maker"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox3, GTK_WIDGET(g->maker), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+  g->lens  = GTK_ENTRY(gtk_entry_new());
+  g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
+  label = gtk_label_new(_("lens"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox3, GTK_WIDGET(g->lens), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+
+  // iso
+  label = gtk_label_new(_("iso"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
+  g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum iso value"), (char *)NULL);
+  gtk_spin_button_set_digits(g->iso_min, 0);
+  gtk_box_pack_start(vbox3, GTK_WIDGET(g->iso_min), FALSE, FALSE, 0);
+  g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
+  g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum iso value"), (char *)NULL);
+  gtk_spin_button_set_digits(g->iso_max, 0);
+  gtk_box_pack_start(vbox4, GTK_WIDGET(g->iso_max), FALSE, FALSE, 0);
+
+  // exposure
+  label = gtk_label_new(_("exposure"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
+  g_object_set(G_OBJECT(g->exposure_max), "tooltip-text", _("maximum exposure time"), (char *)NULL);
+  for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
+    gtk_combo_box_append_text(g->exposure_min, dt_gui_presets_exposure_value_str[k]);
+  for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
+    gtk_combo_box_append_text(g->exposure_max, dt_gui_presets_exposure_value_str[k]);
+  gtk_box_pack_start(vbox3, GTK_WIDGET(g->exposure_min), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox4, GTK_WIDGET(g->exposure_max), FALSE, FALSE, 0);
+
+  // aperture
+  label = gtk_label_new(_("aperture"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->aperture_max), "tooltip-text", _("maximum aperture value"), (char *)NULL);
+  for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
+    gtk_combo_box_append_text(g->aperture_min, dt_gui_presets_aperture_value_str[k]);
+  for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
+    gtk_combo_box_append_text(g->aperture_max, dt_gui_presets_aperture_value_str[k]);
+  gtk_box_pack_start(vbox3, GTK_WIDGET(g->aperture_min), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox4, GTK_WIDGET(g->aperture_max), FALSE, FALSE, 0);
+
+  // focal length
+  label = gtk_label_new(_("focal length"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  g->focal_length_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
+  gtk_spin_button_set_digits(g->focal_length_min, 0);
+  gtk_box_pack_start(vbox3, GTK_WIDGET(g->focal_length_min), FALSE, FALSE, 0);
+  g->focal_length_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
+  g_object_set(G_OBJECT(g->focal_length_min), "tooltip-text", _("minimum focal length"), (char *)NULL);
+  g_object_set(G_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), (char *)NULL);
+  gtk_spin_button_set_digits(g->focal_length_max, 0);
+  gtk_box_pack_start(vbox4, GTK_WIDGET(g->focal_length_max), FALSE, FALSE, 0);
+
+  gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select description, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, autoapply, filter from presets where rowid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid );
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 0));
+    gtk_entry_set_text(g->model, (const char *)sqlite3_column_text(stmt, 1));
+    gtk_entry_set_text(g->maker, (const char *)sqlite3_column_text(stmt, 2));
+    gtk_entry_set_text(g->lens,  (const char *)sqlite3_column_text(stmt, 3));
+    gtk_spin_button_set_value(g->iso_min, sqlite3_column_double(stmt, 4));
+    gtk_spin_button_set_value(g->iso_max, sqlite3_column_double(stmt, 5));
+
+    float val = sqlite3_column_double(stmt, 6);
+    int k=0;
+    for(; k<dt_gui_presets_exposure_value_cnt&&val>dt_gui_presets_exposure_value[k]; k++);
+    gtk_combo_box_set_active(g->exposure_min, k);
+    val = sqlite3_column_double(stmt, 7);
+    for(k=0; k<dt_gui_presets_exposure_value_cnt&&val>dt_gui_presets_exposure_value[k]; k++);
+    gtk_combo_box_set_active(g->exposure_max, k);
+    val = sqlite3_column_double(stmt, 8);
+    for(k=0; k<dt_gui_presets_aperture_value_cnt&&val>dt_gui_presets_aperture_value[k]; k++);
+    gtk_combo_box_set_active(g->aperture_min, k);
+    val = sqlite3_column_double(stmt, 9);
+    for(k=0; k<dt_gui_presets_aperture_value_cnt&&val>dt_gui_presets_aperture_value[k]; k++);
+    gtk_combo_box_set_active(g->aperture_max, k);
+    gtk_spin_button_set_value(g->focal_length_min, sqlite3_column_double(stmt, 10));
+    gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 11));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 12));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    sqlite3_column_int(stmt, 13));
+  }
+  sqlite3_finalize(stmt);
+
+  g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
+  gtk_widget_show_all (dialog);
+}
+
+static void
+edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
+{
+  // commit all the user input fields
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set name = ?1, description = ?2, "
+          "model = ?3, maker = ?4, lens = ?5, iso_min = ?6, iso_max = ?7, exposure_min = ?8, exposure_max = ?9, aperture_min = ?10, "
+          "aperture_max = ?11, focal_length_min = ?12, focal_length_max = ?13, autoapply = ?14, filter = ?15, def = 0 "
+          "where rowid = ?16", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, gtk_entry_get_text(g->model), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, gtk_entry_get_text(g->maker), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, gtk_entry_get_text(g->lens), -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt,  6, gtk_spin_button_get_value(g->iso_min));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, gtk_spin_button_get_value(g->iso_max));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_min)]);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, dt_gui_presets_exposure_value[gtk_combo_box_get_active(g->exposure_max)]);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_min)]);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, dt_gui_presets_aperture_value[gtk_combo_box_get_active(g->aperture_max)]);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, gtk_spin_button_get_value(g->focal_length_min));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 13, gtk_spin_button_get_value(g->focal_length_max));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, g->rowid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  GtkTreeStore *tree_store = GTK_TREE_STORE(gtk_tree_view_get_model(g->tree));
+  gtk_tree_store_clear(tree_store);
+  tree_insert_presets(tree_store);
+
+  gtk_widget_destroy(GTK_WIDGET(dialog));
+  free(g);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
