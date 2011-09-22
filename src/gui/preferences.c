@@ -48,7 +48,7 @@ static const char* dt_gui_presets_aperture_value_str[] = {"f/0", "f/0.5", "f/0.7
     "f/2.8", "f/4", "f/5.6", "f/8", "f/11", "f/16", "f/22", "f/32", "f/45", "f/64", "f/90", "f/128", "f/+"
                                                          };
 
-// Values for the accelerators treeview
+// Values for the accelerators/presets treeview
 
 enum {A_ACCEL_COLUMN, A_BINDING_COLUMN, A_TRANS_COLUMN, A_N_COLUMNS};
 enum {P_MODULE_COLUMN, P_NAME_COLUMN, /*P_DESCRIPTION_COLUMN,*/ P_MODEL_COLUMN, P_MAKER_COLUMN, P_LENS_COLUMN, P_ISO_COLUMN, P_EXPOSURE_COLUMN, P_APERTURE_COLUMN, P_FOCAL_LENGTH_COLUMN, P_AUTOAPPLY_COLUMN, /*P_ENABLED_COLUMN,*/ P_N_COLUMNS};
@@ -67,7 +67,9 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
 static void delete_matching_accels(gpointer path, gpointer key_event);
 static void import_export(GtkButton *button, gpointer data);
 static void restore_defaults(GtkButton *button, gpointer data);
-static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+                         gpointer data);
+static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
                          gpointer data);
 
 // Signal handlers
@@ -122,7 +124,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
   sqlite3_stmt *stmt;
   gchar *last_module = NULL;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description, operation, enabled, autoapply, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max from presets order by operation", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description, operation, enabled, autoapply, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max from presets order by operation,name", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     gchar* name              = (gchar*) sqlite3_column_text(stmt, 0);
@@ -240,10 +242,10 @@ static void init_tab_presets(GtkWidget *book)
   tree_insert_presets(model);
 
   // Seting a custom sort functions so expandable groups rise to the top
-//   gtk_tree_sortable_set_sort_column_id(
-//       GTK_TREE_SORTABLE(model), TRANS_COLUMN, GTK_SORT_ASCENDING);
-//   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), TRANS_COLUMN,
-//                                   compare_rows, NULL, NULL);
+  gtk_tree_sortable_set_sort_column_id(
+      GTK_TREE_SORTABLE(model), P_MODULE_COLUMN, GTK_SORT_ASCENDING);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), P_MODULE_COLUMN,
+                                  compare_rows_presets, NULL, NULL);
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
@@ -392,7 +394,7 @@ static void init_tab_accels(GtkWidget *book)
   gtk_tree_sortable_set_sort_column_id(
       GTK_TREE_SORTABLE(model), A_TRANS_COLUMN, GTK_SORT_ASCENDING);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), A_TRANS_COLUMN,
-                                  compare_rows, NULL, NULL);
+                                  compare_rows_accels, NULL, NULL);
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
@@ -970,8 +972,8 @@ static gboolean prefix_search(GtkTreeModel *model, gint column,
   return FALSE;
 }
 
-// Custom sort function for TreeModel entries
-static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+// Custom sort function for TreeModel entries for accels list
+static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
                          gpointer data)
 {
   gchar *a_text;
@@ -991,6 +993,23 @@ static gint compare_rows(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
   gtk_tree_model_get(model, b, A_TRANS_COLUMN, &b_text, -1);
   return strcasecmp(a_text, b_text);
 
+}
+
+// Custom sort function for TreeModel entries for presets list
+static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+                         gpointer data)
+{
+  gchar *a_text;
+  gchar *b_text;
+
+  gtk_tree_model_get(model, a, P_MODULE_COLUMN, &a_text, -1);
+  gtk_tree_model_get(model, b, P_MODULE_COLUMN, &b_text, -1);
+  if(*a_text == '\0' && *b_text == '\0')
+  {
+    gtk_tree_model_get(model, a, P_NAME_COLUMN, &a_text, -1);
+    gtk_tree_model_get(model, b, P_NAME_COLUMN, &b_text, -1);
+  }
+  return strcasecmp(a_text, b_text);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
