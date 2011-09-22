@@ -262,9 +262,6 @@ dt_mipmap_cache_read_get(
     const dt_mipmap_size_t mip,
     const dt_mipmap_get_flags_t flags)
 {
-  // TODO: if _F or _FULL
-  //       always do exact match, no best-effort
-
   if(flags == DT_MIPMAP_TESTLOCK)
   {
     // simple case: only get and lock if it's there.
@@ -286,26 +283,15 @@ dt_mipmap_cache_read_get(
   }
   else if(flags == DT_MIPMAP_PREFETCH)
   {
-#if 0 // and opposite: prefetch without locking
-    if(!img || mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
-    dt_pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
-    if(img->mip_buf_size[mip] > 0)
-    {
-      // already loaded.
-      dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-      return;
-    }
+    // and opposite: prefetch without locking
+    if(mip > DT_MIPMAP_F || mip < DT_MIPMAP_0) return;
     dt_job_t j;
-    dt_image_load_job_init(&j, img->id, mip);
+    dt_image_load_job_init(&j, imgid, mip);
     // if the job already exists, make it high-priority, if not, add it:
     if(dt_control_revive_job(darktable.control, &j) < 0)
       dt_control_add_job(darktable.control, &j);
-    dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-#endif
   }
-  // FIXME: half-duck: only blocking mode so far.
-  else
-  // if(flags == DT_MIPMAP_BLOCKING)
+  else if(flags == DT_MIPMAP_BLOCKING)
   {
     // simple case: blocking get
     uint32_t *buf = (uint32_t *)dt_cache_read_get(&cache->mip[mip].cache, imgid);
@@ -315,15 +301,26 @@ dt_mipmap_cache_read_get(
     buf->size   = mip;
     buf->buf    = buf + 4;
   }
-  // else if(flags == DT_MIPMAP_BEST_EFFORT)
-#if 0
-  // best-effort, might also return NULL.
-  for(int k=mip;k>DT_MIPMAP_0;k--)
+  else if(flags == DT_MIPMAP_BEST_EFFORT)
   {
-    // TODO: query cache->cache[k]
-    // TODO: 
+    // best-effort, might also return NULL.
+    // never decrease mip level for float buffer or full image:
+    dt_mipmap_size_t min_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_0;
+    for(int k=mip;k>=min_mip;k--)
+    {
+      // already loaded?
+      dt_mipmap_cache_read_get(cache, buf, imgid, mip, DT_MIPMAP_TESTLOCK);
+      if(buf.buf) return;
+      // didn't succeed the first time? prefetch for later!
+      if(mip == k)
+        dt_mipmap_cache_read_get(cache, buf, imgid, mip, DT_MIPMAP_PREFETCH);
+    }
+    // nothing found :(
+    buf->buf   = NULL;
+    buf->imgid = 0;
+    buf->size  = DT_MIPMAP_NONE;
+    buf->width = buf->height = 0;
   }
-#endif
 }
 
 void

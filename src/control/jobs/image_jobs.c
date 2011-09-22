@@ -20,7 +20,7 @@
 #include "common/image_cache.h"
 #include "control/jobs/image_jobs.h"
 
-void dt_image_load_job_init(dt_job_t *job, int32_t id, dt_image_buffer_t mip)
+void dt_image_load_job_init(dt_job_t *job, int32_t id, dt_mipmap_size_t mip)
 {
   dt_control_job_init(job, "load image %d mip %d", id, mip);
   job->execute = &dt_image_load_job_run;
@@ -32,15 +32,18 @@ void dt_image_load_job_init(dt_job_t *job, int32_t id, dt_image_buffer_t mip)
 int32_t dt_image_load_job_run(dt_job_t *job)
 {
   dt_image_load_t *t = (dt_image_load_t *)job->param;
-  dt_image_t *img = dt_image_cache_get(t->imgid, 'r');
-  if(!img) return 1;
 
-  char message[512]= {0};
-  snprintf(message, 512, _("loading image %s"), img->filename);
+  // hook back into mipmap_cache:
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_read_get(
+      &darktable.mipmap_cache,
+      &buf,
+      t->imgid,
+      t->mip,
+      DT_MIPMAP_BLOCKING);
 
-  int ret = dt_image_load(img, t->mip);
   // drop read lock, as this is only speculative async loading.
-  if(!ret) dt_image_release(img, t->mip, 'r');
-  dt_image_cache_release(img, 'r');
+  dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
   return 0;
 }
+

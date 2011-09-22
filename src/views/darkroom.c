@@ -462,7 +462,7 @@ static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 }
 
 static void
-dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
+dt_dev_change_image(dt_develop_t *dev, const dt_image_t *image)
 {
   // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
@@ -662,9 +662,9 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
         return;
       }
 
-      image = dt_image_cache_get(imgid, 'r');
+      const dt_image_t *image = dt_image_cache_read_get(&darktable.image_cache, imgid);
       dt_dev_change_image(dev, image);
-      dt_image_cache_release(dev->image, 'r');
+      dt_image_cache_read_release(&darktable.image_cache, image);
       select_this_image(dev->image->id);
       dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image->id);
 
