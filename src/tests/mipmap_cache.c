@@ -184,43 +184,13 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 }
 
 const dt_mipmap_buffer_t*
-dt_mipmap_cache_read_testget(dt_mipmap_cache_t *cache, const uint32_t key, dt_mipmap_size_t mip)
+dt_mipmap_cache_read_get(
+    dt_mipmap_cache_t *cache,
+    const uint32_t key,
+    dt_mipmap_size_t mip,
+    dt_mipmap_get_flags_t flags)
 {
   // TODO:
-}
-dt_mipmap_buffer_t*
-dt_mipmap_cache_write_testget(dt_mipmap_cache_t *cache, const uint32_t key, dt_mipmap_size_t mip)
-{
-  // TODO: 
-}
-
-// TODO: get with flags: (r/w have to be in the function name, because of the return value)
-// - PREFETCH
-// - BLOCK
-// - 0 // best effort or null
-
-// TODO: also blocking variant!
-
-#if 0 // and opposite: prefetch:
-  if(!img || mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
-  dt_pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
-  if(img->mip_buf_size[mip] > 0)
-  {
-    // already loaded.
-    dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-    return;
-  }
-  dt_job_t j;
-  dt_image_load_job_init(&j, img->id, mip);
-  // if the job already exists, make it high-priority, if not, add it:
-  if(dt_control_revive_job(darktable.control, &j) < 0)
-    dt_control_add_job(darktable.control, &j);
-  dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
-#endif
-
-const dt_mipmap_buffer_t*
-dt_mipmap_cache_read_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_size_t mip)
-{
 #if 0
 // this should load and return with 'r' lock on mip buffer.
   if(!img) return 1;
@@ -290,8 +260,34 @@ dt_mipmap_cache_read_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_
   }
   return NULL;
 }
+dt_mipmap_buffer_t*
+dt_mipmap_cache_write_get(
+    dt_mipmap_cache_t *cache,
+    const uint32_t key,
+    dt_mipmap_size_t mip,
+    dt_mipmap_get_flags_t flags)
+{
+  // TODO: 
+}
 
-// TODO: other interface functions: read_release write_get/release..
+
+#if 0 // and opposite: prefetch:
+  if(!img || mip > DT_IMAGE_MIPF || mip < DT_IMAGE_MIP0) return;
+  dt_pthread_mutex_lock(&(darktable.mipmap_cache->mutex));
+  if(img->mip_buf_size[mip] > 0)
+  {
+    // already loaded.
+    dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+    return;
+  }
+  dt_job_t j;
+  dt_image_load_job_init(&j, img->id, mip);
+  // if the job already exists, make it high-priority, if not, add it:
+  if(dt_control_revive_job(darktable.control, &j) < 0)
+    dt_control_add_job(darktable.control, &j);
+  dt_pthread_mutex_unlock(&(darktable.mipmap_cache->mutex));
+#endif
+
 
 // return the closest mipmap size
 // for the given window you wish to draw.

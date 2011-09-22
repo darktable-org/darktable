@@ -39,6 +39,25 @@ typedef enum dt_mipmap_size_t
 }
 dt_mipmap_size_t;
 
+// type to be passed to getter functions
+typedef enum dt_mipmap_get_flags_t
+{
+  // gives you what you requested or a smaller mip,
+  // or NULL if none could be found
+  // also NULL is the fallback for _F and _FULL buffers.
+  DT_MIPMAP_BEST_EFFORT = 0,
+  // actually don't lock and return a buffer, but only
+  // start a bg job to load it, if it's not in cache already.
+  DT_MIPMAP_PREFETCH = 1,
+  // only return when the requested buffer is loaded.
+  // blocks until that happens.
+  DT_MIPMAP_BLOCKING = 2,
+  // don't actually acquire the lock if it is not
+  // in cache (i.e. would have to be loaded first)
+  DT_MIPMAP_TESTLOCK = 3
+}
+dt_mipmap_get_flags_t;
+
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
@@ -68,11 +87,7 @@ typedef struct dt_mipmap_cache_one_t
   // only stores 4*uint8_t per pixel for thumbnails:
   uint32_t *buf;
 
-  // TODO: use this cache to dynamically allocate mipmap buffers
-  //       (so it will grow slowly)
-  // TODO: one cache per mipmap scale!
-  // TODO: need clever hashing img->mip (not just id..?)
-  // TODO: say folder id + img filename hash
+  // one cache per mipmap scale!
   dt_cache_t cache;
 }
 dt_mipmap_cache_one_t;
@@ -88,27 +103,36 @@ void dt_mipmap_cache_init   (dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_print  (dt_mipmap_cache_t *cache);
 
-// get a buffer for reading. this has best effort/bad luck
-// semantics, so you'll get a smaller mipmap or NULL if
-// your request is not found in the cache.
+// get a buffer for reading. 
+// see dt_mipmap_get_flags_t for explanation on the exact
+// behaviour. pass 0 as flags for the default (best effort)
 const dt_mipmap_buffer_t*
-dt_mipmap_cache_read_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_size_t mip);
+dt_mipmap_cache_read_get(
+    dt_cache_image_t *cache,
+    const uint32_t imgid,
+    dt_mipmap_size_t mip,
+    dt_mipmap_get_flags_t flags);
 
-// you need to hold a read lock for this buffer before you lock it for
-// writing:
+// lock it for writing
 dt_mipmap_buffer_t*
-dt_mipmap_cache_write_get(dt_cache_image_t *cache, const uint32_t key, dt_mipmap_size_t mip);
+dt_mipmap_cache_write_get(
+    dt_cache_image_t *cache,
+    const uint32_t imgid,
+    dt_mipmap_size_t mip,
+    dt_mipmap_get_flags_t flags);
 
-// TODO: pass mip, too? pack it all into buffer_t? return bucket instead?
 // drop a read lock
-void dt_mipmap_cache_read_release (dt_cache_image_t *cache, const uint32_t key);
+void
+dt_mipmap_cache_read_release(
+    dt_cache_image_t *cache,
+    const uint32_t imgid,
+    dt_mipmap_size_t mip);
+
 // drop a write lock, read will still remain.
-void dt_mipmap_cache_write_release(dt_cache_image_t *cache, const uint32_t key);
-
-// TODO: read_get_blocking
-// TODO: prefetch (no lock, no return)
-// TODO: lock_if_available
-
-
+void
+dt_mipmap_cache_write_release(
+    dt_cache_image_t *cache,
+    const uint32_t imgid,
+    dt_mipmap_size_t mip);
 
 #endif
