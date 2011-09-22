@@ -80,6 +80,7 @@ void  dt_cache_write_release(dt_cache_t *cache, const uint32_t key);
 // gets you a slot in the cache for the given key, read locked.
 // will only contain valid data if it was there before.
 void*   dt_cache_read_get(dt_cache_t *cache, const uint32_t key);
+void*   dt_cache_read_testget(dt_cache_t *cache, const uint32_t key);
 int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key);
 void    dt_cache_remove(dt_cache_t *cache, const uint32_t key);
 // removes from the end of the lru list, until the fill ratio

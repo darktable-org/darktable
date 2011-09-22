@@ -492,6 +492,41 @@ dt_cache_bucket_write_release(dt_cache_bucket_t *bucket)
 }
 
 
+// return read locked bucket, or NULL if it's not already there.
+// never attempt to allocate a new slot.
+void*
+dt_cache_read_testget(
+    dt_cache_t     *cache,
+    const uint32_t  key)
+{
+  // just to support different keys:
+  const uint32_t hash = key;
+  dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
+
+  dt_cache_lock(&segment->lock);
+
+  dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
+  dt_cache_bucket_t *last_bucket = NULL;
+  dt_cache_bucket_t *compare_bucket = start_bucket;
+  int16_t next_delta = compare_bucket->first_delta;
+  while(next_delta != DT_CACHE_NULL_DELTA)
+  {
+    compare_bucket += next_delta;
+    if(hash == compare_bucket->hash && (key == compare_bucket->key))
+    {
+      void *rc = compare_bucket->data;
+      dt_cache_bucket_read_lock(compare_bucket);
+      dt_cache_unlock(&segment->lock);
+      // move this to the  most recently used slot, too:
+      lru_insert_locked(cache, compare_bucket);
+      return rc;
+    }
+    last_bucket = compare_bucket;
+    next_delta = compare_bucket->next_delta;
+  }
+  return NULL;
+}
+
 // if found, the data void* is returned. if not, it is set to be
 // the given *data and a new hash table entry is created, which can be
 // found using the given key later on.

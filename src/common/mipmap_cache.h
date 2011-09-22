@@ -118,12 +118,11 @@ dt_mipmap_cache_read_get(
     const dt_mipmap_get_flags_t flags);
 
 // lock it for writing. this is always blocking.
+// requires you already hold a read lock.
 void
 dt_mipmap_cache_write_get(
     dt_cache_image_t *cache,
-    dt_mipmap_buffer_t *buf,
-    const uint32_t imgid,
-    const dt_mipmap_size_t mip);
+    dt_mipmap_buffer_t *buf);
 
 // drop a read lock
 void
