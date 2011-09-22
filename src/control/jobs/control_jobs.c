@@ -21,6 +21,7 @@
 #include "common/collection.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_dng.h"
 #include "common/exif.h"
@@ -90,22 +91,24 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+    const dt_image_t *img = dt_image_cache_read_get(&darktable.image_cache, imgid);
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_read_get(&darktable.mipmap_cache, &buf, img, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
     if(img->filters == 0 || img->bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(&darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
     }
     filter = dt_image_flipped_filter(img);
-    if(mip != DT_IMAGE_FULL)
+    if(buf.size != DT_MIPMAP_FULL)
     {
       dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(&darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
@@ -126,8 +129,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       dt_control_log(_("images have to be of same size!"));
       free(pixels);
       free(weight);
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(&darktable.image_cache, img);
       goto error;
     }
     // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in the system => f/22
@@ -156,8 +159,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     fraction+=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
 
-    dt_image_release(img, DT_IMAGE_FULL, 'r');
-    dt_image_cache_release(img, 'r');
+    dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+    dt_image_cache_read_release(&darktable.image_cache, img);
   }
   // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
 #ifdef _OPENMP
