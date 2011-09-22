@@ -20,6 +20,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/debug.h"
 #include "common/history.h"
 #include "libs/lib.h"
@@ -688,50 +689,50 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     }
   }
 
-#if 1
-  int32_t iwd = width*imgwd, iht = height*imgwd, stride;
-  float fwd=0, fht=0;
   float scale = 1.0;
-  dt_image_buffer_t mip = DT_IMAGE_NONE;
+  dt_mipmap_buffer_t buf;
   if(img)
   {
-    mip = dt_image_get_matching_mip_size(img, imgwd*width, imgwd*height, &iwd, &iht);
-    mip = dt_image_get(img, mip, 'r');
-    iwd = img->mip_width[mip];
-    iht = img->mip_height[mip];
-    fwd = img->mip_width_f[mip]-3;
-    fht = img->mip_height_f[mip]-3;
+    dt_mipmap_size_t mip = 
+      dt_mipmap_cache_get_matching_size(
+        &darktable.mipmap_cache,
+        imgwd*width, imgwd*height);
+    dt_mipmap_cache_read_get(
+        &darktable.mipmap_cache,
+        &buf,
+        img->id,
+        mip,
+        0);
   }
   cairo_surface_t *surface = NULL;
-  if(mip != DT_IMAGE_NONE)
+  if(buf.buf)
   {
-    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, iwd);
-    surface = cairo_image_surface_create_for_data (img->mip[mip], CAIRO_FORMAT_RGB24, iwd, iht, stride);
-    scale = fminf(width*imgwd/fwd, height*imgwd/fht);
+    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+    surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
+    scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
   }
 
   // draw centered and fitted:
   cairo_save(cr);
   cairo_translate(cr, width/2.0, height/2.0f);
   cairo_scale(cr, scale, scale);
-  cairo_translate(cr, -.5f*(fwd), -.5f*(fht));
 
-  if(mip != DT_IMAGE_NONE)
+  if(buf.buf)
   {
+    cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
     cairo_set_source_surface (cr, surface, -1, -1);
-    cairo_rectangle(cr, 0, 0, fwd, fht);
+    cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
-    dt_image_release(img, mip, 'r');
 
     if(zoom == 1) cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
-    cairo_rectangle(cr, 0, 0, fwd, fht);
+    cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
 
   // border around image
   const float border = zoom == 1 ? 16/scale : 2/scale;
   cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
-  if(mip != DT_IMAGE_NONE && selected)
+  if(buf.buf && selected)
   {
     cairo_set_line_width(cr, 1./scale);
     if(zoom == 1)
@@ -744,7 +745,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       float alpha = 1.0f;
       for(int k=0; k<16; k++)
       {
-        cairo_rectangle(cr, 0, 0, fwd, fht);
+        cairo_rectangle(cr, 0, 0, buf.width, buf.height);
         cairo_new_sub_path(cr);
         cairo_rectangle(cr, -k/scale, -k/scale, fwd+2.*k/scale, fht+2.*k/scale);
         cairo_set_source_rgba(cr, 0, 0, 0, alpha);
@@ -762,7 +763,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       cairo_fill(cr);
     }
   }
-  else if(mip != DT_IMAGE_NONE)
+  else if(buf.buf)
   {
     cairo_set_line_width(cr, 1);
     cairo_stroke(cr);
@@ -923,8 +924,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   }
 
   cairo_restore(cr);
+  dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
-#endif
 }
 
 
