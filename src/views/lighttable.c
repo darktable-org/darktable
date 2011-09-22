@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
     copyright (c) 2011 Henrik Andersson.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -396,12 +396,9 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   // End of loop; do post-loop update
   if (clicked1) lib->last_selected_idx = selidx;
 
-#if 1
-  /*
-   * FIXME: Is this really a good place to do this ? 
-   *        seems better to do this in paralell and
-   *        not on every expose event of lighttable...
-   */
+  // launch prefetching.
+  // cost should be only what you see here, actual loading is done in a separate thread
+  // through the job system:
 
   /* clear and reset main query */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -420,17 +417,20 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   while(imgids_num > 0)
   {
     imgids_num --;
-    dt_image_t *image = dt_image_cache_get(imgids[imgids_num], 'r');
-    if(image)
-    {
-      int32_t iwd, iht;
-      float imgwd = iir == 1 ? 0.97 : 0.8;
-      dt_image_buffer_t mip = dt_image_get_matching_mip_size(image, imgwd*wd, imgwd*(iir==1?height:ht), &iwd, &iht);
-      dt_image_prefetch(image, mip);
-      dt_image_cache_release(image, 'r');
-    }
+    dt_mipmap_buffer_t buf;
+    int32_t iwd, iht;
+    float imgwd = iir == 1 ? 0.97 : 0.8;
+    dt_mipmap_size_t mip = 
+      dt_mipmap_cache_get_matching_size(
+          &darktable.mipmap_cache, 
+          imgwd*wd, imgwd*(iir==1?height:ht));
+
+    dt_mipmap_cache_read_get(
+        &darktable.mipmap_cache,
+        &buf,
+        mip,
+        DT_MIPMAP_PREFETCH);
   }
-#endif
 
 failure:
 

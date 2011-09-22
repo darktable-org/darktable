@@ -111,7 +111,7 @@ void dt_mipmap_cache_print  (dt_mipmap_cache_t *cache);
 // behaviour. pass 0 as flags for the default (best effort)
 void
 dt_mipmap_cache_read_get(
-    dt_cache_image_t *cache,
+    dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
     const uint32_t imgid,
     const dt_mipmap_size_t mip,
@@ -121,19 +121,19 @@ dt_mipmap_cache_read_get(
 // requires you already hold a read lock.
 void
 dt_mipmap_cache_write_get(
-    dt_cache_image_t *cache,
+    dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf);
 
 // drop a read lock
 void
 dt_mipmap_cache_read_release(
-    dt_cache_image_t *cache,
+    dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf);
 
 // drop a write lock, read will still remain.
 void
 dt_mipmap_cache_write_release(
-    dt_cache_image_t *cache,
+    dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf);
 
 #endif
