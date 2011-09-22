@@ -82,7 +82,7 @@ dt_image_cache_write_release(
 // and invalidate all resources (includes mipmaps)
 void
 dt_image_cache_remove(
+    dt_image_cache_t *cache,
     const uint32_t imgid);
-
 
 #endif

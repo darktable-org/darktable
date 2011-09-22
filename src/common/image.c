@@ -382,8 +382,6 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
 void dt_image_init(dt_image_t *img)
 {
-  for(int k=0; (int)k<(int)DT_IMAGE_MIPF; k++) img->mip[k] = NULL;
-  memset(img->lock,0, sizeof(dt_image_lock_t)*DT_IMAGE_NONE);
   img->output_width = img->output_height = img->width = img->height = 0;
   img->orientation = -1;
 

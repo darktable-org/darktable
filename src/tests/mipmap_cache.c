@@ -44,6 +44,7 @@ get_size(const uint32_t key)
 void*
 dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost)
 {
+  // TODO: get_imgid??
   dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
   const uint32_t hash = key;
   const uint32_t slot = hash & c->cache->bucket_mask;
@@ -109,6 +110,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   for(int k=0;k<DT_MIPMAP_F;k++)
   {
     dt_cache_init(&cache->mip[k].cache, thumbnails, 16, 64, 1);
+    // might have been rounded to power of two:
+    thumbnails = dt_cache_capacity(&cache->mip[k].cache);
     dt_cache_set_allocate_callback(&cache->mip[k].cache,
         &dt_mipmap_cache_allocate, &cache->mip[k].cache);
     dt_cache_set_cleanup_callback(&cache->mip[k].cache,
