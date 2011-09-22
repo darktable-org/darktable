@@ -1066,18 +1066,6 @@ void dt_view_filmstrip_prefetch()
     if(sqlite3_step(stmt) == SQLITE_ROW)
       offset = sqlite3_column_int(stmt, 0) - 1;
     sqlite3_finalize(stmt);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset+1);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, 2);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      imgid = sqlite3_column_int(stmt, 0);
-      dt_image_t *image = dt_image_cache_get(imgid, 'r');
-      dt_image_prefetch(image, DT_IMAGE_MIPF);
-      dt_image_cache_release(image, 'r');
-    }
-    sqlite3_finalize(stmt);
   }
 }
 
