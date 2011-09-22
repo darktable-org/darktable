@@ -58,9 +58,12 @@ typedef enum dt_mipmap_get_flags_t
 }
 dt_mipmap_get_flags_t;
 
+// struct to be alloc'ed by the client, filled by
+// _get functions.
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
+  const uint32_t imgid,
   int32_t width, height;
   uint8_t *buf;
 }
@@ -106,33 +109,32 @@ void dt_mipmap_cache_print  (dt_mipmap_cache_t *cache);
 // get a buffer for reading. 
 // see dt_mipmap_get_flags_t for explanation on the exact
 // behaviour. pass 0 as flags for the default (best effort)
-const dt_mipmap_buffer_t*
+void
 dt_mipmap_cache_read_get(
     dt_cache_image_t *cache,
+    dt_mipmap_buffer_t *buf,
     const uint32_t imgid,
-    dt_mipmap_size_t mip,
-    dt_mipmap_get_flags_t flags);
+    const dt_mipmap_size_t mip,
+    const dt_mipmap_get_flags_t flags);
 
-// lock it for writing
-dt_mipmap_buffer_t*
+// lock it for writing. this is always blocking.
+void
 dt_mipmap_cache_write_get(
     dt_cache_image_t *cache,
+    dt_mipmap_buffer_t *buf,
     const uint32_t imgid,
-    dt_mipmap_size_t mip,
-    dt_mipmap_get_flags_t flags);
+    const dt_mipmap_size_t mip);
 
 // drop a read lock
 void
 dt_mipmap_cache_read_release(
     dt_cache_image_t *cache,
-    const uint32_t imgid,
-    dt_mipmap_size_t mip);
+    dt_mipmap_buffer_t *buf);
 
 // drop a write lock, read will still remain.
 void
 dt_mipmap_cache_write_release(
     dt_cache_image_t *cache,
-    const uint32_t imgid,
-    dt_mipmap_size_t mip);
+    dt_mipmap_buffer_t *buf);
 
 #endif

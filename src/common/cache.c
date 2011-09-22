@@ -284,6 +284,7 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
 void
 dt_cache_cleanup(dt_cache_t *cache)
 {
+  // TODO: make sure data* cleanup stuff is called!
   free(cache->table);
   free(cache->segments);
 }

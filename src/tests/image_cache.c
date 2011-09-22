@@ -162,6 +162,7 @@ dt_image_cache_write_get(
 // TODO: users should now use dt_image_cache_write_release
 void dt_image_write_sidecar_file(int imgid)
 {
+  // TODO: dirty bit checking!
   // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
@@ -174,6 +175,9 @@ void dt_image_write_sidecar_file(int imgid)
   }
 }
 
+
+// TODO: are these gui utility functions actually?
+#if 0
 void dt_image_synch_xmp(const int selected)
 {
   if(selected > 0)
@@ -237,6 +241,8 @@ void dt_image_synch_all_xmp(const gchar *pathname)
   }
 }
 
+#endif
+
 
 // drops the write priviledges on an image struct.
 // this triggers a write-through to sql, and if the setting
@@ -282,8 +288,6 @@ dt_image_cache_write_release(
   {
     // rest about sidecars:
     // also synch dttags file:
-
-    // TODO: check dirty bit?
     dt_image_write_sidecar_file(img->id);
   }
   dt_cache_write_release(cache->cache, img->id);
