@@ -847,7 +847,7 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
   memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_gui_update(module);
-  if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module, TRUE);
+  dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
 static void

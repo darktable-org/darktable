@@ -52,9 +52,6 @@ struct dt_imageio_module_format_t;
 struct dt_imageio_module_data_t;
 int dt_imageio_export(dt_image_t *img, const char *filename, struct dt_imageio_module_format_t *format, struct dt_imageio_module_data_t *format_params);
 
-void dt_imageio_preview_f_to_8(int32_t wd, int32_t ht, const float *f, uint8_t *p8);
-void dt_imageio_preview_8_to_f(int32_t wd, int32_t ht, const uint8_t *p8, float *f);
-
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation);
 void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation);
 void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation);

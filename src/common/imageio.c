@@ -50,19 +50,6 @@
 #include <strings.h>
 #include <glib/gstdio.h>
 
-void dt_imageio_preview_f_to_8(int32_t p_wd, int32_t p_ht, const float *f, uint8_t *p8)
-{
-  for(int idx=0; idx < p_wd*p_ht; idx++)
-    for(int k=0; k<3; k++) p8[4*idx+2-k] = dt_dev_default_gamma[(int)CLAMPS(0xffff*f[4*idx+k], 0, 0xffff)];
-}
-
-void dt_imageio_preview_8_to_f(int32_t p_wd, int32_t p_ht, const uint8_t *p8, float *f)
-{
-  for(int idx=0; idx < p_wd*p_ht; idx++)
-    for(int k=0; k<3; k++) f[4*idx+2-k] = dt_dev_de_gamma[p8[4*idx+k]];
-}
-
-
 // =================================================
 //   begin libraw wrapper functions:
 // =================================================
@@ -216,7 +203,8 @@ all_good:
   }
   dt_image_check_buffer(img, DT_IMAGE_MIP4, 4*p_wd*p_ht*sizeof(uint8_t));
   dt_image_check_buffer(img, DT_IMAGE_MIPF, 4*p_wd*p_ht*sizeof(float));
-  dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
+  // FIXME: don't do mip4 business here at all!
+  // dt_imageio_preview_f_to_8(p_wd, p_ht, img->mipf, img->mip[DT_IMAGE_MIP4]);
   dt_image_release(img, DT_IMAGE_MIP4, 'w');
   ret = dt_image_update_mipmaps(img);
   dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -1180,10 +1168,6 @@ int dt_imageio_dttags_read (dt_image_t *img, const char *filename)
     {
       if( sscanf( line, "stars: %d\n", &stars) == 1 )
         img->flags = (img->flags & ~0x7) | (0x7 & stars);
-    }
-    else if( strncmp( line, "rawimport:",10) == 0)
-    {
-      sscanf( line, "rawimport: %f %f %d\n", &img->raw_denoise_threshold, &img->raw_auto_bright_threshold, (int32_t *)&img->raw_params);
     }
     else if( strncmp( line, "colorlabels:",12) == 0)
     {

@@ -27,9 +27,6 @@
 #include "develop/imageop.h"
 #include "common/image.h"
 
-extern uint8_t dt_dev_default_gamma[0x10000];
-extern float dt_dev_de_gamma[0x100];
-
 struct dt_iop_module_t;
 struct dt_iop_params_t;
 typedef struct dt_dev_history_item_t
@@ -64,8 +61,6 @@ typedef struct dt_develop_t
 
   // image under consideration.
   dt_image_t *image;
-  int32_t mipf_width, mipf_height;
-  float   *mipf, mipf_exact_width, mipf_exact_height;
 
   // history stack
   dt_pthread_mutex_t history_mutex;
@@ -79,26 +74,24 @@ typedef struct dt_develop_t
   // histogram for display.
   float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  uint8_t gamma[0x100];
 
   /* proxy for communication between plugins and develop/darkroom */
-  struct {
-
-    /* 
-     * exposure plugin hooks, used by histogram dragging functions 
-     */
-    struct {
+  struct
+  {
+    // exposure plugin hooks, used by histogram dragging functions 
+    struct
+    {
       struct dt_iop_module_t *module;
       void  (*set_white)(struct dt_iop_module_t *exp, const float white);
       float (*get_white)(struct dt_iop_module_t *exp);
       void  (*set_black)(struct dt_iop_module_t *exp, const float black);
       float (*get_black)(struct dt_iop_module_t *exp);
-    } exposure;
+    }
+    exposure;
 
-    /*
-     * modulegroups plugin hooks
-     */
-    struct {
+    // modulegroups plugin hooks
+    struct
+    {
       struct dt_lib_module_t *module;
       /* switch module group */
       void (*set)(struct dt_lib_module_t *self, uint32_t group);
@@ -106,39 +99,35 @@ typedef struct dt_develop_t
       uint32_t (*get)(struct dt_lib_module_t *self);
       /* test if iop group flags matches modulegroup */
       gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
-    } modulegroups;
+    }
+    modulegroups;
 
-    /* 
-     * snapshots plugin hooks 
-     */
-    struct {
-      /* this flag is set by snapshot plugin to signal that expose of darkroom
-	 should store cairo surface as snapshot to disk using filename.
-      */
+    // snapshots plugin hooks 
+    struct
+    {
+      // this flag is set by snapshot plugin to signal that expose of darkroom
+      // should store cairo surface as snapshot to disk using filename.
       gboolean request;
       const gchar *filename;
-    } snapshot;
+    }
+    snapshot;
 
-  } proxy;
-
+  }
+  proxy;
 }
 dt_develop_t;
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
-void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img);
 void dt_dev_raw_reload(dt_develop_t *dev);
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
-// directly in this thread process mipf->mip4..0
-void dt_dev_process_to_mip(dt_develop_t *dev);
 
 void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
-void dt_dev_load_preview(dt_develop_t *dev, struct dt_image_t *image);
 /** checks if provided imgid is the image currently in develop */
 int dt_dev_is_current_image(dt_develop_t *dev, int imgid);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
@@ -150,7 +139,6 @@ void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_invalidate(dt_develop_t *dev);
 // also invalidates preview (which is unaffected by resize/zoom/pan)
 void dt_dev_invalidate_all(dt_develop_t *dev);
-void dt_dev_set_gamma(dt_develop_t *dev);
 void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt);

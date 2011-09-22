@@ -571,18 +571,16 @@ int dt_init(int argc, char *argv[], const int init_gui)
       {
         dt_film_open(filmid);
         // make sure buffers are loaded (load full for testing)
-        dt_image_t *img = dt_image_cache_get(id, 'r');
-        dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
-        if(!buf)
+        dt_mipmap_buffer_t buf;
+        dt_mipmap_cache_read_get(&darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, 0);
+        if(!buf.buf)
         {
           id = 0;
-          dt_image_cache_release(img, 'r');
           dt_control_log(_("file `%s' has unknown format!"), filename);
         }
         else
         {
-          dt_image_release(img, DT_IMAGE_FULL, 'r');
-          dt_image_cache_release(img, 'r');
+          dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
           dt_ctl_switch_mode_to(DT_DEVELOP);
         }

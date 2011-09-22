@@ -344,6 +344,35 @@ dt_mipmap_cache_write_get(
   // buf->size   = mip;
 }
 
+void
+dt_mipmap_cache_read_release(
+    dt_cache_image_t *cache,
+    dt_mipmap_buffer_t *buf)
+{
+  if(buf->size == DT_MIPMAP_NONE || buf->buf == NULL) return;
+  assert(buf->imgid > 0);
+  assert(buf->size >= DT_MIPMAP_0);
+  assert(buf->size <  DT_MIPMAP_NONE);
+  dt_cache_read_release(&cache->mip[buf->size].cache, buf->imgid);
+  buf->size = DT_MIPMAP_NONE;
+  buf->buf  = NULL;
+}
+
+// drop a write lock, read will still remain.
+void
+dt_mipmap_cache_write_release(
+    dt_cache_image_t *cache,
+    dt_mipmap_buffer_t *buf)
+{
+  if(buf->size == DT_MIPMAP_NONE || buf->buf == NULL) return;
+  assert(buf->imgid > 0);
+  assert(buf->size >= DT_MIPMAP_0);
+  assert(buf->size <  DT_MIPMAP_NONE);
+  dt_cache_write_release(&cache->mip[buf->size].cache, buf->imgid);
+  buf->size = DT_MIPMAP_NONE;
+  buf->buf  = NULL;
+}
+
 
 
 // return the closest mipmap size
@@ -515,8 +544,12 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   {
     dt_develop_t dev;
     dt_dev_init(&dev, 0);
-    dt_dev_load_preview(&dev, img);
-    dt_dev_process_to_mip(&dev);
+    // TODO: dev->image = ?
+    // void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
+    // replace this with code below:
+    // and make it work with full buf instead!
+    // dt_dev_load_preview(&dev, img);
+    // dt_dev_process_to_mip(&dev);
     dt_dev_cleanup(&dev);
     // load preview keeps a lock on mipf:
     dt_image_release(img, DT_IMAGE_MIPF, 'r');
@@ -524,6 +557,76 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
   dt_image_import_unlock(img);
   return 0;
 }
+
+// FIXME: make sure this doesn't subsample the mips as grossly as
+//        it does currently. it should start from the full raw
+//        in case output_width/h are much smaller than the input.
+// process preview to gain ldr-mipmaps:
+void dt_dev_process_to_mip(dt_develop_t *dev)
+{
+  // TODO: efficiency: check hash on preview_pipe->backbuf
+  if(dt_image_get_blocking(dev->image, DT_IMAGE_MIPF, 'r') != DT_IMAGE_MIPF)
+  {
+    fprintf(stderr, "[dev_process_to_mip] no float buffer is available yet!\n");
+    return; // not loaded yet.
+  }
+
+  if(!dev->preview_pipe)
+  {
+    // init pixel pipeline for preview.
+    dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
+    dt_dev_pixelpipe_init(dev->preview_pipe);
+    dt_image_get_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_width, &dev->mipf_height);
+    dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIPF, &dev->mipf_exact_width, &dev->mipf_exact_height);
+    dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, dev->image->mipf, dev->mipf_width, dev->mipf_height, dev->image->width/(float)dev->mipf_width);
+    dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
+    dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
+    dev->preview_loading = 0;
+  }
+
+  int wd, ht;
+  float fwd, fht;
+
+  dev->preview_downsampling = 1.0;
+  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dt_dev_process_preview_job(dev);
+
+  // now the real wd/ht is available.
+  dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
+  dt_image_get_mip_size(dev->image, DT_IMAGE_MIP4, &wd, &ht);
+  dt_image_get_exact_mip_size(dev->image, DT_IMAGE_MIP4, &fwd, &fht);
+
+  if(dt_image_alloc(dev->image, DT_IMAGE_MIP4))
+  {
+    fprintf(stderr, "[dev_process_to_mip] could not alloc mip4 to write mipmaps!\n");
+    dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+    return;
+  }
+
+  dt_image_check_buffer(dev->image, DT_IMAGE_MIP4, sizeof(uint8_t)*4*wd*ht);
+  dt_pthread_mutex_lock(&(dev->preview_pipe->backbuf_mutex));
+
+  // don't if processing failed and backbuf's not there.
+  if(dev->preview_pipe->backbuf)
+  {
+    dt_iop_clip_and_zoom_8(dev->preview_pipe->backbuf, 0, 0, dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height,
+                           dev->preview_pipe->backbuf_width, dev->preview_pipe->backbuf_height,
+                           dev->image->mip[DT_IMAGE_MIP4], 0, 0, fwd, fht, wd, ht);
+
+  }
+  dt_image_release(dev->image, DT_IMAGE_MIP4, 'w');
+  dt_pthread_mutex_unlock(&(dev->preview_pipe->backbuf_mutex));
+
+  dt_image_update_mipmaps(dev->image);
+
+  dt_image_cache_flush(dev->image); // write new output size to db.
+  dt_image_release(dev->image, DT_IMAGE_MIP4, 'r');
+  dt_image_release(dev->image, DT_IMAGE_MIPF, 'r');
+
+  /* raise signal that mipmaps has been flushed to cache */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+}
+
 
 // TODO: this should never have to be called explicitly
 dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
