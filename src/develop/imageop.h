@@ -373,3 +373,5 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
