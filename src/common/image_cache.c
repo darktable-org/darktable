@@ -16,17 +16,25 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/exif.h"
+#include "common/image.h"
 #include "common/image_cache.h"
+#include "control/conf.h"
+#include "develop/develop.h"
 
+#include <sqlite3.h>
 
 void*
 dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
 {
   dt_image_cache_t *c = (dt_image_cache_t *)data;
   const uint32_t hash = key; // == image id
-  const uint32_t slot = hash & c->cache->bucket_mask;
-  *cost = sizeof(dt_image_t)
+  const uint32_t slot = hash & c->cache.bucket_mask;
+  *cost = sizeof(dt_image_t);
 
+  dt_image_t *img = ((dt_image_t *)c->images) + slot;
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
@@ -65,11 +73,11 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
   else fprintf(stderr, "[image_cache_allocate] failed to open image from database: %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
   sqlite3_finalize(stmt);
 
-  return c->image + slot;
+  return c->images + slot;
 }
 
 void
-dt_mipmap_cache_cleanup(void *data, const uint32_t key, void *payload)
+dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
 {
   // don't free. memory is only allocated once.
   dt_image_t *img = (dt_image_t *)payload;
@@ -93,8 +101,8 @@ dt_image_cache_init(dt_image_cache_t *cache)
   //       can we get away with a fixed size?
   uint32_t num = CLAMPS(dt_conf_get_int("mipmap_cache_thumbnails"), 100, 100000);
   dt_cache_init(&cache->cache, num, 16, 64, 1);
-  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate, &cache->cache);
-  dt_cache_set_cleanup_callback (&cache->cache, &dt_image_cache_cleanup,  &cache->cache);
+  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate,   &cache->cache);
+  dt_cache_set_cleanup_callback (&cache->cache, &dt_image_cache_deallocate, &cache->cache);
 
   // might have been rounded to power of two:
   num = dt_cache_capacity(&cache->cache);
@@ -111,7 +119,7 @@ dt_image_cache_init(dt_image_cache_t *cache)
 void
 dt_image_cache_cleanup(dt_image_cache_t *cache)
 {
-  dt_cache_cleanup(cache->cache);
+  dt_cache_cleanup(&cache->cache);
   free(cache->images);
 }
 
@@ -138,7 +146,7 @@ dt_image_cache_read_release(
     const dt_image_t *img)
 {
   // just force the dt_image_t struct to make sure it has been locked before.
-  dt_cache_read_release(cache, img->id);
+  dt_cache_read_release(&cache->cache, img->id);
 }
 
 // augments the already acquired read lock on an image to write the struct.
@@ -174,9 +182,9 @@ dt_image_write_sidecar_file(int imgid)
   // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
-    char filename[DT_MAX_PATH+8];
-    dt_image_full_path(imgid, filename, DT_MAX_PATH);
-    dt_image_path_append_version(imgid, filename, DT_MAX_PATH);
+    char filename[DT_MAX_PATH_LEN+8];
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
+    dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, filename);
@@ -298,18 +306,17 @@ dt_image_cache_write_release(
     // also synch dttags file:
     dt_image_write_sidecar_file(img->id);
   }
-  dt_cache_write_release(cache->cache, img->id);
+  dt_cache_write_release(&cache->cache, img->id);
 }
 
 
 // remove the image from the cache
-// and invalidate all resources (includes mipmaps)
 void
 dt_image_cache_remove(
     dt_image_cache_t *cache,
     const uint32_t imgid)
 {
-  dt_cache_remove(cache->cache, imgid);
+  dt_cache_remove(&cache->cache, imgid);
 }
 
 

@@ -19,6 +19,7 @@
 #define DT_IMAGE_CACHE_H
 
 #include "common/cache.h"
+#include "common/image.h"
 
 typedef struct dt_image_cache_t
 {
@@ -79,7 +80,6 @@ dt_image_cache_write_release(
     dt_image_cache_write_mode_t mode);
 
 // remove the image from the cache
-// and invalidate all resources (includes mipmaps)
 void
 dt_image_cache_remove(
     dt_image_cache_t *cache,

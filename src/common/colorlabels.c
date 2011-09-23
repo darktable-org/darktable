@@ -151,8 +151,9 @@ void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
         break;
     }
   }
-  // synch to dttags:
-  dt_image_synch_xmp(selected);
+  // synch to file:
+  // FIXME: this is clearly broken now!
+  // dt_image_synch_xmp(selected);
   dt_control_queue_redraw_center();
 }
 

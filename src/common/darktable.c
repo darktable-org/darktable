@@ -30,8 +30,9 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
-#include "common/points.h"
+#include "common/mipmap_cache.h"
 #include "common/opencl.h"
+#include "common/points.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "libs/lib.h"
@@ -567,7 +568,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
         dt_film_open(filmid);
         // make sure buffers are loaded (load full for testing)
         dt_mipmap_buffer_t buf;
-        dt_mipmap_cache_read_get(&darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, 0);
+        dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, 0);
         if(!buf.buf)
         {
           id = 0;
@@ -575,7 +576,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
         }
         else
         {
-          dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+          dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
           dt_ctl_switch_mode_to(DT_DEVELOP);
         }

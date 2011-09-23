@@ -20,13 +20,14 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "common/darktable.h"
-#include "common/imageio.h"
-#include "common/image_cache.h"
+#include "common/debug.h"
 #include "common/exif.h"
 #include "common/history.h"
-#include "common/debug.h"
-#include "common/utility.h"
+#include "common/imageio.h"
+#include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/tags.h"
+#include "common/utility.h"
 
 
 void dt_history_delete_on_image(int32_t imgid)
@@ -45,7 +46,7 @@ void dt_history_delete_on_image(int32_t imgid)
     dt_dev_reload_history_items (darktable.develop);
 
   /* make sure mipmaps are recomputed */
-  dt_mipmap_cache_remove(&darktable.mipmap_cache, imgid);
+  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style%",imgid);
@@ -74,8 +75,8 @@ dt_history_load_and_apply_on_selection (gchar *filename)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
-    const dt_image_t *cimg = dt_image_cache_read_get(&darktable.image_cache, (int32_t)imgid);
-    dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, cimg);
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
     if(img)
     {
       if (dt_exif_xmp_read(img, filename, 1))
@@ -88,9 +89,9 @@ dt_history_load_and_apply_on_selection (gchar *filename)
       if (dt_dev_is_current_image(darktable.develop, imgid))
         dt_dev_reload_history_items (darktable.develop);
 
-      dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-      dt_image_cache_read_release(&darktable.image_cache, img);
-      dt_mipmap_cache_remove(&darktable.mipmap_cache, imgid);
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
     }
   }
   sqlite3_finalize(stmt);
@@ -139,7 +140,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   if (dt_dev_is_current_image(darktable.develop, dest_imgid))
     dt_dev_reload_history_items (darktable.develop);
 
-  dt_mipmap_cache_remove(&darktable.mipmap_cache, dest_imgid);
+  dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
 
   return 0;
 }

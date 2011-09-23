@@ -63,7 +63,7 @@ dt_mipmap_get_flags_t;
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
-  const uint32_t imgid,
+  const uint32_t imgid;
   int32_t width, height;
   uint8_t *buf;
 }

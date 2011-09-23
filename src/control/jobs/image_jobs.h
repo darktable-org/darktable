@@ -20,6 +20,7 @@
 
 #include <inttypes.h>
 #include "common/image.h"
+#include "common/mipmap_cache.h"
 #include "control/control.h"
 
 typedef struct dt_image_load_t

@@ -42,7 +42,7 @@ typedef struct dt_cache_t
 
   // callback functions for cache misses/garbage collection
   void* (*allocate)(void *data, const uint32_t key, int32_t *cost);
-  void* (*cleanup) (void *data, const uint32_t key, void *payload);
+  void  (*cleanup) (void *data, const uint32_t key, void *payload);
   void *allocate_data;
   void *cleanup_data;
 }

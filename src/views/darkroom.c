@@ -913,13 +913,12 @@ void leave(dt_view_t *self)
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
-  // release full buffer
-  if(dev->image->pixels)
-    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
+  // dump new xmp data
+  dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, dev->image);
+  dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
 
   // release image struct with metadata as well.
-  dt_image_cache_flush(dev->image);
-  dt_image_cache_release(dev->image, 'r');
+  dt_image_cache_read_release(&darktable.image_cache, dev->image);
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 

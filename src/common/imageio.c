@@ -20,6 +20,10 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "common/colorlabels.h"
+#include "common/darktable.h"
+#include "common/debug.h"
+#include "common/exif.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -30,10 +34,7 @@
 #include "common/imageio_rgbe.h"
 #include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
-#include "common/darktable.h"
-#include "common/exif.h"
-#include "common/colorlabels.h"
-#include "common/debug.h"
+#include "common/mipmap_cache.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
@@ -153,6 +154,7 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
   }
 }
 
+void
 dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
 {
   const float scale = 1.0f/(white - black);
@@ -187,7 +189,7 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
   for(int j=0; j<ht; j++)
   {
     float *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
-    const uint16_t *in2  = in + stride*j;
+    const uint8_t *in2  = in + stride*j;
     for(int i=0; i<wd; i++)
     {
       for(int k=0; k<ch; k++) out2[k] = (in2[k] - black)*scale;
@@ -196,7 +198,6 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
     }
   }
 }
-void
 
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
 {

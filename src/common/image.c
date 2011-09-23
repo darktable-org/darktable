@@ -17,11 +17,12 @@
 */
 
 #include "common/darktable.h"
+#include "common/debug.h"
+#include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
-#include "common/exif.h"
-#include "common/debug.h"
+#include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -203,7 +204,6 @@ int32_t dt_image_duplicate(const int32_t imgid)
   return newid;
 }
 
-// TODO: move to image cache api, leave function here.
 void dt_image_remove(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
@@ -237,9 +237,9 @@ void dt_image_remove(const int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  dt_image_cache_clear(imgid);
-  // TODO: also clear all thumbnails in mipmap_cache? done inside the above?
-  // TODO: should also be called dt_image_cache_remove().
+  // also clear all thumbnails in mipmap_cache.
+  dt_image_cache_remove(darktable.image_cache, imgid);
+  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 }
 
 int dt_image_altered(const dt_image_t *img)

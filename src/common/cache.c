@@ -22,6 +22,7 @@
 #include <inttypes.h>
 #include <assert.h>
 
+#include "common/darktable.h"
 #include "common/cache.h"
 
 // this implements a concurrent LRU cache using
@@ -69,8 +70,7 @@ dt_cache_lock(uint32_t *lock)
 static inline void
 dt_cache_unlock(uint32_t *lock)
 {
-  const uint32_t res = __sync_val_compare_and_swap(lock, 1, 0);
-  assert(res);
+  __sync_val_compare_and_swap(lock, 1, 0);
 }
 
 static uint32_t
@@ -757,6 +757,7 @@ dt_cache_write_get(dt_cache_t *cache, const uint32_t key)
   }
   // clear user error, he should hold a read lock already, so this has to be there.
   fprintf(stderr, "[cache] write_get: bucket not found!\n");
+  return NULL;
 }
 
 void
