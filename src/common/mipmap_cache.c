@@ -176,22 +176,30 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost)
   const dt_mipmap_size_t size  = get_size(key);
   uint32_t *buf;
 
-  // load the image:
-  dt_image_t *dt_image_cache_write_get(darktable.image_cache, (int32_t)imgid);
-  dt_imageio_retval_t ret = dt_imageio_open(img, filename, &buf);
-  *cost = sizeof(uint32_t)*4+img->bpp*img->width*img->height;
-
-  // don't write xmp for this (we only changed db stuff):
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-  return buf;
+  if(size == DT_MIPMAP_FULL)
+  {
+    // load the image:
+    dt_image_t *dt_image_cache_write_get(darktable.image_cache, (int32_t)imgid);
+    dt_imageio_retval_t ret = dt_imageio_open(img, filename, &buf);
+    *cost = sizeof(uint32_t)*4+img->bpp*img->width*img->height;
+    // don't write xmp for this (we only changed db stuff):
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    return buf;
+  }
+  else
+  {
+    printf("[mipmap_cache] trying to dynamically allocate an invalid mipmap size! (%d)\n", size);
+    return NULL;
+  }
 }
 
+#if 0
 void
 dt_mipmap_cache_cleanup_dynamic(void *data, const uint32_t key, void *payload)
 {
-  // TODO: don't free, check buf[2] for size!
-  free(payload);
+  // don't clean up anything, as we are re-allocating. 
 }
+#endif
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
@@ -200,58 +208,59 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   int32_t thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
   thumbnails = CLAMPS(thumbnails, min_th, max_th);
   const int32_t max_size = 2048, min_size = 32;
-  int32_t wd = dt_conf_get_int ("plugins/lighttable/thumbnail_width");
-  int32_t ht = dt_conf_get_int ("plugins/lighttable/thumbnail_height");
+  // TODO: use these new user parameters! also in darkroom.c and develop.c
+  int32_t wd = DT_IMAGE_WINDOW_SIZE;//dt_conf_get_int ("plugins/lighttable/thumbnail_width");
+  int32_t ht = DT_IMAGE_WINDOW_SIZE;//dt_conf_get_int ("plugins/lighttable/thumbnail_height");
   wd = CLAMPS(wd, min_size, max_size);
   ht = CLAMPS(ht, min_size, max_size);
   // round up to a multiple of 8, so we can divide by two 3 times
   if(wd & 0xf) wd = (wd & ~0xf) + 0x10;
   if(ht & 0xf) ht = (ht & ~0xf) + 0x10;
   // cache these, can't change at runtime:
-  cache->mip[DT_MIPMAP_4].max_width  = wd;
-  cache->mip[DT_MIPMAP_4].max_height = ht;
-  for(int k=DT_MIPMAP_3;k>=DT_MIPMAP_0;k--)
+  cache->mip[DT_MIPMAP_F].max_width  = wd;
+  cache->mip[DT_MIPMAP_F].max_height = ht;
+  cache->mip[DT_MIPMAP_F-1].max_width  = wd;
+  cache->mip[DT_MIPMAP_F-1].max_height = ht;
+  for(int k=DT_MIPMAP_F-2;k>=DT_MIPMAP_0;k--)
   {
     cache->mip[k].max_width  = cache->mip[k+1].max_width  / 2;
     cache->mip[k].max_height = cache->mip[k+1].max_height / 2;
   }
 
-  for(int k=0;k<DT_MIPMAP_F;k++)
+  for(int k=0;k<=DT_MIPMAP_F;k++)
   {
+    // only very few F buffers, but as many as full:
+    if(k == DT_MIPMAP_F) thumbnails = full_bufs;
     dt_cache_init(&cache->mip[k].cache, thumbnails, 16, 64, 1);
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
-    dt_print(DT_DEBUG_CACHE, "[mipmap_cache_init] cache has %d entries for mip %d.\n", thumbnails, k);
     dt_cache_set_allocate_callback(&cache->mip[k].cache,
         &dt_mipmap_cache_allocate, &cache->mip[k].cache);
     dt_cache_set_cleanup_callback(&cache->mip[k].cache,
         &dt_mipmap_cache_cleanup, &cache->mip[k].cache);
     // buffer stores width and height + actual data
-    cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
+    const int width  = cache->mip[k].max_width;
+    const int height = cache->mip[k].max_height;
+    if(k == DT_MIPMAP_F)
+      cache->mip[k].buffer_size = (4 + 4 * width * height)*sizeof(float);
+    else
+      cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
     cache->mip[k].size = k;
     cache->mip[k].buf = dt_alloc_align(64, thumbnails * cache->mip[k].buffer_size);
+
+    dt_print(DT_DEBUG_CACHE,
+        "[mipmap_cache_init] cache has %d entries for mip %d (%02f MB).\n",
+        thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
+
     thumbnails >>= 2;
     thumbnails = CLAMPS(thumbnails, min_th, max_th);
   }
-  // full buffer count for these:
-  // TODO: what to do with _F? more than _FULL necessary?
-  // could re-create mip maps 0-4 from it..?
-  int32_t full_bufs = dt_conf_get_int ("mipmap_cache_full_images");
-  dt_cache_init(&cache->mip[DT_MIPMAP_F].cache, full_bufs, 16, 64, 1);
-  dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_F].cache,
-      &dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_F].cache);
-  dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_F].cache,
-      &dt_mipmap_cache_cleanup_dynamic, &cache->mip[DT_MIPMAP_F].cache);
-  cache->mip[DT_MIPMAP_F].buffer_size = 0;
-  cache->mip[DT_MIPMAP_F].buffer_cnt  = 0;
-  cache->mip[DT_MIPMAP_F].size = DT_MIPMAP_F;
-  cache->mip[DT_MIPMAP_F].buf = NULL;
-
+  // full buffer needs dynamic alloc:
   dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, full_bufs, 16, 64, 1);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       &dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL].cache);
-  dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
-      &dt_mipmap_cache_cleanup_dynamic, &cache->mip[DT_MIPMAP_FULL].cache);
+  // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
+      // &dt_mipmap_cache_cleanup_dynamic, &cache->mip[DT_MIPMAP_FULL].cache);
   cache->mip[DT_MIPMAP_FULL].buffer_size = 0;
   cache->mip[DT_MIPMAP_FULL].buffer_cnt  = 0;
   cache->mip[DT_MIPMAP_FULL].size = DT_MIPMAP_FULL;
@@ -261,7 +270,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 {
   // TODO: serialize
-  for(int k=0;k<DT_MIPMAP_F;k++)
+  for(int k=0;k<=DT_MIPMAP_F;k++)
   {
     dt_cache_cleanup(&cache->mip[k].cache);
     // now mem is actually freed, not during cache cleanup
@@ -313,7 +322,7 @@ dt_mipmap_cache_read_get(
   else if(flags == DT_MIPMAP_PREFETCH)
   {
     // and opposite: prefetch without locking
-    if(mip > DT_MIPMAP_F || mip < DT_MIPMAP_0) return;
+    if(mip > DT_MIPMAP_FULL || mip < DT_MIPMAP_0) return;
     dt_job_t j;
     dt_image_load_job_init(&j, imgid, mip);
     // if the job already exists, make it high-priority, if not, add it:
