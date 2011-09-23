@@ -45,7 +45,7 @@ extern "C"
 #include <OpenEXR/ImfStandardAttributes.h>
 
 
-dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
 {
   bool isTiled=false;
   std::auto_ptr<Imf::TiledInputFile> fileTiled;
@@ -86,83 +86,13 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename)
 
 
   // Try to allocate image data
-  if(dt_image_alloc(img, DT_IMAGE_FULL))
+  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  if(!buf)
   {
     fprintf(stderr, "[exr_read] could not alloc full buffer for image `%s'\n", img->filename);
     /// \todo open exr cleanup...
     return DT_IMAGEIO_CACHE_FULL;
   }
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
-
-  /* check channels in image, currently we only support R,G,B */
-  const Imf::ChannelList &channels = header->channels();
-  if(channels.findChannel("R") && channels.findChannel("G") && channels.findChannel("B"))
-  {
-    Imf::FrameBuffer frameBuffer;
-    frameBuffer.insert ("R",Imf::Slice(Imf::FLOAT,(char *)(img->pixels),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-    frameBuffer.insert ("G",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+1),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-    frameBuffer.insert ("B",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+2),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-    frameBuffer.insert ("A",Imf::Slice(Imf::FLOAT,(char *)(img->pixels+3),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-
-    if(isTiled)
-    {
-      fileTiled->setFrameBuffer (frameBuffer);
-      fileTiled->readTiles (0, fileTiled->numXTiles() - 1, 0, fileTiled->numYTiles() - 1);
-    }
-    else
-    {
-      file->setFrameBuffer (frameBuffer);
-      file->readPixels(dw.min.y,dw.max.y);
-    }
-  }
-
-  /* cleanup and return... */
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
-  img->flags |= DT_IMAGE_HDR;
-
-  return DT_IMAGEIO_OK;
-}
-
-dt_imageio_retval_t dt_imageio_open_exr_preview(dt_image_t *img, const char *filename)
-{
-  bool isTiled=false;
-  std::auto_ptr<Imf::TiledInputFile> fileTiled;
-  std::auto_ptr<Imf::InputFile> file;
-  const Imf::Header *header=NULL;
-
-  /* verify openexr image */
-  if(!Imf::isOpenExrFile ((const char *)filename,isTiled))
-    return DT_IMAGEIO_FILE_CORRUPTED;
-
-  /* open exr file */
-  try
-  {
-    if(isTiled)
-    {
-      std::auto_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
-      fileTiled = temp;
-      header = &(fileTiled->header());
-    }
-    else
-    {
-      std::auto_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
-      file = temp;
-      header = &(file->header());
-    }
-  }
-  catch (const std::exception &e)
-  {
-    return DT_IMAGEIO_FILE_CORRUPTED;
-  }
-
-  /* Get image width and height */
-  Imath::Box2i dw = header->dataWindow();
-  uint32_t width = dw.max.x - dw.min.x + 1;
-  uint32_t height = dw.max.y - dw.min.y + 1;
-  img->width = width;
-  img->height = height;
-
-  float *buf = (float*)dt_alloc_align(16,4*sizeof(float)*img->width*img->height);
 
   /* check channels in image, currently we only support R,G,B */
   const Imf::ChannelList &channels = header->channels();
@@ -185,8 +115,10 @@ dt_imageio_retval_t dt_imageio_open_exr_preview(dt_image_t *img, const char *fil
       file->readPixels(dw.min.y,dw.max.y);
     }
   }
-  dt_imageio_retval_t retv = dt_image_raw_to_preview(img, buf);
-  free(buf);
 
-  return retv;
+  /* cleanup and return... */
+  img->flags |= DT_IMAGE_HDR;
+
+  return DT_IMAGEIO_OK;
 }
+

@@ -25,7 +25,7 @@
 #include "common/cache.h"
 
 // this implements a concurrent LRU cache using
-// a chunked-lock doubly linked list
+// a concurrent doubly linked list
 // and a hopscotch hashmap, source following the paper and
 // the additional material (GPLv2+ c++ concurrency package source)
 // `Hopscotch Hashing' by Maurice Herlihy, Nir Shavit and Moran Tzafrir

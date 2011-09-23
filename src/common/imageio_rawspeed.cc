@@ -48,7 +48,7 @@ rawspeed_get_number_of_processor_cores()
 
 using namespace RawSpeed;
 
-dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, void **buf);
+dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_allocator_t a);
 static CameraMetaData *meta = NULL;
 
 #if 0
@@ -75,7 +75,7 @@ dt_imageio_retval_t
 dt_imageio_open_rawspeed(
     dt_image_t  *img,
     const char  *filename,
-    void       **buf)
+    dt_mipmap_cache_allocator_t a)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
@@ -151,14 +151,14 @@ dt_imageio_open_rawspeed(
       img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
       img->height = (orientation & 4) ? r->dim.x : r->dim.y;
 
-      *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL);
-      if(!*buf)
+      void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+      if(!buf)
       {
         if (d) delete d;
         if (m) delete m;
         return DT_IMAGEIO_CACHE_FULL;
       }
-      dt_imageio_flip_buffers((char *)*buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
+      dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
     }
     catch (RawDecoderException e)
     {
@@ -191,7 +191,7 @@ dt_imageio_open_rawspeed(
 }
 
 dt_imageio_retval_t
-dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r)
+dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_allocator_t a)
 {
   // this is modelled substantially on dt_imageio_open_tiff
 
@@ -211,8 +211,8 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r)
   bool is_50d = !strncmp(makermodel, "Canon EOS 50D", 13);
   int raw_width_extra = (is_50d && r->subsampling.y == 2) ? 72 : 0;
 
-  *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL);
-  if(!*buf)
+  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  if(!buf)
     return DT_IMAGEIO_CACHE_FULL;
 
   int black = r->blackLevel;
@@ -221,7 +221,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r)
   ushort16* raw_img = (ushort16*)r->getData();
 
 #if 0
-  dt_imageio_flip_buffers_ui16_to_float(*buf, raw_img, black, white, 3, raw_width, raw_height,
+  dt_imageio_flip_buffers_ui16_to_float(buf, raw_img, black, white, 3, raw_width, raw_height,
                                         raw_width, raw_height, raw_width + raw_width_extra, orientation);
 #else
 
@@ -230,7 +230,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r)
   for( int row = 0; row < raw_height; ++row )
     for( int col = 0; col < raw_width; ++col )
       for( int k = 0; k < 3; ++k )
-        img->pixels[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] = (float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] * scale;
+        ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] = (float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] * scale;
 #endif
 
   return DT_IMAGEIO_OK;
