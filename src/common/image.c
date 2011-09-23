@@ -438,10 +438,10 @@ int32_t dt_image_duplicate(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into images "
-                              "(id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
+                              "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
                               "focal_length, focus_distance, datetime_taken, flags, output_width, output_height, crop, "
                               "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation) "
-                              "select null, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
+                              "select null, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, "
                               "focal_length, focus_distance, datetime_taken, flags, width, height, crop, "
                               "raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation "
                               "from images where id = ?1", -1, &stmt, NULL);
@@ -483,6 +483,14 @@ int32_t dt_image_duplicate(const int32_t imgid)
 void dt_image_remove(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
+#if 0
+  int group_id = -1;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW) group_id = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+#endif
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -513,6 +521,21 @@ void dt_image_remove(const int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+#if 0
+  // make sure that the group_id is equal to the id of one of the images in the group.
+  if(imgid == group_id){
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images where group_id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+    if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 0) > 0){
+      sqlite3_finalize(stmt);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = (select id from images where group_id = ?1 limit 1) where group_id = ?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, group_id);
+      sqlite3_step(stmt);
+    }
+    sqlite3_finalize(stmt);
+  }
+#endif
   dt_image_cache_clear(imgid);
 }
 
@@ -674,10 +697,31 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
+  // Try to find out if this should be grouped already.
+  gchar *basename = g_strdup(imgfname);
+  gchar *cc2 = basename + strlen(basename);
+  for(; *cc2!='.'&&cc2>basename; cc2--);
+  *cc2='\0';
+  gchar *sql_pattern = g_strconcat(basename, ".%", NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
+  int group_id;
+  if(sqlite3_step(stmt) == SQLITE_ROW) group_id = sqlite3_column_int(stmt, 0);
+  else                                 group_id = id;
+  sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = ?1 where id = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
   dt_image_t *img = dt_image_cache_get_uninited(id, 'w');
   g_strlcpy(img->filename, imgfname, DT_MAX_PATH);
   img->id = id;
+  img->group_id = group_id;
   img->film_id = film_id;
   img->dirty = 1;
 
@@ -734,6 +778,8 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
   g_free(imgfname);
   g_free(fname);
+  g_free(basename);
+  g_free(sql_pattern);
 
   return id;
 }
@@ -828,6 +874,7 @@ void dt_image_init(dt_image_t *img)
   }
   sqlite3_finalize(stmt);
   img->film_id = -1;
+  img->group_id = -1;
   img->flags = dt_conf_get_int("ui_last/import_initial_rating");
   if(img->flags < 0 || img->flags > 4)
   {
@@ -867,42 +914,43 @@ int dt_image_open2(dt_image_t *img, const int32_t id)
   int rc, ret = 1;
   char *str;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation, focus_distance from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation, focus_distance from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   // DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, img->filename, strlen(img->filename), SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    img->id      = sqlite3_column_int(stmt, 0);
-    img->film_id = sqlite3_column_int(stmt, 1);
-    img->width   = sqlite3_column_int(stmt, 2);
-    img->height  = sqlite3_column_int(stmt, 3);
+    img->id       = sqlite3_column_int(stmt, 0);
+    img->group_id = sqlite3_column_int(stmt, 1); // FIXME: this one may change without the image noticing (when deleting an image). so use with care.
+    img->film_id  = sqlite3_column_int(stmt, 2);
+    img->width    = sqlite3_column_int(stmt, 3);
+    img->height   = sqlite3_column_int(stmt, 4);
     img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] =
         img->exif_datetime_taken[0] = '\0';
-    str = (char *)sqlite3_column_text(stmt, 4);
-    if(str) g_strlcpy(img->filename,   str, 512);
     str = (char *)sqlite3_column_text(stmt, 5);
-    if(str) g_strlcpy(img->exif_maker, str, 32);
+    if(str) g_strlcpy(img->filename,   str, 512);
     str = (char *)sqlite3_column_text(stmt, 6);
-    if(str) g_strlcpy(img->exif_model, str, 32);
+    if(str) g_strlcpy(img->exif_maker, str, 32);
     str = (char *)sqlite3_column_text(stmt, 7);
+    if(str) g_strlcpy(img->exif_model, str, 32);
+    str = (char *)sqlite3_column_text(stmt, 8);
     if(str) g_strlcpy(img->exif_lens,  str, 52);
-    img->exif_exposure = sqlite3_column_double(stmt, 8);
-    img->exif_aperture = sqlite3_column_double(stmt, 9);
-    img->exif_iso = sqlite3_column_double(stmt, 10);
-    img->exif_focal_length = sqlite3_column_double(stmt, 11);
-    str = (char *)sqlite3_column_text(stmt, 12);
+    img->exif_exposure = sqlite3_column_double(stmt, 9);
+    img->exif_aperture = sqlite3_column_double(stmt, 10);
+    img->exif_iso = sqlite3_column_double(stmt, 11);
+    img->exif_focal_length = sqlite3_column_double(stmt, 12);
+    str = (char *)sqlite3_column_text(stmt, 13);
     if(str) g_strlcpy(img->exif_datetime_taken, str, 20);
-    img->flags = sqlite3_column_int(stmt, 13);
-    img->output_width  = sqlite3_column_int(stmt, 14);
-    img->output_height = sqlite3_column_int(stmt, 15);
-    img->exif_crop = sqlite3_column_double(stmt, 16);
-    *(int *)&img->raw_params = sqlite3_column_int(stmt, 17);
-    img->raw_denoise_threshold = sqlite3_column_double(stmt, 18);
-    img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 19);
-    img->black   = sqlite3_column_double(stmt, 20);
-    img->maximum = sqlite3_column_double(stmt, 21);
-    img->orientation = sqlite3_column_int(stmt, 22);
-    img->exif_focus_distance = sqlite3_column_double(stmt,23);
+    img->flags = sqlite3_column_int(stmt, 14);
+    img->output_width  = sqlite3_column_int(stmt, 15);
+    img->output_height = sqlite3_column_int(stmt, 16);
+    img->exif_crop = sqlite3_column_double(stmt, 17);
+    *(int *)&img->raw_params = sqlite3_column_int(stmt, 18);
+    img->raw_denoise_threshold = sqlite3_column_double(stmt, 19);
+    img->raw_auto_bright_threshold = sqlite3_column_double(stmt, 20);
+    img->black   = sqlite3_column_double(stmt, 21);
+    img->maximum = sqlite3_column_double(stmt, 22);
+    img->orientation = sqlite3_column_int(stmt, 23);
+    img->exif_focus_distance = sqlite3_column_double(stmt,24);
     if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
 
     ret = 0;

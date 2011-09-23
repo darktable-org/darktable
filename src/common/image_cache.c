@@ -549,6 +549,7 @@ void dt_image_cache_clear(int32_t id)
   // if still locked, at least invalidate the data.
   {
     cache->line[cache_line].image.film_id = -1;
+    cache->line[cache_line].image.group_id = -1;
     cache->line[cache_line].image.id = -1;
 
   }
@@ -668,6 +669,7 @@ dt_image_t *dt_image_cache_get_uninited(int32_t id, const char mode)
     cache->line[cache_line].image.id = id;
     cache->line[cache_line].image.cacheline = cache_line;
     cache->line[cache_line].image.film_id = -1;
+    cache->line[cache_line].image.group_id = -1;
   }
 
   if(cache->line[cache_line].lock.write)
@@ -735,7 +737,7 @@ void dt_image_cache_flush_no_sidecars(dt_image_t *img)
   img->dirty = 0;
   int rc;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, output_width = ?14, output_height = ?15, crop = ?16, raw_parameters = ?17, raw_denoise_threshold = ?18, raw_auto_bright_threshold = ?19, raw_black = ?20, raw_maximum = ?21, orientation = ?22 where id = ?23", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set width = ?1, height = ?2, maker = ?3, model = ?4, lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, output_width = ?14, output_height = ?15, crop = ?16, raw_parameters = ?17, raw_denoise_threshold = ?18, raw_auto_bright_threshold = ?19, raw_black = ?20, raw_maximum = ?21, orientation = ?22, group_id = ?23 where id = ?24", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
@@ -758,7 +760,8 @@ void dt_image_cache_flush_no_sidecars(dt_image_t *img)
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->black);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 21, img->maximum);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, img->orientation);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->group_id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->id);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_flush] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);

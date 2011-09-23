@@ -114,7 +114,7 @@ typedef struct dt_image_t
   // common stuff
   int32_t width, height, output_width, output_height;
   // used by library
-  int32_t num, flags, film_id, id;
+  int32_t num, flags, film_id, id, group_id;
   // cache
   int32_t cacheline; // for image_cache
   uint8_t *mip[DT_IMAGE_MIPF]; // for mipmap_cache
@@ -418,3 +418,5 @@ dt_imageio_retval_t dt_image_raw_to_preview(dt_image_t *img, const float *raw);
 /** up-converts mip4 to mipf using guessed gamma values. needs mip4 r locked. */
 dt_imageio_retval_t dt_image_preview_to_raw(dt_image_t *img);
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

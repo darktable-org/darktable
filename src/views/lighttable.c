@@ -92,6 +92,8 @@ typedef struct dt_library_t
     sqlite3_stmt *select_imgid_in_selection;
     /* delete from selected_images where imgid != ?1 */
     sqlite3_stmt *delete_except_arg;
+    /* check if the group of the image under the mouse has others, too, ?1: group_id, ?2: imgid */
+    sqlite3_stmt *is_grouped;
   } statements;
 
 }
@@ -156,7 +158,7 @@ void init(dt_view_t *self)
 
   /* initialize reusable sql statements */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid != ?1", -1, &lib->statements.delete_except_arg, NULL);
-  
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = ?1 and id != ?2", -1, &lib->statements.is_grouped, NULL); //TODO: only check in displayed images?
 }
 
 
@@ -205,7 +207,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   // grid stride
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
   lib->image_over = DT_VIEW_DESERT;
-  int32_t mouse_over_id;
+  int32_t mouse_over_id, mouse_over_group = -1;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
   if(iir == 1) cairo_set_source_rgb (cr, .9, .9, .9);
@@ -323,16 +325,43 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   /* setup offset and row for the main query */
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset);
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, max_rows*iir);
- 
+
+  if(mouse_over_id != -1)
+  {
+    dt_image_t *mouse_over_image = dt_image_cache_get(mouse_over_id, 'r');
+    mouse_over_group = mouse_over_image->group_id;
+    dt_image_cache_release(mouse_over_image, 'r');
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.is_grouped);
+    DT_DEBUG_SQLITE3_RESET(lib->statements.is_grouped);
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.is_grouped, 1, mouse_over_group);
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.is_grouped, 2, mouse_over_id);
+    if(sqlite3_step(lib->statements.is_grouped) != SQLITE_ROW)
+      mouse_over_group = -1;
+  }
+
+  // prefetch the ids so that we can peek into the future to see if there are adjacent images in the same group.
+  int *query_ids = g_malloc0(max_rows*max_cols*sizeof(int));
+  for(int row = 0; row < max_rows; row++)
+  {
+    for(int col = 0; col < max_cols; col++)
+    {
+      if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+        query_ids[row*iir+col] = sqlite3_column_int(lib->statements.main_query, 0);
+      else goto end_query_cache;
+    }
+  }
+
+end_query_cache:
+
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
     {
       curidx = grid_to_index(row, col, iir, offset);
 
-      if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+      id = query_ids[row*iir+col];
+      if(id > 0)
       {
-        id = sqlite3_column_int(lib->statements.main_query, 0);
         dt_image_t *image = dt_image_cache_get(id, 'r');
         if (iir == 1 && row)
         {
@@ -352,12 +381,12 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           {
             /* clear selection if no modifier is being held */
 
-	    /* clear and reset statment */
-	    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
-	    DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
-	    
-	    /* reuse statement */
-	    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
+            /* clear and reset statment */
+            DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
+            DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
+
+            /* reuse statement */
+            DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
             sqlite3_step(lib->statements.delete_except_arg);
           }
           // Step 1: If this is the clicked cell, toggle it
@@ -385,6 +414,95 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         cairo_save(cr);
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
+
+        gboolean paint_border = FALSE;
+        // regular highlight border
+        if(mouse_over_group == image->group_id && iir > 1 && (darktable.gui->grouping == FALSE || image->group_id == darktable.gui->expanded_group_id))
+        {
+          cairo_set_source_rgb(cr, 1, 0, 0);
+          paint_border = TRUE;
+        }
+        // border of expanded group
+        else if(darktable.gui->grouping && image->group_id == darktable.gui->expanded_group_id && iir > 1)
+        {
+          cairo_set_source_rgb(cr, 0, 0, 1);
+          paint_border = TRUE;
+        }
+
+        if(paint_border)
+        {
+          int neighbour_group = -1;
+          // top border
+          if(row > 0)
+          {
+            int _id = query_ids[(row-1)*iir+col];
+            if(_id > 0)
+            {
+              dt_image_t *_img = dt_image_cache_get(_id, 'r');
+              neighbour_group = _img->group_id;
+              dt_image_cache_release(_img, 'r');
+            }
+          }
+          if(neighbour_group != image->group_id)
+          {
+            cairo_move_to(cr, 0, 0);
+            cairo_line_to(cr, wd, 0);
+          }
+          // left border
+          neighbour_group = -1;
+          if(col > 0)
+          {
+            int _id = query_ids[row*iir+(col-1)];
+            if(_id > 0)
+            {
+              dt_image_t *_img = dt_image_cache_get(_id, 'r');
+              neighbour_group = _img->group_id;
+              dt_image_cache_release(_img, 'r');
+            }
+          }
+          if(neighbour_group != image->group_id)
+          {
+            cairo_move_to(cr, 0, 0);
+            cairo_line_to(cr, 0, ht);
+          }
+          // bottom border
+          neighbour_group = -1;
+          if(row < max_rows-1)
+          {
+            int _id = query_ids[(row+1)*iir+col];
+            if(_id > 0)
+            {
+              dt_image_t *_img = dt_image_cache_get(_id, 'r');
+              neighbour_group = _img->group_id;
+              dt_image_cache_release(_img, 'r');
+            }
+          }
+          if(neighbour_group != image->group_id)
+          {
+            cairo_move_to(cr, 0, ht);
+            cairo_line_to(cr, wd, ht);
+          }
+          // right border
+          neighbour_group = -1;
+          if(col < max_cols-1)
+          {
+            int _id = query_ids[row*iir+(col+1)];
+            if(_id > 0)
+            {
+              dt_image_t *_img = dt_image_cache_get(_id, 'r');
+              neighbour_group = _img->group_id;
+              dt_image_cache_release(_img, 'r');
+            }
+          }
+          if(neighbour_group != image->group_id)
+          {
+            cairo_move_to(cr, wd, 0);
+            cairo_line_to(cr, wd, ht);
+          }
+          cairo_set_line_width(cr, 0.01*wd);
+          cairo_stroke(cr);
+        }
+
         cairo_restore(cr);
         dt_image_cache_release(image, 'r');
       }
@@ -433,6 +551,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 #endif
 
 failure:
+
+  g_free(query_ids);
 
   oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
@@ -983,6 +1103,20 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
         }
         dt_image_cache_flush(image);
         dt_image_cache_release(image, 'r');
+        break;
+      }
+      case DT_VIEW_GROUP:
+      {
+        int32_t mouse_over_id;
+        DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+        dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+        if(!image) return 0;
+        if(image->group_id == darktable.gui->expanded_group_id)
+          darktable.gui->expanded_group_id = -1;
+        else
+          darktable.gui->expanded_group_id = image->group_id;
+        dt_image_cache_release(image, 'r');
+        dt_collection_update_query(darktable.collection);
         break;
       }
       default:

@@ -43,7 +43,8 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from selected_images where imgid = ?1", -1, &vm->statements.delete_from_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into selected_images values (?1)", -1, &vm->statements.make_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1", -1, &vm->statements.have_history, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &vm->statements.get_color, NULL); 
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &vm->statements.get_color, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = (select group_id from images where id=?1) and id != ?2", -1, &vm->statements.get_grouped, NULL);
 
   int res=0, midx=0;
   char *modules[] = {"lighttable","darkroom","capture",NULL};
@@ -577,6 +578,7 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
 static inline void
 dt_view_draw_altered(cairo_t *cr, const float x, const float y, const float r)
 {
+  cairo_new_sub_path(cr);
   cairo_arc(cr, x, y, r, 0, 2.0f*M_PI);
   const float dx = r*cosf(M_PI/8.0f), dy = r*sinf(M_PI/8.0f);
   cairo_move_to(cr, x-dx, y-dy);
@@ -609,19 +611,23 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   cairo_save (cr);
   const int32_t imgid = img ? img->id : index; // in case of locked image, use id to draw basic stuff.
   float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
-  int selected = 0, altered = 0, imgsel;
+  int selected = 0, altered = 0, imgsel, is_grouped = 0;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
 
   /* clear and reset statements */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
   DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
   DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
 
   /* bind imgid to prepared statments */
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid); 
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, imgid);
 
   /* lets check if imgid is selected */
   if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) 
@@ -630,7 +636,11 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   /* lets check if imgid has history */
   if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) 
     altered = 1;
-  
+
+  /* lets check if imgid is in a group */
+  if(sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW)
+    is_grouped = 1;
+
   if(selected == 1)
   {
     outlinecol = 0.4;
@@ -846,6 +856,33 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     cairo_stroke(cr);
     cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
     cairo_set_line_width(cr, 1.5);
+
+    // image part of a group?
+    if(is_grouped && darktable.gui && darktable.gui->grouping)
+    {
+      // draw grouping icon and border if the current group is expanded
+      // align to the right, left of altered
+      float s = (r1+r2)*.75;
+      float _x, _y;
+      if(zoom != 1)
+      {
+        _x = width*0.9 - s*2.5;
+        _y = height*0.1 - s*.4;
+      }
+      else
+      {
+        _x = (.04+7*0.04-1.1*.04)*fscale;
+        _y = y - (.17*.04)*fscale;
+      }
+      cairo_save(cr);
+      if(imgid != img->group_id)
+        cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+      dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23);
+      cairo_restore(cr);
+      // mouse is over the grouping icon
+      if(img && abs(px-_x-.5*s) <= .8*s && abs(py-_y-.5*s) <= .8*s)
+        *image_over = DT_VIEW_GROUP;
+    }
 
     // image altered?
     if(altered)
@@ -1091,6 +1128,5 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
   if (vm->proxy.lighttable.module)
     vm->proxy.lighttable.set_zoom(vm->proxy.lighttable.module, zoom);
 }
-
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

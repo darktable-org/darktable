@@ -39,6 +39,8 @@ dt_lib_tool_filter_t;
 static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data);
 /* callback for sort combobox change */
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data);
+/* callback for grouping button */
+static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user_data);
 /* callback for preference button */
 static void _lib_filter_preferences_button_clicked(GtkWidget *widget, gpointer user_data);
 /* updates the query and redraws the view */
@@ -134,6 +136,17 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_filter_sort_combobox_changed),
                     (gpointer)self);
 
+  /* create the grouping button */
+  widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 7);
+  if(darktable.gui->grouping)
+    g_object_set(G_OBJECT(widget), "tooltip-text", _("expand grouped images"), (char *)NULL);
+  else
+    g_object_set(G_OBJECT(widget), "tooltip-text", _("collapse grouped images"), (char *)NULL);
+  g_signal_connect (G_OBJECT (widget), "clicked",
+                    G_CALLBACK (_lib_filter_grouping_button_clicked),
+                    NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), darktable.gui->grouping);
 
   /* create the preference button */
   widget = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
@@ -196,6 +209,17 @@ static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user
   _lib_filter_update_query(user_data);
 }
 
+static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  darktable.gui->grouping = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  if(darktable.gui->grouping)
+    g_object_set(G_OBJECT(widget), "tooltip-text", _("expand grouped images"), (char *)NULL);
+  else
+    g_object_set(G_OBJECT(widget), "tooltip-text", _("collapse grouped images"), (char *)NULL);
+  dt_conf_set_bool("ui_last/grouping", darktable.gui->grouping);
+  dt_collection_update_query(darktable.collection);
+}
+
 static void _lib_filter_preferences_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   dt_gui_preferences_show();
@@ -213,3 +237,5 @@ static void _lib_filter_update_query(dt_lib_module_t *self)
   if(darktable.develop->image)
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, darktable.develop->image->id);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

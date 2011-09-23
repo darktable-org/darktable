@@ -58,6 +58,9 @@ typedef struct dt_gui_gtk_t
 
   int32_t center_tooltip; // 0 = no tooltip, 1 = new tooltip, 2 = old tooltip
 
+  gboolean grouping;
+  int32_t expanded_group_id;
+
 }
 dt_gui_gtk_t;
 
@@ -174,3 +177,5 @@ GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_main_window(struct dt_ui_t *ui);
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
