@@ -374,15 +374,6 @@ static void init_tab_presets(GtkWidget *book)
   g_signal_connect(G_OBJECT(tree), "row-activated",
                    G_CALLBACK(tree_row_activated_presets), NULL);
 
-  // A selection change will cancel a currently active remapping
-//   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(tree))),
-//                    "changed",
-//                    G_CALLBACK(tree_selection_changed), NULL);
-
-  // A keypress may remap an accel or delete one
-//   g_signal_connect(G_OBJECT(tree), "key-press-event",
-//                    G_CALLBACK(tree_key_press), (gpointer)model);
-
   // Setting up the search functionality
   gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), P_NAME_COLUMN);
   gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
