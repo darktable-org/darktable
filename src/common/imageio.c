@@ -218,14 +218,14 @@ dt_imageio_retval_t
 dt_imageio_open_hdr(
     dt_image_t  *img,
     const char  *filename,
-    void       **buf)
+    dt_mipmap_cache_allocator_t a)
 {
   dt_imageio_retval_t ret;
-  ret = dt_imageio_open_exr(img, filename, buf);
+  ret = dt_imageio_open_exr(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-  ret = dt_imageio_open_rgbe(img, filename, buf);
+  ret = dt_imageio_open_rgbe(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-  ret = dt_imageio_open_pfm(img, filename, buf);
+  ret = dt_imageio_open_pfm(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 return_label:
   if(ret == DT_IMAGEIO_OK)
@@ -244,7 +244,7 @@ dt_imageio_retval_t
 dt_imageio_open_raw(
     dt_image_t  *img,
     const char  *filename,
-    void       **buf)
+    dt_mipmap_cache_allocator_t a)
 {
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
@@ -309,8 +309,8 @@ dt_imageio_open_raw(
   img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
 
-  *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL);
-  if(!*buf)
+  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  if(!buf)
   {
     libraw_recycle(raw);
     libraw_close(raw);
@@ -321,7 +321,7 @@ dt_imageio_open_raw(
   #pragma omp parallel for schedule(static) default(none) shared(img, image, raw)
 #endif
   for(int k=0; k<img->width*img->height; k++)
-    ((uint16_t *)*buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
+    ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
   // clean up raw stuff.
   libraw_recycle(raw);
   libraw_close(raw);
@@ -382,9 +382,9 @@ gboolean dt_imageio_is_ldr(const char *filename)
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t
 dt_imageio_open_ldr(
-    dt_image_t  *img,
-    const char  *filename,
-    void       **buf)
+    dt_image_t *img,
+    const char *filename,
+    dt_mipmap_cache_allocator_t a)
 {
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_tiff(img, filename, buf);
@@ -422,8 +422,8 @@ dt_imageio_open_ldr(
   }
   img->bpp = 4*sizeof(float);
 
-  *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL);
-  if(!*buf)
+  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  if(!buf)
   {
     free(tmp);
     return DT_IMAGEIO_CACHE_FULL;
@@ -432,7 +432,7 @@ dt_imageio_open_ldr(
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = orientation & 4 ? img->height : img->width;
 
-  dt_imageio_flip_buffers_ui8_to_float((float *)*buf, tmp, 0.0f, 255.0f, 4, wd2, ht2, wd2, ht2, wd2, orientation);
+  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, wd2, ht2, wd2, ht2, wd2, orientation);
 
   free(tmp);
 
@@ -642,32 +642,28 @@ has_ldr_extension(const char *filename)
   return ret;
 }
 
-// TODO: interface has to change! something like:
 dt_imageio_retval_t
 dt_imageio_open(
-    dt_image_t  *img,              // non-const * means you hold a write lock!
-    const char  *filename,         // full path
-    void       **buf)              // fill this buffer, allocate it via dt_mipmap_cache_alloc
+    dt_image_t  *img,               // non-const * means you hold a write lock!
+    const char  *filename,          // full path
+    dt_mipmap_cache_allocator_t a)  // allocate via dt_mipmap_cache_alloc
 {
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
   
   /* check if file is ldr using magic's */
   if (dt_imageio_is_ldr(filename))
-    ret = dt_imageio_open_ldr(img, filename, buf);
+    ret = dt_imageio_open_ldr(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
 #ifdef HAVE_RAWSPEED
-    ret = dt_imageio_open_rawspeed(img, filename, buf);
+    ret = dt_imageio_open_rawspeed(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
 #endif
-    ret = dt_imageio_open_raw(img, filename, buf);
+    ret = dt_imageio_open_raw(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_hdr(img, filename, buf);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // Failsafing, if ldr magic test fails..
-      ret = dt_imageio_open_ldr(img, filename, buf);
+    ret = dt_imageio_open_hdr(img, filename, a);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // failsafing, if ldr magic test fails..
+      ret = dt_imageio_open_ldr(img, filename, a);
 
-  // FIXME: flushing is done in image_cache_write_release(), which has to follow this function,
-  //        since we get a non-const image pointer!
-  // if(ret == DT_IMAGEIO_OK) dt_image_cache_flush_no_sidecars(img);
   img->flags &= ~DT_IMAGE_THUMBNAIL;
   img->dirty = 1;
   return ret;

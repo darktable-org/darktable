@@ -133,11 +133,12 @@ dt_mipmap_cache_cleanup(void *data, const uint32_t key, void *payload)
   // TODO: overwrite buffer with not-found image?
 }
 
+
 // callback for the imageio core to allocate memory.
 // only needed for _F and _FULL buffers, as they change size
 // with the input image. will allocate img->width*img->height*img->bpp bytes.
 void*
-dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size)
+dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_allocator_t a)
 {
   assert(size == DT_MIPMAP_F || size == DT_MIPMAP_FULL);
   dt_mipmap_cache_one_t *c = darktable.mipmap_cache.mip + size;
@@ -148,15 +149,21 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size)
       (DT_IMAGE_WIDOW_SIZE * DT_IMAGE_WINDOW_SIZE * 4*sizeof(float)))
     + sizeof(float)*4; // padding for sse alignment.
 
-  // FIXME: memory clutter will still result here!
-  // TODO: only free/alloc if size is too small!
-  uint32_t *buf = dt_alloc_align(64, buffer_size);
-  if(!buf) return NULL;
-  buf[0] = img->width;
-  buf[1] = img->height;
-  buf[2] = buffer_size;
+  // buf might have been alloc'ed before,
+  // so only check size and re-alloc if necessary:
+  void **buf = a;
+  if(*buf && (*buf[2] < buffer_size))
+  {
+    free(*buf);
+    *buf = dt_alloc_align(64, buffer_size);
+    // set buffer size only if we're making it larger.
+    *buf[2] = buffer_size;
+  }
+  if(!*buf) return NULL;
+  *buf[0] = img->width;
+  *buf[1] = img->height;
   // trick the user into using a pointer without the header:
-  return buf+4;
+  return *buf+4;
 }
 
 // callback for the cache backend to initialize payload pointers
@@ -167,15 +174,12 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost)
   dt_mipmap_cache_one_t *c     = (dt_mipmap_cache_one_t *)data;
   const uint32_t imgid         = get_imgid(key);
   const dt_mipmap_size_t size  = get_size(key);
-  // FIXME: actually what we're after is exactly what's not inited by the image_cache.
-  // TODO: image_cache_write_get
+  uint32_t *buf;
+
+  // load the image:
   dt_image_t *dt_image_cache_write_get(darktable.image_cache, (int32_t)imgid);
-  // TODO: imageio_open()
-  // TODO: done :)
-
-  // TODO: wrap mipmap_cache_allocate as a callback for them!
-
-  *cost = buffer_size;
+  dt_imageio_retval_t ret = dt_imageio_open(img, filename, &buf);
+  *cost = sizeof(uint32_t)*4+img->bpp*img->width*img->height;
 
   // don't write xmp for this (we only changed db stuff):
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);

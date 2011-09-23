@@ -102,6 +102,17 @@ typedef struct dt_mipmap_cache_t
 }
 dt_mipmap_cache_t;
 
+typedef void** dt_mipmap_cache_allocator_t;
+// dynamic memory allocation interface for imageio backend:
+// the allocator is passed in, it might already contain a
+// valid buffer. this function takes care of re-allocating,
+// if necessary.
+void*
+dt_mipmap_cache_alloc(
+    dt_image_t *img,
+    dt_mipmap_size_t size,
+    dt_mipmap_cache_allocator_t a);
+
 void dt_mipmap_cache_init   (dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_print  (dt_mipmap_cache_t *cache);
