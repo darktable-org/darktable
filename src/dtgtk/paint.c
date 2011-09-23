@@ -484,6 +484,19 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_stroke (cr);
 }
 
+// TODO: Find better icon
+void dtgtk_cairo_paint_grouping(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s = (w<h?w:h);
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+
+  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size (cr, 2);
+  cairo_move_to (cr, -0.3, 1.2);
+  cairo_show_text(cr, "G");
+}
+
 void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
   gint s=w<h?w:h;
@@ -646,3 +659,5 @@ void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
   cairo_stroke(cr);
 
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

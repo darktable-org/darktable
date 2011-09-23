@@ -81,6 +81,8 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
 void dtgtk_cairo_paint_alignment(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint styles icon */
 void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint the grouping icon. */
+void dtgtk_cairo_paint_grouping(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint the preferences wheel. */
 void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint and */
@@ -97,3 +99,5 @@ void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
 void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
                             gint flags);
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
