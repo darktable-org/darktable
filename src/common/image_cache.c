@@ -149,6 +149,7 @@ dt_image_cache_write_get(
     dt_image_cache_t *cache,
     const dt_image_t *img)
 {
+  if(!img) return NULL;
   // just force the dt_image_t struct to make sure it has been locked for reading before.
   return (dt_image_t *)dt_cache_write_get(&cache->cache, img->id);
 }

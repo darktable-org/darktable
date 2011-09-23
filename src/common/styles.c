@@ -188,13 +188,8 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     if (dt_dev_is_current_image(darktable.develop, imgid))
       dt_dev_reload_history_items (darktable.develop);
 
-    /* reimport image */
-    dt_image_t *img = dt_image_cache_get (imgid, 'r');
-    if(img != NULL)
-    {
-      img->force_reimport = 1;
-      dt_image_cache_flush(img);
-    }
+    /* remove old obsolete thumbnails */
+    dt_mipmap_cache_remove(&darktable.mipmap_cache, imgid);
   }
 }
 

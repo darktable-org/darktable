@@ -29,7 +29,7 @@ void dt_ratings_apply_to_selection (int rating)
   uint32_t count = dt_collection_get_selected_count(darktable.collection);
   if (count)
   {
-    dt_control_log(_("applying rating %d onto %d image(s)"),rating,count);
+    dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count), rating, count);
 #if 0 // not updating cache
     gchar query[1024]={0};
     g_snprintf(query,1024,
@@ -44,10 +44,10 @@ void dt_ratings_apply_to_selection (int rating)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      dt_image_t *image = dt_image_cache_get(sqlite3_column_int(stmt, 0), 'r');
+      dt_image_t *image = dt_image_cache_write_get(&darktable.image_cache, sqlite3_column_int(stmt, 0));
       image->flags = (image->flags & ~0x7) | (0x7 & rating);
-      dt_image_cache_flush(image);
-      dt_image_cache_release(image, 'r');
+      // synch through:
+      dt_image_cache_write_release(image, DT_IMAGE_CACHE_SAFE);
     }
     sqlite3_finalize(stmt);
 
@@ -55,7 +55,7 @@ void dt_ratings_apply_to_selection (int rating)
     dt_control_queue_redraw_center();
   }
   else
-    dt_control_log(_("no images selected for applying rating"));
+    dt_control_log(_("no images selected to apply rating"));
 
 }
 

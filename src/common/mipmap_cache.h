@@ -147,4 +147,10 @@ dt_mipmap_cache_write_release(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf);
 
+// remove thumbnails, so they will be regenerated:
+void
+dt_mipmap_cache_remove(
+    dt_mipmap_cache_t *cache,
+    const uint32_t imgid);
+
 #endif

@@ -257,6 +257,10 @@ int dt_image_altered(const dt_image_t *img)
 // TODO: move to mipmap_cache.c (at least the guts of it)
 int dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
+  fprintf(stderr, "[image_import] is not implemented yet!\n");
+  return 0;
+  //FIXME: re-implement on top of new cache!!
+#if 0
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 0;
   const char *cc = filename + strlen(filename);
   for(; *cc!='.'&&cc>filename; cc--);
@@ -378,6 +382,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   g_free(fname);
 
   return id;
+#endif
 }
 
 void dt_image_init(dt_image_t *img)

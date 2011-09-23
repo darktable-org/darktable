@@ -179,11 +179,15 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost)
   if(size == DT_MIPMAP_FULL)
   {
     // load the image:
-    dt_image_t *dt_image_cache_write_get(darktable.image_cache, (int32_t)imgid);
+    const dt_image_t *cimg = dt_image_cache_read_get(&darktable.image_cache, (int32_t)imgid);
+    dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, cimg);
+    char filename[DT_MAX_PATH_LEN];
+    dt_image_full_path(img->id, filename, DT_MAX_PATH_LEN);
     dt_imageio_retval_t ret = dt_imageio_open(img, filename, &buf);
     *cost = sizeof(uint32_t)*4+img->bpp*img->width*img->height;
     // don't write xmp for this (we only changed db stuff):
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(&darktable.image_cache, img);
     return buf;
   }
   else
@@ -436,6 +440,19 @@ dt_mipmap_cache_get_matching_size(
     }
   }
   return best;
+}
+
+void
+dt_mipmap_cache_remove(
+    dt_mipmap_cache_t *cache,
+    const uint32_t imgid)
+{
+  // get rid of all ldr thumbnails:
+  for(int k=DT_MIPMAP_0;k<DT_MIPMAP_F;k++)
+  {
+    const uint32_t key = get_key(imgid, k);
+    dt_cache_remove(cache->mip[k].cache, key);
+  }
 }
 
 
