@@ -24,7 +24,7 @@
 #include <errno.h>
 #include <glib.h>
 #include <strings.h>
-#ifdef  HAVE_INOTIFY
+#if 0//def  HAVE_INOTIFY
 #include <sys/inotify.h>
 #endif
 
@@ -42,7 +42,7 @@ typedef struct _watch_t
 } _watch_t;
 
 
-#ifdef  HAVE_INOTIFY
+#if 0// def  HAVE_INOTIFY
 
 typedef struct inotify_event_t
 {
