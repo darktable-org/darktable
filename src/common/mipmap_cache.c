@@ -179,7 +179,7 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost)
   if(size == DT_MIPMAP_FULL)
   {
     // load the image:
-    const dt_image_t *cimg = dt_image_cache_read_get(&darktable.image_cache, (int32_t)imgid);
+    const dt_image_t *cimg = dt_image_cache_read_get(&darktable.image_cache, imgid);
     dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, cimg);
     char filename[DT_MAX_PATH_LEN];
     dt_image_full_path(img->id, filename, DT_MAX_PATH_LEN);

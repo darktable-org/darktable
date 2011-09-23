@@ -152,7 +152,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  const dt_image_t *img = dt_image_cache_read_get(&darktable.image_cache, imgid);
   if(!img) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
@@ -224,7 +224,7 @@ failed:
 
   /* export image to file */
   dt_imageio_export(img, filename, format, fdata);
-  dt_image_cache_release(img, 'r');
+  dt_image_cache_read_release(&darktable.image_cache, img);
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;
