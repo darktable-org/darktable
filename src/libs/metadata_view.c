@@ -132,10 +132,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     const int vl = 512;
     char value[vl];
-    dt_image_t *img = dt_image_cache_get(mouse_over_id, 'r');
-    if(!img || img->film_id == -1)
+    const dt_image_t *img = dt_image_cache_read_get(&darktable.image_cache, mouse_over_id);
+    if(!img) goto fill_minuses;
+    if(img->film_id == -1)
     {
-      dt_image_cache_release(img, 'r');
+      dt_image_cache_read_release(&darktable.image_cache, img);
       goto fill_minuses;
     }
 
@@ -202,7 +203,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
    
    
     /* release img */
-    dt_image_cache_release(img, 'r');
+    dt_image_cache_read_release(&darktable.image_cache, img);
     
   }
 

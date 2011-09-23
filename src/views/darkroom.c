@@ -418,7 +418,7 @@ int try_enter(dt_view_t *self)
   }
 
   // this loads the image from db if needed:
-  dev->image = dt_image_cache_get(selected, 'r');
+  dev->image = dt_image_cache_read_get(&darktable.image_cache, selected);
   // get image and check if it has been deleted from disk first!
   char imgfilename[1024];
   dt_image_full_path(dev->image->id, imgfilename, 1024);
@@ -426,7 +426,7 @@ int try_enter(dt_view_t *self)
   {
     dt_control_log(_("image `%s' is currently unavailable"), dev->image->filename);
     // dt_image_remove(selected);
-    dt_image_cache_release(dev->image, 'r');
+    dt_image_cache_read_release(&darktable.image_cache, dev->image);
     dev->image = NULL;
     return 1;
   }
@@ -462,7 +462,7 @@ static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 }
 
 static void
-dt_dev_change_image(dt_develop_t *dev, const dt_image_t *image)
+dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 {
   // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
@@ -483,14 +483,14 @@ dt_dev_change_image(dt_develop_t *dev, const dt_image_t *image)
     dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
     dev->image->force_reimport = 1;
   }
-  // release full buffer
-  if(dev->image && dev->image->pixels)
-    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
 
   // writes the .xmp and the database:
-  dt_image_cache_flush(dev->image);
+  dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, dev->image);
+  dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
 
-  dev->image = image;
+  // change read lock to new image
+  dt_image_cache_read_release(&darktable.image_cache, dev->image);
+  dev->image = dt_image_cache_read_get(&darktable.image_cache, imgid);
   while(dev->history)
   {
     // clear history of old image
@@ -603,12 +603,9 @@ film_strip_activated(const int imgid, void *data)
   // switch images in darkroom mode:
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  dt_image_t *image = dt_image_cache_get(imgid, 'r');
-  dt_dev_change_image(dev, image);
-  // release image struct with metadata.
-  dt_image_cache_release(dev->image, 'r');
+  dt_dev_change_image(dev, imgid);
   // select newly loaded image
-  select_this_image(dev->image->id);
+  select_this_image(imgid);
   // force redraw
   dt_control_queue_redraw();
   // prefetch next few from first selected image on.
@@ -662,11 +659,9 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
         return;
       }
 
-      const dt_image_t *image = dt_image_cache_read_get(&darktable.image_cache, imgid);
-      dt_dev_change_image(dev, image);
-      dt_image_cache_read_release(&darktable.image_cache, image);
-      select_this_image(dev->image->id);
-      dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image->id);
+      dt_dev_change_image(dev, imgid);
+      select_this_image(imgid);
+      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid);
 
     }
     sqlite3_finalize(stmt);

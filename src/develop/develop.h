@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,8 +59,8 @@ typedef struct dt_develop_t
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
 
-  // image under consideration.
-  dt_image_t *image;
+  // image under consideration. locked for reading by the thread which constructs this develop_t
+  const dt_image_t *image;
 
   // history stack
   dt_pthread_mutex_t history_mutex;

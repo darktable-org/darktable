@@ -315,14 +315,14 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   // First of all draw image if availble
   if( lib->image_id >= 0 )
   {
-    dt_image_t *image = dt_image_cache_get(lib->image_id, 'r');
+    const dt_image_t *image = dt_image_cache_read_get(&darktable.image_cache, lib->image_id);
     if( image )
     {
       const float wd = width/1.0;
       cairo_translate(cr,0.0f, TOP_MARGIN);
       dt_view_image_expose(image, &(lib->image_over), lib->image_id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
       cairo_translate(cr,0.0f, -BOTTOM_MARGIN);
-      dt_image_cache_release(image, 'r');
+      dt_image_cache_read_release(&darktable.image_cache, image);
     }
   }
 }
