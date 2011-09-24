@@ -38,7 +38,7 @@ struct dt_imageio_module_format_t;
 struct dt_imageio_module_data_t;
 int
 dt_imageio_export(
-    const dt_image_t *img,                            // means you need a read lock, but no write lock on this image
+    const uint32_t imgid,
     const char *filename,
     struct dt_imageio_module_format_t *format,
     struct dt_imageio_module_data_t *format_params);

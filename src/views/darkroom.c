@@ -397,7 +397,6 @@ void reset(dt_view_t *self)
 
 int try_enter(dt_view_t *self)
 {
-  dt_develop_t *dev = (dt_develop_t *)self->data;
   int selected;
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
   if(selected < 0)
@@ -418,18 +417,22 @@ int try_enter(dt_view_t *self)
   }
 
   // this loads the image from db if needed:
-  dev->image = dt_image_cache_read_get(darktable.image_cache, selected);
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, selected);
   // get image and check if it has been deleted from disk first!
   char imgfilename[1024];
-  dt_image_full_path(dev->image->id, imgfilename, 1024);
+  dt_image_full_path(img->id, imgfilename, 1024);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("image `%s' is currently unavailable"), dev->image->filename);
+    dt_control_log(_("image `%s' is currently unavailable"), img->filename);
     // dt_image_remove(selected);
-    dt_image_cache_read_release(darktable.image_cache, dev->image);
-    dev->image = NULL;
+    dt_image_cache_read_release(darktable.image_cache, img);
     return 1;
   }
+  // and drop the lock again.
+  dt_image_cache_read_release(darktable.image_cache, img);
+  // take a copy of the image struct for convenience.
+  // not terribly clean, this assumes that after return 0 always a call to enter() follows.
+  dt_dev_load_image(darktable.develop, selected);
   return 0;
 }
 
@@ -483,13 +486,13 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
     // writes the .xmp and the database:
-    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, dev->image);
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+    // FIXME: write the xmp:
+    // dt_image_synch_xmp(..)
   }
 
-  // change read lock to new image
-  dt_image_cache_read_release(darktable.image_cache, dev->image);
-  dev->image = dt_image_cache_read_get(darktable.image_cache, imgid);
+  // change image:
+  dt_dev_load_image(darktable.develop, imgid);
+
   while(dev->history)
   {
     // clear history of old image
@@ -758,16 +761,15 @@ void enter(dt_view_t *self)
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
+  dev->gui_leaving = 0;
+  dev->gui_module = NULL;
+
   select_this_image(dev->image->id);
 
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
   DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
   DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
-
-  dev->gui_leaving = 0;
-  dev->gui_module = NULL;
-  dt_dev_load_image(dev, dev->image);
 
   /* add IOP modules to plugin list */
 
@@ -876,8 +878,9 @@ void leave(dt_view_t *self)
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
     // dump new xmp data
-    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, dev->image);
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+    // FIXME: write xmp explicitly!
+    // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, dev->image);
+    // dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
   }
 
   // clear gui.
@@ -914,8 +917,6 @@ void leave(dt_view_t *self)
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
-  // release image struct with metadata as well.
-  dt_image_cache_read_release(darktable.image_cache, dev->image);
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 

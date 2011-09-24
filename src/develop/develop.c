@@ -54,7 +54,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->width = -1;
   dev->height = -1;
 
-  dev->image = NULL;
+  dt_image_init(&dev->image_storage);
+  dev->image = &dev->image_storage;
   dev->image_dirty = dev->preview_dirty = 1;
   dev->image_loading = dev->preview_loading = 0;
   dev->image_force_reload = 0;
@@ -173,6 +174,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
   }
   // init pixel pipeline for preview.
+  // TODO: check if image->width is safe to access here (in case of async raw loading).
   dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height, dev->image->width/(float)buf.width);
 
   if(dev->preview_loading)
@@ -231,6 +233,13 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_get_times(&start);
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_show_times(&start, "[dev]", "to load the image.");
+
+  // copy over image now that width and height are sure to be correct:
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image->id);
+  dev->image_storage = *img;
+  // but don't lock the real thing, as that would avoid any writers to change stuff.
+  // (such as raw loading or star rating changes)
+  dt_image_cache_read_release(darktable.image_cache, img);
 
   // failed to load raw?
   if(!buf.buf) return;
@@ -345,9 +354,11 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   return zoom_scale;
 }
 
-void dt_dev_load_image(dt_develop_t *dev, const dt_image_t *image)
+void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 {
-  dev->image = image;
+  const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dev->image_storage = *image;
+  dt_image_cache_read_release(darktable.image_cache, image);
   if(dev->pipe)
   {
     dev->pipe->processed_width  = 0;
@@ -765,7 +776,7 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, con
 }
 
 int
-dt_dev_is_current_image (dt_develop_t *dev, int imgid)
+dt_dev_is_current_image (dt_develop_t *dev, uint32_t imgid)
 {
   return (dev->image && dev->image->id==imgid)?1:0;
 }

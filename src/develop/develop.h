@@ -59,7 +59,12 @@ typedef struct dt_develop_t
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
 
-  // image under consideration. locked for reading by the thread which constructs this develop_t
+  // image under consideration. image* is just pointing to the storage blob, which
+  // is copied each time an image is changed. this means we have some information
+  // always cached (might be out of sync, so stars are not reliable), but for the iops
+  // it's quite a convenience to access trivial stuff which is constant anyways without
+  // calling into the cache explicitly.
+  dt_image_t image_storage;
   const dt_image_t *image;
 
   // history stack
@@ -127,9 +132,9 @@ void dt_dev_process_preview_job(dt_develop_t *dev);
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
 
-void dt_dev_load_image(dt_develop_t *dev, const dt_image_t *img);
+void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
 /** checks if provided imgid is the image currently in develop */
-int dt_dev_is_current_image(dt_develop_t *dev, int imgid);
+int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);

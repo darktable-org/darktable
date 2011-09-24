@@ -21,6 +21,7 @@
 
 #include "common/colorlabels.h"
 #include "common/image.h"
+#include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/variables.h"
 #include "common/utility.h"
@@ -116,9 +117,10 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   /* image exif time */
   gboolean have_exif_tm = FALSE;
   struct tm exif_tm= {0};
-  if (params->img)
+  if (params->imgid)
   {
-    if (sscanf (params->img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, params->imgid);
+    if (sscanf (img->exif_datetime_taken,"%d:%d:%d %d:%d:%d",
                 &exif_tm.tm_year,
                 &exif_tm.tm_mon,
                 &exif_tm.tm_mday,
@@ -132,6 +134,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
       exif_tm.tm_mon--;
       have_exif_tm = TRUE;
     }
+    dt_image_cache_read_release(darktable.image_cache, img);
   }
 
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
@@ -180,7 +183,9 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
 #endif
   else if( g_strcmp0(variable,"$(STARS)") == 0 && (got_value=TRUE) )
   {
-    int stars = (params->img->flags & 0x7);
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, params->imgid);
+    int stars = (img->flags & 0x7);
+    dt_image_cache_read_release(darktable.image_cache, img);
     if(stars == 6) stars = -1;
     sprintf(value,"%d",stars);
   }
@@ -188,7 +193,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   {
     //TODO: currently we concatenate all the color labels with a ',' as a seeparator. Maybe it's better to only use the first/last label?
     unsigned int count = 0;
-    GList *res = dt_metadata_get(params->img->id, "Xmp.darktable.colorlabels", &count);
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", &count);
     res = g_list_first(res);
     if(res != NULL)
     {

@@ -82,7 +82,6 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
   _email_attachment_t *attachment = ( _email_attachment_t *)malloc(sizeof(_email_attachment_t));
@@ -95,15 +94,14 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   g_mkdir_with_parents(tmpdir,0700);
 
   char dirname[4096];
-  dt_image_full_path(img->id, dirname, 1024);
+  dt_image_full_path(imgid, dirname, 1024);
   const gchar * filename = g_basename( dirname );
   gchar * end = g_strrstr( filename,".")+1;
   g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
 
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
 
-  dt_imageio_export(img, attachment->file, format, fdata);
-  dt_image_cache_read_release(darktable.image_cache, img);
+  dt_imageio_export(imgid, attachment->file, format, fdata);
 
   char *trunc = attachment->file + strlen(attachment->file) - 32;
   if(trunc < attachment->file) trunc = attachment->file;

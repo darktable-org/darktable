@@ -678,9 +678,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   {
     description = desc->data;
   }
-
-  dt_imageio_export(img, fname, format, fdata);
   dt_image_cache_read_release(darktable.image_cache, img);
+
+  dt_imageio_export(imgid, fname, format, fdata);
 
 #ifdef _OPENMP
   #pragma omp critical

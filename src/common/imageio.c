@@ -460,11 +460,11 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
-int dt_imageio_export(const dt_image_t *img, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
+int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
-  dt_dev_load_image(&dev, img);
+  dt_dev_load_image(&dev, imgid);
   const int wd = dev.image->width;
   const int ht = dev.image->height;
 
@@ -618,12 +618,12 @@ int dt_imageio_export(const dt_image_t *img, const char *filename, dt_imageio_mo
   int length;
   uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
   char pathname[1024];
-  dt_image_full_path(img->id, pathname, 1024);
-  length = dt_exif_read_blob(exif_profile, pathname, sRGB, img->id);
+  dt_image_full_path(imgid, pathname, 1024);
+  length = dt_exif_read_blob(exif_profile, pathname, sRGB, imgid);
 
   format_params->width  = processed_width;
   format_params->height = processed_height;
-  const int res = format->write_image (format_params, filename, outbuf, exif_profile, length, img->id);
+  const int res = format->write_image (format_params, filename, outbuf, exif_profile, length, imgid);
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
