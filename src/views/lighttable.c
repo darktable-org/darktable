@@ -417,7 +417,7 @@ end_query_cache:
 
         gboolean paint_border = FALSE;
         // regular highlight border
-        if(mouse_over_group == image->group_id && iir > 1 && (darktable.gui->grouping == FALSE || image->group_id == darktable.gui->expanded_group_id))
+        if(mouse_over_group == image->group_id && iir > 1 && ((!darktable.gui->grouping && dt_conf_get_bool("plugins/lighttable/draw_group_borders")) || image->group_id == darktable.gui->expanded_group_id))
         {
           cairo_set_source_rgb(cr, 1, 0, 0);
           paint_border = TRUE;

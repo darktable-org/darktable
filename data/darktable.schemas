@@ -469,6 +469,19 @@
         <long></long>
       </locale>
     </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/ui_last/grouping</key>
+      <applyto>/apps/darktable/ui_last/grouping</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>grouping of images</short>
+        <long>only show a single image for each set of grouped images in lighttable and filmstrip</long>
+      </locale>
+    </schema>
     
     <schema>
       <key>/schemas/apps/darktable/ui_last/view</key>
@@ -701,6 +714,19 @@
       <locale name="C">
         <short>maximum resolution of lighttable thumbnails</short>
         <long>keep this value low for fast thumbnail creation (allowed: 160-1300)\n(needs a restart and will invalidate current thumbnail caches).</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/plugins/lighttable/draw_group_borders</key>
+      <applyto>/apps/darktable/plugins/lighttable/draw_group_borders</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>draw borders around grouped images</short>
+        <long>draw borders around grouped images when grouping is turned off and the mouse hovers over one of the images of the group.</long>
       </locale>
     </schema>
 
