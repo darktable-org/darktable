@@ -27,6 +27,7 @@
 #include "common/collection.h"
 #include "common/colorlabels.h"
 #include "common/debug.h"
+#include "common/grouping.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -1111,11 +1112,18 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
         DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
         dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
         if(!image) return 0;
-        if(image->group_id == darktable.gui->expanded_group_id)
-          darktable.gui->expanded_group_id = -1;
-        else
-          darktable.gui->expanded_group_id = image->group_id;
+        int group_id = image->group_id;
+        int id = image->id;
         dt_image_cache_release(image, 'r');
+        if(group_id == darktable.gui->expanded_group_id)
+        {
+          if(id == darktable.gui->expanded_group_id)
+            darktable.gui->expanded_group_id = -1;
+          else
+            darktable.gui->expanded_group_id = dt_grouping_change_representative(id);
+        }
+        else
+          darktable.gui->expanded_group_id = group_id;
         dt_collection_update_query(darktable.collection);
         break;
       }
