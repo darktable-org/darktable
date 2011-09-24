@@ -127,7 +127,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev);
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
 
-void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
+void dt_dev_load_image(dt_develop_t *dev, const dt_image_t *img);
 /** checks if provided imgid is the image currently in develop */
 int dt_dev_is_current_image(dt_develop_t *dev, int imgid);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);

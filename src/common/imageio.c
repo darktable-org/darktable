@@ -262,7 +262,7 @@ dt_imageio_open_raw(
   raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
-  raw->params.user_flip = img->raw_params.user_flip;
+  raw->params.user_flip = 0;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
@@ -273,7 +273,7 @@ dt_imageio_open_raw(
   raw->params.green_matching = 0;
   raw->params.highlight = 1;
   raw->params.threshold = 0;
-  raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
+  // raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
 
   // raw->params.amaze_ca_refine = 0;
   raw->params.fbdd_noiserd    = 0;
@@ -284,8 +284,8 @@ dt_imageio_open_raw(
   raw->params.half_size = 0;
 
   ret = libraw_unpack(raw);
-  img->black   = raw->color.black/65535.0;
-  img->maximum = raw->color.maximum/65535.0;
+  // img->black   = raw->color.black/65535.0;
+  // img->maximum = raw->color.maximum/65535.0;
   img->bpp = sizeof(uint16_t);
   // printf("black, max: %d %d %f %f\n", raw->color.black, raw->color.maximum, img->black, img->maximum);
   HANDLE_ERRORS(ret, 1);
@@ -319,7 +319,7 @@ dt_imageio_open_raw(
     return DT_IMAGEIO_CACHE_FULL;
   }
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(img, image, raw)
+  #pragma omp parallel for schedule(static) default(none) shared(img, image, raw, buf)
 #endif
   for(int k=0; k<img->width*img->height; k++)
     ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
@@ -388,7 +388,7 @@ dt_imageio_open_ldr(
     dt_mipmap_cache_allocator_t a)
 {
   dt_imageio_retval_t ret;
-  ret = dt_imageio_open_tiff(img, filename, buf);
+  ret = dt_imageio_open_tiff(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
     img->filters = 0;
@@ -478,7 +478,15 @@ int dt_imageio_export(const dt_image_t *img, const char *filename, dt_imageio_mo
     return 0;
   }
 
-  dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev.image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+  if(!buf.buf)
+  {
+    dt_control_log(_("failed to get an image buffer from the cache!"));
+    dt_dev_cleanup(&dev);
+    return 0;
+  }
+  dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
@@ -619,6 +627,7 @@ int dt_imageio_export(const dt_image_t *img, const char *filename, dt_imageio_mo
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
+  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   free(moutbuf);
   return res;
 }

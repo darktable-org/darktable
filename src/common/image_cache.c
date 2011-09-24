@@ -38,7 +38,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, orientation, focus_distance from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -63,11 +63,9 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
     str = (char *)sqlite3_column_text(stmt, 12);
     if(str) g_strlcpy(img->exif_datetime_taken, str, 20);
     img->flags = sqlite3_column_int(stmt, 13);
-    img->output_width  = sqlite3_column_int(stmt, 14);
-    img->output_height = sqlite3_column_int(stmt, 15);
-    img->exif_crop = sqlite3_column_double(stmt, 16);
-    img->orientation = sqlite3_column_int(stmt, 22);
-    img->exif_focus_distance = sqlite3_column_double(stmt,23);
+    img->exif_crop = sqlite3_column_double(stmt, 14);
+    img->orientation = sqlite3_column_int(stmt, 15);
+    img->exif_focus_distance = sqlite3_column_double(stmt,16);
     if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
   }
   else fprintf(stderr, "[image_cache_allocate] failed to open image from database: %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
@@ -275,8 +273,7 @@ dt_image_cache_write_release(
       "update images set width = ?1, height = ?2, maker = ?3, model = ?4, "
       "lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, "
       "focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, "
-      "output_width = ?14, output_height = ?15, crop = ?16, "
-      "orientation = ?17 where id = ?21", -1, &stmt, NULL);
+      "crop = ?14, orientation = ?15 where id = ?16", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, strlen(img->exif_maker), SQLITE_STATIC);
@@ -290,11 +287,9 @@ dt_image_cache_write_release(
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, img->film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 12, img->exif_datetime_taken, strlen(img->exif_datetime_taken), SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->flags);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, img->output_width);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->output_height);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 16, img->exif_crop);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->orientation);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, img->id);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 14, img->exif_crop);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->orientation);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, img->id);
   int rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);

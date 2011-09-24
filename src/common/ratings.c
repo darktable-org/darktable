@@ -44,10 +44,12 @@ void dt_ratings_apply_to_selection (int rating)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      dt_image_t *image = dt_image_cache_write_get(&darktable.image_cache, sqlite3_column_int(stmt, 0));
+      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, sqlite3_column_int(stmt, 0));
+      dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
       image->flags = (image->flags & ~0x7) | (0x7 & rating);
       // synch through:
-      dt_image_cache_write_release(image, DT_IMAGE_CACHE_SAFE);
+      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+      dt_image_cache_read_release(darktable.image_cache, image);
     }
     sqlite3_finalize(stmt);
 

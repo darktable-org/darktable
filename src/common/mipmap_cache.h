@@ -19,6 +19,7 @@
 #define DT_MIPMAP_CACHE_H
 
 #include "common/cache.h"
+#include "common/image.h"
 
 
 // sizes stored in the mipmap cache.
@@ -63,7 +64,7 @@ dt_mipmap_get_flags_t;
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
-  const uint32_t imgid;
+  uint32_t imgid;
   int32_t width, height;
   uint8_t *buf;
 }

@@ -114,7 +114,6 @@ dt_imageio_open_tiff(
   }
   _TIFFfree(buf);
   TIFFClose(image);
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
   return DT_IMAGEIO_OK;
 }
 

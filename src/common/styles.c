@@ -189,7 +189,7 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
       dt_dev_reload_history_items (darktable.develop);
 
     /* remove old obsolete thumbnails */
-    dt_mipmap_cache_remove(&darktable.mipmap_cache, imgid);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   }
 }
 

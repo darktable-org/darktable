@@ -128,7 +128,7 @@ dt_imageio_open_rawspeed(
         img->flags &= ~DT_IMAGE_LDR;
         img->flags |= DT_IMAGE_RAW;
 
-        dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, buf);
+        dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
         if (d) delete d;
         if (m) delete m;
         return ret;
@@ -186,7 +186,6 @@ dt_imageio_open_rawspeed(
   // clean up raw stuff.
   if (d) delete d;
   if (m) delete m;
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
   return DT_IMAGEIO_OK;
 }
 

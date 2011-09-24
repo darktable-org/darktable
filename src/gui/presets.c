@@ -511,7 +511,7 @@ menuitem_factory_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
 
 
 static void
-dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, dt_iop_params_t *params, int32_t params_size, dt_develop_blend_params_t *bl_params, dt_iop_module_t *module, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
+dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, dt_iop_params_t *params, int32_t params_size, dt_develop_blend_params_t *bl_params, dt_iop_module_t *module, const dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
 {
   GtkMenu *menu = darktable.gui->presets_popup_menu;
   if(menu)
@@ -654,7 +654,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
   }
 }
 
-void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t version, void *params, int32_t params_size, void *blendop_params, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
+void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t version, void *params, int32_t params_size, void *blendop_params, const dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
 {
   dt_gui_presets_popup_menu_show_internal(op, version, params, params_size, blendop_params, NULL, image, pick_callback, callback_data);
 }

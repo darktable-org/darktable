@@ -92,7 +92,7 @@ typedef struct dt_image_t
   char filename[DT_MAX_FILENAME_LEN];
 
   // common stuff
-  int32_t width, height, output_width, output_height;
+  int32_t width, height;
   // used by library
   int32_t num, flags, film_id, id;
 

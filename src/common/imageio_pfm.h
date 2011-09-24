@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 #define DT_PFM_H
 
 #include "common/image.h"
+#include "common/mipmap_cache.h"
 
-dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename);
-dt_imageio_retval_t dt_imageio_open_pfm_preview(dt_image_t *img, const char *filename);
+dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 
 #endif

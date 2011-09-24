@@ -387,7 +387,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
 void dt_image_init(dt_image_t *img)
 {
-  img->output_width = img->output_height = img->width = img->height = 0;
+  img->width = img->height = 0;
   img->orientation = -1;
 
   img->filters = 0;

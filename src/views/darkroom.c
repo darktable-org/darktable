@@ -478,15 +478,14 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_write_history(dev);
 
   // be sure light table will update the thumbnail
-  if(dev->image)
+  // TODO: only if image changed!
+  // if()
   {
-    dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
-    dev->image->force_reimport = 1;
+    dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
+    // writes the .xmp and the database:
+    dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, dev->image);
+    dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
   }
-
-  // writes the .xmp and the database:
-  dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, dev->image);
-  dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
 
   // change read lock to new image
   dt_image_cache_read_release(&darktable.image_cache, dev->image);

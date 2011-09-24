@@ -17,7 +17,14 @@
 */
 
 #include "common/darktable.h"
+#include "common/image_cache.h"
+#include "common/imageio.h"
+#include "common/mipmap_cache.h"
 #include "control/conf.h"
+#include "control/jobs.h"
+
+#include <assert.h>
+#include <string.h>
 
 static inline uint32_t
 get_key(const uint32_t imgid, const dt_mipmap_size_t size)
@@ -47,7 +54,7 @@ dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost)
   dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
   const uint32_t hash = key;
   // slot is exactly aligned with encapsulated cache's position
-  const uint32_t slot = hash & c->cache->bucket_mask;
+  const uint32_t slot = hash & c->cache.bucket_mask;
   *cost = c->buffer_size;
 
   // TODO: get image id and mip, initialize reload!
@@ -116,7 +123,7 @@ dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost)
 
 #if 1
   // FIXME: remove this debug thing (black thumbs)
-  uint32_t *buf = c->buf + slot * c->buffer_size
+  uint32_t *buf = c->buf + slot * c->buffer_size;
   memset(buf, 0, c->buffer_size);
   // set width and height:
   buf[0] = c->max_width;
@@ -126,12 +133,14 @@ dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost)
   return c->buf + slot * c->buffer_size;
 }
 
+#if 0
 void
-dt_mipmap_cache_cleanup(void *data, const uint32_t key, void *payload)
+dt_mipmap_cache_deallocate(void *data, const uint32_t key, void *payload)
 {
   // nothing. memory is only allocated once.
   // TODO: overwrite buffer with not-found image?
 }
+#endif
 
 
 // callback for the imageio core to allocate memory.
@@ -140,18 +149,15 @@ dt_mipmap_cache_cleanup(void *data, const uint32_t key, void *payload)
 void*
 dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_allocator_t a)
 {
-  assert(size == DT_MIPMAP_F || size == DT_MIPMAP_FULL);
-  dt_mipmap_cache_one_t *c = darktable.mipmap_cache.mip + size;
-  const uint32_t key = get_key(imgid, size);
+  assert(size == DT_MIPMAP_FULL);
 
-  const uint32_t buffer_size = ((size == DT_MIPMAP_FULL) ?
-      (img->width * img->height * img->bpp) :
-      (DT_IMAGE_WIDOW_SIZE * DT_IMAGE_WINDOW_SIZE * 4*sizeof(float)))
-    + sizeof(float)*4; // padding for sse alignment.
+  const uint32_t buffer_size = 
+      (img->width * img->height * img->bpp) +
+      sizeof(float)*4; // padding for sse alignment.
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
-  void **buf = a;
+  uint32_t **buf = (uint32_t **)a;
   if(*buf && (*buf[2] < buffer_size))
   {
     free(*buf);
@@ -162,6 +168,8 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   if(!*buf) return NULL;
   *buf[0] = img->width;
   *buf[1] = img->height;
+  // possibly store some more flags in the remaining 32 bits, so clear it:
+  *buf[3] = 0;
   // trick the user into using a pointer without the header:
   return *buf+4;
 }
@@ -171,7 +179,6 @@ void*
 dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost)
 {
   // for float preview and full image buffers
-  dt_mipmap_cache_one_t *c     = (dt_mipmap_cache_one_t *)data;
   const uint32_t imgid         = get_imgid(key);
   const dt_mipmap_size_t size  = get_size(key);
   uint32_t *buf;
@@ -179,15 +186,26 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost)
   if(size == DT_MIPMAP_FULL)
   {
     // load the image:
-    const dt_image_t *cimg = dt_image_cache_read_get(&darktable.image_cache, imgid);
-    dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, cimg);
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
     char filename[DT_MAX_PATH_LEN];
     dt_image_full_path(img->id, filename, DT_MAX_PATH_LEN);
-    dt_imageio_retval_t ret = dt_imageio_open(img, filename, &buf);
-    *cost = sizeof(uint32_t)*4+img->bpp*img->width*img->height;
+    dt_imageio_retval_t ret = dt_imageio_open(img, filename, (dt_mipmap_cache_allocator_t)&buf);
+    if(ret != DT_IMAGEIO_OK)
+    {
+      // in case something went wrong, still keep the buffer and return it to the hashtable
+      // so we don't produce mem leaks or unnecessary mem fragmentation.
+      // 
+      // but we can return a zero dimension buffer, so cache_read_get will return
+      // an invalid buffer to the user:
+      buf[0] = buf[1] = 0;
+    }
+    // cost is always what we alloced in this realloc buffer, regardless of what the
+    // image actually uses (could be less than this)
+    *cost = buf[2];
     // don't write xmp for this (we only changed db stuff):
-    dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-    dt_image_cache_read_release(&darktable.image_cache, img);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, img);
     return buf;
   }
   else
@@ -199,7 +217,7 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost)
 
 #if 0
 void
-dt_mipmap_cache_cleanup_dynamic(void *data, const uint32_t key, void *payload)
+dt_mipmap_cache_deallocate_dynamic(void *data, const uint32_t key, void *payload)
 {
   // don't clean up anything, as we are re-allocating. 
 }
@@ -209,6 +227,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
   // TODO: un-serialize!
   const int32_t max_th = 1000000, min_th = 20;
+  const int32_t full_bufs = dt_conf_get_int ("mipmap_cache_full_images");
   int32_t thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
   thumbnails = CLAMPS(thumbnails, min_th, max_th);
   const int32_t max_size = 2048, min_size = 32;
@@ -240,8 +259,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
     dt_cache_set_allocate_callback(&cache->mip[k].cache,
         &dt_mipmap_cache_allocate, &cache->mip[k].cache);
-    dt_cache_set_cleanup_callback(&cache->mip[k].cache,
-        &dt_mipmap_cache_cleanup, &cache->mip[k].cache);
+    // dt_cache_set_cleanup_callback(&cache->mip[k].cache,
+        // &dt_mipmap_cache_deallocate, &cache->mip[k].cache);
     // buffer stores width and height + actual data
     const int width  = cache->mip[k].max_width;
     const int height = cache->mip[k].max_height;
@@ -264,7 +283,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       &dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL].cache);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
-      // &dt_mipmap_cache_cleanup_dynamic, &cache->mip[DT_MIPMAP_FULL].cache);
+      // &dt_mipmap_cache_deallocate_dynamic, &cache->mip[DT_MIPMAP_FULL].cache);
   cache->mip[DT_MIPMAP_FULL].buffer_size = 0;
   cache->mip[DT_MIPMAP_FULL].buffer_cnt  = 0;
   cache->mip[DT_MIPMAP_FULL].size = DT_MIPMAP_FULL;
@@ -288,9 +307,9 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
   for(int k=0; k<(int)DT_MIPMAP_NONE; k++)
   {
-    printf("[mipmap_cache] level %d fill %.2f/%.2f MB (%.2f%%)\n", cache->mip[k].cache.cost/(1024.0*1024.0),
+    printf("[mipmap_cache] level %d fill %.2f/%.2f MB (%.2f%%)\n", k, cache->mip[k].cache.cost/(1024.0*1024.0),
       cache->mip[k].cache.cost_quota/(1024.0*1024.0),
-      (float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota);
+      100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota);
   }
 
   // TODO: stats about locks/users
@@ -307,15 +326,15 @@ dt_mipmap_cache_read_get(
   if(flags == DT_MIPMAP_TESTLOCK)
   {
     // simple case: only get and lock if it's there.
-    uint32_t *buf = (uint32_t *)dt_cache_read_testget(&cache->mip[mip].cache, imgid);
+    uint32_t *data = (uint32_t *)dt_cache_read_testget(&cache->mip[mip].cache, imgid);
     if(buf)
     {
-      buf->width  = buf[0];
-      buf->height = buf[1];
+      buf->width  = data[0];
+      buf->height = data[1];
       buf->imgid  = imgid;
       buf->size   = mip;
       // skip to next 8-byte alignment, for sse buffers.
-      buf->buf    = buf + 4;
+      buf->buf    = (uint8_t *)(data + 4);
     }
     else
     {
@@ -336,12 +355,12 @@ dt_mipmap_cache_read_get(
   else if(flags == DT_MIPMAP_BLOCKING)
   {
     // simple case: blocking get
-    uint32_t *buf = (uint32_t *)dt_cache_read_get(&cache->mip[mip].cache, imgid);
-    buf->width  = buf[0];
-    buf->height = buf[1];
+    uint32_t *data = (uint32_t *)dt_cache_read_get(&cache->mip[mip].cache, imgid);
+    buf->width  = data[0];
+    buf->height = data[1];
     buf->imgid  = imgid;
     buf->size   = mip;
-    buf->buf    = buf + 4;
+    buf->buf    = (uint8_t *)(data + 4);
   }
   else if(flags == DT_MIPMAP_BEST_EFFORT)
   {
@@ -352,7 +371,7 @@ dt_mipmap_cache_read_get(
     {
       // already loaded?
       dt_mipmap_cache_read_get(cache, buf, imgid, mip, DT_MIPMAP_TESTLOCK);
-      if(buf.buf) return;
+      if(buf->buf && buf->width > 0 && buf->height > 0) return;
       // didn't succeed the first time? prefetch for later!
       if(mip == k)
         dt_mipmap_cache_read_get(cache, buf, imgid, mip, DT_MIPMAP_PREFETCH);
@@ -374,10 +393,10 @@ dt_mipmap_cache_write_get(
   assert(buf->size >= DT_MIPMAP_0);
   assert(buf->size <  DT_MIPMAP_NONE);
   // simple case: blocking write get
-  uint32_t *buf = (uint32_t *)dt_cache_write_get(&cache->mip[buf->size].cache, buf->imgid);
-  buf->width  = buf[0];
-  buf->height = buf[1];
-  buf->buf    = buf;
+  uint32_t *data = (uint32_t *)dt_cache_write_get(&cache->mip[buf->size].cache, buf->imgid);
+  buf->width  = data[0];
+  buf->height = data[1];
+  buf->buf    = (uint8_t *)(data + 4);
   // these have already been set in read_get
   // buf->imgid  = imgid;
   // buf->size   = mip;
@@ -451,7 +470,7 @@ dt_mipmap_cache_remove(
   for(int k=DT_MIPMAP_0;k<DT_MIPMAP_F;k++)
   {
     const uint32_t key = get_key(imgid, k);
-    dt_cache_remove(cache->mip[k].cache, key);
+    dt_cache_remove(&cache->mip[k].cache, key);
   }
 }
 
@@ -553,7 +572,6 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
       return 0;
     }
   }
-  img->output_width = img->output_height = 0;
   dt_imageio_retval_t ret = dt_imageio_open_preview(img, filename);
   if(ret == DT_IMAGEIO_CACHE_FULL)
   {
@@ -612,7 +630,7 @@ int dt_image_reimport(dt_image_t *img, const char *filename, dt_image_buffer_t m
 
 // FIXME: make sure this doesn't subsample the mips as grossly as
 //        it does currently. it should start from the full raw
-//        in case output_width/h are much smaller than the input.
+//        in case output width/h are much smaller than the input.
 // process preview to gain ldr-mipmaps:
 void dt_dev_process_to_mip(dt_develop_t *dev)
 {

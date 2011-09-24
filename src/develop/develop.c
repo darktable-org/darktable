@@ -53,13 +53,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->gui_attached = gui_attached;
   dev->width = -1;
   dev->height = -1;
-  dev->mipf = NULL;
 
   dev->image = NULL;
-  dev->buf_full.buf = NULL;
-  dev->buf_f.buf = NULL;
-  dev->buf_full.size = DT_MIPMAP_NONE;
-  dev->buf_f.size = DT_MIPMAP_NONE;
   dev->image_dirty = dev->preview_dirty = 1;
   dev->image_loading = dev->preview_loading = 0;
   dev->image_force_reload = 0;
@@ -178,7 +173,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
   }
   // init pixel pipeline for preview.
-  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, buf.buf, buf.width, buf.height, dev->image->width/(float)buf.width);
+  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height, dev->image->width/(float)buf.width);
 
   if(dev->preview_loading)
   {
@@ -200,7 +195,7 @@ restart:
   if(dev->gui_leaving)
   {
     dt_control_log_busy_leave();
-    dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     return;
   }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -213,7 +208,7 @@ restart:
     if(dev->preview_loading || dev->preview_input_changed)
     {
       dt_control_log_busy_leave();
-      dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
       return;
     }
     else goto restart;
@@ -222,7 +217,7 @@ restart:
 
   dev->preview_dirty = 0;
   dt_control_log_busy_leave();
-  dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
@@ -234,13 +229,13 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
-  dt_mipmap_cache_read_get(&darktable.mipmap_cache, &buf, dev->image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_show_times(&start, "[dev]", "to load the image.");
 
   // failed to load raw?
   if(!buf.buf) return;
   
-  dt_dev_pixelpipe_set_input(dev->pipe, dev, buf.buf, buf.width, buf.height, 1.0);
+  dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
 
   if(dev->image_loading)
   {
@@ -253,8 +248,6 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dev->image_force_reload = 0;
     if(dev->gui_attached)
     {
-      // reset output width
-      dev->image->output_width = dev->image->output_height = 0;
       // during load, a mipf update could have been issued.
       dev->preview_input_changed = 1;
       dev->preview_dirty = 1;
@@ -272,7 +265,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
 restart:
   if(dev->gui_leaving)
   {
-    dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     dt_control_log_busy_leave();
     return;
   }
@@ -291,14 +284,13 @@ restart:
   x = MAX(0, scale*dev->pipe->processed_width *(.5+zoom_x)-dev->capwidth/2);
   y = MAX(0, scale*dev->pipe->processed_height*(.5+zoom_y)-dev->capheight/2);
 
-  dt_times_t start;
   dt_get_times(&start);
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale))
   {
     // interrupted because image changed?
     if(dev->image_force_reload)
     {
-      dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
       dt_control_log_busy_leave();
       return;
     }
@@ -313,7 +305,7 @@ restart:
   // cool, we got a new image!
   dev->image_dirty = 0;
 
-  dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   dt_control_queue_redraw_center();
   dt_control_log_busy_leave();
 }
@@ -321,7 +313,6 @@ restart:
 void dt_dev_raw_reload(dt_develop_t *dev)
 {
   dev->image_force_reload = dev->image_loading = dev->preview_loading = 1;
-  dev->image->output_width = dev->image->output_height = 0;
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
 }
@@ -354,7 +345,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   return zoom_scale;
 }
 
-void dt_dev_load_image(dt_develop_t *dev, dt_image_t *image)
+void dt_dev_load_image(dt_develop_t *dev, const dt_image_t *image)
 {
   dev->image = image;
   if(dev->pipe)
@@ -386,7 +377,7 @@ void dt_dev_configure (dt_develop_t *dev, int wd, int ht)
 }
 
 // helper used to synch a single history item with db
-int dt_dev_write_history_item(dt_image_t *image, dt_dev_history_item_t *h, int32_t num)
+int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h, int32_t num)
 {
   if(!image) return 1;
   sqlite3_stmt *stmt;

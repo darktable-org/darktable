@@ -87,8 +87,20 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>small thumbnails to keep in main memory cache</short>
-        <long>how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts,
-              these get fewer by size. only read at startup.</long>
+        <long>how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts, these get fewer by size. only read at startup.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/mipmap_cache_full_images</key>
+      <applyto>/apps/darktable/mipmap_cache_full_images</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>10</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>maximum number of full resolution image buffers</short>
+        <long>how many full resolution image buffers to keep in main memory at maximum. only read at startup.</long>
       </locale>
     </schema>
 

@@ -86,7 +86,7 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
 
 
   // Try to allocate image data
-  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
   {
     fprintf(stderr, "[exr_read] could not alloc full buffer for image `%s'\n", img->filename);
