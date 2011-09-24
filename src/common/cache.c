@@ -539,6 +539,7 @@ dt_cache_read_testget(
     last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
+  dt_cache_unlock(&segment->lock);
   return NULL;
 }
 
@@ -640,6 +641,7 @@ dt_cache_read_get(
   }
   // TODO: trigger a garbage collection to free some more room!
   // TODO: if fail to insert key, cost will be in an inconsistent state here.
+  // dt_cache_unlock(&segment->lock);
   fprintf(stderr, "[cache] failed to find a free spot for new data!\n");
   exit(1);
   return DT_CACHE_EMPTY_DATA;

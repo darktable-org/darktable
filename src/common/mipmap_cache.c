@@ -30,7 +30,7 @@ static inline uint32_t
 get_key(const uint32_t imgid, const dt_mipmap_size_t size)
 {
   // imgid can't be >= 2^29 (~500 million images)
-  return (size << 29) | imgid;
+  return (((uint32_t)size) << 29) | imgid;
 }
 
 static inline uint32_t
@@ -42,7 +42,7 @@ get_imgid(const uint32_t key)
 static inline dt_mipmap_size_t
 get_size(const uint32_t key)
 {
-  return key >> 29;
+  return (dt_mipmap_size_t)(key >> 29);
 }
 
 // TODO: cache read/write functions!
@@ -325,10 +325,11 @@ dt_mipmap_cache_read_get(
     const dt_mipmap_size_t mip,
     const dt_mipmap_get_flags_t flags)
 {
+  const uint32_t key = get_key(imgid, mip);
   if(flags == DT_MIPMAP_TESTLOCK)
   {
     // simple case: only get and lock if it's there.
-    uint32_t *data = (uint32_t *)dt_cache_read_testget(&cache->mip[mip].cache, imgid);
+    uint32_t *data = NULL;//(uint32_t *)dt_cache_read_testget(&cache->mip[mip].cache, key);
     if(data)
     {
       buf->width  = data[0];
@@ -360,7 +361,7 @@ dt_mipmap_cache_read_get(
   else if(flags == DT_MIPMAP_BLOCKING)
   {
     // simple case: blocking get
-    uint32_t *data = (uint32_t *)dt_cache_read_get(&cache->mip[mip].cache, imgid);
+    uint32_t *data = (uint32_t *)dt_cache_read_get(&cache->mip[mip].cache, key);
     if(!data)
     {
       // sorry guys, no image for you :(
@@ -383,7 +384,7 @@ dt_mipmap_cache_read_get(
     // best-effort, might also return NULL.
     // never decrease mip level for float buffer or full image:
     dt_mipmap_size_t min_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_0;
-    for(int k=mip;k>=min_mip;k--)
+    for(int k=mip;k>=min_mip && k>0;k--)
     {
       // already loaded?
       dt_mipmap_cache_read_get(cache, buf, imgid, mip, DT_MIPMAP_TESTLOCK);
