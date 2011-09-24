@@ -50,7 +50,7 @@ dt_iop_demosaic_params_t;
 typedef struct dt_iop_demosaic_gui_data_t
 {
   GtkDarktableSlider *scale1;
-  GtkToggleButton *greeneq;
+  GtkComboBox *greeneq;
   GtkWidget *color_smoothing;
   GtkComboBox *demosaic_method;
 }
@@ -89,6 +89,14 @@ typedef enum dt_iop_demosaic_method_t
 }
 dt_iop_demosaic_method_t;
 
+typedef enum dt_iop_demosaic_greeneq_t
+{
+  DT_IOP_GREEN_EQ_NO = 0,
+  DT_IOP_GREEN_EQ_LOCAL = 1,
+  DT_IOP_GREEN_EQ_FULL = 2,
+  DT_IOP_GREEN_EQ_BOTH = 3
+}
+dt_iop_demosaic_greeneq_t;
 static void
 amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int filters);
 
@@ -313,16 +321,17 @@ color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const int num_pas
 #undef SWAP
 
 static void
-green_equilibration(float *out, const float *const in, const int width, const int height, const uint32_t filters)
+green_equilibration_lavg(float *out, const float *const in, const int width, const int height, const uint32_t filters, const int x, const int y, const int in_place)
 {
   int oj = 2, oi = 2;
   const float thr = 0.01f;
   const float maximum = 1.0f;
-  if(FC(oj, oi, filters) != 1) oj++;
-  if(FC(oj, oi, filters) != 1) oi++;
-  if(FC(oj, oi, filters) != 1) oj--;
-
-  memcpy(out,in,height*width*sizeof(float));
+  if(FC(oj+y, oi+x, filters) != 1) oj++;
+  if(FC(oj+y, oi+x, filters) != 1) oi++;
+  if(FC(oj+y, oi+x, filters) != 1) oj--;
+  
+  if(!in_place)
+    memcpy(out,in,height*width*sizeof(float));
 
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(out,oi,oj)
@@ -355,6 +364,44 @@ green_equilibration(float *out, const float *const in, const int width, const in
   }
 }
 
+static void
+green_equilibration_favg(float *out, const float *const in, const int width, const int height, const uint32_t filters, const int x, const int y)
+{
+  int oj = 0, oi = 0;
+  //const float ratio_max = 1.1f;
+  double sum1 = 0.0, sum2 = 0.0, gr_ratio;
+
+  if( (FC(oj+y, oi+x, filters) & 1) != 1) oi++;
+  int g2_offset = oi ? -1:1;
+  memcpy(out,in,height*width*sizeof(float));
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) reduction(+: sum1, sum2) shared(oi, oj, g2_offset)
+#endif
+  for(int j=oj; j<(height-1); j+=2)
+  {
+    for(int i=oi; i<(width-1-g2_offset); i+=2)
+    {
+      sum1 += in[j*width+i];
+      sum2 += in[(j+1) * width + i + g2_offset];
+    }
+  }
+
+  if (sum1 > 0.0 && sum2 > 0.0)
+    gr_ratio = sum1/sum2;
+  else
+    return;
+
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(out, oi, oj, gr_ratio, g2_offset)
+#endif
+  for(int j=oj; j<(height-1); j+=2)
+  {
+    for(int i=oi; i<(width-1-g2_offset); i+=2)
+    {
+      out[j*width+i] = in[j*width+i] / gr_ratio;
+    }
+  }
+}
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void
@@ -596,16 +643,31 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-
   const float *const pixels = (float *)i;
   if(roi_out->scale > .999f)
   {
     // output 1:1
     // green eq:
-    if(data->green_eq)
+    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       float *in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
-      green_equilibration(in, pixels, roi_in->width, roi_in->height, data->filters);
+      switch(data->green_eq)
+      {
+        case DT_IOP_GREEN_EQ_FULL:
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
+                        data->filters,  roi_in->x, roi_in->y);
+          break;
+        case DT_IOP_GREEN_EQ_LOCAL:
+          green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
+                        data->filters, roi_in->x, roi_in->y, 0);
+          break;
+        case DT_IOP_GREEN_EQ_BOTH:
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
+                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
+                        data->filters, roi_in->x, roi_in->y, 1);
+          break;
+      } 
       if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
       else
@@ -630,10 +692,26 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     roo.scale = 1.0f;
 
     float *tmp = (float *)dt_alloc_align(16, roo.width*roo.height*4*sizeof(float));
-    if(data->green_eq)
+    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       float *in = (float *)dt_alloc_align(16, roi_in->height*roi_in->width*sizeof(float));
-      green_equilibration(in, pixels, roi_in->width, roi_in->height, data->filters);
+      switch(data->green_eq)
+      {
+        case DT_IOP_GREEN_EQ_FULL:
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
+                        data->filters,  roi_in->x, roi_in->y);
+          break;
+        case DT_IOP_GREEN_EQ_LOCAL:
+          green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
+                        data->filters, roi_in->x, roi_in->y, 0);
+          break;
+        case DT_IOP_GREEN_EQ_BOTH:
+          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, 
+                        data->filters,  roi_in->x, roi_in->y);
+          green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
+                        data->filters, roi_in->x, roi_in->y, 1);
+          break;
+      }
       if (data->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
@@ -691,7 +769,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
      // 1:1 demosaic
     dev_green_eq = NULL;
-    if(data->green_eq)
+    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       // green equilibration
       dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
@@ -764,7 +842,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     const int width = roi_in->width;
     const int height = roi_in->height;
     size_t sizes[2] = { ROUNDUP(width, 4), ROUNDUP(height, 4) };
-    if(data->green_eq)
+    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       // green equilibration
       dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
@@ -992,7 +1070,7 @@ void gui_update   (struct dt_iop_module_t *self)
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   dtgtk_slider_set_value(g->scale1, p->median_thrs);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->greeneq), p->green_eq);
+  gtk_combo_box_set_active(g->greeneq, p->green_eq);
   gtk_combo_box_set_active(g->demosaic_method, p->demosaicing_method);
 }
 
@@ -1018,17 +1096,31 @@ color_smoothing_callback (GtkSpinButton *button, gpointer user_data)
 }
 
 static void
-greeneq_callback (GtkToggleButton *button, gpointer user_data)
+greeneq_callback (GtkComboBox *combo, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  p->green_eq = gtk_toggle_button_get_active(button);
+  int active = gtk_combo_box_get_active(combo);
+  switch(active)
+  {
+    case DT_IOP_GREEN_EQ_FULL:
+      p->green_eq = DT_IOP_GREEN_EQ_FULL;
+      break;
+    case DT_IOP_GREEN_EQ_LOCAL:
+      p->green_eq = DT_IOP_GREEN_EQ_LOCAL;
+      break;
+    case DT_IOP_GREEN_EQ_BOTH:
+      p->green_eq = DT_IOP_GREEN_EQ_BOTH;
+      break;
+    default:
+    case DT_IOP_GREEN_EQ_NO:
+      p->green_eq = DT_IOP_GREEN_EQ_NO;
+      break;
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-demosaic_method_callback (GtkComboBox *combo, dt_iop_module_t *self)
+demosaic_method_callback(GtkComboBox *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   int active = gtk_combo_box_get_active(combo);
@@ -1057,8 +1149,8 @@ void gui_init     (struct dt_iop_module_t *self)
   gtk_table_set_col_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   ////////////////////////////
-  GtkWidget *label = dtgtk_reset_label_new(_("method"), self, &p->demosaicing_method, sizeof(uint32_t));
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
+  GtkWidget *label_dm = dtgtk_reset_label_new(_("method"), self, &p->demosaicing_method, sizeof(uint32_t));
+  gtk_table_attach(GTK_TABLE(self->widget), label_dm, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
   g->demosaic_method = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(g->demosaic_method, _("ppg"));
   gtk_combo_box_append_text(g->demosaic_method, _("AMaZE"));
@@ -1080,17 +1172,23 @@ void gui_init     (struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), g->color_smoothing, 1, 2, 2, 3, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 
-  widget = dtgtk_reset_label_new(_("match greens"), self, &p->green_eq, sizeof(uint32_t));
-  gtk_table_attach(GTK_TABLE(self->widget), widget, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
-  g->greeneq = GTK_TOGGLE_BUTTON(gtk_check_button_new());
-  g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("switch on green equilibration before demosaicing.\nnecessary for some mid-range cameras such as the EOS 400D."), (char *)NULL);
+  ////////////////////////////
+  GtkWidget *label_ge = dtgtk_reset_label_new(_("match greens"), self, &p->green_eq, sizeof(uint32_t));
+  gtk_table_attach(GTK_TABLE(self->widget), label_ge, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
+  g->greeneq = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  gtk_combo_box_append_text(g->greeneq, _("disabled"));
+  gtk_combo_box_append_text(g->greeneq, _("local average"));
+  gtk_combo_box_append_text(g->greeneq, _("full average"));
+  gtk_combo_box_append_text(g->greeneq, _("full and local average"));
+  g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("green channels mathing method"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->greeneq), 1, 2, 3, 4, GTK_FILL|GTK_EXPAND, 0, 0, 0);
+  ////////////////////////////
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (median_thrs_callback), self);
   g_signal_connect (G_OBJECT (g->color_smoothing), "value-changed",
                     G_CALLBACK (color_smoothing_callback), self);
-  g_signal_connect (G_OBJECT (g->greeneq), "toggled",
+  g_signal_connect (G_OBJECT (g->greeneq), "changed",
                     G_CALLBACK (greeneq_callback), self);
   g_signal_connect (G_OBJECT (g->demosaic_method), "changed",
                     G_CALLBACK (demosaic_method_callback), self);
