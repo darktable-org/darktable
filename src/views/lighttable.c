@@ -333,10 +333,10 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
       if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
         id = sqlite3_column_int(lib->statements.main_query, 0);
-        const dt_image_t *image = dt_image_cache_read_get(&darktable.image_cache, id);
+        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
         if (iir == 1 && row)
         {
-          dt_image_cache_read_release(&darktable.image_cache, image);
+          dt_image_cache_read_release(darktable.image_cache, image);
           continue;
         }
         // set mouse over id
@@ -386,7 +386,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
         cairo_restore(cr);
-        dt_image_cache_read_release(&darktable.image_cache, image);
+        dt_image_cache_read_release(darktable.image_cache, image);
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
@@ -418,16 +418,16 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   {
     imgids_num --;
     dt_mipmap_buffer_t buf;
-    int32_t iwd, iht;
     float imgwd = iir == 1 ? 0.97 : 0.8;
     dt_mipmap_size_t mip = 
       dt_mipmap_cache_get_matching_size(
-          &darktable.mipmap_cache, 
+          darktable.mipmap_cache, 
           imgwd*wd, imgwd*(iir==1?height:ht));
 
     dt_mipmap_cache_read_get(
-        &darktable.mipmap_cache,
+        darktable.mipmap_cache,
         &buf,
+        imgids[imgids_num],
         mip,
         DT_MIPMAP_PREFETCH);
   }
@@ -626,7 +626,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
       if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
         id = sqlite3_column_int(lib->statements.main_query, 0);
-        const dt_image_t *image = dt_image_cache_read_get(&darktable.image_cache, id);
+        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
 
         // set mouse over id
         if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row))
@@ -672,7 +672,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(image, &(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
         cairo_restore(cr);
-        dt_image_cache_read_release(&darktable.image_cache, image);
+        dt_image_cache_read_release(darktable.image_cache, image);
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
@@ -704,13 +704,13 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     lib->image_over = DT_VIEW_DESERT;
     cairo_set_source_rgb (cr, .1, .1, .1);
     cairo_paint(cr);
-    const dt_image_t *image = dt_image_cache_read_get(&darktable.image_cache, lib->full_preview_id);
+    const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, lib->full_preview_id);
     if( image )
     {
       // dt_image_prefetch(image, DT_IMAGE_MIPF);
       const float wd = width/1.0;
       dt_view_image_expose(image, &(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
-      dt_image_cache_read_release(&darktable.image_cache, image);
+      dt_image_cache_read_release(darktable.image_cache, image);
     }
   }
   else // we do pass on expose to manager or zoomable
@@ -800,8 +800,8 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          const dt_image_t *cimg = dt_image_cache_read_get(&darktable.image_cache, sqlite3_column_int(stmt, 0));
-          dt_image_t *image = dt_image_cache_write_get(&darktable.image_cache, cimg);
+          const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, sqlite3_column_int(stmt, 0));
+          dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
           if(num == 666 || num == DT_VIEW_DESERT) image->flags &= ~0xf;
           else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
           else
@@ -809,15 +809,15 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
             image->flags &= ~0x7;
             image->flags |= num;
           }
-          dt_image_cache_write_release(&darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-          dt_image_cache_read_release(&darktable.image_cache, cimg);
+          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+          dt_image_cache_read_release(darktable.image_cache, cimg);
         }
         sqlite3_finalize(stmt);
       }
       else
       {
-        const dt_image_t *cimg = dt_image_cache_read_get(&darktable.image_cache, mouse_over_id);
-        dt_image_t *image = dt_image_cache_write_get(&darktable.image_cache, cimg);
+        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+        dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
         if(num == 666 || num == DT_VIEW_DESERT) image->flags &= ~0xf;
         else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
         else
@@ -825,8 +825,8 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
           image->flags &= ~0x7;
           image->flags |= num;
         }
-        dt_image_cache_write_release(&darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-        dt_image_cache_read_release(&darktable.image_cache, cimg);
+        dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_read_release(darktable.image_cache, cimg);
       }
       dt_control_queue_redraw_center();
       break;
@@ -971,8 +971,8 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
       {
         int32_t mouse_over_id;
         DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-        const dt_image_t *cimg = dt_image_cache_read_get(&darktable.image_cache, mouse_over_id);
-        dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, cimg);
+        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+        dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
         if(!image) return 0;
         if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
         else if(lib->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
@@ -981,8 +981,8 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
           image->flags &= ~0x7;
           image->flags |= lib->image_over;
         }
-        dt_image_cache_write_release(&darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-        dt_image_cache_read_release(&darktable.image_cache, image);
+        dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_read_release(darktable.image_cache, image);
         break;
       }
       default:

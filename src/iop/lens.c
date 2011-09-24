@@ -464,7 +464,7 @@ void reload_defaults(dt_iop_module_t *module)
   tmp.tca_b = 1.0;
 
   // init crop from db:
-  dt_image_t *img = module->dev->image;
+  const dt_image_t *img = module->dev->image;
   char model[100];  // truncate often complex descriptions.
   g_strlcpy(model, img->exif_model, 100);
   for(char cnt = 0, *c = model; c < model+100 && *c != '\0'; c++) if(*c == ' ') if(++cnt == 2) *c = '\0';
@@ -476,7 +476,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(cam)
     {
-      img->exif_crop = tmp.crop = cam[0]->CropFactor;
+      tmp.crop = cam[0]->CropFactor;
       lf_free(cam);
     }
   }

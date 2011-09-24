@@ -65,7 +65,7 @@ dt_image_film_roll_name(const char *path)
   return folder;
 }
 
-void dt_image_film_roll(dt_image_t *img, char *pathname, int len)
+void dt_image_film_roll(const dt_image_t *img, char *pathname, int len)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
@@ -120,7 +120,7 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len)
   }
 }
 
-void dt_image_print_exif(dt_image_t *img, char *line, int len)
+void dt_image_print_exif(const dt_image_t *img, char *line, int len)
 {
   if(img->exif_exposure >= 0.1f)
     snprintf(line, len, "%.1f'' f/%.1f %dmm iso %d", img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);

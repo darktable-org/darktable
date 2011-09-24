@@ -243,9 +243,9 @@ process_next_image()
   if(id)
   {
     // get image from cache
-    const dt_image_t *img = dt_image_cache_read_get(&darktable.image_cache, id);
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, id);
     dt_imageio_export(img, "unused", &buf, &dat);
-    dt_image_cache_read_release(&darktable.image_cache, img);
+    dt_image_cache_read_release(darktable.image_cache, img);
   }
   return 0;
 }

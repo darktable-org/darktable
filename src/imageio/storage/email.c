@@ -82,7 +82,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  const dt_image_t *img = dt_image_cache_read_get(&darktable.image_cache, imgid);
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
   _email_attachment_t *attachment = ( _email_attachment_t *)malloc(sizeof(_email_attachment_t));
@@ -103,7 +103,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
 
   dt_imageio_export(img, attachment->file, format, fdata);
-  dt_image_cache_read_release(&darktable.image_cache, img);
+  dt_image_cache_read_release(darktable.image_cache, img);
 
   char *trunc = attachment->file + strlen(attachment->file) - 32;
   if(trunc < attachment->file) trunc = attachment->file;
@@ -199,7 +199,7 @@ proceed: ; // Let's build up uri / command
     gchar exif[256]= {0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
     const gchar *filename = g_basename( attachment->file );
-    const dt_image_t *img = dt_image_cache_read_get(&darktable.image_cache, attachment->imgid);
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, attachment->imgid);
     dt_image_print_exif( img, exif, 256 );
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
 
@@ -208,7 +208,7 @@ proceed: ; // Let's build up uri / command
 
     g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), attachmentFormat, attachment->file );
     // Free attachment item and remove
-    dt_image_cache_read_release(&darktable.image_cache, img);
+    dt_image_cache_read_release(darktable.image_cache, img);
     g_free( d->images->data );
     d->images = g_list_remove( d->images, d->images->data );
   }

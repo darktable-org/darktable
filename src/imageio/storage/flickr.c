@@ -668,7 +668,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
   close(fd);
-  const dt_image_t *img = dt_image_cache_read_get(&darktable.image_cache, imgid);
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   caption = g_path_get_basename( img->filename );
 
   (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
@@ -680,7 +680,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   }
 
   dt_imageio_export(img, fname, format, fdata);
-  dt_image_cache_read_release(&darktable.image_cache, img);
+  dt_image_cache_read_release(darktable.image_cache, img);
 
 #ifdef _OPENMP
   #pragma omp critical

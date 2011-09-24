@@ -154,4 +154,15 @@ dt_mipmap_cache_remove(
     dt_mipmap_cache_t *cache,
     const uint32_t imgid);
 
+// return the closest mipmap size
+// for the given window you wish to draw.
+// a dt_mipmap_size_t has always a fixed resolution associated with it,
+// depending on the user parameter for the maximum thumbnail dimensions.
+// actual resolution depends on the image and is only known after
+// the thumbnail is loaded.
+dt_mipmap_size_t
+dt_mipmap_cache_get_matching_size(
+    const dt_mipmap_cache_t *cache,
+    const int32_t width,
+    const int32_t height);
 #endif

@@ -418,7 +418,7 @@ int try_enter(dt_view_t *self)
   }
 
   // this loads the image from db if needed:
-  dev->image = dt_image_cache_read_get(&darktable.image_cache, selected);
+  dev->image = dt_image_cache_read_get(darktable.image_cache, selected);
   // get image and check if it has been deleted from disk first!
   char imgfilename[1024];
   dt_image_full_path(dev->image->id, imgfilename, 1024);
@@ -426,7 +426,7 @@ int try_enter(dt_view_t *self)
   {
     dt_control_log(_("image `%s' is currently unavailable"), dev->image->filename);
     // dt_image_remove(selected);
-    dt_image_cache_read_release(&darktable.image_cache, dev->image);
+    dt_image_cache_read_release(darktable.image_cache, dev->image);
     dev->image = NULL;
     return 1;
   }
@@ -483,13 +483,13 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
     // writes the .xmp and the database:
-    dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, dev->image);
-    dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, dev->image);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
   }
 
   // change read lock to new image
-  dt_image_cache_read_release(&darktable.image_cache, dev->image);
-  dev->image = dt_image_cache_read_get(&darktable.image_cache, imgid);
+  dt_image_cache_read_release(darktable.image_cache, dev->image);
+  dev->image = dt_image_cache_read_get(darktable.image_cache, imgid);
   while(dev->history)
   {
     // clear history of old image
@@ -628,7 +628,6 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
   {
     int orig_imgid = -1, imgid = -1;
     sqlite3_stmt *stmt;
-    dt_image_t *image;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -872,10 +871,13 @@ void leave(dt_view_t *self)
   dt_dev_write_history(dev);
 
   // be sure light table will regenerate the thumbnail:
-  if(dev->image)
+  // TODO: only if changed!
+  // if()
   {
-    dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
-    dev->image->force_reimport = 1;
+    dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
+    // dump new xmp data
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, dev->image);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
   }
 
   // clear gui.
@@ -912,12 +914,8 @@ void leave(dt_view_t *self)
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
-  // dump new xmp data
-  dt_image_t *img = dt_image_cache_write_get(&darktable.image_cache, dev->image);
-  dt_image_cache_write_release(&darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
-
   // release image struct with metadata as well.
-  dt_image_cache_read_release(&darktable.image_cache, dev->image);
+  dt_image_cache_read_release(darktable.image_cache, dev->image);
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 

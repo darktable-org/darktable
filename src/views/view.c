@@ -605,7 +605,17 @@ dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
 }
 
 
-void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
+void
+dt_view_image_expose(
+    const dt_image_t *img,
+    dt_view_image_over_t *image_over,
+    int32_t index,
+    cairo_t *cr,
+    int32_t width,
+    int32_t height,
+    int32_t zoom,
+    int32_t px,
+    int32_t py)
 {
   cairo_save (cr);
   const int32_t imgid = img ? img->id : index; // in case of locked image, use id to draw basic stuff.
@@ -695,10 +705,10 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   {
     dt_mipmap_size_t mip = 
       dt_mipmap_cache_get_matching_size(
-        &darktable.mipmap_cache,
+        darktable.mipmap_cache,
         imgwd*width, imgwd*height);
     dt_mipmap_cache_read_get(
-        &darktable.mipmap_cache,
+        darktable.mipmap_cache,
         &buf,
         img->id,
         mip,
@@ -707,7 +717,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   cairo_surface_t *surface = NULL;
   if(buf.buf)
   {
-    stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+    const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
     surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
     scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
   }
@@ -747,7 +757,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
       {
         cairo_rectangle(cr, 0, 0, buf.width, buf.height);
         cairo_new_sub_path(cr);
-        cairo_rectangle(cr, -k/scale, -k/scale, fwd+2.*k/scale, fht+2.*k/scale);
+        cairo_rectangle(cr, -k/scale, -k/scale, buf.width+2.*k/scale, buf.height+2.*k/scale);
         cairo_set_source_rgba(cr, 0, 0, 0, alpha);
         alpha *= 0.6f;
         cairo_fill(cr);
@@ -757,7 +767,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
     {
       cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
       cairo_new_sub_path(cr);
-      cairo_rectangle(cr, -border, -border, fwd+2.*border, fht+2.*border);
+      cairo_rectangle(cr, -border, -border, buf.width+2.*border, buf.height+2.*border);
       cairo_stroke_preserve(cr);
       cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
       cairo_fill(cr);
@@ -924,7 +934,7 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   }
 
   cairo_restore(cr);
-  dt_mipmap_cache_read_release(&darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 }
 

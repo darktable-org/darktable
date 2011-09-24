@@ -164,8 +164,8 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
 
   dt_tag_attach(tagid,imgsel);
-  dt_image_synch_xmp(imgsel);
-
+  // FIXME: put back!
+  // dt_image_synch_xmp(imgsel);
 }
 
 static void
@@ -187,7 +187,8 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
 
   dt_tag_detach(tagid,imgsel);
-  dt_image_synch_xmp(imgsel);
+  // FIXME: put back!
+  // dt_image_synch_xmp(imgsel);
 }
 
 static void
@@ -313,7 +314,8 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   {
     do
     {
-      dt_image_synch_xmp(GPOINTER_TO_INT(list_iter->data));
+      // FIXME: put back!
+      // dt_image_synch_xmp(GPOINTER_TO_INT(list_iter->data));
     }
     while((list_iter=g_list_next(list_iter)) != NULL);
   }

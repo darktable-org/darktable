@@ -196,7 +196,8 @@ static gboolean expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_d
 static void clear_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_metadata_clear(-1);
-  dt_image_synch_xmp(-1);
+  // FIXME: put this back!
+  // dt_image_synch_xmp(-1);
   update(user_data, FALSE);
 }
 
@@ -232,7 +233,8 @@ static void write_metadata(dt_lib_module_t *self)
   if(publisher != NULL)
     g_free(publisher);
 
-  dt_image_synch_xmp(-1);
+  // FIXME: put this back!
+  // dt_image_synch_xmp(-1);
   update(self, FALSE);
 }
 
@@ -481,7 +483,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(publisher != NULL && publisher[0] != '\0')
     dt_metadata_set(-1, "Xmp.dc.publisher", publisher);
 
-  dt_image_synch_xmp(-1);
+  // FIXME: put this back!
+  // dt_image_synch_xmp(-1);
   update(self, FALSE);
   return 0;
 }

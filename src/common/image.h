@@ -114,11 +114,11 @@ void dt_image_full_path(const int imgid, char *pathname, int len);
 /** returns the portion of the path used for the film roll name. */
 const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */
-void dt_image_film_roll(dt_image_t *img, char *pathname, int len);
+void dt_image_film_roll(const dt_image_t *img, char *pathname, int len);
 /** appends version numbering for duplicated images. */
 void dt_image_path_append_version(int imgid, char *pathname, const int len);
 /** prints a one-line exif information string. */
-void dt_image_print_exif(dt_image_t *img, char *line, int len);
+void dt_image_print_exif(const dt_image_t *img, char *line, int len);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
 int dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */

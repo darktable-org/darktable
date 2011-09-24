@@ -89,7 +89,8 @@ void    dt_cache_remove(dt_cache_t *cache, const uint32_t key);
 void    dt_cache_gc(dt_cache_t *cache, const float fill_ratio);
 
 // returns the maximum capacity of this cache:
-uint32_t dt_cache_capacity(dt_cache_t *cache)
+static inline uint32_t
+dt_cache_capacity(dt_cache_t *cache)
 {
   return cache->bucket_mask + 1;
 }

@@ -112,7 +112,7 @@ int position()
 }
 
 /* helper function for updating a metadata value */
-static void _metadata_update_value(GtkLabel *label, char *value)
+static void _metadata_update_value(GtkLabel *label, const char *value)
 {
     gtk_label_set_text(GTK_LABEL(label), value);
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
@@ -132,11 +132,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     const int vl = 512;
     char value[vl];
-    const dt_image_t *img = dt_image_cache_read_get(&darktable.image_cache, mouse_over_id);
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
     if(!img) goto fill_minuses;
     if(img->film_id == -1)
     {
-      dt_image_cache_read_release(&darktable.image_cache, img);
+      dt_image_cache_read_release(darktable.image_cache, img);
       goto fill_minuses;
     }
 
@@ -203,7 +203,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
    
    
     /* release img */
-    dt_image_cache_read_release(&darktable.image_cache, img);
+    dt_image_cache_read_release(darktable.image_cache, img);
     
   }
 
