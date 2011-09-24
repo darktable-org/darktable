@@ -146,10 +146,7 @@ add_key_to_beginning_of_list(
 {
   int32_t cost = 1;
   if(cache->allocate)
-  {
-    fprintf(stderr, "calling alloc beg\n");
     cache->allocate(cache->allocate_data, key, &cost, &free_bucket->data);
-  }
   add_cost(cache, cost);
 
   free_bucket->key  = key;
@@ -185,10 +182,7 @@ add_key_to_end_of_list(
 {
   int32_t cost = 1;
   if(cache->allocate)
-  {
-    fprintf(stderr, "calling alloc end\n");
     cache->allocate(cache->allocate_data, key, &cost, &free_bucket->data);
-  }
   add_cost(cache, cost);
 
   free_bucket->key  = key;
