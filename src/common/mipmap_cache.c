@@ -201,11 +201,14 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
       // 
       // but we can return a zero dimension buffer, so cache_read_get will return
       // an invalid buffer to the user:
-      ibuf[0] = ibuf[1] = 0;
+      if(ibuf) ibuf[0] = ibuf[1] = 0;
     }
     // cost is always what we alloced in this realloc buffer, regardless of what the
     // image actually uses (could be less than this)
-    *cost = ibuf[2];
+    if(ibuf)
+      *cost = ibuf[2];
+    else
+      *cost = 0;
     // don't write xmp for this (we only changed db stuff):
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     dt_image_cache_read_release(darktable.image_cache, img);
