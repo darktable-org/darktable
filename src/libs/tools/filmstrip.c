@@ -17,14 +17,15 @@
 */
 
 #include "views/view.h"
-#include "common/history.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/history.h"
+#include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "control/control.h"
 #include "control/conf.h"
-#include "common/image_cache.h"
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/accelerators.h"

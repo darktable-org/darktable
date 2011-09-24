@@ -26,15 +26,15 @@
 
 #include <sqlite3.h>
 
-void*
-dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
+void
+dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
   dt_image_cache_t *c = (dt_image_cache_t *)data;
   const uint32_t hash = key; // == image id
   const uint32_t slot = hash & c->cache.bucket_mask;
   *cost = sizeof(dt_image_t);
 
-  dt_image_t *img = ((dt_image_t *)c->images) + slot;
+  dt_image_t *img = c->images + slot;
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
@@ -71,7 +71,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost)
   else fprintf(stderr, "[image_cache_allocate] failed to open image from database: %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
   sqlite3_finalize(stmt);
 
-  return c->images + slot;
+  *buf = c->images + slot;
 }
 
 void
@@ -99,15 +99,16 @@ dt_image_cache_init(dt_image_cache_t *cache)
   //       can we get away with a fixed size?
   uint32_t num = CLAMPS(dt_conf_get_int("mipmap_cache_thumbnails"), 100, 100000);
   dt_cache_init(&cache->cache, num, 16, 64, 1);
-  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate,   &cache->cache);
-  dt_cache_set_cleanup_callback (&cache->cache, &dt_image_cache_deallocate, &cache->cache);
+  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate,   cache);
+  dt_cache_set_cleanup_callback (&cache->cache, &dt_image_cache_deallocate, cache);
 
   // might have been rounded to power of two:
   num = dt_cache_capacity(&cache->cache);
   cache->images = dt_alloc_align(64, sizeof(dt_image_t)*num);
+  dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
   // initialize first image as empty data:
   dt_image_init(cache->images);
-  for(uint32_t k=0;k<num;k++)
+  for(uint32_t k=1;k<num;k++)
   {
     // optimized initialization (avoid accessing conf):
     memcpy(cache->images + k, cache->images, sizeof(dt_image_t));

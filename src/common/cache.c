@@ -130,14 +130,28 @@ remove_key(dt_cache_segment_t *segment,
 }
 
 static void
-add_key_to_begining_of_list(dt_cache_bucket_t *const keys_bucket,
-                            dt_cache_bucket_t *const free_bucket,
-                            const uint32_t     hash,
-                            const uint32_t     key,
-                            const int32_t      cost,
-                            void              *data)
+add_cost(dt_cache_t    *cache,
+         const int32_t  cost)
 {
-  free_bucket->data = data;
+  __sync_fetch_and_add(&cache->cost, cost);
+}
+
+static void
+add_key_to_beginning_of_list(
+    dt_cache_t        *cache,
+    dt_cache_bucket_t *const keys_bucket,
+    dt_cache_bucket_t *const free_bucket,
+    const uint32_t     hash,
+    const uint32_t     key)
+{
+  int32_t cost = 1;
+  if(cache->allocate)
+  {
+    fprintf(stderr, "calling alloc beg\n");
+    cache->allocate(cache->allocate_data, key, &cost, &free_bucket->data);
+  }
+  add_cost(cache, cost);
+
   free_bucket->key  = key;
   free_bucket->hash = hash;
   free_bucket->cost = cost;
@@ -161,17 +175,24 @@ add_key_to_begining_of_list(dt_cache_bucket_t *const keys_bucket,
 }
 
 static void
-add_key_to_end_of_list(dt_cache_bucket_t *const keys_bucket,
-                       dt_cache_bucket_t *const free_bucket,
-                       const uint32_t     hash,
-                       const uint32_t     key,
-                       const int32_t      cost,
-                       void              *data,
-                       dt_cache_bucket_t *const last_bucket)
+add_key_to_end_of_list(
+    dt_cache_t        *cache,
+    dt_cache_bucket_t *const keys_bucket,
+    dt_cache_bucket_t *const free_bucket,
+    const uint32_t     hash,
+    const uint32_t     key,
+    dt_cache_bucket_t *const last_bucket)
 {
-  free_bucket->data = data;
+  int32_t cost = 1;
+  if(cache->allocate)
+  {
+    fprintf(stderr, "calling alloc end\n");
+    cache->allocate(cache->allocate_data, key, &cost, &free_bucket->data);
+  }
+  add_cost(cache, cost);
+
   free_bucket->key  = key;
-  free_bucket->hash	= hash;
+  free_bucket->hash = hash;
   free_bucket->cost = cost;
   free_bucket->next_delta = DT_CACHE_NULL_DELTA;
 
@@ -392,7 +413,8 @@ lru_insert(dt_cache_t        *cache,
     // re-attach to most recently used end:
     bucket->mru = -1;
     bucket->lru = cache->mru;
-    cache->table[cache->mru].mru = idx;
+    if(cache->mru >= 0)
+      cache->table[cache->mru].mru = idx;
     cache->mru = idx;
     // be consistent if cache was empty before:
     if(cache->lru == -1) cache->lru = idx;
@@ -451,13 +473,6 @@ lru_check_consistency_reverse(dt_cache_t *cache)
   }
   dt_cache_unlock(&cache->lru_lock);
   return cnt;
-}
-
-void
-add_cost(dt_cache_t    *cache,
-         const int32_t  cost)
-{
-  __sync_fetch_and_add(&cache->cost, cost);
 }
 
 // unexposed helpers to increase the read lock count.
@@ -562,12 +577,6 @@ dt_cache_read_get(
     next_delta = compare_bucket->next_delta;
   }
 
-  void *data = NULL;
-  int32_t cost = 1;
-  if(cache->allocate)
-    data = cache->allocate(cache->allocate_data, key, &cost);
-  add_cost(cache, cost);
-
   if(cache->optimize_cacheline)
   {
     dt_cache_bucket_t *free_bucket = start_bucket;
@@ -577,7 +586,8 @@ dt_cache_read_get(
     {
       if(free_bucket->hash == DT_CACHE_EMPTY_HASH)
       {
-        add_key_to_begining_of_list(start_bucket, free_bucket, hash, key, cost, data);
+        add_key_to_beginning_of_list(cache, start_bucket, free_bucket, hash, key);
+        void *data = free_bucket->data;
         dt_cache_bucket_read_lock(free_bucket);
         dt_cache_unlock(&segment->lock);
         lru_insert_locked(cache, free_bucket);
@@ -600,7 +610,8 @@ dt_cache_read_get(
   {
     if(free_max_bucket->hash == DT_CACHE_EMPTY_HASH)
     {
-      add_key_to_end_of_list(start_bucket, free_max_bucket, hash, key, cost, data, last_bucket);
+      add_key_to_end_of_list(cache, start_bucket, free_max_bucket, hash, key, last_bucket);
+      void *data = free_max_bucket->data;
       dt_cache_bucket_read_lock(free_max_bucket);
       dt_cache_unlock(&segment->lock);
       lru_insert_locked(cache, free_max_bucket);
@@ -618,7 +629,8 @@ dt_cache_read_get(
   {
     if(free_min_bucket->hash == DT_CACHE_EMPTY_HASH)
     {
-      add_key_to_end_of_list(start_bucket, free_min_bucket, hash, key, cost, data, last_bucket);
+      add_key_to_end_of_list(cache, start_bucket, free_min_bucket, hash, key, last_bucket);
+      void *data = free_min_bucket->data;
       dt_cache_bucket_read_lock(free_min_bucket);
       dt_cache_unlock(&segment->lock);
       lru_insert_locked(cache, free_min_bucket);
@@ -627,10 +639,7 @@ dt_cache_read_get(
     --free_min_bucket;
   }
   // TODO: trigger a garbage collection to free some more room!
-
-  if(cache->cleanup)
-    cache->cleanup(cache->cleanup_data, key, data);
-  add_cost(cache, -cost);
+  // TODO: if fail to insert key, cost will be in an inconsistent state here.
   fprintf(stderr, "[cache] failed to find a free spot for new data!\n");
   exit(1);
   return DT_CACHE_EMPTY_DATA;

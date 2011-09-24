@@ -74,8 +74,6 @@ typedef struct dt_mipmap_cache_one_t
 {
   // this cache is for which mipmap type?
   dt_mipmap_size_t size;
-  // only usef for _F and _FULL buffers:
-  uint32_t buffer_cnt;
   // real width and height are stored per element
   // (could be smaller than the max for this mip level,
   // due to aspect ratio)
@@ -165,4 +163,5 @@ dt_mipmap_cache_get_matching_size(
     const dt_mipmap_cache_t *cache,
     const int32_t width,
     const int32_t height);
+
 #endif

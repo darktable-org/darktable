@@ -41,8 +41,8 @@ typedef struct dt_cache_t
   uint32_t lru_lock;
 
   // callback functions for cache misses/garbage collection
-  void* (*allocate)(void *data, const uint32_t key, int32_t *cost);
-  void  (*cleanup) (void *data, const uint32_t key, void *payload);
+  void (*allocate)(void *userdata, const uint32_t key, int32_t *cost, void **payload);
+  void (*cleanup) (void *userdata, const uint32_t key, void *payload);
   void *allocate_data;
   void *cleanup_data;
 }
@@ -55,7 +55,7 @@ void dt_cache_cleanup(dt_cache_t *cache);
 static inline void
 dt_cache_set_allocate_callback(
     dt_cache_t *cache,
-    void* (*allocate)(void*, const uint32_t, int32_t*),
+    void (*allocate)(void*, const uint32_t, int32_t*, void**),
     void *allocate_data)
 {
   cache->allocate = allocate;
