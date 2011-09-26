@@ -460,7 +460,11 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
-int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params)
+int dt_imageio_export(
+    const uint32_t              imgid,
+    const char                 *filename,
+    dt_imageio_module_format_t *format,
+    dt_imageio_module_data_t   *format_params)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -475,16 +479,16 @@ int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_mod
   {
     dt_control_log(_("failed to allocate memory for export, please lower the threads used for export or buy more memory."));
     dt_dev_cleanup(&dev);
-    return 0;
+    return 1;
   }
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev.image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   if(!buf.buf)
   {
-    dt_control_log(_("failed to get an image buffer from the cache!"));
+    dt_control_log(_("image `%s' is not available!"), dev.image->filename);
     dt_dev_cleanup(&dev);
-    return 0;
+    return 1;
   }
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
