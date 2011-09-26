@@ -130,11 +130,12 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       img->exif_aperture = pos->toFloat ();
     }
-    /* Read ISO speed */
+    /* Read ISO speed - Nikon happens to return a pair for Lo and Hi modes */
     if ( (pos=Exiv2::isoSpeed(exifData) )
          != exifData.end() )
     {
-      img->exif_iso = pos->toFloat ();
+      int isofield = pos->count () > 1  ? 1 : 0;
+      img->exif_iso = pos->toFloat (isofield);
     }
 #if EXIV2_MINOR_VERSION>19
     /* Read focal length  */
