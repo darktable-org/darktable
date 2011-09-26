@@ -1,0 +1,65 @@
+get it to run without segfaults:
+. develop lock cannot stand man!
+  we even need a write lock when trying to open the image (full pixels).
+. testlock is brocken (doesn't unlock segment lock)
+
+
+flip -> history stack
+
+colorlabels -> cached in image_t
+. xmp_read to use cached values, too!
+. colorlabels.c doesn't sync xmp anymore!
+
+xmp writing/reading does not work currently
+====================================
+. where to put it?
+. what to hide inside cache, what to expose?
+. xmp writing in release should handle dirty bits
+  transparently? checksum?
+. metadata in libs/
+. tagging in libs/
+. explicit writing of history stack in darkroom leave() change()
+
+import does not work anymore! (dt_image_import is crippled)
+
+cleanup messy non-thread-safe dt_dev_get_processed_size() behavior
+
+cap darkroom res by user defined max, not DT_IMAGE_WINDOW_SIZE
+====================================
+. mipmap_cache to initialize to new thumbnail param, too!
+. develop.c
+. also check darkroom.c
+
+
+cache:
+====================================
+. call dt_cache_gc in dt_cache_get_* !
+. call cleanup callbacks in dt_cache_cleanup (and make sure data* is NULL, esp. before calling allocate)
+. find a way to get lock stats for _print functions
+
+
+check dirty bit in dt_image_write_sidecar_file
+. and in all its uses. history.c?
+
+limit full bufs in mipmap_cache_get_read
+ (alloc too late)
+
+exit dr mode: use FULL pipe to get mip4
+
+[de-]serialization of mipmap cache
+ (hashtable? just jpg?)
+
+create mips in mipmap_alloc
+
+invalidate mips in mipmap_cache
+. write through on change?
+
+refactor old api in rest of the code!
+====================================
+. search for dt_image_get
+. search for dt_image_alloc
+. search for dt_image_cache_get
+
+
+light table expose: use 1:1 max mip4
+. mip0 to be fixed size small, too?
