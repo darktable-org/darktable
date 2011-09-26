@@ -206,44 +206,44 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     {
       dt_iop_module_t *module = (dt_iop_module_t*)modules->data;
       GtkWidget *w = module->topwidget;
-    
+
       /* exclude gamma module */
       if(!strcmp(module->op, "gamma")) continue;
-      
+
       /* lets show/hide modules dependent on current group*/
       switch(d->current)
       {
         case DT_MODULEGROUP_ACTIVE_PIPE:
-	{
-	  if(module->enabled)
-	    gtk_widget_show(w);
-	  else
-	    gtk_widget_hide(w);
-	} break;
-	
+          {
+            if(module->enabled)
+              gtk_widget_show(w);
+            else
+              gtk_widget_hide(w);
+          } break;
+
         case DT_MODULEGROUP_FAVORITES:
-	{
-	  if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
-	    gtk_widget_show(w);
-	  else
-	    gtk_widget_hide(w);
-	} break;
+          {
+            if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
+              gtk_widget_show(w);
+            else
+              gtk_widget_hide(w);
+          } break;
 
         case DT_MODULEGROUP_NONE:
-	{
-	  /* show all */
-	  gtk_widget_show(w);
-	} break;
+          {
+            /* show all */
+            gtk_widget_show(w);
+          } break;
 
         default:
-	{
-	  if ( _lib_modulegroups_test(self,d->current, module->groups()) &&
-	       (!module->showhide || (module->showhide && dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))) &&
-	       (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
-	    gtk_widget_show(w);
-	  else
-	    gtk_widget_hide(w);
-	}
+          {
+            if ( _lib_modulegroups_test(self,d->current, module->groups()) &&
+                (!module->showhide || (module->showhide && dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))) &&
+                (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
+              gtk_widget_show(w);
+            else
+              gtk_widget_hide(w);
+          }
       }
     } while((modules = g_list_next(modules))!=NULL);
   }

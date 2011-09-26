@@ -254,6 +254,12 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     /* restore visible stat of panels for the new view */
     dt_ui_restore_panels(darktable.gui->ui);
 
+    /* enter view. crucially, do this before initing the plugins below,
+       as e.g. modulegroups requires the dr stuff to be inited. */
+    if(newv >= 0 && nv->enter) nv->enter(nv);
+    if(newv >= 0 && nv->connect_key_accels)
+      nv->connect_key_accels(nv);
+
     /* lets add plugins related to new view into panels */
     plugins = g_list_last(darktable.lib->plugins);
     while (plugins)
@@ -300,7 +306,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
           snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
 	  
-	  dt_lib_gui_set_expanded(plugin, expanded);
+          dt_lib_gui_set_expanded(plugin, expanded);
 	
           /* show expander if visible  */
           if(dt_lib_is_visible(plugin))
@@ -310,7 +316,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         }
 
         /* show/hide plugin widget depending on expanded flag or if plugin
-	   not is expandeable() */
+           not is expandeable() */
         if(dt_lib_is_visible(plugin) && (expanded || !plugin->expandable()))
           gtk_widget_show_all(plugin->widget);
         else
@@ -320,12 +326,6 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       /* lets get next plugin */
       plugins = g_list_previous(plugins); 
     }
-
-
-    /* enter view */
-    if(newv >= 0 && nv->enter) nv->enter(nv);
-    if(newv >= 0 && nv->connect_key_accels)
-      nv->connect_key_accels(nv);
 
 
     /* raise view changed signal */
