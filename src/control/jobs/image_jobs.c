@@ -43,7 +43,8 @@ int32_t dt_image_load_job_run(dt_job_t *job)
       DT_MIPMAP_BLOCKING);
 
   // drop read lock, as this is only speculative async loading.
-  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  if(buf.buf)
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   return 0;
 }
 

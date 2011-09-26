@@ -729,7 +729,10 @@ dt_cache_read_release(dt_cache_t *cache, const uint32_t key)
     last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
-  fprintf(stderr, "[cache] read_release: bucket not found!\n");
+  dt_cache_unlock(&segment->lock);
+  fprintf(stderr, "[cache] read_release: not locked!\n");
+  // this should never happen, so bail out in debug mode:
+  assert(0);
 }
 
 // augments an already acquired read lock to a write lock. blocks until
