@@ -278,7 +278,6 @@ error:
 static int
 dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
-  dt_pthread_mutex_init(&module->params_mutex, NULL);
   module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
@@ -665,7 +664,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
     free(module->default_blendop_params) ; 
     module->default_blendop_params = NULL ; 
   }
-  dt_pthread_mutex_destroy(&module->params_mutex);
 }
 
 void dt_iop_unload_modules_so()
