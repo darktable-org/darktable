@@ -1052,6 +1052,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS Kiss Digital X50", WhiteFluorescent, 0, { 1.9541, 1, 2.0732, 0 } },
   { "Canon", "EOS Kiss Digital X50", Flash, 0,		{ 2.5283, 1, 1.3584, 0 } },
 
+  { "Canon", "EOS-1DS", Daylight, 0,		{ 1.6133, 1, 1.2500, 0 } }, /* 5302K */
+  { "Canon", "EOS-1DS", Shade, 0,		{ 1.8477, 1, 1.0684, 0 } }, /* 6685K */
+  { "Canon", "EOS-1DS", Cloudy, 0,		{ 1.7285, 1, 1.1504, 0 } }, /* 5940K */
+  { "Canon", "EOS-1DS", Tungsten, 0,		{ 1.1270, 1, 1.9199, 0 } }, /* 3334K */
+  { "Canon", "EOS-1DS", Fluorescent, 0,		{ 1.2012, 1, 1.7168, 0 } }, /* 3643K */
+  { "Canon", "EOS-1DS", Flash, 0,		{ 1.7793, 1, 1.1445, 0 } }, /* 6184K */
+
   // Firmware Version 1.1.6
   { "Canon", "EOS-1Ds Mark II", Daylight, 0,	{ 1.992188, 1, 1.503906, 0 } },
   { "Canon", "EOS-1Ds Mark II", Shade, 0,	{ 2.300781, 1, 1.243164, 0 } },
