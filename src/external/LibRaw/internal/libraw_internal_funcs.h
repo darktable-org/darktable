@@ -48,8 +48,12 @@ it under the terms of the one of three licenses as you choose:
     ushort*     make_decoder (const uchar *source);
     int         ljpeg_start (struct jhead *jh, int info_only);
     void        ljpeg_end(struct jhead *jh);
-    int         ljpeg_diff (ushort *huff);
-    ushort *    ljpeg_row (int jrow, struct jhead *jh);
+    int         ljpeg_diff (ushort *huff); 
+    int         ljpeg_diff_new (LibRaw_bit_buffer& bits, LibRaw_byte_buffer* buf,ushort *huff);
+    int         ljpeg_diff_pef (LibRaw_bit_buffer& bits, LibRaw_byte_buffer* buf,ushort *huff);
+//    ushort *    ljpeg_row (int jrow, struct jhead *jh);
+    ushort *    ljpeg_row_new (int jrow, struct jhead *jh, LibRaw_bit_buffer& bits,LibRaw_byte_buffer* bytes);
+
     unsigned    ph1_bithuff (int nbits, ushort *huff);
 
 // Canon DSLRs
@@ -81,8 +85,9 @@ void        crw_init_tables (unsigned table, ushort *huff[2]);
     void        fuji_load_raw();
     void        parse_fuji (int offset);
 
-
-
+// RedCine
+    void        parse_redcine();
+    void        redcine_load_raw();
 
 // Rollei
     void        rollei_load_raw();

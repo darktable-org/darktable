@@ -11,6 +11,10 @@
       <!--#include virtual="navigation.html" -->
     	<span class="number"><img src="style/quote.png" alt="quote" width="142px" /></span><div class="headline">news</div>
     	
+      <div class="listtext"><img src="images/sun2.jpg" class="img" alt="dreggn"><h1>darktable book final release (v1.0)</h1>
+      <em>(2011-09-18)</em> the book <em>Digital photo development with Darktable</em> has been released. Check out the <a href="http://sourceforge.net/projects/darktable/files/darktable/book/1.0/darktable.pdf/download">pdf</a> or <a href="http://sourceforge.net/projects/darktable/files/darktable/book/1.0/darktable-book-1.0.zip/download">packaged</a> version and, as usual, send your comments and feedback to the <a href="https://lists.sourceforge.net/lists/listinfo/darktable-users">darktable user list</a>.
+      </div>
+    	
       <div class="listtext"><img src="images/crowrock.jpg" class="img" alt="dreggn" /><h1>released 0.9.2</h1>
       <em>(2011-08-27)</em> we <a href="http://sourceforge.net/projects/darktable/files/darktable/0.9/darktable-0.9.2.tar.gz/download">released version 0.9.2</a>, with a few bugfixes on top of release 0.9.1. this is a new point release in the stable branch thus
       there are no new features, just
