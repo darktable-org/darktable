@@ -111,7 +111,7 @@ dt_image_cache_init(dt_image_cache_t *cache)
   //       too large: dangerous and wasteful?
   //       can we get away with a fixed size?
   uint32_t num = CLAMPS(dt_conf_get_int("mipmap_cache_thumbnails"), 100, 100000);
-  dt_cache_init(&cache->cache, num, 16, 64, 1);
+  dt_cache_init(&cache->cache, num, 16, 64, 50 * 1024 * 1024);
   dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate,   cache);
   dt_cache_set_cleanup_callback (&cache->cache, &dt_image_cache_deallocate, cache);
 

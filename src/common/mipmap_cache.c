@@ -215,7 +215,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   {
     // only very few F buffers, but as many as full:
     if(k == DT_MIPMAP_F) thumbnails = full_bufs;
-    dt_cache_init(&cache->mip[k].cache, thumbnails, 16, 64, 1);
+    dt_cache_init(&cache->mip[k].cache, thumbnails, 16, 64, 100*1024*1024);
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
     dt_cache_set_allocate_callback(&cache->mip[k].cache,
@@ -240,7 +240,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     thumbnails = CLAMPS(thumbnails, min_th, max_th);
   }
   // full buffer needs dynamic alloc:
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, full_bufs, 16, 64, 1);
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, full_bufs, 16, 64, 500*1024*1024);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
@@ -562,6 +562,7 @@ _init_8(
   // any errors?
   if(res)
   {
+    fprintf(stderr, "[mipmap init 8] could not process mipmap thumbnail!\n");
     *width = *height = 0;
     return;
   }

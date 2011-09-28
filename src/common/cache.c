@@ -64,6 +64,13 @@ typedef struct dt_cache_segment_t
 dt_cache_segment_t;
 
 
+static inline int
+dt_cache_testlock(uint32_t *lock)
+{
+  if(__sync_val_compare_and_swap(lock, 0, 1)) return 1;
+  return 0;
+}
+
 static inline void
 dt_cache_lock(uint32_t *lock)
 {
@@ -475,21 +482,20 @@ lru_check_consistency_reverse(dt_cache_t *cache)
 // unexposed helpers to increase the read lock count.
 // the segment needs to be locked by the caller.
 static int
-dt_cache_bucket_read_lock(dt_cache_bucket_t *bucket)
+dt_cache_bucket_read_testlock(dt_cache_bucket_t *bucket)
 {
-  // if(bucket->write) return 1;
-  while(bucket->write)
-  {
-    // try again in 5 milliseconds
-    struct timespec s;
-    s.tv_sec = 0;
-    s.tv_nsec = 5000000L;
-    nanosleep(&s, NULL);
-  }
+  if(bucket->write) return 1;
   assert(bucket->read < 0x7ffe);
   assert(bucket->write == 0);
   bucket->read ++;
   return 0;
+}
+static void
+dt_cache_bucket_read_lock(dt_cache_bucket_t *bucket)
+{
+  assert(bucket->read < 0x7ffe);
+  assert(bucket->write == 0);
+  bucket->read ++;
 }
 static void
 dt_cache_bucket_read_release(dt_cache_bucket_t *bucket)
@@ -499,21 +505,21 @@ dt_cache_bucket_read_release(dt_cache_bucket_t *bucket)
   bucket->read --;
 }
 static int
-dt_cache_bucket_write_lock(dt_cache_bucket_t *bucket)
+dt_cache_bucket_write_testlock(dt_cache_bucket_t *bucket)
 {
-  if(bucket->read > 1)
-  {
-    // try again in 5 milliseconds
-    struct timespec s;
-    s.tv_sec = 0;
-    s.tv_nsec = 5000000L;
-    nanosleep(&s, NULL);
-  }
+  if(bucket->read > 1) return 1;
   assert(bucket->read == 1);
   assert(bucket->write < 0x7ffe);
   bucket->write ++;
   return 0;
 }
+// static void
+// dt_cache_bucket_write_lock(dt_cache_bucket_t *bucket)
+// {
+//   assert(bucket->read == 1);
+//   assert(bucket->write < 0x7ffe);
+//   bucket->write ++;
+// }
 static void
 dt_cache_bucket_write_release(dt_cache_bucket_t *bucket)
 {
@@ -535,7 +541,8 @@ dt_cache_read_testget(
   const uint32_t hash = key;
   dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
 
-  dt_cache_lock(&segment->lock);
+  if(dt_cache_testlock(&segment->lock))
+    return NULL;
 
   dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
   dt_cache_bucket_t *last_bucket = NULL;
@@ -547,8 +554,9 @@ dt_cache_read_testget(
     if(hash == compare_bucket->hash && (key == compare_bucket->key))
     {
       void *rc = compare_bucket->data;
-      dt_cache_bucket_read_lock(compare_bucket);
+      int err = dt_cache_bucket_read_testlock(compare_bucket);
       dt_cache_unlock(&segment->lock);
+      if(err) return NULL;
       // move this to the  most recently used slot, too:
       lru_insert_locked(cache, compare_bucket);
       return rc;
@@ -569,31 +577,54 @@ dt_cache_read_get(
     dt_cache_t     *cache,
     const uint32_t  key)
 {
+  // this is the blocking variant, we might need to allocate stuff.
+  // also we have to retry if failed.
+
   // just to support different keys:
   const uint32_t hash = key;
   dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
-
-  dt_cache_lock(&segment->lock);
-
   dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
   dt_cache_bucket_t *last_bucket = NULL;
   dt_cache_bucket_t *compare_bucket = start_bucket;
-  int16_t next_delta = compare_bucket->first_delta;
-  while(next_delta != DT_CACHE_NULL_DELTA)
+
+  while(1)
   {
-    compare_bucket += next_delta;
-    if(hash == compare_bucket->hash && (key == compare_bucket->key))
+    // block and try our luck
+    dt_cache_lock(&segment->lock);
+
+    last_bucket = NULL;
+    compare_bucket = start_bucket;
+    int16_t next_delta = compare_bucket->first_delta;
+    while(next_delta != DT_CACHE_NULL_DELTA)
     {
-      void *rc = compare_bucket->data;
-      dt_cache_bucket_read_lock(compare_bucket);
-      dt_cache_unlock(&segment->lock);
-      // move this to the  most recently used slot, too:
-      lru_insert_locked(cache, compare_bucket);
-      return rc;
+      compare_bucket += next_delta;
+      if(hash == compare_bucket->hash && (key == compare_bucket->key))
+      {
+        void *rc = compare_bucket->data;
+        int err = dt_cache_bucket_read_testlock(compare_bucket);
+        dt_cache_unlock(&segment->lock);
+        // actually all good, just we couldn't get a lock on the bucket.
+        if(err) goto wait;
+        // move this to the  most recently used slot, too:
+        lru_insert_locked(cache, compare_bucket);
+        // found and locked:
+        return rc;
+      }
+      last_bucket = compare_bucket;
+      next_delta = compare_bucket->next_delta;
     }
-    last_bucket = compare_bucket;
-    next_delta = compare_bucket->next_delta;
+    // end of the loop, didn't find it. need to alloc (and keep segment locked)
+    break;
+wait:;
+    // try again in 5 milliseconds
+    struct timespec s;
+    s.tv_sec = 0;
+    s.tv_nsec = 5000000L;
+    nanosleep(&s, NULL);
   }
+
+  // not there yet, now we're allocing, so first clean up:
+  dt_cache_gc(cache, 0.8f);
 
   if(cache->optimize_cacheline)
   {
@@ -660,6 +691,7 @@ dt_cache_read_get(
   // TODO: if fail to insert key, cost will be in an inconsistent state here.
   // dt_cache_unlock(&segment->lock);
   fprintf(stderr, "[cache] failed to find a free spot for new data!\n");
+  assert(0);
   exit(1);
   return DT_CACHE_EMPTY_DATA;
 }
@@ -768,24 +800,36 @@ dt_cache_write_get(dt_cache_t *cache, const uint32_t key)
   const uint32_t hash = key;
   dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
 
-  dt_cache_lock(&segment->lock);
-
-  dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
-  dt_cache_bucket_t *last_bucket = NULL;
-  dt_cache_bucket_t *compare_bucket = start_bucket;
-  int16_t next_delta = compare_bucket->first_delta;
-  while(next_delta != DT_CACHE_NULL_DELTA)
+  while(1)
   {
-    compare_bucket += next_delta;
-    if(hash == compare_bucket->hash && (key == compare_bucket->key))
+    dt_cache_lock(&segment->lock);
+
+    dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
+    dt_cache_bucket_t *last_bucket = NULL;
+    dt_cache_bucket_t *compare_bucket = start_bucket;
+    int16_t next_delta = compare_bucket->first_delta;
+    while(next_delta != DT_CACHE_NULL_DELTA)
     {
-      void *rc = compare_bucket->data;
-      if(dt_cache_bucket_write_lock(compare_bucket)) rc = NULL;
-      dt_cache_unlock(&segment->lock);
-      return rc;
+      compare_bucket += next_delta;
+      if(hash == compare_bucket->hash && (key == compare_bucket->key))
+      {
+        void *rc = compare_bucket->data;
+        int err = dt_cache_bucket_write_testlock(compare_bucket);
+        dt_cache_unlock(&segment->lock);
+        if(err) goto wait;
+        return rc;
+      }
+      last_bucket = compare_bucket;
+      next_delta = compare_bucket->next_delta;
     }
-    last_bucket = compare_bucket;
-    next_delta = compare_bucket->next_delta;
+    // didn't find any entry :(
+    break;
+wait:;
+    // try again in 5 milliseconds
+    struct timespec s;
+    s.tv_sec = 0;
+    s.tv_nsec = 5000000L;
+    nanosleep(&s, NULL);
   }
   dt_cache_unlock(&segment->lock);
   // clear user error, he should hold a read lock already, so this has to be there.
