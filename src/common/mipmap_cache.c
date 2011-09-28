@@ -546,8 +546,8 @@ _init_8(
 {
 
   // FIXME: the below has some mem garbage problems, so for now:
-  // memset(buf, 0, *width * *height * 4);
-  // return;
+  memset(buf, 0, *width * *height * 4);
+  return;
 
   const uint32_t wd = *width, ht = *height;
   dt_imageio_module_format_t format;
@@ -559,6 +559,8 @@ _init_8(
   dat.buf = buf;
   int res = dt_imageio_export(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat);
 
+  fprintf(stderr, "[mipmap init 8] export finished!\n");
+
   // any errors?
   if(res)
   {
@@ -568,8 +570,8 @@ _init_8(
   }
 
   // might be smaller, or have a different aspect than what we got as input.
-  *width  = dat.head.width;
-  *height = dat.head.height;
+  // *width  = dat.head.width;
+  // *height = dat.head.height;
 
   // TODO: various speed optimizations:
   // TODO: pass our cache buffer to the pipe as backbuf!
