@@ -221,6 +221,8 @@ dt_imageio_open_hdr(
     const char  *filename,
     dt_mipmap_cache_allocator_t a)
 {
+  // needed to alloc correct buffer size:
+  img->bpp = 4*sizeof(float);
   dt_imageio_retval_t ret;
   ret = dt_imageio_open_exr(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
@@ -232,7 +234,6 @@ return_label:
   if(ret == DT_IMAGEIO_OK)
   {
     img->filters = 0;
-    img->bpp = 4*sizeof(float);
     img->flags &= ~DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags |=  DT_IMAGE_HDR;
@@ -421,8 +422,8 @@ dt_imageio_open_ldr(
     free(tmp);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
-  img->bpp = 4*sizeof(float);
 
+  img->bpp = 4*sizeof(float);
   void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
   {
@@ -490,6 +491,8 @@ int dt_imageio_export(
     dt_dev_cleanup(&dev);
     return 1;
   }
+  // make sure dev knows about new image bpp and filters:
+  dt_dev_load_image(&dev, imgid);
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);

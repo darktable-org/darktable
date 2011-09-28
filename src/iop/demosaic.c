@@ -567,6 +567,7 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
 {
   // this op is disabled for preview pipe/filters == 0
 
+  fprintf(stderr, "cool, this is called!!!\n");
   *roi_in = *roi_out;
   // need 1:1, demosaic and then sub-sample. or directly sample half-size
   roi_in->x /= roi_out->scale;
@@ -967,7 +968,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
   d->filters = dt_image_flipped_filter(self->dev->image);
-  if(!d->filters || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
+  if(!(self->dev->image->flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
   d->green_eq = p->green_eq;
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;

@@ -133,13 +133,18 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
   if(size == DT_MIPMAP_FULL)
   {
     // load the image:
+    // make sure we access the r/w lock a shortly as possible!
+    dt_image_t buffered_image;
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    buffered_image = *cimg;
+    // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    // dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, cimg);
     char filename[DT_MAX_PATH_LEN];
-    dt_image_full_path(img->id, filename, DT_MAX_PATH_LEN);
-    dt_imageio_retval_t ret = dt_imageio_open(img, filename, (dt_mipmap_cache_allocator_t)buf);
+    dt_image_full_path(buffered_image.id, filename, DT_MAX_PATH_LEN);
+    dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, (dt_mipmap_cache_allocator_t)buf);
     uint32_t *ibuf = *buf;
-    fprintf(stderr, "[cache alloc dyn for `%s' (%d) returned %d\n", filename, img->id, ret);
+    fprintf(stderr, "[cache alloc dyn for `%s' (%d) returned %d\n", filename, buffered_image.id, ret);
     if(ret != DT_IMAGEIO_OK)
     {
       // in case something went wrong, still keep the buffer and return it to the hashtable
@@ -155,6 +160,10 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
       *cost = ibuf[2];
     else
       *cost = 0;
+    // swap back new image data:
+    cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    *img = buffered_image;
     // don't write xmp for this (we only changed db stuff):
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     dt_image_cache_read_release(darktable.image_cache, img);
@@ -179,7 +188,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
   // TODO: un-serialize!
   const int32_t max_th = 1000000, min_th = 20;
-  const int32_t full_bufs = dt_conf_get_int ("mipmap_cache_full_images");
+  const int32_t full_bufs = MAX(min_th, dt_conf_get_int ("mipmap_cache_full_images"));
   int32_t thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
   thumbnails = CLAMPS(thumbnails, min_th, max_th);
   const int32_t max_size = 2048, min_size = 32;
@@ -537,8 +546,8 @@ _init_8(
 {
 
   // FIXME: the below has some mem garbage problems, so for now:
-  memset(buf, 0, *width * *height * 4);
-  return;
+  // memset(buf, 0, *width * *height * 4);
+  // return;
 
   const uint32_t wd = *width, ht = *height;
   dt_imageio_module_format_t format;

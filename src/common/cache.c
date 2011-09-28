@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// for nanosleep:
+#define _POSIX_C_SOURCE 199309L
+#include <time.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -471,28 +474,47 @@ lru_check_consistency_reverse(dt_cache_t *cache)
 
 // unexposed helpers to increase the read lock count.
 // the segment needs to be locked by the caller.
-void
+static int
 dt_cache_bucket_read_lock(dt_cache_bucket_t *bucket)
 {
+  // if(bucket->write) return 1;
+  while(bucket->write)
+  {
+    // try again in 5 milliseconds
+    struct timespec s;
+    s.tv_sec = 0;
+    s.tv_nsec = 5000000L;
+    nanosleep(&s, NULL);
+  }
   assert(bucket->read < 0x7ffe);
   assert(bucket->write == 0);
   bucket->read ++;
+  return 0;
 }
-void
+static void
 dt_cache_bucket_read_release(dt_cache_bucket_t *bucket)
 {
   assert(bucket->read > 0);
   assert(bucket->write == 0);
   bucket->read --;
 }
-void
+static int
 dt_cache_bucket_write_lock(dt_cache_bucket_t *bucket)
 {
+  if(bucket->read > 1)
+  {
+    // try again in 5 milliseconds
+    struct timespec s;
+    s.tv_sec = 0;
+    s.tv_nsec = 5000000L;
+    nanosleep(&s, NULL);
+  }
   assert(bucket->read == 1);
   assert(bucket->write < 0x7ffe);
   bucket->write ++;
+  return 0;
 }
-void
+static void
 dt_cache_bucket_write_release(dt_cache_bucket_t *bucket)
 {
   assert(bucket->read == 1);
@@ -501,6 +523,7 @@ dt_cache_bucket_write_release(dt_cache_bucket_t *bucket)
 }
 
 
+// TODO: the segment lock should not block but return NULL immediately here!
 // return read locked bucket, or NULL if it's not already there.
 // never attempt to allocate a new slot.
 void*
@@ -684,6 +707,7 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
     last_bucket = curr_bucket;
     next_delta = curr_bucket->next_delta;
   }
+  dt_cache_unlock(&segment->lock);
   return;
 }
 
@@ -756,13 +780,14 @@ dt_cache_write_get(dt_cache_t *cache, const uint32_t key)
     if(hash == compare_bucket->hash && (key == compare_bucket->key))
     {
       void *rc = compare_bucket->data;
-      dt_cache_bucket_write_lock(compare_bucket);
+      if(dt_cache_bucket_write_lock(compare_bucket)) rc = NULL;
       dt_cache_unlock(&segment->lock);
       return rc;
     }
     last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
+  dt_cache_unlock(&segment->lock);
   // clear user error, he should hold a read lock already, so this has to be there.
   fprintf(stderr, "[cache] write_get: bucket not found!\n");
   return NULL;
@@ -793,6 +818,7 @@ dt_cache_write_release(dt_cache_t *cache, const uint32_t key)
     last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
+  dt_cache_unlock(&segment->lock);
   fprintf(stderr, "[cache] write_release: bucket not found!\n");
 }
 

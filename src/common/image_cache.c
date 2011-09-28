@@ -67,6 +67,19 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
     img->orientation = sqlite3_column_int(stmt, 15);
     img->exif_focus_distance = sqlite3_column_double(stmt,16);
     if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
+
+    // buffer size?
+    if(img->flags & DT_IMAGE_LDR)
+      img->bpp = 4*sizeof(float);
+    else if(img->flags & DT_IMAGE_HDR)
+    {
+      if(img->flags & DT_IMAGE_RAW)
+        img->bpp = sizeof(float);
+      else
+        img->bpp = 4*sizeof(float);
+    }
+    else // raw
+      img->bpp = sizeof(uint16_t);
   }
   else fprintf(stderr, "[image_cache_allocate] failed to open image from database: %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
   sqlite3_finalize(stmt);
@@ -135,6 +148,7 @@ dt_image_cache_read_get(
     dt_image_cache_t *cache,
     const uint32_t imgid)
 {
+  if(imgid <= 0) return NULL;
   return (const dt_image_t *)dt_cache_read_get(&cache->cache, imgid);
 }
 
@@ -144,6 +158,7 @@ dt_image_cache_read_release(
     dt_image_cache_t *cache,
     const dt_image_t *img)
 {
+  if(!img || img->id <= 0) return;
   // just force the dt_image_t struct to make sure it has been locked before.
   dt_cache_read_release(&cache->cache, img->id);
 }

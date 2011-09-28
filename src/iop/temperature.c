@@ -130,7 +130,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && module->dev->image->filters) return sizeof(float);
+  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && (module->dev->image->flags & DT_IMAGE_RAW)) return sizeof(float);
   else return 4*sizeof(float);
 }
 

@@ -210,6 +210,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   bool is_50d = !strncmp(makermodel, "Canon EOS 50D", 13);
   int raw_width_extra = (is_50d && r->subsampling.y == 2) ? 72 : 0;
 
+  img->bpp = r->getBpp();
   void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
     return DT_IMAGEIO_CACHE_FULL;

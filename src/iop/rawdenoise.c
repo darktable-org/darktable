@@ -312,7 +312,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)params;
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (!self->dev->image->filters || pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if (!(self->dev->image->flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     piece->enabled = 0;
   d->threshold = p->threshold;
 }
@@ -331,7 +331,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
-  if (self->dev->image->filters)
+  if (self->dev->image->flags & DT_IMAGE_RAW)
   {
     dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
     dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)module->params;
