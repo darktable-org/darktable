@@ -67,7 +67,7 @@ dt_grouping_remove_from_group(int image_id)
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = ?1 where group_id = ?2 and id != ?3", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->group_id);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, new_group_id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->group_id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, image_id);
     sqlite3_step(stmt);

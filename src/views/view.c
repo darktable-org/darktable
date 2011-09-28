@@ -640,6 +640,8 @@ void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int
   /* lets check if imgid is in a group */
   if(sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW)
     is_grouped = 1;
+  else if(img && darktable.gui->expanded_group_id == img->group_id)
+    darktable.gui->expanded_group_id = -1;
 
   if(selected == 1)
   {

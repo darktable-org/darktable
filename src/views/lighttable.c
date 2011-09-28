@@ -66,6 +66,14 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                              guint keyval, GdkModifierType modifier,
                              gpointer data);
 
+static void
+group_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data);
+static void
+ungroup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data);
 
 /**
  * this organises the whole library:
@@ -418,16 +426,19 @@ end_query_cache:
 
         gboolean paint_border = FALSE;
         // regular highlight border
-        if(mouse_over_group == image->group_id && iir > 1 && ((!darktable.gui->grouping && dt_conf_get_bool("plugins/lighttable/draw_group_borders")) || image->group_id == darktable.gui->expanded_group_id))
+        if(image)
         {
-          cairo_set_source_rgb(cr, 1, 0, 0);
-          paint_border = TRUE;
-        }
-        // border of expanded group
-        else if(darktable.gui->grouping && image->group_id == darktable.gui->expanded_group_id && iir > 1)
-        {
-          cairo_set_source_rgb(cr, 0, 0, 1);
-          paint_border = TRUE;
+          if(mouse_over_group == image->group_id && iir > 1 && ((!darktable.gui->grouping && dt_conf_get_bool("plugins/lighttable/draw_group_borders")) || image->group_id == darktable.gui->expanded_group_id))
+          {
+            cairo_set_source_rgb(cr, 1, 0, 0);
+            paint_border = TRUE;
+          }
+          // border of expanded group
+          else if(darktable.gui->grouping && image->group_id == darktable.gui->expanded_group_id && iir > 1)
+          {
+            cairo_set_source_rgb(cr, 0, 0, 1);
+            paint_border = TRUE;
+          }
         }
 
         if(paint_border)
@@ -957,6 +968,52 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   }
 }
 
+/** merges all the selected images into a single group.
+ * if there is an expanded group, than they will be joined there, otherwise a new one will be created. */
+static void
+group_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data)
+{
+  if(!darktable.gui->grouping)
+    return;
+
+  int new_group_id = darktable.gui->expanded_group_id;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    if(new_group_id == -1)
+      new_group_id = id;
+    dt_grouping_add_to_group(new_group_id, id);
+  }
+  sqlite3_finalize(stmt);
+  darktable.gui->expanded_group_id = new_group_id;
+  dt_collection_update_query(darktable.collection);
+}
+
+/** removes the selected images from their current group. */
+static void
+ungroup_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                             guint keyval, GdkModifierType modifier,
+                             gpointer data)
+{
+  if(!darktable.gui->grouping)
+    return;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct imgid from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    dt_grouping_remove_from_group(id);
+  }
+  sqlite3_finalize(stmt);
+  darktable.gui->expanded_group_id = -1;
+  dt_collection_update_query(darktable.collection);
+}
+
 static void _lighttable_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
 {
   dt_control_queue_redraw_center();
@@ -1115,14 +1172,22 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
         int group_id = image->group_id;
         int id = image->id;
         dt_image_cache_release(image, 'r');
-        if(group_id == darktable.gui->expanded_group_id)
+        if(state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) // just add the whole group to the selection. TODO: make this also work for collapsed groups.
         {
-          if(id == darktable.gui->expanded_group_id)
+          sqlite3_stmt *stmt;
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into selected_images select id from images where group_id = ?1", -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+          sqlite3_step(stmt);
+          sqlite3_finalize(stmt);
+        }
+        else if(group_id == darktable.gui->expanded_group_id) // the group is already expanded, so ...
+        {
+          if(id == darktable.gui->expanded_group_id) // ... collapse it
             darktable.gui->expanded_group_id = -1;
-          else
+          else                                       // ... make the image the new representative of the group
             darktable.gui->expanded_group_id = dt_grouping_change_representative(id);
         }
-        else
+        else // expand the group
           darktable.gui->expanded_group_id = group_id;
         dt_collection_update_query(darktable.collection);
         break;
@@ -1299,6 +1364,9 @@ void init_key_accels(dt_view_t *self)
   // Preview key
   dt_accel_register_view(self, NC_("accel", "preview"), GDK_z, 0);
 
+  // Grouping keys
+  dt_accel_register_view(self, NC_("accel", "group"), GDK_g, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "ungroup"), GDK_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_view_t *self)
@@ -1370,6 +1438,13 @@ void connect_key_accels(dt_view_t *self)
                            (gpointer)4, NULL);
   dt_accel_connect_view(self, "color purple", closure);
 
+  // Grouping keys
+  closure = g_cclosure_new(G_CALLBACK(group_key_accel_callback),
+                           (gpointer)self, NULL);
+  dt_accel_connect_view(self, "group", closure);
+  closure = g_cclosure_new(G_CALLBACK(ungroup_key_accel_callback),
+                           (gpointer)self, NULL);
+  dt_accel_connect_view(self, "ungroup", closure);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

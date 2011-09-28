@@ -16,12 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/exif.h"
 #include "common/debug.h"
+#include "common/grouping.h"
 #include "common/tags.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -476,6 +478,13 @@ int32_t dt_image_duplicate(const int32_t imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    if(darktable.gui && darktable.gui->grouping)
+    {
+      dt_image_t *img = dt_image_cache_get(newid, 'r');
+      darktable.gui->expanded_group_id = img->group_id;
+      dt_image_cache_release(img, 'r');
+      dt_collection_update_query(darktable.collection);
+    }
   }
   return newid;
 }
@@ -483,14 +492,14 @@ int32_t dt_image_duplicate(const int32_t imgid)
 void dt_image_remove(const int32_t imgid)
 {
   sqlite3_stmt *stmt;
-#if 0
-  int group_id = -1;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) group_id = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-#endif
+  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  int old_group_id = img->group_id;
+  dt_image_cache_release(img, 'r');
+  int new_group_id = dt_grouping_remove_from_group(imgid);
+  if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
+    darktable.gui->expanded_group_id = new_group_id;
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -521,21 +530,6 @@ void dt_image_remove(const int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-#if 0
-  // make sure that the group_id is equal to the id of one of the images in the group.
-  if(imgid == group_id){
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images where group_id = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
-    if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 0) > 0){
-      sqlite3_finalize(stmt);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update images set group_id = (select id from images where group_id = ?1 limit 1) where group_id = ?2", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, group_id);
-      sqlite3_step(stmt);
-    }
-    sqlite3_finalize(stmt);
-  }
-#endif
   dt_image_cache_clear(imgid);
 }
 

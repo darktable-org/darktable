@@ -217,6 +217,7 @@ static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer use
   else
     g_object_set(G_OBJECT(widget), "tooltip-text", _("collapse grouped images"), (char *)NULL);
   dt_conf_set_bool("ui_last/grouping", darktable.gui->grouping);
+  darktable.gui->expanded_group_id = -1;
   dt_collection_update_query(darktable.collection);
 }
 
