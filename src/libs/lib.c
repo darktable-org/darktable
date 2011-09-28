@@ -784,4 +784,27 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module)
                                 module->presets_button);
 }
 
+gchar *
+dt_lib_get_localized_name(const gchar * plugin_name)
+{
+  // Prepare mapping op -> localized name
+  static GHashTable *module_names = NULL;
+  if(module_names == NULL)
+  {
+    module_names = g_hash_table_new(g_str_hash, g_str_equal);
+    GList *lib = g_list_first(darktable.lib->plugins);
+    if(lib != NULL)
+    {
+      do
+      {
+        dt_lib_module_t * module = (dt_lib_module_t *)lib->data;
+        g_hash_table_insert(module_names, module->plugin_name, _(module->name()));
+      }
+      while((lib=g_list_next(lib)) != NULL);
+    }
+  }
+
+  return (gchar*)g_hash_table_lookup(module_names, plugin_name);
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

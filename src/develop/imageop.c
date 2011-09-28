@@ -1637,4 +1637,27 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
     dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
 }
 
+gchar *
+dt_iop_get_localized_name(const gchar * op)
+{
+  // Prepare mapping op -> localized name
+  static GHashTable *module_names = NULL;
+  if(module_names == NULL)
+  {
+    module_names = g_hash_table_new(g_str_hash, g_str_equal);
+    GList *iop = g_list_first(darktable.iop);
+    if(iop != NULL)
+    {
+      do
+      {
+        dt_iop_module_so_t * module = (dt_iop_module_so_t *)iop->data;
+        g_hash_table_insert(module_names, module->op, _(module->name()));
+      }
+      while((iop=g_list_next(iop)) != NULL);
+    }
+  }
+
+  return (gchar*)g_hash_table_lookup(module_names, op);
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
