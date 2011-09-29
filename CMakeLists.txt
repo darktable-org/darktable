@@ -34,6 +34,7 @@ endif()
 if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
 	set(USE_GCONF_BACKEND OFF) 
+	set(USE_OPENCL OFF)
 	set(USE_CAMERA_SUPPORT OFF)
 	set(BUILD_SLIDESHOW OFF)
 
@@ -42,6 +43,7 @@ if(APPLE)
 	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
 	
 	set(LIBS ${LIBS} -Wl,-framework -Wl,Carbon)
+
 	if(USE_OPENCL)
 	  set(LIBS ${LIBS} -Wl,-framework -Wl,OpenCL)
 	endif(USE_OPENCL)
