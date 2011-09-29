@@ -81,7 +81,7 @@ static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 static int dprintf(int fd,const char *fmt, ...)
 {
   va_list ap;
-  FILE *f = fdopen(fd);
+  FILE *f = fdopen(fd,"a");
   va_start(ap, &fmt);
   int rc = vfprintf(f, fmt, ap);
   fclose(f);
