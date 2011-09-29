@@ -34,7 +34,7 @@ for line in $(cat $inputfile | grep -v "^#"); do
     enum=DT_METADATA_$(printf $line | tr '[:lower:].' '[:upper:]_')
     length=$(printf $line | wc -c)
     if [ "$first" -ne 0 ]; then
-        echo "," >> $outputdir/$outputheader
+        printf ",\n" >> $outputdir/$outputheader
     fi
     printf "    $enum" >> $outputdir/$outputheader
     first=1
