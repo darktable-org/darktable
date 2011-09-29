@@ -42,6 +42,9 @@ if(APPLE)
 	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
 	
 	set(LIBS ${LIBS} -Wl,-framework -Wl,Carbon)
+	if(USE_OPENCL)
+	  set(LIBS ${LIBS} -Wl,-framework -Wl,OpenCL)
+	endif(USE_OPENCL)
 endif(APPLE)
 
 if(WIN32)
