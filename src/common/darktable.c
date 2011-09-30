@@ -356,6 +356,18 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
 
+  // set the interface language
+  const gchar* lang = dt_conf_get_string("ui_last/gui_language");
+  if(lang != NULL)
+  {
+    gchar* LANG = g_ascii_strup(lang, -1);
+    gchar* lang_LANG = g_strconcat(lang, "_", LANG, /*".UTF-8",*/ NULL); // FIXME: this does only work for about half of our languages ...
+    setlocale(LC_ALL, lang_LANG);
+    gtk_disable_setlocale();
+    g_free(LANG);
+    g_free(lang_LANG);
+  }
+
   // initialize the database
   darktable.db = dt_database_init(dbfilenameFromCommand);
 
