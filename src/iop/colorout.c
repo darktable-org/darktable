@@ -466,7 +466,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->softproof = NULL;
 
   d->softproof_enabled = p->softproof_enabled;
-  if(self->dev->gui_attached)
+  if(self->dev->gui_attached && self->gui_data != NULL)
   {
     dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
     g->softproof_enabled = p->softproof_enabled;
