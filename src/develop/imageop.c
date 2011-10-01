@@ -635,6 +635,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     // stay constant for all images).
     memcpy(module->factory_params, module->params, module->params_size);
     module->factory_enabled = module->default_enabled;
+    module->so = module_so;
     dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
@@ -1610,6 +1611,8 @@ static void enable_module_callback(GtkAccelGroup *accel_group,
   gboolean active= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 }
+
+
 
 void dt_iop_connect_common_accels(dt_iop_module_t *module)
 {

@@ -189,6 +189,8 @@ typedef struct dt_iop_module_t
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
+  /** the correspoinding SO object */
+  dt_iop_module_so_t *so;
 
 
   /** version of the parameters in the database. */
