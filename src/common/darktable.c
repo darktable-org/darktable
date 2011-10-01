@@ -78,6 +78,19 @@ typedef void (dt_signal_handler_t)(int) ;
 static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 
+#ifdef __APPLE__
+static int dprintf(int fd,const char *fmt, ...)
+{
+  va_list ap;
+  FILE *f = fdopen(fd,"a");
+  va_start(ap, &fmt);
+  int rc = vfprintf(f, fmt, ap);
+  fclose(f);
+  va_end(ap);
+  return rc;
+}
+#endif
+
 static
 void _dt_sigsegv_handler(int param)
 {
@@ -257,15 +270,20 @@ static void strip_semicolons_from_keymap(const char* path)
 
 int dt_init(int argc, char *argv[], const int init_gui)
 {
+#ifndef __APPLE__
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
+#endif
+
 #ifndef __SSE2__
   fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
   fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
   return 1;
 #endif
+
 #ifdef M_MMAP_THRESHOLD
   mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */   
 #endif
+
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
