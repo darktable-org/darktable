@@ -645,3 +645,47 @@ void dt_accel_connect_preset_iop(dt_iop_module_t *module,  const gchar *path)
 
 }
 
+void dt_accel_deregister_locals_iop(dt_iop_module_t *module,const gchar *path)
+{
+	dt_accel_closure_t *accel;
+	GSList *l = module->accel_closures_local;
+	char build_path[1024];
+	dt_accel_path_iop(build_path, 1024, module->op, path);
+	while(l)
+	{
+		accel = (dt_accel_closure_t*)l->data;
+		if(!strcmp(accel->accel->path,build_path)) {
+			if(module->local_closures_connected)
+				gtk_accel_group_disconnect(darktable.control->accelerators,
+						accel->closure);
+			g_closure_unref(accel->closure);
+			free(accel);
+			module->accel_closures_local = g_slist_delete_link(module->accel_closures_local, l);
+			l = NULL;
+		}
+	}
+	l = darktable.control->accelerator_list;
+	while(l)
+	{
+		dt_accel_t *accel = (dt_accel_t*)l->data;
+		if(!strcmp(accel->path, build_path)) {
+			darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
+			l = NULL;
+		} else {
+			l = g_slist_next(l);
+		}
+	}
+	l = module->accel_closures;
+	while(l)
+	{
+		accel = (dt_accel_closure_t*)l->data;
+		if(!strcmp(accel->accel->path, build_path)) {
+			module->accel_closures = g_slist_delete_link(module->accel_closures, l);
+			l = NULL;
+			g_closure_unref(accel->closure);
+			free(accel);
+		} else {
+			l = g_slist_next(l);
+		}
+	}
+}

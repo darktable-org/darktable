@@ -89,5 +89,7 @@ void dt_accel_disconnect_list(GSList *accels);
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module);
 void dt_accel_cleanup_locals_iop(dt_iop_module_t *module);
 
+// Deregister functions
+void dt_accel_deregister_locals_iop(dt_iop_module_t *module,const gchar *path);
 
 #endif
