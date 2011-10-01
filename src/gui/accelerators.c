@@ -541,3 +541,74 @@ void dt_accel_cleanup_locals_iop(dt_iop_module_t *module)
   }
   module->accel_closures_local = NULL;
 }
+
+
+
+typedef struct {
+	dt_iop_module_t* module;
+	char *name;
+}preset_module_callback_description;
+
+static void preset_module_callback_destroyer(gpointer data, GClosure *closure) {
+	preset_module_callback_description *callback_description = (preset_module_callback_description*)data;
+	g_free(callback_description->name);
+	g_free(data);
+}
+static void preset_module_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+
+{
+  preset_module_callback_description *callback_description = (preset_module_callback_description*)data;
+  dt_iop_module_t *module = callback_description->module;
+  const char* name = callback_description->name;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params from presets where operation = ?1 and name = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, name, strlen(name), SQLITE_TRANSIENT);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *op_params = sqlite3_column_blob(stmt, 0);
+    int op_length  = sqlite3_column_bytes(stmt, 0);
+    int enabled = sqlite3_column_int(stmt, 1);
+    const void *blendop_params = sqlite3_column_blob(stmt, 2);
+    int bl_length = sqlite3_column_bytes(stmt, 2);
+    if(op_params && (op_length == module->params_size))
+    {
+      memcpy(module->params, op_params, op_length);
+      module->enabled = enabled;
+    }
+    if (blendop_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+    {
+      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+    else
+    {
+      memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+  }
+  sqlite3_finalize(stmt);
+  dt_iop_gui_update(module);
+  dt_dev_add_history_item(darktable.develop, module, FALSE);
+  gtk_widget_queue_draw(module->widget);
+}
+
+void dt_accel_connect_preset_iop(dt_iop_module_t *module,  const gchar *path)
+{
+  GClosure* closure = NULL;
+  char build_path[1024];
+  gchar* name =g_strdup(path);
+  snprintf(build_path,1024,"preset/%s",name);
+  preset_module_callback_description *callback_description = malloc(sizeof(preset_module_callback_description));
+  callback_description->module = module;
+  callback_description->name = name;
+
+  closure = g_cclosure_new(G_CALLBACK(preset_module_callback),
+                         callback_description, preset_module_callback_destroyer);
+  dt_accel_connect_iop(module, build_path, closure);
+
+}
+

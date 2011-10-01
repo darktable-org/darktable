@@ -82,6 +82,7 @@ void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path,
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                                  GtkWidget *slider);
 void dt_accel_connect_locals_iop(dt_iop_module_t *module);
+void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
 
 // Disconnect function
 void dt_accel_disconnect_list(GSList *accels);

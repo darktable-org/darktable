@@ -557,6 +557,25 @@ init_presets(dt_iop_module_so_t *module_so)
   sqlite3_finalize(stmt);
 }
 
+static void init_key_accels(dt_iop_module_so_t *module)
+{
+    // Calling the accelerator initialization callback, if present
+  if(module->init_key_accels)
+    (module->init_key_accels)(module);
+  /** load shortcuts for presets **/
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char path[1024];
+    snprintf(path,1024,"preset/%s",(const char *)sqlite3_column_text(stmt, 0));
+    dt_accel_register_iop(module, FALSE, NC_("accel", path), 0, 0);
+
+  }
+  sqlite3_finalize(stmt);
+}
+
 void dt_iop_load_modules_so()
 {
   GList *res = NULL;
@@ -587,8 +606,7 @@ void dt_iop_load_modules_so()
     res = g_list_append(res, module);
     init_presets(module);
     // Calling the accelerator initialization callback, if present
-    if(module->init_key_accels)
-      (module->init_key_accels)(module);
+    init_key_accels(module);
 
     if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
     {
@@ -1638,6 +1656,16 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
 
   if(module->fusion_slider)
     dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
+
+  sqlite3_stmt *stmt;
+  // don't know for which image. show all we got:
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+	dt_accel_connect_preset_iop(module,(char *)sqlite3_column_text(stmt, 0));
+  }
+  sqlite3_finalize(stmt);
 }
 
 gchar *
