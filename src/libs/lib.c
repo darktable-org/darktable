@@ -498,11 +498,18 @@ static void
 _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
   gint w,h;
+  gint ww,wh;
   GtkRequisition requisition;
   gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
+  gdk_window_get_size(dt_ui_main_window(darktable.gui->ui)->window,&ww,&wh);
   gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
-  (*x)+=w-requisition.width;
+
+  /* align left panel popupmenu to right edge */
+  if (*x < ww/2) 
+    (*x)+=w-requisition.width;
+
   (*y)+=GTK_WIDGET(data)->allocation.height;
 }
 
