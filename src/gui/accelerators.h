@@ -36,12 +36,6 @@ typedef struct dt_accel_t
 
 } dt_accel_t;
 
-typedef struct dt_accel_local_t
-{
-  dt_accel_t *accel;
-  GClosure *closure;
-} dt_accel_local_t;
-
 // Accel path string building functions
 void dt_accel_path_global(char *s, size_t n, const char* path);
 void dt_accel_path_view(char *s, size_t n, char *module,

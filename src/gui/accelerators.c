@@ -23,6 +23,14 @@
 #include "common/darktable.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "common/debug.h"
+#include "develop/blend.h"
+
+typedef struct dt_accel_closure_t
+{
+  dt_accel_t *accel;
+  GClosure *closure;
+} dt_accel_closure_t;
 
 void dt_accel_path_global(char *s, size_t n, const char* path)
 {
@@ -268,8 +276,8 @@ void dt_accel_connect_view(dt_view_t *self, const gchar *path,
 static void _connect_local_accel(dt_iop_module_t *module, dt_accel_t *accel,
                                  GClosure *closure)
 {
-  dt_accel_local_t *laccel =
-      (dt_accel_local_t*)malloc(sizeof(dt_accel_local_t));
+  dt_accel_closure_t *laccel =
+      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
   laccel->accel = accel;
   laccel->closure = closure;
   g_closure_ref(closure);
@@ -474,12 +482,12 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
 
 void dt_accel_connect_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_local_t *accel;
+  dt_accel_closure_t *accel;
   GSList *l = module->accel_closures_local;
 
   while(l)
   {
-    accel = (dt_accel_local_t*)l->data;
+    accel = (dt_accel_closure_t*)l->data;
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     accel->accel->path, accel->closure);
     l = g_slist_next(l);
@@ -501,7 +509,7 @@ void dt_accel_disconnect_list(GSList *list)
 
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_local_t *accel;
+  dt_accel_closure_t *accel;
   GSList *l = module->accel_closures_local;
 
   if(!module->local_closures_connected)
@@ -509,7 +517,7 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
 
   while(l)
   {
-    accel = (dt_accel_local_t*)l->data;
+    accel = (dt_accel_closure_t*)l->data;
     gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
     l = g_slist_next(l);
   }
@@ -519,11 +527,11 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
 
 void dt_accel_cleanup_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_local_t *accel;
+  dt_accel_closure_t *accel;
   GSList *l = module->accel_closures_local;
   while(l)
   {
-    accel = (dt_accel_local_t*)l->data;
+    accel = (dt_accel_closure_t*)l->data;
     if(module->local_closures_connected)
       gtk_accel_group_disconnect(darktable.control->accelerators,
                                  accel->closure);
