@@ -49,6 +49,7 @@
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
+#include <locale.h>
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__)
 #include <malloc.h>
