@@ -139,7 +139,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
     snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
     const guint jid = 0;
     if(total>1)
-      dt_control_backgroundjobs_create(darktable.control, 0, message);
+      jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
     
     do {
       /* get the _control_indexer_img_t pointer */
