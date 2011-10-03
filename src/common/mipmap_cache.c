@@ -187,9 +187,10 @@ dt_mipmap_cache_deallocate_dynamic(void *data, const uint32_t key, void *payload
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
   // TODO: un-serialize!
+  // FIXME: adjust numbers to be large enough to hold what mem limit suggests!
   const int32_t max_th = 1000000, min_th = 20;
   const int32_t full_bufs = MAX(min_th, dt_conf_get_int ("mipmap_cache_full_images"));
-  int32_t thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
+  int32_t thumbnails = 10000;//dt_conf_get_int ("mipmap_cache_thumbnails");
   thumbnails = CLAMPS(thumbnails, min_th, max_th);
   const int32_t max_size = 2048, min_size = 32;
   // TODO: use these new user parameters! also in darkroom.c and develop.c
@@ -283,6 +284,7 @@ dt_mipmap_cache_read_get(
     const dt_mipmap_get_flags_t flags)
 {
   const uint32_t key = get_key(imgid, mip);
+  // TODO: check if this is a circular dependency image_cache -> mipmap_cache (checking w/h during full buf load)
   if(flags == DT_MIPMAP_TESTLOCK)
   {
     // simple case: only get and lock if it's there.
@@ -546,8 +548,8 @@ _init_8(
 {
 
   // FIXME: the below has some mem garbage problems, so for now:
-  memset(buf, 0, *width * *height * 4);
-  return;
+  // memset(buf, 0, *width * *height * 4);
+  // return;
 
   const uint32_t wd = *width, ht = *height;
   dt_imageio_module_format_t format;
@@ -570,8 +572,8 @@ _init_8(
   }
 
   // might be smaller, or have a different aspect than what we got as input.
-  // *width  = dat.head.width;
-  // *height = dat.head.height;
+  *width  = dat.head.width;
+  *height = dat.head.height;
 
   // TODO: various speed optimizations:
   // TODO: pass our cache buffer to the pipe as backbuf!

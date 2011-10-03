@@ -607,9 +607,8 @@ dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
 
 void
 dt_view_image_expose(
-    const dt_image_t *img,
     dt_view_image_over_t *image_over,
-    int32_t index,
+    uint32_t imgid,
     cairo_t *cr,
     int32_t width,
     int32_t height,
@@ -618,7 +617,6 @@ dt_view_image_expose(
     int32_t py)
 {
   cairo_save (cr);
-  const int32_t imgid = img ? img->id : index; // in case of locked image, use id to draw basic stuff.
   float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
@@ -642,6 +640,8 @@ dt_view_image_expose(
   if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) 
     altered = 1;
   
+  // TODO: testget!
+  dt_image_t *img = NULL;
   if(selected == 1)
   {
     outlinecol = 0.4;
@@ -701,19 +701,16 @@ dt_view_image_expose(
 
   float scale = 1.0;
   dt_mipmap_buffer_t buf;
-  if(img)
-  {
-    dt_mipmap_size_t mip = 
-      dt_mipmap_cache_get_matching_size(
-        darktable.mipmap_cache,
-        imgwd*width, imgwd*height);
-    dt_mipmap_cache_read_get(
-        darktable.mipmap_cache,
-        &buf,
-        img->id,
-        mip,
-        0);
-  }
+  dt_mipmap_size_t mip = 
+    dt_mipmap_cache_get_matching_size(
+      darktable.mipmap_cache,
+      imgwd*width, imgwd*height);
+  dt_mipmap_cache_read_get(
+      darktable.mipmap_cache,
+      &buf,
+      imgid,
+      mip,
+      0);
   cairo_surface_t *surface = NULL;
   if(buf.buf)
   {
@@ -779,6 +776,8 @@ dt_view_image_expose(
     cairo_stroke(cr);
   }
   cairo_restore(cr);
+  if(buf.buf)
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
   const float fscale = fminf(width, height);
   if(imgsel == imgid)
@@ -817,7 +816,7 @@ dt_view_image_expose(
             *image_over = DT_VIEW_STAR_1 + k;
             cairo_fill(cr);
           }
-          else if(img && ((img->flags & 0x7) > k))
+          else if((img->flags & 0x7) > k)
           {
             cairo_fill_preserve(cr);
             cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
@@ -891,6 +890,7 @@ dt_view_image_expose(
   cairo_new_path(cr);
 
   // TODO: make mouse sensitive, just as stars!
+  // TODO: cache in image struct!
   {
     // color labels:
     const float x = zoom == 1 ? (0.07)*fscale : .21*width;
@@ -934,7 +934,6 @@ dt_view_image_expose(
   }
 
   cairo_restore(cr);
-  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 }
 

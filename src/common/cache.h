@@ -82,7 +82,8 @@ void  dt_cache_write_release(dt_cache_t *cache, const uint32_t key);
 void*   dt_cache_read_get(dt_cache_t *cache, const uint32_t key);
 void*   dt_cache_read_testget(dt_cache_t *cache, const uint32_t key);
 int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key);
-void    dt_cache_remove(dt_cache_t *cache, const uint32_t key);
+// returns 0 on success, 1 if the key was not found.
+int32_t dt_cache_remove(dt_cache_t *cache, const uint32_t key);
 // removes from the end of the lru list, until the fill ratio
 // of the hashtable goes below the given parameter, in terms
 // of the user defined cost measure.

@@ -333,12 +333,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
       if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
         id = sqlite3_column_int(lib->statements.main_query, 0);
-        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
-        if (iir == 1 && row)
-        {
-          dt_image_cache_read_release(darktable.image_cache, image);
-          continue;
-        }
+        if (iir == 1 && row) continue;
         // set mouse over id
         if(seli == col && selj == row)
         {
@@ -384,9 +379,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         }
         cairo_save(cr);
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-        dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
+        dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
         cairo_restore(cr);
-        dt_image_cache_read_release(darktable.image_cache, image);
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
@@ -626,7 +620,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
       if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
         id = sqlite3_column_int(lib->statements.main_query, 0);
-        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
 
         // set mouse over id
         if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row))
@@ -670,9 +663,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         }
         cairo_save(cr);
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-        dt_view_image_expose(image, &(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
+        dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
         cairo_restore(cr);
-        dt_image_cache_read_release(darktable.image_cache, image);
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
@@ -704,14 +696,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     lib->image_over = DT_VIEW_DESERT;
     cairo_set_source_rgb (cr, .1, .1, .1);
     cairo_paint(cr);
-    const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, lib->full_preview_id);
-    if( image )
-    {
-      // dt_image_prefetch(image, DT_IMAGE_MIPF);
-      const float wd = width/1.0;
-      dt_view_image_expose(image, &(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
-      dt_image_cache_read_release(darktable.image_cache, image);
-    }
+    // dt_image_prefetch(image, DT_IMAGE_MIPF);
+    const float wd = width/1.0;
+    dt_view_image_expose(&(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
   }
   else // we do pass on expose to manager or zoomable
   {

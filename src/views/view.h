@@ -97,9 +97,8 @@ dt_view_image_over_t;
 /** expose an image, set image over flags. */
 void
 dt_view_image_expose(
-    const dt_image_t *img,
     dt_view_image_over_t *image_over,
-    int32_t index,
+    uint32_t index,
     cairo_t *cr,
     int32_t width,
     int32_t height,

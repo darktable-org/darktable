@@ -438,7 +438,6 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       int id = sqlite3_column_int(stmt, 0);
-      const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
       // set mouse over id
       if(seli == col)
       {
@@ -449,9 +448,8 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
       // FIXME find out where the y translation is done, how big the value is and use it directly instead of getting it from the matrix ...
       cairo_matrix_t m;
       cairo_get_matrix(cr, &m);
-      dt_view_image_expose(image, &(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
+      dt_view_image_expose(&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
       cairo_restore(cr);
-      dt_image_cache_read_release(darktable.image_cache, image);
     }
     else goto failure;
     cairo_translate(cr, wd, 0.0f);
