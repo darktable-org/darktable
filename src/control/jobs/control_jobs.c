@@ -137,7 +137,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
     /* background job plate only if more then one image is reindexed */
     snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
-    const guint jid = 0;
+    guint jid = 0;
     if(total>1)
       jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
     
