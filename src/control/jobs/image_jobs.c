@@ -32,7 +32,6 @@ void dt_image_load_job_init(dt_job_t *job, int32_t id, dt_mipmap_size_t mip)
 int32_t dt_image_load_job_run(dt_job_t *job)
 {
   dt_image_load_t *t = (dt_image_load_t *)job->param;
-  fprintf(stderr, "loading image async %d\n", t->mip);
 
   // hook back into mipmap_cache:
   dt_mipmap_buffer_t buf;
@@ -45,10 +44,7 @@ int32_t dt_image_load_job_run(dt_job_t *job)
 
   // drop read lock, as this is only speculative async loading.
   if(buf.buf)
-  {
-    fprintf(stderr, "loading image async done %u:%d %d %d\n", t->imgid, t->mip, buf.width, buf.height);
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-  }
   return 0;
 }
 

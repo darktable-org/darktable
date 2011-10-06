@@ -706,6 +706,33 @@ wait:;
   return DT_CACHE_EMPTY_DATA;
 }
 
+void
+dt_cache_remove_bucket(dt_cache_t *cache, const uint32_t num)
+{
+  // mercilessly remove bucket, without checking keys or stuff
+  const uint32_t hash = num;
+  dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
+  dt_cache_lock(&segment->lock);
+
+  dt_cache_bucket_t *const curr_bucket = cache->table + (hash & cache->bucket_mask);
+  assert(curr_bucket->read  == 0);
+  assert(curr_bucket->write == 0);
+  void *rc = curr_bucket->data;
+  const int32_t cost = curr_bucket->cost;
+  const uint32_t key = curr_bucket->key;
+  remove_key(segment, curr_bucket, curr_bucket, NULL, hash);
+  if(cache->optimize_cacheline)
+    optimize_cacheline_use(cache, segment, curr_bucket);
+  // put back into unused part of the cache: remove from lru list.
+  dt_cache_unlock(&segment->lock);
+  lru_remove_locked(cache, curr_bucket);
+  // clean up the user data
+  if(cache->cleanup)
+    cache->cleanup(cache->cleanup_data, key, rc);
+  // keep track of cost
+  add_cost(cache, -cost);
+  fprintf(stderr, "[cache remove] freeing %d\n", cost);
+}
 
 int
 dt_cache_remove(dt_cache_t *cache, const uint32_t key)
@@ -722,7 +749,7 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   {
     if(next_delta == DT_CACHE_NULL_DELTA)
     {
-      fprintf(stderr, "[cache remove] key not found!\n");
+      fprintf(stderr, "[cache remove] key not found %u!\n", key);
       dt_cache_unlock(&segment->lock);
       return 1;
     }
@@ -765,14 +792,10 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     fprintf(stderr, "[cache gc] from %u to %u\n", cache->cost, (uint32_t)(0.8*cache->cost));
     // get least recently used bucket
     dt_cache_lock(&cache->lru_lock);
-    dt_cache_segment_t *segment = cache->segments + ((cache->lru >> cache->segment_shift) & cache->segment_mask);
-    dt_cache_lock(&segment->lock);
-    dt_cache_bucket_t *bucket = cache->table + cache->lru;
-    const uint32_t key = bucket->key;
-    dt_cache_unlock(&segment->lock);
+    const uint32_t num = cache->lru;
     dt_cache_unlock(&cache->lru_lock);
     // remove it. takes care of lru, cost, user cleanup, and hashtable
-    if(dt_cache_remove(cache, key)) break;
+    dt_cache_remove_bucket(cache, num);
   }
   const int fwd = lru_check_consistency(cache);
   const int bwd = lru_check_consistency_reverse(cache);
