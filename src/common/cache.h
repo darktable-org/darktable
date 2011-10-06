@@ -89,6 +89,10 @@ int32_t dt_cache_remove(dt_cache_t *cache, const uint32_t key);
 // of the user defined cost measure.
 void    dt_cache_gc(dt_cache_t *cache, const float fill_ratio);
 
+// returns the number of elements currently stored in the cache.
+// O(N), where N is the total capacity. don't use!
+uint32_t dt_cache_size(const dt_cache_t *const cache);
+
 // returns the maximum capacity of this cache:
 static inline uint32_t
 dt_cache_capacity(dt_cache_t *cache)

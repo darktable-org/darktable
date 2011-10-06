@@ -104,7 +104,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
   uint32_t **buf = (uint32_t **)a;
-  if(!*buf || (*buf[2] < buffer_size))
+  if(!*buf || ((*buf)[2] < buffer_size))
   {
     free(*buf);
     *buf = dt_alloc_align(64, buffer_size);
@@ -188,10 +188,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
   // TODO: un-serialize!
   // FIXME: adjust numbers to be large enough to hold what mem limit suggests!
-  const int32_t max_th = 1000000, min_th = 20;
-  const int32_t full_bufs = MAX(min_th, dt_conf_get_int ("mipmap_cache_full_images"));
-  int32_t thumbnails = 10000;//dt_conf_get_int ("mipmap_cache_thumbnails");
-  thumbnails = CLAMPS(thumbnails, min_th, max_th);
+  const uint32_t max_mem = 100*1024*1024;
   const int32_t max_size = 2048, min_size = 32;
   // TODO: use these new user parameters! also in darkroom.c and develop.c
   int32_t wd = DT_IMAGE_WINDOW_SIZE;//dt_conf_get_int ("plugins/lighttable/thumbnail_width");
@@ -214,15 +211,6 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   for(int k=0;k<=DT_MIPMAP_F;k++)
   {
-    // only very few F buffers, but as many as full:
-    if(k == DT_MIPMAP_F) thumbnails = full_bufs;
-    dt_cache_init(&cache->mip[k].cache, thumbnails, 16, 64, 100*1024*1024);
-    // might have been rounded to power of two:
-    thumbnails = dt_cache_capacity(&cache->mip[k].cache);
-    dt_cache_set_allocate_callback(&cache->mip[k].cache,
-        dt_mipmap_cache_allocate, &cache->mip[k]);
-    // dt_cache_set_cleanup_callback(&cache->mip[k].cache,
-        // &dt_mipmap_cache_deallocate, &cache->mip[k]);
     // buffer stores width and height + actual data
     const int width  = cache->mip[k].max_width;
     const int height = cache->mip[k].max_height;
@@ -231,17 +219,25 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     else
       cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
     cache->mip[k].size = k;
+    uint32_t thumbnails = (uint32_t)(1.2f * max_mem/cache->mip[k].buffer_size);
+
+    dt_cache_init(&cache->mip[k].cache, thumbnails, 32, 64, 100*1024*1024);
+    // might have been rounded to power of two:
+    thumbnails = dt_cache_capacity(&cache->mip[k].cache);
+    dt_cache_set_allocate_callback(&cache->mip[k].cache,
+        dt_mipmap_cache_allocate, &cache->mip[k]);
+    // dt_cache_set_cleanup_callback(&cache->mip[k].cache,
+        // &dt_mipmap_cache_deallocate, &cache->mip[k]);
+
     cache->mip[k].buf = dt_alloc_align(64, thumbnails * cache->mip[k].buffer_size);
 
     dt_print(DT_DEBUG_CACHE,
         "[mipmap_cache_init] cache has % 5d entries for mip %d (% 4.02f MB).\n",
         thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
-
-    thumbnails >>= 2;
-    thumbnails = CLAMPS(thumbnails, min_th, max_th);
   }
   // full buffer needs dynamic alloc:
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, full_bufs, 16, 64, 500*1024*1024);
+  const uint32_t full_bufs = 32;
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, full_bufs, 32, 64, 500*1024*1024);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
@@ -267,9 +263,10 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
   for(int k=0; k<(int)DT_MIPMAP_NONE; k++)
   {
-    printf("[mipmap_cache] level %d fill %.2f/%.2f MB (%.2f%%)\n", k, cache->mip[k].cache.cost/(1024.0*1024.0),
+    printf("[mipmap_cache] level %d fill %.2f/%.2f MB (%.2f%% in %u buffers)\n", k, cache->mip[k].cache.cost/(1024.0*1024.0),
       cache->mip[k].cache.cost_quota/(1024.0*1024.0),
-      100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota);
+      100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
+      dt_cache_size(&cache->mip[k].cache));
   }
 
   // TODO: stats about locks/users
@@ -561,7 +558,7 @@ _init_8(
   dat.buf = buf;
   int res = dt_imageio_export(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat);
 
-  fprintf(stderr, "[mipmap init 8] export finished!\n");
+  fprintf(stderr, "[mipmap init 8] export finished (sizes %d %d => %d %d)!\n", wd, ht, dat.head.width, dat.head.height);
 
   // any errors?
   if(res)
