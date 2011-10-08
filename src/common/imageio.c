@@ -472,7 +472,6 @@ int dt_imageio_export(
   dt_dev_load_image(&dev, imgid);
   const int wd = dev.image->width;
   const int ht = dev.image->height;
-  fprintf(stderr, "[imageio export] width and height by now: %d %d\n", wd, ht);
 
   dt_times_t start;
   dt_get_times(&start);

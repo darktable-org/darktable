@@ -343,7 +343,7 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
   while(cache->bucket_mask >> (sh+segment_bits)) sh ++;
   cache->segment_shift = sh;
 
-  fprintf(stderr, "[cache init] segment shift %u segment mask %u\n", cache->segment_shift, cache->segment_mask);
+  // fprintf(stderr, "[cache init] segment shift %u segment mask %u\n", cache->segment_shift, cache->segment_mask);
 
   cache->segments = (dt_cache_segment_t *)dt_alloc_align(64, (cache->segment_mask + 1) * sizeof(dt_cache_segment_t));
   cache->table    = (dt_cache_bucket_t  *)dt_alloc_align(64, num_buckets * sizeof(dt_cache_bucket_t));
@@ -790,7 +790,7 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
 int32_t
 dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
-#if 1
+#if 0
   if(cache->bucket_mask <= 4)
   {
     const int fwd = lru_check_consistency(cache);
@@ -841,7 +841,7 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     }
     i++;
   }
-#if 1
+#if 0
   if(cache->bucket_mask <= 4)
   {
     const int fwd = lru_check_consistency(cache);

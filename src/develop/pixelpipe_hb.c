@@ -323,8 +323,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output))
       {
         memset(*output, 0, pipe->backbuf_size);
-        fprintf(stderr, "scale: %X", *(uint32_t *)&roi_in.scale);
-        fprintf(stderr, "scale: %g %g", roi_in.scale, 1.0f);
         if(roi_in.scale == 1.0f)
         {
           // fast branch for 1:1 pixel copies.

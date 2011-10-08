@@ -123,7 +123,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   (*buf)[1] = img->height;
   (*buf)[3] = 1; // mark as not initialized yet
 
-  fprintf(stderr, "full buffer allocating img %u %d x %d = %u bytes (%lX)\n", img->id, img->width, img->height, buffer_size, (uint64_t)*buf);
+  // fprintf(stderr, "full buffer allocating img %u %d x %d = %u bytes (%lX)\n", img->id, img->width, img->height, buffer_size, (uint64_t)*buf);
 
   // trick the user into using a pointer without the header:
   return (*buf)+4;
@@ -264,9 +264,6 @@ dt_mipmap_cache_read_get(
     const dt_mipmap_size_t mip,
     const dt_mipmap_get_flags_t flags)
 {
-  if(mip == DT_MIPMAP_FULL)
-    dt_cache_print(&cache->mip[mip].cache);
-
   const uint32_t key = get_key(imgid, mip);
   // TODO: check if this is a circular dependency image_cache -> mipmap_cache (checking w/h during full buf load)
   if(flags == DT_MIPMAP_TESTLOCK)
@@ -307,7 +304,7 @@ dt_mipmap_cache_read_get(
     uint32_t *data = (uint32_t *)dt_cache_read_get(&cache->mip[mip].cache, key);
     if(!data)
     {
-      fprintf(stderr, "[mipmap cache get] no data in cache for imgid %u size %d!\n", imgid, mip);
+      // fprintf(stderr, "[mipmap cache get] no data in cache for imgid %u size %d!\n", imgid, mip);
       // sorry guys, no image for you :(
       buf->width = buf->height = 0;
       buf->imgid = 0;
@@ -316,12 +313,12 @@ dt_mipmap_cache_read_get(
     }
     else
     {
-      fprintf(stderr, "[mipmap cache get] found data in cache for imgid %u size %d (%lX)\n", imgid, mip, (uint64_t)data);
+      // fprintf(stderr, "[mipmap cache get] found data in cache for imgid %u size %d (%lX)\n", imgid, mip, (uint64_t)data);
       // uninitialized?
       assert(data[3] == 1 || data[3] == 0);
       if(data[3] == 1)
       {
-        fprintf(stderr, "[mipmap cache get] now initializing buffer for img %u mip %d!\n", imgid, mip);
+        // fprintf(stderr, "[mipmap cache get] now initializing buffer for img %u mip %d!\n", imgid, mip);
         // we're write locked here, as requested by the alloc callback.
         // now fill it with data:
         if(mip == DT_MIPMAP_FULL)
@@ -343,7 +340,7 @@ dt_mipmap_cache_read_get(
           dt_cache_realloc(&cache->mip[mip].cache, key, (void *)data);
           if(ret != DT_IMAGEIO_OK)
           {
-            fprintf(stderr, "[mipmap read get] error loading image: %d\n", ret);
+            // fprintf(stderr, "[mipmap read get] error loading image: %d\n", ret);
             // in case something went wrong, still keep the buffer and return it to the hashtable
             // so we don't produce mem leaks or unnecessary mem fragmentation.
             // 
@@ -381,7 +378,7 @@ dt_mipmap_cache_read_get(
         buf->buf = (uint8_t *)(&data[4]);
       else
       {
-        fprintf(stderr, "[mipmap cache get] got a zero-sized image for img %u mip %d (%lX)!\n", imgid, mip, (uint64_t)data);
+        // fprintf(stderr, "[mipmap cache get] got a zero-sized image for img %u mip %d (%lX)!\n", imgid, mip, (uint64_t)data);
         buf->buf = NULL;
         dt_cache_read_release(&cache->mip[mip].cache, key);
       }
@@ -401,7 +398,7 @@ dt_mipmap_cache_read_get(
       if(mip == k)
         dt_mipmap_cache_read_get(cache, buf, imgid, mip, DT_MIPMAP_PREFETCH);
     }
-    fprintf(stderr, "[mipmap cache get] image not found in cache: imgid %u mip %d!\n", imgid, mip);
+    // fprintf(stderr, "[mipmap cache get] image not found in cache: imgid %u mip %d!\n", imgid, mip);
     // nothing found :(
     buf->buf   = NULL;
     buf->imgid = 0;

@@ -747,7 +747,6 @@ static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
 {
-  fprintf(stderr,"Pipe finished, lets redraw!!!\n");
   dt_control_queue_redraw();
 }
 
