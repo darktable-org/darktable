@@ -493,7 +493,10 @@ int dt_imageio_export(
   }
 
   // make sure dev knows about new image bpp and filters:
-  dt_dev_load_image(&dev, imgid);
+  const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dev.image_storage = *image;
+  dt_image_cache_read_release(darktable.image_cache, image);
+
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
