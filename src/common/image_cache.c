@@ -154,6 +154,15 @@ dt_image_cache_read_get(
   return (const dt_image_t *)dt_cache_read_get(&cache->cache, imgid);
 }
 
+const dt_image_t*
+dt_image_cache_read_testget(
+    dt_image_cache_t *cache,
+    const uint32_t imgid)
+{
+  if(imgid <= 0) return NULL;
+  return (const dt_image_t *)dt_cache_read_testget(&cache->cache, imgid);
+}
+
 // drops the read lock on an image struct
 void
 dt_image_cache_read_release(

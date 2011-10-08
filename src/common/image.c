@@ -254,13 +254,8 @@ int dt_image_altered(const dt_image_t *img)
 }
 
 
-// TODO: move to mipmap_cache.c (at least the guts of it)
-int dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  fprintf(stderr, "[image_import] is not implemented yet!\n");
-  return 0;
-  //FIXME: re-implement on top of new cache!!
-#if 0
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 0;
   const char *cc = filename + strlen(filename);
   for(; *cc!='.'&&cc>filename; cc--);
@@ -285,7 +280,7 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
     return 0;
   }
   int rc;
-  int ret = 0, id = -1;
+  uint32_t id = 0;
   // select from images; if found => return
   gchar *imgfname;
   imgfname = g_path_get_basename((const gchar*)filename);
@@ -298,10 +293,8 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
     id = sqlite3_column_int(stmt, 0);
     g_free(imgfname);
     sqlite3_finalize(stmt);
-    ret = dt_image_open(id); // image already in db, open this.
     g_free(ext);
-    if(ret) return 0;
-    else return id;
+    return id;
   }
   sqlite3_finalize(stmt);
 
@@ -320,21 +313,26 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   sqlite3_finalize(stmt);
 
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
-  // FIXME: this has to go away!
-  dt_image_t *img = dt_image_cache_get_uninited(id, 'w');
-  g_strlcpy(img->filename, imgfname, DT_MAX_FILENAME_LEN);
-  img->id = id;
-  img->film_id = film_id;
-  img->dirty = 1;
+
+  // lock as shortly as possible:
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
+  dt_image_t buffered_image = *cimg;
+  dt_image_cache_read_release(darktable.image_cache, cimg);
 
   // read dttags and exif for database queries!
-  (void) dt_exif_read(img, filename);
+  (void) dt_exif_read(&buffered_image, filename);
   char dtfilename[DT_MAX_PATH_LEN];
   g_strlcpy(dtfilename, filename, DT_MAX_PATH_LEN);
-  dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH_LEN);
+  dt_image_path_append_version(id, dtfilename, DT_MAX_PATH_LEN);
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
-  (void)dt_exif_xmp_read(img, dtfilename, 0);
+  (void)dt_exif_xmp_read(&buffered_image, dtfilename, 0);
+
+  // write through to db, but not to xmp.
+  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+  *img = buffered_image;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_read_release(darktable.image_cache, img);
 
   // add a tag with the file extension
   guint tagid = 0;
@@ -344,10 +342,8 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
   dt_tag_new(tagname, &tagid);
   dt_tag_attach(tagid,id);
 
-  dt_image_cache_flush_no_sidecars(img);
-
-  dt_image_cache_release(img, 'w');
-
+  // FIXME: xmp, put it back in!
+#if 0
   // Search for sidecar files and import them if found.
   glob_t *globbuf = malloc(sizeof(glob_t));
 
@@ -380,9 +376,9 @@ int dt_image_import(const int32_t film_id, const char *filename, gboolean overri
 
   g_free(imgfname);
   g_free(fname);
+#endif
 
   return id;
-#endif
 }
 
 void dt_image_init(dt_image_t *img)

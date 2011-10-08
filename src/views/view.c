@@ -640,8 +640,7 @@ dt_view_image_expose(
   if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) 
     altered = 1;
   
-  // TODO: testget!
-  dt_image_t *img = NULL;
+  const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
   if(selected == 1)
   {
     outlinecol = 0.4;
@@ -933,6 +932,7 @@ dt_view_image_expose(
     cairo_stroke(cr);
   }
 
+  if(img) dt_image_cache_read_release(darktable.image_cache, img);
   cairo_restore(cr);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 }

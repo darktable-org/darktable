@@ -120,7 +120,7 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(const dt_image_t *img, char *line, int len);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
-int dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
+uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database. */

@@ -357,7 +357,7 @@ dt_mipmap_cache_read_get(
             cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
             dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
             *img = buffered_image;
-            fprintf(stderr, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%lX)\n", imgid, data[0], data[1], img->width, img->height, (uint64_t)data);
+            // fprintf(stderr, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%lX)\n", imgid, data[0], data[1], img->width, img->height, (uint64_t)data);
             // don't write xmp for this (we only changed db stuff):
             dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
             dt_image_cache_read_release(darktable.image_cache, img);

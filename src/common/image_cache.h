@@ -56,6 +56,13 @@ dt_image_cache_read_get(
     dt_image_cache_t *cache,
     const uint32_t imgid);
 
+// same as read_get, but doesn't block and returns NULL if the image
+// is currently unavailable.
+const dt_image_t*
+dt_image_cache_read_testget(
+    dt_image_cache_t *cache,
+    const uint32_t imgid);
+
 // drops the read lock on an image struct
 void
 dt_image_cache_read_release(
