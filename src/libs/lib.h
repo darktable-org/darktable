@@ -139,9 +139,14 @@ gboolean dt_lib_is_visible(dt_lib_module_t *module);
 /** set the visible state of a plugin */
 void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible);
 
+/** returns the localized plugin name for a given plugin_name. must not be freed. */
+gchar *dt_lib_get_localized_name(const gchar * plugin_name);
+
 /** preset stuff for lib */
 
 /** add or replace a preset for this operation. */
 void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params, const int32_t params_size);
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -183,17 +183,17 @@ void connect_key_accels(dt_lib_module_t *self)
       self, "copy history",
       g_cclosure_new(
           G_CALLBACK(_lib_filmstrip_copy_history_key_accel_callback),
-          (gpointer)self,NULL));
+          (gpointer)self->data,NULL));
   dt_accel_connect_lib(
       self, "paste history",
       g_cclosure_new(
           G_CALLBACK(_lib_filmstrip_paste_history_key_accel_callback),
-          (gpointer)self,NULL));
+          (gpointer)self->data,NULL));
   dt_accel_connect_lib(
       self, "discard history",
       g_cclosure_new(
           G_CALLBACK(_lib_filmstrip_discard_history_key_accel_callback),
-          (gpointer)self,NULL));
+          (gpointer)self->data,NULL));
 
   // Color label accels
   dt_accel_connect_lib(
@@ -616,3 +616,5 @@ static void _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *accel_g
   if(darktable.view_manager->proxy.filmstrip.module)
     gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

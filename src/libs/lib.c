@@ -498,11 +498,18 @@ static void
 _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
   gint w,h;
+  gint ww,wh;
   GtkRequisition requisition;
   gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
+  gdk_window_get_size(dt_ui_main_window(darktable.gui->ui)->window,&ww,&wh);
   gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
-  (*x)+=w-requisition.width;
+
+  /* align left panel popupmenu to right edge */
+  if (*x < ww/2) 
+    (*x)+=w-requisition.width;
+
   (*y)+=GTK_WIDGET(data)->allocation.height;
 }
 
@@ -782,6 +789,29 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module)
   if(module->presets_button)
     dt_accel_connect_button_lib(module, "show preset menu",
                                 module->presets_button);
+}
+
+gchar *
+dt_lib_get_localized_name(const gchar * plugin_name)
+{
+  // Prepare mapping op -> localized name
+  static GHashTable *module_names = NULL;
+  if(module_names == NULL)
+  {
+    module_names = g_hash_table_new(g_str_hash, g_str_equal);
+    GList *lib = g_list_first(darktable.lib->plugins);
+    if(lib != NULL)
+    {
+      do
+      {
+        dt_lib_module_t * module = (dt_lib_module_t *)lib->data;
+        g_hash_table_insert(module_names, module->plugin_name, _(module->name()));
+      }
+      while((lib=g_list_next(lib)) != NULL);
+    }
+  }
+
+  return (gchar*)g_hash_table_lookup(module_names, plugin_name);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

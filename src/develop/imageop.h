@@ -314,6 +314,9 @@ void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);
 
 dt_iop_module_t *get_colorout_module();
 
+/** returns the localized plugin name for a given op name. must not be freed. */
+gchar *dt_iop_get_localized_name(const gchar * op);
+
 /** takes four points (x,y) in two arrays and fills the cubic coefficients a, such that y = [X] * a, where
   * [X] is the matrix containing all x^3 x^2 x^1 x^0 lines for all four x. */
 void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a);
@@ -368,3 +371,5 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
