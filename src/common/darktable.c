@@ -76,7 +76,7 @@ static int usage(const char *argv0)
 }
 
 typedef void (dt_signal_handler_t)(int) ;
-static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
+// static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 
 static
@@ -131,9 +131,11 @@ void _dt_sigsegv_handler(int param)
   _dt_sigsegv_old_handler(param);
 }
 
+#if 0
 static
 void _dt_sigill_handler(int param)
 {
+  fprintf(stderr, "[this doesn't seem to work]\n");
   GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
 "darktable has trapped an illegal instruction which probably means that \
 an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
@@ -159,7 +161,6 @@ the console and post the backtrace log to mailing list with information about yo
     : "0" (level) \
     )
 #endif
-
 
 
 static 
@@ -200,6 +201,7 @@ darktable will now close down.\n\n%s"),message);
     exit(11);
   }
 }
+#endif
 
 /*  TODO: make this case insensitive */
 gboolean dt_supported_image(const gchar *filename)
@@ -337,8 +339,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   g_type_init();
 
+  // does not work, as gtk is not inited yet.
+  // even if it were, it's a super bad idea to invoke gtk stuff from
+  // a signal handler.
   /* check cput caps */
-  dt_check_cpu(argc,argv);
+  // dt_check_cpu(argc,argv);
 
   
 #ifdef HAVE_GEGL

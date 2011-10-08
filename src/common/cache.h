@@ -41,8 +41,11 @@ typedef struct dt_cache_t
   uint32_t lru_lock;
 
   // callback functions for cache misses/garbage collection
-  void (*allocate)(void *userdata, const uint32_t key, int32_t *cost, void **payload);
-  void (*cleanup) (void *userdata, const uint32_t key, void *payload);
+  // allocate should return != 0 if a write lock on alloc is needed.
+  // this might be useful for cases where the allocation takes a lot of time and you don't want
+  // the hashtable spinlocks to block and wait for it.
+  int32_t (*allocate)(void *userdata, const uint32_t key, int32_t *cost, void **payload);
+  void    (*cleanup) (void *userdata, const uint32_t key, void *payload);
   void *allocate_data;
   void *cleanup_data;
 }
@@ -55,7 +58,7 @@ void dt_cache_cleanup(dt_cache_t *cache);
 static inline void
 dt_cache_set_allocate_callback(
     dt_cache_t *cache,
-    void (*allocate)(void*, const uint32_t, int32_t*, void**),
+    int32_t (*allocate)(void*, const uint32_t, int32_t*, void**),
     void *allocate_data)
 {
   cache->allocate = allocate;
@@ -87,7 +90,7 @@ int32_t dt_cache_remove(dt_cache_t *cache, const uint32_t key);
 // removes from the end of the lru list, until the fill ratio
 // of the hashtable goes below the given parameter, in terms
 // of the user defined cost measure.
-void    dt_cache_gc(dt_cache_t *cache, const float fill_ratio);
+int32_t dt_cache_gc(dt_cache_t *cache, const float fill_ratio);
 
 // returns the number of elements currently stored in the cache.
 // O(N), where N is the total capacity. don't use!
@@ -99,5 +102,11 @@ dt_cache_capacity(dt_cache_t *cache)
 {
   return cache->bucket_mask + 1;
 }
+
+// very verbose dump of the cache contents
+void dt_cache_print(dt_cache_t *cache);
+
+// replace data pointer, cleanup has to be done by the user.
+void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, void *data);
 
 #endif

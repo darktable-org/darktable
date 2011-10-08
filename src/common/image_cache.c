@@ -26,7 +26,7 @@
 
 #include <sqlite3.h>
 
-void
+int32_t
 dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
   dt_image_cache_t *c = (dt_image_cache_t *)data;
@@ -85,6 +85,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
   sqlite3_finalize(stmt);
 
   *buf = c->images + slot;
+  return 0; // no write lock required, we inited it all right here.
 }
 
 void

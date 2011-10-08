@@ -492,6 +492,7 @@ int dt_imageio_export(
     dt_dev_cleanup(&dev);
     return 1;
   }
+
   // make sure dev knows about new image bpp and filters:
   dt_dev_load_image(&dev, imgid);
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);
@@ -499,6 +500,9 @@ int dt_imageio_export(
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
   dt_show_times(&start, "[export] creating pixelpipe", NULL);
+
+  assert(((uint32_t *)buf.buf)[-4] == dev.image->width);
+  assert(((uint32_t *)buf.buf)[-3] == dev.image->height);
 
   // find output color profile for this image:
   int sRGB = 1;
