@@ -49,7 +49,7 @@ typedef struct dt_cache_t
   void *allocate_data;
   void *cleanup_data;
 }
-dt_cache_t;	
+dt_cache_t;
 
 
 void dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, int32_t cache_line_size, int32_t optimize_cacheline);

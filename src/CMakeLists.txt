@@ -27,7 +27,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_tiff.c" 
   "common/imageio_rawspeed.cc" 
   "common/metadata.c" 
-  "common/mipmap_cache.c" 
+  "common/mipmap_cache.c"
   "common/styles.c" 
   "common/tags.c" 
   "common/utility.c" 

@@ -264,7 +264,7 @@ add_key_to_end_of_list(
 
   if(last_bucket == NULL)
     keys_bucket->first_delta = (int16_t)(free_bucket - keys_bucket);
-  else 
+  else
     last_bucket->next_delta = (int16_t)(free_bucket - last_bucket);
 }
 
@@ -469,7 +469,7 @@ lru_remove(dt_cache_t        *cache,
   bucket->mru = bucket->lru = -2;
 }
 
-// insert an entry, must already hold the lock! 
+// insert an entry, must already hold the lock!
 void
 lru_insert(dt_cache_t        *cache,
            dt_cache_bucket_t *bucket)
@@ -592,7 +592,7 @@ dt_cache_read_testget(
 // if found, the data void* is returned. if not, it is set to be
 // the given *data and a new hash table entry is created, which can be
 // found using the given key later on.
-// 
+//
 void*
 dt_cache_read_get(
     dt_cache_t     *cache,
