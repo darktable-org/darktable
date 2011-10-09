@@ -20,12 +20,23 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/imageio_jpeg.h"
 #include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/jobs.h"
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <glib/gstdio.h>
+#include <errno.h>
+
+#define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
+#define DT_MIPMAP_CACHE_FILE_VERSION 20
+#define DT_MIPMAP_CACHE_FILE_NAME "mipmaps"
 
 static inline int32_t
 buffer_is_broken(dt_mipmap_buffer_t *buf)
@@ -60,6 +71,197 @@ get_size(const uint32_t key)
 
 // TODO: cache read/write functions!
 // see old common/image_cache.c for backup file magic.
+
+typedef struct _iterate_data_t
+{
+  FILE *f;
+  uint8_t *blob;
+}
+_iterate_data_t;
+
+static int
+_write_buffer(const uint32_t key, const void *data, void *user_data)
+{
+  _iterate_data_t *d = (_iterate_data_t *)user_data;
+  int written = fwrite(&key, sizeof(uint32_t), 1, d->f);
+  if(written != 1) return 1;
+
+  dt_mipmap_buffer_t buf;
+  if(!data) return 1;
+  buf.width  = ((uint32_t *)data)[0];
+  buf.height = ((uint32_t *)data)[1];
+  buf.imgid  = get_imgid(key);
+  buf.size   = get_size(key);
+  // skip to next 8-byte alignment, for sse buffers.
+  buf.buf    = (uint8_t *)(&((uint32_t *)data)[4]);
+
+  const int32_t length = dt_imageio_jpeg_compress(buf.buf, d->blob, buf.width, buf.height, MIN(100, MAX(10, dt_conf_get_int("database_cache_quality"))));
+  written = fwrite(&length, sizeof(int32_t), 1, d->f);
+  if(written != 1) return 1;
+  written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
+  if(written != length) return 1;
+
+  fprintf(stderr, "[mipmap_cache] serializing image %u (%d x %d) with %d bytes\n", get_imgid(key), buf.width, buf.height, length);
+
+  return 0;
+}
+
+static int
+dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
+{
+  char cachedir[1024];
+  char dbfilename[1024];
+  dt_util_get_user_cache_dir(cachedir,1024);
+  gchar *filename = dt_conf_get_string("cachefile");
+
+  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/%s", cachedir, DT_MIPMAP_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", cachedir, filename);
+  else                                 snprintf(dbfilename, 512, "%s", filename);
+  g_free(filename);
+
+  // only store smallest thumbs.
+  const dt_mipmap_size_t mip = DT_MIPMAP_0;
+
+  _iterate_data_t d;
+  d.f = NULL;
+  d.blob = (uint8_t *)malloc(cache->mip[mip].buffer_size);
+  int written = 0;
+  FILE *f = fopen(dbfilename, "wb");
+  if(!f) goto write_error;
+  d.f = f;
+  fprintf(stderr, "[mipmap_cache] serializing to `%s'\n", dbfilename);
+
+  // write version info:
+  const int32_t magic = DT_MIPMAP_CACHE_FILE_MAGIC + DT_MIPMAP_CACHE_FILE_VERSION;
+  written = fwrite(&magic, sizeof(int32_t), 1, f);
+  if(written != 1) goto write_error;
+
+  // print max sizes for this cache
+  written = fwrite(&cache->mip[mip].max_width, sizeof(int32_t), 1, f);
+  if(written != 1) goto write_error;
+  written = fwrite(&cache->mip[mip].max_height, sizeof(int32_t), 1, f);
+  if(written != 1) goto write_error;
+
+  if(dt_cache_for_all(&cache->mip[mip].cache, _write_buffer, &d)) goto write_error;
+
+  free(d.blob);
+  fclose(f);
+  return 0;
+
+write_error:
+  fprintf(stderr, "[mipmap_cache] serialization to `%s' failed!\n", dbfilename);
+  if(f) fclose(f);
+  free(d.blob);
+  return 1;
+}
+
+static int
+dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
+{
+  // FIXME: currently broken:
+  return 1;
+  uint8_t *blob = NULL;
+  int32_t rd = 0;
+  const dt_mipmap_size_t mip = DT_MIPMAP_0;
+
+  char cachedir[1024];
+  char dbfilename[1024];
+  dt_util_get_user_cache_dir(cachedir, 1024);
+  gchar *filename = dt_conf_get_string ("cachefile");
+  if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", cachedir, DT_MIPMAP_CACHE_FILE_NAME);
+  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", cachedir, filename);
+  else                                 snprintf (dbfilename, 512, "%s", filename);
+  g_free(filename);
+
+  FILE *f = fopen(dbfilename, "rb");
+  if(!f) 
+  {
+    if (errno == ENOENT)
+    {
+      fprintf(stderr, "[mipmap_cache] cache is empty, file `%s' doesn't exist\n", dbfilename);
+    }
+    else
+    {
+      fprintf(stderr, "[mipmap_cache] failed to open the cache from `%s'\n", dbfilename);
+    }
+    goto read_finalize;
+  }
+
+  // read version info:
+  const int32_t magic = DT_MIPMAP_CACHE_FILE_MAGIC + DT_MIPMAP_CACHE_FILE_VERSION;
+  int32_t magic_file = 0;
+  rd = fread(&magic_file, sizeof(int32_t), 1, f);
+  if(rd != 1) goto read_error;
+  if(magic_file != magic)
+  {
+    if(magic_file > DT_MIPMAP_CACHE_FILE_MAGIC && magic_file < magic)
+        fprintf(stderr, "[mipmap_cache] cache version too old, dropping `%s' cache\n", dbfilename);
+    else
+        fprintf(stderr, "[mipmap_cache] invalid cache file, dropping `%s' cache\n", dbfilename);
+    goto read_finalize;
+  }
+  int file_width = 0, file_height = 0;
+  rd = fread(&file_width, sizeof(int32_t), 1, f);
+  if(rd != 1) goto read_error;
+  rd = fread(&file_height, sizeof(int32_t), 1, f);
+  if(rd != 1) goto read_error;
+  if(file_width  != cache->mip[mip].max_width ||
+     file_height != cache->mip[mip].max_height)
+  {
+    fprintf(stderr, "[mipmap_cache] cache settings changed, dropping `%s' cache\n", dbfilename);
+    goto read_finalize;
+  }
+  blob = (uint8_t *)malloc(4*sizeof(uint8_t)*file_width*file_height);
+
+  while(!feof(f))
+  {
+    int32_t key = 0;
+    rd = fread(&key, sizeof(int32_t), 1, f);
+    if(rd != 1) goto read_error;
+    fprintf(stderr, "[mipmap_cache] thumbnail for image %d\n", get_imgid(key));
+    // FIXME: need to read w/h here, of the actual thumbnail
+    int32_t length = 0;
+    rd = fread(&length, sizeof(int32_t), 1, f);
+    fprintf(stderr, "[mipmap_cache] thumbnail for image %d length %d bytes\n", get_imgid(key), length);
+    if(rd != 1 || length > 4*sizeof(uint8_t)*file_width*file_height);
+      goto read_error;
+    rd = fread(blob, sizeof(uint8_t), length, f);
+    if(rd != length) goto read_error;
+
+    dt_mipmap_buffer_t buf;
+    dt_imageio_jpeg_t jpg;
+    fprintf(stderr, "[mipmap_cache] thumbnail for image %d\n", get_imgid(key));
+
+    // FIXME: this won't work, as it will be reading stuff from disk!
+    // TODO:  use low level cache interface!
+    dt_mipmap_cache_read_get(cache, &buf, get_imgid(key), get_size(key), DT_MIPMAP_BLOCKING);
+    if(!buf.buf) goto read_error;
+    dt_mipmap_cache_write_get(cache, &buf);
+    fprintf(stderr, "[mipmap_cache] thumbnail for image %d\n", get_imgid(key));
+
+    if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) ||
+        (jpg.width != file_width|| jpg.height != file_height) ||
+        dt_imageio_jpeg_decompress(&jpg, buf.buf))
+    {
+      fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(key));
+    }
+    dt_mipmap_cache_write_release(cache, &buf);
+    dt_mipmap_cache_read_release(cache, &buf);
+    fprintf(stderr, "[mipmap_cache] decompressed thumbnail for image %d!\n", get_imgid(key));
+  }
+
+  fclose(f);
+  free(blob);
+  return 0;
+
+read_error:
+  fprintf(stderr, "[mipmap_cache] failed to recover the cache from `%s'\n", dbfilename);
+read_finalize:
+  if(f) fclose(f);
+  free(blob);
+  g_unlink(dbfilename);
+  return 1;
+}
 
 static void _init_f(float   *buf, uint32_t *width, uint32_t *height, const uint32_t imgid);
 static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint32_t imgid, const dt_mipmap_size_t size);
@@ -135,6 +337,7 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
 {
   // for full image buffers
   // FIXME: this is meaningless at this point!
+  // TODO:  pimp cache_realloc function to take another cost
   // cost is always what we alloced in this realloc buffer, regardless of what the
   // image actually uses (could be less than this)
   *cost = 1;//data[2];
@@ -222,11 +425,13 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   cache->mip[DT_MIPMAP_FULL].buffer_size = 0;
   cache->mip[DT_MIPMAP_FULL].size = DT_MIPMAP_FULL;
   cache->mip[DT_MIPMAP_FULL].buf = NULL;
+
+  dt_mipmap_cache_deserialize(cache);
 }
 
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 {
-  // TODO: serialize
+  dt_mipmap_cache_serialize(cache);
   for(int k=0;k<=DT_MIPMAP_F;k++)
   {
     dt_cache_cleanup(&cache->mip[k].cache);
@@ -265,7 +470,6 @@ dt_mipmap_cache_read_get(
     const dt_mipmap_get_flags_t flags)
 {
   const uint32_t key = get_key(imgid, mip);
-  // TODO: check if this is a circular dependency image_cache -> mipmap_cache (checking w/h during full buf load)
   if(flags == DT_MIPMAP_TESTLOCK)
   {
     // simple case: only get and lock if it's there.
@@ -580,8 +784,6 @@ _write_image(
     int                       exif_len,
     int                       imgid)
 {
-  // TODO: can we get that directly from the pixelpipe's backbuf? or hand it over our buffer,
-  //       to avoid this copy?
   _dummy_data_t *d = (_dummy_data_t *)data;
   memcpy(d->buf, in, data->width*data->height*sizeof(uint32_t));
   return 0;
@@ -595,11 +797,6 @@ _init_8(
     const uint32_t          imgid,
     const dt_mipmap_size_t  size)
 {
-
-  // FIXME: the below has some mem garbage problems, so for now:
-  // memset(buf, 0, *width * *height * 4);
-  // return;
-
   const uint32_t wd = *width, ht = *height;
   dt_imageio_module_format_t format;
   _dummy_data_t dat;
@@ -626,14 +823,10 @@ _init_8(
   *height = dat.head.height;
 
   // TODO: various speed optimizations:
-  // TODO: pass our cache buffer to the pipe as backbuf!
   // TODO: get mip from larger mip (testget)!
   // TODO: also init all smaller mips!
   // TODO: use mipf, but:
   // TODO: if output is cropped, don't use mipf!
-  // TODO: flag exif as not needed!
-  // TODO: always switch off high quality mode (overwrite export arguments)
-
 }
 
 // *************************************************************

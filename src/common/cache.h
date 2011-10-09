@@ -109,4 +109,13 @@ void dt_cache_print(dt_cache_t *cache);
 // replace data pointer, cleanup has to be done by the user.
 void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, void *data);
 
+// iterate over all currently contained data blocks.
+// not thread safe! only use this for init/cleanup!
+// returns non zero the first time process() returns non zero.
+int
+dt_cache_for_all(
+    dt_cache_t *cache,
+    int (*process)(const uint32_t key, const void *data, void *user_data),
+    void *user_data);
+
 #endif

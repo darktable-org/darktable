@@ -513,6 +513,28 @@ lru_insert_locked(dt_cache_t        *cache,
   dt_cache_unlock(&cache->lru_lock);
 }
 
+int
+dt_cache_for_all(
+    dt_cache_t *cache,
+    int (*process)(const uint32_t key, const void *data, void *user_data),
+    void *user_data)
+{
+  // this is not thread safe.
+  //dt_cache_lock(&cache->lru_lock);
+  int32_t curr = cache->lru;
+  while(curr >= 0)
+  {
+    const int err = process(cache->table[curr].key, cache->table[curr].data, user_data);
+    if(err) return err;
+    if(curr == cache->mru) break;
+    int32_t next = cache->table[curr].mru;
+    assert(cache->table[next].lru == curr);
+    curr = next;
+  }
+  //dt_cache_unlock(&cache->lru_lock);
+  return 0;
+}
+
 // does a consistency check of the lru list.
 // returns how many entries it finds.
 // hangs infinitely if the list has cycles.
