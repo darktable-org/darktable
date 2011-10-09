@@ -16,6 +16,8 @@ endforeach(pixmap_size)
 FILE(GLOB DARKROOM_PLUGIN_PIXMAPS "plugins/darkroom/*.png")
 install(FILES ${DARKROOM_PLUGIN_PIXMAPS} DESTINATION ${SHARE_INSTALL}/pixmaps/plugins/darkroom )
 
+FILE(GLOB OTHER_PIXMAPS "*.png")
+install(FILES ${OTHER_PIXMAPS} DESTINATION ${SHARE_INSTALL}/pixmaps )
 
 #
 # Add debian package postinstall icon cache update

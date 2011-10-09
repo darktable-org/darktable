@@ -86,7 +86,7 @@ initfile=init_$tab.c
 # header of the init tab function
 cat > $initfile << EOF
 static void
-init_tab_$tab (GtkWidget *tab)
+init_tab_$tab (GtkWidget *tab, void (*hardcoded_part)(GtkWidget *vbox1, GtkWidget *vbox2))
 {
   GtkWidget *widget, *label, *labelev;
   GtkWidget *hbox = gtk_hbox_new(5, FALSE);
@@ -184,6 +184,8 @@ EOF
 done
 
 cat >> $initfile << EOF
+  if(hardcoded_part)
+    (*hardcoded_part)(vbox1, vbox2);
 }
 
 EOF

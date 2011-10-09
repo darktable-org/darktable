@@ -28,4 +28,7 @@ void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t ve
 /** show the popup menu for the given module, with default behavior. */
 void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
 
+/** show popupmenu for favorite modules */
+void dt_gui_favorite_presets_menu_show();
+
 #endif

@@ -102,6 +102,107 @@ static void edit_preset (GtkTreeView * tree, const gint rowid, const gchar * nam
 static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g);
 
 static GtkWidget *_preferences_dialog;
+static GList *language_codes = NULL;
+static gint sys_default = -1;
+
+static void language_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_string("ui_last/gui_language", (gchar*)g_list_nth(language_codes, gtk_combo_box_get_active(GTK_COMBO_BOX(widget)))->data);
+}
+
+static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), sys_default+1);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+// TODO: sort the list of languages
+static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
+{
+  GtkWidget *label, *widget, *labelev;
+  GDir *dir;
+  const gchar *filename;
+  GList *languages = NULL, *iter;
+  const gchar * const * names = g_get_language_names();
+  gint selected = -1;
+  sys_default = -1;
+  gboolean store_codes = (language_codes == NULL);
+  gchar *ui_lang = dt_conf_get_string("ui_last/gui_language");
+  dir = g_dir_open(DARKTABLE_LOCALEDIR, 0, NULL);
+
+  if(store_codes)
+    language_codes = g_list_append(language_codes, g_strdup("C"));
+
+  if(dir)
+  {
+    int i = -1;
+    while((filename = g_dir_read_name(dir)))
+    {
+      gchar *testname =g_build_filename(DARKTABLE_LOCALEDIR, filename, NULL);
+      if(g_file_test(testname, G_FILE_TEST_IS_DIR))
+      {
+        gchar *entry = NULL;
+        i++;
+        if(sys_default == -1)
+        {
+          // check if this is the system default
+          const gchar * const * n = names;
+          while(*n)
+          {
+            if(g_strcmp0(*n, filename) == 0)
+            {
+              sys_default = i;
+              entry = g_strconcat(filename, " (", _("system default"), ")", NULL);
+              break;
+            }
+            n++;
+          }
+        }
+        if(g_strcmp0(ui_lang, filename) == 0)
+          selected = i;
+        languages = g_list_append(languages, entry?entry:g_strdup(filename));
+        if(store_codes)
+          language_codes = g_list_append(language_codes, g_strdup(filename));
+      }
+      g_free(testname);
+    }
+    g_dir_close(dir) ;
+  }
+  if(selected == -1 && g_strcmp0(ui_lang, "C") != 0)
+    selected = sys_default;
+
+  label = gtk_label_new(_("interface language"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  widget = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("english"));
+
+  if((iter = g_list_first(languages)) != NULL)
+  {
+    do
+    {
+      gtk_combo_box_append_text(GTK_COMBO_BOX(widget), iter->data);
+      g_free(iter->data);
+    }
+    while((iter=g_list_next(iter)) != NULL);
+    g_list_free(languages);
+  }
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected + 1);
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(language_callback), 0);
+  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", _("double click to reset to the system language"), (char *)NULL);
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
+  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("set the language of the user interface (needs a restart)"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
+}
 
 void dt_gui_preferences_show()
 {
@@ -122,8 +223,8 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_str = NULL;
   darktable.control->accel_remap_path = NULL;
 
-  init_tab_gui(notebook);
-  init_tab_core(notebook);
+  init_tab_gui(notebook, &hardcoded_gui);
+  init_tab_core(notebook, NULL);
   init_tab_accels(notebook);
   init_tab_presets(notebook);
   gtk_widget_show_all(_preferences_dialog);

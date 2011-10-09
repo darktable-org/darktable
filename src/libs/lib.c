@@ -498,11 +498,18 @@ static void
 _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
   gint w,h;
+  gint ww,wh;
   GtkRequisition requisition;
   gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
+  gdk_window_get_size(dt_ui_main_window(darktable.gui->ui)->window,&ww,&wh);
   gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
-  (*x)+=w-requisition.width;
+
+  /* align left panel popupmenu to right edge */
+  if (*x < ww/2) 
+    (*x)+=w-requisition.width;
+
   (*y)+=GTK_WIDGET(data)->allocation.height;
 }
 
@@ -679,13 +686,17 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
     hw[idx] = gtk_fixed_new();
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
 
+  /* add a spacer to align buttons with iop buttons (enabled button) */
+  hw[idx] = gtk_fixed_new();
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
   /* lets order header elements depending on left/right side panel placement */  
   int c = module->container();
   if ( c & DT_UI_CONTAINER_PANEL_LEFT_TOP || 
        c & DT_UI_CONTAINER_PANEL_LEFT_CENTER ||
        c & DT_UI_CONTAINER_PANEL_LEFT_BOTTOM )
   {
-    for(int i=0;i<=3;i++)
+    for(int i=0;i<=4;i++)
       if (hw[i])
 	gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
     gtk_misc_set_alignment(GTK_MISC(hw[1]),0.0,0.5);
@@ -693,14 +704,14 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   }
   else
   {
-    for(int i=3;i>=0;i--)
+    for(int i=4;i>=0;i--)
        if (hw[i])
 	 gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
     gtk_misc_set_alignment(GTK_MISC(hw[1]),1.0,0.5);
     dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);    
   }
 
-  /* add module widtget into an alignment */
+  /* add module widget into an alignment */
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 8);
   gtk_container_add(GTK_CONTAINER(pluginui), al);
