@@ -42,6 +42,15 @@ dt_imageio_export(
     const char *filename,
     struct dt_imageio_module_format_t *format,
     struct dt_imageio_module_data_t *format_params);
+int
+dt_imageio_export_with_flags(
+    const uint32_t                     imgid,
+    const char                        *filename,
+    struct dt_imageio_module_format_t *format,
+    struct dt_imageio_module_data_t   *format_params,
+    const int32_t                      ignore_exif,
+    const int32_t                      display_byteorder,
+    const int32_t                      high_quality);
 
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation);
 

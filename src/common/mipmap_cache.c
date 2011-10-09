@@ -608,7 +608,8 @@ _init_8(
   dat.head.max_width  = wd;
   dat.head.max_height = ht;
   dat.buf = buf;
-  int res = dt_imageio_export(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat);
+  // export with flags: ignore exif (don't load from disk), don't swap byte order, and don't do hq processing
+  int res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0);
 
   // fprintf(stderr, "[mipmap init 8] export finished (sizes %d %d => %d %d)!\n", wd, ht, dat.head.width, dat.head.height);
 

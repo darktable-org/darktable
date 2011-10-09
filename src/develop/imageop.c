@@ -774,8 +774,9 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
 {
   if(event->button == 1 && (event->state & GDK_SHIFT_MASK)) // TODO: this can also be done when some auto-collapse option is set ...
   {
-    int current_group = dt_dev_modulegroups_get(module->dev);
-    GList *iop = g_list_first(module->dev->iop);
+    dt_develop_t *dev = module->dev;
+    int current_group = dt_dev_modulegroups_get(dev);
+    GList *iop = g_list_first(dev->iop);
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
@@ -783,16 +784,16 @@ expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module
 
       /* add special group flag for moduel in active pipe */
       if(module->enabled)
-	additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
+        additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
 
       /* add special group flag for favorite */
       if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
-	additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+        additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
       /* if module is the current, always expand it */
       if (m == module)
         gtk_expander_set_expanded(m->expander, TRUE);
-      else if((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, module->groups()|additional_flags)))
+      else if((current_group == 7 || dt_dev_modulegroups_test(dev, current_group, module->groups()|additional_flags)))
         gtk_expander_set_expanded(m->expander, FALSE);
 
       iop = g_list_next(iop);

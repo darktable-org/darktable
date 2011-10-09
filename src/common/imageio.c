@@ -467,6 +467,20 @@ int dt_imageio_export(
     dt_imageio_module_format_t *format,
     dt_imageio_module_data_t   *format_params)
 {
+  return dt_imageio_export_with_flags(imgid, filename, format, format_params,
+      0, 0, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing"));
+}
+
+// internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
+int dt_imageio_export_with_flags(
+    const uint32_t              imgid,
+    const char                 *filename,
+    dt_imageio_module_format_t *format,
+    dt_imageio_module_data_t   *format_params,
+    const int32_t               ignore_exif,
+    const int32_t               display_byteorder,
+    const int32_t               high_quality)
+{
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, imgid);
@@ -538,7 +552,7 @@ int dt_imageio_export(
   // get only once at the beginning, in case the user changes it on the way:
   const int high_quality_processing = ((format_params->max_width  == 0 || format_params->max_width  >= pipe.processed_width ) &&
                                        (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)) ? 0 :
-                                        dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+                                        high_quality;
   const int width  = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
   const float scalex = width  > 0 ? fminf(width /(float)pipe.processed_width,  1.0) : 1.0;
@@ -583,7 +597,7 @@ int dt_imageio_export(
   }
 
   // downconversion to low-precision formats:
-  if(bpp == 8)
+  if(bpp == 8 && !display_byteorder)
   {
     // ldr output: char
     if(high_quality_processing)
@@ -629,15 +643,23 @@ int dt_imageio_export(
   }
   // else output float, no further harm done to the pixels :)
 
-  int length;
-  uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-  char pathname[1024];
-  dt_image_full_path(imgid, pathname, 1024);
-  length = dt_exif_read_blob(exif_profile, pathname, sRGB, imgid);
-
   format_params->width  = processed_width;
   format_params->height = processed_height;
-  const int res = format->write_image (format_params, filename, outbuf, exif_profile, length, imgid);
+  int res = 0;
+  if(!ignore_exif)
+  {
+    int length;
+    uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
+    char pathname[1024];
+    dt_image_full_path(imgid, pathname, 1024);
+    length = dt_exif_read_blob(exif_profile, pathname, sRGB, imgid);
+
+    res = format->write_image (format_params, filename, outbuf, exif_profile, length, imgid);
+  }
+  else
+  {
+    res = format->write_image (format_params, filename, outbuf, NULL, 0, imgid);
+  }
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
