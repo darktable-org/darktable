@@ -507,7 +507,6 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     if(strcmp(module->op, "gamma"))
     {
       // remove widget:
-      GtkWidget *top = GTK_WIDGET(module->topwidget);
       GtkWidget *exp = GTK_WIDGET(module->expander);
       GtkWidget *shh = GTK_WIDGET(module->showhide);
       GtkWidget *rsb = GTK_WIDGET(module->reset_button);
@@ -524,7 +523,6 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       if(module->connect_key_accels)
         module->connect_key_accels(module);
       // copy over already inited stuff:
-      module->topwidget = top;
       module->expander = exp;
       module->showhide = shh;
       module->reset_button = rsb;
@@ -532,7 +530,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       dt_iop_connect_common_accels(module);
       // reparent
       gtk_container_add(GTK_CONTAINER(parent), module->widget);
-      gtk_widget_show_all(module->topwidget);
+      gtk_widget_show(module->expander);
       // all the signal handlers get passed module*, which is still valid.
     }
     modules = g_list_previous(modules);
@@ -567,7 +565,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     }
     else
     {
-      gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
+      gtk_widget_hide(GTK_WIDGET(module->expander));
     }
     modules = g_list_next(modules);
   }
@@ -787,7 +785,6 @@ void enter(dt_view_t *self)
     
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
-    module->topwidget = GTK_WIDGET(expander);
     module->accel_closures = NULL;
     if(module->connect_key_accels)
       module->connect_key_accels(module);

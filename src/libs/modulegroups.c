@@ -212,7 +212,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     do
     {
       dt_iop_module_t *module = (dt_iop_module_t*)modules->data;
-      GtkWidget *w = module->topwidget;
+      GtkWidget *w = module->expander;
     
       /* exclude gamma module */
       if(!strcmp(module->op, "gamma")) continue;

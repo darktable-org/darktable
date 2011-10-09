@@ -1,6 +1,7 @@
 /*
 		This file is part of darktable,
 		copyright (c) 2009--2011 johannes hanika.
+		copyright (c) 2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -173,8 +174,9 @@ typedef struct dt_iop_module_t
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
   GtkDarktableToggleButton *off;
-  /** this widget contains all of the module: expander and label decoration. */
-  GtkWidget *topwidget;
+  /** this is the module header, contains labe and buttons */
+  GtkWidget *header;
+
   /** button used to show/hide this module in the plugin list. */
   GtkWidget *showhide;
   /** expander containing the widget. */

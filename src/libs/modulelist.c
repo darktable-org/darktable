@@ -91,7 +91,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
   if(state==0)
   {
     /* module is hidden lets set gconf values */
-    gtk_widget_hide(GTK_WIDGET(module->topwidget));
+    gtk_widget_hide(GTK_WIDGET(module->expander));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, FALSE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
@@ -105,7 +105,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
     /* module is shown lets set gconf values */
     // FIXME
     // dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->topwidget));
+    gtk_widget_show(GTK_WIDGET(module->expander));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, TRUE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
@@ -121,7 +121,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
     /* module is shown and favorite lets set gconf values */
     // FIXME
     // dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->topwidget));
+    gtk_widget_show(GTK_WIDGET(module->expander));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, TRUE);
     snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
@@ -185,7 +185,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
     }
     else
     {
-      gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
+      gtk_widget_hide_all(GTK_WIDGET(module->expander));
     }
 
     modules = g_list_previous(modules);
