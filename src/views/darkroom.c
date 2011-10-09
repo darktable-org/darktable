@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@
 #include "control/jobs.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "dtgtk/button.h"
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "common/image_cache.h"
@@ -30,6 +32,7 @@
 #include "common/tags.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "libs/colorpicker.h"
 
 #include <stdlib.h>
@@ -751,6 +754,14 @@ static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer
   dt_control_queue_redraw();
 }
 
+static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_data)
+{
+  /* create favorites menu and popup */
+  dt_gui_favorite_presets_menu_show();
+  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+}
+
 void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
@@ -771,6 +782,17 @@ void enter(dt_view_t *self)
   dev->gui_leaving = 0;
   dev->gui_module = NULL;
   dt_dev_load_image(dev, dev->image);
+
+  /* create favorite plugin preset popup tool */
+  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
+               (char *)NULL);
+  g_signal_connect (G_OBJECT (favorite_presets), "clicked",
+                    G_CALLBACK (_darkroom_ui_favorite_presets_popupmenu),
+                    NULL);
+ 
+  dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets);
+
 
   /* add IOP modules to plugin list */
 
