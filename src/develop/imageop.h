@@ -178,7 +178,7 @@ typedef struct dt_iop_module_t
   /** button used to show/hide this module in the plugin list. */
   GtkWidget *showhide;
   /** expander containing the widget. */
-  GtkExpander *expander;
+  GtkWidget *expander;
   /** reset parameters button */
   GtkWidget *reset_button;
   /** show preset menu button */
@@ -274,10 +274,16 @@ void dt_iop_cleanup_module(dt_iop_module_t *module);
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
+/** set expanded state of iop */
+void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded);
+
 /** commits params and updates piece hash. */
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
+/** get the widget of plugin ui in expander */
+GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
+
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
 /** loads default settings from database. */

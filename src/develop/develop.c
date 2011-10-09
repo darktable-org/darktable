@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1045,6 +1046,12 @@ gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t io
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test)
     return dev->proxy.modulegroups.test(dev->proxy.modulegroups.module, group, iop_group); 
   return FALSE;
+}
+
+void dt_dev_modulegroups_switch(dt_develop_t *dev, dt_iop_module_t *module)
+{
+  if (dev->proxy.modulegroups.module && dev->proxy.modulegroups.switch_group)
+    dev->proxy.modulegroups.switch_group(dev->proxy.modulegroups.module, module);
 }
 
 

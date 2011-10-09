@@ -106,6 +106,8 @@ typedef struct dt_develop_t
       uint32_t (*get)(struct dt_lib_module_t *self);
       /* test if iop group flags matches modulegroup */
       gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+      /* switch to modulegroup */
+      void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
     } modulegroups;
 
     /* 
@@ -187,6 +189,8 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
  */
 /** check if modulegroups hooks are available */
 gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
+/** switch to modulegroup of module */
+void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** set the active modulegroup */
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */

@@ -506,9 +506,6 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(strcmp(module->op, "gamma"))
     {
-      char var[1024];
-      snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
-      dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
       // remove widget:
       GtkWidget *top = GTK_WIDGET(module->topwidget);
       GtkWidget *exp = GTK_WIDGET(module->expander);
@@ -528,7 +525,7 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
         module->connect_key_accels(module);
       // copy over already inited stuff:
       module->topwidget = top;
-      module->expander = GTK_EXPANDER(exp);
+      module->expander = exp;
       module->showhide = shh;
       module->reset_button = rsb;
       module->presets_button = psb;
@@ -563,9 +560,10 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
       if(module->showhide)
         dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
 
+      
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
-      gtk_expander_set_expanded (module->expander, active);
+      dt_iop_gui_set_expanded(module, active);
     }
     else
     {
@@ -780,7 +778,7 @@ void enter(dt_view_t *self)
 
   // avoid triggering of events before plugin is ready:
   darktable.gui->reset = 1;
-
+  char option[1024];
   GList *modules = g_list_last(dev->iop);
   while(modules)
   {
@@ -797,6 +795,9 @@ void enter(dt_view_t *self)
 
     dt_ui_container_add_widget(darktable.gui->ui,
                                DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+
+    snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+    dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
 
     modules = g_list_previous(modules);
   }
@@ -903,11 +904,6 @@ void leave(dt_view_t *self)
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
-    // printf("removing module %d - %s\n", module->instance, module->op);
-    char var[1024];
-    snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
-    dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
-
     module->gui_cleanup(module);
     dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;

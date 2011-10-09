@@ -66,11 +66,15 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group);
   \see dt_dev_modulegroups_get()
 */
 static uint32_t _lib_modulegroups_get(dt_lib_module_t *self);
-
 /* modulegroups proxy test function.
    tests if iop module group flags matches modulegroup.
 */
 static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+/* modulegroups proxy switch group function.
+   sets the active group which module belongs too.
+*/
+static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module);
+
 
 const char* name()
 {
@@ -164,6 +168,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.set = _lib_modulegroups_set;
   darktable.develop->proxy.modulegroups.get = _lib_modulegroups_get;
   darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
+  darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
 
   /* lets set default group */
   _lib_modulegroups_set(self, DT_MODULEGROUP_BASIC);
@@ -176,6 +181,8 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.set = NULL;
   darktable.develop->proxy.modulegroups.get = NULL;
   darktable.develop->proxy.modulegroups.test  = NULL;
+  darktable.develop->proxy.modulegroups.switch_group  = NULL;
+  
   g_free(self->data);
   self->data = NULL;
 }
@@ -302,6 +309,26 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[group]), TRUE);
 
   if (i_own_lock) dt_control_gdk_unlock();
+
+}
+
+static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  
+  /* do nothing if module is member of current group */
+  if (_lib_modulegroups_test(self, d->current, module->groups()))
+    return;
+
+  /* lets find the group which is not favorit/acive pipe */
+  for(int k=DT_MODULEGROUP_BASIC;k<DT_MODULEGROUP_SIZE;k++)
+  {
+    if (_lib_modulegroups_test(self, k, module->groups()))
+    {
+      _lib_modulegroups_set(self,k);
+      return;
+    }
+  }
 
 }
 
