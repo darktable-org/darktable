@@ -190,7 +190,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 
     modules = g_list_previous(modules);
   }
-
+  gtk_widget_show_all(self->widget);
 }
 
 
