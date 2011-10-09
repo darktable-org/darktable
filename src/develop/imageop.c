@@ -751,40 +751,6 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
   return iop_cs_rgb;
 }
 
-static void
-dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
-{
-  GtkExpander *expander = GTK_EXPANDER (object);
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  GtkWidget *content = gtk_widget_get_parent(module->widget);
-  if (gtk_expander_get_expanded (expander))
-  {
-    gtk_widget_show(content);
-    // Hack: in views/darkroom.c we use gtk_widget_show_all() which also shows the to be hidden blend box when entering darkroom mode.
-    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
-    if(bd != NULL && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->enable)) == FALSE)
-      gtk_widget_hide(GTK_WIDGET(bd->box));
-
-    // register to receive draw events
-    dt_iop_request_focus(module);
- 
-    for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
-      dt_ui_container_focus_widget(darktable.gui->ui, k, module->expander);
-
-    /* we need to redraw because iop might have post expose */
-    dt_control_queue_redraw_center();
-  }
-  else
-  {
-    if(module->dev->gui_module == module)
-    {
-      dt_iop_request_focus(NULL);
-      dt_control_queue_redraw_center();
-    }
-    gtk_widget_hide(content);
-  }
-}
-#endif
 
 static void
 dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
