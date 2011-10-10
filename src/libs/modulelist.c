@@ -84,6 +84,59 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_iop_module_t *module)
+{
+  char option[1024];
+  gboolean expand = FALSE;
+  if(state==0)
+  {
+    /* module is hidden lets set gconf values */
+    gtk_widget_hide(GTK_WIDGET(module->expander));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, FALSE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    dt_conf_set_bool (option, FALSE);
+    
+    /* construct tooltip text into option */
+    snprintf(option, 512, _("show %s"), module->name());
+  }
+  else if(state==1)
+  {
+    /* module is shown lets set gconf values */
+    // FIXME
+    // dt_gui_iop_modulegroups_switch(module->groups());
+    gtk_widget_show(GTK_WIDGET(module->expander));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, TRUE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    dt_conf_set_bool (option, FALSE);
+
+    expand = TRUE;
+
+    /* construct tooltip text into option */
+    snprintf(option, 512, _("%s as favorite"), module->name());
+  }
+  else if(state==2)
+  {
+    /* module is shown and favorite lets set gconf values */
+    // FIXME
+    // dt_gui_iop_modulegroups_switch(module->groups());
+    gtk_widget_show(GTK_WIDGET(module->expander));
+    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    dt_conf_set_bool (option, TRUE);
+    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    dt_conf_set_bool (option, TRUE);
+
+    expand = TRUE;
+    
+    /* construct tooltip text into option */
+    snprintf(option, 512, _("hide %s"), module->name());
+  }
+
+  g_object_set(G_OBJECT(w), "tooltip-text", option, (char *)NULL);
+  return expand;
+}
+
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -104,27 +157,8 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 	snprintf(filename, 1024, "%s/pixmaps/plugins/darkroom/template.png", datadir);
       GtkWidget *image = gtk_image_new_from_file(filename);
       gtk_button_set_image(GTK_BUTTON(module->showhide), image);
-      g_signal_connect(G_OBJECT(module->showhide), "tristate-changed",
-		       G_CALLBACK(_lib_modulelist_tristate_changed_callback), module);
-      gtk_table_attach(GTK_TABLE(self->widget), module->showhide, ti, ti+1, tj, tj+1,
-		       GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-		       GTK_SHRINK,
-		       0, 0);
-      if(ti < 5) ti++;
-      else { ti = 0; tj ++; }
-    }
-    modules = g_list_previous(modules);
-  }
 
-  gtk_widget_show_all(self->widget);
-
-  // hack: now hide all custom expander widgets again.
-  modules = darktable.develop->iop;
-  while(modules)
-  {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(strcmp(module->op, "gamma"))
-    {
+      /* set button state */
       char option[1024];
       snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
       gboolean active = dt_conf_get_bool (option);
@@ -136,74 +170,40 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 	state++;
 	if(favorite) state++;
       }
-      
-      if(module->showhide)
-	dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
-      
-      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-      active = dt_conf_get_bool (option);
-      gtk_expander_set_expanded (module->expander, active);
+      _lib_modulelist_tristate_set_state(module->showhide,state,module);
+      dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide), state);
+
+      /* connect tristate button callback*/
+      g_signal_connect(G_OBJECT(module->showhide), "tristate-changed",
+		       G_CALLBACK(_lib_modulelist_tristate_changed_callback), module);
+      gtk_table_attach(GTK_TABLE(self->widget), module->showhide, ti, ti+1, tj, tj+1,
+		       GTK_FILL | GTK_EXPAND | GTK_SHRINK,
+		       GTK_SHRINK,
+		       0, 0);
+      if(ti < 5) ti++;
+      else { ti = 0; tj ++; }
     }
     else
     {
-      gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
+      gtk_widget_hide_all(GTK_WIDGET(module->expander));
     }
-    modules = g_list_next(modules);
+
+    modules = g_list_previous(modules);
   }
+  gtk_widget_show_all(self->widget);
 }
+
+
 
 static void _lib_modulelist_tristate_changed_callback(GtkWidget *w,gint state, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  char option[512]= {0};
+  
+  /* set state of tristate button and expand iop if wanted */
+  gboolean expanded = _lib_modulelist_tristate_set_state(w,state,module);
+  dt_dev_modulegroups_switch(module->dev, module);
+  dt_iop_gui_set_expanded(module, expanded);
 
-  if(state==0)
-  {
-    /* module is hidden lets set gconf values */
-    gtk_widget_hide(GTK_WIDGET(module->topwidget));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, FALSE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, FALSE);
-    gtk_expander_set_expanded(module->expander, FALSE);
-    
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("show %s"), module->name());
-  }
-  else if(state==1)
-  {
-    /* module is shown lets set gconf values */
-    // FIXME
-    // dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->topwidget));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, FALSE);
-    
-    gtk_expander_set_expanded(module->expander, TRUE);
-    
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("%s as favorite"), module->name());
-  }
-  else if(state==2)
-  {
-    /* module is shown and favorite lets set gconf values */
-    // FIXME
-    // dt_gui_iop_modulegroups_switch(module->groups());
-    gtk_widget_show(GTK_WIDGET(module->topwidget));
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
-    dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
-    dt_conf_set_bool (option, TRUE);
-    
-    gtk_expander_set_expanded(module->expander, TRUE);
-    
-    /* construct tooltip text into option */
-    snprintf(option, 512, _("hide %s"), module->name());
-  }
-
-  g_object_set(G_OBJECT(w), "tooltip-text", option, (char *)NULL);
 }
 
 

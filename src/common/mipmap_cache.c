@@ -158,8 +158,6 @@ write_error:
 static int
 dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
 {
-  // FIXME: currently broken:
-  return 1;
   uint8_t *blob = NULL;
   int32_t rd = 0;
   const dt_mipmap_size_t mip = DT_MIPMAP_0;
@@ -217,37 +215,33 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   {
     int32_t key = 0;
     rd = fread(&key, sizeof(int32_t), 1, f);
-    if(rd != 1) goto read_error;
-    fprintf(stderr, "[mipmap_cache] thumbnail for image %d\n", get_imgid(key));
-    // FIXME: need to read w/h here, of the actual thumbnail
+    if(rd != 1) break; // first value is break only, goes to eof.
     int32_t length = 0;
     rd = fread(&length, sizeof(int32_t), 1, f);
-    fprintf(stderr, "[mipmap_cache] thumbnail for image %d length %d bytes\n", get_imgid(key), length);
-    if(rd != 1 || length > 4*sizeof(uint8_t)*file_width*file_height);
+    fprintf(stderr, "[mipmap_cache] thumbnail for image %d length %d bytes (%d x %d)\n", get_imgid(key), length, file_width, file_height);
+    if(rd != 1 || length > 4*sizeof(uint8_t)*file_width*file_height)
       goto read_error;
     rd = fread(blob, sizeof(uint8_t), length, f);
     if(rd != length) goto read_error;
 
-    dt_mipmap_buffer_t buf;
+#if 0
     dt_imageio_jpeg_t jpg;
-    fprintf(stderr, "[mipmap_cache] thumbnail for image %d\n", get_imgid(key));
-
-    // FIXME: this won't work, as it will be reading stuff from disk!
-    // TODO:  use low level cache interface!
-    dt_mipmap_cache_read_get(cache, &buf, get_imgid(key), get_size(key), DT_MIPMAP_BLOCKING);
-    if(!buf.buf) goto read_error;
-    dt_mipmap_cache_write_get(cache, &buf);
-    fprintf(stderr, "[mipmap_cache] thumbnail for image %d\n", get_imgid(key));
+    uint8_t *data = (uint8_t *)dt_cache_read_get(&cache->mip[mip].cache, key);
 
     if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) ||
-        (jpg.width != file_width|| jpg.height != file_height) ||
-        dt_imageio_jpeg_decompress(&jpg, buf.buf))
+        (jpg.width > file_width || jpg.height > file_height) ||
+        dt_imageio_jpeg_decompress(&jpg, data+sizeof(uint32_t)*4))
     {
       fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(key));
     }
-    dt_mipmap_cache_write_release(cache, &buf);
-    dt_mipmap_cache_read_release(cache, &buf);
-    fprintf(stderr, "[mipmap_cache] decompressed thumbnail for image %d!\n", get_imgid(key));
+    uint32_t *idata = (uint32_t *)data;
+    idata[0] = jpg.width;
+    idata[1] = jpg.height;
+    idata[3] = 0;
+    // TODO: these come write locked in case idata[3] == 1, so release that!
+    // TODO: check key!
+    dt_cache_read_release(&cache->mip[mip].cache, key);
+#endif
   }
 
   fclose(f);
@@ -366,7 +360,6 @@ dt_mipmap_cache_deallocate_dynamic(void *data, const uint32_t key, void *payload
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
-  // TODO: un-serialize!
   // FIXME: adjust numbers to be large enough to hold what mem limit suggests!
   const uint32_t max_mem = 100*1024*1024;
   const int32_t max_size = 2048, min_size = 32;
@@ -508,6 +501,7 @@ dt_mipmap_cache_read_get(
     uint32_t *data = (uint32_t *)dt_cache_read_get(&cache->mip[mip].cache, key);
     if(!data)
     {
+      // should never happen.
       // fprintf(stderr, "[mipmap cache get] no data in cache for imgid %u size %d!\n", imgid, mip);
       // sorry guys, no image for you :(
       buf->width = buf->height = 0;

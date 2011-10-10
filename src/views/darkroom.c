@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@
 #include "control/jobs.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "dtgtk/button.h"
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "common/image_cache.h"
@@ -30,6 +32,7 @@
 #include "common/tags.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "libs/colorpicker.h"
 
 #include <stdlib.h>
@@ -508,11 +511,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(strcmp(module->op, "gamma"))
     {
-      char var[1024];
-      snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
-      dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
       // remove widget:
-      GtkWidget *top = GTK_WIDGET(module->topwidget);
       GtkWidget *exp = GTK_WIDGET(module->expander);
       GtkWidget *shh = GTK_WIDGET(module->showhide);
       GtkWidget *rsb = GTK_WIDGET(module->reset_button);
@@ -529,15 +528,14 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       if(module->connect_key_accels)
         module->connect_key_accels(module);
       // copy over already inited stuff:
-      module->topwidget = top;
-      module->expander = GTK_EXPANDER(exp);
+      module->expander = exp;
       module->showhide = shh;
       module->reset_button = rsb;
       module->presets_button = psb;
       dt_iop_connect_common_accels(module);
       // reparent
       gtk_container_add(GTK_CONTAINER(parent), module->widget);
-      gtk_widget_show_all(module->topwidget);
+      gtk_widget_show(module->expander);
       // all the signal handlers get passed module*, which is still valid.
     }
     modules = g_list_previous(modules);
@@ -565,13 +563,14 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       if(module->showhide)
         dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
 
+      
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
       active = dt_conf_get_bool (option);
-      gtk_expander_set_expanded (module->expander, active);
+      dt_iop_gui_set_expanded(module, active);
     }
     else
     {
-      gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
+      gtk_widget_hide(GTK_WIDGET(module->expander));
     }
     modules = g_list_next(modules);
   }
@@ -750,6 +749,14 @@ static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer
   dt_control_queue_redraw();
 }
 
+static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_data)
+{
+  /* create favorites menu and popup */
+  dt_gui_favorite_presets_menu_show();
+  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+}
+
 void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
@@ -770,11 +777,21 @@ void enter(dt_view_t *self)
   DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
 
+  /* create favorite plugin preset popup tool */
+  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
+               (char *)NULL);
+  g_signal_connect (G_OBJECT (favorite_presets), "clicked",
+                    G_CALLBACK (_darkroom_ui_favorite_presets_popupmenu),
+                    NULL);
+ 
+  dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets);
+
   /* add IOP modules to plugin list */
 
   // avoid triggering of events before plugin is ready:
   darktable.gui->reset = 1;
-
+  char option[1024];
   GList *modules = g_list_last(dev->iop);
   while(modules)
   {
@@ -783,7 +800,6 @@ void enter(dt_view_t *self)
     
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
-    module->topwidget = GTK_WIDGET(expander);
     module->accel_closures = NULL;
     if(module->connect_key_accels)
       module->connect_key_accels(module);
@@ -791,6 +807,9 @@ void enter(dt_view_t *self)
 
     dt_ui_container_add_widget(darktable.gui->ui,
                                DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+
+    snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+    dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
 
     modules = g_list_previous(modules);
   }
@@ -901,11 +920,6 @@ void leave(dt_view_t *self)
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
-    // printf("removing module %d - %s\n", module->instance, module->op);
-    char var[1024];
-    snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
-    dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
-
     module->gui_cleanup(module);
     dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;

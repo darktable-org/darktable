@@ -82,4 +82,5 @@ static void _lib_view_toolbox_add(dt_lib_module_t *self,GtkWidget *widget)
 {
   dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)self->data;
   gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);
+  gtk_widget_show_all(widget);
 }

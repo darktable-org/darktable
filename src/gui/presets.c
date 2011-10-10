@@ -24,6 +24,7 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "dtgtk/tristatebutton.h"
 #include <stdlib.h>
 
 
@@ -507,6 +508,56 @@ menuitem_factory_default (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   dt_iop_load_default_params(module);
+}
+
+
+void dt_gui_favorite_presets_menu_show()
+{
+  sqlite3_stmt *stmt;
+  GtkMenu *menu = darktable.gui->presets_popup_menu;
+  if(menu)
+    gtk_widget_destroy(GTK_WIDGET(menu));
+  darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
+  menu = darktable.gui->presets_popup_menu;
+
+  GList *modules = darktable.develop->iop;
+  if (modules)
+  {
+    do
+    {
+      dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
+
+      /* check if module is favorite */
+      if(iop->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(iop->showhide))==2)
+      {
+	/* create submenu for module */
+	GtkMenuItem *smi = (GtkMenuItem*)gtk_menu_item_new_with_label(iop->name());
+	GtkMenu *sm = (GtkMenu*) gtk_menu_new();
+	gtk_menu_item_set_submenu(smi,GTK_WIDGET(sm));
+
+	/* query presets for module */
+	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, description, blendop_params, op_version from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+	DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, strlen(iop->op), SQLITE_TRANSIENT);
+
+	while (sqlite3_step(stmt) == SQLITE_ROW)
+	{
+	  GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label((char *)sqlite3_column_text(stmt,0));
+	  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
+	  gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mi));
+	}
+	
+	sqlite3_finalize(stmt);
+	
+	/* add submenu to main menu if we got any presets */
+	if(g_list_length(gtk_container_get_children(GTK_CONTAINER(sm))) > 0)
+	  gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi));
+	
+      }
+
+    } while ((modules=g_list_next(modules))!=NULL);
+  }
+
+
 }
 
 
