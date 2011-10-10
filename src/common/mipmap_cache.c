@@ -309,7 +309,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   {
     free(*buf);
     *buf = dt_alloc_align(64, buffer_size);
-    fprintf(stderr, "[mipmap cache] alloc %lX\n", (uint64_t)*buf);
+    fprintf(stderr, "[mipmap cache] alloc for key %u %lX\n", get_key(img->id, size), (uint64_t)*buf);
     if(!(*buf)) return NULL;
     // set buffer size only if we're making it larger.
     (*buf)[2] = buffer_size;
@@ -339,8 +339,8 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
   // alloc mere minimum for the header:
   if(!ibuf)
   {
-    *buf = dt_alloc_align(16, 4*sizeof(uint32_t));
-    fprintf(stderr, "[mipmap cache] alloc dynamic %lX\n", (uint64_t)*buf);
+    *buf = dt_alloc_align(16, 14*sizeof(uint32_t));
+    fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %lX\n", key, (uint64_t)*buf);
     if(!(*buf))
     {
       fprintf(stderr, "[mipmap cache] memory allocation failed!\n");
@@ -348,7 +348,7 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
     }
     ibuf = *buf;
     ibuf[0] = ibuf[1] = 0;
-    ibuf[2] = 4*sizeof(uint32_t);
+    ibuf[2] = 16*sizeof(uint32_t);
   }
   assert(ibuf[2] >= 4*sizeof(uint32_t));
   // FIXME: at some point valgrind complains that this accesses invalid addresses:
