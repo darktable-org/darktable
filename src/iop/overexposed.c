@@ -305,7 +305,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_iop_overexposed_quickbutton),
                     self);
-  dt_view_manager_view_toolbox_add(darktable.view_manager, button);
+  dt_view_manager_module_toolbox_add(darktable.view_manager, button);
 
 
 
