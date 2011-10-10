@@ -45,8 +45,6 @@ dt_lib_history_t;
 static void _lib_history_compress_clicked_callback (GtkWidget *widget, gpointer user_data);
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_history_create_style_button_clicked_callback (GtkWidget *widget, gpointer user_data);
-static void _lib_history_apply_style_activate_callback(gchar *name);
-static void _lib_history_apply_style_button_press_callback (GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 /* signal callback for history change */
 static void _lib_history_change_callback(gpointer instance, gpointer user_data);
 
@@ -118,17 +116,9 @@ void gui_init(dt_lib_module_t *self)
   g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from the current history stack"), (char *)NULL);
   d->create_button = hbutton2;
 
-  /* add toolbar button for applying a style */
-  GtkWidget *hbutton3 = dtgtk_button_new (dtgtk_cairo_paint_styles,1);
-  //gtk_widget_set_size_request (hbutton,24,-1);
-  g_signal_connect (G_OBJECT (hbutton3), "button-press-event", G_CALLBACK (_lib_history_apply_style_button_press_callback),(gpointer)0);
-  g_object_set (G_OBJECT (hbutton3), "tooltip-text", _("applies a style selected from popup menu"), (char *)NULL);
-  d->apply_button = hbutton3;
-
   /* add buttons to buttonbox */
   gtk_box_pack_start (GTK_BOX (hhbox),hbutton,TRUE,TRUE,0);
   gtk_box_pack_start (GTK_BOX (hhbox),hbutton2,FALSE,FALSE,0);
-  gtk_box_pack_start (GTK_BOX (hhbox),hbutton3,FALSE,FALSE,0);
 
   /* add history list and buttonbox to widget */
   gtk_box_pack_start (GTK_BOX (self->widget),d->history_box,FALSE,FALSE,0);
@@ -266,39 +256,3 @@ static void _lib_history_create_style_button_clicked_callback (GtkWidget *widget
   }
 }
 
-static void _lib_history_apply_style_activate_callback(gchar *name)
-{
-  dt_control_log(_("applied style `%s' on current image"),name);
-  dt_styles_apply_to_image (name, FALSE, darktable.develop->image->id);
-  dt_dev_raw_reload(darktable.develop);
-}
-
-static void _lib_history_apply_style_button_press_callback (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{
-
-  GList *styles = dt_styles_get_list("");
-  GtkWidget *menu = NULL;
-  if(styles)
-  {
-    menu= gtk_menu_new();
-    do
-    {
-      dt_style_t *style=(dt_style_t *)styles->data;
-      GtkWidget *mi=gtk_menu_item_new_with_label(style->name);
-      gtk_menu_append (GTK_MENU (menu), mi);
-      gtk_signal_connect_object (GTK_OBJECT (mi), "activate",
-                                 GTK_SIGNAL_FUNC (_lib_history_apply_style_activate_callback),
-                                 (gpointer) g_strdup (style->name));
-      gtk_widget_show (mi);
-    }
-    while ((styles=g_list_next(styles))!=NULL);
-  }
-
-  /* if we got any styles, lets popup menu for selection */
-  if (menu)
-  {
-    gtk_menu_popup (GTK_MENU(menu), NULL, NULL, NULL, NULL,
-                    event->button, event->time);
-  }
-  else dt_control_log(_("no styles have been created yet"));
-}

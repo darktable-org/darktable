@@ -30,6 +30,7 @@
 #include "common/imageio.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/styles.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -762,6 +763,43 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 }
 
+static void _darkroom_ui_apply_style_activate_callback(gchar *name)
+{
+  dt_control_log(_("applied style `%s' on current image"),name);
+  dt_styles_apply_to_image (name, FALSE, darktable.develop->image->id);
+  dt_dev_raw_reload(darktable.develop);
+}
+
+static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
+{
+  /* show styles popup menu */
+  GList *styles = dt_styles_get_list("");
+  GtkWidget *menu = NULL;
+  if(styles)
+  {
+    menu= gtk_menu_new();
+    do
+    {
+      dt_style_t *style=(dt_style_t *)styles->data;
+      GtkWidget *mi=gtk_menu_item_new_with_label(style->name);
+      gtk_menu_append (GTK_MENU (menu), mi);
+      gtk_signal_connect_object (GTK_OBJECT (mi), "activate",
+                                 GTK_SIGNAL_FUNC (_darkroom_ui_apply_style_activate_callback),
+                                 (gpointer) g_strdup (style->name));
+      gtk_widget_show (mi);
+    }
+    while ((styles=g_list_next(styles))!=NULL);
+  }
+
+  /* if we got any styles, lets popup menu for selection */
+  if (menu)
+  {
+    gtk_menu_popup (GTK_MENU(menu), NULL, NULL, NULL, NULL,
+                    0, 0);
+  }
+  else dt_control_log(_("no styles have been created yet"));
+}
+
 void enter(dt_view_t *self)
 {
   /* connect to ui pipe finished signal for redraw */
@@ -783,6 +821,10 @@ void enter(dt_view_t *self)
   dev->gui_module = NULL;
   dt_dev_load_image(dev, dev->image);
 
+  /*
+   * Add view specific tool buttons
+   */
+
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
@@ -790,12 +832,21 @@ void enter(dt_view_t *self)
   g_signal_connect (G_OBJECT (favorite_presets), "clicked",
                     G_CALLBACK (_darkroom_ui_favorite_presets_popupmenu),
                     NULL);
- 
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets);
 
+  /* create quick styles popup menu tool */
+  GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT);
+  g_signal_connect (G_OBJECT (styles), "clicked", 
+		    G_CALLBACK (_darkroom_ui_apply_style_popupmenu),
+		    NULL);
+  g_object_set (G_OBJECT (styles), "tooltip-text", _("quick access for applying any of your styles"), 
+		(char *)NULL);
+  dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
 
-  /* add IOP modules to plugin list */
 
+  /* 
+   * add IOP modules to plugin list 
+   */
   // avoid triggering of events before plugin is ready:
   darktable.gui->reset = 1;
   char option[1024];
