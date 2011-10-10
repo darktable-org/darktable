@@ -14,6 +14,7 @@ set(MODULES ${MODULES} colorlabels)
 set(MODULES ${MODULES} filter)
 set(MODULES ${MODULES} lighttable_mode)
 set(MODULES ${MODULES} view_toolbox)
+set(MODULES ${MODULES} module_toolbox)
 set(MODULES ${MODULES} filmstrip)
 
 # modules
@@ -46,6 +47,7 @@ add_library(ratings MODULE "tools/ratings.c")
 add_library(filter MODULE "tools/filter.c")
 add_library(lighttable_mode MODULE "tools/lighttable.c")
 add_library(view_toolbox MODULE "tools/view_toolbox.c")
+add_library(module_toolbox MODULE "tools/module_toolbox.c")
 add_library(filmstrip MODULE "tools/filmstrip.c")
 
 if(APRIL_FOOLS)

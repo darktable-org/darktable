@@ -23,17 +23,17 @@
 DT_MODULE(1)
 
 /* proxy function, to add a widget to toolbox */
-static void _lib_view_toolbox_add(dt_lib_module_t *self,GtkWidget *widget);
+static void _lib_module_toolbox_add(dt_lib_module_t *self,GtkWidget *widget);
 
-typedef struct dt_lib_view_toolbox_t
+typedef struct dt_lib_module_toolbox_t
 {
   GtkWidget *container;
 }
-dt_lib_view_toolbox_t;
+dt_lib_module_toolbox_t;
 
 const char* name()
 {
-  return _("view toolbox");
+  return _("module toolbox");
 }
 
 uint32_t views()
@@ -43,7 +43,7 @@ uint32_t views()
 
 uint32_t container()
 {
-  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
+  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT;
 }
 
 int expandable() 
@@ -59,16 +59,16 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)g_malloc(sizeof(dt_lib_view_toolbox_t));
+  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)g_malloc(sizeof(dt_lib_module_toolbox_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_view_toolbox_t));
+  memset(d,0,sizeof(dt_lib_module_toolbox_t));
 
   /* the toolbar container */
   d->container = self->widget = gtk_hbox_new(FALSE,10);
   
   /* setup proxy */
-  darktable.view_manager->proxy.view_toolbox.module = self;
-  darktable.view_manager->proxy.view_toolbox.add = _lib_view_toolbox_add;
+  darktable.view_manager->proxy.module_toolbox.module = self;
+  darktable.view_manager->proxy.module_toolbox.add = _lib_module_toolbox_add;
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -78,9 +78,9 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 
-static void _lib_view_toolbox_add(dt_lib_module_t *self,GtkWidget *widget)
+static void _lib_module_toolbox_add(dt_lib_module_t *self,GtkWidget *widget)
 {
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)self->data;
+  dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)self->data;
   gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);
   gtk_widget_show_all(widget);
 }

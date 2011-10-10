@@ -1139,6 +1139,19 @@
 		<Vertical x="4064" width="6"/>
 	</BlackAreas>
   </Camera>
+  <Camera make="OLYMPUS IMAGING CORP." model="E-PM1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-24" height="0"/>
+    <Sensor black="45" white="4095"/>
+		<BlackAreas>
+			<Vertical x="4064" width="6"/>
+		</BlackAreas>
+  </Camera>
   <Camera make="OLYMPUS IMAGING CORP." model="E-P2">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -1372,7 +1385,7 @@
       <Color x="1" y="1">RED</Color><Color x="0" y="1">GREEN</Color>
     </CFA>
     <Crop x="0" y="0" width="-216" height="0"/>
-    <Sensor black="0" white="5400"/>
+    <Sensor black="0" white="4096"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-GH1" mode="16:9">
     <CFA width="2" height="2">
