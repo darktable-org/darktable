@@ -443,7 +443,7 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
 
   dt_accel_closure_t *laccel =
       (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel; //TBSL
+  laccel->accel = accel;
   laccel->closure = closure;
 
   if(accel && accel->local)
@@ -462,7 +462,7 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   accel = _lookup_accel(decrease_path);
   laccel =
       (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel; //TBSL
+  laccel->accel = accel;
   laccel->closure = closure;
   if(accel && accel->local)
   {
@@ -480,7 +480,7 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   accel = _lookup_accel(reset_path);
   laccel =
       (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel; //TBSL
+  laccel->accel = accel;
   laccel->closure = closure;
   if(accel && accel->local)
   {
@@ -498,7 +498,7 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   accel = _lookup_accel(edit_path);
   laccel =
       (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel; //TBSL
+  laccel->accel = accel;
   laccel->closure = closure;
   if(accel && accel->local)
   {
