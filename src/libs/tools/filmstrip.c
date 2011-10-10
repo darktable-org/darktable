@@ -60,6 +60,7 @@ static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self);
 
 static gboolean _lib_filmstrip_size_handle_button_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data);
 static gboolean _lib_filmstrip_size_handle_motion_notify_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data);
+static gboolean _lib_filmstrip_size_handle_cursor_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data);
 
 /* motion notify event handler */
 static gboolean _lib_filmstrip_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data);
@@ -280,7 +281,9 @@ void gui_init(dt_lib_module_t *self)
 			GDK_POINTER_MOTION_MASK | 
 			GDK_POINTER_MOTION_HINT_MASK | 
 			GDK_BUTTON_PRESS_MASK | 
-			GDK_BUTTON_RELEASE_MASK 
+			GDK_BUTTON_RELEASE_MASK |
+			GDK_ENTER_NOTIFY_MASK |
+			GDK_LEAVE_NOTIFY_MASK
 			);
 
   g_signal_connect (G_OBJECT (size_handle), "button-press-event",
@@ -289,7 +292,11 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_filmstrip_size_handle_button_callback), self);
   g_signal_connect (G_OBJECT (size_handle), "motion-notify-event",
                     G_CALLBACK (_lib_filmstrip_size_handle_motion_notify_callback), self);
-  
+  g_signal_connect (G_OBJECT (size_handle), "leave-notify-event",
+		    G_CALLBACK(_lib_filmstrip_size_handle_cursor_callback), self);
+  g_signal_connect (G_OBJECT (size_handle), "enter-notify-event",
+		    G_CALLBACK(_lib_filmstrip_size_handle_cursor_callback), self);
+
 
   
   gtk_box_pack_start(GTK_BOX(self->widget), size_handle, FALSE, FALSE,0);
@@ -333,6 +340,12 @@ void gui_cleanup(dt_lib_module_t *self)
 static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  return TRUE;
+}
+
+static gboolean _lib_filmstrip_size_handle_cursor_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+{
+  dt_control_change_cursor( (e->type==GDK_ENTER_NOTIFY)?GDK_SB_V_DOUBLE_ARROW:GDK_LEFT_PTR);
   return TRUE;
 }
 
