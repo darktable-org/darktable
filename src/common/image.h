@@ -295,4 +295,9 @@ dt_image_orientation_to_flip_bits(const int orient)
   }
 }
 
+// xmp functions:
+void dt_image_write_sidecar_file(int imgid);
+void dt_image_synch_xmp(const int selected);
+void dt_image_synch_all_xmp(const gchar *pathname);
+
 #endif

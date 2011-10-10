@@ -39,7 +39,6 @@
 #define DT_CACHE_EMPTY_HASH -1
 #define DT_CACHE_EMPTY_KEY  -1
 #define DT_CACHE_EMPTY_DATA  NULL
-#define DT_CACHE_INSERT_RANGE (1024*4)
 
 
 typedef struct dt_cache_bucket_t
@@ -214,7 +213,6 @@ add_key_to_beginning_of_list(
     // upgrade to a write lock in case the user requests it:
     if(cache->allocate(cache->allocate_data, key, &cost, &free_bucket->data))
       dt_cache_bucket_write_lock(free_bucket);
-    fprintf(stderr, "[cache] this was alloced: %lX %lX\n", (uint64_t)free_bucket->data, (uint64_t)&cost);
   }
   add_cost(cache, cost);
 
@@ -335,7 +333,7 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
   cache->segment_mask = adj_num_threads - 1;
   // cache->segment_shift = calc_div_shift(nearest_power_of_two(num_threads/(float)adj_num_threads)-1);
   const uint32_t adj_init_cap = nearest_power_of_two(MAX(adj_num_threads*2, capacity));
-  const uint32_t num_buckets = adj_init_cap + DT_CACHE_INSERT_RANGE + 1;
+  const uint32_t num_buckets = adj_init_cap;
   cache->bucket_mask = adj_init_cap - 1;
   uint32_t segment_bits = 0;
   while(cache->segment_mask >> segment_bits) segment_bits++;
@@ -415,7 +413,7 @@ uint32_t
 dt_cache_size(const dt_cache_t *const cache)
 {
   uint32_t cnt = 0;
-  const uint32_t num = cache->bucket_mask + DT_CACHE_INSERT_RANGE;
+  const uint32_t num = cache->bucket_mask + 1;
   for(int k=0;k<num;k++)
   {
     if(cache->table[k].hash != DT_CACHE_EMPTY_HASH) cnt++;
@@ -572,7 +570,6 @@ lru_check_consistency_reverse(dt_cache_t *cache)
 }
 
 
-// TODO: the segment lock should not block but return NULL immediately here!
 // return read locked bucket, or NULL if it's not already there.
 // never attempt to allocate a new slot.
 void*
@@ -972,6 +969,8 @@ dt_cache_realloc(dt_cache_t *cache, const uint32_t key, void *data)
     compare_bucket += next_delta;
     if(hash == compare_bucket->hash && (key == compare_bucket->key))
     {
+      if(compare_bucket->write != 1 || compare_bucket->read != 1)
+        fprintf(stderr, "[cache realloc] key %u not locked!\n", key);
       // need to have the bucket write locked:
       assert(compare_bucket->write == 1);
       assert(compare_bucket->read == 1);
@@ -984,7 +983,7 @@ dt_cache_realloc(dt_cache_t *cache, const uint32_t key, void *data)
   }
   dt_cache_unlock(&segment->lock);
   // clear user error, he should hold a write lock already, so this has to be there.
-  fprintf(stderr, "[cache] realloc: bucket not found!\n");
+  fprintf(stderr, "[cache] realloc: bucket for key %u not found!\n", key);
   return;
 }
 

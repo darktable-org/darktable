@@ -1,21 +1,8 @@
-
 flip -> history stack
 
 colorlabels -> cached in image_t
 . xmp_read to use cached values, too!
 . colorlabels.c doesn't sync xmp anymore!
-
-xmp writing/reading does not work currently
-====================================
-. where to put it?
-. what to hide inside cache, what to expose?
-. xmp writing in release should handle dirty bits
-  transparently? checksum?
-. metadata in libs/
-. tagging in libs/
-. explicit writing of history stack in darkroom leave() change()
-
-import does not work anymore! (dt_image_import is crippled)
 
 cleanup messy non-thread-safe dt_dev_get_processed_size() behavior
 
@@ -25,17 +12,7 @@ cap darkroom res by user defined max, not DT_IMAGE_WINDOW_SIZE
 . develop.c
 . also check darkroom.c
 
-
 check dirty bit in dt_image_write_sidecar_file
 . and in all its uses. history.c?
 
-exit dr mode: use FULL pipe to get mip4
-
-[de-]serialization of mipmap cache
- (hashtable? just jpg?)
-
-invalidate mips in mipmap_cache
-. write through on change?
-
-light table expose: use 1:1 max mip4
-. mip0 to be fixed size small, too?
+user params for cache size, respect them!

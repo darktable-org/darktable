@@ -433,7 +433,8 @@ int try_enter(dt_view_t *self)
   }
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
-  darktable.develop->image_storage.id = selected;
+  // change image:
+  dt_dev_load_image(darktable.develop, selected);
   return 0;
 }
 
@@ -486,13 +487,8 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // if()
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
-    // writes the .xmp and the database:
-    // FIXME: write the xmp:
-    // dt_image_synch_xmp(..)
+    dt_image_synch_xmp(dev->image->id);
   }
-
-  // change image:
-  dt_dev_load_image(darktable.develop, imgid);
 
   while(dev->history)
   {
@@ -824,7 +820,6 @@ void enter(dt_view_t *self)
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE);
 
   // synch gui and flag gegl pipe as dirty
-  // FIXME: this assumes static pipeline as well
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(dev, dev->history_end);
 
@@ -901,9 +896,7 @@ void leave(dt_view_t *self)
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
     // dump new xmp data
-    // FIXME: write xmp explicitly!
-    // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, dev->image);
-    // dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+    dt_image_synch_xmp(dev->image->id);
   }
 
   // clear gui.

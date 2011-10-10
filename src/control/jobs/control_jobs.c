@@ -287,8 +287,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   while(list)
   {
     imgname = (char *)list->data;
-    // FIXME: xmp writing has been disabled!
-    // dt_image_synch_all_xmp(imgname);
+    dt_image_synch_all_xmp(imgname);
     list = g_list_delete_link(list, list);
   } 
   g_list_free(list);  
@@ -364,8 +363,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(list)
   {
     imgname = (char *)list->data;
-    // FIXME: put xmp stuff back in!
-    // dt_image_synch_all_xmp(imgname);
+    dt_image_synch_all_xmp(imgname);
     list = g_list_delete_link(list, list);
   } 
   g_list_free(list);

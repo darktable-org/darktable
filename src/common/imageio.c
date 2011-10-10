@@ -483,6 +483,8 @@ int dt_imageio_export_with_flags(
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_dev_load_image(&dev, imgid);
   const int wd = dev.image->width;
   const int ht = dev.image->height;
@@ -494,22 +496,17 @@ int dt_imageio_export_with_flags(
   {
     dt_control_log(_("failed to allocate memory for export, please lower the threads used for export or buy more memory."));
     dt_dev_cleanup(&dev);
+    if(buf.buf)
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     return 1;
   }
 
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev.image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   if(!buf.buf)
   {
     dt_control_log(_("image `%s' is not available!"), dev.image->filename);
     dt_dev_cleanup(&dev);
     return 1;
   }
-
-  // make sure dev knows about new image bpp and filters:
-  const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
-  dev.image_storage = *image;
-  dt_image_cache_read_release(darktable.image_cache, image);
 
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);

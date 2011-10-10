@@ -309,6 +309,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   {
     free(*buf);
     *buf = dt_alloc_align(64, buffer_size);
+    fprintf(stderr, "[mipmap cache] alloc %lX\n", (uint64_t)*buf);
     if(!(*buf)) return NULL;
     // set buffer size only if we're making it larger.
     (*buf)[2] = buffer_size;
@@ -338,11 +339,19 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
   // alloc mere minimum for the header:
   if(!ibuf)
   {
-    *buf = dt_alloc_align(64, 4*sizeof(uint32_t));
+    *buf = dt_alloc_align(16, 4*sizeof(uint32_t));
+    fprintf(stderr, "[mipmap cache] alloc dynamic %lX\n", (uint64_t)*buf);
+    if(!(*buf))
+    {
+      fprintf(stderr, "[mipmap cache] memory allocation failed!\n");
+      exit(1);
+    }
     ibuf = *buf;
     ibuf[0] = ibuf[1] = 0;
     ibuf[2] = 4*sizeof(uint32_t);
   }
+  assert(ibuf[2] >= 4*sizeof(uint32_t));
+  // FIXME: at some point valgrind complains that this accesses invalid addresses:
   ibuf[3] = 1; // mark as not initialized yet
   // fprintf(stderr, "dummy allocing %lX\n", (uint64_t)*buf);
   return 1; // request write lock
@@ -500,7 +509,7 @@ dt_mipmap_cache_read_get(
     if(!data)
     {
       // should never happen.
-      // fprintf(stderr, "[mipmap cache get] no data in cache for imgid %u size %d!\n", imgid, mip);
+      fprintf(stderr, "[mipmap cache get] no data in cache for imgid %u size %d!\n", imgid, mip);
       // sorry guys, no image for you :(
       buf->width = buf->height = 0;
       buf->imgid = 0;
@@ -531,12 +540,16 @@ dt_mipmap_cache_read_get(
           dt_image_full_path(buffered_image.id, filename, DT_MAX_PATH_LEN);
           dt_mipmap_cache_allocator_t a = (dt_mipmap_cache_allocator_t)&data;
           dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, a);
-          // write back to cache, too.
-          data = *(uint32_t **)a;
-          dt_cache_realloc(&cache->mip[mip].cache, key, (void *)data);
+          if(data != *(uint32_t **)a)
+          {
+            fprintf(stderr, "[mipmap cache] realloc %lX\n", (uint64_t)data);
+            // write back to cache, too.
+            data = *(uint32_t **)a;
+            dt_cache_realloc(&cache->mip[mip].cache, key, (void *)data);
+          }
           if(ret != DT_IMAGEIO_OK)
           {
-            // fprintf(stderr, "[mipmap read get] error loading image: %d\n", ret);
+            fprintf(stderr, "[mipmap read get] error loading image: %d\n", ret);
             // in case something went wrong, still keep the buffer and return it to the hashtable
             // so we don't produce mem leaks or unnecessary mem fragmentation.
             // 
