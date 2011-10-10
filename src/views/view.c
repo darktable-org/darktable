@@ -254,12 +254,6 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     /* restore visible stat of panels for the new view */
     dt_ui_restore_panels(darktable.gui->ui);
 
-    /* enter view. crucially, do this before initing the plugins below,
-       as e.g. modulegroups requires the dr stuff to be inited. */
-    if(newv >= 0 && nv->enter) nv->enter(nv);
-    if(newv >= 0 && nv->connect_key_accels)
-      nv->connect_key_accels(nv);
-
     /* lets add plugins related to new view into panels */
     plugins = g_list_last(darktable.lib->plugins);
     while (plugins)
@@ -327,6 +321,11 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       plugins = g_list_previous(plugins); 
     }
 
+    /* enter view. crucially, do this before initing the plugins below,
+       as e.g. modulegroups requires the dr stuff to be inited. */
+    if(newv >= 0 && nv->enter) nv->enter(nv);
+    if(newv >= 0 && nv->connect_key_accels)
+      nv->connect_key_accels(nv);
 
     /* raise view changed signal */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
