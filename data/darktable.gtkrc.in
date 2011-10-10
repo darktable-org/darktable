@@ -1,6 +1,9 @@
 # from art.gnome.org: marble-look, adjusted
 style "clearlooks-default"
 {
+  GtkWindow::resize-grip-height = 0
+  GtkWindow::resize-grip-width = 0
+
   GtkScrolledWindow::scrollbar-spacing = 0
   GtkScrolledWindow::scrollbar-within-bevel = TRUE
   GtkScrolledWindow::shadow-type = GTK_SHADOW_NONE
