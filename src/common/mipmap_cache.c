@@ -69,9 +69,6 @@ get_size(const uint32_t key)
   return (dt_mipmap_size_t)(key >> 29);
 }
 
-// TODO: cache read/write functions!
-// see old common/image_cache.c for backup file magic.
-
 typedef struct _iterate_data_t
 {
   FILE *f;
@@ -129,7 +126,7 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
   FILE *f = fopen(dbfilename, "wb");
   if(!f) goto write_error;
   d.f = f;
-  fprintf(stderr, "[mipmap_cache] serializing to `%s'\n", dbfilename);
+  // fprintf(stderr, "[mipmap_cache] serializing to `%s'\n", dbfilename);
 
   // write version info:
   const int32_t magic = DT_MIPMAP_CACHE_FILE_MAGIC + DT_MIPMAP_CACHE_FILE_VERSION;
@@ -218,30 +215,31 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
     if(rd != 1) break; // first value is break only, goes to eof.
     int32_t length = 0;
     rd = fread(&length, sizeof(int32_t), 1, f);
-    fprintf(stderr, "[mipmap_cache] thumbnail for image %d length %d bytes (%d x %d)\n", get_imgid(key), length, file_width, file_height);
+    // fprintf(stderr, "[mipmap_cache] thumbnail for image %d length %d bytes (%d x %d)\n", get_imgid(key), length, file_width, file_height);
     if(rd != 1 || length > 4*sizeof(uint8_t)*file_width*file_height)
       goto read_error;
     rd = fread(blob, sizeof(uint8_t), length, f);
     if(rd != length) goto read_error;
 
-#if 0
     dt_imageio_jpeg_t jpg;
     uint8_t *data = (uint8_t *)dt_cache_read_get(&cache->mip[mip].cache, key);
 
-    if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) ||
-        (jpg.width > file_width || jpg.height > file_height) ||
-        dt_imageio_jpeg_decompress(&jpg, data+sizeof(uint32_t)*4))
-    {
-      fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(key));
-    }
     uint32_t *idata = (uint32_t *)data;
-    idata[0] = jpg.width;
-    idata[1] = jpg.height;
-    idata[3] = 0;
-    // TODO: these come write locked in case idata[3] == 1, so release that!
-    // TODO: check key!
+    if(idata[3] == 1)
+    {
+      if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) ||
+          (jpg.width > file_width || jpg.height > file_height) ||
+          dt_imageio_jpeg_decompress(&jpg, data+sizeof(uint32_t)*4))
+      {
+        fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(key));
+      }
+      idata[0] = jpg.width;
+      idata[1] = jpg.height;
+      idata[3] = 0;
+      // these come write locked in case idata[3] == 1, so release that!
+      dt_cache_write_release(&cache->mip[mip].cache, key);
+    }
     dt_cache_read_release(&cache->mip[mip].cache, key);
-#endif
   }
 
   fclose(f);
