@@ -96,4 +96,7 @@ void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
 /** paint lock icon */
 void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
                             gint flags);
+/** paint a over/under exposure icon */
+void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+
 #endif
