@@ -107,7 +107,7 @@ dt_cache_capacity(dt_cache_t *cache)
 void dt_cache_print(dt_cache_t *cache);
 
 // replace data pointer, cleanup has to be done by the user.
-void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, void *data);
+void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void *data);
 
 // iterate over all currently contained data blocks.
 // not thread safe! only use this for init/cleanup!

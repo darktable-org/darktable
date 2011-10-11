@@ -329,17 +329,11 @@ int32_t
 dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
   // for full image buffers
-  // FIXME: this is meaningless at this point!
-  // TODO:  pimp cache_realloc function to take another cost
-  // cost is always what we alloced in this realloc buffer, regardless of what the
-  // image actually uses (could be less than this)
-  *cost = 1;//data[2];
-
   uint32_t *ibuf = *buf;
   // alloc mere minimum for the header:
   if(!ibuf)
   {
-    *buf = dt_alloc_align(16, 14*sizeof(uint32_t));
+    *buf = dt_alloc_align(16, 4*sizeof(uint32_t));
     fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %lX\n", key, (uint64_t)*buf);
     if(!(*buf))
     {
@@ -348,11 +342,15 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
     }
     ibuf = *buf;
     ibuf[0] = ibuf[1] = 0;
-    ibuf[2] = 16*sizeof(uint32_t);
+    ibuf[2] = 4*sizeof(uint32_t);
   }
   assert(ibuf[2] >= 4*sizeof(uint32_t));
   // FIXME: at some point valgrind complains that this accesses invalid addresses:
   ibuf[3] = 1; // mark as not initialized yet
+
+  // cost is always what we alloced in this realloc buffer, regardless of what the
+  // image actually uses (could be less than this)
+  *cost = ibuf[2];
   // fprintf(stderr, "dummy allocing %lX\n", (uint64_t)*buf);
   return 1; // request write lock
 }
@@ -416,8 +414,10 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
         thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
   }
   // full buffer needs dynamic alloc:
-  const uint32_t full_bufs = 3;
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, 1.2*full_bufs, 2, 64, full_bufs);//500*1024*1024);
+  const int32_t max_mem_full = 500*1024*1024;
+  // assume very small full buffers of 20MB to get slot count:
+  const int32_t max_mem_bufs = max_mem_full/(20*1024*1024);
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, 8, 64, max_mem_full);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
@@ -443,7 +443,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
-  for(int k=0; k<(int)DT_MIPMAP_FULL; k++)
+  for(int k=0; k<=(int)DT_MIPMAP_FULL; k++)
   {
     printf("[mipmap_cache] level %d fill %.2f/%.2f MB (%.2f%% in %u/%u buffers)\n", k, cache->mip[k].cache.cost/(1024.0*1024.0),
       cache->mip[k].cache.cost_quota/(1024.0*1024.0),
@@ -451,12 +451,6 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
       dt_cache_size(&cache->mip[k].cache),
       dt_cache_capacity(&cache->mip[k].cache));
   }
-  printf("[mipmap_cache] level %d fill %d/%d (%.2f%% in %u/%u buffers)\n", DT_MIPMAP_FULL, cache->mip[DT_MIPMAP_FULL].cache.cost,
-    cache->mip[DT_MIPMAP_FULL].cache.cost_quota,
-    100.0f*(float)cache->mip[DT_MIPMAP_FULL].cache.cost/(float)cache->mip[DT_MIPMAP_FULL].cache.cost_quota,
-    dt_cache_size(&cache->mip[DT_MIPMAP_FULL].cache),
-    dt_cache_capacity(&cache->mip[DT_MIPMAP_FULL].cache));
-
   // very verbose stats about locks/users
   dt_cache_print(&cache->mip[DT_MIPMAP_FULL].cache);
 }
@@ -539,13 +533,13 @@ dt_mipmap_cache_read_get(
           char filename[DT_MAX_PATH_LEN];
           dt_image_full_path(buffered_image.id, filename, DT_MAX_PATH_LEN);
           dt_mipmap_cache_allocator_t a = (dt_mipmap_cache_allocator_t)&data;
+          uint32_t *olddata = data;
           dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, a);
-          if(data != *(uint32_t **)a)
+          if(data != olddata)
           {
             fprintf(stderr, "[mipmap cache] realloc %lX\n", (uint64_t)data);
             // write back to cache, too.
-            data = *(uint32_t **)a;
-            dt_cache_realloc(&cache->mip[mip].cache, key, (void *)data);
+            dt_cache_realloc(&cache->mip[mip].cache, key, data[2], (void *)data);
           }
           if(ret != DT_IMAGEIO_OK)
           {

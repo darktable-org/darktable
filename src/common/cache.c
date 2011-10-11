@@ -952,7 +952,7 @@ wait:;
 }
 
 void
-dt_cache_realloc(dt_cache_t *cache, const uint32_t key, void *data)
+dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void *data)
 {
   // just to support different keys:
   const uint32_t hash = key;
@@ -975,6 +975,9 @@ dt_cache_realloc(dt_cache_t *cache, const uint32_t key, void *data)
       assert(compare_bucket->write == 1);
       assert(compare_bucket->read == 1);
       compare_bucket->data = data;
+      const int32_t cost_diff = cost - compare_bucket->cost;
+      compare_bucket->cost = cost;
+      add_cost(cache, cost_diff);
       dt_cache_unlock(&segment->lock);
       return;
     }
