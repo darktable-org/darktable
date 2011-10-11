@@ -519,14 +519,14 @@ dt_cache_for_all(
 {
   // this is not thread safe.
   //dt_cache_lock(&cache->lru_lock);
-  int32_t curr = cache->lru;
+  int32_t curr = cache->mru;
   while(curr >= 0)
   {
     const int err = process(cache->table[curr].key, cache->table[curr].data, user_data);
     if(err) return err;
-    if(curr == cache->mru) break;
-    int32_t next = cache->table[curr].mru;
-    assert(cache->table[next].lru == curr);
+    if(curr == cache->lru) break;
+    int32_t next = cache->table[curr].lru;
+    assert(cache->table[next].mru == curr);
     curr = next;
   }
   //dt_cache_unlock(&cache->lru_lock);

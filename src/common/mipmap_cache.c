@@ -98,7 +98,7 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
   written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
   if(written != length) return 1;
 
-  fprintf(stderr, "[mipmap_cache] serializing image %u (%d x %d) with %d bytes\n", get_imgid(key), buf.width, buf.height, length);
+  // fprintf(stderr, "[mipmap_cache] serializing image %u (%d x %d) with %d bytes\n", get_imgid(key), buf.width, buf.height, length);
 
   return 0;
 }
@@ -309,7 +309,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   {
     free(*buf);
     *buf = dt_alloc_align(64, buffer_size);
-    fprintf(stderr, "[mipmap cache] alloc for key %u %lX\n", get_key(img->id, size), (uint64_t)*buf);
+    // fprintf(stderr, "[mipmap cache] alloc for key %u %lX\n", get_key(img->id, size), (uint64_t)*buf);
     if(!(*buf)) return NULL;
     // set buffer size only if we're making it larger.
     (*buf)[2] = buffer_size;
@@ -334,7 +334,7 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
   if(!ibuf)
   {
     *buf = dt_alloc_align(16, 4*sizeof(uint32_t));
-    fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %lX\n", key, (uint64_t)*buf);
+    // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %lX\n", key, (uint64_t)*buf);
     if(!(*buf))
     {
       fprintf(stderr, "[mipmap cache] memory allocation failed!\n");
@@ -345,7 +345,6 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
     ibuf[2] = 4*sizeof(uint32_t);
   }
   assert(ibuf[2] >= 4*sizeof(uint32_t));
-  // FIXME: at some point valgrind complains that this accesses invalid addresses:
   ibuf[3] = 1; // mark as not initialized yet
 
   // cost is always what we alloced in this realloc buffer, regardless of what the
@@ -537,7 +536,7 @@ dt_mipmap_cache_read_get(
           dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, a);
           if(data != olddata)
           {
-            fprintf(stderr, "[mipmap cache] realloc %lX\n", (uint64_t)data);
+            // fprintf(stderr, "[mipmap cache] realloc %lX\n", (uint64_t)data);
             // write back to cache, too.
             dt_cache_realloc(&cache->mip[mip].cache, key, data[2], (void *)data);
           }
