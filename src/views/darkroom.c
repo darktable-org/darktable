@@ -743,6 +743,7 @@ static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer
   dt_control_queue_redraw();
 }
 
+#if 0
 static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_data)
 {
   /* create favorites menu and popup */
@@ -750,6 +751,7 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 }
+#endif
 
 void enter(dt_view_t *self)
 {
@@ -774,6 +776,7 @@ void enter(dt_view_t *self)
   // take a copy of the image struct for convenience.
   dt_dev_load_image(darktable.develop, dev->image->id);
 
+#if 0 // seems to have some problems with order of initialization.
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
@@ -783,6 +786,7 @@ void enter(dt_view_t *self)
                     NULL);
  
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets);
+#endif
 
   /* add IOP modules to plugin list */
 

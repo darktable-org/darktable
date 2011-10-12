@@ -285,12 +285,6 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       plugins = g_list_previous(plugins);
     }
 
-    /* enter view. crucially, do this before initing the plugins below,
-       as e.g. modulegroups requires the dr stuff to be inited. */
-    if(newv >= 0 && nv->enter) nv->enter(nv);
-    if(newv >= 0 && nv->connect_key_accels)
-      nv->connect_key_accels(nv);
-
     /* hide/show modules as last config */
     plugins = g_list_last(darktable.lib->plugins);
     while (plugins)
@@ -326,6 +320,12 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       /* lets get next plugin */
       plugins = g_list_previous(plugins); 
     }
+
+    /* enter view. crucially, do this before initing the plugins below,
+       as e.g. modulegroups requires the dr stuff to be inited. */
+    if(newv >= 0 && nv->enter) nv->enter(nv);
+    if(newv >= 0 && nv->connect_key_accels)
+      nv->connect_key_accels(nv);
 
     /* raise view changed signal */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
