@@ -535,8 +535,11 @@ dt_cache_for_all(
   int32_t curr = cache->mru;
   while(curr >= 0)
   {
-    const int err = process(cache->table[curr].key, cache->table[curr].data, user_data);
-    if(err) return err;
+    if(cache->table[curr].key != DT_CACHE_EMPTY_KEY)
+    {
+      const int err = process(cache->table[curr].key, cache->table[curr].data, user_data);
+      if(err) return err;
+    }
     if(curr == cache->lru) break;
     int32_t next = cache->table[curr].lru;
     assert(cache->table[next].mru == curr);
