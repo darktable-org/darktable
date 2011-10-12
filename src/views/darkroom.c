@@ -815,6 +815,7 @@ void enter(dt_view_t *self)
   /*
    * Add view specific tool buttons
    */
+
   /* create favorite plugin preset popup tool */
   GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
@@ -823,6 +824,8 @@ void enter(dt_view_t *self)
                     G_CALLBACK (_darkroom_ui_favorite_presets_popupmenu),
                     NULL);
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets);
+
+  /* add IOP modules to plugin list */
 
   /* create quick styles popup menu tool */
   GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT);
