@@ -633,6 +633,7 @@ dt_cache_read_get(
   // this is the blocking variant, we might need to allocate stuff.
   // also we have to retry if failed.
 
+  int spam = 0;
   // just to support different keys:
   const uint32_t hash = key;
   dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
@@ -745,7 +746,9 @@ wait:;
     --free_min_bucket;
   }
 
-  fprintf(stderr, "[cache] failed to find a free spot for new data!\n");
+  // don't spam the console. maybe something else will output useful info.
+  if(!spam)
+    fprintf(stderr, "[cache] failed to find a free spot for new data!\n");
   dt_cache_unlock(&segment->lock);
   goto wait;
 }
