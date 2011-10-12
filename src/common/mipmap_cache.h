@@ -33,7 +33,7 @@ typedef enum dt_mipmap_size_t
   DT_MIPMAP_0    = 0,
   DT_MIPMAP_1    = 1,
   DT_MIPMAP_2    = 2,
-  DT_MIPMAP_4    = 3,
+  DT_MIPMAP_3    = 3,
   DT_MIPMAP_F    = 4,
   DT_MIPMAP_FULL = 5,
   DT_MIPMAP_NONE = 6

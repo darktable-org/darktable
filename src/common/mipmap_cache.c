@@ -262,12 +262,8 @@ int32_t
 dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
   dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
-  const uint32_t hash = key;
-  // slot is exactly aligned with encapsulated cache's position
-  const uint32_t slot = (hash & c->cache.bucket_mask);
+  // slot is exactly aligned with encapsulated cache's position and already allocated
   *cost = c->buffer_size;
-
-  *buf = c->buf + slot * (c->buffer_size/sizeof(uint32_t));
   uint32_t *ibuf = (uint32_t *)*buf;
   // set width and height:
   ibuf[0] = c->max_width;
@@ -399,14 +395,16 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     uint32_t thumbnails = (uint32_t)(1.2f * max_mem/cache->mip[k].buffer_size);
 
     dt_cache_init(&cache->mip[k].cache, thumbnails, 8, 64, 100*1024*1024);
+
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
+    cache->mip[k].buf = dt_alloc_align(64, thumbnails * cache->mip[k].buffer_size);
+    dt_cache_static_allocation(&cache->mip[k].cache, (uint8_t *)cache->mip[k].buf, cache->mip[k].buffer_size);
     dt_cache_set_allocate_callback(&cache->mip[k].cache,
         dt_mipmap_cache_allocate, &cache->mip[k]);
     // dt_cache_set_cleanup_callback(&cache->mip[k].cache,
         // &dt_mipmap_cache_deallocate, &cache->mip[k]);
 
-    cache->mip[k].buf = dt_alloc_align(64, thumbnails * cache->mip[k].buffer_size);
 
     dt_print(DT_DEBUG_CACHE,
         "[mipmap_cache_init] cache has % 5d entries for mip %d (% 4.02f MB).\n",
@@ -451,7 +449,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
       dt_cache_capacity(&cache->mip[k].cache));
   }
   // very verbose stats about locks/users
-  dt_cache_print(&cache->mip[DT_MIPMAP_FULL].cache);
+  dt_cache_print(&cache->mip[DT_MIPMAP_3].cache);
 }
 
 void
@@ -806,7 +804,7 @@ _init_8(
   // export with flags: ignore exif (don't load from disk), don't swap byte order, and don't do hq processing
   int res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0);
 
-  // fprintf(stderr, "[mipmap init 8] export finished (sizes %d %d => %d %d)!\n", wd, ht, dat.head.width, dat.head.height);
+  // fprintf(stderr, "[mipmap init 8] export image %u finished (sizes %d %d => %d %d)!\n", imgid, wd, ht, dat.head.width, dat.head.height);
 
   // any errors?
   if(res)

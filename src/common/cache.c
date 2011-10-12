@@ -122,7 +122,7 @@ remove_key(dt_cache_segment_t *segment,
 {
   key_bucket->hash = DT_CACHE_EMPTY_HASH;
   key_bucket->key  = DT_CACHE_EMPTY_KEY;
-  // crucially don't release the data pointer.
+  // crucially don't release the data pointer (not for dynamic nor static allocation a good idea)
   // key_bucket->data = DT_CACHE_EMPTY_DATA;
 
   if(prev_key_bucket == NULL)
@@ -380,6 +380,19 @@ dt_cache_cleanup(dt_cache_t *cache)
   // TODO: make sure data* cleanup stuff is called!
   free(cache->table);
   free(cache->segments);
+}
+
+void
+dt_cache_static_allocation(
+    dt_cache_t *cache,
+    uint8_t *buf,
+    const uint32_t stride)
+{
+  const int num_buckets = cache->bucket_mask + 1;
+  for(int k=0;k<num_buckets;k++)
+  {
+    cache->table[k].data = (void *)(buf + k*stride);
+  }
 }
 
 
