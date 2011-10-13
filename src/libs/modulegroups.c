@@ -182,6 +182,9 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  /* let's not listen to signals anymore.. */
+  dt_control_signal_disconnect(darktable.signals,  G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
+
   darktable.develop->proxy.modulegroups.module = NULL;
   darktable.develop->proxy.modulegroups.set = NULL;
   darktable.develop->proxy.modulegroups.get = NULL;
