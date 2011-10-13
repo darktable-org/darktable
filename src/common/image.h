@@ -129,7 +129,7 @@ int32_t dt_image_duplicate(const int32_t imgid);
 // FIXME: re-implement the right way!
 // void dt_image_flip(const int32_t imgid, const int32_t cw);
 /** returns 1 if there is history data found for this image, 0 else. */
-int dt_image_altered(const dt_image_t *img);
+int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image, exif or user override, if set. */
 static inline int dt_image_orientation(const dt_image_t *img)
 {

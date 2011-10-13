@@ -242,12 +242,12 @@ void dt_image_remove(const int32_t imgid)
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 }
 
-int dt_image_altered(const dt_image_t *img)
+int dt_image_altered(const uint32_t imgid)
 {
   int altered = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) altered = 1;
   sqlite3_finalize(stmt);
   return altered;

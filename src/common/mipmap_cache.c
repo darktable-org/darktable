@@ -24,6 +24,7 @@
 #include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "libraw/libraw.h"
 
 #include <assert.h>
 #include <string.h>
@@ -794,32 +795,117 @@ _init_8(
     const dt_mipmap_size_t  size)
 {
   const uint32_t wd = *width, ht = *height;
-  dt_imageio_module_format_t format;
-  _dummy_data_t dat;
-  format.bpp = _bpp;
-  format.write_image = _write_image;
-  dat.head.max_width  = wd;
-  dat.head.max_height = ht;
-  dat.buf = buf;
-  // export with flags: ignore exif (don't load from disk), don't swap byte order, and don't do hq processing
-  int res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0);
+
+  const int altered = dt_image_altered(imgid);
+  int res = 1;
+
+  // try to load the embedded thumbnail first
+  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb"))
+  {
+    // no history stack: get thumbnail
+    int ret;
+    char filename[DT_MAX_PATH_LEN];
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
+    libraw_data_t *raw = libraw_init(0);
+    libraw_processed_image_t *image = NULL;
+    ret = libraw_open_file(raw, filename);
+    if(ret) goto libraw_fail;
+    ret = libraw_unpack_thumb(raw);
+    if(ret) goto libraw_fail;
+    ret = libraw_adjust_sizes_info_only(raw);
+    if(ret) goto libraw_fail;
+
+    image = libraw_dcraw_make_mem_thumb(raw, &ret);
+    if(!image || ret) goto libraw_fail;
+    const int orientation = raw->sizes.flip;
+    if(image->type == LIBRAW_IMAGE_JPEG)
+    {
+      // JPEG: decode (directly rescaled to mip4)
+      dt_imageio_jpeg_t jpg;
+      if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
+      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+      if(dt_imageio_jpeg_decompress(&jpg, tmp))
+      {
+        free(tmp);
+        goto libraw_fail;
+      }
+      // scale to fit
+      // TODO: optimize and make the scaling look better!
+      const int wd2 = (orientation & 4) ? ht : wd;
+      const int ht2 = (orientation & 4) ? wd : ht;
+      const float scale = fmaxf(jpg.width/(float)wd2, jpg.height/(float)ht2);
+      const int p_ht2 = MIN(ht2, jpg.height/scale), p_wd2 = MIN(wd2, jpg.width/scale);
+      for(int j=0; j<p_ht2 && scale*j<jpg.height; j++) for(int i=0; i<p_wd2 && scale*i < jpg.width; i++)
+        {
+          uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
+          for(int k=0; k<3; k++) buf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, p_wd2, p_ht2, orientation)+2-k] = cam[k];
+        }
+      free(tmp);
+      *width  = MIN(wd, ((orientation & 4) ? jpg.height : jpg.width )/scale);
+      *height = MIN(ht, ((orientation & 4) ? jpg.width  : jpg.height)/scale);
+      res = 0;
+    }
+    else
+    {
+      // bmp
+      // TODO: optimize and make the scaling look better!
+      const int wd2 = (orientation & 4) ? ht : wd;
+      const int ht2 = (orientation & 4) ? wd : ht;
+      const float scale = fmaxf(image->width/(float)wd2, image->height/(float)ht2);
+      const int p_ht2 = MIN(ht2, image->height/scale), p_wd2 = MIN(wd2, image->width/scale);
+      for(int j=0; j<p_ht2 && scale*j<image->height; j++) for(int i=0; i<p_wd2 && scale*i < image->width; i++)
+        {
+          uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
+          for(int k=0; k<3; k++) buf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, p_wd2, p_ht2, orientation)+2-k] = cam[k];
+        }
+      *width  = MIN(wd, ((orientation & 4) ? image->height : image->width )/scale);
+      *height = MIN(ht, ((orientation & 4) ? image->width  : image->height)/scale);
+      res = 0;
+    }
+    // clean up raw stuff.
+    libraw_recycle(raw);
+    libraw_close(raw);
+    free(image);
+    if(0)
+    {
+libraw_fail:
+      fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
+      libraw_close(raw);
+      res = 1;
+    }
+  }
+
+  if(res)
+  {
+    // try the real thing: rawspeed + pixelpipe
+    dt_imageio_module_format_t format;
+    _dummy_data_t dat;
+    format.bpp = _bpp;
+    format.write_image = _write_image;
+    dat.head.max_width  = wd;
+    dat.head.max_height = ht;
+    dat.buf = buf;
+    // export with flags: ignore exif (don't load from disk), don't swap byte order, and don't do hq processing
+    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 1, 0);
+    if(!res)
+    {
+      // might be smaller, or have a different aspect than what we got as input.
+      *width  = dat.head.width;
+      *height = dat.head.height;
+    }
+  }
 
   // fprintf(stderr, "[mipmap init 8] export image %u finished (sizes %d %d => %d %d)!\n", imgid, wd, ht, dat.head.width, dat.head.height);
 
   // any errors?
   if(res)
   {
-    fprintf(stderr, "[mipmap init 8] could not process mipmap thumbnail!\n");
+    fprintf(stderr, "[mipmap_cache] could not process thumbnail!\n");
     *width = *height = 0;
     return;
   }
 
-  // might be smaller, or have a different aspect than what we got as input.
-  *width  = dat.head.width;
-  *height = dat.head.height;
-
   // TODO: various speed optimizations:
-  // TODO: get mip from larger mip (testget)!
   // TODO: also init all smaller mips!
   // TODO: use mipf, but:
   // TODO: if output is cropped, don't use mipf!
