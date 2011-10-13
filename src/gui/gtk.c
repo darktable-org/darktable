@@ -655,10 +655,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if (!g_thread_supported ()) g_thread_init(NULL);
   gdk_threads_init();
 
-  /* gnome attribute of dark theme settings */
-  GtkSettings *settings = gtk_settings_get_default();
-  g_object_set (G_OBJECT (settings),"gtk-application-prefer-dark-theme", TRUE, NULL);
-
   gdk_threads_enter();
 
   gtk_init (&argc, &argv);
