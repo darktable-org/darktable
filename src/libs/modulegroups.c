@@ -75,6 +75,8 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, ui
 */
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module);
 
+/* hook up with viewmanager view change to initialize modulegroup */
+static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data);
 
 const char* name()
 {
@@ -170,8 +172,11 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
 
-  /* lets set default group */
-  _lib_modulegroups_set(self, DT_MODULEGROUP_BASIC);
+  /* let's connect to view changed signal to set default group */
+  dt_control_signal_connect(darktable.signals,
+			    DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, 
+			    G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
+
 
 }
 
@@ -185,6 +190,11 @@ void gui_cleanup(dt_lib_module_t *self)
   
   g_free(self->data);
   self->data = NULL;
+}
+
+static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data)
+{
+  _lib_modulegroups_set(data, DT_MODULEGROUP_BASIC);
 }
 
 static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
@@ -213,7 +223,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     {
       dt_iop_module_t *module = (dt_iop_module_t*)modules->data;
       GtkWidget *w = module->expander;
-    
+      
       /* exclude gamma module */
       if(!strcmp(module->op, "gamma")) continue;
 
