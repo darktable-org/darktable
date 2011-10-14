@@ -645,8 +645,20 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   int which = gtk_combo_box_get_active(combo);
   if (which < 0)
   {
+    // parse config param:
+    if(g->current_aspect == -1.0f)
+    {
+      g->current_aspect = dt_conf_get_float("plugins/darkroom/clipping/custom_aspect");
+      if(g->current_aspect <= 0.0f) g->current_aspect = 1.5f;
+      char text[128];
+      snprintf(text, 128, "%.3f:1", g->current_aspect);
+      gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(combo))), text);
+      apply_box_aspect(self, 5);
+      dt_control_queue_redraw_center();
+    }
+    // user is typing, don't overwrite it.
+    g->current_aspect = -2.0f;
     // reset to free aspect ratio:
-    g->current_aspect = -1.0;
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", -1);
   }
   else if (which < 9)
@@ -703,7 +715,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
-  if(act < 0 || act > 7) act = 0;
+  if(act < -1 || act > 7) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
 
   // reset gui draw box to what we have in the parameters:
