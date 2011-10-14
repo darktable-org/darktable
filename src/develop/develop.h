@@ -127,7 +127,6 @@ dt_develop_t;
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
-void dt_dev_raw_reload(dt_develop_t *dev);
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 // launch jobs above
@@ -135,6 +134,7 @@ void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
+void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
 /** checks if provided imgid is the image currently in develop */
 int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);

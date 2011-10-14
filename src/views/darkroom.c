@@ -497,6 +497,10 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     free( (dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
+
+  // get new image:
+  dt_dev_reload_image(dev, imgid);
+
   // make sure no signals propagate here:
   darktable.gui->reset = 1;
   GList *modules = g_list_last(dev->iop);
@@ -571,7 +575,6 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
-  dt_dev_raw_reload(dev);
 
   // make signals work again:
   darktable.gui->reset = 0;
@@ -755,7 +758,7 @@ static void _darkroom_ui_apply_style_activate_callback(gchar *name)
 {
   dt_control_log(_("applied style `%s' on current image"),name);
   dt_styles_apply_to_image (name, FALSE, darktable.develop->image->id);
-  dt_dev_raw_reload(darktable.develop);
+  dt_dev_reload_image(darktable.develop, darktable.develop->image->id);
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)

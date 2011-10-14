@@ -320,8 +320,11 @@ restart:
   dt_control_log_busy_leave();
 }
 
-void dt_dev_raw_reload(dt_develop_t *dev)
+void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
 {
+  const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dev->image_storage = *image;
+  dt_image_cache_read_release(darktable.image_cache, image);
   dev->image_force_reload = dev->image_loading = dev->preview_loading = 1;
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
