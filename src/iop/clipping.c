@@ -617,6 +617,28 @@ void reload_defaults(dt_iop_module_t *self)
 }
 
 static void
+aspect_free_activated (GtkEntry *entry, dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  gchar *text = g_strdup(gtk_entry_get_text(entry));
+  if(text)
+  {
+    gchar *c = text;
+    while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
+    if(c < text + strlen(text) - 1)
+    {
+      *c = '\0';
+      c++;
+      g->current_aspect = atof(text) / atof(c);
+      apply_box_aspect(self, 5);
+      dt_control_queue_redraw_center();
+      dt_iop_request_focus(self);
+    }
+    g_free(text);
+  }
+}
+
+static void
 aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -626,22 +648,6 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
     // reset to free aspect ratio:
     g->current_aspect = -1.0;
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", -1);
-    gchar *text = gtk_combo_box_get_active_text(combo);
-    if(text)
-    {
-      gchar *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
-      {
-        *c = '\0';
-        c++;
-        g->current_aspect = atof(text) / atof(c);
-        apply_box_aspect(self, 5);
-        dt_control_queue_redraw_center();
-        dt_iop_request_focus(self);
-      }
-      g_free(text);
-    }
   }
   else if (which < 9)
   {
@@ -771,27 +777,6 @@ static void key_commit_callback(GtkAccelGroup *accel_group,
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
   commit_box(self, g, p);
-}
-
-static void key_undo_callback(GtkAccelGroup *accel_group,
-                              GObject *acceleratable,
-                              guint keyval, GdkModifierType modifier,
-                              gpointer data)
-{
-  dt_iop_module_t* self = (dt_iop_module_t*)data;
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
-
-  // reverse cropping to where it was before.
-  p->cx = p->cy = 0.0f;
-  p->cw = p->ch = 1.0f;
-  g->clip_x = g->old_clip_x;
-  g->clip_y = g->old_clip_y;
-  g->clip_w = g->old_clip_w;
-  g->clip_h = g->old_clip_h;
-  g->applied = 0;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_control_queue_redraw_center();
 }
 
 static void
@@ -926,11 +911,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
+  dt_gui_key_accel_block_on_focus(GTK_WIDGET(g->aspect_presets));
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
   if(act < 0 || act >= 9) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
+  g_signal_connect (G_OBJECT (gtk_bin_get_child(GTK_BIN(g->aspect_presets))), "activate",
+                    G_CALLBACK (aspect_free_activated), self);
   g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), (char *)NULL);
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
@@ -1578,8 +1566,6 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, TRUE, NC_("accel", "commit"),
                         GDK_Return, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "undo"),
-                        GDK_z, GDK_CONTROL_MASK);
   dt_accel_register_iop(self, TRUE, NC_("accel", "swap the aspect ratio"),
                         GDK_x, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "angle"));
@@ -1595,10 +1581,6 @@ void connect_key_accels(dt_iop_module_t *self)
   closure = g_cclosure_new(G_CALLBACK(key_commit_callback),
                            (gpointer)self, NULL);
   dt_accel_connect_iop(self, "commit", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(key_undo_callback),
-                           (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "undo", closure);
 
   dt_accel_connect_button_iop(self, "swap the aspect ratio", g->swap_button);
   dt_accel_connect_slider_iop(self, "angle", GTK_WIDGET(g->scale5));
