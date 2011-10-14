@@ -631,7 +631,7 @@ aspect_free_activated (GtkEntry *entry, dt_iop_module_t *self)
       c++;
       g->current_aspect = atof(text) / atof(c);
       apply_box_aspect(self, 5);
-      dt_control_queue_redraw_center();
+      dt_control_queue_draw_all();
       dt_iop_request_focus(self);
     }
     g_free(text);
@@ -654,7 +654,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
       snprintf(text, 128, "%.3f:1", g->current_aspect);
       gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(combo))), text);
       apply_box_aspect(self, 5);
-      dt_control_queue_redraw_center();
+      dt_control_queue_draw_all();
     }
     // user is typing, don't overwrite it.
     g->current_aspect = -2.0f;
