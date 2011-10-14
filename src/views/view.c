@@ -1054,6 +1054,7 @@ void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid)
 
 void dt_view_filmstrip_prefetch()
 {
+#if 0 // FIXME: this code as it is does nothing. it should prefetch the next full image in filmstrip mode!
   char query[1024];
   const gchar *qin = dt_collection_get_query (darktable.collection);
   int offset = 0;
@@ -1075,6 +1076,7 @@ void dt_view_filmstrip_prefetch()
       offset = sqlite3_column_int(stmt, 0) - 1;
     sqlite3_finalize(stmt);
   }
+#endif
 }
 
 void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,GtkWidget *tool)

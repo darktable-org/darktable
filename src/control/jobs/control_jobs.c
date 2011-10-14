@@ -221,6 +221,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 
 int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
+#if 0
   // FIXME: replace with proper crop/rotate history stack pasting
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -242,6 +243,7 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+#endif
   return 0;
 }
 

@@ -601,7 +601,6 @@ dt_cache_read_testget(
     return NULL;
 
   dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
-  dt_cache_bucket_t *last_bucket = NULL;
   dt_cache_bucket_t *compare_bucket = start_bucket;
   int16_t next_delta = compare_bucket->first_delta;
   while(next_delta != DT_CACHE_NULL_DELTA)
@@ -617,7 +616,6 @@ dt_cache_read_testget(
       lru_insert_locked(cache, compare_bucket);
       return rc;
     }
-    last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
   dt_cache_unlock(&segment->lock);
@@ -899,7 +897,6 @@ dt_cache_read_release(dt_cache_t *cache, const uint32_t key)
   dt_cache_lock(&segment->lock);
 
   dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
-  dt_cache_bucket_t *last_bucket = NULL;
   dt_cache_bucket_t *compare_bucket = start_bucket;
   int16_t next_delta = compare_bucket->first_delta;
   while(next_delta != DT_CACHE_NULL_DELTA)
@@ -911,7 +908,6 @@ dt_cache_read_release(dt_cache_t *cache, const uint32_t key)
       dt_cache_unlock(&segment->lock);
       return;
     }
-    last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
   dt_cache_unlock(&segment->lock);
@@ -934,7 +930,6 @@ dt_cache_write_get(dt_cache_t *cache, const uint32_t key)
     dt_cache_lock(&segment->lock);
 
     dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
-    dt_cache_bucket_t *last_bucket = NULL;
     dt_cache_bucket_t *compare_bucket = start_bucket;
     int16_t next_delta = compare_bucket->first_delta;
     while(next_delta != DT_CACHE_NULL_DELTA)
@@ -948,7 +943,6 @@ dt_cache_write_get(dt_cache_t *cache, const uint32_t key)
         if(err) goto wait;
         return rc;
       }
-      last_bucket = compare_bucket;
       next_delta = compare_bucket->next_delta;
     }
     // didn't find any entry :(
@@ -977,7 +971,6 @@ dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void
   dt_cache_lock(&segment->lock);
 
   dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
-  dt_cache_bucket_t *last_bucket = NULL;
   dt_cache_bucket_t *compare_bucket = start_bucket;
   int16_t next_delta = compare_bucket->first_delta;
   while(next_delta != DT_CACHE_NULL_DELTA)
@@ -997,7 +990,6 @@ dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void
       dt_cache_unlock(&segment->lock);
       return;
     }
-    last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
   dt_cache_unlock(&segment->lock);
@@ -1016,7 +1008,6 @@ dt_cache_write_release(dt_cache_t *cache, const uint32_t key)
   dt_cache_lock(&segment->lock);
 
   dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
-  dt_cache_bucket_t *last_bucket = NULL;
   dt_cache_bucket_t *compare_bucket = start_bucket;
   int16_t next_delta = compare_bucket->first_delta;
   while(next_delta != DT_CACHE_NULL_DELTA)
@@ -1028,7 +1019,6 @@ dt_cache_write_release(dt_cache_t *cache, const uint32_t key)
       dt_cache_unlock(&segment->lock);
       return;
     }
-    last_bucket = compare_bucket;
     next_delta = compare_bucket->next_delta;
   }
   dt_cache_unlock(&segment->lock);
