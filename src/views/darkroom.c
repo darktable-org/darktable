@@ -434,8 +434,7 @@ int try_enter(dt_view_t *self)
   }
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
-  // change image:
-  dt_dev_load_image(darktable.develop, selected);
+  darktable.develop->image_storage.id = selected;
   return 0;
 }
 
