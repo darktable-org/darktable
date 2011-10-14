@@ -2006,6 +2006,32 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/clipping/custom_aspect</key>
+      <applyto>/apps/darktable/plugins/darkroom/clipping/custom_aspect</applyto>
+      <owner>darktable</owner>
+      <type>float</type>
+      <default>1.5</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>last chosen custom aspect ratio</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/clipping/aspect_preset</key>
+      <applyto>/apps/darktable/plugins/darkroom/clipping/aspect_preset</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>last chosen aspect ratio preset</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/colorcorrection/expanded</key>
       <applyto>/apps/darktable/plugins/darkroom/colorcorrection/expanded</applyto>
       <owner>darktable</owner>
