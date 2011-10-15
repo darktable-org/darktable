@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: johannes hanika <hanatos@gmail.com>
 Build-Depends: debhelper (>= 7), libtool, intltool, autotools-dev, libgtk2.0-dev, libsqlite3-dev, libglade2-dev, libgegl-0.0-dev, libcairo2-dev,  liblcms1-dev, libexiv2-dev, libjpeg62-dev, libpng12-dev, liblensfun-dev, libgconf2-dev
 Standards-Version: 3.8.0
-Homepage: http://darktable.sf.net/
+Homepage: http://www.darktable.org/
 
 Package: darktable
 Architecture: any
