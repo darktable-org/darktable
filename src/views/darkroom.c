@@ -509,6 +509,11 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(strcmp(module->op, "gamma"))
     {
+
+      dt_iop_reload_defaults(module);
+
+#if 0 // IS THIS STUFF REALLY NEEDED ?
+
       // remove widget:
       GtkWidget *exp = GTK_WIDGET(module->expander);
       GtkWidget *shh = GTK_WIDGET(module->showhide);
@@ -535,10 +540,13 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       gtk_container_add(GTK_CONTAINER(parent), module->widget);
       gtk_widget_show(module->expander);
       // all the signal handlers get passed module*, which is still valid.
+#endif
     }
     modules = g_list_previous(modules);
   }
 
+
+#if 0 // IS THIS STUFF REALLY NEEDED ?
   // hack: now hide all custom expander widgets again.
   modules = dev->iop;
   while(modules)
@@ -572,7 +580,8 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     }
     modules = g_list_next(modules);
   }
-  dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
+#endif
+
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
 
@@ -593,6 +602,10 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     }
     g_free(active_plugin);
   }
+
+  /* last set the group to update visibility of iop modules for new pipe */
+  dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
+
 }
 
 static void
