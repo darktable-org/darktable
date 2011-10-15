@@ -7,7 +7,7 @@ pkgname=darktable
 pkgver=0.2
 pkgrel=1
 pkgdesc="Utility to organize and develop raw images (compiled with qwerty support)"
-url="http://darktable.sf.net/"
+url="http://www.darktable.org/"
 arch=('i686' 'x86_64')
 license=('GPL3')
 depends=('sqlite3>=3.6.11' 'imagemagick>=6.4.8.3' 'cairo>=1.8.6' 'libglade>=2.6.3')

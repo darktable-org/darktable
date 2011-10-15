@@ -5,7 +5,7 @@
 inherit eutils
 
 DESCRIPTION="Utility to organize and develop raw images"
-HOMEPAGE="http://darktable.sf.net/"
+HOMEPAGE="http://www.darktable.org/"
 # TODO: keep to gentoo naming conventions (_alpha) for the next release..
 P="darktable-0.1-alpha"
 S="${WORKDIR}/${P}"
