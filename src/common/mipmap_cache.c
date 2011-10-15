@@ -869,7 +869,7 @@ _init_8(
     if(0)
     {
 libraw_fail:
-      fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
+      // fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
       libraw_close(raw);
       res = 1;
     }

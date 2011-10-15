@@ -192,10 +192,9 @@ dt_imageio_open_rawspeed(
 dt_imageio_retval_t
 dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_allocator_t a)
 {
-  // this is modelled substantially on dt_imageio_open_tiff
-
-  img->flags &= ~DT_IMAGE_LDR;
-  img->flags |= DT_IMAGE_RAW;
+  // sraw aren't real raw
+  img->flags |= DT_IMAGE_LDR;
+  img->flags &= ~DT_IMAGE_RAW;
 
   const int orientation = dt_image_orientation(img);
   img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
@@ -210,7 +209,8 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   bool is_50d = !strncmp(makermodel, "Canon EOS 50D", 13);
   int raw_width_extra = (is_50d && r->subsampling.y == 2) ? 72 : 0;
 
-  img->bpp = r->getBpp();
+  // actually we want to store full floats here:
+  img->bpp = 4*sizeof(float);
   void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
     return DT_IMAGEIO_CACHE_FULL;
@@ -230,7 +230,8 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   for( int row = 0; row < raw_height; ++row )
     for( int col = 0; col < raw_width; ++col )
       for( int k = 0; k < 3; ++k )
-        ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] = (float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] * scale;
+        ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] =
+          ((float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] - black) * scale;
 #endif
 
   return DT_IMAGEIO_OK;

@@ -350,7 +350,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, 0);
+      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
       if(!buf.buf)
       {
         dt_control_log(_("file has unknown format!"));
