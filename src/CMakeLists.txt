@@ -351,7 +351,7 @@ set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTAL
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE AND USE_OPENCL)
 set_target_properties(darktable PROPERTIES LINK_FLAGS -Wl,-syslibroot,/Developer-old/SDKs/MacOSX10.6.sdk)
-endif(APPLE)
+endif(APPLE AND USE_OPENCL)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
 
