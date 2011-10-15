@@ -1114,7 +1114,7 @@ void dt_exif_init()
   // Exiv2::LogMsg::setLevel(Exiv2::LogMsg::error);
 
   Exiv2::XmpParser::initialize();
-  Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
+  Exiv2::XmpProperties::registerNs("http://www.darktable.org/", "darktable");
 }
 
 void dt_exif_cleanup()

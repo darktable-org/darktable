@@ -18,7 +18,7 @@
 
 /**
  * this is a collection of custom measured color matrices, profiled
- * for darktable (darktable.sf.net), so far all calculated by Pascal de Bruijn.
+ * for darktable (http://www.darktable.org), so far all calculated by Pascal de Bruijn.
  */
 typedef struct dt_profiled_colormatrix_t
 {
