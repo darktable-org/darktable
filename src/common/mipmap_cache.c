@@ -737,7 +737,7 @@ _init_f(
       dt_iop_clip_and_zoom_demosaic_half_size_f(
           out, (const float *)buf.buf,
           &roi_out, &roi_in, roi_out.width, roi_in.width,
-          dt_image_flipped_filter(image));
+          dt_image_flipped_filter(image), 1.0f);
     else
       dt_iop_clip_and_zoom_demosaic_half_size(
           out, (const uint16_t *)buf.buf,

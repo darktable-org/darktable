@@ -48,7 +48,8 @@ typedef struct _iop_gui_blend_data_t
   GtkVBox *box;
   GtkComboBox *blend_modes_combo;
   GtkWidget *opacity_slider;
-} _iop_gui_blend_data_t;
+}
+_iop_gui_blend_data_t;
 
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
@@ -1283,8 +1284,14 @@ FC(const int row, const int col, const unsigned int filters)
  * resamping is done via bilateral filtering and respecting the input mosaic pattern.
  */
 void
-dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-                                        const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+dt_iop_clip_and_zoom_demosaic_half_size(
+    float *out,
+    const uint16_t *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -1350,7 +1357,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
           const uint16_t p3 = in[i   + in_stride*(j + 1)];
           const uint16_t p4 = in[i+1 + in_stride*(j + 1)];
 
-          if (!((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)))
+          if (!((pc >= 60000) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) >= 60000)))
           {
             sum = _mm_add_epi32(sum, _mm_set_epi32(0,p4,p3+p2,p1));
             num++;
@@ -1371,6 +1378,90 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 #endif
 }
 
+void
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters,
+    const float clip)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f/roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = round(px_footprint/2);
+
+  // move p to point to an rggb block:
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx+1, filters) != 1) trggbx ++;
+  if(FC(trggby, trggbx,   filters) != 0)
+  {
+    trggbx = (trggbx + 1)&1;
+    trggby ++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    float *outc = out + 4*(out_stride*y);
+
+    float fy = (y + roi_out->y)*px_footprint;
+    int py = (int)fy & ~1;
+    py = MIN(((roi_in->height-4) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
+
+    float fx = roi_out->x*px_footprint;
+      
+    for(int x=0; x<roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      fx += px_footprint;
+      int px = (int)fx & ~1;
+      px = MIN(((roi_in->width -4) & ~1u), px) + rggbx;
+
+      int maxi = MIN(((roi_in->width -3)&~1u)+rggbx, px+2*samples);
+
+      int num = 0;
+
+      const int idx = px + in_stride*py;
+      const float pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
+
+      // 2x2 blocks in the middle of sampling region
+      __m128 sum = _mm_setzero_ps();
+
+      for(int j=py; j<=maxj; j+=2)
+        for(int i=px; i<=maxi; i+=2)
+        {
+          const float p1 = in[i   + in_stride*j];
+          const float p2 = in[i+1 + in_stride*j];
+          const float p3 = in[i   + in_stride*(j + 1)];
+          const float p4 = in[i+1 + in_stride*(j + 1)];
+
+          if (!((pc >= clip) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) >= clip)))
+          {
+            sum = _mm_add_ps(sum, _mm_set_ps(0,p4,p3+p2,p1));
+            num++;
+          }
+        }
+
+      col = _mm_mul_ps(sum, _mm_div_ps(_mm_set_ps(0.0f,1.0f,0.5f,1.0f),_mm_set1_ps(num)));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
+
+#if 0 // very fast, but doesn't handle highlights:
 void
 dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
     const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
@@ -1547,6 +1638,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   }
   _mm_sfence();
 }
+#endif
 
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {
