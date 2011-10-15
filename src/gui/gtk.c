@@ -459,7 +459,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     dt_cleanup();
     gtk_main_quit();
   }
- 
   return TRUE;
 }
 
