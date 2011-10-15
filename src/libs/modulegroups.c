@@ -312,11 +312,13 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
   /* this is a proxy function so it might be called from another thread */
   gboolean i_own_lock = dt_control_gdk_lock();
 
-  _lib_modulegroups_update_iop_visibility(self);
+  /* if no change just update visibilility */
+  if(d->current == group)
+  {
+    _lib_modulegroups_update_iop_visibility(self);
+    return;
+  }
 
-  /* if no change just do nothing.. */
-  if(d->current == group) return;
-    
   /* set current group */
   if(group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[group]))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[group]), TRUE);
