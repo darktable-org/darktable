@@ -192,8 +192,8 @@ dt_imageio_open_rawspeed(
 dt_imageio_retval_t
 dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_allocator_t a)
 {
-  // sraw aren't real raw
-  img->flags |= DT_IMAGE_LDR;
+  // sraw aren't real raw, but not ldr either (need white balance and stuff)
+  img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
 
   const int orientation = dt_image_orientation(img);

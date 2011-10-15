@@ -396,6 +396,7 @@ void reload_defaults(dt_iop_module_t *module)
     ret = libraw_open_file(raw, filename);
     if(!ret)
     {
+      module->default_enabled = 1;
       for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.cam_mul[k];
       if(tmp.coeffs[0] <= 0.0)
       {
