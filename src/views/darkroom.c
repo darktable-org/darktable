@@ -508,79 +508,10 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(strcmp(module->op, "gamma"))
-    {
-
       dt_iop_reload_defaults(module);
 
-#if 0 // IS THIS STUFF REALLY NEEDED ?
-
-      // remove widget:
-      GtkWidget *exp = GTK_WIDGET(module->expander);
-      GtkWidget *shh = GTK_WIDGET(module->showhide);
-      GtkWidget *rsb = GTK_WIDGET(module->reset_button);
-      GtkWidget *psb = GTK_WIDGET(module->presets_button);
-      GtkWidget *parent = NULL;
-      g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
-      // re-init and re-gui_init
-      module->gui_cleanup(module);
-      dt_dev_cleanup_module_accels(module);
-      gtk_widget_destroy(GTK_WIDGET(module->widget));
-      dt_iop_reload_defaults(module);
-      module->gui_init(module);
-      module->accel_closures = NULL;
-      if(module->connect_key_accels)
-        module->connect_key_accels(module);
-      // copy over already inited stuff:
-      module->expander = exp;
-      module->showhide = shh;
-      module->reset_button = rsb;
-      module->presets_button = psb;
-      dt_iop_connect_common_accels(module);
-      // reparent
-      gtk_container_add(GTK_CONTAINER(parent), module->widget);
-      gtk_widget_show(module->expander);
-      // all the signal handlers get passed module*, which is still valid.
-#endif
-    }
     modules = g_list_previous(modules);
   }
-
-
-#if 0 // IS THIS STUFF REALLY NEEDED ?
-  // hack: now hide all custom expander widgets again.
-  modules = dev->iop;
-  while(modules)
-  {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(strcmp(module->op, "gamma"))
-    {
-      char option[1024];
-      snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
-      gboolean active = dt_conf_get_bool (option);
-      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
-      gboolean favorite = dt_conf_get_bool (option);
-      gint state=0;
-      if(active)
-      {
-        state++;
-        if(favorite) state++;
-      }
-
-      if(module->showhide)
-        dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
-
-      
-      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-      active = dt_conf_get_bool (option);
-      dt_iop_gui_set_expanded(module, active);
-    }
-    else
-    {
-      gtk_widget_hide(GTK_WIDGET(module->expander));
-    }
-    modules = g_list_next(modules);
-  }
-#endif
 
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
