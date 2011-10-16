@@ -30,6 +30,7 @@ DT_MODULE(1)
 enum {
   /* internal */
   md_internal_filmroll=0,
+  md_internal_imgid,
   md_internal_filename,
 
   /* exif */
@@ -61,6 +62,7 @@ static void _lib_metatdata_view_init_labels()
 {
   /* internal */
   _md_labels[md_internal_filmroll] = _("filmroll");
+  _md_labels[md_internal_imgid] = _("image id");
   _md_labels[md_internal_filename] = _("filename");
 
   /* exif */
@@ -144,6 +146,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     
     dt_image_film_roll(img, value, vl);
     _metadata_update_value(d->metadata[md_internal_filmroll], value);
+
+    snprintf(value,vl,"%d", img->id);
+    _metadata_update_value(d->metadata[md_internal_imgid], value);
 
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
 
