@@ -283,6 +283,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *param
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
+/** get the eventbox of plugin ui in expander */
+GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module);
 
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);

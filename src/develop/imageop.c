@@ -792,7 +792,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if (darktable.develop->gui_module->gui_focus) 
       darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
 
-    gtk_widget_set_state(dt_iop_gui_get_widget(darktable.develop->gui_module), GTK_STATE_NORMAL);
+    gtk_widget_set_state(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_NORMAL);
 
   //    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
 
@@ -816,9 +816,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   /* set the focus on module */
   if(module)
   {
-    gtk_widget_set_state(dt_iop_gui_get_widget(module), GTK_STATE_SELECTED);
+    gtk_widget_set_state(dt_iop_gui_get_pluginui(module), GTK_STATE_SELECTED);
       
-    gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
+    //gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
 
     /*
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
@@ -1070,6 +1070,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkWidget *pluginui_frame = gtk_frame_new(NULL);
   GtkWidget *pluginui = gtk_event_box_new();
 
+  gtk_widget_set_name(pluginui,"dt-plugin-ui");
+
   module->header = header;
 
   /* steup the header box */
@@ -1166,6 +1168,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)
 {
   return gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),1)))));
+}
+
+GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
+{
+  return gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),1)));
 }
 
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
