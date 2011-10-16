@@ -1222,7 +1222,6 @@ static GtkWidget * _ui_init_panel_container_top(GtkWidget *container)
 
 static GtkWidget * _ui_init_panel_container_center(GtkWidget *container, gboolean left)
 {
-
   GtkWidget *widget;
   GtkAdjustment *a[4];
 

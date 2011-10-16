@@ -150,7 +150,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_hour:tim->tm_hour));
   else if( g_strcmp0(variable,"$(EXIF_MINUTE)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_min:tim->tm_min));
   else if( g_strcmp0(variable,"$(EXIF_SECOND)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_sec:tim->tm_sec));
-
+  else if( params->img && g_strcmp0(variable,"$(ID)") == 0 && (got_value=TRUE) ) sprintf(value,"%d", params->img->id); 
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
   else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_basename(g_path_get_dirname(params->filename)));
   else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));

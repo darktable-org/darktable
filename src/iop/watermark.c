@@ -213,8 +213,17 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       svgdata = svgdoc;
     }
 
-    // Current image
+    // Current image ID
     gchar buffer[1024];
+    g_snprintf(buffer,1024,"%d",self->dev->image->id);
+    svgdoc = _string_substitute(svgdata,"$(IMAGE.ID)",buffer);
+    if( svgdoc != svgdata )
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
+
+    // Current image
     dt_image_print_exif(self->dev->image,buffer,1024);
     svgdoc = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
     if( svgdoc != svgdata )
