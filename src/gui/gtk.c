@@ -1907,6 +1907,7 @@ void init_info_box(GtkWidget *container)
 
   GtkWidget** widgets[] =
   {
+    &darktable.gui->widgets.metadata_label_imageid,
     &darktable.gui->widgets.metadata_label_filename,
     &darktable.gui->widgets.metadata_label_model,
     &darktable.gui->widgets.metadata_label_maker,
@@ -1927,6 +1928,7 @@ void init_info_box(GtkWidget *container)
 
   gchar* labels[] =
   {
+    _("image id"),
     _("filename"),
     _("model"),
     _("maker"),
@@ -1976,7 +1978,7 @@ void init_info_box(GtkWidget *container)
   // Attaching the information labels
   container = widget;
 
-  for(i = 0; i < 16; i++)
+  for(i = 0; i < 17; i++)
   {
     // Attaching the field title
     widget = gtk_label_new(labels[i]);

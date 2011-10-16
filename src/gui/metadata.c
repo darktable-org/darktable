@@ -39,6 +39,11 @@ void dt_gui_metadata_update()
       dt_image_cache_release(img, 'r');
       goto fill_minuses;
     }
+
+    widget = darktable.gui->widgets.metadata_label_imageid;
+    g_snprintf(lbl,ll,"%d",img->id);
+    gtk_label_set_text(GTK_LABEL(widget),lbl);
+
     widget = darktable.gui->widgets.metadata_label_filmroll;
     dt_image_film_roll(img, lbl, ll);
     gtk_label_set_text(GTK_LABEL(widget), lbl);
