@@ -298,10 +298,17 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   }
   sqlite3_finalize(stmt);
 
+  uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
+  if(flags < 0 || flags > 4)
+  {
+    flags = 1;
+    dt_conf_set_int("ui_last/import_initial_rating", 1);
+  }
   // insert dummy image entry in database
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into images (id, film_id, filename, caption, description, license, sha1sum) values (null, ?1, ?2, '', '', '', '')", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into images (id, film_id, filename, caption, description, license, sha1sum, flags) values (null, ?1, ?2, '', '', '', '', ?3)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, flags);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
@@ -383,12 +390,7 @@ void dt_image_init(dt_image_t *img)
   img->filters = 0;
   img->bpp = 0;
   img->film_id = -1;
-  img->flags = dt_conf_get_int("ui_last/import_initial_rating");
-  if(img->flags < 0 || img->flags > 4)
-  {
-    img->flags = 1;
-    dt_conf_set_int("ui_last/import_initial_rating", 1);
-  }
+  img->flags = 0;
   img->id = -1;
   img->dirty = 0;
   img->exif_inited = 0;
