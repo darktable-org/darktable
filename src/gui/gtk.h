@@ -113,6 +113,7 @@ typedef struct dt_gui_widgets_t
   GtkWidget *metadata_expander;
 
   GtkWidget
+      *metadata_label_imageid,
       *metadata_label_filename,
       *metadata_label_model,
       *metadata_label_maker,
