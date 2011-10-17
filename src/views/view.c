@@ -651,6 +651,9 @@ dt_view_image_expose(
     bgcol = 0.8;  // mouse over
     fontcol = 0.7;
     outlinecol = 0.6;
+    // if the user points at this image, we really want it:
+    if(!img)
+      img = dt_image_cache_read_get(darktable.image_cache, imgid);
   }
   float imgwd = 0.8f;
   if(zoom == 1)
