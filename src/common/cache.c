@@ -1031,7 +1031,7 @@ void dt_cache_print(dt_cache_t *cache)
   for(int k=0;k<=cache->bucket_mask;k++)
   {
     if(cache->table[k].key != DT_CACHE_EMPTY_KEY)
-      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d and data %lX\n",
+      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d and data %"PRIX64"\n",
           k, (cache->table[k].key & 0x1fffffff)+1, cache->table[k].read, cache->table[k].write, (uint64_t)cache->table[k].data);
     else
       fprintf(stderr, "[cache] bucket %d is empty with locks r %d w %d\n",
@@ -1043,7 +1043,7 @@ void dt_cache_print(dt_cache_t *cache)
   while(curr >= 0)
   {
     if(cache->table[curr].key != DT_CACHE_EMPTY_KEY)
-      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d and data %lX\n",
+      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d and data %"PRIX64"\n",
           curr, (cache->table[curr].key & 0x1fffffff)+1, cache->table[curr].read, cache->table[curr].write, (uint64_t)cache->table[curr].data);
     else
     {
