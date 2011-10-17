@@ -677,28 +677,28 @@
       </locale>
     </schema>
 
-    <schema>
-      <key>/schemas/apps/darktable/plugins/filmstrip/size</key>
-      <applyto>/apps/darktable/plugins/filmstrip/size</applyto>
-      <owner>darktable</owner>
-      <type>float</type>
-      <default>0.15</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
     <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/plugins/filmstrip/on</key>
-      <applyto>/apps/darktable/plugins/filmstrip/on</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/filmstrip/visible</key>
+      <applyto>/apps/darktable/plugins/lighttable/filmstrip/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>enable filmstrip in darkroom mode</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/filmstrip/height</key>
+      <applyto>/apps/darktable/plugins/lighttable/filmstrip/height</applyto>
+      <owner>darktable</owner>
+      <type>120</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>height of filmstrip</short>
         <long></long>
       </locale>
     </schema>

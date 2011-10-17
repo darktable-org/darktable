@@ -272,7 +272,7 @@ void gui_init(dt_lib_module_t *self)
 
   
   /* set size of filmstrip */
-  int32_t height = dt_conf_get_int("plugins/filmstrip/height");
+  int32_t height = dt_conf_get_int("plugins/lighttable/filmstrip/height");
   gtk_widget_set_size_request(d->filmstrip, -1, CLAMP(height,64,400));
 
   /* create the resize handle */
@@ -381,7 +381,7 @@ static gboolean _lib_filmstrip_size_handle_motion_notify_callback(GtkWidget *w, 
     gtk_widget_get_size_request (d->filmstrip,&sx,&sy);
     sy = CLAMP(d->size_handle_height+(d->size_handle_y - y), 64,400);
 
-    dt_conf_set_int("plugins/filmstrip/height", sy);
+    dt_conf_set_int("plugins/lighttable/filmstrip/height", sy);
 
     gtk_widget_set_size_request(d->filmstrip,-1,sy);
 

@@ -295,26 +295,35 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         /* set expanded if last mode was that */
         char var[1024];
         gboolean expanded = FALSE;
+        gboolean visible = dt_lib_is_visible(plugin);
         if (plugin->expandable())
         {
           snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
 	  
-          dt_lib_gui_set_expanded(plugin, expanded);
-	
           /* show expander if visible  */
-          if(dt_lib_is_visible(plugin))
+          if(visible)
+          {
             gtk_widget_show_all(GTK_WIDGET(plugin->expander));
+            // gtk_widget_show_all(plugin->widget);
+          }
           else
+          {
             gtk_widget_hide(GTK_WIDGET(plugin->expander));
-        }
+            // gtk_widget_hide_all(plugin->widget);
+          }
 
-        /* show/hide plugin widget depending on expanded flag or if plugin
-           not is expandeable() */
-        if(dt_lib_is_visible(plugin) && (expanded || !plugin->expandable()))
-          gtk_widget_show_all(plugin->widget);
+          dt_lib_gui_set_expanded(plugin, expanded);
+        }
         else
-          gtk_widget_hide_all(plugin->widget);
+        {
+          /* show/hide plugin widget depending on expanded flag or if plugin
+             not is expandeable() */
+          if(visible)
+            gtk_widget_show_all(plugin->widget);
+          else
+            gtk_widget_hide_all(plugin->widget);
+        }
       }
 
       /* lets get next plugin */
