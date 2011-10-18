@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -216,7 +217,13 @@ new_button_clicked (GtkButton *button, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
   const gchar *tag = gtk_entry_get_text(d->entry);
-  dt_tag_new(tag,NULL);
+  /* create new tag */
+  guint tid=0;
+  dt_tag_new(tag, &tid);
+
+  /** attach tag to selected images  */
+  dt_tag_attach(tid,-1);
+
   update(self, 1);
 }
 
@@ -227,8 +234,14 @@ entry_activated (GtkButton *button, gpointer user_data)
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
   const gchar *tag = gtk_entry_get_text(d->entry);
   if(!tag || tag[0] == '\0') return;
-  dt_tag_new(tag,NULL);
-  attach_selected_tag(self, d);
+
+ /* create new tag */
+  guint tid=0;
+  dt_tag_new(tag, &tid);
+
+  /** attach tag to selected images  */
+  dt_tag_attach(tid,-1);
+
   update(self, 1);
   update(self, 0);
   gtk_entry_set_text(d->entry, "");
