@@ -21,6 +21,7 @@
 #include "common/collection.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_dng.h"
 #include "common/exif.h"
@@ -57,13 +58,13 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    char dtfilename[520];
-    dt_image_full_path(img->id, dtfilename, 512);
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
+    char dtfilename[DT_MAX_PATH_LEN+4];
+    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN);
     char *c = dtfilename + strlen(dtfilename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, dtfilename);
-    dt_image_cache_release(img, 'r');
+    dt_image_cache_read_release(darktable.image_cache, img);
     t = g_list_delete_link(t, t);
   }
   return 0;
@@ -90,22 +91,24 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, img->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
     if(img->filters == 0 || img->bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
     }
     filter = dt_image_flipped_filter(img);
-    if(mip != DT_IMAGE_FULL)
+    if(buf.size != DT_MIPMAP_FULL)
     {
       dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
@@ -126,8 +129,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       dt_control_log(_("images have to be of same size!"));
       free(pixels);
       free(weight);
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       goto error;
     }
     // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in the system => f/22
@@ -140,11 +143,11 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float cal = 100.0f/(aperture*exp*iso);
     whitelevel = fmaxf(whitelevel, cal);
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
+    #pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht)
 #endif
     for(int k=0; k<wd*ht; k++)
     {
-      const uint16_t in = ((uint16_t *)img->pixels)[k];
+      const uint16_t in = ((uint16_t *)buf.buf)[k];
       const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : exp * 0.01f);
       pixels[k] += w * in * cal;
       weight[k] += w;
@@ -156,8 +159,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     fraction+=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
 
-    dt_image_release(img, DT_IMAGE_FULL, 'r');
-    dt_image_cache_release(img, 'r');
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_image_cache_read_release(darktable.image_cache, img);
   }
   // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
 #ifdef _OPENMP
@@ -218,24 +221,29 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 
 int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
+#if 0
+  // FIXME: replace with proper crop/rotate history stack pasting
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  const int cw = t1->flag;
+  // const int cw = t1->flag;
   GList *t = t1->index;
   int total = g_list_length(t);
-  char message[512]= {0};
   double fraction=0;
-  snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  // char message[512]= {0};
+  // snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
+  // const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, "flipping has been disabled!");
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_flip(imgid, cw);
+    // FIXME: disabled for now!
+    // dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+#endif
   return 0;
 }
 
@@ -315,7 +323,6 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   GList *list = NULL;
   
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -343,10 +350,6 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     dt_image_path_append_version(imgid, filename, 512);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
-    (void)g_unlink(filename);
-    sprintf(c, ".dt");
-    (void)g_unlink(filename);
-    sprintf(c, ".dttags");
     (void)g_unlink(filename);
 
     dt_image_remove(imgid);
@@ -550,8 +553,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   const int full_entries = dt_conf_get_int ("parallel_export");
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
-  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
-#pragma omp parallel default(none) private(imgid, size) shared(control,fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads) if(num_threads > 1)
+  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
+#pragma omp parallel default(none) private(imgid, size) shared(control, fraction, stderr, w, h, mformat, mstorage, t, sdata, job, darktable) num_threads(num_threads) if(num_threads > 1)
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
@@ -584,7 +587,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       dt_tag_detach(tagid, imgid);
       // check if image still exists:
       char imgfilename[1024];
-      dt_image_t *image = dt_image_cache_get(imgid, 'r');
+      const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
         dt_image_full_path(image->id, imgfilename, 1024);
@@ -593,11 +596,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);
           fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
           // dt_image_remove(imgid);
-          dt_image_cache_release(image, 'r');
+          dt_image_cache_read_release(darktable.image_cache, image);
         }
         else
         {
-          dt_image_cache_release(image, 'r');
+          dt_image_cache_read_release(darktable.image_cache, image);
           mstorage->store(sdata, imgid, mformat, fdata, num, total);
         }
       }
@@ -606,7 +609,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #endif
       {
         fraction+=1.0/total;
-	dt_control_backgroundjobs_progress(control, jid, fraction);
+        dt_control_backgroundjobs_progress(control, jid, fraction);
       }
     }
 #ifdef _OPENMP

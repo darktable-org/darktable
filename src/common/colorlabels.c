@@ -151,7 +151,8 @@ void dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
         break;
     }
   }
-  // synch to dttags:
+  // synch to file:
+  // TODO: move color labels to image_t cache and sync via write_get!
   dt_image_synch_xmp(selected);
   dt_control_queue_redraw_center();
 }

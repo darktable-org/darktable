@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
+    copyright (c) 2010 henrik andersson,
+    copyright (c) 2011 johannes hanika
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,13 +20,14 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "common/darktable.h"
-#include "common/imageio.h"
-#include "common/image_cache.h"
+#include "common/debug.h"
 #include "common/exif.h"
 #include "common/history.h"
-#include "common/debug.h"
-#include "common/utility.h"
+#include "common/imageio.h"
+#include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/tags.h"
+#include "common/utility.h"
 
 
 void dt_history_delete_on_image(int32_t imgid)
@@ -38,23 +40,13 @@ void dt_history_delete_on_image(int32_t imgid)
 
   dt_image_t tmp;
   dt_image_init (&tmp);
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
-  img->force_reimport = 1;
-  img->dirty = 1;
-  img->raw_params = tmp.raw_params;
-  img->raw_denoise_threshold = tmp.raw_denoise_threshold;
-  img->raw_auto_bright_threshold = tmp.raw_auto_bright_threshold;
-  img->black = tmp.black;
-  img->maximum = tmp.maximum;
-  img->output_width = img->width;
-  img->output_height = img->height;
-  dt_image_cache_flush (img);
 
   /* if current image in develop reload history */
   if (dt_dev_is_current_image (darktable.develop, imgid))
     dt_dev_reload_history_items (darktable.develop);
 
-  dt_image_cache_release (img, 'r');
+  /* make sure mipmaps are recomputed */
+  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style%",imgid);
@@ -83,7 +75,8 @@ dt_history_load_and_apply_on_selection (gchar *filename)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
     if(img)
     {
       if (dt_exif_xmp_read(img, filename, 1))
@@ -91,15 +84,14 @@ dt_history_load_and_apply_on_selection (gchar *filename)
         res=1;
         break;
       }
-      img->force_reimport = 1;
-      img->dirty = 1;
-      dt_image_cache_flush(img);
 
       /* if current image in develop reload history */
       if (dt_dev_is_current_image(darktable.develop, imgid))
         dt_dev_reload_history_items (darktable.develop);
 
-      dt_image_cache_release(img, 'r');
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_read_release(darktable.image_cache, img);
+      dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
     }
   }
   sqlite3_finalize(stmt);
@@ -118,8 +110,6 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
     return 1;
   }
     
-  dt_image_t *oimg = dt_image_cache_get (imgid, 'r');
-
   /* if merge onto history stack, lets find history offest in destination image */
   int32_t offs = 0;
   if (merge)
@@ -146,22 +136,12 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
 
-  /* reimport image updated image */
-  dt_image_t *img = dt_image_cache_get (dest_imgid, 'r');
-  img->force_reimport = 1;
-  img->dirty = 1;
-  img->raw_params = oimg->raw_params;
-  img->raw_denoise_threshold = oimg->raw_denoise_threshold;
-  img->raw_auto_bright_threshold = oimg->raw_auto_bright_threshold;
-  dt_image_cache_flush(img);
-
   /* if current image in develop reload history */
   if (dt_dev_is_current_image(darktable.develop, dest_imgid))
     dt_dev_reload_history_items (darktable.develop);
 
-  dt_image_cache_release(img, 'r');
+  dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
 
-  dt_image_cache_release(oimg, 'r');
   return 0;
 }
 

@@ -95,7 +95,16 @@ typedef enum dt_view_image_over_t
 dt_view_image_over_t;
 
 /** expose an image, set image over flags. */
-void dt_view_image_expose(dt_image_t *img, dt_view_image_over_t *image_over, int32_t index, cairo_t *cr, int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
+void
+dt_view_image_expose(
+    dt_view_image_over_t *image_over,
+    uint32_t index,
+    cairo_t *cr,
+    int32_t width,
+    int32_t height,
+    int32_t zoom,
+    int32_t px,
+    int32_t py);
 
 /** Set the selection bit to a given value for the specified image */
 void dt_view_set_selection(int imgid, int value);
@@ -141,6 +150,12 @@ typedef struct dt_view_manager_t
       struct dt_lib_module_t *module;
       void (*add)(struct dt_lib_module_t *,GtkWidget *);
     } view_toolbox;
+
+    /* module toolbox proxy object */
+    struct {
+      struct dt_lib_module_t *module;
+      void (*add)(struct dt_lib_module_t *,GtkWidget *);
+    } module_toolbox;
 
     /* filmstrip proxy object */
     struct {
@@ -189,6 +204,9 @@ void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y,
 
 /** add widget to the current view toolbox */
 void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,GtkWidget *tool);
+
+/** add widget to the current module toolbox */
+void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm,GtkWidget *tool);
 
 /** load module to view managers list, if still space. return slot number on success. */
 int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod);

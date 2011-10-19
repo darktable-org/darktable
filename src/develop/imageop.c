@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,9 +26,9 @@
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-//#include "gui/iop_modulegroups.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
+#include "dtgtk/icon.h"
 #include "dtgtk/tristatebutton.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/tristatebutton.h"
@@ -47,7 +48,9 @@ typedef struct _iop_gui_blend_data_t
   GtkVBox *box;
   GtkComboBox *blend_modes_combo;
   GtkWidget *opacity_slider;
-} _iop_gui_blend_data_t;
+}
+_iop_gui_blend_data_t;
+
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
@@ -278,11 +281,10 @@ error:
 static int
 dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
-  dt_pthread_mutex_init(&module->params_mutex, NULL);
   module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
-  module->topwidget = NULL;
+  module->header = NULL;
   module->showhide = NULL;
   module->off = NULL;
   module->priority = 0;
@@ -392,54 +394,31 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     else module->enabled = 0;
     dt_dev_add_history_item(module->dev, module, FALSE);
     // close parent expander.
-    gtk_expander_set_expanded(module->expander, module->enabled);
+    dt_iop_gui_set_expanded(module, module->enabled);
   }
   char tooltip[512];
   snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
-static void
-update_topwidget(dt_iop_module_t *module)
+
+static void _iop_gui_update_header(dt_iop_module_t *module)
 {
-  // update/insert/remove module->off:
-  if(!module->hide_enable_button && !module->off)
-  {
-    // insert new
-    // module->topwidget [evb] -> vbox -> hbox -> leftmost entry
-    GtkWidget *vbox = gtk_bin_get_child(GTK_BIN(module->topwidget));
-    GList *vboxlist = gtk_container_get_children(GTK_CONTAINER(vbox));
-    GtkWidget *hbox = GTK_WIDGET(vboxlist->data);
-
-    GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-    gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
-    char tooltip[512];
-    snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
-    gtk_box_reorder_child(GTK_BOX(hbox), GTK_WIDGET(button), 0);
-    g_signal_connect (G_OBJECT (button), "toggled",
-                      G_CALLBACK (dt_iop_gui_off_callback), module);
-    module->off = button;
-
-    GtkWidget *w = gtk_expander_get_label_widget (module->expander);
-    gtk_misc_set_padding(GTK_MISC(w), 0, 0);
-  }
-  else if(module->hide_enable_button && module->off)
-  {
-    // remove widget
-    gtk_widget_destroy(GTK_WIDGET(module->off));
-    module->off = NULL;
-
-    GtkWidget *w = gtk_expander_get_label_widget (module->expander);
-    gtk_misc_set_padding(GTK_MISC(w), 13, 0);
-  }
-  else if(module->off)
-  {
-    // just toggle with current module->enabled value.
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-  }
+    /* get the enable button spacer and button */
+    GtkWidget *eb = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),0);
+    GtkWidget *ebs = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),1);
+    
+    if (module->hide_enable_button)
+    {
+      gtk_widget_hide(eb);
+      gtk_widget_show(ebs);
+    }
+    else
+    {
+      gtk_widget_show(eb);
+      gtk_widget_hide(ebs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+    }
 }
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
@@ -452,7 +431,9 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
     module->factory_enabled = module->default_enabled;
   }
   dt_iop_load_default_params(module);
-  if(module->topwidget) update_topwidget(module);
+
+  if(module->header) 
+    _iop_gui_update_header(module);
 }
 
 static void
@@ -684,7 +665,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
     free(module->default_blendop_params) ; 
     module->default_blendop_params = NULL ; 
   }
-  dt_pthread_mutex_destroy(&module->params_mutex);
 }
 
 void dt_iop_unload_modules_so()
@@ -790,75 +770,6 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 }
 
 
-static gboolean
-expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
-{
-  if(event->button == 1 && (event->state & GDK_SHIFT_MASK)) // TODO: this can also be done when some auto-collapse option is set ...
-  {
-    int current_group = dt_dev_modulegroups_get(module->dev);
-    GList *iop = g_list_first(module->dev->iop);
-    while(iop)
-    {
-      dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-      uint32_t additional_flags=0;
-
-      /* add special group flag for moduel in active pipe */
-      if(module->enabled)
-	additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
-
-      /* add special group flag for favorite */
-      if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
-	additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
-
-      /* if module is the current, always expand it */
-      if (m == module)
-        gtk_expander_set_expanded(m->expander, TRUE);
-      else if((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, module->groups()|additional_flags)))
-        gtk_expander_set_expanded(m->expander, FALSE);
-
-      iop = g_list_next(iop);
-    }
-
-    /* prevent expander to handle the button press because we alread did :) */
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static void
-dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
-{
-  GtkExpander *expander = GTK_EXPANDER (object);
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  GtkWidget *content = gtk_widget_get_parent(module->widget);
-  if (gtk_expander_get_expanded (expander))
-  {
-    gtk_widget_show(content);
-    // Hack: in views/darkroom.c we use gtk_widget_show_all() which also shows the to be hidden blend box when entering darkroom mode.
-    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
-    if(bd != NULL && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->enable)) == FALSE)
-      gtk_widget_hide(GTK_WIDGET(bd->box));
-
-    // register to receive draw events
-    dt_iop_request_focus(module);
- 
-    for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
-      dt_ui_container_focus_widget(darktable.gui->ui, k, module->topwidget);
-
-    /* we need to redraw because iop might have post expose */
-    dt_control_queue_redraw_center();
-  }
-  else
-  {
-    if(module->dev->gui_module == module)
-    {
-      dt_iop_request_focus(NULL);
-      dt_control_queue_redraw_center();
-    }
-    gtk_widget_hide(content);
-  }
-}
-
 static void
 dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 {
@@ -866,7 +777,7 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
   memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_gui_update(module);
-  if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module, TRUE);
+  dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
 static void
@@ -877,26 +788,8 @@ _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpoint
   gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
   gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
-  (*x)+=w-requisition.width;
+  
   (*y)+=GTK_WIDGET(data)->allocation.height;
-}
-
-static gboolean
-popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
-{
-  if(event->button == 1)
-  {
-    dt_iop_request_focus(module);
-    return TRUE;
-  }
-  else if(event->button == 3)
-  {
-    dt_gui_presets_popup_menu_show_for_module(module);
-    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, event->button, event->time);
-    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
-    return TRUE;
-  }
-  return FALSE;
 }
 
 static void
@@ -911,27 +804,55 @@ popup_callback(GtkButton *button, dt_iop_module_t *module)
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
-  if(darktable.develop->gui_module)
+
+  /* lets loose the focus of previous focus module*/
+  if (darktable.develop->gui_module)
   {
-    if(darktable.develop->gui_module->gui_focus) darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
-    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
+    if (darktable.develop->gui_module->gui_focus) 
+      darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
+
+    gtk_widget_set_state(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_NORMAL);
+
+  //    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
+
+    /*
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
-    if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+
+    if (off) 
+      gtk_widget_set_state(off, 
+			   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? 
+			   GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    */
+
     if (darktable.develop->gui_module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
+
     dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
   }
+
   darktable.develop->gui_module = module;
+
+  /* set the focus on module */
   if(module)
   {
-    gtk_widget_set_state(module->topwidget, GTK_STATE_SELECTED);
-    gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
+    gtk_widget_set_state(dt_iop_gui_get_pluginui(module), GTK_STATE_SELECTED);
+      
+    //gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
+
+    /*
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
-    if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    if (off) 
+      gtk_widget_set_state(off, 
+			   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? 
+			   GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    */
     if (module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
+
     dt_accel_connect_locals_iop(module);
-    if(module->gui_focus) module->gui_focus(module, TRUE);
+
+    if(module->gui_focus) 
+      module->gui_focus(module, TRUE);
   }
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
@@ -973,55 +894,123 @@ _blendop_opacity_callback (GtkDarktableSlider *slider, _iop_gui_blend_data_t *da
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+/*
+ * NEW EXPANDER
+ */
 
-GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
+void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
 {
-  char name[1024];
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  snprintf(name, 1024, "%s%s",module->name(),(module->flags() & IOP_FLAGS_DEPRECATED)?_(" (deprecated)"):"");
-  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)name));
-  // gamma is always needed for display (down to uint8_t)
-  // colorin/colorout are essential for La/Lb/L conversion.
-  if(!module->hide_enable_button)
+  if(!module->expander) return;
+
+  /* update expander arrow state */
+  GtkWidget *icon;
+  GtkWidget *header = gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),0)));
+  GtkWidget *pluginui = dt_iop_gui_get_widget(module);
+  gint flags = CPF_DIRECTION_DOWN;
+
+  /* get arrow icon widget */
+  icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
+  if(!expanded)
+    flags=CPF_DIRECTION_LEFT;
+ 
+  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
+
+  /* show / hide plugin widget */
+  if (expanded) 
   {
-    GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-    gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
-    char tooltip[512];
-    snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
-    g_signal_connect (G_OBJECT (button), "toggled",
-                      G_CALLBACK (dt_iop_gui_off_callback), module);
-    module->off = button;
+    /* show plugin ui */
+    gtk_widget_show(pluginui);
+
+    /* ensure that blending widgets are show as the should */
+    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+    if (bd != NULL && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->enable)) == FALSE)
+      gtk_widget_hide(GTK_WIDGET(bd->box));
+
+    /* set this module to receive focus / draw events*/
+    dt_iop_request_focus(module);
+
+    /* focus the current module */
+    for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
+      dt_ui_container_focus_widget(darktable.gui->ui, k, module->expander);
+    
+    /* redraw center, iop might have post expose */
+    dt_control_queue_redraw_center();
+
   }
   else
   {
-    GtkWidget *w = gtk_expander_get_label_widget (module->expander);
-    gtk_misc_set_padding(GTK_MISC(w), 13, 0);
+    gtk_widget_hide(pluginui);
+
+    if(module->dev->gui_module == module)
+    {
+      dt_iop_request_focus(NULL);
+      dt_control_queue_redraw_center();
+    }
   }
 
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  module->reset_button = GTK_WIDGET(resetbutton);
-  GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  module->presets_button = GTK_WIDGET(presetsbutton);
-  gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
-  gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-  g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
-  g_object_set(G_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
-  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
-  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
+  /* store expanded state of module */
+  char var[1024];
+  snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
+  dt_conf_set_bool(var, gtk_widget_get_visible(pluginui));
 
-  /* add module widget to container */
-  GtkWidget * iopw = gtk_vbox_new(FALSE,4);
-  gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
+}
 
+static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  GtkWidget *pluginui = dt_iop_gui_get_widget(module);
 
+  if (e->button == 1) 
+  {
+    /* handle shiftclick on expander, hide all except this */
+    if ((e->state & GDK_SHIFT_MASK))
+    {
+      int current_group = dt_dev_modulegroups_get(module->dev);
+      GList *iop = g_list_first(module->dev->iop);
+      while (iop)
+	{
+	  dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+	  uint32_t additional_flags=0;
+	  
+	  /* add special group flag for moduel in active pipe */
+	  if(module->enabled)
+	    additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
+	  
+	  /* add special group flag for favorite */
+	  if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
+	    additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+	  
+	  /* if module is the current, always expand it */
+	  if (m == module)
+	    dt_iop_gui_set_expanded(m, TRUE);
+	  else if ((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+	    dt_iop_gui_set_expanded(m, FALSE);
+	  
+	  iop = g_list_next(iop);
+	  
+	}
+    }
+    else
+    {
+      /* else just toggle */
+      dt_iop_gui_set_expanded(module, !gtk_widget_get_visible(pluginui));
+    }
+
+    return TRUE;
+  }
+  else if (e->button == 3)
+  {
+    dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+
+    return TRUE;
+  }
+  return FALSE;
+}
+
+void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
+{
   /* create and add blend mode if module supports it */
   if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
   {
@@ -1088,29 +1077,121 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_box_pack_end(GTK_BOX(iopw), btb,TRUE,TRUE,0);
     
   }
+}
 
-  /* add the iopw widget to aligment widget */
+GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
+{
+  int bs = 12;
+  char tooltip[512];
+  GtkWidget *expander = gtk_vbox_new(FALSE, 3);
+  GtkWidget *header_evb = gtk_event_box_new();
+  GtkWidget *header = gtk_hbox_new(FALSE, 0);
+  GtkWidget *pluginui_frame = gtk_frame_new(NULL);
+  GtkWidget *pluginui = gtk_event_box_new();
+
+  gtk_widget_set_name(pluginui,"dt-plugin-ui");
+
+  module->header = header;
+
+  /* steup the header box */
+  gtk_container_add(GTK_CONTAINER(header_evb), header);
+  g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_iop_plugin_header_button_press), module);
+
+  /* setup plugin content frame */
+  gtk_frame_set_shadow_type(GTK_FRAME(pluginui_frame),GTK_SHADOW_IN);
+  gtk_container_add(GTK_CONTAINER(pluginui_frame),pluginui);
+
+  /* layout the main expander widget */
+  gtk_box_pack_start(GTK_BOX(expander), header_evb, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(expander), pluginui_frame, TRUE, FALSE,0);
+
+  /*
+   * initialize the header widgets
+   */
+  int idx = 0;
+  GtkWidget *hw[6]={NULL,NULL,NULL,NULL,NULL,NULL};
+
+  /* add the expand indicator icon */
+  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+  
+  /* add module label */
+  char label[128];
+  g_snprintf(label,128,"<span size=\"larger\">%s</span>",module->name());
+  hw[idx] = gtk_label_new("");
+  gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
+
+  /* add reset button */
+  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  module->reset_button = GTK_WIDGET(hw[idx]);
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("reset parameters"), (char *)NULL);
+  g_signal_connect (G_OBJECT (hw[idx]), "clicked",
+		    G_CALLBACK (dt_iop_gui_reset_callback), module);  
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+  
+
+  /* add preset button if module has implementation */
+  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  module->presets_button = GTK_WIDGET(hw[idx]);
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("presets"), (char *)NULL);
+  g_signal_connect (G_OBJECT (hw[idx]), "clicked", G_CALLBACK (popup_callback), module);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
+  /* add enabled button spacer */
+  hw[idx] = gtk_fixed_new();
+  gtk_widget_set_no_show_all(hw[idx],TRUE);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
+  /* add enabled button */
+  hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  gtk_widget_set_no_show_all(hw[idx],TRUE);
+  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
+  g_signal_connect (G_OBJECT (hw[idx]), "toggled",
+		    G_CALLBACK (dt_iop_gui_off_callback), module);  
+  module->off = DTGTK_TOGGLEBUTTON(hw[idx]);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
+ 
+  /* reorder header, for now, iop are always int right panel */
+  for(int i=5;i>=0;i--)
+    if (hw[i])
+      gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
+  gtk_misc_set_alignment(GTK_MISC(hw[1]),1.0,0.5);
+  dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);    
+
+  /* add the blending ui if supported */
+  GtkWidget * iopw = gtk_vbox_new(FALSE,4);
+  gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
+  dt_iop_gui_init_blending(iopw,module);
+  
+
+  /* add module widtget into an alignment */
+  GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 8);
+  gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), iopw);
-  gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
+
+  gtk_widget_hide_all(pluginui);
+  
+  module->expander = expander;
+
+  /* update header */
+  _iop_gui_update_header(module);
 
 
-  g_signal_connect (G_OBJECT (resetbutton), "clicked",
-                    G_CALLBACK (dt_iop_gui_reset_callback), module);
-  g_signal_connect (G_OBJECT (presetsbutton), "clicked",
-                    G_CALLBACK (popup_callback), module);
-  g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
-                    G_CALLBACK (dt_iop_gui_expander_callback), module);
-  gtk_expander_set_spacing(module->expander, 10);
-  gtk_widget_hide_all(al);
-  gtk_expander_set_expanded(module->expander, FALSE);
-  GtkWidget *evb = gtk_event_box_new();
-  gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
-  gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
+  return module->expander;
+}
 
-  gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
-  g_signal_connect(G_OBJECT(module->expander), "button-press-event", G_CALLBACK(expander_button_callback), module);
-  return evb;
+GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)
+{
+  return gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),1)))));
+}
+
+GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
+{
+  return gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),1)));
 }
 
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
@@ -1229,8 +1310,14 @@ FC(const int row, const int col, const unsigned int filters)
  * resamping is done via bilateral filtering and respecting the input mosaic pattern.
  */
 void
-dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-                                        const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+dt_iop_clip_and_zoom_demosaic_half_size(
+    float *out,
+    const uint16_t *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -1296,7 +1383,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
           const uint16_t p3 = in[i   + in_stride*(j + 1)];
           const uint16_t p4 = in[i+1 + in_stride*(j + 1)];
 
-          if (!((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)))
+          if (!((pc >= 60000) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) >= 60000)))
           {
             sum = _mm_add_epi32(sum, _mm_set_epi32(0,p4,p3+p2,p1));
             num++;
@@ -1317,6 +1404,90 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 #endif
 }
 
+void
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters,
+    const float clip)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f/roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = round(px_footprint/2);
+
+  // move p to point to an rggb block:
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx+1, filters) != 1) trggbx ++;
+  if(FC(trggby, trggbx,   filters) != 0)
+  {
+    trggbx = (trggbx + 1)&1;
+    trggby ++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    float *outc = out + 4*(out_stride*y);
+
+    float fy = (y + roi_out->y)*px_footprint;
+    int py = (int)fy & ~1;
+    py = MIN(((roi_in->height-4) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
+
+    float fx = roi_out->x*px_footprint;
+      
+    for(int x=0; x<roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      fx += px_footprint;
+      int px = (int)fx & ~1;
+      px = MIN(((roi_in->width -4) & ~1u), px) + rggbx;
+
+      int maxi = MIN(((roi_in->width -3)&~1u)+rggbx, px+2*samples);
+
+      int num = 0;
+
+      const int idx = px + in_stride*py;
+      const float pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
+
+      // 2x2 blocks in the middle of sampling region
+      __m128 sum = _mm_setzero_ps();
+
+      for(int j=py; j<=maxj; j+=2)
+        for(int i=px; i<=maxi; i+=2)
+        {
+          const float p1 = in[i   + in_stride*j];
+          const float p2 = in[i+1 + in_stride*j];
+          const float p3 = in[i   + in_stride*(j + 1)];
+          const float p4 = in[i+1 + in_stride*(j + 1)];
+
+          if (!((pc >= clip) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) >= clip)))
+          {
+            sum = _mm_add_ps(sum, _mm_set_ps(0,p4,p3+p2,p1));
+            num++;
+          }
+        }
+
+      col = _mm_mul_ps(sum, _mm_div_ps(_mm_set_ps(0.0f,1.0f,0.5f,1.0f),_mm_set1_ps(num)));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
+
+#if 0 // very fast, but doesn't handle highlights:
 void
 dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
     const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
@@ -1493,6 +1664,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   }
   _mm_sfence();
 }
+#endif
 
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {
@@ -1615,7 +1787,7 @@ static void show_module_callback(GtkAccelGroup *accel_group,
 
   // FIXME
   //dt_gui_iop_modulegroups_switch(module->groups());
-  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
+  dt_iop_gui_set_expanded(module, TRUE);
   dt_iop_request_focus(module);
 }
 

@@ -19,7 +19,7 @@
 
 header=$(cat << EOF
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- created with darktable utility scritps, http://darktable.sf.net/ -->
+<!-- created with darktable utility scritps, http://www.darktable.org/ -->
 
 <svg
    xmlns:svg="http://www.w3.org/2000/svg"

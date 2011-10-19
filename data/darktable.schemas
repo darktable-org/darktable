@@ -87,8 +87,20 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>small thumbnails to keep in main memory cache</short>
-        <long>how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts,
-              these get fewer by size. only read at startup.</long>
+        <long>how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts, these get fewer by size. only read at startup.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/mipmap_cache_full_images</key>
+      <applyto>/apps/darktable/mipmap_cache_full_images</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>10</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>maximum number of full resolution image buffers</short>
+        <long>how many full resolution image buffers to keep in main memory at maximum. only read at startup.</long>
       </locale>
     </schema>
 
@@ -665,28 +677,28 @@
       </locale>
     </schema>
 
-    <schema>
-      <key>/schemas/apps/darktable/plugins/filmstrip/size</key>
-      <applyto>/apps/darktable/plugins/filmstrip/size</applyto>
-      <owner>darktable</owner>
-      <type>float</type>
-      <default>0.15</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
     <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/plugins/filmstrip/on</key>
-      <applyto>/apps/darktable/plugins/filmstrip/on</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/filmstrip/visible</key>
+      <applyto>/apps/darktable/plugins/lighttable/filmstrip/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>enable filmstrip in darkroom mode</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/filmstrip/height</key>
+      <applyto>/apps/darktable/plugins/lighttable/filmstrip/height</applyto>
+      <owner>darktable</owner>
+      <type>120</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>height of filmstrip</short>
         <long></long>
       </locale>
     </schema>
@@ -2001,6 +2013,32 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/clipping/custom_aspect</key>
+      <applyto>/apps/darktable/plugins/darkroom/clipping/custom_aspect</applyto>
+      <owner>darktable</owner>
+      <type>float</type>
+      <default>1.5</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>last chosen custom aspect ratio</short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/clipping/aspect_preset</key>
+      <applyto>/apps/darktable/plugins/darkroom/clipping/aspect_preset</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>last chosen aspect ratio preset</short>
         <long></long>
       </locale>
     </schema>

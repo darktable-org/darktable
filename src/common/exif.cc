@@ -130,11 +130,12 @@ int dt_exif_read(dt_image_t *img, const char* path)
     {
       img->exif_aperture = pos->toFloat ();
     }
-    /* Read ISO speed */
+    /* Read ISO speed - Nikon happens to return a pair for Lo and Hi modes */
     if ( (pos=Exiv2::isoSpeed(exifData) )
          != exifData.end() )
     {
-      img->exif_iso = pos->toFloat ();
+      int isofield = pos->count () > 1  ? 1 : 0;
+      img->exif_iso = pos->toFloat (isofield);
     }
 #if EXIV2_MINOR_VERSION>19
     /* Read focal length  */
@@ -606,6 +607,7 @@ void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len
 #undef TO_BINARY
 }
 
+// need a write lock on *img (non-const) to write stars (and soon color labels).
 int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_only)
 {
   try
@@ -711,12 +713,10 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     }
 
     int stars = 1;
-    int raw_params = -16711632;
-    int set = 0;
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"))) != xmpData.end() )
     {
       stars = (pos->toLong() == -1) ? 6 : pos->toLong();
-      set = 1;
+      img->flags = (img->flags & ~0x7) | (0x7 & stars);
     }
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Label"))) != xmpData.end() )
     {
@@ -731,19 +731,6 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         dt_colorlabels_set_label(img->id, 3);
       else if(label == "Purple")               // Is it really called like that in XMP files?
         dt_colorlabels_set_label(img->id, 4);
-    }
-    if ( (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.raw_params"))) != xmpData.end() )
-    {
-      raw_params = pos->toLong();
-      set = 1;
-    }
-    if (set)
-    {
-      // set in cache and write through.
-      *((int32_t *)&img->raw_params) = raw_params;
-      img->flags = (img->flags & ~0x7) | (0x7 & stars);
-      img->dirty = 1;
-      dt_image_cache_flush_no_sidecars(img);
     }
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
     {
@@ -925,17 +912,6 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     // actually nobody's interested in that if the file doesn't exist:
     // std::string s(e.what());
     // std::cerr << "[exiv2] " << s << std::endl;
-
-    // legacy fallback:
-    char dtfilename[1024];
-    g_strlcpy(dtfilename, filename, 1024);
-    char *c = dtfilename + strlen(dtfilename);
-    while(c > dtfilename && *c != '.') c--;
-    sprintf(c, ".dttags");
-    if(!history_only) dt_imageio_dttags_read(img, dtfilename);
-    sprintf(c, ".dt");
-    dt_imageio_dt_read(img->id, dtfilename);
-    return 0;
   }
   return 0;
 }
@@ -1114,7 +1090,7 @@ void dt_exif_init()
   // Exiv2::LogMsg::setLevel(Exiv2::LogMsg::error);
 
   Exiv2::XmpParser::initialize();
-  Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
+  Exiv2::XmpProperties::registerNs("http://www.darktable.org/", "darktable");
 }
 
 void dt_exif_cleanup()

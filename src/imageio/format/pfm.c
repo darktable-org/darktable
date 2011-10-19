@@ -24,58 +24,6 @@
 
 DT_MODULE(1)
 
-#if 0
-dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename)
-{
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".pfm", 4) && strncmp(ext, ".PFM", 4) && strncmp(ext, ".Pfm", 4)) return DT_IMAGEIO_FILE_CORRUPTED;
-  FILE *f = fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
-  int ret = 0;
-  int cols = 3;
-  char head[2] = {'X', 'X'};
-  ret = fscanf(f, "%c%c\n", head, head+1);
-  if(ret != 2 || head[0] != 'P') goto error_corrupt;
-  if(head[1] == 'F') cols = 3;
-  else if(head[1] == 'f') cols = 1;
-  else goto error_corrupt;
-  ret = fscanf(f, "%d %d\n%*[^\n]\n", &img->width, &img->height);
-  if(ret != 2) goto error_corrupt;
-
-  if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error_cache_full;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
-  if(cols == 3) ret = fread(img->pixels, 3*sizeof(float), img->width*img->height, f);
-  else for(int j=0; j < img->height; j++)
-      for(int i=0; i < img->width; i++)
-      {
-        ret = fread(img->pixels + 3*(img->width*j + i), sizeof(float), 1, f);
-        img->pixels[3*(img->width*j + i) + 2] =
-          img->pixels[3*(img->width*j + i) + 1] =
-            img->pixels[3*(img->width*j + i) + 0];
-      }
-  // repair nan/inf etc
-  for(int i=0; i < img->width*img->height*3; i++) img->pixels[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
-  float *line = (float *)malloc(sizeof(float)*3*img->width);
-  for(int j=0; j < img->height/2; j++)
-  {
-    memcpy(line,                                         img->pixels + img->width*j*3,                 3*sizeof(float)*img->width);
-    memcpy(img->pixels + img->width*j*3,                 img->pixels + img->width*(img->height-1-j)*3, 3*sizeof(float)*img->width);
-    memcpy(img->pixels + img->width*(img->height-1-j)*3, line,                                         3*sizeof(float)*img->width);
-  }
-  free(line);
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
-  return DT_IMAGEIO_OK;
-
-error_corrupt:
-  fclose(f);
-  return DT_IMAGEIO_FILE_CORRUPTED;
-error_cache_full:
-  fclose(f);
-  return DT_IMAGEIO_CACHE_FULL;
-}
-#endif
-
 int write_image (dt_imageio_module_data_t *pfm, const char *filename, const float *in, void *exif, int exif_len, int imgid)
 {
   int status = 0;

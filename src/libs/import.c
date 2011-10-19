@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/film.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
@@ -348,17 +349,15 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
     {
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
-      dt_image_t *img = dt_image_cache_get(id, 'r');
-      dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
-      if(!buf)
+      dt_mipmap_buffer_t buf;
+      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+      if(!buf.buf)
       {
-        dt_image_cache_release(img, 'r');
-        dt_control_log(_("file `%s' has unknown format!"), img->filename);
+        dt_control_log(_("file has unknown format!"));
       }
       else
       {
-        dt_image_release(img, DT_IMAGE_FULL, 'r');
-        dt_image_cache_release(img, 'r');
+        dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
         DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
         dt_ctl_switch_mode_to(DT_DEVELOP);
       }

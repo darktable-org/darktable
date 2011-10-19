@@ -30,6 +30,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_darktable_t
 {
+  cairo_surface_t *image;
 }
 dt_lib_darktable_t;
 
@@ -87,10 +88,15 @@ void gui_init(dt_lib_module_t *self)
   int panel_width = dt_conf_get_int("panel_width");
   gtk_widget_set_size_request(self->widget, panel_width*2, 48);
 
+  /* create a cairo surface of dt icon */
+  d->image = cairo_image_surface_create_from_png(DARKTABLE_DATADIR"/pixmaps/idbutton.png");
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
+  cairo_surface_destroy(d->image);
   g_free(self->data);
   self->data = NULL;
 }
@@ -99,6 +105,9 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
+
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
   
@@ -107,6 +116,12 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   /* fill background */ 
   cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
   cairo_paint(cr);
+
+  /* paint icon image */
+  cairo_set_source_surface(cr, d->image, 0, 10);
+  cairo_rectangle(cr,0,0,48,48);
+  cairo_fill(cr);
+
 
   /* create a pango layout and print fancy  name/version string */
   PangoLayout *layout;
@@ -117,14 +132,14 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   
   pango_layout_set_text (layout,PACKAGE_NAME,-1);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
-  cairo_move_to (cr, 5.0, 5.0);
+  cairo_move_to (cr, 42.0, 5.0);
   pango_cairo_show_layout (cr, layout);
 
   /* print version */
   pango_font_description_set_absolute_size (style->font_desc, 10 * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc);
   pango_layout_set_text (layout,PACKAGE_VERSION,-1);
-  cairo_move_to (cr, 7.0, 36.0);
+  cairo_move_to (cr, 44.0, 36.0);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
   pango_cairo_show_layout (cr, layout);
 
@@ -149,7 +164,7 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, tobias ellinghaus et al. 2009-2011");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
-  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://darktable.sf.net/");
+  gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://www.darktable.org/");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
   const char *authors[] =
     {

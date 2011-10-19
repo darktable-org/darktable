@@ -459,7 +459,6 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
     dt_cleanup();
     gtk_main_quit();
   }
- 
   return TRUE;
 }
 
@@ -654,6 +653,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   if (!g_thread_supported ()) g_thread_init(NULL);
   gdk_threads_init();
+
   gdk_threads_enter();
 
   gtk_init (&argc, &argv);
@@ -1086,11 +1086,18 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
     case DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT:
       gtk_box_pack_end(GTK_BOX(ui->containers[c]),w,FALSE,FALSE,0);
       break;
+
+    /* if box is center we want it to fill as much as it can */
+    case DT_UI_CONTAINER_PANEL_TOP_CENTER:
+    case DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER:
+    case DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER:
+    case DT_UI_CONTAINER_PANEL_BOTTOM:
+      gtk_box_pack_start(GTK_BOX(ui->containers[c]),w,TRUE,TRUE,0);
+      break;
+
     default:
     {
-      /* add specialcase where we want widget added to panel to fill */
-      gboolean fill = c==DT_UI_CONTAINER_PANEL_BOTTOM?TRUE:FALSE;
-      gtk_box_pack_start(GTK_BOX(ui->containers[c]),w,fill,fill,0);
+      gtk_box_pack_start(GTK_BOX(ui->containers[c]),w,FALSE,FALSE,0);
     }  break;
   }
   gtk_widget_show_all(w);
@@ -1215,7 +1222,6 @@ static GtkWidget * _ui_init_panel_container_top(GtkWidget *container)
 
 static GtkWidget * _ui_init_panel_container_center(GtkWidget *container, gboolean left)
 {
-
   GtkWidget *widget;
   GtkAdjustment *a[4];
 
@@ -1387,15 +1393,15 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 
   /* adding the center bottom left toolbox */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT] = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT], TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT], TRUE, TRUE, 10);
   
   /* adding the center box */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER], FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER], FALSE, TRUE, 10);
 
   /* adding the right toolbox */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT], TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT], TRUE, TRUE, 10);
 
 }
 

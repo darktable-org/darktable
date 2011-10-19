@@ -219,10 +219,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
   }
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   dt_pthread_mutex_unlock(&dev->history_mutex);
-  if(pipe == dev->preview_pipe)
-    dt_dev_pixelpipe_get_dimensions(pipe, dev, dev->mipf_exact_width, dev->mipf_exact_height, &pipe->processed_width, &pipe->processed_height);
-  else
-    dt_dev_pixelpipe_get_dimensions(pipe, dev, pipe->iwidth, pipe->iheight, &pipe->processed_width, &pipe->processed_height);
+  dt_dev_pixelpipe_get_dimensions(pipe, dev, pipe->iwidth, pipe->iheight, &pipe->processed_width, &pipe->processed_height);
 }
 
 // TODO:
@@ -241,7 +238,7 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   {
     // first input.
     // mipf and non-raw images have 4 floats per pixel
-    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || dev->image->filters == 0) return 4*sizeof(float);
+    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !(dev->image->flags & DT_IMAGE_RAW)) return 4*sizeof(float);
     else return dev->image->bpp;
   }
   return module->output_bpp(module, pipe, piece);
@@ -302,7 +299,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
   // if image has changed, stop now.
   if(pipe == dev->pipe && dev->image_force_reload) return 1;
   if(pipe == dev->preview_pipe && dev->preview_loading) return 1;
-  if(pipe == dev->preview_pipe && pipe->input != dev->image->mipf) return 1;
   if(dev->gui_leaving) return 1;
 
 

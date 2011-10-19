@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
+    copyright (c) 2010-2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +38,10 @@ typedef struct dt_camera_t
 
   /** Camera configuration cache */
   CameraWidget *configuration;
+
+  /** Registered timeout func */  
+  CameraTimeoutFunc timeout;
+
   gboolean config_changed;
   dt_pthread_mutex_t config_lock;
   /** This camera/device can import images. */
@@ -63,6 +67,9 @@ typedef struct dt_camera_t
 
   /** gphoto2 camera pointer */
   Camera *gpcam;
+
+  /** gphoto2 context */
+  GPContext *gpcontext;
 }
 dt_camera_t;
 

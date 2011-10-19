@@ -157,6 +157,32 @@ static void _message_func_dispatch(GPContext *context, const char *format, va_li
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 message: %s\n",buffer);
 }
 
+
+static gboolean _camera_timeout_job(gpointer data)
+{
+  dt_camera_t *cam = (dt_camera_t *)data;
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Calling timeout func for camera 0x%x.\n",cam);
+  cam->timeout(cam->gpcam, cam->gpcontext);
+  return TRUE;
+}
+
+static int _camera_start_timeout_func(Camera *c,unsigned int timeout,CameraTimeoutFunc func, void *data)
+{
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] start timeout %d seconds for camera 0x%x requested by driver.\n",timeout,data);
+  dt_camera_t *cam = (dt_camera_t*)data;
+  cam->timeout = func;
+  return g_timeout_add_seconds(timeout, _camera_timeout_job, cam);
+}
+
+static void _camera_stop_timeout_func(Camera *c, int id,void *data)
+{
+  dt_camera_t *cam = (dt_camera_t*)data;
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] Removing timeout %d for camera 0x%x.\n",id,cam);
+  g_source_remove(id);
+  cam->timeout = NULL;
+}
+
+
 void _camera_add_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job)
 {
   dt_camera_t *cam=(dt_camera_t *)camera;
@@ -494,6 +520,14 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     // read a full copy of config to configuration cache
     gp_camera_get_config( cam->gpcam, &cam->configuration, c->gpcontext );
 
+    // initialize timeout callbacks eg. keep alive, some cameras needs it.
+    cam->gpcontext = camctl->gpcontext;
+    gp_camera_set_timeout_funcs(cam->gpcam, 
+				(CameraTimeoutStartFunc)_camera_start_timeout_func,
+				(CameraTimeoutStopFunc)_camera_stop_timeout_func,
+				cam);
+
+
     dt_pthread_mutex_init(&cam->jobqueue_lock, NULL);
 
     dt_print(DT_DEBUG_CAMCTL,"[camera_control] device %s on port %s initialized\n", cam->model,cam->port);
@@ -712,6 +746,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam,gboolean
       camctl->active_camera=camera;
       camera->is_tethering=TRUE;
       pthread_create(&camctl->camera_event_thread, NULL, &_camera_event_thread, (void *)c);
+
     }
     else
     {
@@ -963,7 +998,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
         {
           // Property change event occured on camera
           // let's update cache and signalling
-	  dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event, lets update internal configuration cache.");
+	  dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event, lets update internal configuration cache.\n");
           _camera_configuration_update(c,cam);
         }
       }

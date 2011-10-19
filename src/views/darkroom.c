@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,14 +23,17 @@
 #include "control/jobs.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "dtgtk/button.h"
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/styles.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "libs/colorpicker.h"
 
 #include <stdlib.h>
@@ -397,7 +401,6 @@ void reset(dt_view_t *self)
 
 int try_enter(dt_view_t *self)
 {
-  dt_develop_t *dev = (dt_develop_t *)self->data;
   int selected;
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
   if(selected < 0)
@@ -418,18 +421,20 @@ int try_enter(dt_view_t *self)
   }
 
   // this loads the image from db if needed:
-  dev->image = dt_image_cache_get(selected, 'r');
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, selected);
   // get image and check if it has been deleted from disk first!
   char imgfilename[1024];
-  dt_image_full_path(dev->image->id, imgfilename, 1024);
+  dt_image_full_path(img->id, imgfilename, 1024);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("image `%s' is currently unavailable"), dev->image->filename);
+    dt_control_log(_("image `%s' is currently unavailable"), img->filename);
     // dt_image_remove(selected);
-    dt_image_cache_release(dev->image, 'r');
-    dev->image = NULL;
+    dt_image_cache_read_release(darktable.image_cache, img);
     return 1;
   }
+  // and drop the lock again.
+  dt_image_cache_read_release(darktable.image_cache, img);
+  darktable.develop->image_storage.id = selected;
   return 0;
 }
 
@@ -462,7 +467,7 @@ static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 }
 
 static void
-dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
+dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 {
   // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(dev));
@@ -478,19 +483,13 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   dt_dev_write_history(dev);
 
   // be sure light table will update the thumbnail
-  if(dev->image)
+  // TODO: only if image changed!
+  // if()
   {
-    dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
-    dev->image->force_reimport = 1;
+    dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
+    dt_image_synch_xmp(dev->image->id);
   }
-  // release full buffer
-  if(dev->image && dev->image->pixels)
-    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
 
-  // writes the .xmp and the database:
-  dt_image_cache_flush(dev->image);
-
-  dev->image = image;
   while(dev->history)
   {
     // clear history of old image
@@ -498,6 +497,10 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     free( (dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
+
+  // get new image:
+  dt_dev_reload_image(dev, imgid);
+
   // make sure no signals propagate here:
   darktable.gui->reset = 1;
   GList *modules = g_list_last(dev->iop);
@@ -505,78 +508,13 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(strcmp(module->op, "gamma"))
-    {
-      char var[1024];
-      snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
-      dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
-      // remove widget:
-      GtkWidget *top = GTK_WIDGET(module->topwidget);
-      GtkWidget *exp = GTK_WIDGET(module->expander);
-      GtkWidget *shh = GTK_WIDGET(module->showhide);
-      GtkWidget *rsb = GTK_WIDGET(module->reset_button);
-      GtkWidget *psb = GTK_WIDGET(module->presets_button);
-      GtkWidget *parent = NULL;
-      g_object_get(G_OBJECT(module->widget), "parent", &parent, (char *)NULL);
-      // re-init and re-gui_init
-      module->gui_cleanup(module);
-      dt_dev_cleanup_module_accels(module);
-      gtk_widget_destroy(GTK_WIDGET(module->widget));
       dt_iop_reload_defaults(module);
-      module->gui_init(module);
-      module->accel_closures = NULL;
-      if(module->connect_key_accels)
-        module->connect_key_accels(module);
-      // copy over already inited stuff:
-      module->topwidget = top;
-      module->expander = GTK_EXPANDER(exp);
-      module->showhide = shh;
-      module->reset_button = rsb;
-      module->presets_button = psb;
-      dt_iop_connect_common_accels(module);
-      // reparent
-      gtk_container_add(GTK_CONTAINER(parent), module->widget);
-      gtk_widget_show_all(module->topwidget);
-      // all the signal handlers get passed module*, which is still valid.
-    }
+
     modules = g_list_previous(modules);
   }
 
-  // hack: now hide all custom expander widgets again.
-  modules = dev->iop;
-  while(modules)
-  {
-    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(strcmp(module->op, "gamma"))
-    {
-      char option[1024];
-      snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
-      gboolean active = dt_conf_get_bool (option);
-      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
-      gboolean favorite = dt_conf_get_bool (option);
-      gint state=0;
-      if(active)
-      {
-        state++;
-        if(favorite) state++;
-      }
-
-      if(module->showhide)
-        dtgtk_tristatebutton_set_state(DTGTK_TRISTATEBUTTON(module->showhide),state);
-
-      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-      active = dt_conf_get_bool (option);
-      gtk_expander_set_expanded (module->expander, active);
-    }
-    else
-    {
-      gtk_widget_hide_all(GTK_WIDGET(module->topwidget));
-    }
-    modules = g_list_next(modules);
-  }
-  dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
   dt_dev_read_history(dev);
   dt_dev_pop_history_items(dev, dev->history_end);
-  dt_dev_raw_reload(dev);
 
   // make signals work again:
   darktable.gui->reset = 0;
@@ -595,6 +533,10 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     }
     g_free(active_plugin);
   }
+
+  /* last set the group to update visibility of iop modules for new pipe */
+  dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
+
 }
 
 static void
@@ -603,12 +545,9 @@ film_strip_activated(const int imgid, void *data)
   // switch images in darkroom mode:
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  dt_image_t *image = dt_image_cache_get(imgid, 'r');
-  dt_dev_change_image(dev, image);
-  // release image struct with metadata.
-  dt_image_cache_release(dev->image, 'r');
+  dt_dev_change_image(dev, imgid);
   // select newly loaded image
-  select_this_image(dev->image->id);
+  select_this_image(imgid);
   // force redraw
   dt_control_queue_redraw();
   // prefetch next few from first selected image on.
@@ -632,7 +571,6 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
   {
     int orig_imgid = -1, imgid = -1;
     sqlite3_stmt *stmt;
-    dt_image_t *image;
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -662,11 +600,9 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
         return;
       }
 
-      image = dt_image_cache_get(imgid, 'r');
-      dt_dev_change_image(dev, image);
-      dt_image_cache_release(dev->image, 'r');
-      select_this_image(dev->image->id);
-      dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image->id);
+      dt_dev_change_image(dev, imgid);
+      select_this_image(imgid);
+      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid);
 
     }
     sqlite3_finalize(stmt);
@@ -751,8 +687,52 @@ static void skip_b_key_accel_callback(GtkAccelGroup *accel_group,
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
 {
-  fprintf(stderr,"Pipe finished, lets redraw!!!\n");
   dt_control_queue_redraw();
+}
+
+static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_data)
+{
+  /* create favorites menu and popup */
+  dt_gui_favorite_presets_menu_show();
+  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
+  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+}
+
+static void _darkroom_ui_apply_style_activate_callback(gchar *name)
+{
+  dt_control_log(_("applied style `%s' on current image"),name);
+  dt_styles_apply_to_image (name, FALSE, darktable.develop->image->id);
+  dt_dev_reload_image(darktable.develop, darktable.develop->image->id);
+}
+
+static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
+{
+  /* show styles popup menu */
+  GList *styles = dt_styles_get_list("");
+  GtkWidget *menu = NULL;
+  if(styles)
+  {
+    menu= gtk_menu_new();
+    do
+    {
+      dt_style_t *style=(dt_style_t *)styles->data;
+      GtkWidget *mi=gtk_menu_item_new_with_label(style->name);
+      gtk_menu_append (GTK_MENU (menu), mi);
+      gtk_signal_connect_object (GTK_OBJECT (mi), "activate",
+                                 GTK_SIGNAL_FUNC (_darkroom_ui_apply_style_activate_callback),
+                                 (gpointer) g_strdup (style->name));
+      gtk_widget_show (mi);
+    }
+    while ((styles=g_list_next(styles))!=NULL);
+  }
+
+  /* if we got any styles, lets popup menu for selection */
+  if (menu)
+  {
+    gtk_menu_popup (GTK_MENU(menu), NULL, NULL, NULL, NULL,
+                    0, 0);
+  }
+  else dt_control_log(_("no styles have been created yet"));
 }
 
 void enter(dt_view_t *self)
@@ -765,6 +745,9 @@ void enter(dt_view_t *self)
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
+  dev->gui_leaving = 0;
+  dev->gui_module = NULL;
+
   select_this_image(dev->image->id);
 
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
@@ -772,15 +755,39 @@ void enter(dt_view_t *self)
   DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
 
-  dev->gui_leaving = 0;
-  dev->gui_module = NULL;
-  dt_dev_load_image(dev, dev->image);
+  // take a copy of the image struct for convenience.
+  dt_dev_load_image(darktable.develop, dev->image->id);
+
+  /*
+   * Add view specific tool buttons
+   */
+
+  /* create favorite plugin preset popup tool */
+  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
+               (char *)NULL);
+  g_signal_connect (G_OBJECT (favorite_presets), "clicked",
+                    G_CALLBACK (_darkroom_ui_favorite_presets_popupmenu),
+                    NULL);
+  dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets);
 
   /* add IOP modules to plugin list */
 
+  /* create quick styles popup menu tool */
+  GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT);
+  g_signal_connect (G_OBJECT (styles), "clicked", 
+		    G_CALLBACK (_darkroom_ui_apply_style_popupmenu),
+		    NULL);
+  g_object_set (G_OBJECT (styles), "tooltip-text", _("quick access for applying any of your styles"), 
+		(char *)NULL);
+  dt_view_manager_view_toolbox_add(darktable.view_manager, styles);
+
+  /* 
+   * add IOP modules to plugin list 
+   */
   // avoid triggering of events before plugin is ready:
   darktable.gui->reset = 1;
-
+  char option[1024];
   GList *modules = g_list_last(dev->iop);
   while(modules)
   {
@@ -789,7 +796,6 @@ void enter(dt_view_t *self)
     
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
-    module->topwidget = GTK_WIDGET(expander);
     module->accel_closures = NULL;
     if(module->connect_key_accels)
       module->connect_key_accels(module);
@@ -797,6 +803,9 @@ void enter(dt_view_t *self)
 
     dt_ui_container_add_widget(darktable.gui->ui,
                                DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+
+    snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+    dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
 
     modules = g_list_previous(modules);
   }
@@ -806,7 +815,6 @@ void enter(dt_view_t *self)
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_INITIALIZE);
 
   // synch gui and flag gegl pipe as dirty
-  // FIXME: this assumes static pipeline as well
   // this is done here and not in dt_read_history, as it would else be triggered before module->gui_init.
   dt_dev_pop_history_items(dev, dev->history_end);
 
@@ -878,10 +886,12 @@ void leave(dt_view_t *self)
   dt_dev_write_history(dev);
 
   // be sure light table will regenerate the thumbnail:
-  if(dev->image)
+  // TODO: only if changed!
+  // if()
   {
-    dt_dev_get_processed_size(dev, &dev->image->output_width, &dev->image->output_height);
-    dev->image->force_reimport = 1;
+    dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
+    // dump new xmp data
+    dt_image_synch_xmp(dev->image->id);
   }
 
   // clear gui.
@@ -903,11 +913,6 @@ void leave(dt_view_t *self)
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
-    // printf("removing module %d - %s\n", module->instance, module->op);
-    char var[1024];
-    snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
-    dt_conf_set_bool(var, gtk_expander_get_expanded (module->expander));
-
     module->gui_cleanup(module);
     dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;
@@ -918,13 +923,6 @@ void leave(dt_view_t *self)
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
-  // release full buffer
-  if(dev->image->pixels)
-    dt_image_release(dev->image, DT_IMAGE_FULL, 'r');
-
-  // release image struct with metadata as well.
-  dt_image_cache_flush(dev->image);
-  dt_image_cache_release(dev->image, 'r');
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 

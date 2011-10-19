@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 # Add files for libdarktable
 #
 FILE(GLOB SOURCE_FILES
+  "common/cache.c"
   "common/collection.c" 
   "common/colorlabels.c" 
   "common/colormatrices.c" 
@@ -26,6 +27,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_tiff.c" 
   "common/imageio_rawspeed.cc" 
   "common/metadata.c" 
+  "common/mipmap_cache.c"
   "common/styles.c" 
   "common/tags.c" 
   "common/utility.c" 
@@ -248,11 +250,11 @@ else()
 	set(MARCH "-mtune=generic")
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse ${MARCH} -g")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse -g")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse ${MARCH} -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
   
 
@@ -353,9 +355,9 @@ set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
-if(APPLE && USE_OPENCL)
+if(APPLE AND USE_OPENCL)
 set_target_properties(darktable PROPERTIES LINK_FLAGS -Wl,-syslibroot,/Developer-old/SDKs/MacOSX10.6.sdk)
-endif(APPLE)
+endif(APPLE AND USE_OPENCL)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
 

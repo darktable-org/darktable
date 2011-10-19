@@ -621,8 +621,8 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
   cairo_t *cr = cairo_create(cst);
 
   /* clear background */
-  GtkStateType state = gtk_widget_get_state(self->topwidget);
-  GtkStyle *style = gtk_widget_get_style(self->topwidget);
+  GtkStateType state = gtk_widget_get_state(self->expander);
+  GtkStyle *style = gtk_widget_get_style(self->expander);
   cairo_set_source_rgb (cr, style->bg[state].red/65535.0, style->bg[state].green/65535.0, style->bg[state].blue/65535.0);
   cairo_paint (cr);
 

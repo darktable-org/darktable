@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010 Tobias Ellinghaus.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "dtgtk/slider.h"
+#include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -260,6 +262,13 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static void _iop_overexposed_quickbutton(GtkWidget *w, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  gtk_button_clicked(GTK_BUTTON(self->off));
+
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data                   = malloc(sizeof(dt_iop_overexposed_gui_data_t));
@@ -288,6 +297,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->lower), "value-changed", G_CALLBACK (lower_callback), self);
   g_signal_connect (G_OBJECT (g->upper), "value-changed", G_CALLBACK (upper_callback), self);
+
+  /* add quicktool button for enable/disable the plugin */
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("toggle over/under exposed inidication"),
+               (char *)NULL);
+  g_signal_connect (G_OBJECT (button), "clicked",
+                    G_CALLBACK (_iop_overexposed_quickbutton),
+                    self);
+  dt_view_manager_module_toolbox_add(darktable.view_manager, button);
+
+
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

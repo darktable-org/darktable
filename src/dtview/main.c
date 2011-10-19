@@ -243,9 +243,7 @@ process_next_image()
   if(id)
   {
     // get image from cache
-    dt_image_t *img = dt_image_cache_get(id, 'r');
-    dt_imageio_export(img, "unused", &buf, &dat);
-    dt_image_cache_release(img, 'r');
+    dt_imageio_export(id, "unused", &buf, &dat);
   }
   return 0;
 }

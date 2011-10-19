@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
     copyright (c) 2011 Henrik Andersson.
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -333,12 +333,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
       if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
         id = sqlite3_column_int(lib->statements.main_query, 0);
-        dt_image_t *image = dt_image_cache_get(id, 'r');
-        if (iir == 1 && row)
-        {
-          dt_image_cache_release(image, 'r');
-          continue;
-        }
+        if (iir == 1 && row) continue;
         // set mouse over id
         if(seli == col && selj == row)
         {
@@ -352,12 +347,12 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           {
             /* clear selection if no modifier is being held */
 
-	    /* clear and reset statment */
-	    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
-	    DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
-	    
-	    /* reuse statement */
-	    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
+            /* clear and reset statment */
+            DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
+            DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg);
+
+            /* reuse statement */
+            DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
             sqlite3_step(lib->statements.delete_except_arg);
           }
           // Step 1: If this is the clicked cell, toggle it
@@ -384,9 +379,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         }
         cairo_save(cr);
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-        dt_view_image_expose(image, &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
+        dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery);
         cairo_restore(cr);
-        dt_image_cache_release(image, 'r');
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
@@ -396,12 +390,9 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   // End of loop; do post-loop update
   if (clicked1) lib->last_selected_idx = selidx;
 
-#if 1
-  /*
-   * FIXME: Is this really a good place to do this ? 
-   *        seems better to do this in paralell and
-   *        not on every expose event of lighttable...
-   */
+  // launch prefetching.
+  // cost should be only what you see here, actual loading is done in a separate thread
+  // through the job system:
 
   /* clear and reset main query */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -420,17 +411,20 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   while(imgids_num > 0)
   {
     imgids_num --;
-    dt_image_t *image = dt_image_cache_get(imgids[imgids_num], 'r');
-    if(image)
-    {
-      int32_t iwd, iht;
-      float imgwd = iir == 1 ? 0.97 : 0.8;
-      dt_image_buffer_t mip = dt_image_get_matching_mip_size(image, imgwd*wd, imgwd*(iir==1?height:ht), &iwd, &iht);
-      dt_image_prefetch(image, mip);
-      dt_image_cache_release(image, 'r');
-    }
+    dt_mipmap_buffer_t buf;
+    float imgwd = iir == 1 ? 0.97 : 0.8;
+    dt_mipmap_size_t mip = 
+      dt_mipmap_cache_get_matching_size(
+          darktable.mipmap_cache, 
+          imgwd*wd, imgwd*(iir==1?height:ht));
+
+    dt_mipmap_cache_read_get(
+        darktable.mipmap_cache,
+        &buf,
+        imgids[imgids_num],
+        mip,
+        DT_MIPMAP_PREFETCH);
   }
-#endif
 
 failure:
 
@@ -626,7 +620,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
       if(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
       {
         id = sqlite3_column_int(lib->statements.main_query, 0);
-        dt_image_t *image = dt_image_cache_get(id, 'r');
 
         // set mouse over id
         if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row))
@@ -670,9 +663,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         }
         cairo_save(cr);
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-        dt_view_image_expose(image, &(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
+        dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery);
         cairo_restore(cr);
-        dt_image_cache_release(image, 'r');
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
@@ -704,14 +696,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     lib->image_over = DT_VIEW_DESERT;
     cairo_set_source_rgb (cr, .1, .1, .1);
     cairo_paint(cr);
-    dt_image_t *image = dt_image_cache_get(lib->full_preview_id, 'r');
-    if( image )
-    {
-      // dt_image_prefetch(image, DT_IMAGE_MIPF);
-      const float wd = width/1.0;
-      dt_view_image_expose(image, &(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
-      dt_image_cache_release(image, 'r');
-    }
+    // dt_image_prefetch(image, DT_IMAGE_MIPF);
+    const float wd = width/1.0;
+    dt_view_image_expose(&(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
   }
   else // we do pass on expose to manager or zoomable
   {
@@ -800,8 +787,8 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          dt_image_t *image = dt_image_cache_get(sqlite3_column_int(stmt, 0), 'r');
-          image->dirty = 1;
+          const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, sqlite3_column_int(stmt, 0));
+          dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
           if(num == 666 || num == DT_VIEW_DESERT) image->flags &= ~0xf;
           else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
           else
@@ -809,15 +796,15 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
             image->flags &= ~0x7;
             image->flags |= num;
           }
-          dt_image_cache_flush(image);
-          dt_image_cache_release(image, 'r');
+          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+          dt_image_cache_read_release(darktable.image_cache, cimg);
         }
         sqlite3_finalize(stmt);
       }
       else
       {
-        dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-        image->dirty = 1;
+        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+        dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
         if(num == 666 || num == DT_VIEW_DESERT) image->flags &= ~0xf;
         else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
         else
@@ -825,8 +812,8 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
           image->flags &= ~0x7;
           image->flags |= num;
         }
-        dt_image_cache_flush(image);
-        dt_image_cache_release(image, 'r');
+        dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_read_release(darktable.image_cache, cimg);
       }
       dt_control_queue_redraw_center();
       break;
@@ -971,9 +958,9 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
       {
         int32_t mouse_over_id;
         DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-        dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+        dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
         if(!image) return 0;
-        image->dirty = 1;
         if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
         else if(lib->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
         else
@@ -981,8 +968,8 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
           image->flags &= ~0x7;
           image->flags |= lib->image_over;
         }
-        dt_image_cache_flush(image);
-        dt_image_cache_release(image, 'r');
+        dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+        dt_image_cache_read_release(darktable.image_cache, image);
         break;
       }
       default:

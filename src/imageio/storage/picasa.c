@@ -945,7 +945,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
   close(fd);
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   caption = g_path_get_basename( img->filename );
 
   (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
@@ -955,9 +955,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   {
     description = desc->data;
   }
+  dt_image_cache_read_release(darktable.image_cache, img);
 
-  dt_imageio_export(img, fname, format, fdata);
-  dt_image_cache_release(img, 'r');
+  dt_imageio_export(imgid, fname, format, fdata);
 
   // Open the temp file and read image to memory
   GMappedFile *imgfile = g_mapped_file_new(fname,FALSE,NULL);
