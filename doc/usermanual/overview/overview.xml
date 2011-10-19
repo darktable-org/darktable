@@ -7,7 +7,7 @@
 		</keywordset>
 	</chapterinfo>
 	<title>Overview</title>
-	<para>Darktable is an application to manage and develop your digital images.</para>
+	<para>darktable is an application to manage and develop your digital images.</para>
 	<para>It is fully non-destructive and works on a 32 bit floating point format per channel. 
 			Most of the actions on the pixelpipe are done in CIELab.</para>
 
@@ -25,7 +25,7 @@
 					<colspec colwidth='5cm'/>
 					<tbody>
 						<row>						
-							<entry>This section describes the layout of the user interface. You can change Darktable contrast by using <emphasis>f7</emphasis> and  <emphasis>f8</emphasis>.
+							<entry>This section describes the layout of the user interface. You can change darktable contrast by using <emphasis>f7</emphasis> and  <emphasis>f8</emphasis>.
 							</entry>
 							<entry>
 								<!--<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />-->
@@ -36,7 +36,7 @@
 			</informaltable>
 		
 		<sect2 status="final"><title>Views</title>
-			<para>Darktable consists of several views also mentioned as modes. For the time being, there are three available views as described 
+			<para>darktable consists of several views also mentioned as modes. For the time being, there are three available views as described 
 				in this section. The current view is identified by the label at the top of the right panel.
 				Some key accelerators, allowing to access the different views, are described in the table below:
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -87,19 +87,19 @@
 
 	</sect1>
 	
-	<sect1 status="final"><title>Darktable basic workflow</title>
+	<sect1 status="final"><title>darktable basic workflow</title>
 		<sect2 status="draft"><title>Importing images</title>
-			<para>To begin with Darktable, you first need to import images. You can either import
+			<para>To begin with darktable, you first need to import images. You can either import
 					from your filesystem or from your camera if supported.</para>
 			<para>In the left panel you will find the import module, here you have the choice to import either a single image or a folder,
-					Darktable will analyse its content, detect images that is already imported and only import new images.
+					darktable will analyse its content, detect images that is already imported and only import new images.
 			</para>
 		</sect2>
 				
 		<sect2 status="draft"><title>Importing from camera</title>
 			<sect3><title>Introduction</title>
 				<para>Connect your camera to your system and if you distribution tries to automount it, select the option to abort the mount operation
-					otherwise the camera will be locked and not accessible from within Darktable.</para>
+					otherwise the camera will be locked and not accessible from within darktable.</para>
 
 				<para>In the left panel of lighttable view you have the import pane and if your don't see your camera there you need to hit the
 					scan for devices button. Your camera will then appear in same pane with additional actions: import and tethering.</para>
@@ -132,7 +132,7 @@
 				</para>
 				
 				<para>
-					Darktables ships with a bunch of modules and each of them is arranged into groups named modules groups, these module groups are accessed
+					darktables ships with a bunch of modules and each of them is arranged into groups named modules groups, these module groups are accessed
 					as toggle buttons in the right panel just under the histogram.
 					There are also to special module groups named active and favorites, were active will show only modules enabled in history for the current image and
 					favorites will only show modules selected as favorite by you, this is done in the "more plugins" at bottom of left panel, just click your favorite module
@@ -168,7 +168,7 @@
 		<sect2 status="draft"><title>Exporting images</title>
 			<para>Your changes to an image is not saved as in a regular image editor darktable is a non destructive editor which means all your changes are stored in a database and the orginal image is untouched and therefor you need to export your images to get an "image" file to distribute with your special processing.</para>
 			<para>Images are exported from lighttable and is done using the export module in right panel, export means in general, save my developed RAW image as an jpeg.</para>
-			<para>The export is also modularized into storage and format. Darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more, 
+			<para>The export is also modularized into storage and format. darktable is shipping several storage modules such as save on disk, picasa and flickr webalbum and more, 
 				format modules is the actual image formats such as jpeg,png,tiff,openexr and more.
 			</para>
 			<para>Select images on your lighttable that you want to export, then choose your target storage and format to use and set the maximum width and height image restraint, this means that none of the images will be bigger than any of the width/height restraint. Leave the width and height restraint as zero value if you want orginal resolution and hit the export button.

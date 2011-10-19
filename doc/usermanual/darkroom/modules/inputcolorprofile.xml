@@ -18,7 +18,7 @@
 
 	<sect3><title>Usage</title>
 		<sect4><title>intent</title>
-			<para>Set intent to use for input profile. As a reminder, the intent is the way Darktable will deal with out-of-gamut colors.						
+			<para>Set intent to use for input profile. As a reminder, the intent is the way darktable will deal with out-of-gamut colors.						
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
 					<tbody>
@@ -46,7 +46,7 @@
 			</para>
 		</sect4>
 		<sect4><title>profile</title>
-			<para>Choose the color matrix to apply. Darktable offers many widespread profile along with an enhanced matrix processed by Darktable team in order to provide a look close to the manufacturer one.
+			<para>Choose the color matrix to apply. darktable offers many widespread profile along with an enhanced matrix processed by darktable team in order to provide a look close to the manufacturer one.
 			</para>
 		</sect4>
 	</sect3>

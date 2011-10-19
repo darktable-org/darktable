@@ -4,7 +4,7 @@
 <tbody>
 <row>
 <entry>
-&lt;Darktable&gt;/capture/toggle film strip
+&lt;darktable&gt;/capture/toggle film strip
 </entry>
 <entry>
 &lt;Control&gt;f
@@ -12,7 +12,7 @@
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/export
+&lt;darktable&gt;/darkroom/export
 </entry>
 <entry>
 &lt;Control&gt;e
@@ -20,7 +20,7 @@
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/image back
+&lt;darktable&gt;/darkroom/image back
 </entry>
 <entry>
 BackSpace
@@ -28,7 +28,7 @@ BackSpace
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/image forward
+&lt;darktable&gt;/darkroom/image forward
 </entry>
 <entry>
 space
@@ -36,7 +36,7 @@ space
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/plugins/clipping/commit
+&lt;darktable&gt;/darkroom/plugins/clipping/commit
 </entry>
 <entry>
 Return
@@ -44,7 +44,7 @@ Return
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/plugins/clipping/undo
+&lt;darktable&gt;/darkroom/plugins/clipping/undo
 </entry>
 <entry>
 &lt;Control&gt;z
@@ -52,7 +52,7 @@ Return
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/plugins/colorout/toggle softproofing
+&lt;darktable&gt;/darkroom/plugins/colorout/toggle softproofing
 </entry>
 <entry>
 s
@@ -60,7 +60,7 @@ s
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/toggle film strip
+&lt;darktable&gt;/darkroom/toggle film strip
 </entry>
 <entry>
 &lt;Control&gt;f
@@ -68,7 +68,7 @@ s
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/zoom/close-up
+&lt;darktable&gt;/darkroom/zoom/close-up
 </entry>
 <entry>
 &lt;Alt&gt;1
@@ -76,7 +76,7 @@ s
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/zoom/fill
+&lt;darktable&gt;/darkroom/zoom/fill
 </entry>
 <entry>
 &lt;Alt&gt;2
@@ -84,7 +84,7 @@ s
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/darkroom/zoom/fit
+&lt;darktable&gt;/darkroom/zoom/fit
 </entry>
 <entry>
 &lt;Alt&gt;3
@@ -92,7 +92,7 @@ s
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/color/blue
+&lt;darktable&gt;/film strip/color/blue
 </entry>
 <entry>
 F4
@@ -100,7 +100,7 @@ F4
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/color/green
+&lt;darktable&gt;/film strip/color/green
 </entry>
 <entry>
 F3
@@ -108,7 +108,7 @@ F3
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/color/purple
+&lt;darktable&gt;/film strip/color/purple
 </entry>
 <entry>
 F5
@@ -116,7 +116,7 @@ F5
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/color/red
+&lt;darktable&gt;/film strip/color/red
 </entry>
 <entry>
 F1
@@ -124,7 +124,7 @@ F1
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/color/yellow
+&lt;darktable&gt;/film strip/color/yellow
 </entry>
 <entry>
 F2
@@ -132,7 +132,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/history/copy
+&lt;darktable&gt;/film strip/history/copy
 </entry>
 <entry>
 &lt;Control&gt;c
@@ -140,7 +140,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/history/discard
+&lt;darktable&gt;/film strip/history/discard
 </entry>
 <entry>
 &lt;Control&gt;d
@@ -148,7 +148,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/history/paste
+&lt;darktable&gt;/film strip/history/paste
 </entry>
 <entry>
 &lt;Control&gt;v
@@ -156,7 +156,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/rating/1
+&lt;darktable&gt;/film strip/rating/1
 </entry>
 <entry>
 1
@@ -164,7 +164,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/rating/2
+&lt;darktable&gt;/film strip/rating/2
 </entry>
 <entry>
 2
@@ -172,7 +172,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/rating/3
+&lt;darktable&gt;/film strip/rating/3
 </entry>
 <entry>
 3
@@ -180,7 +180,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/rating/4
+&lt;darktable&gt;/film strip/rating/4
 </entry>
 <entry>
 4
@@ -188,7 +188,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/rating/5
+&lt;darktable&gt;/film strip/rating/5
 </entry>
 <entry>
 5
@@ -196,7 +196,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/rating/desert
+&lt;darktable&gt;/film strip/rating/desert
 </entry>
 <entry>
 0
@@ -204,7 +204,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/rating/reject
+&lt;darktable&gt;/film strip/rating/reject
 </entry>
 <entry>
 r
@@ -212,7 +212,7 @@ r
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/scroll back
+&lt;darktable&gt;/film strip/scroll back
 </entry>
 <entry>
 Left
@@ -220,7 +220,7 @@ Left
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/film strip/scroll forward
+&lt;darktable&gt;/film strip/scroll forward
 </entry>
 <entry>
 Right
@@ -228,7 +228,7 @@ Right
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/capture view
+&lt;darktable&gt;/global/capture view
 </entry>
 <entry>
 t
@@ -236,7 +236,7 @@ t
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/darkroom view
+&lt;darktable&gt;/global/darkroom view
 </entry>
 <entry>
 d
@@ -244,7 +244,7 @@ d
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/decrease brightness
+&lt;darktable&gt;/global/decrease brightness
 </entry>
 <entry>
 F9
@@ -252,7 +252,7 @@ F9
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/decrease contrast
+&lt;darktable&gt;/global/decrease contrast
 </entry>
 <entry>
 F7
@@ -260,7 +260,7 @@ F7
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/increase brightness
+&lt;darktable&gt;/global/increase brightness
 </entry>
 <entry>
 F10
@@ -268,7 +268,7 @@ F10
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/increase contrast
+&lt;darktable&gt;/global/increase contrast
 </entry>
 <entry>
 F8
@@ -276,7 +276,7 @@ F8
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/leave fullscreen
+&lt;darktable&gt;/global/leave fullscreen
 </entry>
 <entry>
 Escape
@@ -284,7 +284,7 @@ Escape
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/lighttable view
+&lt;darktable&gt;/global/lighttable view
 </entry>
 <entry>
 l
@@ -292,7 +292,7 @@ l
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/quit
+&lt;darktable&gt;/global/quit
 </entry>
 <entry>
 &lt;Control&gt;q
@@ -300,7 +300,7 @@ l
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/switch view
+&lt;darktable&gt;/global/switch view
 </entry>
 <entry>
 period
@@ -308,7 +308,7 @@ period
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/toggle fullscreen
+&lt;darktable&gt;/global/toggle fullscreen
 </entry>
 <entry>
 F11
@@ -316,7 +316,7 @@ F11
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/global/toggle side borders
+&lt;darktable&gt;/global/toggle side borders
 </entry>
 <entry>
 Tab
@@ -324,7 +324,7 @@ Tab
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/color/blue
+&lt;darktable&gt;/lighttable/color/blue
 </entry>
 <entry>
 F4
@@ -332,7 +332,7 @@ F4
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/color/green
+&lt;darktable&gt;/lighttable/color/green
 </entry>
 <entry>
 F3
@@ -340,7 +340,7 @@ F3
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/color/purple
+&lt;darktable&gt;/lighttable/color/purple
 </entry>
 <entry>
 F5
@@ -348,7 +348,7 @@ F5
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/color/red
+&lt;darktable&gt;/lighttable/color/red
 </entry>
 <entry>
 F1
@@ -356,7 +356,7 @@ F1
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/color/yellow
+&lt;darktable&gt;/lighttable/color/yellow
 </entry>
 <entry>
 F2
@@ -364,7 +364,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/navigate/down
+&lt;darktable&gt;/lighttable/navigate/down
 </entry>
 <entry>
 &lt;Shift&gt;g
@@ -372,7 +372,7 @@ F2
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/navigate/page down
+&lt;darktable&gt;/lighttable/navigate/page down
 </entry>
 <entry>
 Page_Down
@@ -380,7 +380,7 @@ Page_Down
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/navigate/page up
+&lt;darktable&gt;/lighttable/navigate/page up
 </entry>
 <entry>
 Page_Up
@@ -388,7 +388,7 @@ Page_Up
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/navigate/up
+&lt;darktable&gt;/lighttable/navigate/up
 </entry>
 <entry>
 g
@@ -396,7 +396,7 @@ g
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/plugins/image/delete from disk
+&lt;darktable&gt;/lighttable/plugins/image/delete from disk
 </entry>
 <entry>
 
@@ -404,7 +404,7 @@ g
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/plugins/image/remove from collection
+&lt;darktable&gt;/lighttable/plugins/image/remove from collection
 </entry>
 <entry>
 Delete
@@ -412,7 +412,7 @@ Delete
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/preview
+&lt;darktable&gt;/lighttable/preview
 </entry>
 <entry>
 z
@@ -420,7 +420,7 @@ z
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/rating/1
+&lt;darktable&gt;/lighttable/rating/1
 </entry>
 <entry>
 1
@@ -428,7 +428,7 @@ z
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/rating/2
+&lt;darktable&gt;/lighttable/rating/2
 </entry>
 <entry>
 2
@@ -436,7 +436,7 @@ z
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/rating/3
+&lt;darktable&gt;/lighttable/rating/3
 </entry>
 <entry>
 3
@@ -444,7 +444,7 @@ z
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/rating/4
+&lt;darktable&gt;/lighttable/rating/4
 </entry>
 <entry>
 4
@@ -452,7 +452,7 @@ z
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/rating/5
+&lt;darktable&gt;/lighttable/rating/5
 </entry>
 <entry>
 5
@@ -460,7 +460,7 @@ z
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/rating/desert
+&lt;darktable&gt;/lighttable/rating/desert
 </entry>
 <entry>
 0
@@ -468,7 +468,7 @@ z
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/rating/reject
+&lt;darktable&gt;/lighttable/rating/reject
 </entry>
 <entry>
 r
@@ -476,7 +476,7 @@ r
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/scroll/center
+&lt;darktable&gt;/lighttable/scroll/center
 </entry>
 <entry>
 apostrophe
@@ -484,7 +484,7 @@ apostrophe
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/scroll/down
+&lt;darktable&gt;/lighttable/scroll/down
 </entry>
 <entry>
 Down
@@ -492,7 +492,7 @@ Down
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/scroll/left
+&lt;darktable&gt;/lighttable/scroll/left
 </entry>
 <entry>
 Left
@@ -500,7 +500,7 @@ Left
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/scroll/right
+&lt;darktable&gt;/lighttable/scroll/right
 </entry>
 <entry>
 Right
@@ -508,7 +508,7 @@ Right
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/scroll/up
+&lt;darktable&gt;/lighttable/scroll/up
 </entry>
 <entry>
 Up
@@ -516,7 +516,7 @@ Up
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/zoom/in
+&lt;darktable&gt;/lighttable/zoom/in
 </entry>
 <entry>
 &lt;Alt&gt;2
@@ -524,7 +524,7 @@ Up
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/zoom/max
+&lt;darktable&gt;/lighttable/zoom/max
 </entry>
 <entry>
 &lt;Alt&gt;1
@@ -532,7 +532,7 @@ Up
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/zoom/min
+&lt;darktable&gt;/lighttable/zoom/min
 </entry>
 <entry>
 &lt;Alt&gt;4
@@ -540,7 +540,7 @@ Up
 </row>
 <row>
 <entry>
-&lt;Darktable&gt;/lighttable/zoom/out
+&lt;darktable&gt;/lighttable/zoom/out
 </entry>
 <entry>
 &lt;Alt&gt;3

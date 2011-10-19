@@ -7,7 +7,7 @@
 					<row>						
 						<entry>This module is used to denoise high iso pictures.
 							It is flagged as a slow module due to its high resources consumption.
-							Depending of your hardware, this module can currently slow down Darktable or even crash it.
+							Depending of your hardware, this module can currently slow down darktable or even crash it.
 							Quite counter-intuitively, the greater the values for sliders, the lesser resources.
 						</entry>
 						<entry>
