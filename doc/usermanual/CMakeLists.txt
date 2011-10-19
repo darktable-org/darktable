@@ -141,7 +141,9 @@ if(can_build_usermanual)
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wp/index.html.php
 		COMMAND xsltproc  --stringparam chunker.output.encoding UTF-8 --stringparam base.dir ${CMAKE_CURRENT_BINARY_DIR}/wp/ xsl/darktable_html.xsl ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i s/${binary_path}\\/media\\///g {} \;
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<html>.*<\/head>/<?php define('WP_USE_THEMES', false);require('\.\.\/wp-config\.php'); ?>/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<html>.*<title>/<?php define('WP_USE_THEMES', false);require('\.\.\/wp-config\.php'); add_filter('wp_title', 'set_title_page'); function set_title_page(){echo '/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<\/title>.*<\/head>/ | user manual | ';}?>/g" {} \;
+
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<body[^>]*>/<?php get_header(); ?><div id=\"primary\"><div id=\"content\" role=\"main\"><div class=\"usermanual\">/g" {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<\/body><\/html>/<\/div><\/div><\/div><?php get_footer(); ?>/g" {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/\.html/\.html\.php/g" {} \;
