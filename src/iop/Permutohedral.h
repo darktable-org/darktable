@@ -156,8 +156,6 @@ private:
   /* Grows the size of the hash table */
   void grow()
   {
-    printf("Resizing hash table from %zd to %zd\n", capacity, 2*capacity);
-
     size_t oldCapacity = capacity;
     capacity *= 2;
     capacity_bits = (capacity_bits << 1) | 1;
