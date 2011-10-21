@@ -520,9 +520,6 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
 
-  // make signals work again:
-  darktable.gui->reset = 0;
-
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   if(active_plugin)
@@ -537,6 +534,9 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
     }
     g_free(active_plugin);
   }
+  // make signals work again, but only after focus event,
+  // to avoid crop/rotate for example to add another history item.
+  darktable.gui->reset = 0;
 }
 
 static void

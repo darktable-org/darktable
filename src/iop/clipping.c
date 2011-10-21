@@ -467,7 +467,8 @@ void gui_focus (struct dt_iop_module_t *self, gboolean in)
       uint32_t hack = *(uint32_t*)&p->cy;
       hack ++;
       p->cy = *(float *)&hack;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      if(!darktable.gui->reset)
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
     else
     {
