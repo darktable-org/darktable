@@ -1509,6 +1509,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 static void
 commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p)
 {
+  if(darktable.gui->reset) return;
   g->old_clip_x = g->clip_x;
   g->old_clip_y = g->clip_y;
   g->old_clip_w = g->clip_w;

@@ -408,6 +408,9 @@ static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 static void
 dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
 {
+  // get last active plugin, make sure focus out is called:
+  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
+  dt_iop_request_focus(NULL);
   // store last active group
   dt_conf_set_int("plugins/darkroom/groups", dt_gui_iop_modulegroups_get());
   // store last active plugin:
@@ -520,8 +523,6 @@ dt_dev_change_image(dt_develop_t *dev, dt_image_t *image)
   dt_dev_pop_history_items(dev, dev->history_end);
   dt_dev_raw_reload(dev);
 
-  // get last active plugin:
-  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   if(active_plugin)
   {
     modules = dev->iop;
