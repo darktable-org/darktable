@@ -16,21 +16,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
+#include "common/cache.h"
+
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
-#ifndef __STDC_FORMAT_MACROS
-// As per C99 standard, for getting all PRIxxx defined
-#define __STDC_FORMAT_MACROS
-#endif
 #include <inttypes.h>
 #include <assert.h>
 #include <sched.h>
 
 #include <sys/select.h>
-
-#include "common/darktable.h"
-#include "common/cache.h"
 
 // this implements a concurrent LRU cache using
 // a concurrent doubly linked list
@@ -1034,8 +1030,8 @@ void dt_cache_print(dt_cache_t *cache)
   for(int k=0;k<=cache->bucket_mask;k++)
   {
     if(cache->table[k].key != DT_CACHE_EMPTY_KEY)
-      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d and data %"PRIXPTR"\n",
-          k, (cache->table[k].key & 0x1fffffff)+1, cache->table[k].read, cache->table[k].write, (intptr_t)cache->table[k].data);
+      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d\n",
+          k, (cache->table[k].key & 0x1fffffff)+1, cache->table[k].read, cache->table[k].write);
     else
       fprintf(stderr, "[cache] bucket %d is empty with locks r %d w %d\n",
           k, cache->table[k].read, cache->table[k].write);
@@ -1046,8 +1042,8 @@ void dt_cache_print(dt_cache_t *cache)
   while(curr >= 0)
   {
     if(cache->table[curr].key != DT_CACHE_EMPTY_KEY)
-      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d and data %"PRIXPTR"\n",
-          curr, (cache->table[curr].key & 0x1fffffff)+1, cache->table[curr].read, cache->table[curr].write, (intptr_t)cache->table[curr].data);
+      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d\n",
+          curr, (cache->table[curr].key & 0x1fffffff)+1, cache->table[curr].read, cache->table[curr].write);
     else
     {
       fprintf(stderr, "[cache] bucket %d is empty with locks r %d w %d\n",
