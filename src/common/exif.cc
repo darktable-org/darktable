@@ -1090,7 +1090,8 @@ void dt_exif_init()
   // Exiv2::LogMsg::setLevel(Exiv2::LogMsg::error);
 
   Exiv2::XmpParser::initialize();
-  Exiv2::XmpProperties::registerNs("http://www.darktable.org/", "darktable");
+  // this has te stay with the old url (namespace already propagated outside dt)
+  Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
 }
 
 void dt_exif_cleanup()
