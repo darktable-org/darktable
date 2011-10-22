@@ -95,7 +95,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-  const float amount = (d->amount*0.01)*0.5;
+  const float amount = (d->amount*0.01);
   
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out) schedule(static)
@@ -106,10 +106,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int l=0;l<(roi_out->width*ch);l+=ch)
     {
       /* saturation weight 0 - 1 */
-      float sw = (fabs(in[offs + l + 1]/128.0) + fabs(in[offs + l + 2]/128.0)) * 0.5;
-      float ls = 1.0 - (amount * sw);
-      /* use half affection of sw*/
-      float ss = (1.0 + ((amount * sw)*0.5));
+      float sw = 1.0 - fabs(-1 + (fabs(in[offs + l + 1]/128.0) + fabs(in[offs + l + 2]/128.0)));
+      float ls = 1.0 - ((amount * sw)*.25);
+      float ss = 1.0 + (amount * sw);
       out[offs + l + 0] = in[offs + l + 0] * ls;
       out[offs + l + 1] = in[offs + l + 1] * ss;
       out[offs + l + 2] = in[offs + l + 2] * ss;
@@ -168,7 +167,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_vibrance_params_t tmp = (dt_iop_vibrance_params_t)
   {
-    100
+    25
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_vibrance_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_vibrance_params_t));
