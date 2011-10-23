@@ -501,6 +501,8 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_image_synch_xmp(dev->image->id);
   }
 
+  select_this_image(imgid);
+
   while(dev->history)
   {
     // clear history of old image
@@ -546,6 +548,9 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
   darktable.gui->reset = 0;
+
+  // prefetch next few from first selected image on.
+  dt_view_filmstrip_prefetch();
 }
 
 static void
@@ -555,12 +560,8 @@ film_strip_activated(const int imgid, void *data)
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_change_image(dev, imgid);
-  // select newly loaded image
-  select_this_image(imgid);
   // force redraw
   dt_control_queue_redraw();
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,gpointer user_data)
@@ -610,7 +611,6 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       }
 
       dt_dev_change_image(dev, imgid);
-      select_this_image(imgid);
       dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid);
 
     }
@@ -862,6 +862,9 @@ void enter(dt_view_t *self)
 			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
 			    G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
 			    self);
+
+  // prefetch next few from first selected image on.
+  dt_view_filmstrip_prefetch();
 }
 
 void leave(dt_view_t *self)
