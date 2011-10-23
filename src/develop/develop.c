@@ -41,8 +41,7 @@
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev,0,sizeof(dt_develop_t));
-  float downsampling = dt_conf_get_float ("preview_subsample");
-  dev->preview_downsampling = downsampling <= 1.0 && downsampling >= 0.1 ? downsampling : .5;
+  dev->preview_downsampling = 1.0f;
   dev->gui_module = NULL;
   dev->timestamp = 0;
   dev->gui_leaving = 0;

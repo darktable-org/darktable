@@ -362,7 +362,7 @@ dt_mipmap_cache_deallocate_dynamic(void *data, const uint32_t key, void *payload
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
   // FIXME: adjust numbers to be large enough to hold what mem limit suggests!
-  const uint32_t max_mem = 100*1024*1024;
+  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100*1024*1024, 2000*1024*1024)/5;
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
   int32_t ht = darktable.thumbnail_height;
@@ -411,7 +411,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
         thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
   }
   // full buffer needs dynamic alloc:
-  const int32_t max_mem_full = 500*1024*1024;
+  const int32_t max_mem_full = max_mem;
   // assume very small full buffers of 20MB to get slot count:
   const int32_t max_mem_bufs = max_mem_full/(20*1024*1024);
   dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, 8, 64, max_mem_full);
