@@ -41,8 +41,7 @@
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev,0,sizeof(dt_develop_t));
-  float downsampling = dt_conf_get_float ("preview_subsample");
-  dev->preview_downsampling = downsampling <= 1.0 && downsampling >= 0.1 ? downsampling : .5;
+  dev->preview_downsampling = 1.0f;
   dev->gui_module = NULL;
   dev->timestamp = 0;
   dev->gui_leaving = 0;
@@ -288,9 +287,8 @@ restart:
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
 
   scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0);
-  // TODO: make WINDOW_SIZE configurable for the user
-  dev->capwidth  = MIN(MIN(dev->width,  dev->pipe->processed_width *scale), DT_IMAGE_WINDOW_SIZE);
-  dev->capheight = MIN(MIN(dev->height, dev->pipe->processed_height*scale), DT_IMAGE_WINDOW_SIZE);
+  dev->capwidth  = MIN(MIN(dev->width,  dev->pipe->processed_width *scale), darktable.thumbnail_width);
+  dev->capheight = MIN(MIN(dev->height, dev->pipe->processed_height*scale), darktable.thumbnail_height);
   x = MAX(0, scale*dev->pipe->processed_width *(.5+zoom_x)-dev->capwidth/2);
   y = MAX(0, scale*dev->pipe->processed_height*(.5+zoom_y)-dev->capheight/2);
 
@@ -378,9 +376,8 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht)
 {
-  // TODO: make window size configurable!
-  wd = MIN(DT_IMAGE_WINDOW_SIZE, wd);
-  ht = MIN(DT_IMAGE_WINDOW_SIZE, ht);
+  wd = MIN(darktable.thumbnail_width, wd);
+  ht = MIN(darktable.thumbnail_height, ht);
   if(dev->width != wd || dev->height != ht)
   {
     dev->width  = wd;
@@ -637,6 +634,12 @@ void dt_dev_read_history(dt_develop_t *dev)
 
     GList *modules = dev->iop;
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
+    if(!opname)
+    {
+      fprintf(stderr, "[dev_read_history] database history for image `%s' seems to be corrupted!\n", dev->image->filename);
+      free(hist);
+      continue;
+    }
    
     hist->module = NULL;
     while(modules)

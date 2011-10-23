@@ -78,32 +78,6 @@
       </locale>
     </schema>
 
-    <schema>
-      <key>/schemas/apps/darktable/mipmap_cache_thumbnails</key>
-      <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>1000</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>small thumbnails to keep in main memory cache</short>
-        <long>how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts, these get fewer by size. only read at startup.</long>
-      </locale>
-    </schema>
-
-    <schema>
-      <key>/schemas/apps/darktable/mipmap_cache_full_images</key>
-      <applyto>/apps/darktable/mipmap_cache_full_images</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>10</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>maximum number of full resolution image buffers</short>
-        <long>how many full resolution image buffers to keep in main memory at maximum. only read at startup.</long>
-      </locale>
-    </schema>
-
     <schema><!--tab:core-->
       <key>/schemas/apps/darktable/parallel_export</key>
       <applyto>/apps/darktable/parallel_export</applyto>
@@ -245,19 +219,6 @@
       <locale name="C">
         <short>ask before deleting images</short>
         <long>always ask the user before any image file is deleted.</long>
-      </locale>
-    </schema>
-
-    <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/preview_subsample</key>
-      <applyto>/apps/darktable/preview_subsample</applyto>
-      <owner>darktable</owner>
-      <type>float</type>
-      <default>1.0</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>downsample the preview pixels</short>
-        <long>this value smaller than 1.0 downsamples the preview pixels in darkroom mode for faster feedback.</long>
       </locale>
     </schema>
 
@@ -704,15 +665,28 @@
     </schema>
     
     <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_size</key>
-      <applyto>/apps/darktable/plugins/lighttable/thumbnail_size</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_width</key>
+      <applyto>/apps/darktable/plugins/lighttable/thumbnail_width</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>800</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>maximum resolution of lighttable thumbnails</short>
-        <long>keep this value low for fast thumbnail creation (allowed: 160-1300)\n(needs a restart and will invalidate current thumbnail caches).</long>
+        <long>maximum lighttable resolution of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_height</key>
+      <applyto>/apps/darktable/plugins/lighttable/thumbnail_height</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>800</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>maximum resolution of lighttable thumbnails</short>
+        <long>maximum lighttable resolution of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
 

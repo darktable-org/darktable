@@ -106,6 +106,7 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
   const float size = fabsf(d->size);
+  if(size == 0) return;
   if(d->size < 0.0f)
   {
     // this means: relative to width and constant for height as well:

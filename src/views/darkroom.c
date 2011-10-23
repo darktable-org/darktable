@@ -97,18 +97,26 @@ void cleanup(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
 {
+  // startup-time conf parameter:
+  const int32_t capwd = darktable.thumbnail_width;
+  const int32_t capht = darktable.thumbnail_height;
   // if width or height > max pipeline pixels: center the view and clamp.
-  int32_t width  = MIN(width_i,  DT_IMAGE_WINDOW_SIZE);
-  int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
+  int32_t width  = MIN(width_i,  capwd);
+  int32_t height = MIN(height_i, capht);
 
   cairo_set_source_rgb (cri, .2, .2, .2);
-  cairo_rectangle(cri, 0, 0, fmaxf(0, width_i-DT_IMAGE_WINDOW_SIZE) *.5f, height);
+  cairo_save(cri);
+  cairo_set_fill_rule(cri, CAIRO_FILL_RULE_EVEN_ODD);
+  cairo_rectangle(cri, 0, 0, width_i, height_i);
+  cairo_rectangle(cri,
+      MAX(1.0, width_i -capwd) *.5f,
+      MAX(1.0, height_i-capht) *.5f,
+      MIN(width, width_i-1), MIN(height, height_i-1));
   cairo_fill (cri);
-  cairo_rectangle(cri, fmaxf(0.0, width_i-DT_IMAGE_WINDOW_SIZE) *.5f + width, 0, width_i, height);
-  cairo_fill (cri);
+  cairo_restore(cri);
 
-  if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
-  if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
+  if(width_i  > capwd) cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
+  if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
   cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -384,8 +392,8 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
   else if(dev->gui_module && dev->gui_module->gui_post_expose)
   {
-    if(width_i  > DT_IMAGE_WINDOW_SIZE) pointerx += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
-    if(height_i > DT_IMAGE_WINDOW_SIZE) pointery += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+    if(width_i  > capwd) pointerx += (capwd-width_i) *.5f;
+    if(height_i > capht) pointery += (capht-height_i)*.5f;
     dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
   }
 }
@@ -493,6 +501,8 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_image_synch_xmp(dev->image->id);
   }
 
+  select_this_image(imgid);
+
   while(dev->history)
   {
     // clear history of old image
@@ -538,6 +548,9 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
   darktable.gui->reset = 0;
+
+  // prefetch next few from first selected image on.
+  dt_view_filmstrip_prefetch();
 }
 
 static void
@@ -547,12 +560,8 @@ film_strip_activated(const int imgid, void *data)
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_change_image(dev, imgid);
-  // select newly loaded image
-  select_this_image(imgid);
   // force redraw
   dt_control_queue_redraw();
-  // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance,gpointer user_data)
@@ -602,7 +611,6 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       }
 
       dt_dev_change_image(dev, imgid);
-      select_this_image(imgid);
       dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid);
 
     }
@@ -854,6 +862,9 @@ void enter(dt_view_t *self)
 			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
 			    G_CALLBACK(_view_darkroom_filmstrip_activate_callback),
 			    self);
+
+  // prefetch next few from first selected image on.
+  dt_view_filmstrip_prefetch();
 }
 
 void leave(dt_view_t *self)
@@ -940,6 +951,8 @@ void mouse_leave(dt_view_t *self)
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
+  const int32_t capwd = darktable.thumbnail_width;
+  const int32_t capht = darktable.thumbnail_height;
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
@@ -955,8 +968,8 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   const int32_t width_i  = self->width;
   const int32_t height_i = self->height;
   int32_t offx = 0.0f, offy = 0.0f;
-  if(width_i  > DT_IMAGE_WINDOW_SIZE) offx =   (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
-  if(height_i > DT_IMAGE_WINDOW_SIZE) offy =   (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+  if(width_i  > capwd) offx = (capwd-width_i) *.5f;
+  if(height_i > capht) offy = (capht-height_i)*.5f;
   int handled = 0;
   x += offx;
   y += offy;
@@ -1017,11 +1030,13 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
+  const int32_t capwd = darktable.thumbnail_width;
+  const int32_t capht = darktable.thumbnail_height;
   dt_develop_t *dev = darktable.develop;
   const int32_t width_i  = self->width;
   const int32_t height_i = self->height;
-  if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
-  if(height_i > DT_IMAGE_WINDOW_SIZE) y += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+  if(width_i  > capwd) x += (capwd-width_i) *.5f;
+  if(height_i > capht) y += (capht-height_i)*.5f;
 
   int handled = 0;
   if(dev->gui_module && dev->gui_module->button_released) handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
@@ -1033,11 +1048,13 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
+  const int32_t capwd = darktable.thumbnail_width;
+  const int32_t capht = darktable.thumbnail_height;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t width_i  = self->width;
   const int32_t height_i = self->height;
-  if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
-  if(height_i > DT_IMAGE_WINDOW_SIZE) y += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+  if(width_i  > capwd) x += (capwd-width_i) *.5f;
+  if(height_i > capht) y += (capht-height_i)*.5f;
 
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick && which == 1)
@@ -1109,11 +1126,13 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
+  const int32_t capwd = darktable.thumbnail_width;
+  const int32_t capht = darktable.thumbnail_height;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t width_i  = self->width;
   const int32_t height_i = self->height;
-  if(width_i  > DT_IMAGE_WINDOW_SIZE) x += (DT_IMAGE_WINDOW_SIZE-width_i) *.5f;
-  if(height_i > DT_IMAGE_WINDOW_SIZE) y += (DT_IMAGE_WINDOW_SIZE-height_i)*.5f;
+  if(width_i  > capwd) x += (capwd-width_i) *.5f;
+  if(height_i > capht) y += (capht-height_i)*.5f;
 
   int handled = 0;
   if(dev->gui_module && dev->gui_module->scrolled) handled = dev->gui_module->scrolled(dev->gui_module, x, y, up, state);

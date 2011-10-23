@@ -413,10 +413,13 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_conf_init(darktable.conf, filename);
 
   // get max lighttable thumbnail size:
-  darktable.thumbnail_size = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_size"), 160, 1300);
+  darktable.thumbnail_width  = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_width"),  200, 3000);
+  darktable.thumbnail_height = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_height"), 200, 3000);
   // and make sure it can be mip-mapped all the way from mip4 to mip0
-  darktable.thumbnail_size /= 16;
-  darktable.thumbnail_size *= 16;
+  darktable.thumbnail_width  /= 16;
+  darktable.thumbnail_width  *= 16;
+  darktable.thumbnail_height /= 16;
+  darktable.thumbnail_height *= 16;
 
   // Initialize the password storage engine
   darktable.pwstorage=dt_pwstorage_new();

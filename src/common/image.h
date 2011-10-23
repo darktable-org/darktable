@@ -25,11 +25,6 @@
 #include <inttypes.h>
 #include "common/dtpthread.h"
 
-// how large would the average screen be (largest mip map size) ?
-// this is able to develop images on a 1920 monitor (-2*300 - 20 for the panels).
-// TODO: make this a default value in conf
-#define DT_IMAGE_WINDOW_SIZE 1300
-
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256
 // TODO: separate into path/filename and store 256 for filename

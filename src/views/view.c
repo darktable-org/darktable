@@ -737,7 +737,7 @@ dt_view_image_expose(
   if(buf.buf)
   {
     cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
-    cairo_set_source_surface (cr, surface, -1, -1);
+    cairo_set_source_surface (cr, surface, 0, 0);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
@@ -1066,9 +1066,10 @@ void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid)
 
 void dt_view_filmstrip_prefetch()
 {
-#if 0 // FIXME: this code as it is does nothing. it should prefetch the next full image in filmstrip mode!
-  char query[1024];
   const gchar *qin = dt_collection_get_query (darktable.collection);
+  if(!qin) return;
+
+  char query[1024];
   int offset = 0;
   if(qin)
   {
@@ -1088,7 +1089,19 @@ void dt_view_filmstrip_prefetch()
       offset = sqlite3_column_int(stmt, 0) - 1;
     sqlite3_finalize(stmt);
   }
-#endif
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
+  // only get one more image:
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset+1);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offset+2);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const uint32_t prefetchid = sqlite3_column_int(stmt, 0);
+    // dt_control_log("prefetching image %u", prefetchid);
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, NULL, prefetchid, DT_MIPMAP_FULL, DT_MIPMAP_PREFETCH);
+  }
+  sqlite3_finalize(stmt);
 }
 
 void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,GtkWidget *tool)
