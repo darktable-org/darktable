@@ -704,15 +704,28 @@
     </schema>
     
     <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_size</key>
-      <applyto>/apps/darktable/plugins/lighttable/thumbnail_size</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_width</key>
+      <applyto>/apps/darktable/plugins/lighttable/thumbnail_width</applyto>
       <owner>darktable</owner>
       <type>int</type>
       <default>800</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>maximum resolution of lighttable thumbnails</short>
-        <long>keep this value low for fast thumbnail creation (allowed: 160-1300)\n(needs a restart and will invalidate current thumbnail caches).</long>
+        <long>maximum lighttable resolution of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_height</key>
+      <applyto>/apps/darktable/plugins/lighttable/thumbnail_height</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>800</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>maximum resolution of lighttable thumbnails</short>
+        <long>maximum lighttable resolution of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
 

@@ -364,9 +364,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // FIXME: adjust numbers to be large enough to hold what mem limit suggests!
   const uint32_t max_mem = 100*1024*1024;
   const int32_t max_size = 2048, min_size = 32;
-  // TODO: use these new user parameters! also in darkroom.c and develop.c
-  int32_t wd = DT_IMAGE_WINDOW_SIZE;//dt_conf_get_int ("plugins/lighttable/thumbnail_width");
-  int32_t ht = DT_IMAGE_WINDOW_SIZE;//dt_conf_get_int ("plugins/lighttable/thumbnail_height");
+  int32_t wd = darktable.thumbnail_width;
+  int32_t ht = darktable.thumbnail_height;
   wd = CLAMPS(wd, min_size, max_size);
   ht = CLAMPS(ht, min_size, max_size);
   // round up to a multiple of 8, so we can divide by two 3 times

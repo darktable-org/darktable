@@ -97,7 +97,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("plugins/lighttable/collect/num_rules", 0);
 
   // reasonable thumbnail res:
-  dt_conf_set_int  ("plugins/lighttable/thumbnail_size", 800);
+  dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 800);
+  dt_conf_set_int  ("plugins/lighttable/thumbnail_height", 800);
 
   // should be unused:
   dt_conf_set_float("gamma_linear", .1f);

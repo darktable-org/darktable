@@ -327,16 +327,18 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
 
-  int32_t width  = MIN(width_i,  DT_IMAGE_WINDOW_SIZE);
-  int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
+  const int32_t capwd = darktable.thumbnail_width;
+  const int32_t capht = darktable.thumbnail_height;
+  int32_t width  = MIN(width_i,  capwd);
+  int32_t height = MIN(height_i, capht);
 
   cairo_set_source_rgb (cri, .2, .2, .2);
   cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_fill (cri);
 
 
-  if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
-  if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
+  if(width_i  > capwd) cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
+  if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
 
   // Mode dependent expose of center view
   switch(lib->mode)
