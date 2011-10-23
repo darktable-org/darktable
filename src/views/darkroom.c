@@ -105,7 +105,15 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   int32_t height = MIN(height_i, capht);
 
   cairo_set_source_rgb (cri, .2, .2, .2);
-  cairo_paint(cri);
+  cairo_save(cri);
+  cairo_set_fill_rule(cri, CAIRO_FILL_RULE_EVEN_ODD);
+  cairo_rectangle(cri, 0, 0, width_i, height_i);
+  cairo_rectangle(cri,
+      MAX(1.0, width_i -capwd) *.5f,
+      MAX(1.0, height_i-capht) *.5f,
+      MIN(width, width_i-1), MIN(height, height_i-1));
+  cairo_fill (cri);
+  cairo_restore(cri);
 
   if(width_i  > capwd) cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
   if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
