@@ -106,7 +106,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int l=0;l<(roi_out->width*ch);l+=ch)
     {
       /* saturation weight 0 - 1 */
-      float sw = 1.0 - fabs(-1 + (fabs(in[offs + l + 1]/128.0) + fabs(in[offs + l + 2]/128.0)));
+      float sw = sqrt( (in[offs + l + 1]*in[offs + l + 1]) + (in[offs + l + 2]*in[offs + l + 2]) )/256.0;
       float ls = 1.0 - ((amount * sw)*.25);
       float ss = 1.0 + (amount * sw);
       out[offs + l + 0] = in[offs + l + 0] * ls;
