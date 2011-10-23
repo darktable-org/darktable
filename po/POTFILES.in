@@ -6,7 +6,9 @@ src/common/darktable.c
 src/common/film.c
 src/common/history.c
 src/common/image.c
+src/common/imageio.c
 src/common/styles.c
+src/common/variables.c
 src/control/control.c
 src/control/jobs/camera_jobs.c
 src/control/jobs/control_jobs.c
@@ -37,6 +39,7 @@ src/imageio/format/jpeg.c
 src/imageio/format/pfm.c
 src/imageio/format/png.c
 src/imageio/format/ppm.c
+src/imageio/format/rgbe.c
 src/imageio/format/tiff.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
