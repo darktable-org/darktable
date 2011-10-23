@@ -737,7 +737,7 @@ dt_view_image_expose(
   if(buf.buf)
   {
     cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
-    cairo_set_source_surface (cr, surface, -1, -1);
+    cairo_set_source_surface (cr, surface, 0, 0);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
