@@ -1163,7 +1163,7 @@ msgstr "imágenes ordenadas por"
 #: ../src/gui/gtk.c:1691
 #: ../src/gui/gtk.c:1932
 msgid "filename"
-msgstr "exportanombre"
+msgstr "nombre"
 
 #: ../src/gui/gtk.c:1692
 msgid "time"
