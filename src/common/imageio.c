@@ -298,7 +298,6 @@ dt_imageio_open_raw(
 
   // filters seem only ever to take a useful value after unpack/process
   img->filters = raw->idata.filters;
-  img->orientation = raw->sizes.flip;
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
   img->exif_iso = raw->other.iso_speed;
