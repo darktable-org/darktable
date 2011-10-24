@@ -147,7 +147,7 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   /* draw standard button background if not transparent nor flat styled */
   if( (flags & CPF_STYLE_FLAT ))
   {
-    if( state != GTK_STATE_NORMAL )
+    if( state != GTK_STATE_NORMAL && !(flags & CPF_BG_TRANSPARENT))
     {
       cairo_rectangle (cr,x,y,width,height);
       cairo_set_source_rgba (cr,
