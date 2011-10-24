@@ -1169,6 +1169,7 @@ void gui_init     (struct dt_iop_module_t *self)
   g->color_smoothing = gtk_spin_button_new_with_range(0, 5, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->color_smoothing), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
+  dt_gui_key_accel_block_on_focus(g->color_smoothing);
   g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), g->color_smoothing, 1, 2, 2, 3, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 
