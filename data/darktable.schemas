@@ -672,8 +672,8 @@
       <default>800</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>maximum resolution of lighttable thumbnails</short>
-        <long>maximum lighttable resolution of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
+        <short>maximum width of lighttable thumbnails</short>
+        <long>maximum lighttable width of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
 
@@ -685,8 +685,8 @@
       <default>800</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>maximum resolution of lighttable thumbnails</short>
-        <long>maximum lighttable resolution of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
+        <short>maximum height of lighttable thumbnails</short>
+        <long>maximum lighttable height of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
 
