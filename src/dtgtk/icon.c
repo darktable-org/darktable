@@ -66,6 +66,8 @@ _icon_expose (GtkWidget *widget, GdkEventExpose *event)
   cairo_t *cr;
   cr = gdk_cairo_create (widget->window);
 
+  int x = widget->allocation.x;
+  int y = widget->allocation.y;
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 
@@ -86,7 +88,7 @@ _icon_expose (GtkWidget *widget, GdkEventExpose *event)
 
   /* draw icon */
   if (DTGTK_ICON(widget)->icon)
-      DTGTK_ICON(widget)->icon(cr, border, border, width-(border*2), height-(border*2), flags);
+      DTGTK_ICON(widget)->icon(cr, x+border, y+border, width-(border*2), height-(border*2), flags);
 
   cairo_destroy (cr);
 
@@ -99,6 +101,7 @@ dtgtk_icon_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableIcon *icon;
   icon = gtk_type_new (dtgtk_icon_get_type());
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(icon),FALSE);
   icon->icon = paint;
   icon->icon_flags = paintflags;
   return (GtkWidget *)icon;
