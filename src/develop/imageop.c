@@ -926,7 +926,7 @@ static gboolean _iop_gui_expander_expose(GtkWidget *w,GdkEventExpose *event, gpo
     {
       /* border fill */
       cairo_pattern_add_color_stop_rgba(g, 0.0, frgb[0], frgb[1], frgb[2], amount);
-      cairo_pattern_add_color_stop_rgba(g, 1.0, frgb[0], frgb[1], frgb[2], amount*0.1);
+      cairo_pattern_add_color_stop_rgba(g, 1.0, frgb[0], frgb[1], frgb[2], 0.0);
     }
     
     /* fill gradient background */
