@@ -669,7 +669,7 @@
       <applyto>/apps/darktable/plugins/lighttable/thumbnail_width</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>800</default>
+      <default>1300</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>maximum width of lighttable thumbnails</short>
@@ -682,7 +682,7 @@
       <applyto>/apps/darktable/plugins/lighttable/thumbnail_height</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>800</default>
+      <default>1000</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>maximum height of lighttable thumbnails</short>
