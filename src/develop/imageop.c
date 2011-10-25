@@ -1404,6 +1404,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(
 #endif
 }
 
+#if 0 // gets rid of pink artifacts, but doesn't do sub-pixel sampling, so shows some staircasing artifacts.
 void
 dt_iop_clip_and_zoom_demosaic_half_size_f(
     float *out,
@@ -1487,10 +1488,17 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
   _mm_sfence();
 }
 
-#if 0 // very fast, but doesn't handle highlights:
+#else // very fast and smooth, but doesn't handle highlights:
 void
-dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
-    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters,
+    const float clip)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
