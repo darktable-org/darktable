@@ -664,7 +664,7 @@ dt_view_image_expose(
     if(!img)
       img = dt_image_cache_read_get(darktable.image_cache, imgid);
   }
-  float imgwd = 0.8f;
+  float imgwd = 0.9f;
   if(zoom == 1)
   {
     imgwd = .97f;
