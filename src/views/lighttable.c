@@ -208,8 +208,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  if(iir == 1) cairo_set_source_rgb (cr, .9, .9, .9);
-  else cairo_set_source_rgb (cr, .2, .2, .2);
+  cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
 
   if(lib->first_visible_zoomable >= 0)
@@ -460,8 +459,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
 
   lib->image_over = DT_VIEW_DESERT;
 
-  if(zoom == 1) cairo_set_source_rgb (cr, .9, .9, .9);
-  else cairo_set_source_rgb (cr, .2, .2, .2);
+  cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
 
   const float wd = width/zoom;
