@@ -738,6 +738,8 @@ dt_view_image_expose(
   {
     cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
     cairo_set_source_surface (cr, surface, 0, 0);
+    if(buf.width <= 8 && buf.height <= 8)
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);

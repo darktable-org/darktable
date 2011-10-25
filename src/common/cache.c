@@ -745,9 +745,10 @@ wait:;
     --free_min_bucket;
   }
 
-  fprintf(stderr, "[cache] failed to find a free spot for new data!\n");
+  // fprintf(stderr, "[cache] failed to find a free spot for new data!\n");
   dt_cache_unlock(&segment->lock);
-  goto wait;
+  return NULL;
+  // goto wait;
 }
 
 int

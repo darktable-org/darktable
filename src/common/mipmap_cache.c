@@ -34,6 +34,7 @@
 #include <sys/fcntl.h>
 #include <glib/gstdio.h>
 #include <errno.h>
+#include <xmmintrin.h>
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
 #define DT_MIPMAP_CACHE_FILE_VERSION 20
@@ -50,6 +51,47 @@ struct dt_mipmap_buffer_dsc
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
 }  __attribute__((packed));
 
+static inline void
+dead_image_8(dt_mipmap_buffer_t *buf)
+{
+  if(!buf->buf) return;
+  struct dt_mipmap_buffer_dsc* dsc = (struct dt_mipmap_buffer_dsc*)buf->buf - 1;
+  dsc->width = dsc->height = 8;
+  assert(dsc->size > 64*sizeof(uint32_t));
+  const uint32_t X = 0xffffffffu;
+  const uint32_t o = 0u;
+  const uint32_t image[] =
+  { o, o, o, o, o, o, o, o,
+    o, o, X, X, X, X, o, o,
+    o, X, o, X, X, o, X, o,
+    o, X, X, X, X, X, X, o,
+    o, o, X, o, o, X, o, o,
+    o, o, o, o, o, o, o, o,
+    o, o, X, X, X, X, o, o,
+    o, o, o, o, o, o, o, o };
+  memcpy(buf->buf, image, sizeof(uint32_t)*64);
+}
+
+static inline void
+dead_image_f(dt_mipmap_buffer_t *buf)
+{
+  if(!buf->buf) return;
+  struct dt_mipmap_buffer_dsc* dsc = (struct dt_mipmap_buffer_dsc*)buf->buf - 1;
+  dsc->width = dsc->height = 8;
+  assert(dsc->size > 64*4*sizeof(float));
+  const __m128 X = _mm_set1_ps(1.0f);
+  const __m128 o = _mm_set1_ps(0.0f);
+  const __m128 image[] =
+  { o, o, o, o, o, o, o, o,
+    o, o, X, X, X, X, o, o,
+    o, X, o, X, X, o, X, o,
+    o, X, X, X, X, X, X, o,
+    o, o, X, o, o, X, o, o,
+    o, o, o, o, o, o, o, o,
+    o, o, X, X, X, X, o, o,
+    o, o, o, o, o, o, o, o };
+  memcpy(buf->buf, image, sizeof(__m128)*64);
+}
 
 static inline int32_t
 buffer_is_broken(dt_mipmap_buffer_t *buf)
@@ -92,13 +134,16 @@ _iterate_data_t;
 static int
 _write_buffer(const uint32_t key, const void *data, void *user_data)
 {
+  if(!data) return 1;
+  struct dt_mipmap_buffer_dsc* dsc = (struct dt_mipmap_buffer_dsc*)data;
+  // too small to write. no error, but don't write.
+  if(dsc->width <= 8 && dsc->height <= 8) return 0;
+
   _iterate_data_t *d = (_iterate_data_t *)user_data;
   int written = fwrite(&key, sizeof(uint32_t), 1, d->f);
   if(written != 1) return 1;
 
   dt_mipmap_buffer_t buf;
-  if(!data) return 1;
-  struct dt_mipmap_buffer_dsc* dsc = (struct dt_mipmap_buffer_dsc*)data;
   buf.width  = dsc->width;
   buf.height = dsc->height;
   buf.imgid  = get_imgid(key);
@@ -341,10 +386,10 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
 {
   // for full image buffers
     struct dt_mipmap_buffer_dsc* dsc = *buf;
-  // alloc mere minimum for the header:
+  // alloc mere minimum for the header + broken image buffer:
   if(!dsc)
   {
-    *buf = dt_alloc_align(16, sizeof(*dsc));
+    *buf = dt_alloc_align(16, sizeof(*dsc)+sizeof(float)*4*64);
     // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %lX\n", key, (uint64_t)*buf);
     if(!(*buf))
     {
@@ -354,7 +399,7 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
     dsc = *buf;
     dsc->width = 0;
     dsc->height = 0;
-    dsc->size = sizeof(*dsc);
+    dsc->size = sizeof(*dsc)+sizeof(float)*4*64;
   }
   assert(dsc->size >= sizeof(*dsc));
   dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
@@ -514,8 +559,9 @@ dt_mipmap_cache_read_get(
     struct dt_mipmap_buffer_dsc* dsc = (struct dt_mipmap_buffer_dsc*)dt_cache_read_get(&cache->mip[mip].cache, key);
     if(!dsc)
     {
-      // should never happen.
-      fprintf(stderr, "[mipmap cache get] no data in cache for imgid %u size %d!\n", imgid, mip);
+      // should never happen for anything but full images which have been moved.
+      assert(mip == DT_MIPMAP_FULL);
+      // fprintf(stderr, "[mipmap cache get] no data in cache for imgid %u size %d!\n", imgid, mip);
       // sorry guys, no image for you :(
       buf->width = buf->height = 0;
       buf->imgid = 0;
@@ -535,7 +581,7 @@ dt_mipmap_cache_read_get(
         if(mip == DT_MIPMAP_FULL)
         {
           // load the image:
-          // make sure we access the r/w lock a shortly as possible!
+          // make sure we access the r/w lock as shortly as possible!
           dt_image_t buffered_image;
           const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
           buffered_image = *cimg;
@@ -555,7 +601,7 @@ dt_mipmap_cache_read_get(
           }
           if(ret != DT_IMAGEIO_OK)
           {
-            fprintf(stderr, "[mipmap read get] error loading image: %d\n", ret);
+            // fprintf(stderr, "[mipmap read get] error loading image: %d\n", ret);
             // in case something went wrong, still keep the buffer and return it to the hashtable
             // so we don't produce mem leaks or unnecessary mem fragmentation.
             // 
@@ -589,13 +635,12 @@ dt_mipmap_cache_read_get(
       buf->height = dsc->height;
       buf->imgid  = imgid;
       buf->size   = mip;
-      if(dsc->width && dsc->height)
-        buf->buf = (uint8_t *)(dsc+1);
-      else
+      buf->buf = (uint8_t *)(dsc+1);
+      if(dsc->width == 0 || dsc->height == 0)
       {
-        // fprintf(stderr, "[mipmap cache get] got a zero-sized image for img %u mip %d (%lX)!\n", imgid, mip, (uint64_t)data);
-        buf->buf = NULL;
-        dt_cache_read_release(&cache->mip[mip].cache, key);
+        // fprintf(stderr, "[mipmap cache get] got a zero-sized image for img %u mip %d!\n", imgid, mip);
+        if(mip < DT_MIPMAP_F) dead_image_8(buf);
+        else                  dead_image_f(buf);
       }
     }
   }
@@ -914,7 +959,7 @@ libraw_fail:
   // any errors?
   if(res)
   {
-    fprintf(stderr, "[mipmap_cache] could not process thumbnail!\n");
+    // fprintf(stderr, "[mipmap_cache] could not process thumbnail!\n");
     *width = *height = 0;
     return;
   }
