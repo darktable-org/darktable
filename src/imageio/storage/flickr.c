@@ -671,7 +671,16 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   caption = g_path_get_basename( img->filename );
 
-  (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
+  // If title is not existing, then use the filename without extension. If not, then use title instead
+  GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+  if(title != NULL)
+  {
+    caption = title->data;
+  }
+  else
+  {
+    (g_strrstr(caption,"."))[0]='\0'; // Shop extension...
+  }
 
   GList *desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
   if(desc != NULL)

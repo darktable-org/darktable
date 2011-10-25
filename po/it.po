@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-13 00:21+0200\n"
+"POT-Creation-Date: 2011-10-24 20:27+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Daniele Giorgis <daniele.giorgis@gmail.com>\n"
 "Language-Team: \n"
@@ -350,6 +350,10 @@ msgstr "Immagine orfana"
 msgid "image `%s' is not available"
 msgstr "Immagine '%s' non è disponibile"
 
+#: ../src/common/imageio.c:860
+msgid "failed to allocate memory for export, please lower the threads used for export or buy more memory."
+msgstr "Fallita l'allocazione della memoria per l'esportazione, abbassare il numero di thread usati per l'esportazione o aggiungere memoria."
+
 #: ../src/common/styles.c:73
 #, c-format
 msgid "style with name '%s' already exists"
@@ -374,6 +378,12 @@ msgstr "Stile '%s' è stato salvato con successo"
 #, c-format
 msgid "style %s was sucessfully imported"
 msgstr "Stile '%s' è stato importato con successo"
+
+#: ../src/common/variables.c:207
+#: ../src/iop/clipping.c:952
+#, c-format
+msgid "none"
+msgstr "Nessuno"
 
 #: ../src/control/control.c:943
 #: ../src/control/control.c:946
@@ -607,7 +617,7 @@ msgid "mode"
 msgstr "Modo"
 
 #: ../src/develop/imageop.c:1010
-#: ../src/iop/watermark.c:705
+#: ../src/iop/watermark.c:714
 msgid "opacity"
 msgstr "Opacità"
 
@@ -1152,7 +1162,7 @@ msgid "images sorted by"
 msgstr "Ordina immagini per"
 
 #: ../src/gui/gtk.c:1691
-#: ../src/gui/gtk.c:1930
+#: ../src/gui/gtk.c:1932
 msgid "filename"
 msgstr "Nome file"
 
@@ -1190,24 +1200,28 @@ msgid "history"
 msgstr "Coda di sviluppo"
 
 #: ../src/gui/gtk.c:1931
+msgid "image id"
+msgstr "ID Immagine"
+
+#: ../src/gui/gtk.c:1933
 #: ../src/gui/presets.c:283
 msgid "model"
 msgstr "Modello"
 
-#: ../src/gui/gtk.c:1932
+#: ../src/gui/gtk.c:1934
 #: ../src/gui/presets.c:290
 msgid "maker"
 msgstr "Costruttore"
 
 #. aperture
-#: ../src/gui/gtk.c:1933
+#: ../src/gui/gtk.c:1935
 #: ../src/gui/presets.c:332
 #: ../src/libs/camera.c:516
 msgid "aperture"
 msgstr "Diaframma"
 
 #. exposure
-#: ../src/gui/gtk.c:1934
+#: ../src/gui/gtk.c:1936
 #: ../src/gui/presets.c:317
 #: ../src/iop/exposure.c:45
 #: ../src/iop/exposure.c:384
@@ -1215,45 +1229,45 @@ msgstr "Diaframma"
 msgid "exposure"
 msgstr "Esposizione"
 
-#: ../src/gui/gtk.c:1935
+#: ../src/gui/gtk.c:1937
 msgid "f-length"
 msgstr "Lunghezza focale"
 
-#: ../src/gui/gtk.c:1936
+#: ../src/gui/gtk.c:1938
 msgid "distance"
 msgstr "Distanza"
 
 #. iso
-#: ../src/gui/gtk.c:1937
+#: ../src/gui/gtk.c:1939
 #: ../src/gui/presets.c:304
 #: ../src/libs/camera.c:546
 msgid "iso"
 msgstr "Iso"
 
-#: ../src/gui/gtk.c:1938
+#: ../src/gui/gtk.c:1940
 msgid "date/time"
 msgstr "Data/ora"
 
-#: ../src/gui/gtk.c:1939
+#: ../src/gui/gtk.c:1941
 #: ../src/gui/presets.c:297
 msgid "lens"
 msgstr "Lente"
 
-#: ../src/gui/gtk.c:1940
+#: ../src/gui/gtk.c:1942
 #: ../src/iop/relight.c:319
 msgid "width"
 msgstr "Larghezza"
 
-#: ../src/gui/gtk.c:1941
+#: ../src/gui/gtk.c:1943
 msgid "height"
 msgstr "Altezza"
 
-#: ../src/gui/gtk.c:1942
+#: ../src/gui/gtk.c:1944
 #: ../src/libs/collect.h:29
 msgid "film roll"
 msgstr "Rullino"
 
-#: ../src/gui/gtk.c:1943
+#: ../src/gui/gtk.c:1945
 #: ../src/imageio/storage/flickr.c:506
 #: ../src/imageio/storage/gallery.c:154
 #: ../src/imageio/storage/picasa.c:767
@@ -1262,91 +1276,91 @@ msgstr "Rullino"
 msgid "title"
 msgstr "Titolo"
 
-#: ../src/gui/gtk.c:1944
+#: ../src/gui/gtk.c:1946
 #: ../src/libs/collect.h:37
 #: ../src/libs/metadata.c:311
 msgid "creator"
 msgstr "Costruttore"
 
-#: ../src/gui/gtk.c:1945
+#: ../src/gui/gtk.c:1947
 #: ../src/imageio/storage/picasa.c:769
 #: ../src/libs/collect.h:39
 #: ../src/libs/metadata.c:337
 msgid "rights"
 msgstr "Diritti"
 
-#: ../src/gui/gtk.c:1960
+#: ../src/gui/gtk.c:1962
 msgid "image information"
 msgstr "Informazioni sull'immagine"
 
 #. Attaching the label to hold the information
-#: ../src/gui/gtk.c:1990
+#: ../src/gui/gtk.c:1992
 msgid "-"
 msgstr "-"
 
-#: ../src/gui/gtk.c:2016
+#: ../src/gui/gtk.c:2018
 msgid "snapshots"
 msgstr "Istantanee"
 
-#: ../src/gui/gtk.c:2056
+#: ../src/gui/gtk.c:2058
 msgctxt "global import"
 msgid "import"
 msgstr "Importa "
 
 #. Adding the single import button
-#: ../src/gui/gtk.c:2082
+#: ../src/gui/gtk.c:2084
 #: ../src/iop/borders.c:401
-#: ../src/iop/clipping.c:921
+#: ../src/iop/clipping.c:919
 msgid "image"
 msgstr "Immagine"
 
-#: ../src/gui/gtk.c:2084
+#: ../src/gui/gtk.c:2086
 msgid "select one or more images to import"
 msgstr "Seleziona una o più immagini da importare"
 
 #. Adding the import button
-#: ../src/gui/gtk.c:2095
+#: ../src/gui/gtk.c:2097
 msgid "folder"
 msgstr "Cartella"
 
-#: ../src/gui/gtk.c:2098
+#: ../src/gui/gtk.c:2100
 msgid "select a folder to import as film roll"
 msgstr "Seleziona una cartella da importare come rullino"
 
-#: ../src/gui/gtk.c:2262
+#: ../src/gui/gtk.c:2264
 msgid "histogram"
 msgstr "Istogramma"
 
-#: ../src/gui/gtk.c:2362
+#: ../src/gui/gtk.c:2364
 msgid "more plugins"
 msgstr "Altri effetti"
 
-#: ../src/gui/gtk.c:2457
+#: ../src/gui/gtk.c:2459
 msgid "mean"
 msgstr "Medio"
 
-#: ../src/gui/gtk.c:2458
+#: ../src/gui/gtk.c:2460
 msgid "min"
 msgstr "Min"
 
-#: ../src/gui/gtk.c:2459
+#: ../src/gui/gtk.c:2461
 msgid "max"
 msgstr "Max"
 
-#: ../src/gui/gtk.c:2472
+#: ../src/gui/gtk.c:2474
 msgid "rgb"
 msgstr "RGB"
 
-#: ../src/gui/gtk.c:2473
+#: ../src/gui/gtk.c:2475
 msgid "Lab"
 msgstr "Lab"
 
 #. Creating the colorpicker output label
-#: ../src/gui/gtk.c:2485
+#: ../src/gui/gtk.c:2487
 msgid "(---)"
 msgstr "(---)"
 
-#: ../src/gui/gtk.c:2498
+#: ../src/gui/gtk.c:2500
 msgid "zoomable light table"
 msgstr "Lavagna zoomabile"
 
@@ -1354,7 +1368,7 @@ msgstr "Lavagna zoomabile"
 #. char* n = _("zoomable light table\nfile manager");
 #. while(*n != '\n') n++; n++;
 #. return n;
-#: ../src/gui/gtk.c:2499
+#: ../src/gui/gtk.c:2501
 #: ../src/libs/file_manager.c:43
 msgid "file manager"
 msgstr "Gestore file"
@@ -1746,16 +1760,16 @@ msgstr "Qualità"
 msgid "float pfm"
 msgstr "Float PFM"
 
-#: ../src/imageio/format/png.c:375
+#: ../src/imageio/format/png.c:376
 msgid "8/16-bit png"
 msgstr "8/16-bit png"
 
-#: ../src/imageio/format/png.c:393
+#: ../src/imageio/format/png.c:394
 #: ../src/imageio/format/tiff.c:239
 msgid "8-bit"
 msgstr "8-bit"
 
-#: ../src/imageio/format/png.c:398
+#: ../src/imageio/format/png.c:399
 #: ../src/imageio/format/tiff.c:244
 msgid "16-bit"
 msgstr "16-bit"
@@ -1763,6 +1777,10 @@ msgstr "16-bit"
 #: ../src/imageio/format/ppm.c:93
 msgid "16-bit ppm"
 msgstr "16 bit ppm"
+
+#: ../src/imageio/format/rgbe.c:562
+msgid "float hdr"
+msgstr "Float HDR"
 
 #: ../src/imageio/format/tiff.c:221
 msgid "8/16-bit tiff"
@@ -2064,7 +2082,7 @@ msgstr "Estensione spaziale dell'effetto intorno ai bordi"
 #: ../src/iop/anlfyeni.c:295
 #: ../src/iop/lens.c:1400
 #: ../src/iop/vignette.c:883
-#: ../src/iop/watermark.c:707
+#: ../src/iop/watermark.c:716
 msgid "scale"
 msgstr "Proporzione"
 
@@ -2411,42 +2429,42 @@ msgid "size of the border in percent of the full image"
 msgstr "Grandezza del bordo in percentuale all'immagine totale"
 
 #: ../src/iop/borders.c:397
-#: ../src/iop/clipping.c:915
+#: ../src/iop/clipping.c:913
 msgid "aspect"
 msgstr "Aspetto"
 
 #: ../src/iop/borders.c:402
-#: ../src/iop/clipping.c:922
+#: ../src/iop/clipping.c:920
 msgid "golden cut"
 msgstr "Taglio aureo"
 
 #: ../src/iop/borders.c:403
-#: ../src/iop/clipping.c:923
+#: ../src/iop/clipping.c:921
 msgid "1:2"
 msgstr "1:2"
 
 #: ../src/iop/borders.c:404
-#: ../src/iop/clipping.c:924
+#: ../src/iop/clipping.c:922
 msgid "3:2"
 msgstr "3:2"
 
 #: ../src/iop/borders.c:405
-#: ../src/iop/clipping.c:925
+#: ../src/iop/clipping.c:923
 msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:406
-#: ../src/iop/clipping.c:926
+#: ../src/iop/clipping.c:924
 msgid "square"
 msgstr "Quadrato"
 
 #: ../src/iop/borders.c:407
-#: ../src/iop/clipping.c:927
+#: ../src/iop/clipping.c:925
 msgid "DIN"
 msgstr "DIN"
 
 #: ../src/iop/borders.c:408
-#: ../src/iop/clipping.c:928
+#: ../src/iop/clipping.c:926
 msgid "16:9"
 msgstr "16:9"
 
@@ -2455,7 +2473,7 @@ msgid "constant border"
 msgstr "Bordo costante"
 
 #: ../src/iop/borders.c:412
-#: ../src/iop/clipping.c:934
+#: ../src/iop/clipping.c:935
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -2593,150 +2611,141 @@ msgstr "Quantità dell'effetto"
 msgid "crop and rotate"
 msgstr "Ritaglia e ruota"
 
-#: ../src/iop/clipping.c:591
+#: ../src/iop/clipping.c:592
 msgid "rotate by  90"
 msgstr "Ruota di 90°"
 
-#: ../src/iop/clipping.c:593
+#: ../src/iop/clipping.c:594
 msgid "rotate by -90"
 msgstr "Ruota di -90°"
 
-#: ../src/iop/clipping.c:595
+#: ../src/iop/clipping.c:596
 msgid "rotate by 180"
 msgstr "Ruota di 180°"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:882
-#: ../src/iop/clipping.c:968
+#: ../src/iop/clipping.c:880
+#: ../src/iop/clipping.c:969
 msgid "flip"
 msgstr "Rifletti"
 
-#: ../src/iop/clipping.c:889
+#: ../src/iop/clipping.c:887
 msgid "flip image horizontally"
 msgstr "Rifletti l'immagine orizzontalmente"
 
-#: ../src/iop/clipping.c:890
+#: ../src/iop/clipping.c:888
 msgid "flip image vertically"
 msgstr "Rifletti l'immagine verticalmente"
 
-#: ../src/iop/clipping.c:893
+#: ../src/iop/clipping.c:891
 msgid "angle"
 msgstr "Angolo"
 
-#: ../src/iop/clipping.c:897
+#: ../src/iop/clipping.c:895
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "Tasto destro e trascina una linea sull'immagine per fare una linea retta"
 
-#: ../src/iop/clipping.c:902
+#: ../src/iop/clipping.c:900
 msgid "keystone h"
 msgstr "Prospettiva oriz."
 
-#: ../src/iop/clipping.c:903
+#: ../src/iop/clipping.c:901
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "Regola la prospettiva per la distorsione orizzontale"
 
-#: ../src/iop/clipping.c:909
+#: ../src/iop/clipping.c:907
 msgid "keystone v"
 msgstr "Prospettiva vert."
 
-#: ../src/iop/clipping.c:910
+#: ../src/iop/clipping.c:908
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "Regola la prospettiva per la distorsione verticale"
 
-#: ../src/iop/clipping.c:920
+#: ../src/iop/clipping.c:918
 msgid "free"
 msgstr "Libero"
 
-#: ../src/iop/clipping.c:941
+#: ../src/iop/clipping.c:942
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "Cambia il rapporto dell'aspetto (Ctrl-x)"
 
-#: ../src/iop/clipping.c:948
+#: ../src/iop/clipping.c:949
 msgid "guides"
 msgstr "Guide"
 
-#: ../src/iop/clipping.c:951
-msgid "none"
-msgstr "Nessuno"
-
-#: ../src/iop/clipping.c:952
+#: ../src/iop/clipping.c:953
 msgid "grid"
 msgstr "Griglia"
 
-#: ../src/iop/clipping.c:953
+#: ../src/iop/clipping.c:954
 msgid "rules of thirds"
 msgstr "Regola dei terzi"
 
-#: ../src/iop/clipping.c:954
+#: ../src/iop/clipping.c:955
 msgid "diagonal method"
 msgstr "Metodo diagonale"
 
-#: ../src/iop/clipping.c:955
+#: ../src/iop/clipping.c:956
 msgid "harmonious triangles"
 msgstr "Triangoli armonici"
 
-#: ../src/iop/clipping.c:956
+#: ../src/iop/clipping.c:957
 msgid "golden mean"
 msgstr "Sezione aurea"
 
-#: ../src/iop/clipping.c:958
+#: ../src/iop/clipping.c:959
 msgid "with this option, you can display guide lines to help compose your photograph."
 msgstr "Con questa opzione puoi visualizzare linee guida come aiuto nella composizione della fotografia."
 
-#: ../src/iop/clipping.c:962
+#: ../src/iop/clipping.c:963
 msgid "type"
 msgstr "Tipo"
 
-#: ../src/iop/clipping.c:975
+#: ../src/iop/clipping.c:976
 msgid "flip guides horizontally"
 msgstr "Rifletti guide orizzontalmente"
 
-#: ../src/iop/clipping.c:976
+#: ../src/iop/clipping.c:977
 msgid "flip guides vertically"
 msgstr "Rifletti guide verticalmente"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:978
+#: ../src/iop/clipping.c:979
 msgid "golden sections"
 msgstr "Sezioni auree"
 
-#: ../src/iop/clipping.c:980
+#: ../src/iop/clipping.c:981
 msgid "enable this option to show golden sections."
 msgstr "Abilita questa opzione per mostrare le sezioni auree"
 
-#: ../src/iop/clipping.c:983
+#: ../src/iop/clipping.c:984
 msgid "spiral sections"
 msgstr "Sezioni spirale"
 
-#: ../src/iop/clipping.c:984
+#: ../src/iop/clipping.c:985
 msgid "enable this option to show golden spiral sections."
 msgstr "Abilita questa opzione per mostrare sezioni spirale aurea"
 
-#: ../src/iop/clipping.c:987
+#: ../src/iop/clipping.c:988
 msgid "golden spiral"
 msgstr "Spirale aurea"
 
-#: ../src/iop/clipping.c:988
+#: ../src/iop/clipping.c:989
 msgid "enable this option to show a golden spiral guide."
 msgstr "Abilita questa opzione per mostrare la guida spirale aurea."
 
-#: ../src/iop/clipping.c:991
+#: ../src/iop/clipping.c:992
 msgid "golden triangles"
 msgstr "Triangoli aurei"
 
-#: ../src/iop/clipping.c:992
+#: ../src/iop/clipping.c:993
 msgid "enable this option to show golden triangles."
 msgstr "Abilita questa opzione per mostrare triangoli aurei."
 
-#: ../src/iop/clipping.c:1579
+#: ../src/iop/clipping.c:1581
 msgctxt "accel"
 msgid "commit"
 msgstr "Applica"
-
-#: ../src/iop/clipping.c:1581
-msgctxt "accel"
-msgid "undo"
-msgstr "Indietro"
 
 #: ../src/iop/clipping.c:1583
 msgctxt "accel"
@@ -3023,34 +3032,34 @@ msgstr "Pellicola bianco e nero"
 msgid "select by"
 msgstr "Seleziona per"
 
-#: ../src/iop/demosaic.c:98
+#: ../src/iop/demosaic.c:106
 msgid "demosaic"
 msgstr "Demosaicizzazione "
 
-#: ../src/iop/demosaic.c:115
+#: ../src/iop/demosaic.c:123
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "Soglia bordi"
 
 #. //////////////////////////
-#: ../src/iop/demosaic.c:1059
+#: ../src/iop/demosaic.c:1151
 #: ../src/iop/highlights.c:413
 msgid "method"
 msgstr "Metodo"
 
-#: ../src/iop/demosaic.c:1062
+#: ../src/iop/demosaic.c:1154
 msgid "ppg"
 msgstr "ppg"
 
-#: ../src/iop/demosaic.c:1063
+#: ../src/iop/demosaic.c:1155
 msgid "AMaZE"
 msgstr "AMaZE"
 
-#: ../src/iop/demosaic.c:1064
+#: ../src/iop/demosaic.c:1156
 msgid "demosaicing raw data method"
 msgstr "Metodo demosaicizzazione RAW"
 
-#: ../src/iop/demosaic.c:1069
+#: ../src/iop/demosaic.c:1161
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -3060,29 +3069,42 @@ msgstr ""
 "Imposta 0 per disattivare.\n"
 "Imposta 1 per ignorare i bordi."
 
-#: ../src/iop/demosaic.c:1070
+#: ../src/iop/demosaic.c:1162
 msgid "edge threshold"
 msgstr "Soglia bordi"
 
-#: ../src/iop/demosaic.c:1074
+#: ../src/iop/demosaic.c:1166
 msgid "color smoothing"
 msgstr "Sfumatura colore"
 
-#: ../src/iop/demosaic.c:1079
+#: ../src/iop/demosaic.c:1171
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "Passaggi mediana di sfumatura colore eseguito dopo la demosaicizzazione"
 
-#: ../src/iop/demosaic.c:1082
+#. //////////////////////////
+#: ../src/iop/demosaic.c:1175
 msgid "match greens"
 msgstr "Corrispondenza verdi"
 
-#: ../src/iop/demosaic.c:1085
-msgid ""
-"switch on green equilibration before demosaicing.\n"
-"necessary for some mid-range cameras such as the EOS 400D."
-msgstr ""
-"Attiva l'equilibrio dei verdi prima della demosaicizzazione.\n"
-"Necessario per alcuni modelli di fotocamere di fascia media come la EOS 400D."
+#: ../src/iop/demosaic.c:1178
+msgid "disabled"
+msgstr "Disabilitato"
+
+#: ../src/iop/demosaic.c:1179
+msgid "local average"
+msgstr "Media locale"
+
+#: ../src/iop/demosaic.c:1180
+msgid "full average"
+msgstr "Media piena"
+
+#: ../src/iop/demosaic.c:1181
+msgid "full and local average"
+msgstr "Media piena e locale"
+
+#: ../src/iop/demosaic.c:1182
+msgid "green channels mathing method"
+msgstr "Metodo di corrispondenza per i canali di verde"
 
 #: ../src/iop/equalizer.c:43
 msgid "legacy equalizer"
@@ -3741,11 +3763,11 @@ msgstr "Contrasto del filtro passa-basso"
 msgid "the color saturation of lowpass filter"
 msgstr "Saturazione del colore del filtro passa-basso"
 
-#: ../src/iop/monochrome.c:65
+#: ../src/iop/monochrome.c:62
 msgid "monochrome"
 msgstr "Monocromia"
 
-#: ../src/iop/monochrome.c:307
+#: ../src/iop/monochrome.c:294
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr "Trascina e scorri la rotella del mouse per regolare il filtro colore virtuale"
 
@@ -4303,28 +4325,28 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "Posizione y"
 
-#: ../src/iop/watermark.c:688
+#: ../src/iop/watermark.c:697
 msgid "marker"
 msgstr "Firma"
 
-#: ../src/iop/watermark.c:689
+#: ../src/iop/watermark.c:698
 msgid "alignment"
 msgstr "Allineamento"
 
-#: ../src/iop/watermark.c:729
+#: ../src/iop/watermark.c:738
 msgid "x offset"
 msgstr "Margine x"
 
-#: ../src/iop/watermark.c:730
+#: ../src/iop/watermark.c:739
 msgid "y offset"
 msgstr "Margine y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:736
+#: ../src/iop/watermark.c:745
 msgid "the opacity of the watermark"
 msgstr "Opacità filigrana"
 
-#: ../src/iop/watermark.c:737
+#: ../src/iop/watermark.c:746
 msgid "the scale of the watermark"
 msgstr "Proporzioni della filigrana"
 
@@ -4847,7 +4869,7 @@ msgstr "Esporta con le impostazioni correnti (Ctrl-e)"
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:754
 #: ../src/libs/styles.c:70
-#: ../src/views/darkroom.c:1251
+#: ../src/views/darkroom.c:1252
 msgctxt "accel"
 msgid "export"
 msgstr "Esporta "
@@ -4884,7 +4906,7 @@ msgstr "Rimuovi dalla collezione"
 
 #: ../src/libs/image.c:94
 #: ../src/libs/styles.c:361
-#: ../src/libs/tagging.c:428
+#: ../src/libs/tagging.c:441
 msgid "delete"
 msgstr "Elimina"
 
@@ -5216,11 +5238,11 @@ msgstr "Importa"
 msgid "import style from a style file"
 msgstr "Importa uno stile da un file stile"
 
-#: ../src/libs/tagging.c:50
+#: ../src/libs/tagging.c:51
 msgid "tagging"
 msgstr "Tagging"
 
-#: ../src/libs/tagging.c:274
+#: ../src/libs/tagging.c:287
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -5235,11 +5257,11 @@ msgstr[1] ""
 "Sicuro di eliminare il tag '%s'?\n"
 "E' assegnato a %d immagini!"
 
-#: ../src/libs/tagging.c:277
+#: ../src/libs/tagging.c:290
 msgid "delete tag?"
 msgstr "Eliminare tag?"
 
-#: ../src/libs/tagging.c:361
+#: ../src/libs/tagging.c:374
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -5247,27 +5269,27 @@ msgstr ""
 "Tags allegati,\n"
 "doppio click per togliere"
 
-#: ../src/libs/tagging.c:368
+#: ../src/libs/tagging.c:381
 msgid "attach"
 msgstr "Allega"
 
-#: ../src/libs/tagging.c:369
+#: ../src/libs/tagging.c:382
 msgid "attach tag to all selected images"
 msgstr "Allega tag alle immagini selezionate"
 
-#: ../src/libs/tagging.c:374
+#: ../src/libs/tagging.c:387
 msgid "detach"
 msgstr "Togli"
 
-#: ../src/libs/tagging.c:375
+#: ../src/libs/tagging.c:388
 msgid "detach tag from all selected images"
 msgstr "Togli tag dalle immagini selezionate"
 
-#: ../src/libs/tagging.c:389
+#: ../src/libs/tagging.c:402
 msgid "enter tag name"
 msgstr "Inserisci nome tag"
 
-#: ../src/libs/tagging.c:415
+#: ../src/libs/tagging.c:428
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -5275,11 +5297,11 @@ msgstr ""
 "Tags collegati,\n"
 "doppio click per allegare"
 
-#: ../src/libs/tagging.c:422
+#: ../src/libs/tagging.c:435
 msgid "new"
 msgstr "Nuovo"
 
-#: ../src/libs/tagging.c:423
+#: ../src/libs/tagging.c:436
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -5287,7 +5309,7 @@ msgstr ""
 "Crea un nuovo tag con il\n"
 "nome inserito"
 
-#: ../src/libs/tagging.c:429
+#: ../src/libs/tagging.c:442
 msgid "delete selected tag"
 msgstr "Elimina il tag selezionato"
 
@@ -5308,7 +5330,7 @@ msgstr "Nuova sessione '%s' inizializzata"
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:616
-#: ../src/views/darkroom.c:1239
+#: ../src/views/darkroom.c:1240
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "Cambia rullino"
@@ -5341,28 +5363,28 @@ msgid "no image selected!"
 msgstr "Nessuna immagine selezionata!"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1243
+#: ../src/views/darkroom.c:1244
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "Primo piano"
 
-#: ../src/views/darkroom.c:1245
+#: ../src/views/darkroom.c:1246
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "Riempi"
 
-#: ../src/views/darkroom.c:1247
+#: ../src/views/darkroom.c:1248
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "Adatta"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1255
+#: ../src/views/darkroom.c:1256
 msgctxt "accel"
 msgid "image forward"
 msgstr "Immagine avanti"
 
-#: ../src/views/darkroom.c:1257
+#: ../src/views/darkroom.c:1258
 msgctxt "accel"
 msgid "image back"
 msgstr "Immagine indietro"
@@ -5573,6 +5595,19 @@ msgstr "Centro di scorrimento"
 msgctxt "accel"
 msgid "preview"
 msgstr "Anteprima"
+
+#~ msgctxt "accel"
+
+#~ msgid "undo"
+#~ msgstr "Indietro"
+
+#~ msgid ""
+#~ "switch on green equilibration before demosaicing.\n"
+#~ "necessary for some mid-range cameras such as the EOS 400D."
+#~ msgstr ""
+#~ "Attiva l'equilibrio dei verdi prima della demosaicizzazione.\n"
+#~ "Necessario per alcuni modelli di fotocamere di fascia media come la EOS "
+#~ "400D."
 
 #~ msgid "( --- )"
 #~ msgstr "( --- )"

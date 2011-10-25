@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-18 12:26+0200\n"
-"PO-Revision-Date: 2011-10-18 13:06+0100\n"
+"POT-Creation-Date: 2011-10-24 21:48+0200\n"
+"PO-Revision-Date: 2011-10-24 21:50+0100\n"
 "Last-Translator: Jose Carlos Garcia Sogo <jcsogo@gmail.com>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -349,6 +349,10 @@ msgstr "imágenes huerfanas"
 msgid "image `%s' is not available"
 msgstr "imagen `%s' no esta disponible"
 
+#: ../src/common/imageio.c:860
+msgid "failed to allocate memory for export, please lower the threads used for export or buy more memory."
+msgstr "no se consiguió reservar la memoria necesaria para exportar, por favor reduzca el número de hilos usados para exportar o compre más memoria RAM"
+
 #: ../src/common/styles.c:73
 #, c-format
 msgid "style with name '%s' already exists"
@@ -373,6 +377,12 @@ msgstr "stilo %s fue correctamente guardado"
 #, c-format
 msgid "style %s was sucessfully imported"
 msgstr "stilo %s fue importado correctamente"
+
+#: ../src/common/variables.c:207
+#: ../src/iop/clipping.c:952
+#, c-format
+msgid "none"
+msgstr "ninguna"
 
 #: ../src/control/control.c:943
 #: ../src/control/control.c:946
@@ -1153,7 +1163,7 @@ msgstr "imágenes ordenadas por"
 #: ../src/gui/gtk.c:1691
 #: ../src/gui/gtk.c:1932
 msgid "filename"
-msgstr "exportanombre"
+msgstr "nombre"
 
 #: ../src/gui/gtk.c:1692
 msgid "time"
@@ -1299,7 +1309,7 @@ msgstr "importar"
 #. Adding the single import button
 #: ../src/gui/gtk.c:2084
 #: ../src/iop/borders.c:401
-#: ../src/iop/clipping.c:918
+#: ../src/iop/clipping.c:919
 msgid "image"
 msgstr "imagen"
 
@@ -1766,6 +1776,10 @@ msgstr "16-bit"
 #: ../src/imageio/format/ppm.c:93
 msgid "16-bit ppm"
 msgstr "16-bit ppm"
+
+#: ../src/imageio/format/rgbe.c:562
+msgid "float hdr"
+msgstr "hdr (float)"
 
 #: ../src/imageio/format/tiff.c:221
 msgid "8/16-bit tiff"
@@ -2414,42 +2428,42 @@ msgid "size of the border in percent of the full image"
 msgstr "tamaño del borde en porcentaje de la imagen completa"
 
 #: ../src/iop/borders.c:397
-#: ../src/iop/clipping.c:912
+#: ../src/iop/clipping.c:913
 msgid "aspect"
 msgstr "aspecto"
 
 #: ../src/iop/borders.c:402
-#: ../src/iop/clipping.c:919
+#: ../src/iop/clipping.c:920
 msgid "golden cut"
 msgstr "proporción áurea"
 
 #: ../src/iop/borders.c:403
-#: ../src/iop/clipping.c:920
+#: ../src/iop/clipping.c:921
 msgid "1:2"
 msgstr "1:2"
 
 #: ../src/iop/borders.c:404
-#: ../src/iop/clipping.c:921
+#: ../src/iop/clipping.c:922
 msgid "3:2"
 msgstr "3:2"
 
 #: ../src/iop/borders.c:405
-#: ../src/iop/clipping.c:922
+#: ../src/iop/clipping.c:923
 msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:406
-#: ../src/iop/clipping.c:923
+#: ../src/iop/clipping.c:924
 msgid "square"
 msgstr "cuadrado"
 
 #: ../src/iop/borders.c:407
-#: ../src/iop/clipping.c:924
+#: ../src/iop/clipping.c:925
 msgid "DIN"
 msgstr "DIN"
 
 #: ../src/iop/borders.c:408
-#: ../src/iop/clipping.c:925
+#: ../src/iop/clipping.c:926
 msgid "16:9"
 msgstr "16:9"
 
@@ -2458,7 +2472,7 @@ msgid "constant border"
 msgstr "borde constante"
 
 #: ../src/iop/borders.c:412
-#: ../src/iop/clipping.c:934
+#: ../src/iop/clipping.c:935
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -2596,162 +2610,158 @@ msgstr "fuerza del efecto"
 msgid "crop and rotate"
 msgstr "recortar y rotar"
 
-#: ../src/iop/clipping.c:591
+#: ../src/iop/clipping.c:592
 msgid "rotate by  90"
 msgstr "rotar 90"
 
-#: ../src/iop/clipping.c:593
+#: ../src/iop/clipping.c:594
 msgid "rotate by -90"
 msgstr "rotar -90"
 
-#: ../src/iop/clipping.c:595
+#: ../src/iop/clipping.c:596
 msgid "rotate by 180"
 msgstr "rotar 180"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:879
-#: ../src/iop/clipping.c:968
+#: ../src/iop/clipping.c:880
+#: ../src/iop/clipping.c:969
 msgid "flip"
 msgstr "giro"
 
-#: ../src/iop/clipping.c:886
+#: ../src/iop/clipping.c:887
 msgid "flip image horizontally"
 msgstr "girar imagen horizontalmente"
 
-#: ../src/iop/clipping.c:887
+#: ../src/iop/clipping.c:888
 msgid "flip image vertically"
 msgstr "girar imagen verticalmente"
 
-#: ../src/iop/clipping.c:890
+#: ../src/iop/clipping.c:891
 msgid "angle"
 msgstr "ángulo"
 
-#: ../src/iop/clipping.c:894
+#: ../src/iop/clipping.c:895
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "click derecho y arrastrar ratón en la imagen para crear una linea recta"
 
-#: ../src/iop/clipping.c:899
+#: ../src/iop/clipping.c:900
 msgid "keystone h"
 msgstr "trapezoide h"
 
-#: ../src/iop/clipping.c:900
+#: ../src/iop/clipping.c:901
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "ajustar perspectiva para la distorsión trapezoidal horizontal"
 
-#: ../src/iop/clipping.c:906
+#: ../src/iop/clipping.c:907
 msgid "keystone v"
 msgstr "trapezoide v"
 
-#: ../src/iop/clipping.c:907
+#: ../src/iop/clipping.c:908
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "ajustar perspectiva para la distorsión trapezoidal vertical"
 
-#: ../src/iop/clipping.c:917
+#: ../src/iop/clipping.c:918
 msgid "free"
 msgstr "libre"
 
-#: ../src/iop/clipping.c:941
+#: ../src/iop/clipping.c:942
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "intercambiar el aspecto de la proporción (ctrl-x)"
 
-#: ../src/iop/clipping.c:948
+#: ../src/iop/clipping.c:949
 msgid "guides"
 msgstr "guias"
 
-#: ../src/iop/clipping.c:951
-msgid "none"
-msgstr "ninguna"
-
-#: ../src/iop/clipping.c:952
+#: ../src/iop/clipping.c:953
 msgid "grid"
 msgstr "rejilla"
 
-#: ../src/iop/clipping.c:953
+#: ../src/iop/clipping.c:954
 msgid "rules of thirds"
 msgstr "regla de los tercios"
 
-#: ../src/iop/clipping.c:954
+#: ../src/iop/clipping.c:955
 msgid "diagonal method"
 msgstr "método diagonal"
 
-#: ../src/iop/clipping.c:955
+#: ../src/iop/clipping.c:956
 msgid "harmonious triangles"
 msgstr "triángulos armónicos"
 
-#: ../src/iop/clipping.c:956
+#: ../src/iop/clipping.c:957
 msgid "golden mean"
 msgstr "proporción áurea"
 
-#: ../src/iop/clipping.c:958
+#: ../src/iop/clipping.c:959
 msgid "with this option, you can display guide lines to help compose your photograph."
 msgstr "con esta opción, puede mostrar lineas guía para ayudar a componer su fotografía."
 
-#: ../src/iop/clipping.c:962
+#: ../src/iop/clipping.c:963
 msgid "type"
 msgstr "tipo"
 
-#: ../src/iop/clipping.c:975
+#: ../src/iop/clipping.c:976
 msgid "flip guides horizontally"
 msgstr "girar guías horizontalmente"
 
-#: ../src/iop/clipping.c:976
+#: ../src/iop/clipping.c:977
 msgid "flip guides vertically"
 msgstr "girar guías verticalmente"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:978
+#: ../src/iop/clipping.c:979
 msgid "golden sections"
 msgstr "secciones áureas"
 
-#: ../src/iop/clipping.c:980
+#: ../src/iop/clipping.c:981
 msgid "enable this option to show golden sections."
 msgstr "active esta opción para mostrar secciones áureas."
 
-#: ../src/iop/clipping.c:983
+#: ../src/iop/clipping.c:984
 msgid "spiral sections"
 msgstr "secciones espirales"
 
-#: ../src/iop/clipping.c:984
+#: ../src/iop/clipping.c:985
 msgid "enable this option to show golden spiral sections."
 msgstr "activar esta opción para mostrar secciones espirales áureas"
 
-#: ../src/iop/clipping.c:987
+#: ../src/iop/clipping.c:988
 msgid "golden spiral"
 msgstr "espiral áurea"
 
-#: ../src/iop/clipping.c:988
+#: ../src/iop/clipping.c:989
 msgid "enable this option to show a golden spiral guide."
 msgstr "activar esta opción para mostrar una guía de espirales áureas."
 
-#: ../src/iop/clipping.c:991
+#: ../src/iop/clipping.c:992
 msgid "golden triangles"
 msgstr "triángulos áureos"
 
-#: ../src/iop/clipping.c:992
+#: ../src/iop/clipping.c:993
 msgid "enable this option to show golden triangles."
 msgstr "activar esta opción para mostrar triángulos áureos"
 
-#: ../src/iop/clipping.c:1579
+#: ../src/iop/clipping.c:1581
 msgctxt "accel"
 msgid "commit"
 msgstr "enviar"
 
-#: ../src/iop/clipping.c:1581
+#: ../src/iop/clipping.c:1583
 msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "intercambiar el aspecto de la proporción"
 
-#: ../src/iop/clipping.c:1583
+#: ../src/iop/clipping.c:1585
 msgctxt "accel"
 msgid "angle"
 msgstr "ángulo"
 
-#: ../src/iop/clipping.c:1584
+#: ../src/iop/clipping.c:1586
 msgctxt "accel"
 msgid "keystone h"
 msgstr "trapezoide h"
 
-#: ../src/iop/clipping.c:1585
+#: ../src/iop/clipping.c:1587
 msgctxt "accel"
 msgid "keystone v"
 msgstr "trapezoide v"
@@ -4861,7 +4871,7 @@ msgstr "exportar con la configuración actual (ctrl-e)"
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:754
 #: ../src/libs/styles.c:70
-#: ../src/views/darkroom.c:1251
+#: ../src/views/darkroom.c:1252
 msgctxt "accel"
 msgid "export"
 msgstr "exportar"
@@ -4898,7 +4908,7 @@ msgstr "eliminar de la colección"
 
 #: ../src/libs/image.c:94
 #: ../src/libs/styles.c:361
-#: ../src/libs/tagging.c:428
+#: ../src/libs/tagging.c:441
 msgid "delete"
 msgstr "borrar"
 
@@ -5230,11 +5240,11 @@ msgstr "importar"
 msgid "import style from a style file"
 msgstr "importar estilo de un fichero"
 
-#: ../src/libs/tagging.c:50
+#: ../src/libs/tagging.c:51
 msgid "tagging"
 msgstr "etiquetado"
 
-#: ../src/libs/tagging.c:274
+#: ../src/libs/tagging.c:287
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -5249,11 +5259,11 @@ msgstr[1] ""
 "desea borrar las etiqueta `%s'?\n"
 "%d imágenes tienen asignada esta etiqueta!"
 
-#: ../src/libs/tagging.c:277
+#: ../src/libs/tagging.c:290
 msgid "delete tag?"
 msgstr "borrar etiqueta?"
 
-#: ../src/libs/tagging.c:361
+#: ../src/libs/tagging.c:374
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -5261,27 +5271,27 @@ msgstr ""
 "etiquetas adjuntas,\n"
 "doble click para separar"
 
-#: ../src/libs/tagging.c:368
+#: ../src/libs/tagging.c:381
 msgid "attach"
 msgstr "añadir"
 
-#: ../src/libs/tagging.c:369
+#: ../src/libs/tagging.c:382
 msgid "attach tag to all selected images"
 msgstr "añadir etiqueta a todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:374
+#: ../src/libs/tagging.c:387
 msgid "detach"
 msgstr "quitar"
 
-#: ../src/libs/tagging.c:375
+#: ../src/libs/tagging.c:388
 msgid "detach tag from all selected images"
 msgstr "quitar etiquetas de todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:389
+#: ../src/libs/tagging.c:402
 msgid "enter tag name"
 msgstr "introducir nombre de etiqueta"
 
-#: ../src/libs/tagging.c:415
+#: ../src/libs/tagging.c:428
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -5289,11 +5299,11 @@ msgstr ""
 "etiquetas relacionadas, \n"
 "doble click para añadir"
 
-#: ../src/libs/tagging.c:422
+#: ../src/libs/tagging.c:435
 msgid "new"
 msgstr "nueva"
 
-#: ../src/libs/tagging.c:423
+#: ../src/libs/tagging.c:436
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -5301,7 +5311,7 @@ msgstr ""
 "crear una nueva etiqueta con el\n"
 "nombre introducido"
 
-#: ../src/libs/tagging.c:429
+#: ../src/libs/tagging.c:442
 msgid "delete selected tag"
 msgstr "borrar etiqueta seleccionada"
 
@@ -5322,7 +5332,7 @@ msgstr "nueva sesión iniciada '%s'"
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:616
-#: ../src/views/darkroom.c:1239
+#: ../src/views/darkroom.c:1240
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "tira de imágenes"
@@ -5355,28 +5365,28 @@ msgid "no image selected!"
 msgstr "¡no hay imagen seleccionada!"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1243
+#: ../src/views/darkroom.c:1244
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom acercar"
 
-#: ../src/views/darkroom.c:1245
+#: ../src/views/darkroom.c:1246
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom rellenar"
 
-#: ../src/views/darkroom.c:1247
+#: ../src/views/darkroom.c:1248
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajustar"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1255
+#: ../src/views/darkroom.c:1256
 msgctxt "accel"
 msgid "image forward"
 msgstr "siguiente imagen"
 
-#: ../src/views/darkroom.c:1257
+#: ../src/views/darkroom.c:1258
 msgctxt "accel"
 msgid "image back"
 msgstr "imagen anterior"
@@ -6441,9 +6451,6 @@ msgstr "previsualizar"
 
 #~ msgid "8-bit tiff"
 #~ msgstr "8-bit tiff"
-
-#~ msgid "float exr"
-#~ msgstr "exr flotante"
 
 #~ msgid "fixed aspect ratio"
 #~ msgstr "relación de aspecto fijo"

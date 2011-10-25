@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-09-24 21:06+0900\n"
-"PO-Revision-Date: 2011-09-24 22:42+0900\n"
+"POT-Creation-Date: 2011-10-25 09:31+0900\n"
+"PO-Revision-Date: 2011-10-25 09:34+0900\n"
 "Last-Translator: Deacon MacMillan <deaconmacmillan@gmail.com>\n"
 "Language-Team: deacon macmillan <deaconmacmillan@gmail.com>\n"
 "Language: \n"
@@ -17,102 +17,104 @@ msgstr ""
 "X-Poedit-Country: JAPAN\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: ../build/src/preferences_gen.h:342
+#: ../build/src/preferences_gen.h:370
 msgid "gui options"
 msgstr "gui オプション"
 
-#: ../build/src/preferences_gen.h:344
+#: ../build/src/preferences_gen.h:372
 msgid "filename of your custom theme in share/darktable/"
 msgstr "カスタムテーマのファイル名　share/darktable"
 
-#: ../build/src/preferences_gen.h:352
-#: ../build/src/preferences_gen.h:369
-#: ../build/src/preferences_gen.h:385
-#: ../build/src/preferences_gen.h:400
-#: ../build/src/preferences_gen.h:416
-#: ../build/src/preferences_gen.h:433
-#: ../build/src/preferences_gen.h:450
-#: ../build/src/preferences_gen.h:467
-#: ../build/src/preferences_gen.h:482
-#: ../build/src/preferences_gen.h:498
-#: ../build/src/preferences_gen.h:515
-#: ../build/src/preferences_gen.h:531
-#: ../build/src/preferences_gen.h:563
-#: ../build/src/preferences_gen.h:579
-#: ../build/src/preferences_gen.h:595
-#: ../build/src/preferences_gen.h:612
-#: ../build/src/preferences_gen.h:629
-#: ../build/src/preferences_gen.h:645
-#: ../build/src/preferences_gen.h:661
-#: ../build/src/preferences_gen.h:677
-#: ../build/src/preferences_gen.h:693
-#: ../build/src/preferences_gen.h:710
+#: ../build/src/preferences_gen.h:380
+#: ../build/src/preferences_gen.h:397
+#: ../build/src/preferences_gen.h:413
+#: ../build/src/preferences_gen.h:428
+#: ../build/src/preferences_gen.h:444
+#: ../build/src/preferences_gen.h:461
+#: ../build/src/preferences_gen.h:478
+#: ../build/src/preferences_gen.h:495
+#: ../build/src/preferences_gen.h:510
+#: ../build/src/preferences_gen.h:526
+#: ../build/src/preferences_gen.h:543
+#: ../build/src/preferences_gen.h:559
+#: ../build/src/preferences_gen.h:591
+#: ../build/src/preferences_gen.h:607
+#: ../build/src/preferences_gen.h:623
+#: ../build/src/preferences_gen.h:640
+#: ../build/src/preferences_gen.h:657
+#: ../build/src/preferences_gen.h:674
+#: ../build/src/preferences_gen.h:691
+#: ../build/src/preferences_gen.h:707
+#: ../build/src/preferences_gen.h:723
+#: ../build/src/preferences_gen.h:739
+#: ../build/src/preferences_gen.h:755
+#: ../build/src/preferences_gen.h:772
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "ダブルクリックすると'%s' に戻る"
 
-#: ../build/src/preferences_gen.h:355
-#: ../build/src/preferences_gen.h:615
+#: ../build/src/preferences_gen.h:383
+#: ../build/src/preferences_gen.h:643
 msgid " (needs a restart) "
 msgstr "「再開が必要」"
 
-#: ../build/src/preferences_gen.h:360
+#: ../build/src/preferences_gen.h:388
 msgid "size of the side panels in pixels"
 msgstr "パネルの幅(ピクセル数）"
 
-#: ../build/src/preferences_gen.h:372
+#: ../build/src/preferences_gen.h:400
 msgid " (needs a restart)"
 msgstr "「再開が必要」"
 
-#: ../build/src/preferences_gen.h:377
+#: ../build/src/preferences_gen.h:405
 msgid "don't use embedded preview jpeg, always use half-size raw"
 msgstr "RAW内JPEGを使わずにRAWのハーフサイズを使う"
 
-#: ../build/src/preferences_gen.h:392
+#: ../build/src/preferences_gen.h:420
 msgid "ask before removing images"
 msgstr "画像を削除事前に確認する"
 
-#: ../build/src/preferences_gen.h:403
+#: ../build/src/preferences_gen.h:431
 msgid "always ask the user before any image is removed from db."
 msgstr "デタベースから画像を削除する前にユーザに確認する"
 
-#: ../build/src/preferences_gen.h:408
+#: ../build/src/preferences_gen.h:436
 msgid "ask before deleting images"
 msgstr "画像を削除する前にユーザに確認する"
 
-#: ../build/src/preferences_gen.h:419
+#: ../build/src/preferences_gen.h:447
 msgid "always ask the user before any image file is deleted."
 msgstr "ファイルを削除する前にユーザに確認する"
 
-#: ../build/src/preferences_gen.h:424
+#: ../build/src/preferences_gen.h:452
 msgid "downsample the preview pixels"
 msgstr "プレビューにダウンサンプリングを使う"
 
-#: ../build/src/preferences_gen.h:436
+#: ../build/src/preferences_gen.h:464
 msgid "this value smaller than 1.0 downsamples the preview pixels in darkroom mode for faster feedback."
 msgstr "1.0より小さい数字は暗室モードにダウンサンプリングを使うため早くなります。"
 
-#: ../build/src/preferences_gen.h:441
+#: ../build/src/preferences_gen.h:469
 msgid "number of folder levels to show in lists"
 msgstr "表示されたフォルダー段数"
 
-#: ../build/src/preferences_gen.h:453
+#: ../build/src/preferences_gen.h:481
 msgid "the number of folder levels to show in film roll names, starting from the right"
 msgstr "右から表示されたフイルムのフォルダー段数"
 
-#: ../build/src/preferences_gen.h:458
+#: ../build/src/preferences_gen.h:486
 msgid "initial rating when importing filmrolls"
 msgstr "フイルムを取り込む時の星の数"
 
-#: ../build/src/preferences_gen.h:474
+#: ../build/src/preferences_gen.h:502
 msgid "enable filmstrip in darkroom mode"
 msgstr "暗室モードにサムネールを表示する"
 
-#: ../build/src/preferences_gen.h:489
+#: ../build/src/preferences_gen.h:517
 msgid "maximum resolution of lighttable thumbnails"
 msgstr "ライトテーブルモードのサムネールの最大理解度"
 
-#: ../build/src/preferences_gen.h:501
+#: ../build/src/preferences_gen.h:529
 msgid ""
 "keep this value low for fast thumbnail creation (allowed: 160-1300)\n"
 "(needs a restart and will invalidate current thumbnail caches)."
@@ -120,95 +122,111 @@ msgstr ""
 "低いほどサムネール作成が早くなる「160-1300」\n"
 " 再開とサムネールをの作り直しが必要"
 
-#: ../build/src/preferences_gen.h:506
+#: ../build/src/preferences_gen.h:534
 msgid "jpeg quality of on-disk thumbnails"
 msgstr "サムネールJPEGの画質"
 
-#: ../build/src/preferences_gen.h:518
+#: ../build/src/preferences_gen.h:546
 msgid "affects only the thumbnail cache used for quick startup."
 msgstr "クイックスタートのサムネールのカッシュのみ"
 
-#: ../build/src/preferences_gen.h:523
+#: ../build/src/preferences_gen.h:551
 msgid "ask before deleting a tag"
 msgstr "タグを削除をする前に確認"
 
-#: ../build/src/preferences_gen.h:553
+#: ../build/src/preferences_gen.h:581
 msgid "core options"
 msgstr "コアオプション"
 
-#: ../build/src/preferences_gen.h:555
+#: ../build/src/preferences_gen.h:583
 msgid "database file"
 msgstr "データベースファイル"
 
-#: ../build/src/preferences_gen.h:566
+#: ../build/src/preferences_gen.h:594
 msgid "filename relative to ~/.config/darktable or starting with a slash (needs a restart)."
 msgstr "/.config/darktable からのファイル名(再開が必要）"
 
-#: ../build/src/preferences_gen.h:571
+#: ../build/src/preferences_gen.h:599
 msgid "image cache file"
 msgstr "画像カッシュファイル"
 
-#: ../build/src/preferences_gen.h:582
+#: ../build/src/preferences_gen.h:610
 msgid "filename relative to ~/.cache/darktable or starting with a slash (needs a restart)."
 msgstr "~/.cache/darktable からのファイル名(再開が必要）"
 
-#: ../build/src/preferences_gen.h:587
+#: ../build/src/preferences_gen.h:615
 msgid "image cache file backup"
 msgstr "画像カッシュファイルの複製"
 
-#: ../build/src/preferences_gen.h:598
+#: ../build/src/preferences_gen.h:626
 msgid "creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart)."
 msgstr "クラッシュのためのサムネールデータロスならないように、カッシュファイルのバクアップをします「再開が必要」"
 
-#: ../build/src/preferences_gen.h:603
+#: ../build/src/preferences_gen.h:631
 msgid "memory in bytes to use for mipmap cache"
 msgstr "mipmapのカッシュに使うメモリー「バイト数」"
 
-#: ../build/src/preferences_gen.h:620
+#: ../build/src/preferences_gen.h:648
 msgid "export multiple images in parallel"
 msgstr "複数の画像を同時に書き出す。"
 
-#: ../build/src/preferences_gen.h:632
+#: ../build/src/preferences_gen.h:660
 msgid "set this variable to num_threads if you want multithreaded export to process multiple images at a time. be warned: every thread will need about 1GB of memory. setting this to 1 switches on per-image parallelization."
 msgstr "この変数を画像書き出すの時のスレッド数にしてください(画像の同時書き出し）各スレッドはやく1GBのメモリを使うのでご注意ください。"
 
-#: ../build/src/preferences_gen.h:637
+#: ../build/src/preferences_gen.h:665
+msgid "host memory limit (in MB) for tiling"
+msgstr "タイリング用最大ホストメモリ量制限"
+
+#: ../build/src/preferences_gen.h:677
+msgid "this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart."
+msgstr "この変数はモジュールの最大メモリ使用量を制限する。低い値にすればはメモリ沢山使うのモジュールのタイル数が増えます。0の値は無制限、500より低い値は500となります。"
+
+#: ../build/src/preferences_gen.h:682
+msgid "minimum amount of memory (in MB) for a single buffer in tiling"
+msgstr "タイリングバッファーの最小メモリ使用量(MB)"
+
+#: ../build/src/preferences_gen.h:694
+msgid "if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit. needs a restart."
+msgstr "0より大きい値は画像一枚の最小のタイリングメモリの使用量となります。ホストメモリ制限より優先となる。"
+
+#: ../build/src/preferences_gen.h:699
 msgid "write a redundant sidecar file for each image"
 msgstr "各画像のサイドカーファイルを作成"
 
-#: ../build/src/preferences_gen.h:648
+#: ../build/src/preferences_gen.h:710
 msgid "these files can later be re-imported into a different database, preserving your changes to the image."
 msgstr "処理を残すためファイルを別のデータベースにインポートすることが可能です。"
 
-#: ../build/src/preferences_gen.h:653
+#: ../build/src/preferences_gen.h:715
 msgid "activate OpenCL support (experimental)"
 msgstr "OpenCL を使用する(試用）"
 
-#: ../build/src/preferences_gen.h:664
-msgid "if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. expect random crashes."
-msgstr "あればOpenCLを使用する。まだ試用の為クラッシュに注意"
+#: ../build/src/preferences_gen.h:726
+msgid "if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to forum darktable-devel at sourceforge.net"
+msgstr "もしもシステムに使われてる場合OpenCLを使用する。まだ試用の為クラッシュに注意"
 
-#: ../build/src/preferences_gen.h:669
+#: ../build/src/preferences_gen.h:731
 msgid "always use lcms2 during export"
 msgstr "書き出しにlcms2を使用する"
 
-#: ../build/src/preferences_gen.h:680
+#: ../build/src/preferences_gen.h:742
 msgid "this is about 28x as slow as the default."
 msgstr "既定値より約28倍遅い"
 
-#: ../build/src/preferences_gen.h:685
+#: ../build/src/preferences_gen.h:747
 msgid "do high quality resampling during export"
 msgstr "書き出しにハイクオリティリサンプリングを使用"
 
-#: ../build/src/preferences_gen.h:696
+#: ../build/src/preferences_gen.h:758
 msgid "the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower."
 msgstr "画像はフル理解度で処理してからダウンサンプリングをするよりよい画質(デスが時間かかります）"
 
-#: ../build/src/preferences_gen.h:701
+#: ../build/src/preferences_gen.h:763
 msgid "password storage backend to use"
 msgstr "ばくエンドのストレージのパスワード"
 
-#: ../build/src/preferences_gen.h:713
+#: ../build/src/preferences_gen.h:775
 msgid "the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
 msgstr "ばくエンドのストレージのパスワード：0- 無、1 - gconf (使用しない), 2 - Kwallet, 3 - gnome keyring"
 
@@ -261,15 +279,15 @@ msgstr "紫"
 msgid "altered"
 msgstr "処理済み"
 
-#: ../src/common/darktable.c:136
+#: ../src/common/darktable.c:149
 msgid "darktable has trapped an illegal instruction which probably means that an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from the console and post the backtrace log to mailing list with information about your CPU and where you got the package from."
 msgstr "カスタムコードはCPUのコードパスに問題があり。端未からgdb darktable を走行して同じくラッシュを行ったらバっクトレースログをメーリングリストに送信してください。"
 
-#: ../src/common/darktable.c:173
+#: ../src/common/darktable.c:186
 msgid "SIMD extensions found: "
 msgstr "SMIDエクステンションが見つかりました"
 
-#: ../src/common/darktable.c:189
+#: ../src/common/darktable.c:202
 #, c-format
 msgid ""
 "darktable is very cpu intensive and uses SSE2 SIMD instructions for heavy calculations. This gives a better user experience but also defines a minimum processor requirement.\n"
@@ -282,23 +300,23 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../src/common/darktable.c:549
+#: ../src/common/darktable.c:567
 #, c-format
 msgid "found strange path `%s'"
 msgstr "パス `%s' が可笑しい"
 
-#: ../src/common/darktable.c:577
+#: ../src/common/darktable.c:595
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "デレクトリー`%s' ローディングエラー"
 
-#: ../src/common/darktable.c:598
+#: ../src/common/darktable.c:616
 #: ../src/gui/gtk.c:1000
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "画像 `%s' の形式は認識出来ない"
 
-#: ../src/common/darktable.c:610
+#: ../src/common/darktable.c:628
 #: ../src/gui/gtk.c:985
 #, c-format
 msgid "error loading file `%s'"
@@ -333,6 +351,10 @@ msgstr "迷子の画像"
 msgid "image `%s' is not available"
 msgstr "画像 `%s' は見つかりません"
 
+#: ../src/common/imageio.c:860
+msgid "failed to allocate memory for export, please lower the threads used for export or buy more memory."
+msgstr "書き出しの為のメモリが足りない、スレッド数を減らしてください"
+
 #: ../src/common/styles.c:73
 #, c-format
 msgid "style with name '%s' already exists"
@@ -357,6 +379,12 @@ msgstr " `%s' スタイル保存しました"
 #, c-format
 msgid "style %s was sucessfully imported"
 msgstr " `%s' スタイル取り込みました"
+
+#: ../src/common/variables.c:207
+#: ../src/iop/clipping.c:952
+#, c-format
+msgid "none"
+msgstr "無し"
 
 #: ../src/control/control.c:943
 #: ../src/control/control.c:946
@@ -590,7 +618,7 @@ msgid "mode"
 msgstr "モード"
 
 #: ../src/develop/imageop.c:1010
-#: ../src/iop/watermark.c:705
+#: ../src/iop/watermark.c:714
 msgid "opacity"
 msgstr "透明度"
 
@@ -1135,7 +1163,7 @@ msgid "images sorted by"
 msgstr "画像整理"
 
 #: ../src/gui/gtk.c:1691
-#: ../src/gui/gtk.c:1930
+#: ../src/gui/gtk.c:1932
 msgid "filename"
 msgstr "ファイル名"
 
@@ -1173,24 +1201,28 @@ msgid "history"
 msgstr "処理歴"
 
 #: ../src/gui/gtk.c:1931
+msgid "image id"
+msgstr "画像同定"
+
+#: ../src/gui/gtk.c:1933
 #: ../src/gui/presets.c:283
 msgid "model"
 msgstr "型"
 
-#: ../src/gui/gtk.c:1932
+#: ../src/gui/gtk.c:1934
 #: ../src/gui/presets.c:290
 msgid "maker"
 msgstr "メーカー"
 
 #. aperture
-#: ../src/gui/gtk.c:1933
+#: ../src/gui/gtk.c:1935
 #: ../src/gui/presets.c:332
 #: ../src/libs/camera.c:516
 msgid "aperture"
 msgstr "絞り"
 
 #. exposure
-#: ../src/gui/gtk.c:1934
+#: ../src/gui/gtk.c:1936
 #: ../src/gui/presets.c:317
 #: ../src/iop/exposure.c:45
 #: ../src/iop/exposure.c:384
@@ -1198,45 +1230,45 @@ msgstr "絞り"
 msgid "exposure"
 msgstr "暴光"
 
-#: ../src/gui/gtk.c:1935
+#: ../src/gui/gtk.c:1937
 msgid "f-length"
 msgstr "f-距離"
 
-#: ../src/gui/gtk.c:1936
+#: ../src/gui/gtk.c:1938
 msgid "distance"
 msgstr "距離"
 
 #. iso
-#: ../src/gui/gtk.c:1937
+#: ../src/gui/gtk.c:1939
 #: ../src/gui/presets.c:304
 #: ../src/libs/camera.c:546
 msgid "iso"
 msgstr "iso"
 
-#: ../src/gui/gtk.c:1938
+#: ../src/gui/gtk.c:1940
 msgid "date/time"
 msgstr "日付・時間"
 
-#: ../src/gui/gtk.c:1939
+#: ../src/gui/gtk.c:1941
 #: ../src/gui/presets.c:297
 msgid "lens"
 msgstr "レンズ"
 
-#: ../src/gui/gtk.c:1940
+#: ../src/gui/gtk.c:1942
 #: ../src/iop/relight.c:319
 msgid "width"
 msgstr "幅"
 
-#: ../src/gui/gtk.c:1941
+#: ../src/gui/gtk.c:1943
 msgid "height"
 msgstr "高さ"
 
-#: ../src/gui/gtk.c:1942
+#: ../src/gui/gtk.c:1944
 #: ../src/libs/collect.h:29
 msgid "film roll"
 msgstr "フイルム"
 
-#: ../src/gui/gtk.c:1943
+#: ../src/gui/gtk.c:1945
 #: ../src/imageio/storage/flickr.c:506
 #: ../src/imageio/storage/gallery.c:154
 #: ../src/imageio/storage/picasa.c:767
@@ -1245,91 +1277,91 @@ msgstr "フイルム"
 msgid "title"
 msgstr "題名"
 
-#: ../src/gui/gtk.c:1944
+#: ../src/gui/gtk.c:1946
 #: ../src/libs/collect.h:37
 #: ../src/libs/metadata.c:311
 msgid "creator"
 msgstr "クリエーター"
 
-#: ../src/gui/gtk.c:1945
+#: ../src/gui/gtk.c:1947
 #: ../src/imageio/storage/picasa.c:769
 #: ../src/libs/collect.h:39
 #: ../src/libs/metadata.c:337
 msgid "rights"
 msgstr "著作権"
 
-#: ../src/gui/gtk.c:1960
+#: ../src/gui/gtk.c:1962
 msgid "image information"
 msgstr "画像情報"
 
 #. Attaching the label to hold the information
-#: ../src/gui/gtk.c:1990
+#: ../src/gui/gtk.c:1992
 msgid "-"
 msgstr "-"
 
-#: ../src/gui/gtk.c:2016
+#: ../src/gui/gtk.c:2018
 msgid "snapshots"
 msgstr "スナップ"
 
-#: ../src/gui/gtk.c:2056
+#: ../src/gui/gtk.c:2058
 msgctxt "global import"
 msgid "import"
 msgstr "取り込む"
 
 #. Adding the single import button
-#: ../src/gui/gtk.c:2082
+#: ../src/gui/gtk.c:2084
 #: ../src/iop/borders.c:401
-#: ../src/iop/clipping.c:921
+#: ../src/iop/clipping.c:919
 msgid "image"
 msgstr "画像"
 
-#: ../src/gui/gtk.c:2084
+#: ../src/gui/gtk.c:2086
 msgid "select one or more images to import"
 msgstr "一つ以上の画像を取り込む"
 
 #. Adding the import button
-#: ../src/gui/gtk.c:2095
+#: ../src/gui/gtk.c:2097
 msgid "folder"
 msgstr "フォルダー"
 
-#: ../src/gui/gtk.c:2098
+#: ../src/gui/gtk.c:2100
 msgid "select a folder to import as film roll"
 msgstr "フイルムとして取り込むフォルダーを選択してください"
 
-#: ../src/gui/gtk.c:2262
+#: ../src/gui/gtk.c:2264
 msgid "histogram"
 msgstr "ヒストグラム"
 
-#: ../src/gui/gtk.c:2362
+#: ../src/gui/gtk.c:2364
 msgid "more plugins"
 msgstr "機能追加"
 
-#: ../src/gui/gtk.c:2457
+#: ../src/gui/gtk.c:2459
 msgid "mean"
 msgstr "均等"
 
-#: ../src/gui/gtk.c:2458
+#: ../src/gui/gtk.c:2460
 msgid "min"
 msgstr "最小"
 
-#: ../src/gui/gtk.c:2459
+#: ../src/gui/gtk.c:2461
 msgid "max"
 msgstr "最"
 
-#: ../src/gui/gtk.c:2472
+#: ../src/gui/gtk.c:2474
 msgid "rgb"
 msgstr "rgb"
 
-#: ../src/gui/gtk.c:2473
+#: ../src/gui/gtk.c:2475
 msgid "Lab"
 msgstr "lab"
 
 #. Creating the colorpicker output label
-#: ../src/gui/gtk.c:2485
+#: ../src/gui/gtk.c:2487
 msgid "(---)"
 msgstr "(---)"
 
-#: ../src/gui/gtk.c:2498
+#: ../src/gui/gtk.c:2500
 msgid "zoomable light table"
 msgstr "ライトテーブル"
 
@@ -1337,7 +1369,7 @@ msgstr "ライトテーブル"
 #. char* n = _("zoomable light table\nfile manager");
 #. while(*n != '\n') n++; n++;
 #. return n;
-#: ../src/gui/gtk.c:2499
+#: ../src/gui/gtk.c:2501
 #: ../src/libs/file_manager.c:43
 msgid "file manager"
 msgstr "ファイルマネージャー"
@@ -1727,16 +1759,16 @@ msgstr "画質"
 msgid "float pfm"
 msgstr "フロートfpm"
 
-#: ../src/imageio/format/png.c:375
+#: ../src/imageio/format/png.c:376
 msgid "8/16-bit png"
 msgstr "8/16ビットpng"
 
-#: ../src/imageio/format/png.c:393
+#: ../src/imageio/format/png.c:394
 #: ../src/imageio/format/tiff.c:239
 msgid "8-bit"
 msgstr "8-ビット"
 
-#: ../src/imageio/format/png.c:398
+#: ../src/imageio/format/png.c:399
 #: ../src/imageio/format/tiff.c:244
 msgid "16-bit"
 msgstr "16-ビット"
@@ -1744,6 +1776,10 @@ msgstr "16-ビット"
 #: ../src/imageio/format/ppm.c:93
 msgid "16-bit ppm"
 msgstr "16-ビット ppm"
+
+#: ../src/imageio/format/rgbe.c:562
+msgid "float hdr"
+msgstr "フロート HDR"
 
 #: ../src/imageio/format/tiff.c:221
 msgid "8/16-bit tiff"
@@ -1843,13 +1879,13 @@ msgstr "flickrへ"
 
 #: ../src/imageio/storage/flickr.c:359
 #: ../src/imageio/storage/flickr.c:399
-#: ../src/imageio/storage/flickr.c:815
-#: ../src/imageio/storage/flickr.c:821
+#: ../src/imageio/storage/flickr.c:824
+#: ../src/imageio/storage/flickr.c:830
 msgid "not authenticated"
 msgstr "確認されていません"
 
 #: ../src/imageio/storage/flickr.c:395
-#: ../src/imageio/storage/flickr.c:811
+#: ../src/imageio/storage/flickr.c:820
 #: ../src/imageio/storage/picasa.c:643
 msgid "authenticated"
 msgstr "確認された"
@@ -1916,12 +1952,12 @@ msgid "export tags"
 msgstr "書き出しにタグを残す"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:748
+#: ../src/imageio/storage/flickr.c:757
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgstr "%d/%d flickr web albumに書き出しました"
 
-#: ../src/imageio/storage/flickr.c:823
+#: ../src/imageio/storage/flickr.c:832
 msgid "Flickr account not authenticated"
 msgstr "flickr アカウント認証されてない。"
 
@@ -2031,7 +2067,7 @@ msgstr "効果の端空間"
 #: ../src/iop/anlfyeni.c:295
 #: ../src/iop/lens.c:1400
 #: ../src/iop/vignette.c:883
-#: ../src/iop/watermark.c:707
+#: ../src/iop/watermark.c:716
 msgid "scale"
 msgstr "尺度"
 
@@ -2378,51 +2414,51 @@ msgid "size of the border in percent of the full image"
 msgstr "枠の大きさ(画像の％）"
 
 #: ../src/iop/borders.c:397
-#: ../src/iop/clipping.c:915
+#: ../src/iop/clipping.c:913
 msgid "aspect"
 msgstr "比例"
 
 #: ../src/iop/borders.c:402
-#: ../src/iop/clipping.c:922
+#: ../src/iop/clipping.c:920
 msgid "golden cut"
 msgstr "黄金率"
 
 #: ../src/iop/borders.c:403
-#: ../src/iop/clipping.c:923
+#: ../src/iop/clipping.c:921
 msgid "1:2"
 msgstr "1:2"
 
 #: ../src/iop/borders.c:404
-#: ../src/iop/clipping.c:924
+#: ../src/iop/clipping.c:922
 msgid "3:2"
 msgstr "3:2"
 
 #: ../src/iop/borders.c:405
-#: ../src/iop/clipping.c:925
+#: ../src/iop/clipping.c:923
 msgid "4:3"
 msgstr "4:2"
 
 #: ../src/iop/borders.c:406
-#: ../src/iop/clipping.c:926
+#: ../src/iop/clipping.c:924
 msgid "square"
 msgstr "1:1"
 
 #: ../src/iop/borders.c:407
-#: ../src/iop/clipping.c:927
+#: ../src/iop/clipping.c:925
 msgid "DIN"
 msgstr "DIN"
 
 #: ../src/iop/borders.c:408
-#: ../src/iop/clipping.c:928
+#: ../src/iop/clipping.c:926
 msgid "16:9"
 msgstr "16:9"
 
 #: ../src/iop/borders.c:409
 msgid "constant border"
-msgstr ""
+msgstr "均等"
 
 #: ../src/iop/borders.c:412
-#: ../src/iop/clipping.c:934
+#: ../src/iop/clipping.c:935
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -2560,150 +2596,141 @@ msgstr "効果量"
 msgid "crop and rotate"
 msgstr "トリミングと回転"
 
-#: ../src/iop/clipping.c:591
+#: ../src/iop/clipping.c:592
 msgid "rotate by  90"
 msgstr "90度右回転"
 
-#: ../src/iop/clipping.c:593
+#: ../src/iop/clipping.c:594
 msgid "rotate by -90"
 msgstr "９０度左回転"
 
-#: ../src/iop/clipping.c:595
+#: ../src/iop/clipping.c:596
 msgid "rotate by 180"
 msgstr "１８０度回転"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:882
-#: ../src/iop/clipping.c:968
+#: ../src/iop/clipping.c:880
+#: ../src/iop/clipping.c:969
 msgid "flip"
 msgstr "ひっくり返す"
 
-#: ../src/iop/clipping.c:889
+#: ../src/iop/clipping.c:887
 msgid "flip image horizontally"
 msgstr "水平半転換"
 
-#: ../src/iop/clipping.c:890
+#: ../src/iop/clipping.c:888
 msgid "flip image vertically"
 msgstr "垂直半転換"
 
-#: ../src/iop/clipping.c:893
+#: ../src/iop/clipping.c:891
 msgid "angle"
 msgstr "角度"
 
-#: ../src/iop/clipping.c:897
+#: ../src/iop/clipping.c:895
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "右クリックしながら直線を引く"
 
-#: ../src/iop/clipping.c:902
+#: ../src/iop/clipping.c:900
 msgid "keystone h"
 msgstr "水平キーストーン"
 
-#: ../src/iop/clipping.c:903
+#: ../src/iop/clipping.c:901
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "水平のキーストン視点調整"
 
-#: ../src/iop/clipping.c:909
+#: ../src/iop/clipping.c:907
 msgid "keystone v"
 msgstr "垂直キーストーン"
 
-#: ../src/iop/clipping.c:910
+#: ../src/iop/clipping.c:908
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "水直のキーストーン視点調整"
 
-#: ../src/iop/clipping.c:920
+#: ../src/iop/clipping.c:918
 msgid "free"
 msgstr "自由"
 
-#: ../src/iop/clipping.c:941
+#: ../src/iop/clipping.c:942
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "比例交換「ctrl-x」"
 
-#: ../src/iop/clipping.c:948
+#: ../src/iop/clipping.c:949
 msgid "guides"
 msgstr "ガイドを表示する"
 
-#: ../src/iop/clipping.c:951
-msgid "none"
-msgstr "無し"
-
-#: ../src/iop/clipping.c:952
+#: ../src/iop/clipping.c:953
 msgid "grid"
 msgstr "グリッド"
 
-#: ../src/iop/clipping.c:953
+#: ../src/iop/clipping.c:954
 msgid "rules of thirds"
 msgstr "3分の2のルールを表示する"
 
-#: ../src/iop/clipping.c:954
+#: ../src/iop/clipping.c:955
 msgid "diagonal method"
 msgstr "対角方法を表示する"
 
-#: ../src/iop/clipping.c:955
+#: ../src/iop/clipping.c:956
 msgid "harmonious triangles"
 msgstr "調和のとれた三角形を表示する"
 
-#: ../src/iop/clipping.c:956
+#: ../src/iop/clipping.c:957
 msgid "golden mean"
 msgstr "黄金率"
 
-#: ../src/iop/clipping.c:958
+#: ../src/iop/clipping.c:959
 msgid "with this option, you can display guide lines to help compose your photograph."
 msgstr "コンポジションガイド線を表示する"
 
-#: ../src/iop/clipping.c:962
+#: ../src/iop/clipping.c:963
 msgid "type"
 msgstr "グリッドタイプ"
 
-#: ../src/iop/clipping.c:975
+#: ../src/iop/clipping.c:976
 msgid "flip guides horizontally"
 msgstr "線の水平反転する"
 
-#: ../src/iop/clipping.c:976
+#: ../src/iop/clipping.c:977
 msgid "flip guides vertically"
 msgstr "線を垂直反転する"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:978
+#: ../src/iop/clipping.c:979
 msgid "golden sections"
 msgstr "黄金分"
 
-#: ../src/iop/clipping.c:980
+#: ../src/iop/clipping.c:981
 msgid "enable this option to show golden sections."
 msgstr "黄金率表示"
 
-#: ../src/iop/clipping.c:983
+#: ../src/iop/clipping.c:984
 msgid "spiral sections"
 msgstr "螺旋を表示"
 
-#: ../src/iop/clipping.c:984
+#: ../src/iop/clipping.c:985
 msgid "enable this option to show golden spiral sections."
 msgstr "黄金螺旋を表示"
 
-#: ../src/iop/clipping.c:987
+#: ../src/iop/clipping.c:988
 msgid "golden spiral"
 msgstr "黄金螺旋"
 
-#: ../src/iop/clipping.c:988
+#: ../src/iop/clipping.c:989
 msgid "enable this option to show a golden spiral guide."
 msgstr "黄金螺旋ガイド表示"
 
-#: ../src/iop/clipping.c:991
+#: ../src/iop/clipping.c:992
 msgid "golden triangles"
 msgstr "黄金三角"
 
-#: ../src/iop/clipping.c:992
+#: ../src/iop/clipping.c:993
 msgid "enable this option to show golden triangles."
 msgstr "黄金三角を表示"
 
-#: ../src/iop/clipping.c:1579
+#: ../src/iop/clipping.c:1581
 msgctxt "accel"
 msgid "commit"
 msgstr "決定"
-
-#: ../src/iop/clipping.c:1581
-msgctxt "accel"
-msgid "undo"
-msgstr "戻る"
 
 #: ../src/iop/clipping.c:1583
 msgctxt "accel"
@@ -2990,34 +3017,34 @@ msgstr "白黒フイルム"
 msgid "select by"
 msgstr "選択方法"
 
-#: ../src/iop/demosaic.c:98
+#: ../src/iop/demosaic.c:106
 msgid "demosaic"
 msgstr "デモザイク"
 
-#: ../src/iop/demosaic.c:115
+#: ../src/iop/demosaic.c:123
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "端のしきい値"
 
 #. //////////////////////////
-#: ../src/iop/demosaic.c:1059
+#: ../src/iop/demosaic.c:1151
 #: ../src/iop/highlights.c:413
 msgid "method"
 msgstr "方法"
 
-#: ../src/iop/demosaic.c:1062
+#: ../src/iop/demosaic.c:1154
 msgid "ppg"
 msgstr "ppg"
 
-#: ../src/iop/demosaic.c:1063
+#: ../src/iop/demosaic.c:1155
 msgid "AMaZE"
 msgstr "AMaZE"
 
-#: ../src/iop/demosaic.c:1064
+#: ../src/iop/demosaic.c:1156
 msgid "demosaicing raw data method"
 msgstr "RAWデモザイク方法"
 
-#: ../src/iop/demosaic.c:1069
+#: ../src/iop/demosaic.c:1161
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -3027,29 +3054,42 @@ msgstr ""
 "0.0=切 \n"
 "1.0= 端を無視する。"
 
-#: ../src/iop/demosaic.c:1070
+#: ../src/iop/demosaic.c:1162
 msgid "edge threshold"
 msgstr "端のしきい値"
 
-#: ../src/iop/demosaic.c:1074
+#: ../src/iop/demosaic.c:1166
 msgid "color smoothing"
 msgstr "色スムージング"
 
-#: ../src/iop/demosaic.c:1079
+#: ../src/iop/demosaic.c:1171
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "デモザイク後の色スムージングの段"
 
-#: ../src/iop/demosaic.c:1082
+#. //////////////////////////
+#: ../src/iop/demosaic.c:1175
 msgid "match greens"
 msgstr "緑を合わせる"
 
-#: ../src/iop/demosaic.c:1085
-msgid ""
-"switch on green equilibration before demosaicing.\n"
-"necessary for some mid-range cameras such as the EOS 400D."
-msgstr ""
-"デモザイク事前緑平衡をする。\n"
-"eos kiss X等に必要"
+#: ../src/iop/demosaic.c:1178
+msgid "disabled"
+msgstr "無効"
+
+#: ../src/iop/demosaic.c:1179
+msgid "local average"
+msgstr "ローカル均等"
+
+#: ../src/iop/demosaic.c:1180
+msgid "full average"
+msgstr "全体均等"
+
+#: ../src/iop/demosaic.c:1181
+msgid "full and local average"
+msgstr "全体とローカル平均"
+
+#: ../src/iop/demosaic.c:1182
+msgid "green channels mathing method"
+msgstr "緑チャネルマッチング方法"
 
 #: ../src/iop/equalizer.c:43
 msgid "legacy equalizer"
@@ -3708,11 +3748,11 @@ msgstr "ローパスフィルターのコントラスト"
 msgid "the color saturation of lowpass filter"
 msgstr "ローパスフィルターの彩度"
 
-#: ../src/iop/monochrome.c:65
+#: ../src/iop/monochrome.c:62
 msgid "monochrome"
 msgstr "モノクロ"
 
-#: ../src/iop/monochrome.c:307
+#: ../src/iop/monochrome.c:294
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr "ドラッグとスクロールすると色フイルターを調整出来ます"
 
@@ -4267,28 +4307,28 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "yオフセット"
 
-#: ../src/iop/watermark.c:688
+#: ../src/iop/watermark.c:697
 msgid "marker"
 msgstr "印"
 
-#: ../src/iop/watermark.c:689
+#: ../src/iop/watermark.c:698
 msgid "alignment"
 msgstr "調整"
 
-#: ../src/iop/watermark.c:729
+#: ../src/iop/watermark.c:738
 msgid "x offset"
 msgstr "xオフセット"
 
-#: ../src/iop/watermark.c:730
+#: ../src/iop/watermark.c:739
 msgid "y offset"
 msgstr "yオフセット"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:736
+#: ../src/iop/watermark.c:745
 msgid "the opacity of the watermark"
 msgstr "透明度"
 
-#: ../src/iop/watermark.c:737
+#: ../src/iop/watermark.c:746
 msgid "the scale of the watermark"
 msgstr "大きさ"
 
@@ -4805,7 +4845,7 @@ msgstr "現在の設定で書き出し「ctrl-e」"
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:754
 #: ../src/libs/styles.c:70
-#: ../src/views/darkroom.c:1251
+#: ../src/views/darkroom.c:1252
 msgctxt "accel"
 msgid "export"
 msgstr "書き出し"
@@ -4842,7 +4882,7 @@ msgstr "コレクションから除く"
 
 #: ../src/libs/image.c:94
 #: ../src/libs/styles.c:361
-#: ../src/libs/tagging.c:428
+#: ../src/libs/tagging.c:441
 msgid "delete"
 msgstr "削除"
 
@@ -5172,11 +5212,11 @@ msgstr "取り込む"
 msgid "import style from a style file"
 msgstr "スタイルをファイルから取り込む"
 
-#: ../src/libs/tagging.c:50
+#: ../src/libs/tagging.c:51
 msgid "tagging"
 msgstr "タグ"
 
-#: ../src/libs/tagging.c:274
+#: ../src/libs/tagging.c:287
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -5191,11 +5231,11 @@ msgstr[1] ""
 "タグを本当に削除しますか`%s'\n"
 "%d画像は現在たぐを付いてます"
 
-#: ../src/libs/tagging.c:277
+#: ../src/libs/tagging.c:290
 msgid "delete tag?"
 msgstr "タグを削除しますか？"
 
-#: ../src/libs/tagging.c:361
+#: ../src/libs/tagging.c:374
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -5203,27 +5243,27 @@ msgstr ""
 "添付されたタグ\n"
 "ダブルクリック＝除く"
 
-#: ../src/libs/tagging.c:368
+#: ../src/libs/tagging.c:381
 msgid "attach"
 msgstr "添付"
 
-#: ../src/libs/tagging.c:369
+#: ../src/libs/tagging.c:382
 msgid "attach tag to all selected images"
 msgstr "選択された画像にタグを付ける"
 
-#: ../src/libs/tagging.c:374
+#: ../src/libs/tagging.c:387
 msgid "detach"
 msgstr "タグを除く"
 
-#: ../src/libs/tagging.c:375
+#: ../src/libs/tagging.c:388
 msgid "detach tag from all selected images"
 msgstr "選択された画像のタグを除く"
 
-#: ../src/libs/tagging.c:389
+#: ../src/libs/tagging.c:402
 msgid "enter tag name"
 msgstr "タグ名を入力"
 
-#: ../src/libs/tagging.c:415
+#: ../src/libs/tagging.c:428
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -5231,11 +5271,11 @@ msgstr ""
 "関連タグ \n"
 "ダブルクリック=タグを除く"
 
-#: ../src/libs/tagging.c:422
+#: ../src/libs/tagging.c:435
 msgid "new"
 msgstr "新"
 
-#: ../src/libs/tagging.c:423
+#: ../src/libs/tagging.c:436
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -5243,7 +5283,7 @@ msgstr ""
 "入力された名\n"
 "タグを作成する "
 
-#: ../src/libs/tagging.c:429
+#: ../src/libs/tagging.c:442
 msgid "delete selected tag"
 msgstr "選択されたタグを削除する"
 
@@ -5264,7 +5304,7 @@ msgstr "新セッション開始 '%s'"
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:616
-#: ../src/views/darkroom.c:1239
+#: ../src/views/darkroom.c:1240
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "フイルムストリップ入切"
@@ -5297,28 +5337,28 @@ msgid "no image selected!"
 msgstr "画像選択されていません！"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1243
+#: ../src/views/darkroom.c:1244
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "ズームアップ"
 
-#: ../src/views/darkroom.c:1245
+#: ../src/views/darkroom.c:1246
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "ズーム詰める"
 
-#: ../src/views/darkroom.c:1247
+#: ../src/views/darkroom.c:1248
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "ズームぴったり"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1255
+#: ../src/views/darkroom.c:1256
 msgctxt "accel"
 msgid "image forward"
 msgstr "次の画像"
 
-#: ../src/views/darkroom.c:1257
+#: ../src/views/darkroom.c:1258
 msgctxt "accel"
 msgid "image back"
 msgstr "前の画像"
@@ -5529,6 +5569,18 @@ msgstr "スクロール中央"
 msgctxt "accel"
 msgid "preview"
 msgstr "プレビュー"
+
+#~ msgctxt "accel"
+
+#~ msgid "undo"
+#~ msgstr "戻る"
+
+#~ msgid ""
+#~ "switch on green equilibration before demosaicing.\n"
+#~ "necessary for some mid-range cameras such as the EOS 400D."
+#~ msgstr ""
+#~ "デモザイク事前緑平衡をする。\n"
+#~ "eos kiss X等に必要"
 
 #~ msgid "center"
 #~ msgstr "中央"

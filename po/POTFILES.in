@@ -32,6 +32,7 @@ src/imageio/format/jpeg.c
 src/imageio/format/pfm.c
 src/imageio/format/png.c
 src/imageio/format/ppm.c
+src/imageio/format/rgbe.c
 src/imageio/format/tiff.c
 src/imageio/format/rgbe.c
 src/imageio/storage/disk.c
