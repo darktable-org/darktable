@@ -726,7 +726,12 @@ dt_view_image_expose(
   {
     const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
     surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
-    scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
+    if(zoom == 1)
+    {
+      if(buf.size == DT_MIPMAP_3) scale = 1.0f;
+      else scale = fminf(darktable.thumbnail_width/(float)buf.width, darktable.thumbnail_height/(float)buf.height);
+    }
+    else scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
   }
 
   // draw centered and fitted:
