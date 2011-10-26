@@ -664,7 +664,7 @@ dt_view_image_expose(
     if(!img)
       img = dt_image_cache_read_get(darktable.image_cache, imgid);
   }
-  float imgwd = 0.9f;
+  float imgwd = 0.90f;
   if(zoom == 1)
   {
     imgwd = .97f;
@@ -672,8 +672,7 @@ dt_view_image_expose(
   }
   else
   {
-    double x0 = 0.007*width, y0 = 0.007*height, rect_width = 0.986*width, rect_height = 0.986*height, radius = 0.04*width;
-    // double x0 = 0.*width, y0 = 0.*height, rect_width = 1.*width, rect_height = 1.*height, radius = 0.08*width;
+    double x0 = 1, y0 = 1, rect_width = width-2, rect_height = height-2, radius = 5;
     double x1, y1, off, off1;
 
     x1=x0+rect_width;
