@@ -35,7 +35,7 @@ int32_t dt_captured_image_import_job_run(dt_job_t *job)
 
   char message[512]= {0};
   snprintf(message, 512, _("importing image %s"), t->filename);
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
 
   int id = dt_image_import(t->film_id, t->filename, TRUE);
   if(id)
@@ -67,7 +67,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   char message[512]= {0};
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
   double fraction=0;
-  const guint jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   /* try to get exp program mode for nikon */
   char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");

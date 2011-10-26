@@ -75,6 +75,8 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, ui
 */
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module);
 
+/* hook up with viewmanager view change to initialize modulegroup */
+static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data);
 
 const char* name()
 {
@@ -170,13 +172,19 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
 
-  /* lets set default group */
-  _lib_modulegroups_set(self, DT_MODULEGROUP_BASIC);
+  /* let's connect to view changed signal to set default group */
+  dt_control_signal_connect(darktable.signals,
+			    DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, 
+			    G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
+
 
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  /* let's not listen to signals anymore.. */
+  dt_control_signal_disconnect(darktable.signals,  G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
+
   darktable.develop->proxy.modulegroups.module = NULL;
   darktable.develop->proxy.modulegroups.set = NULL;
   darktable.develop->proxy.modulegroups.get = NULL;
@@ -185,6 +193,11 @@ void gui_cleanup(dt_lib_module_t *self)
   
   g_free(self->data);
   self->data = NULL;
+}
+
+static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data)
+{
+  _lib_modulegroups_set(data, DT_MODULEGROUP_BASIC);
 }
 
 static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
@@ -213,44 +226,44 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     {
       dt_iop_module_t *module = (dt_iop_module_t*)modules->data;
       GtkWidget *w = module->expander;
-    
+      
       /* exclude gamma module */
       if(!strcmp(module->op, "gamma")) continue;
-      
+
       /* lets show/hide modules dependent on current group*/
       switch(d->current)
       {
         case DT_MODULEGROUP_ACTIVE_PIPE:
-	{
-	  if(module->enabled)
-	    gtk_widget_show(w);
-	  else
-	    gtk_widget_hide(w);
-	} break;
-	
+          {
+            if(module->enabled)
+              gtk_widget_show(w);
+            else
+              gtk_widget_hide(w);
+          } break;
+
         case DT_MODULEGROUP_FAVORITES:
-	{
-	  if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
-	    gtk_widget_show(w);
-	  else
-	    gtk_widget_hide(w);
-	} break;
+          {
+            if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
+              gtk_widget_show(w);
+            else
+              gtk_widget_hide(w);
+          } break;
 
         case DT_MODULEGROUP_NONE:
-	{
-	  /* show all */
-	  gtk_widget_show(w);
-	} break;
+          {
+            /* show all */
+            gtk_widget_show(w);
+          } break;
 
         default:
-	{
-	  if ( _lib_modulegroups_test(self,d->current, module->groups()) &&
-	       (!module->showhide || (module->showhide && dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))) &&
-	       (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
-	    gtk_widget_show(w);
-	  else
-	    gtk_widget_hide(w);
-	}
+          {
+            if ( _lib_modulegroups_test(self,d->current, module->groups()) &&
+                (!module->showhide || (module->showhide && dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide)))) &&
+                (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
+              gtk_widget_show(w);
+            else
+              gtk_widget_hide(w);
+          }
       }
     } while((modules = g_list_next(modules))!=NULL);
   }
@@ -299,11 +312,13 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
   /* this is a proxy function so it might be called from another thread */
   gboolean i_own_lock = dt_control_gdk_lock();
 
-  _lib_modulegroups_update_iop_visibility(self);
+  /* if no change just update visibilility */
+  if(d->current == group)
+  {
+    _lib_modulegroups_update_iop_visibility(self);
+    return;
+  }
 
-  /* if no change just do nothing.. */
-  if(d->current == group) return;
-    
   /* set current group */
   if(group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[group]))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[group]), TRUE);

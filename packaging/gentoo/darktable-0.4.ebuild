@@ -6,7 +6,7 @@
 inherit eutils git
 
 DESCRIPTION="Utility to organize and develop raw images"
-HOMEPAGE="http://darktable.sf.net/"
+HOMEPAGE="http://www.darktable.org/"
 SRC_URI="http://switch.dl.sourceforge.net/sourceforge/darktable/${P}.tar.bz2"
 LICENSE="GPL-3"
 SLOT="0"

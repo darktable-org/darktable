@@ -496,7 +496,7 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width,
 #undef RGBE_DATA_SIZE
 
 
-dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
+dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
@@ -506,18 +506,15 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
 
   if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;
 
-  if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error_cache_full;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 4*img->width*img->height*sizeof(float));
-  if(RGBE_ReadPixels_RLE(f, img->pixels, img->width, img->height))
+  float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  if(!buf) goto error_cache_full;
+  if(RGBE_ReadPixels_RLE(f, buf, img->width, img->height))
   {
-    dt_image_release(img, DT_IMAGE_FULL, 'w');
-    dt_image_release(img, DT_IMAGE_FULL, 'r');
     goto error_corrupt;
   }
   fclose(f);
   // repair nan/inf etc
-  for(int i=img->width*img->height-1; i>=0; i--) for(int c=0; c<3; c++) img->pixels[4*i+c] = fmaxf(0.0f, fminf(10000.0, img->pixels[3*i+c]));
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
+  for(int i=img->width*img->height-1; i>=0; i--) for(int c=0; c<3; c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0, buf[3*i+c]));
   return DT_IMAGEIO_OK;
 
 error_corrupt:
@@ -526,34 +523,5 @@ error_corrupt:
 error_cache_full:
   fclose(f);
   return DT_IMAGEIO_CACHE_FULL;
-}
-
-dt_imageio_retval_t dt_imageio_open_rgbe_preview(dt_image_t *img, const char *filename)
-{
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4)) return DT_IMAGEIO_FILE_CORRUPTED;
-  FILE *f = fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
-
-  if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;
-
-  float *buf = (float *)malloc(4*sizeof(float)*img->width*img->height);
-  if(!buf) goto error_corrupt;
-  if(RGBE_ReadPixels_RLE(f, buf, img->width, img->height))
-  {
-    free(buf);
-    goto error_corrupt;
-  }
-  // repair nan/inf etc
-  for(int i=img->width*img->height-1; i>=0; i--) for(int c=0; c<3; c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0f, buf[3*i+c]));
-  dt_imageio_retval_t retv = dt_image_raw_to_preview(img, buf);
-  free(buf);
-  fclose(f);
-  return retv;
-
-error_corrupt:
-  fclose(f);
-  return DT_IMAGEIO_FILE_CORRUPTED;
 }
 

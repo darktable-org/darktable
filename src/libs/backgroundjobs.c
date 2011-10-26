@@ -46,13 +46,13 @@ typedef struct dt_lib_backgroundjobs_t
 dt_lib_backgroundjobs_t;
 
 /* proxy function for creating a ui bgjob plate */
-static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gchar *message);
+static const guint *_lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gchar *message);
 /* proxy function for destroying a ui bgjob plate */
-static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, guint key);
+static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, const guint *key);
 /* proxy function for assigning and set cancel job for a ui bgjob plate*/
-static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, guint key, struct dt_job_t *job);
+static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, const guint *key, struct dt_job_t *job);
 /* proxy function for setting the progress of a ui bgjob plate */
-static void _lib_backgroundjobs_progress(dt_lib_module_t *self, guint key, double progress);
+static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key, double progress);
 /* callback when cancel job button is pushed  */
 static void _lib_backgroundjobs_cancel_callback(GtkWidget *w, gpointer user_data);
 
@@ -112,7 +112,7 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gchar *message)
+static const guint * _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gchar *message)
 {
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t *)self->data;
 
@@ -124,10 +124,11 @@ static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gch
   j->type = type;
   j->widget = gtk_event_box_new();
 
-  guint key = g_direct_hash((gconstpointer)j);
+  guint *key = g_malloc(sizeof(guint));
+  *key = g_direct_hash((gconstpointer)j);
 
   /* create in hash out of j pointer*/
-  g_hash_table_insert(d->jobs, (gpointer)j, j);
+  g_hash_table_insert(d->jobs, key, j);
 
   /* intialize the ui elements for job */
   gtk_widget_set_name (GTK_WIDGET (j->widget), "background_job_eventbox");
@@ -159,16 +160,16 @@ static guint _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gch
   return key;
 }
 
-static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, guint key)
+static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, const guint *key)
 {
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
 
   gboolean i_own_lock = dt_control_gdk_lock();
 
-  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
+  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, key);
   if(j) 
   {
-    g_hash_table_remove(d->jobs, GUINT_TO_POINTER(key));
+    g_hash_table_remove(d->jobs, key);
     
     /* remove job widget from jobbox */
     if(GTK_IS_WIDGET(j->widget))
@@ -180,6 +181,7 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, guint key)
     
     /* free allocted mem */
     g_free(j);
+    g_free((guint*)key);
   }
   if(i_own_lock) dt_control_gdk_unlock();
 }
@@ -190,14 +192,14 @@ static void _lib_backgroundjobs_cancel_callback(GtkWidget *w, gpointer user_data
   dt_control_job_cancel(job);
 }
 
-static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, guint key, struct dt_job_t *job)
+static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, const guint *key, struct dt_job_t *job)
 {
   if(!darktable.control->running) return;
   gboolean i_own_lock = dt_control_gdk_lock();
 
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
 
-  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
+  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, key);
   if (j)
   {
     GtkWidget *w=j->widget;
@@ -213,13 +215,13 @@ static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, guint key
 }
 
 
-static void _lib_backgroundjobs_progress(dt_lib_module_t *self, guint key, double progress)
+static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key, double progress)
 {
   if(!darktable.control->running) return;
   dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;  
   gboolean i_own_lock = dt_control_gdk_lock();
 
-  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, GUINT_TO_POINTER(key));
+  dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, key);
   if(j)
   {
     /* check if progress is above 1.0 and destroy bgjob if finished */

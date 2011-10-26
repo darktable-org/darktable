@@ -315,15 +315,10 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   // First of all draw image if availble
   if( lib->image_id >= 0 )
   {
-    dt_image_t *image = dt_image_cache_get(lib->image_id, 'r');
-    if( image )
-    {
-      const float wd = width/1.0;
-      cairo_translate(cr,0.0f, TOP_MARGIN);
-      dt_view_image_expose(image, &(lib->image_over), lib->image_id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
-      cairo_translate(cr,0.0f, -BOTTOM_MARGIN);
-      dt_image_cache_release(image, 'r');
-    }
+    const float wd = width/1.0;
+    cairo_translate(cr,0.0f, TOP_MARGIN);
+    dt_view_image_expose(&(lib->image_over), lib->image_id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
+    cairo_translate(cr,0.0f, -BOTTOM_MARGIN);
   }
 }
 
@@ -332,16 +327,18 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
 
-  int32_t width  = MIN(width_i,  DT_IMAGE_WINDOW_SIZE);
-  int32_t height = MIN(height_i, DT_IMAGE_WINDOW_SIZE);
+  const int32_t capwd = darktable.thumbnail_width;
+  const int32_t capht = darktable.thumbnail_height;
+  int32_t width  = MIN(width_i,  capwd);
+  int32_t height = MIN(height_i, capht);
 
   cairo_set_source_rgb (cri, .2, .2, .2);
   cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_fill (cri);
 
 
-  if(width_i  > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, -(DT_IMAGE_WINDOW_SIZE-width_i) *.5f, 0.0f);
-  if(height_i > DT_IMAGE_WINDOW_SIZE) cairo_translate(cri, 0.0f, -(DT_IMAGE_WINDOW_SIZE-height_i)*.5f);
+  if(width_i  > capwd) cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
+  if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
 
   // Mode dependent expose of center view
   switch(lib->mode)

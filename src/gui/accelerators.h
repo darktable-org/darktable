@@ -36,12 +36,6 @@ typedef struct dt_accel_t
 
 } dt_accel_t;
 
-typedef struct dt_accel_local_t
-{
-  dt_accel_t *accel;
-  GClosure *closure;
-} dt_accel_local_t;
-
 // Accel path string building functions
 void dt_accel_path_global(char *s, size_t n, const char* path);
 void dt_accel_path_view(char *s, size_t n, char *module,
@@ -88,11 +82,16 @@ void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path,
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                                  GtkWidget *slider);
 void dt_accel_connect_locals_iop(dt_iop_module_t *module);
+void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
 
 // Disconnect function
 void dt_accel_disconnect_list(GSList *accels);
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module);
 void dt_accel_cleanup_locals_iop(dt_iop_module_t *module);
 
+// Deregister functions
+void dt_accel_deregister_iop(dt_iop_module_t *module,const gchar *path);
+// Rename functions
+void dt_accel_rename_iop(dt_iop_module_t *module,const gchar *path,const gchar *new_path);
 
 #endif

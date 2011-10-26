@@ -1199,7 +1199,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void gui_update    (dt_iop_module_t *self)
 {
-  if(self->dev->image->filters)
+  if(self->dev->image->flags & DT_IMAGE_RAW)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
   else
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction\nonly works for raw images."));

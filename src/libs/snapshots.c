@@ -366,10 +366,8 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   g_free(label1);
 
   /* generate a label */
-  char *fname = darktable.develop->image->filename + strlen(darktable.develop->image->filename);
-  while(fname > darktable.develop->image->filename && *fname != '/') fname--;
-  snprintf(wdname, 64, "%s", fname);
-  fname = wdname + strlen(wdname);
+  snprintf(wdname, 64, "%s", darktable.develop->image->filename);
+  char *fname = wdname + strlen(wdname);
   while(fname > wdname && *fname != '.') fname --;
   if(*fname != '.') fname = wdname + strlen(wdname);
   if(wdname + 64 - fname > 4) sprintf(fname, "(%d)", darktable.develop->history_end);

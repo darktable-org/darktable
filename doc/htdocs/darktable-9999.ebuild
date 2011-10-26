@@ -7,7 +7,7 @@ inherit gnome2 cmake-utils git
 unset SRC_URI
 
 DESCRIPTION="Darktable is a virtual lighttable and darkroom for photographers"
-HOMEPAGE="http://darktable.sf.net/"
+HOMEPAGE="http://www.darktable.org/"
 EGIT_REPO_URI="git://darktable.git.sf.net/gitroot/darktable/darktable"
 
 EGIT_BRANCH="master"

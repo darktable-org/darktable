@@ -189,13 +189,11 @@ sort_pos(pair_t *a, pair_t *b)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
-  if(!img) return 1;
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
 
   char filename[1024]= {0};
   char dirname[1024]= {0};
-  dt_image_full_path(img->id, dirname, 1024);
+  dt_image_full_path(imgid, dirname, 1024);
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
@@ -216,7 +214,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
-    d->vp->img = img;
+    d->vp->imgid = imgid;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
@@ -230,7 +228,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     {
       fprintf(stderr, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
       dt_control_log(_("could not create directory `%s'!"), dirname);
-      dt_image_cache_release(img, 'r');
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       return 1;
     }
@@ -250,14 +247,14 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     char *title = NULL, *description = NULL, *tags = NULL;
     GList *res;
 
-    res = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+    res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res)
     {
       title = res->data;
       g_list_free(res);
     }
 
-    res = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
+    res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
     if(res)
     {
       description = res->data;
@@ -265,7 +262,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     }
 
     unsigned int count = 0;
-    res = dt_metadata_get(img->id, "Xmp.dc.subject", &count);
+    res = dt_metadata_get(imgid, "Xmp.dc.subject", &count);
     if(res)
     {
       // don't show the internal tags (darktable|...)
@@ -311,7 +308,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  dt_imageio_export(img, filename, format, fdata);
+  dt_imageio_export(imgid, filename, format, fdata);
   /* also export thumbnail: */
   // write with reduced resolution:
   const int max_width  = fdata->max_width;
@@ -324,11 +321,10 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if(c <= filename || *c=='/') c = filename + strlen(filename);
   const char *ext = format->extension(fdata);
   sprintf(c,"-thumb.%s",ext);
-  dt_imageio_export(img, filename, format, fdata);
+  dt_imageio_export(imgid, filename, format, fdata);
   // restore for next image:
   fdata->max_width = max_width;
   fdata->max_height = max_height;
-  dt_image_cache_release(img, 'r');
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;

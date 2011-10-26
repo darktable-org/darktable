@@ -21,6 +21,7 @@
 #include "common/collection.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_dng.h"
 #include "common/similarity.h"
@@ -59,13 +60,13 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    char dtfilename[520];
-    dt_image_full_path(img->id, dtfilename, 512);
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
+    char dtfilename[DT_MAX_PATH_LEN+4];
+    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN);
     char *c = dtfilename + strlen(dtfilename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, dtfilename);
-    dt_image_cache_release(img, 'r');
+    dt_image_cache_read_release(darktable.image_cache, img);
     t = g_list_delete_link(t, t);
   }
   return 0;
@@ -137,9 +138,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 
     /* background job plate only if more then one image is reindexed */
     snprintf(message, 512, ngettext ("re-indexing %d image", "re-indexing %d images", total), total );
-    guint jid = 0;
-    if(total>1)
-      jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+    const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
     
     do {
       /* get the _control_indexer_img_t pointer */
@@ -165,6 +164,7 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
         /* no need to additional work */
         continue;
       }
+
       
       /*
        *  Check if image histogram or lightmap should be updated.
@@ -172,142 +172,112 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
        */
       if ( (idximg->flags&_INDEXER_UPDATE_HISTOGRAM) ||  (idximg->flags&_INDEXER_UPDATE_LIGHTMAP) )
       {
-        /* get image from imgid */
-        dt_image_t *img = dt_image_cache_get(idximg->id, 'r');
-        
-        /* setup a pipe Max x Height 320x320 */
-        dt_develop_t dev;
-        dt_dev_init(&dev, 0);
-        dt_dev_load_image(&dev, img);
-        
-        /* check that we actually got image pixels... 
-            if not this will SIGKILL down the pipe...
-        */
-        if(dev.image->pixels)
-        {
-          const int wd = dev.image->width;
-          const int ht = dev.image->height;
-          
-          dt_dev_pixelpipe_t pipe;
-          dt_dev_pixelpipe_init_export(&pipe, wd, ht);
-          dt_dev_pixelpipe_set_input(&pipe, &dev, dev.image->pixels, dev.image->width, dev.image->height, 1.0);
-          dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-          dt_dev_pixelpipe_synch_all(&pipe, &dev);
-          dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-              
-          /* set scaling */
-          const float scalex = fminf(320/(float)pipe.processed_width,  1.0);
-          const float scaley = fminf(320/(float)pipe.processed_height, 1.0);
-          const float scale = fminf(scalex, scaley);
-          const int dest_width=pipe.processed_width*scale, dest_height=pipe.processed_height*scale;
-          
-          /* process the pipe */
-          dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, dest_width, dest_height, scale);
-          
-          /* lets generate a histogram */
-          uint8_t *pixel = pipe.backbuf;
-        
-          /*
-           * Generate similarity histogram data if requested
-           */
-          if (pipe.backbuf && (idximg->flags&_INDEXER_UPDATE_HISTOGRAM))
-          {
-            dt_similarity_histogram_t histogram;
-            float bucketscale = (float)DT_SIMILARITY_HISTOGRAM_BUCKETS/(float)0xff;
-            for(int j=0;j<(4*dest_width*dest_height);j+=4)
-            {
-              /* swap rgb and scale to bucket index*/
-              uint8_t rgb[3];
-              
-              for(int k=0; k<3; k++)
-                rgb[k] = (int)((float)pixel[j+2-k] * bucketscale);
+	/* get a mipmap of image to analyse */
+	dt_mipmap_buffer_t buf;
+	dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, idximg->id, DT_MIPMAP_2, DT_MIPMAP_BLOCKING);
 
-              /* distribute rgb into buckets */
-              for(int k=0; k<3; k++)
-                histogram.rgbl[rgb[k]][k]++;
-              
-              /* distribute lum into buckets */
-              uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
-              histogram.rgbl[lum][3]++;
-            }
-             
-            for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
-              for (int j=0;j<4;j++) 
-                histogram.rgbl[k][j] /= (dest_width*dest_height);
-              
-            /* store the histogram data */
-            dt_similarity_histogram_store(idximg->id, &histogram);
-            
-          }                  
-          
-          /*
-           * Generate scaledowned similarity lightness map if requested
-           */
-          if (pipe.backbuf && (idximg->flags&_INDEXER_UPDATE_LIGHTMAP))
+	/*
+	 * Generate similarity histogram data if requested
+	 */
+	if ( (idximg->flags&_INDEXER_UPDATE_HISTOGRAM) )
+        {
+	  dt_similarity_histogram_t histogram;
+	  float bucketscale = (float)DT_SIMILARITY_HISTOGRAM_BUCKETS/(float)0xff;
+	  for(int j=0;j<(4*buf.width*buf.height);j+=4)
           {
-            dt_similarity_lightmap_t lightmap;
-            memset(&lightmap,0,sizeof(dt_similarity_lightmap_t));
+	    /* swap rgb and scale to bucket index */
+	    uint8_t rgb[3];
             
-            /* 
-             * create a pixbuf out of the image for downscaling 
-             */
-            
-            /* first of setup a standard rgb buffer, swap bgr in same routine */
-            uint8_t *rgbbuf = g_malloc(dest_width*dest_height*3);
-            for(int j=0;j<(dest_width*dest_height);j++)
-              for(int k=0;k<3;k++)
-                rgbbuf[3*j+k] = pixel[4*j+2-k];
-           
-            /* then create pixbuf and scale down to lightmap size */
-            GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf,GDK_COLORSPACE_RGB,FALSE,8,dest_width,dest_height,(dest_width*3),NULL,NULL);
-            GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source,DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE,GDK_INTERP_HYPER);
-            
-            /* copy scaled data into lightmap */
-            uint8_t min=0xff,max=0;
-            uint8_t *spixels = gdk_pixbuf_get_pixels(scaled);
+	    for(int k=0; k<3; k++)
+	      rgb[k] = (int)((buf.buf[j+2-k]/(float)0xff) * bucketscale);
+	    
+	    /* distribute rgb into buckets */
+	    for(int k=0; k<3; k++)
+	      histogram.rgbl[rgb[k]][k]++;
+	    
+	    /* distribute lum into buckets */
+	    uint8_t lum = MAX(MAX(rgb[0], rgb[1]), rgb[2]);
+	    histogram.rgbl[lum][3]++;
+	  }
           
-            for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
-            {
-              /* copy rgb */
-              for(int k=0;k<3;k++)
-                lightmap.pixels[4*j+k] = spixels[3*j+k];
-              
-              /* average intensity into 4th channel */
-              lightmap.pixels[4*j+3] =  (lightmap.pixels[4*j+0]+ lightmap.pixels[4*j+1]+ lightmap.pixels[4*j+2])/3.0;
-              min = MAX(0,MIN(min, lightmap.pixels[4*j+3]));
-              max = MIN(0xff,MAX(max, lightmap.pixels[4*j+3]));
-            }
-      
-            /* contrast stretch each channel in lightmap */
-            float scale=0;
-            int range = max-min;
-            if(range==0) 
-              scale = 1.0;
-            else 
-              scale = 0xff/range;
-            for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
-            {
-              for(int k=0;k<4;k++)
-                lightmap.pixels[4*j+k] = (lightmap.pixels[4*j+k]-min)*scale;
-            }
-              
-            /* free some resources */
-            gdk_pixbuf_unref(scaled);
-            gdk_pixbuf_unref(source);
+	  for(int k=0; k<DT_SIMILARITY_HISTOGRAM_BUCKETS; k++) 
+	    for (int j=0;j<4;j++) 
+	      histogram.rgbl[k][j] /= (buf.width*buf.height);
+	  
+	  /* store the histogram data */
+	  dt_similarity_histogram_store(idximg->id, &histogram);
+          
+	}                  
+          
+	/*
+	 * Generate scaledowned similarity lightness map if requested
+	 */
+	if ( (idximg->flags&_INDEXER_UPDATE_LIGHTMAP) )
+        {
+	  dt_similarity_lightmap_t lightmap;
+	  memset(&lightmap,0,sizeof(dt_similarity_lightmap_t));
+          
+	  /* 
+	   * create a pixbuf out of the image for downscaling 
+	   */
+	  
+	  /* first of setup a standard rgb buffer, swap bgr in same routine */
+	  uint8_t *rgbbuf = g_malloc(buf.width*buf.height*3);
+	  for(int j=0;j<(buf.width*buf.height);j++)
+	    for(int k=0;k<3;k++)
+	      rgbbuf[3*j+k] = buf.buf[4*j+2-k];
+	  
+	  
+	  /* then create pixbuf and scale down to lightmap size */
+	  GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf,GDK_COLORSPACE_RGB,FALSE,8,buf.width,buf.height,(buf.width*3),NULL,NULL);
+	  GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source,DT_SIMILARITY_LIGHTMAP_SIZE,DT_SIMILARITY_LIGHTMAP_SIZE,GDK_INTERP_HYPER);
+          
+	  /* copy scaled data into lightmap */
+	  uint8_t min=0xff,max=0;
+	  uint8_t *spixels = gdk_pixbuf_get_pixels(scaled);
+          
+	  for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
+          {
+	    /* copy rgb */
+	    for(int k=0;k<3;k++)
+	      lightmap.pixels[4*j+k] = spixels[3*j+k];
+	    
+	    /* average intensity into 4th channel */
+	    lightmap.pixels[4*j+3] =  (lightmap.pixels[4*j+0]+ lightmap.pixels[4*j+1]+ lightmap.pixels[4*j+2])/3.0;
+	    min = MAX(0,MIN(min, lightmap.pixels[4*j+3]));
+	    max = MIN(0xff,MAX(max, lightmap.pixels[4*j+3]));
+	  }
+	  
+	  /* contrast stretch each channel in lightmap 
+	   *  TODO: do we want this...
+	   */
+	  float scale=0;
+	  int range = max-min;
+	  if(range==0) 
+	    scale = 1.0;
+	  else 
+	    scale = 0xff/range;
+	  for(int j=0;j<(DT_SIMILARITY_LIGHTMAP_SIZE*DT_SIMILARITY_LIGHTMAP_SIZE);j++)
+          {
+	    for(int k=0;k<4;k++)
+	      lightmap.pixels[4*j+k] = (lightmap.pixels[4*j+k]-min)*scale;
+	  }
+	  
+	  /* free some resources */
+	  gdk_pixbuf_unref(scaled);
+	  gdk_pixbuf_unref(source);
             
-            g_free(rgbbuf);
-            
-            /* store the lightmap */
-            dt_similarity_lightmap_store(idximg->id, &lightmap);
-          }
-    
-    
-          dt_dev_pixelpipe_cleanup(&pipe);
-        }
-        
-        dt_dev_cleanup(&dev);
-        dt_image_cache_release(img, 'r');
-      }
+	  g_free(rgbbuf);
+          
+	  /* store the lightmap */
+	  dt_similarity_lightmap_store(idximg->id, &lightmap);
+	}
+	
+	
+	/* no use for buffer anymore release the mipmap */
+	dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+	
+      }        
       
       /* update background progress */
       if (total>1)
@@ -358,7 +328,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, 512, ngettext ("merging %d image", "merging %d images", total), total );
 
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
  
   float *pixels = NULL;
   float *weight = NULL;
@@ -369,22 +339,24 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, img->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
     if(img->filters == 0 || img->bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
     }
     filter = dt_image_flipped_filter(img);
-    if(mip != DT_IMAGE_FULL)
+    if(buf.size != DT_MIPMAP_FULL)
     {
       dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
@@ -405,8 +377,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       dt_control_log(_("images have to be of same size!"));
       free(pixels);
       free(weight);
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       goto error;
     }
     // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in the system => f/22
@@ -419,11 +391,11 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float cal = 100.0f/(aperture*exp*iso);
     whitelevel = fmaxf(whitelevel, cal);
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
+    #pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht)
 #endif
     for(int k=0; k<wd*ht; k++)
     {
-      const uint16_t in = ((uint16_t *)img->pixels)[k];
+      const uint16_t in = ((uint16_t *)buf.buf)[k];
       const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : exp * 0.01f);
       pixels[k] += w * in * cal;
       weight[k] += w;
@@ -435,8 +407,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     fraction+=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
 
-    dt_image_release(img, DT_IMAGE_FULL, 'r');
-    dt_image_cache_release(img, 'r');
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_image_cache_read_release(darktable.image_cache, img);
   }
   // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
 #ifdef _OPENMP
@@ -482,7 +454,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("duplicating %d image", "duplicating %d images", total), total );
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
     imgid = (long int)t->data;
@@ -497,24 +469,29 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 
 int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
+#if 0
+  // FIXME: replace with proper crop/rotate history stack pasting
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  const int cw = t1->flag;
+  // const int cw = t1->flag;
   GList *t = t1->index;
   int total = g_list_length(t);
-  char message[512]= {0};
   double fraction=0;
-  snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  // char message[512]= {0};
+  // snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
+  // const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, "flipping has been disabled!");
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_flip(imgid, cw);
+    // FIXME: disabled for now!
+    // dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+#endif
   return 0;
 }
 
@@ -527,7 +504,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   char query[1024];
   sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
@@ -579,7 +556,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("deleting %d image", "deleting %d images", total), total );
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   sqlite3_stmt *stmt;
 
@@ -594,7 +571,6 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   GList *list = NULL;
   
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -622,10 +598,6 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     dt_image_path_append_version(imgid, filename, 512);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
-    (void)g_unlink(filename);
-    sprintf(c, ".dt");
-    (void)g_unlink(filename);
-    sprintf(c, ".dttags");
     (void)g_unlink(filename);
 
     dt_image_remove(imgid);
@@ -847,7 +819,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
   
   /* create a cancellable bgjob ui template */
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
   const dt_control_t *control = darktable.control;
 
@@ -858,8 +830,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   const int full_entries = dt_conf_get_int ("parallel_export");
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
-  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
-#pragma omp parallel default(none) private(imgid, size) shared(control,fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads) if(num_threads > 1)
+  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
+#pragma omp parallel default(none) private(imgid, size) shared(control, fraction, stderr, w, h, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
@@ -892,29 +864,29 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       dt_tag_detach(tagid, imgid);
       // check if image still exists:
       char imgfilename[1024];
-      dt_image_t *image = dt_image_cache_get(imgid, 'r');
+      const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
-  dt_image_full_path(image->id, imgfilename, 1024);
-  if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
-  {
-    dt_control_log(_("image `%s' is currently unavailable"), image->filename);
-    fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
-    // dt_image_remove(imgid);
-    dt_image_cache_release(image, 'r');
-  }
-  else
-  {
-    dt_image_cache_release(image, 'r');
-    mstorage->store(sdata, imgid, mformat, fdata, num, total);
-  }
+        dt_image_full_path(image->id, imgfilename, 1024);
+        if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
+        {
+          dt_control_log(_("image `%s' is currently unavailable"), image->filename);
+          fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
+          // dt_image_remove(imgid);
+          dt_image_cache_read_release(darktable.image_cache, image);
+        }
+        else
+        {
+          dt_image_cache_read_release(darktable.image_cache, image);
+          mstorage->store(sdata, imgid, mformat, fdata, num, total);
+        }
       }
 #ifdef _OPENMP
       #pragma omp critical
 #endif
       {
         fraction+=1.0/total;
-	dt_control_backgroundjobs_progress(control, jid, fraction);
+        dt_control_backgroundjobs_progress(control, jid, fraction);
       }
     }
 #ifdef _OPENMP

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -497,40 +497,6 @@ int RGBE_ReadPixels_RLE(FILE *fp, float *data, int scanline_width,
 #undef RGBE_DATA_BLUE
 #undef RGBE_DATA_SIZE
 
-
-#if 0
-dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename)
-{
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4)) return DT_IMAGEIO_FILE_CORRUPTED;
-  FILE *f = fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
-
-  if(RGBE_ReadHeader(f, &img->width, &img->height, NULL)) goto error_corrupt;
-
-  if(dt_image_alloc(img, DT_IMAGE_FULL)) goto error_cache_full;
-  dt_image_check_buffer(img, DT_IMAGE_FULL, 3*img->width*img->height*sizeof(uint8_t));
-  if(RGBE_ReadPixels_RLE(f, img->pixels, img->width, img->height))
-  {
-    dt_image_release(img, DT_IMAGE_FULL, 'w');
-    dt_image_release(img, DT_IMAGE_FULL, 'r');
-    goto error_corrupt;
-  }
-  fclose(f);
-  // repair nan/inf etc
-  for(int i=0; i < img->width*img->height*3; i++) img->pixels[i] = fmaxf(0.0f, fminf(10000.0, img->pixels[i]));
-  dt_image_release(img, DT_IMAGE_FULL, 'w');
-  return DT_IMAGEIO_OK;
-
-error_corrupt:
-  fclose(f);
-  return DT_IMAGEIO_FILE_CORRUPTED;
-error_cache_full:
-  fclose(f);
-  return DT_IMAGEIO_CACHE_FULL;
-}
-#endif
 
 void*
 get_params(dt_imageio_module_format_t *self)

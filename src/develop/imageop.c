@@ -48,7 +48,8 @@ typedef struct _iop_gui_blend_data_t
   GtkVBox *box;
   GtkComboBox *blend_modes_combo;
   GtkWidget *opacity_slider;
-} _iop_gui_blend_data_t;
+}
+_iop_gui_blend_data_t;
 
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
@@ -280,7 +281,6 @@ error:
 static int
 dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
-  dt_pthread_mutex_init(&module->params_mutex, NULL);
   module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
@@ -538,6 +538,25 @@ init_presets(dt_iop_module_so_t *module_so)
   sqlite3_finalize(stmt);
 }
 
+static void init_key_accels(dt_iop_module_so_t *module)
+{
+    // Calling the accelerator initialization callback, if present
+  if(module->init_key_accels)
+    (module->init_key_accels)(module);
+  /** load shortcuts for presets **/
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char path[1024];
+    snprintf(path,1024,"preset/%s",(const char *)sqlite3_column_text(stmt, 0));
+    dt_accel_register_iop(module, FALSE, NC_("accel", path), 0, 0);
+
+  }
+  sqlite3_finalize(stmt);
+}
+
 void dt_iop_load_modules_so()
 {
   GList *res = NULL;
@@ -568,8 +587,7 @@ void dt_iop_load_modules_so()
     res = g_list_append(res, module);
     init_presets(module);
     // Calling the accelerator initialization callback, if present
-    if(module->init_key_accels)
-      (module->init_key_accels)(module);
+    init_key_accels(module);
 
     if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
     {
@@ -616,6 +634,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     // stay constant for all images).
     memcpy(module->factory_params, module->params, module->params_size);
     module->factory_enabled = module->default_enabled;
+    module->so = module_so;
     dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
@@ -646,7 +665,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
     free(module->default_blendop_params) ; 
     module->default_blendop_params = NULL ; 
   }
-  dt_pthread_mutex_destroy(&module->params_mutex);
 }
 
 void dt_iop_unload_modules_so()
@@ -759,7 +777,7 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
   memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_gui_update(module);
-  if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module, TRUE);
+  dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
 static void
@@ -793,7 +811,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if (darktable.develop->gui_module->gui_focus) 
       darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
 
-    gtk_widget_set_state(dt_iop_gui_get_widget(darktable.develop->gui_module), GTK_STATE_NORMAL);
+    gtk_widget_set_state(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_NORMAL);
 
   //    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
 
@@ -817,9 +835,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   /* set the focus on module */
   if(module)
   {
-    gtk_widget_set_state(dt_iop_gui_get_widget(module), GTK_STATE_SELECTED);
+    gtk_widget_set_state(dt_iop_gui_get_pluginui(module), GTK_STATE_SELECTED);
       
-    gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
+    //gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
 
     /*
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
@@ -1071,6 +1089,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkWidget *pluginui_frame = gtk_frame_new(NULL);
   GtkWidget *pluginui = gtk_event_box_new();
 
+  gtk_widget_set_name(pluginui,"dt-plugin-ui");
+
   module->header = header;
 
   /* steup the header box */
@@ -1167,6 +1187,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)
 {
   return gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),1)))));
+}
+
+GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
+{
+  return gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),1)));
 }
 
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
@@ -1285,8 +1310,14 @@ FC(const int row, const int col, const unsigned int filters)
  * resamping is done via bilateral filtering and respecting the input mosaic pattern.
  */
 void
-dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-                                        const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+dt_iop_clip_and_zoom_demosaic_half_size(
+    float *out,
+    const uint16_t *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -1352,7 +1383,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
           const uint16_t p3 = in[i   + in_stride*(j + 1)];
           const uint16_t p4 = in[i+1 + in_stride*(j + 1)];
 
-          if (!((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)))
+          if (!((pc >= 60000) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) >= 60000)))
           {
             sum = _mm_add_epi32(sum, _mm_set_epi32(0,p4,p3+p2,p1));
             num++;
@@ -1373,9 +1404,101 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 #endif
 }
 
+#if 0 // gets rid of pink artifacts, but doesn't do sub-pixel sampling, so shows some staircasing artifacts.
 void
-dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
-    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters,
+    const float clip)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f/roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = round(px_footprint/2);
+
+  // move p to point to an rggb block:
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx+1, filters) != 1) trggbx ++;
+  if(FC(trggby, trggbx,   filters) != 0)
+  {
+    trggbx = (trggbx + 1)&1;
+    trggby ++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    float *outc = out + 4*(out_stride*y);
+
+    float fy = (y + roi_out->y)*px_footprint;
+    int py = (int)fy & ~1;
+    py = MIN(((roi_in->height-4) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
+
+    float fx = roi_out->x*px_footprint;
+      
+    for(int x=0; x<roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      fx += px_footprint;
+      int px = (int)fx & ~1;
+      px = MIN(((roi_in->width -4) & ~1u), px) + rggbx;
+
+      int maxi = MIN(((roi_in->width -3)&~1u)+rggbx, px+2*samples);
+
+      int num = 0;
+
+      const int idx = px + in_stride*py;
+      const float pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
+
+      // 2x2 blocks in the middle of sampling region
+      __m128 sum = _mm_setzero_ps();
+
+      for(int j=py; j<=maxj; j+=2)
+        for(int i=px; i<=maxi; i+=2)
+        {
+          const float p1 = in[i   + in_stride*j];
+          const float p2 = in[i+1 + in_stride*j];
+          const float p3 = in[i   + in_stride*(j + 1)];
+          const float p4 = in[i+1 + in_stride*(j + 1)];
+
+          if (!((pc >= clip) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) >= clip)))
+          {
+            sum = _mm_add_ps(sum, _mm_set_ps(0,p4,p3+p2,p1));
+            num++;
+          }
+        }
+
+      col = _mm_mul_ps(sum, _mm_div_ps(_mm_set_ps(0.0f,1.0f,0.5f,1.0f),_mm_set1_ps(num)));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
+
+#else // very fast and smooth, but doesn't handle highlights:
+void
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters,
+    const float clip)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -1549,6 +1672,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   }
   _mm_sfence();
 }
+#endif
 
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {
@@ -1686,6 +1810,8 @@ static void enable_module_callback(GtkAccelGroup *accel_group,
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 }
 
+
+
 void dt_iop_connect_common_accels(dt_iop_module_t *module)
 {
   GClosure* closure = NULL;
@@ -1710,6 +1836,16 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
 
   if(module->fusion_slider)
     dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
+
+  sqlite3_stmt *stmt;
+  // don't know for which image. show all we got:
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+	dt_accel_connect_preset_iop(module,(char *)sqlite3_column_text(stmt, 0));
+  }
+  sqlite3_finalize(stmt);
 }
 
 gchar *

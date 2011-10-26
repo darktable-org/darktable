@@ -225,7 +225,7 @@ balance_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->balance= dtgtk_slider_get_value(slider);
+  p->balance = dtgtk_slider_get_value(slider)/100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -387,7 +387,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->highlight_hue= p->highlight_hue;
   d->shadow_saturation = p->shadow_saturation;
   d->highlight_saturation = p->highlight_saturation;
-  d->balance = p->balance/100.0;
+  d->balance = p->balance;
   d->compress=p->compress;
 #endif
 }

@@ -1,9 +1,11 @@
 # from art.gnome.org: marble-look, adjusted
 style "clearlooks-default"
 {
+
   GtkWindow::resize-grip-height = 0
   GtkWindow::resize-grip-width = 0
-
+  GtkScrollbar::slider_width = 16
+  GtkScrollbar::stepper_size = 16
   GtkScrolledWindow::scrollbar-spacing = 0
   GtkScrolledWindow::scrollbar-within-bevel = TRUE
   GtkScrolledWindow::shadow-type = GTK_SHADOW_NONE
@@ -268,13 +270,6 @@ widget "*.plugins_vbox_left.GtkEventBox" style "clearlooks-brightbg"
 
 widget "*.header_label" style "clearlooks-header"
 
-widget "*.import_eventbox" style "clearlooks-brightbg"
-widget "*.library_eventbox" style "clearlooks-brightbg"
-widget "*.snapshots_eventbox" style "clearlooks-brightbg"
-widget "*.metadata_eventbox" style "clearlooks-brightbg"
-widget "*.history_eventbox" style "clearlooks-brightbg"
-#widget "*.module_list_eventbox" style "clearlooks-brightbg"
-
 widget "*.right.GtkEventBox" style "clearlooks-brightbg"
 widget "*.left.GtkEventBox" style "clearlooks-brightbg"
 
@@ -282,6 +277,7 @@ widget "*.left.GtkEventBox" style "clearlooks-brightbg"
 # class "GtkEntry" style "clearlooks-entry"
 
 widget_class "*.GtkFrame.GtkEventBox" style "clearlooks-plugin"
+widget "*.dt-plugin-ui" style "clearlooks-plugin"
 
 widget "*.background_job_eventbox" style "clearlooks-brightbg"
 #widget_class "*.GtkMenuItem.*" style "clearlooks-menu-item"

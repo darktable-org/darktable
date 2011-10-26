@@ -17,14 +17,15 @@
 */
 
 #include "views/view.h"
-#include "common/history.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/history.h"
+#include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "control/control.h"
 #include "control/conf.h"
-#include "common/image_cache.h"
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/accelerators.h"
@@ -271,7 +272,7 @@ void gui_init(dt_lib_module_t *self)
 
   
   /* set size of filmstrip */
-  int32_t height = dt_conf_get_int("plugins/filmstrip/height");
+  int32_t height = dt_conf_get_int("plugins/lighttable/filmstrip/height");
   gtk_widget_set_size_request(d->filmstrip, -1, CLAMP(height,64,400));
 
   /* create the resize handle */
@@ -380,7 +381,7 @@ static gboolean _lib_filmstrip_size_handle_motion_notify_callback(GtkWidget *w, 
     gtk_widget_get_size_request (d->filmstrip,&sx,&sy);
     sy = CLAMP(d->size_handle_height+(d->size_handle_y - y), 64,400);
 
-    dt_conf_set_int("plugins/filmstrip/height", sy);
+    dt_conf_set_int("plugins/lighttable/filmstrip/height", sy);
 
     gtk_widget_set_size_request(d->filmstrip,-1,sy);
 
@@ -444,7 +445,8 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
     case DT_VIEW_STAR_4:
     case DT_VIEW_STAR_5:
     {
-      dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
+      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+      dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
       image->dirty = 1;
       if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
       else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6)) image->flags &= ~0x7;
@@ -453,8 +455,8 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
         image->flags &= ~0x7;
         image->flags |= strip->image_over;
       }
-      dt_image_cache_flush(image);
-      dt_image_cache_release(image, 'r');
+      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+      dt_image_cache_read_release(darktable.image_cache, image);
       break;
     }
 
@@ -527,7 +529,6 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       int id = sqlite3_column_int(stmt, 0);
-      dt_image_t *image = dt_image_cache_get(id, 'r');
       // set mouse over id
       if(seli == col)
       {
@@ -538,9 +539,8 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
       // FIXME find out where the y translation is done, how big the value is and use it directly instead of getting it from the matrix ...
       cairo_matrix_t m;
       cairo_get_matrix(cr, &m);
-      dt_view_image_expose(image, &(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
+      dt_view_image_expose(&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
       cairo_restore(cr);
-      dt_image_cache_release(image, 'r');
     }
     else goto failure;
     cairo_translate(cr, wd, 0.0f);
@@ -675,21 +675,19 @@ static void _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_group
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       if (mouse_over_id <= 0) return;
       /* get image from cache */
-      dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-      image->dirty = 1;
+      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+      dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
       if (num == 666) 
-	image->flags &= ~0xf;
+        image->flags &= ~0xf;
       else if (num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) 
-	image->flags &= ~0x7;
+        image->flags &= ~0x7;
       else
       {
-	image->flags &= ~0x7;
-	image->flags |= num;
+        image->flags &= ~0x7;
+        image->flags |= num;
       }
-
-      /* flush and release image */
-      dt_image_cache_flush(image);
-      dt_image_cache_release(image, 'r');
+      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+      dt_image_cache_read_release(darktable.image_cache, image);
 
       /* redraw all */
       dt_control_queue_redraw();

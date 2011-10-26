@@ -62,8 +62,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
   dt_conf_set_bool ("write_sidecar_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
-  dt_conf_set_float("preview_subsample", 1.f);
-  dt_conf_set_int  ("mipmap_cache_thumbnails", 1000);
   dt_conf_set_int  ("parallel_export", 1);
   dt_conf_set_int  ("cache_memory", 536870912);
   dt_conf_set_int  ("database_cache_quality", 89);
@@ -104,7 +102,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("plugins/lighttable/collect/num_rules", 0);
 
   // reasonable thumbnail res:
-  dt_conf_set_int  ("plugins/lighttable/thumbnail_size", 800);
+  dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 800);
+  dt_conf_set_int  ("plugins/lighttable/thumbnail_height", 800);
 
   // should be unused:
   dt_conf_set_float("gamma_linear", .1f);
@@ -356,7 +355,7 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->run_mutex, NULL);
 
   // start threads
-  s->num_threads = dt_ctl_get_num_procs()+1;
+  s->num_threads = MIN(4, dt_ctl_get_num_procs()+1);
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
   dt_pthread_mutex_lock(&s->run_mutex);
   s->running = 1;
@@ -1429,27 +1428,27 @@ int dt_control_key_released(guint key, guint state)
 
 
 
-guint dt_control_backgroundjobs_create(const struct dt_control_t *s, guint type,const gchar *message)
+const guint *dt_control_backgroundjobs_create(const struct dt_control_t *s, guint type,const gchar *message)
 {
   if (s->proxy.backgroundjobs.module)
     return s->proxy.backgroundjobs.create(s->proxy.backgroundjobs.module, type, message);
   return 0;
 }
 
-void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, guint id)
+void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, const guint *key)
 {
   if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.destroy(s->proxy.backgroundjobs.module, id);
+    s->proxy.backgroundjobs.destroy(s->proxy.backgroundjobs.module, key);
 }
 
-void dt_control_backgroundjobs_progress(const struct dt_control_t *s, guint id, double progress)
+void dt_control_backgroundjobs_progress(const struct dt_control_t *s, const guint *key, double progress)
 {
   if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.progress(s->proxy.backgroundjobs.module, id, progress);
+    s->proxy.backgroundjobs.progress(s->proxy.backgroundjobs.module, key, progress);
 }
 
-void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, guint id, dt_job_t *job)
+void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, const guint *key, dt_job_t *job)
 {
   if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, id, job);
+    s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, key, job);
 }

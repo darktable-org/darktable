@@ -361,7 +361,7 @@ void dt_film_import1(dt_film_t *film)
   double fraction = 0;
   uint32_t total = g_list_length(images); 
   g_snprintf(message, 512, ngettext("importing %d image","importing %d images", total), total);
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   /* loop thru the images and import to current film roll */
   dt_film_t *cfr = film;
@@ -505,7 +505,11 @@ void dt_film_remove(const int id)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where film_id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   while(sqlite3_step(stmt) == SQLITE_ROW)
-    dt_image_cache_clear(sqlite3_column_int(stmt, 0));
+  {
+    const uint32_t imgid = sqlite3_column_int(stmt, 0);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+    dt_image_cache_remove (darktable.image_cache, imgid);
+  }
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from images where id in (select id from images where film_id = ?1)", -1, &stmt, NULL);

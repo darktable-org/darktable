@@ -24,6 +24,7 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "dtgtk/tristatebutton.h"
 #include <stdlib.h>
 
@@ -58,6 +59,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkComboBox *exposure_min, *exposure_max;
   GtkComboBox *aperture_min, *aperture_max;
   GtkSpinButton *focal_length_min, *focal_length_max;
+  gchar *original_name;
 }
 dt_gui_presets_edit_dialog_t;
 
@@ -158,6 +160,9 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_stmt *stmt;
   gchar *name = get_active_preset_name(module);
   if(name == NULL) return;
+  char tmp_path[1024];
+  snprintf(tmp_path,1024,"preset/%s",name);
+  dt_accel_deregister_iop(module,tmp_path);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3 and writeprotect=0", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
@@ -170,6 +175,10 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 static void
 edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
 {
+	//rename accerelartors
+    char path[1024];
+    snprintf(path,1024,"preset/%s",g->original_name);
+    dt_accel_rename_iop(g->module,path,gtk_entry_get_text(g->name));
   // commit all the user input fields
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, enabled, blendop_params, "
@@ -200,6 +209,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
   sqlite3_finalize(stmt);
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
+  g_free(g->original_name);
   free(g);
 }
 
@@ -253,6 +263,7 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   GtkBox *vbox4 = GTK_BOX(gtk_vbox_new(TRUE, 5));
 
   dt_gui_presets_edit_dialog_t *g = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
+  g->original_name = name;
   g->module = module;
   g->name = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_text(g->name, name);
@@ -404,7 +415,6 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
 
   g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
   gtk_widget_show_all (dialog);
-  g_free(name);
 }
 
 static void
@@ -436,6 +446,11 @@ menuitem_new_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, module->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  // create a shortcut for the new entry
+    char path[1024];
+    snprintf(path,1024,"preset/%s",_("new preset"));
+  dt_accel_register_iop(module->so,FALSE,path,0,0);
+  dt_accel_connect_preset_iop(module,_("new preset"));
   // then show edit dialog
   edit_preset (_("new preset"), module);
 }
@@ -562,7 +577,7 @@ void dt_gui_favorite_presets_menu_show()
 
 
 static void
-dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, dt_iop_params_t *params, int32_t params_size, dt_develop_blend_params_t *bl_params, dt_iop_module_t *module, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
+dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, dt_iop_params_t *params, int32_t params_size, dt_develop_blend_params_t *bl_params, dt_iop_module_t *module, const dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
 {
   GtkMenu *menu = darktable.gui->presets_popup_menu;
   if(menu)
@@ -705,9 +720,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
   }
 }
 
-
-
-void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t version, void *params, int32_t params_size, void *blendop_params, dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
+void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t version, void *params, int32_t params_size, void *blendop_params, const dt_image_t *image, void (*pick_callback)(GtkMenuItem*,void*), void *callback_data)
 {
   dt_gui_presets_popup_menu_show_internal(op, version, params, params_size, blendop_params, NULL, image, pick_callback, callback_data);
 }

@@ -18,7 +18,7 @@
 				</tgroup>
 			</informaltable>
 			
-		<para>Darktable splittoning module has more parameters that impacts on the default above behavior, 
+		<para>darktable splittoning module has more parameters that impacts on the default above behavior, 
 				we have balance which offsets the 50% gray level in image and compression that does compress
 				toning in the shadows and highlights which  leaves a gap which are untouched by the effect.
 				Read more and see examples of these additional parameters to splittoning module in "usage" section.

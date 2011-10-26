@@ -30,8 +30,9 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
-#include "common/points.h"
+#include "common/mipmap_cache.h"
 #include "common/opencl.h"
+#include "common/points.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "libs/lib.h"
@@ -77,7 +78,7 @@ static int usage(const char *argv0)
 }
 
 typedef void (dt_signal_handler_t)(int) ;
-static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
+// static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 
 #ifdef __APPLE__
@@ -145,9 +146,11 @@ void _dt_sigsegv_handler(int param)
   _dt_sigsegv_old_handler(param);
 }
 
+#if 0
 static
 void _dt_sigill_handler(int param)
 {
+  fprintf(stderr, "[this doesn't seem to work]\n");
   GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
 "darktable has trapped an illegal instruction which probably means that \
 an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
@@ -173,7 +176,6 @@ the console and post the backtrace log to mailing list with information about yo
     : "0" (level) \
     )
 #endif
-
 
 
 static 
@@ -214,6 +216,7 @@ darktable will now close down.\n\n%s"),message);
     exit(11);
   }
 }
+#endif
 
 /*  TODO: make this case insensitive */
 gboolean dt_supported_image(const gchar *filename)
@@ -356,8 +359,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   g_type_init();
 
+  // does not work, as gtk is not inited yet.
+  // even if it were, it's a super bad idea to invoke gtk stuff from
+  // a signal handler.
   /* check cput caps */
-  dt_check_cpu(argc,argv);
+  // dt_check_cpu(argc,argv);
 
   
 #ifdef HAVE_GEGL
@@ -408,10 +414,13 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_conf_init(darktable.conf, filename);
 
   // get max lighttable thumbnail size:
-  darktable.thumbnail_size = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_size"), 160, 1300);
+  darktable.thumbnail_width  = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_width"),  200, 3000);
+  darktable.thumbnail_height = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_height"), 200, 3000);
   // and make sure it can be mip-mapped all the way from mip4 to mip0
-  darktable.thumbnail_size /= 16;
-  darktable.thumbnail_size *= 16;
+  darktable.thumbnail_width  /= 16;
+  darktable.thumbnail_width  *= 16;
+  darktable.thumbnail_height /= 16;
+  darktable.thumbnail_height *= 16;
 
   // Initialize the password storage engine
   darktable.pwstorage=dt_pwstorage_new();
@@ -481,18 +490,15 @@ int dt_init(int argc, char *argv[], const int init_gui)
   memset(darktable.points, 0, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
-  int thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
-  thumbnails = MIN(1000000, MAX(20, thumbnails));
+  // must come before mipmap_cache, because that one will need to access
+  // image dimensions stored in here:
+  darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
+  memset(darktable.image_cache, 0, sizeof(dt_image_cache_t));
+  dt_image_cache_init(darktable.image_cache);
 
   darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
   memset(darktable.mipmap_cache, 0, sizeof(dt_mipmap_cache_t));
-  dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
-
-  darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  memset(darktable.image_cache, 0, sizeof(dt_image_cache_t));
-  dt_image_cache_init(darktable.image_cache, 
-		      MIN(10000, MAX(500, thumbnails)), 
-		      !dt_database_is_new(darktable.db));
+  dt_mipmap_cache_init(darktable.mipmap_cache);
 
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to register
@@ -603,18 +609,16 @@ int dt_init(int argc, char *argv[], const int init_gui)
       {
         dt_film_open(filmid);
         // make sure buffers are loaded (load full for testing)
-        dt_image_t *img = dt_image_cache_get(id, 'r');
-        dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
-        if(!buf)
+        dt_mipmap_buffer_t buf;
+        dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, 0);
+        if(!buf.buf)
         {
           id = 0;
-          dt_image_cache_release(img, 'r');
           dt_control_log(_("file `%s' has unknown format!"), filename);
         }
         else
         {
-          dt_image_release(img, DT_IMAGE_FULL, 'r');
-          dt_image_cache_release(img, 'r');
+          dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
           dt_ctl_switch_mode_to(DT_DEVELOP);
         }

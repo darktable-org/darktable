@@ -22,9 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "control/control.h"
@@ -81,7 +78,7 @@ int flags()
 static float
 color_filter(const float L, const float ai, const float bi, const float a, const float b, const float size)
 {
-  return L * dt_fast_expf(-((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size));
+  return L * dt_fast_expf(-CLAMPS(((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size), 0.0f, 1.0f));
 }
 
 
@@ -107,32 +104,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)p1;
-#ifdef HAVE_GEGL
-#error "FIXME: port monochrome to gegl."
-#else
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
   d->a = p->a;
   d->b = p->b;
   const float sigma = 128.0 * p->size;
   d->size = sigma*sigma;
-#endif
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-#else
   piece->data = malloc(sizeof(dt_iop_monochrome_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-#else
   free(piece->data);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
