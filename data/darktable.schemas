@@ -1606,7 +1606,7 @@
       <applyto>/apps/darktable/plugins/imageio/storage/gallery/file_directory</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>$(HOME_FOLDER)/darktable_gallery/</default>
+      <default>$(HOME_FOLDER)/darktable_gallery/img_$(SEQUENCE)</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
