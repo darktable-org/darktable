@@ -80,7 +80,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, 512, ngettext ("merging %d image", "merging %d images", total), total );
 
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
  
   float *pixels = NULL;
   float *weight = NULL;
@@ -206,7 +206,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("duplicating %d image", "duplicating %d images", total), total );
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
     imgid = (long int)t->data;
@@ -232,7 +232,7 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
   // char message[512]= {0};
   // snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
   // const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, "flipping has been disabled!");
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, "flipping has been disabled!");
   while(t)
   {
     imgid = (long int)t->data;
@@ -256,7 +256,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   char query[1024];
   sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
@@ -308,7 +308,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("deleting %d image", "deleting %d images", total), total );
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   sqlite3_stmt *stmt;
 
@@ -542,7 +542,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
   
   /* create a cancellable bgjob ui template */
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
   const dt_control_t *control = darktable.control;
 
@@ -554,7 +554,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
-#pragma omp parallel default(none) private(imgid, size) shared(control, fraction, stderr, w, h, mformat, mstorage, t, sdata, job, darktable) num_threads(num_threads) if(num_threads > 1)
+#pragma omp parallel default(none) private(imgid, size) shared(control, fraction, stderr, w, h, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):

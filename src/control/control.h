@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -115,13 +116,13 @@ struct dt_job_t;
 
 /* backgroundjobs proxy funcs */
 /** creates a background job and returns hash id reference */
-guint dt_control_backgroundjobs_create(const struct dt_control_t *s,guint type,const gchar *message);
+const guint *dt_control_backgroundjobs_create(const struct dt_control_t *s,guint type,const gchar *message);
 /** destroys a backgroundjob using hash id reference */
-void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, guint id);
+void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, const guint *key);
 /** sets the progress of a backgroundjob using hash id reference */
-void dt_control_backgroundjobs_progress(const struct dt_control_t *s, guint id, double progress);
+void dt_control_backgroundjobs_progress(const struct dt_control_t *s, const guint *key, double progress);
 /** assign a dt_job_t to a bgjob which makes it cancellable thru ui interaction */
-void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, guint id,struct dt_job_t *job);
+void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, const guint *key,struct dt_job_t *job);
 
 /** turn the use of key accelerators on */
 void dt_control_key_accelerators_on(struct dt_control_t *s);
@@ -250,10 +251,10 @@ typedef struct dt_control_t
     /* proxy functions for backgroundjobs ui*/
     struct {
       dt_lib_module_t *module;
-      guint (*create)(dt_lib_module_t *self, int type, const gchar *message);
-      void (*destroy)(dt_lib_module_t *self, guint id);
-      void (*progress)(dt_lib_module_t *self, guint id, double progress);
-      void (*set_cancellable)(dt_lib_module_t *self, guint id, dt_job_t *job);
+      const guint *(*create)(dt_lib_module_t *self, int type, const gchar *message);
+      void (*destroy)(dt_lib_module_t *self, const guint *key);
+      void (*progress)(dt_lib_module_t *self, const guint *key, double progress);
+      void (*set_cancellable)(dt_lib_module_t *self, const guint *key, dt_job_t *job);
     } backgroundjobs;
   } proxy;
 

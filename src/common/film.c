@@ -361,7 +361,7 @@ void dt_film_import1(dt_film_t *film)
   double fraction = 0;
   uint32_t total = g_list_length(images); 
   g_snprintf(message, 512, ngettext("importing %d image","importing %d images", total), total);
-  const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   /* loop thru the images and import to current film roll */
   dt_film_t *cfr = film;

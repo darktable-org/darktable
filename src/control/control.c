@@ -1307,27 +1307,27 @@ int dt_control_key_released(guint key, guint state)
 
 
 
-guint dt_control_backgroundjobs_create(const struct dt_control_t *s, guint type,const gchar *message)
+const guint *dt_control_backgroundjobs_create(const struct dt_control_t *s, guint type,const gchar *message)
 {
   if (s->proxy.backgroundjobs.module)
     return s->proxy.backgroundjobs.create(s->proxy.backgroundjobs.module, type, message);
   return 0;
 }
 
-void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, guint id)
+void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, const guint *key)
 {
   if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.destroy(s->proxy.backgroundjobs.module, id);
+    s->proxy.backgroundjobs.destroy(s->proxy.backgroundjobs.module, key);
 }
 
-void dt_control_backgroundjobs_progress(const struct dt_control_t *s, guint id, double progress)
+void dt_control_backgroundjobs_progress(const struct dt_control_t *s, const guint *key, double progress)
 {
   if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.progress(s->proxy.backgroundjobs.module, id, progress);
+    s->proxy.backgroundjobs.progress(s->proxy.backgroundjobs.module, key, progress);
 }
 
-void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, guint id, dt_job_t *job)
+void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, const guint *key, dt_job_t *job)
 {
   if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, id, job);
+    s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, key, job);
 }
