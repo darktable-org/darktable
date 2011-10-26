@@ -572,7 +572,7 @@ dt_mipmap_cache_read_get(
     {
       // fprintf(stderr, "[mipmap cache get] found data in cache for imgid %u size %d (%lX)\n", imgid, mip, (uint64_t)data);
       // uninitialized?
-      assert(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE || dsc->size == 0);
+      //assert(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE || dsc->size == 0);
       if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
       {
         // fprintf(stderr, "[mipmap cache get] now initializing buffer for img %u mip %d!\n", imgid, mip);
