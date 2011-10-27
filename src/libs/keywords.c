@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/tags.h"
 #include "libs/lib.h"
 
 DT_MODULE(1)
@@ -28,6 +29,25 @@ typedef struct dt_lib_keywords_t
   GtkTreeView *view;
 }
 dt_lib_keywords_t;
+
+
+/* callback for drag and drop */
+static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
+					  GdkDragContext *dctx,
+					  guint x,
+					  guint y,
+					  GtkSelectionData *data,
+					  guint info,
+					  guint time,
+					  gpointer user_data);
+
+/* set the data for drag and drop, eg the treeview path of drag source */
+static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
+						 GdkDragContext *dctx,
+						 GtkSelectionData *data,
+						 guint info,
+						 guint time,
+						 gpointer user_data);
 
 const char* name()
 {
@@ -62,6 +82,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "scan for devices",
                               GTK_WIDGET(d->scan_devices)); */
 }
+
 
 
 void gui_init(dt_lib_module_t *self)
@@ -155,6 +176,26 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_tree_view_set_model(d->view, GTK_TREE_MODEL(store));
 
+  /* setup dnd source and destination within treeview */
+  static const GtkTargetEntry dnd_target = { "keywords-reorganize",
+					     GTK_TARGET_SAME_WIDGET, 0};
+
+  gtk_tree_view_enable_model_drag_source(d->view, 
+					 GDK_BUTTON1_MASK, 
+					 &dnd_target, 1, GDK_ACTION_MOVE);
+  
+  gtk_tree_view_enable_model_drag_dest(d->view, &dnd_target, 1, GDK_ACTION_MOVE);
+
+  /* setup drag and drop signals */
+  g_signal_connect(G_OBJECT(d->view),"drag-data-received",
+			  G_CALLBACK(_lib_keywords_drag_data_received_callback),
+			  self);
+
+    g_signal_connect(G_OBJECT(d->view),"drag-data-get",
+			  G_CALLBACK(_lib_keywords_drag_data_get_callback),
+			  self);
+
+
   /* free store, treeview has its own storage now */
   g_object_unref(store);
   
@@ -172,4 +213,161 @@ void gui_cleanup(dt_lib_module_t *self)
   /* cleanup mem */
   g_free(self->data);
   self->data = NULL;
+}
+
+
+static void _gtk_tree_move_iter(GtkTreeStore *store, GtkTreeIter *source, GtkTreeIter *dest)
+{
+  /* create copy of iter and insert into destinatation */
+  GtkTreeIter ni;
+  GValue value;
+  memset(&value,0,sizeof(GValue));
+
+  gtk_tree_model_get_value(GTK_TREE_MODEL(store), source, 0, &value);
+  gtk_tree_store_insert(store, &ni, dest,0);
+  gtk_tree_store_set(store, &ni, 0, g_strdup(g_value_get_string(&value)), -1);   
+
+  /* for each children recurse into */
+  int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store), source);
+  for (int k=0;k<children;k++)
+  {
+    GtkTreeIter child;
+    if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &child, source, k))
+      _gtk_tree_move_iter(store, &child, &ni);
+  
+  }
+
+  /* iter copied lets remove source */
+  gtk_tree_store_remove(store, source);
+
+}
+
+static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
+						 GdkDragContext *dctx,
+						 GtkSelectionData *data,
+						 guint info,
+						 guint time,
+						 gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_keywords_t *d = (dt_lib_keywords_t*)self->data;
+  
+  /* get iter of item to drag to ssetup drag data */
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  GtkTreeSelection *s = gtk_tree_view_get_selection(d->view);
+  
+  if (gtk_tree_selection_get_selected(s,&model,&iter))
+  {
+
+    /* get tree path as string out of iter into selection data */
+    GtkTreePath *path = NULL;
+    path = gtk_tree_model_get_path(model,&iter);
+    gchar *sp = gtk_tree_path_to_string(path);
+   
+    gtk_selection_data_set(data,data->target, 8, (const guchar *)sp, strlen(sp));
+  }
+
+}
+
+/* builds a keyword string out of GtkTreePath */
+static void _lib_keywords_string_from_path(char *dest,size_t ds, 
+					   GtkTreeModel *model, 
+					   GtkTreePath *path)
+{
+  g_assert(model!=NULL);
+  g_assert(path!=NULL);
+
+  GList *components = NULL;
+  GtkTreePath *wp = gtk_tree_path_copy(path);
+  GtkTreeIter iter;
+
+  /* get components of path */
+  while (1)
+  {
+    GValue value;
+    memset(&value,0,sizeof(GValue));
+
+    /* get iter from path, break out if fail */
+    if (!gtk_tree_model_get_iter(model, &iter, wp))
+      break;
+
+    /* add component to begin of list */
+    gtk_tree_model_get_value(model, &iter, 0, &value);
+    components = g_list_insert(components, 
+			       g_strdup(g_value_get_string(&value)), 
+			       0);
+
+    g_value_unset(&value);
+
+    /* get parent of current path break out if we are at root */
+    if (!gtk_tree_path_up(wp) || gtk_tree_path_get_depth(wp) == 0)
+      break;
+  }
+
+  /* build the tag string from components */
+  int dcs = 0;
+  for(int i=0;i<g_list_length(components);i++) 
+  {
+    dcs += g_snprintf(dest+dcs, ds-dcs,
+		      "%s%s",
+		      (gchar *)g_list_nth_data(components, i),
+		      (i < g_list_length(components)-1) ? "|" : "");
+  }
+
+  /* free data */
+  gtk_tree_path_free(wp);
+  
+
+}
+
+static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
+					  GdkDragContext *dctx,
+					  guint x,
+					  guint y,
+					  GtkSelectionData *data,
+					  guint info,
+					  guint time,
+					  gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_keywords_t *d = (dt_lib_keywords_t*)self->data;
+
+  GtkTreePath *dpath;
+  GtkTreeViewDropPosition dpos;
+  GtkTreeModel *model = gtk_tree_view_get_model(d->view);
+
+  if (data->format == 8)
+  {
+    if (gtk_tree_view_get_dest_row_at_pos(d->view, x, y, &dpath, &dpos))
+    {
+      /* fetch tree iter of source and dest dnd operation */
+      GtkTreePath *spath = gtk_tree_path_new_from_string((char *)data->data);      
+     
+      char dtag[1024];
+      char stag[1024];
+      
+      _lib_keywords_string_from_path(dtag, 1024, model, dpath);
+      _lib_keywords_string_from_path(stag, 1024, model, spath);
+      
+      /* updated tags in database */
+      dt_tag_reorganize(stag,dtag);
+
+      /* lets move the source iter into dest iter */
+      GtkTreeIter sit,dit;
+      gtk_tree_model_get_iter(model, &sit, spath);
+      gtk_tree_model_get_iter(model, &dit, dpath);
+     
+      _gtk_tree_move_iter(GTK_TREE_STORE(model), &sit, &dit);
+      
+      /* accept drop */
+      gtk_drag_finish(dctx, TRUE, FALSE, time);
+
+      
+    }
+
+  }   
+ 
+  /* reject drop */
+  gtk_drag_finish (dctx, FALSE, FALSE, time);
 }

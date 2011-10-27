@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
+    copyright (c) 2010--o2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,8 +116,49 @@ const gchar *dt_tag_get_name(const guint tagid)
   return name;
 }
 
+void dt_tag_reorganize(const gchar *source, const gchar *dest)
+{
+
+  if (!strcmp(source,dest)) return;
+
+  char query[1024];
+  gchar *ps = g_strdup(source);
+
+  if (g_strrstr(ps,"|"))
+  {
+    *g_strrstr(ps,"|")='\0';
+
+    g_snprintf(query,1024,
+	       "update tags set name=replace(name,'%s','%s') where name like '%s%%'",
+	       ps,
+	       dest,
+	       source);
+    
+
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+
+  }
+
+}
+
 gboolean dt_tag_exists(const char *name,guint *tagid)
 {
+  int rt;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
+			      "select id,name from tags where name = '?1'", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  rt = sqlite3_step(stmt);
+
+  if(rt == SQLITE_ROW)
+  {
+    if( tagid != NULL)
+      *tagid = sqlite3_column_int64(stmt, 0);
+    sqlite3_finalize(stmt);
+    return  TRUE;
+  }
+
+  sqlite3_finalize(stmt);
   return FALSE;
 }
 
