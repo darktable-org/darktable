@@ -64,4 +64,7 @@ uint32_t dt_tag_get_recent_used(GList **result);
 /** frees the memory of a result set. */
 void dt_tag_free_result(GList **result);
 
+/** reorgnize tags */
+void dt_tag_reorganize(const gchar *source, const gchar *dest);
+
 #endif
