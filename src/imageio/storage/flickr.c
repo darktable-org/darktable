@@ -493,7 +493,7 @@ gui_init (dt_imageio_module_storage_t *self)
   self->widget = gtk_vbox_new(FALSE, 0);
 
   GtkWidget *hbox1=gtk_hbox_new(FALSE,5);
-  GtkWidget *hbox0=gtk_hbox_new(FALSE,0);
+  GtkWidget *hbox0=gtk_hbox_new(FALSE,5);
   GtkWidget *vbox1=gtk_vbox_new(FALSE,0);
   GtkWidget *vbox2=gtk_vbox_new(FALSE,0);
 

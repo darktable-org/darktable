@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-19 09:22+0200\n"
-"PO-Revision-Date: 2011-10-19 10:00+0100\n"
+"POT-Creation-Date: 2011-10-24 19:07+0200\n"
+"PO-Revision-Date: 2011-10-24 19:13+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: \n"
@@ -350,6 +350,10 @@ msgstr "verweesde afbeelding"
 msgid "image `%s' is not available"
 msgstr "afbeelding `%s' is niet beschikbaar"
 
+#: ../src/common/imageio.c:860
+msgid "failed to allocate memory for export, please lower the threads used for export or buy more memory."
+msgstr "geheugen toewijzing voor exporteren is mislukt. Advies: Verlaag het aantal exporteer onderwerpen"
+
 #: ../src/common/styles.c:73
 #, c-format
 msgid "style with name '%s' already exists"
@@ -374,6 +378,12 @@ msgstr "profiel '%s' is opgeslagen"
 #, c-format
 msgid "style %s was sucessfully imported"
 msgstr "profiel '%s' is geïmporteerd"
+
+#: ../src/common/variables.c:207
+#: ../src/iop/clipping.c:952
+#, c-format
+msgid "none"
+msgstr "geen"
 
 #: ../src/control/control.c:943
 #: ../src/control/control.c:946
@@ -1307,7 +1317,7 @@ msgstr "importeren"
 #. Adding the single import button
 #: ../src/gui/gtk.c:2084
 #: ../src/iop/borders.c:401
-#: ../src/iop/clipping.c:918
+#: ../src/iop/clipping.c:919
 msgid "image"
 msgstr "afbeelding"
 
@@ -1776,6 +1786,10 @@ msgstr "16-bit "
 #: ../src/imageio/format/ppm.c:93
 msgid "16-bit ppm"
 msgstr "16-bit ppm"
+
+#: ../src/imageio/format/rgbe.c:562
+msgid "float hdr"
+msgstr "zwevend hdr"
 
 #: ../src/imageio/format/tiff.c:221
 msgid "8/16-bit tiff"
@@ -2426,42 +2440,42 @@ msgstr ""
 "als percentage van de volledige afbeelding"
 
 #: ../src/iop/borders.c:397
-#: ../src/iop/clipping.c:912
+#: ../src/iop/clipping.c:913
 msgid "aspect"
 msgstr "verhouding"
 
 #: ../src/iop/borders.c:402
-#: ../src/iop/clipping.c:919
+#: ../src/iop/clipping.c:920
 msgid "golden cut"
 msgstr "gulden snede"
 
 #: ../src/iop/borders.c:403
-#: ../src/iop/clipping.c:920
+#: ../src/iop/clipping.c:921
 msgid "1:2"
 msgstr "1:2"
 
 #: ../src/iop/borders.c:404
-#: ../src/iop/clipping.c:921
+#: ../src/iop/clipping.c:922
 msgid "3:2"
 msgstr "3:2"
 
 #: ../src/iop/borders.c:405
-#: ../src/iop/clipping.c:922
+#: ../src/iop/clipping.c:923
 msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:406
-#: ../src/iop/clipping.c:923
+#: ../src/iop/clipping.c:924
 msgid "square"
 msgstr "vierkant"
 
 #: ../src/iop/borders.c:407
-#: ../src/iop/clipping.c:924
+#: ../src/iop/clipping.c:925
 msgid "DIN"
 msgstr "DIN"
 
 #: ../src/iop/borders.c:408
-#: ../src/iop/clipping.c:925
+#: ../src/iop/clipping.c:926
 msgid "16:9"
 msgstr "16:9"
 
@@ -2470,7 +2484,7 @@ msgid "constant border"
 msgstr "vaste randdikte"
 
 #: ../src/iop/borders.c:412
-#: ../src/iop/clipping.c:934
+#: ../src/iop/clipping.c:935
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
@@ -2609,164 +2623,160 @@ msgstr "sterkte van het effect"
 msgid "crop and rotate"
 msgstr "uitsnijden/roteren"
 
-#: ../src/iop/clipping.c:591
+#: ../src/iop/clipping.c:592
 msgid "rotate by  90"
 msgstr "roteer 90 graden"
 
-#: ../src/iop/clipping.c:593
+#: ../src/iop/clipping.c:594
 msgid "rotate by -90"
 msgstr "roteer 90 graden negatief"
 
-#: ../src/iop/clipping.c:595
+#: ../src/iop/clipping.c:596
 msgid "rotate by 180"
 msgstr "roteer 180 graden"
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:879
-#: ../src/iop/clipping.c:968
+#: ../src/iop/clipping.c:880
+#: ../src/iop/clipping.c:969
 msgid "flip"
 msgstr "spiegelen"
 
-#: ../src/iop/clipping.c:886
+#: ../src/iop/clipping.c:887
 msgid "flip image horizontally"
 msgstr "horizontaal spiegelen"
 
-#: ../src/iop/clipping.c:887
+#: ../src/iop/clipping.c:888
 msgid "flip image vertically"
 msgstr "verticaal spiegelen"
 
-#: ../src/iop/clipping.c:890
+#: ../src/iop/clipping.c:891
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:894
+#: ../src/iop/clipping.c:895
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "nota bene: ook kan men door de rechter muistoetste activeren en een lijn over de afbeelding te trekken\n"
 "een afbeelding recht zetten"
 
-#: ../src/iop/clipping.c:899
+#: ../src/iop/clipping.c:900
 msgid "keystone h"
 msgstr "roteren h"
 
-#: ../src/iop/clipping.c:900
+#: ../src/iop/clipping.c:901
 msgid "adjust perspective for horizontal keystone distortion"
 msgstr "instelling horizontaal perspectief wijzigen"
 
-#: ../src/iop/clipping.c:906
+#: ../src/iop/clipping.c:907
 msgid "keystone v"
 msgstr "roteren v"
 
-#: ../src/iop/clipping.c:907
+#: ../src/iop/clipping.c:908
 msgid "adjust perspective for vertical keystone distortion"
 msgstr "instelling verticaal perspectief wijzigen"
 
-#: ../src/iop/clipping.c:917
+#: ../src/iop/clipping.c:918
 msgid "free"
 msgstr "vrij"
 
-#: ../src/iop/clipping.c:941
+#: ../src/iop/clipping.c:942
 msgid "swap the aspect ratio (ctrl-x)"
 msgstr "verwissel verhouding (ctrl-x)"
 
-#: ../src/iop/clipping.c:948
+#: ../src/iop/clipping.c:949
 msgid "guides"
 msgstr "hulplijnen"
 
-#: ../src/iop/clipping.c:951
-msgid "none"
-msgstr "geen"
-
-#: ../src/iop/clipping.c:952
+#: ../src/iop/clipping.c:953
 msgid "grid"
 msgstr "raster"
 
-#: ../src/iop/clipping.c:953
+#: ../src/iop/clipping.c:954
 msgid "rules of thirds"
 msgstr "regel van derden"
 
-#: ../src/iop/clipping.c:954
+#: ../src/iop/clipping.c:955
 msgid "diagonal method"
 msgstr "diagonaal methode"
 
-#: ../src/iop/clipping.c:955
+#: ../src/iop/clipping.c:956
 msgid "harmonious triangles"
 msgstr "harmonieuze driehoeken"
 
-#: ../src/iop/clipping.c:956
+#: ../src/iop/clipping.c:957
 msgid "golden mean"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:958
+#: ../src/iop/clipping.c:959
 msgid "with this option, you can display guide lines to help compose your photograph."
 msgstr "schakel hulplijnen in om composities te verbeteren. "
 
-#: ../src/iop/clipping.c:962
+#: ../src/iop/clipping.c:963
 msgid "type"
 msgstr "type"
 
-#: ../src/iop/clipping.c:975
+#: ../src/iop/clipping.c:976
 msgid "flip guides horizontally"
 msgstr "wissel de hulplijnen horizontaal"
 
-#: ../src/iop/clipping.c:976
+#: ../src/iop/clipping.c:977
 msgid "flip guides vertically"
 msgstr "wissel de hulplijnen verticaal "
 
 #. -------------------------------------------
-#: ../src/iop/clipping.c:978
+#: ../src/iop/clipping.c:979
 msgid "golden sections"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:980
+#: ../src/iop/clipping.c:981
 msgid "enable this option to show golden sections."
 msgstr "activeer deze optie voor vertoning van de gulden secties."
 
-#: ../src/iop/clipping.c:983
+#: ../src/iop/clipping.c:984
 msgid "spiral sections"
 msgstr "spiraal secties"
 
-#: ../src/iop/clipping.c:984
+#: ../src/iop/clipping.c:985
 msgid "enable this option to show golden spiral sections."
 msgstr "activeer deze optie voor vertoning van de gulden snede"
 
-#: ../src/iop/clipping.c:987
+#: ../src/iop/clipping.c:988
 msgid "golden spiral"
 msgstr "gulden spiraal"
 
-#: ../src/iop/clipping.c:988
+#: ../src/iop/clipping.c:989
 msgid "enable this option to show a golden spiral guide."
 msgstr "activeer deze optie voor vertoning van de gulden snede hulplijnen"
 
-#: ../src/iop/clipping.c:991
+#: ../src/iop/clipping.c:992
 msgid "golden triangles"
 msgstr "gulden driehoeken"
 
-#: ../src/iop/clipping.c:992
+#: ../src/iop/clipping.c:993
 msgid "enable this option to show golden triangles."
 msgstr "activeer deze optie voor vertoning van de gulden driehoeken"
 
-#: ../src/iop/clipping.c:1579
+#: ../src/iop/clipping.c:1581
 msgctxt "accel"
 msgid "commit"
 msgstr "goedkeuren"
 
-#: ../src/iop/clipping.c:1581
+#: ../src/iop/clipping.c:1583
 msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "wissel de verhouding "
 
-#: ../src/iop/clipping.c:1583
+#: ../src/iop/clipping.c:1585
 msgctxt "accel"
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:1584
+#: ../src/iop/clipping.c:1586
 msgctxt "accel"
 msgid "keystone h"
 msgstr "roteren h"
 
-#: ../src/iop/clipping.c:1585
+#: ../src/iop/clipping.c:1587
 msgctxt "accel"
 msgid "keystone v"
 msgstr "roteren v"
@@ -4879,7 +4889,7 @@ msgstr ""
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:754
 #: ../src/libs/styles.c:70
-#: ../src/views/darkroom.c:1251
+#: ../src/views/darkroom.c:1252
 msgctxt "accel"
 msgid "export"
 msgstr "exporteer"
@@ -5354,7 +5364,7 @@ msgstr "nieuwe sessie gestart-'%s'"
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:616
-#: ../src/views/darkroom.c:1239
+#: ../src/views/darkroom.c:1240
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "wissel fotoreeks"
@@ -5387,28 +5397,28 @@ msgid "no image selected!"
 msgstr "geen afbeelding geselecteerd!"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1243
+#: ../src/views/darkroom.c:1244
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "maximaal inzoomen"
 
-#: ../src/views/darkroom.c:1245
+#: ../src/views/darkroom.c:1246
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom vullen"
 
-#: ../src/views/darkroom.c:1247
+#: ../src/views/darkroom.c:1248
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom passend"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1255
+#: ../src/views/darkroom.c:1256
 msgctxt "accel"
 msgid "image forward"
 msgstr "volgende afbeelding"
 
-#: ../src/views/darkroom.c:1257
+#: ../src/views/darkroom.c:1258
 msgctxt "accel"
 msgid "image back"
 msgstr "vorige afbeelding"
