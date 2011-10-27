@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 Henrik Andersson.
+    copyright (c) 2009--2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
   char dirname[4096];
   dt_image_full_path(img->id, dirname, 1024);
-  const gchar * filename = g_basename( dirname );
+  const gchar * filename = g_path_get_basename( dirname );
   gchar * end = g_strrstr( filename,".")+1;
   g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
 
@@ -198,7 +198,7 @@ proceed: ; // Let's build up uri / command
   {
     gchar exif[256]= {0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
-    const gchar *filename = g_basename( attachment->file );
+    const gchar *filename = g_path_get_basename( attachment->file );
     dt_image_t *img = dt_image_cache_get( attachment->imgid, 'r');
     dt_image_print_exif( img, exif, 256 );
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
