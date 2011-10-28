@@ -95,28 +95,35 @@ void cleanup(dt_view_t *self)
 }
 
 
+#define BORDER 20
+
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
 {
   // startup-time conf parameter:
   const int32_t capwd = darktable.thumbnail_width;
   const int32_t capht = darktable.thumbnail_height;
   // if width or height > max pipeline pixels: center the view and clamp.
-  int32_t width  = MIN(width_i,  capwd);
-  int32_t height = MIN(height_i, capht);
+  int32_t width  = MIN(width_i-(BORDER*2),  capwd);
+  int32_t height = MIN(height_i-(BORDER*2), capht);
 
+  /* fil background */
   cairo_set_source_rgb (cri, .2, .2, .2);
   cairo_save(cri);
-  cairo_set_fill_rule(cri, CAIRO_FILL_RULE_EVEN_ODD);
+  //cairo_set_fill_rule(cri, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_rectangle(cri, 0, 0, width_i, height_i);
-  cairo_rectangle(cri,
+  /* cairo_rectangle(cri,
       MAX(1.0, width_i -capwd) *.5f,
       MAX(1.0, height_i-capht) *.5f,
-      MIN(width, width_i-1), MIN(height, height_i-1));
+      MIN(width, width_i-1), MIN(height, height_i-1));*/
   cairo_fill (cri);
   cairo_restore(cri);
 
-  if(width_i  > capwd) cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
-  if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
+  /* center image */
+  if (width_i  > capwd) 
+    cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
+  if (height_i > capht) 
+    cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
+  cairo_translate(cri,BORDER,BORDER);
   cairo_save(cri);
 
   dt_develop_t *dev = (dt_develop_t *)self->data;
