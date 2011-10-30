@@ -727,8 +727,10 @@ dt_view_image_expose(
     surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
     if(zoom == 1)
     {
-      if(buf.size == DT_MIPMAP_3) scale = 1.0f;
-      else scale = fminf(darktable.thumbnail_width/(float)buf.width, darktable.thumbnail_height/(float)buf.height);
+      scale = fminf(
+			 fminf(darktable.thumbnail_width, width) / (float)buf.width, 
+			 fminf(darktable.thumbnail_height, height) / (float)buf.height
+			 );
     }
     else scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
   }
