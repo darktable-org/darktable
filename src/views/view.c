@@ -470,12 +470,12 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
   while (plugins)
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-    
+
     /* does this module belong to current view ?*/
     if (plugin->button_released && plugin->views() & v->view(v) )
       if(plugin->button_released(plugin, x, y, which,state))
-	handled = TRUE;
-    
+        handled = TRUE;
+
     /* get next plugin */
     plugins = g_list_previous(plugins);
   } 
@@ -495,18 +495,18 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
   /* lets check if any plugins want to handle button press */
   gboolean handled = FALSE;
   GList *plugins = g_list_last(darktable.lib->plugins);
-  while (plugins)
+  while (plugins && !handled)
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-    
+
     /* does this module belong to current view ?*/
     if (plugin->button_pressed && plugin->views() & v->view(v) )
       if(plugin->button_pressed(plugin, x, y, which,type,state))
-	handled = TRUE;
-    
+        handled = TRUE;
+
     /* get next plugin */
     plugins = g_list_previous(plugins);
-  } 
+  }
 
   /* if not handled by any plugin let pass to view handler*/
   if(!handled && v->button_pressed) 
