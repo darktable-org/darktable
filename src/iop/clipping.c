@@ -1564,12 +1564,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
-  if(which == 1 && darktable.control->button_type == GDK_2BUTTON_PRESS)
-  {
-    commit_box(self, g, p);
-    return 1;
-  }
-  else if(which == 3 || which == 1)
+  if(which == 3 || which == 1)
   {
     if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
     g->button_down_x = x;
