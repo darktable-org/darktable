@@ -781,7 +781,7 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 }
 
 static void
-_preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
+_preset_popup_position(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
   gint w,h;
   GtkRequisition requisition;
@@ -796,7 +796,7 @@ static void
 popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
   dt_gui_presets_popup_menu_show_for_module(module);
-  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,gtk_get_current_event_time());
+  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0, gtk_get_current_event_time());
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 }
@@ -955,6 +955,25 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
 
 }
 
+static gboolean
+_iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  if (e->button == 1)
+  {
+    dt_iop_request_focus(module);
+    return TRUE;
+  }
+  else if (e->button == 3)
+  {
+    dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+    return TRUE;
+  }
+  return FALSE;
+}
+
 static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -968,27 +987,26 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       int current_group = dt_dev_modulegroups_get(module->dev);
       GList *iop = g_list_first(module->dev->iop);
       while (iop)
-	{
-	  dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-	  uint32_t additional_flags=0;
-	  
-	  /* add special group flag for moduel in active pipe */
-	  if(module->enabled)
-	    additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
-	  
-	  /* add special group flag for favorite */
-	  if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
-	    additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
-	  
-	  /* if module is the current, always expand it */
-	  if (m == module)
-	    dt_iop_gui_set_expanded(m, TRUE);
-	  else if ((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
-	    dt_iop_gui_set_expanded(m, FALSE);
-	  
-	  iop = g_list_next(iop);
-	  
-	}
+      {
+        dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+        uint32_t additional_flags=0;
+
+        /* add special group flag for moduel in active pipe */
+        if(module->enabled)
+          additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
+
+        /* add special group flag for favorite */
+        if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
+          additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+
+        /* if module is the current, always expand it */
+        if (m == module)
+          dt_iop_gui_set_expanded(m, TRUE);
+        else if ((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+          dt_iop_gui_set_expanded(m, FALSE);
+
+        iop = g_list_next(iop);
+      }
     }
     else
     {
@@ -1092,6 +1110,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_name(pluginui,"dt-plugin-ui");
 
   module->header = header;
+  /* connect mouse button callbacks for focus and presets */
+  g_signal_connect(G_OBJECT(module->widget), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
 
   /* steup the header box */
   gtk_container_add(GTK_CONTAINER(header_evb), header);
@@ -1167,7 +1187,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   dt_iop_gui_init_blending(iopw,module);
   
 
-  /* add module widtget into an alignment */
+  /* add module widget into an alignment */
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 8);
   gtk_container_add(GTK_CONTAINER(pluginui), al);
