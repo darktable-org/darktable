@@ -19,12 +19,15 @@
 #include <glib.h>
 #include "control/signal.h"
 
-typedef struct dt_control_signal_t {
+typedef struct dt_control_signal_t
+{
   /* the sinks for the signals */
   GObject *sink;
-} dt_control_signal_t;
+}
+dt_control_signal_t;
 
-static char *_signal_name[DT_SIGNAL_COUNT] = {
+static char *_signal_name[DT_SIGNAL_COUNT] = 
+{
   /* Global signals */
   "dt-global-mouse-over-image-change",            // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
 
@@ -92,3 +95,4 @@ void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCal
 				       NULL , 
 				       cb, user_data);
 }
+

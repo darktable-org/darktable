@@ -694,9 +694,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     lib->image_over = DT_VIEW_DESERT;
     cairo_set_source_rgb (cr, .1, .1, .1);
     cairo_paint(cr);
-    // dt_image_prefetch(image, DT_IMAGE_MIPF);
-    const float wd = width/1.0;
-    dt_view_image_expose(&(lib->image_over),mouse_over_id, cr, wd, height, 1, pointerx, pointery);
+    dt_view_image_expose(&(lib->image_over),mouse_over_id, cr, width, height, 1, pointerx, pointery);
   }
   else // we do pass on expose to manager or zoomable
   {

@@ -26,8 +26,8 @@
     document what it's used for, then add a matching signal string
     name to _strings in signal.c
 */
-typedef enum dt_signal_t {
-
+typedef enum dt_signal_t
+{
   /** \brief This signal is raised when mouse hovers over image thumbs
       both on lighttable and in the filmstrip.
    */
@@ -73,7 +73,8 @@ typedef enum dt_signal_t {
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
-} dt_signal_t;
+}
+dt_signal_t;
 
 /* intitialize the signal framework */
 struct dt_control_signal_t *dt_control_signal_init();

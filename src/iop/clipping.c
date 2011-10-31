@@ -98,6 +98,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkDarktableToggleButton *flipHorGoldenGuide, *flipVerGoldenGuide;
   GtkCheckButton *goldenSectionBox, *goldenSpiralSectionBox, *goldenSpiralBox, *goldenTriangleBox;
 
+  float button_down_x, button_down_y;
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
   float old_clip_x, old_clip_y, old_clip_w, old_clip_h;
@@ -465,7 +466,7 @@ void gui_focus (struct dt_iop_module_t *self, gboolean in)
       g->clip_h = p->ch - p->cy;
       // flip one bit to trigger the cache:
       uint32_t hack = *(uint32_t*)&p->cy;
-      hack ++;
+      hack ^= 1;
       p->cy = *(float *)&hack;
       if(!darktable.gui->reset)
         dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1536,7 +1537,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   if(g->straightening)
   {
-    float dx = x - darktable.control->button_x, dy = y - darktable.control->button_y;
+    float dx = x - g->button_down_x, dy = y - g->button_down_y;
     if(dx < 0)
     {
       dx = -dx;
@@ -1563,13 +1564,11 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
-  if(which == 1 && darktable.control->button_type == GDK_2BUTTON_PRESS)
+  if(which == 3 || which == 1)
   {
-    commit_box(self, g, p);
-    return 1;
-  }
-  else if(which == 3 || which == 1)
-  {
+    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+    g->button_down_x = x;
+    g->button_down_y = y;
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
     g->button_down_angle = p->angle;
     return 1;
