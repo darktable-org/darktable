@@ -120,6 +120,14 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
 
+    /* backup style to disk */
+    char stylesdir[1024];
+    dt_util_get_user_config_dir(stylesdir, 1024);
+    g_strlcat(stylesdir,"/styles",1024);
+    g_mkdir_with_parents(stylesdir,00755);
+
+    dt_styles_save_to_file(name,stylesdir);
+
     dt_control_log(_("style named '%s' successfully created"),name);
   }
 }
