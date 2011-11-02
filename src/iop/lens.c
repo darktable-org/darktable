@@ -722,6 +722,7 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
   if (!cam)
   {
     gtk_button_set_label(GTK_BUTTON(g->camera_model), "");
+    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
     g_object_set(G_OBJECT(g->camera_model), "tooltip-text", "", (char *)NULL);
     return;
   }
@@ -741,6 +742,7 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
     else
       fm = g_strdup_printf ("%s", model);
     gtk_button_set_label (GTK_BUTTON (g->camera_model), fm);
+    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
     g_free (fm);
   }
 
@@ -1004,6 +1006,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   if (!lens)
   {
     gtk_button_set_label(GTK_BUTTON(g->lens_model), "");
+    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
     g_object_set(G_OBJECT(g->lens_model), "tooltip-text", "", (char *)NULL);
     return;
   }
@@ -1020,6 +1023,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
     else
       fm = g_strdup_printf ("%s", model);
     gtk_button_set_label (GTK_BUTTON (g->lens_model), fm);
+    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
     g_free (fm);
   }
 
@@ -1327,6 +1331,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->camera_model = GTK_BUTTON(gtk_button_new());
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model));
   gtk_button_set_label(g->camera_model, self->dev->image->exif_model);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
   g_signal_connect (G_OBJECT (g->camera_model), "clicked",
                     G_CALLBACK (camera_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->camera_model), TRUE, TRUE, 0);
@@ -1336,13 +1341,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(button), "tooltip-text", _("find camera"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (camera_autosearch_clicked), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 0, 1, GTK_SHRINK|GTK_FILL, 0, 0, 0);
 
   // lens selector
   hbox = gtk_hbox_new(FALSE, 0);
   g->lens_model = GTK_BUTTON(gtk_button_new());
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
   gtk_button_set_label(g->lens_model, self->dev->image->exif_lens);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
   g_signal_connect (G_OBJECT (g->lens_model), "clicked",
                     G_CALLBACK (lens_menusearch_clicked), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->lens_model), TRUE, TRUE, 0);
@@ -1352,7 +1358,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(button), "tooltip-text", _("find lens"), (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (lens_autosearch_clicked), self);
-  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), hbox, 0, 2, 1, 2, GTK_SHRINK|GTK_FILL, 0, 0, 0);
 
 
   // lens properties
@@ -1440,6 +1446,8 @@ void gui_update(struct dt_iop_module_t *self)
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)self->data;
   gtk_button_set_label(g->camera_model, p->camera);
   gtk_button_set_label(g->lens_model, p->lens);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
   gtk_combo_box_set_active(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->reverse), p->inverse);
   dtgtk_slider_set_value(g->tca_r, p->tca_r);
