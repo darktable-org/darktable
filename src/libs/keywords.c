@@ -99,20 +99,21 @@ void gui_init(dt_lib_module_t *self)
   sqlite3_stmt *stmt;
 
   GtkTreeIter uncategorized, temp;  
+  memset(&uncategorized,0,sizeof(GtkTreeIter));
 
-
-
-  /* base tree iters */
-  gtk_tree_store_insert(store, &uncategorized, NULL,0);
-  gtk_tree_store_set(store, &uncategorized, 0, _(UNCATEGORIZED_TAG), -1);
-  
-  
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
 			      "select name,icon,description from tags", -1, &stmt, NULL);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     if(strchr((const char *)sqlite3_column_text(stmt, 0),'|')==0)
     {
+      /* add uncategorized root iter if not exists */
+      if (!uncategorized.stamp)
+      {
+	gtk_tree_store_insert(store, &uncategorized, NULL,0);
+	gtk_tree_store_set(store, &uncategorized, 0, _(UNCATEGORIZED_TAG), -1);
+      }
+
       /* adding a uncategorized tag */
       gtk_tree_store_insert(store, &temp, &uncategorized,0);
       gtk_tree_store_set(store, &temp, 0, sqlite3_column_text(stmt, 0), -1); 
