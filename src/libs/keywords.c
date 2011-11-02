@@ -83,7 +83,7 @@ void connect_key_accels(dt_lib_module_t *self)
                               GTK_WIDGET(d->scan_devices)); */
 }
 
-
+#define UNCATEGORIZED_TAG "uncategorized"
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -104,7 +104,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* base tree iters */
   gtk_tree_store_insert(store, &uncategorized, NULL,0);
-  gtk_tree_store_set(store, &uncategorized, 0, _("uncategorized"), -1);
+  gtk_tree_store_set(store, &uncategorized, 0, _(UNCATEGORIZED_TAG), -1);
   
   
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
@@ -294,10 +294,13 @@ static void _lib_keywords_string_from_path(char *dest,size_t ds,
 
     /* add component to begin of list */
     gtk_tree_model_get_value(model, &iter, 0, &value);
-    components = g_list_insert(components, 
-			       g_strdup(g_value_get_string(&value)), 
-			       0);
-
+    if ( !(gtk_tree_path_get_depth(wp) == 1 &&
+	   strcmp(g_value_get_string(&value), _(UNCATEGORIZED_TAG)) == 0))
+    {
+      components = g_list_insert(components, 
+				 g_strdup(g_value_get_string(&value)), 
+				 0);
+    }
     g_value_unset(&value);
 
     /* get parent of current path break out if we are at root */

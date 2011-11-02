@@ -124,6 +124,8 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   char query[1024];
   gchar *ps = g_strdup(source);
 
+  fprintf(stderr,"Moving '%s' into '%s'\n",source,dest);
+
   if (g_strrstr(ps,"|"))
   {
     *g_strrstr(ps,"|")='\0';
@@ -133,11 +135,15 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
 	       ps,
 	       dest,
 	       source);
-    
-
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-
   }
+  else
+    g_snprintf(query, 1024,
+	       "update tags set name='%s|%s' where name = '%s'",
+	       dest, ps, ps);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+
+  g_free(ps);
 
 }
 
