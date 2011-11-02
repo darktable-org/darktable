@@ -1111,7 +1111,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   module->header = header;
   /* connect mouse button callbacks for focus and presets */
-  g_signal_connect(G_OBJECT(module->widget), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
+  g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
 
   /* steup the header box */
   gtk_container_add(GTK_CONTAINER(header_evb), header);
