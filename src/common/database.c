@@ -32,13 +32,8 @@ typedef struct dt_database_t
   /* database filename */
   gchar *dbfilename;
 
-  /* main handle used as fallback */
+  /* main handle */
   sqlite3 *main_handle;
-
-  /* the size of pool handles */
-  uint32_t size;
-  /* array of database handles one for each thread */
-  sqlite3 **handles;
 } dt_database_t;
 
 
@@ -113,49 +108,12 @@ dt_database_t *dt_database_init(char *alternative)
 
 void dt_database_destroy(const dt_database_t *db)
 {
-  for(int k=0;k<db->size;k++)
-    sqlite3_close(db->handles[k]);
-  
   g_free((dt_database_t *)db);
-}
-
-void dt_database_init_pool(const dt_database_t *db)
-{
-  dt_database_t *idb = (dt_database_t *)db;
-  idb->size = darktable.control->num_threads+DT_CTL_WORKER_RESERVED;
-  idb->handles = (sqlite3 **)g_malloc(sizeof(sqlite3 *)*idb->size);
-  for (int k = 0;k < idb->size;k++)
-    __DT_DEBUG_ASSERT__(sqlite3_open(idb->dbfilename, &idb->handles[k]));
 }
 
 sqlite3 *dt_database_get(const dt_database_t *db)
 {
-  int threadid = 0;
-
   return db->main_handle;
-  
-  /* if no control is running lets return mainhandler */
-  if(!darktable.control->running || !db->handles)
-    return db->main_handle;
-
-  /* compare to threads */
-  while (!pthread_equal(darktable.control->thread[threadid], pthread_self()) &&
-	 threadid < darktable.control->num_threads-1)
-    threadid++;
-
-  /* res threadsd */
-  if (!pthread_equal(darktable.control->thread[threadid],pthread_self()))
-  {
-    while(!pthread_equal(darktable.control->thread_res[threadid],pthread_self()) && threadid < DT_CTL_WORKER_RESERVED-1)
-      threadid++;
-  }
-
-  /* if its ou of range use default pool handle at 0 */
-  if(threadid > db->size-1)
-    threadid = 0;
-
-  //fprintf(stderr,"Getting database handle for thread %d\n",threadid);
-  return db->handles[threadid];
 }
 
 
