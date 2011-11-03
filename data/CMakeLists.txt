@@ -5,11 +5,6 @@ add_subdirectory(pixmaps)
 add_subdirectory(kernels)
 
 #
-# install darktable faster wrapper
-#
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable-faster DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-
-#
 # Generate and instal gtkrc
 #
 set(GTKRC_FONT_SIZE 8)
