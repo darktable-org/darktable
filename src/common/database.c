@@ -118,7 +118,7 @@ dt_database_t *dt_database_init(char *alternative)
 
   if (db->working_handle == db->ondisk_handle)
   {
-    fprintf(stderr, "[init] could not create an in memory DB for faster collection processing. Expect some slow IO on your HDD\n");
+    fprintf(stderr, "[init] could not create an in memory db for faster collection processing. expect some slow io on your hdd\n");
   }
 
   /* attach a memory database to db connection for use with temporary tables
@@ -135,7 +135,7 @@ void dt_database_destroy(const dt_database_t *db)
   {
     if (_database_backup(db->ondisk_handle, db->working_handle))
     {
-      fprintf(stderr, "[close] could not write back in memory DB to disk. Your session work is lost.");
+      fprintf(stderr, "[close] could not write back in memory db to disk. your session work is only in the xmp, back them up!");
     }
     sqlite3_close(db->working_handle);
   }
