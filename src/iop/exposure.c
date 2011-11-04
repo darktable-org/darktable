@@ -119,6 +119,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
   const float scale = 1.0/(white - black);
+  const __v4sf blackv = _mm_set1_ps(black);
+  const __v4sf scalev = _mm_set1_ps(scale);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
@@ -126,9 +128,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     const float *in = ((float *)i) + ch*k*roi_out->width;
     float *out = ((float *)o) + ch*k*roi_out->width;
-    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
-      for(int i=0; i<3; i++)
-        out[i] = (in[i]-black)*scale;
+    for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
+      _mm_store_ps(out, (_mm_load_ps(in)-blackv)*scalev);
   }
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
