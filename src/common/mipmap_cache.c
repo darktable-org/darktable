@@ -889,36 +889,15 @@ _init_8(
         goto libraw_fail;
       }
       // scale to fit
-      // TODO: optimize and make the scaling look better!
-      const int wd2 = (orientation & 4) ? ht : wd;
-      const int ht2 = (orientation & 4) ? wd : ht;
-      const float scale = fmaxf(jpg.width/(float)wd2, jpg.height/(float)ht2);
-      const int p_ht2 = MIN(ht2, jpg.height/scale), p_wd2 = MIN(wd2, jpg.width/scale);
-      for(int j=0; j<p_ht2 && scale*j<jpg.height; j++) for(int i=0; i<p_wd2 && scale*i < jpg.width; i++)
-        {
-          uint8_t *cam = tmp + 4*((int)(scale*j)*jpg.width + (int)(scale*i));
-          for(int k=0; k<3; k++) buf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, p_wd2, p_ht2, orientation)+2-k] = cam[k];
-        }
+      dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
+
       free(tmp);
-      *width  = MIN(wd, ((orientation & 4) ? jpg.height : jpg.width )/scale);
-      *height = MIN(ht, ((orientation & 4) ? jpg.width  : jpg.height)/scale);
       res = 0;
     }
     else
     {
       // bmp
-      // TODO: optimize and make the scaling look better!
-      const int wd2 = (orientation & 4) ? ht : wd;
-      const int ht2 = (orientation & 4) ? wd : ht;
-      const float scale = fmaxf(image->width/(float)wd2, image->height/(float)ht2);
-      const int p_ht2 = MIN(ht2, image->height/scale), p_wd2 = MIN(wd2, image->width/scale);
-      for(int j=0; j<p_ht2 && scale*j<image->height; j++) for(int i=0; i<p_wd2 && scale*i < image->width; i++)
-        {
-          uint8_t *cam = image->data + 3*((int)(scale*j)*image->width + (int)(scale*i));
-          for(int k=0; k<3; k++) buf[4*dt_imageio_write_pos(i, j, p_wd2, p_ht2, p_wd2, p_ht2, orientation)+2-k] = cam[k];
-        }
-      *width  = MIN(wd, ((orientation & 4) ? image->height : image->width )/scale);
-      *height = MIN(ht, ((orientation & 4) ? image->width  : image->height)/scale);
+      dt_iop_flip_and_zoom_8(image->data, image->width, image->height, buf, wd, ht, orientation, width, height);
       res = 0;
     }
     // clean up raw stuff.
@@ -969,63 +948,4 @@ libraw_fail:
   // TODO: use mipf, but:
   // TODO: if output is cropped, don't use mipf!
 }
-
-// *************************************************************
-// TODO: some glue code down here. should be transparently
-//       incorporated into the rest.
-// *************************************************************
-
-
-#if 0
-// old code to resample mip maps
-dt_imageio_retval_t dt_image_update_mipmaps(dt_image_t *img)
-{
-  if(dt_image_lock_if_available(img, DT_IMAGE_MIP4, 'r')) return DT_IMAGEIO_CACHE_FULL;
-  int oldwd, oldht;
-  float fwd, fht;
-  dt_image_get_mip_size(img, DT_IMAGE_MIP4, &oldwd, &oldht);
-  dt_image_get_exact_mip_size(img, DT_IMAGE_MIP4, &fwd, &fht);
-  img->mip_width  [DT_IMAGE_MIP4] = oldwd;
-  img->mip_height  [DT_IMAGE_MIP4] = oldht;
-  img->mip_width_f[DT_IMAGE_MIP4] = fwd;
-  img->mip_height_f[DT_IMAGE_MIP4] = fht;
-
-  // here we got mip4 'r' locked
-  // create 8-bit mip maps:
-  for(dt_image_buffer_t l=DT_IMAGE_MIP3; (int)l>=(int)DT_IMAGE_MIP0; l--)
-  {
-    // here we got mip l+1 'r' locked
-    int p_wd, p_ht;
-    dt_image_get_mip_size(img, l, &p_wd, &p_ht);
-    dt_image_get_exact_mip_size(img, l, &fwd, &fht);
-    if(dt_image_alloc(img, l))
-    {
-      dt_image_release(img, l+1, 'r');
-      return DT_IMAGEIO_CACHE_FULL;
-    }
-    img->mip_width  [l] = p_wd;
-    img->mip_height  [l] = p_ht;
-    img->mip_width_f[l] = fwd;
-    img->mip_height_f[l] = fht;
-
-    // here, we got mip l+1 'r' locked, and  mip l 'rw'
-
-    dt_image_check_buffer(img, l, p_wd*p_ht*4*sizeof(uint8_t));
-    // printf("creating mipmap %d for img %s: %d x %d\n", l, img->filename, p_wd, p_ht);
-    // downscale 8-bit mip
-    if(oldwd != p_wd)
-      for(int j=0; j<p_ht; j++) for(int i=0; i<p_wd; i++)
-          for(int k=0; k<4; k++) img->mip[l][4*(j*p_wd + i) + k] = ((int)img->mip[l+1][8*(2*j)*p_wd + 4*(2*i) + k] + (int)img->mip[l+1][8*(2*j)*p_wd + 4*(2*i+1) + k]
-                + (int)img->mip[l+1][8*(2*j+1)*p_wd + 4*(2*i+1) + k] + (int)img->mip[l+1][8*(2*j+1)*p_wd + 4*(2*i) + k])/4;
-    else memcpy(img->mip[l], img->mip[l+1], 4*sizeof(uint8_t)*p_ht*p_wd);
-
-    dt_image_release(img, l, 'w');
-    dt_image_release(img, l+1, 'r');
-    // here we got mip l 'r' locked
-  }
-  dt_image_release(img, DT_IMAGE_MIP0, 'r');
-  return DT_IMAGEIO_OK;
-}
-#endif
-
 
