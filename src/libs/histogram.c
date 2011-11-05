@@ -217,22 +217,19 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
     cairo_restore(cr);
   }
 
-  if(dev->image)
-  {
-    cairo_set_source_rgb(cr, .25, .25, .25);
-    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, .1*height);
+  cairo_set_source_rgb(cr, .25, .25, .25);
+  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size (cr, .1*height);
 
-    char exifline[50];
-    cairo_move_to (cr, .02*width, .98*height);
-    dt_image_print_exif(dev->image, exifline, 50);
-    cairo_show_text(cr, exifline);
-    /*cairo_text_path(cr, exifline);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-    cairo_stroke(cr);*/
-  }
+  char exifline[50];
+  cairo_move_to (cr, .02*width, .98*height);
+  dt_image_print_exif(&dev->image_storage, exifline, 50);
+  cairo_show_text(cr, exifline);
+  /*cairo_text_path(cr, exifline);
+  cairo_fill_preserve(cr);
+  cairo_set_line_width(cr, 1.0);
+  cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+  cairo_stroke(cr);*/
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));

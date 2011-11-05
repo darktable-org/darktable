@@ -79,7 +79,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->iscale = iscale;
   pipe->input = input;
   pipe->image = dev->image_storage;
-  if(width < dev->image->width && height < dev->image->height) pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
+  if(width < pipe->image.width && height < pipe->image.height) pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
@@ -236,8 +236,8 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   {
     // first input.
     // mipf and non-raw images have 4 floats per pixel
-    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !(dev->image->flags & DT_IMAGE_RAW)) return 4*sizeof(float);
-    else return dev->image->bpp;
+    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !(pipe->image.flags & DT_IMAGE_RAW)) return 4*sizeof(float);
+    else return pipe->image.bpp;
   }
   return module->output_bpp(module, pipe, piece);
 }
@@ -276,7 +276,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     return 1;
   }
-  uint64_t hash = dt_dev_pixelpipe_cache_hash(dev->image->id, roi_out, pipe, pos);
+  uint64_t hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, pos);
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
@@ -1250,7 +1250,7 @@ restart:
 
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(dev->image->id, &roi, pipe, 0);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, 0);
   pipe->backbuf = buf;
   pipe->backbuf_width  = width;
   pipe->backbuf_height = height;

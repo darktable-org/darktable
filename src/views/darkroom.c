@@ -200,7 +200,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_stroke(cr);
     cairo_surface_destroy (surface);
     dt_pthread_mutex_unlock(mutex);
-    image_surface_imgid = dev->image->id;
+    image_surface_imgid = dev->image_storage.id;
   }
   else if(!dev->preview_dirty)
     // else if(!dev->preview_loading)
@@ -228,11 +228,11 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_fill(cr);
     cairo_surface_destroy (surface);
     dt_pthread_mutex_unlock(mutex);
-    image_surface_imgid = dev->image->id;
+    image_surface_imgid = dev->image_storage.id;
   }
   cairo_restore(cri);
 
-  if(image_surface_imgid == dev->image->id)
+  if(image_surface_imgid == dev->image_storage.id)
   {
     cairo_destroy(cr);
     cairo_set_source_surface(cri, image_surface, 0, 0);
@@ -497,8 +497,8 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // TODO: only if image changed!
   // if()
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
-    dt_image_synch_xmp(dev->image->id);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
+    dt_image_synch_xmp(dev->image_storage.id);
   }
 
   select_this_image(imgid);
@@ -710,8 +710,8 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
 static void _darkroom_ui_apply_style_activate_callback(gchar *name)
 {
   dt_control_log(_("applied style `%s' on current image"),name);
-  dt_styles_apply_to_image (name, FALSE, darktable.develop->image->id);
-  dt_dev_reload_image(darktable.develop, darktable.develop->image->id);
+  dt_styles_apply_to_image (name, FALSE, darktable.develop->image_storage.id);
+  dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
@@ -757,7 +757,7 @@ void enter(dt_view_t *self)
   dev->gui_leaving = 0;
   dev->gui_module = NULL;
 
-  select_this_image(dev->image->id);
+  select_this_image(dev->image_storage.id);
 
   DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
   DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
@@ -765,7 +765,7 @@ void enter(dt_view_t *self)
   DT_CTL_SET_GLOBAL(dev_closeup, 0);
 
   // take a copy of the image struct for convenience.
-  dt_dev_load_image(darktable.develop, dev->image->id);
+  dt_dev_load_image(darktable.develop, dev->image_storage.id);
 
   /*
    * Add view specific tool buttons
@@ -828,7 +828,7 @@ void enter(dt_view_t *self)
   dt_dev_pop_history_items(dev, dev->history_end);
 
   /* ensure that filmstrip shows current image */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image->id);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id);
 
   // switch on groups as they where last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
@@ -893,7 +893,7 @@ void leave(dt_view_t *self)
   // TODO: only tag the image when there was a real change.
   guint tagid = 0;
   dt_tag_new("darktable|changed",&tagid);
-  dt_tag_attach(tagid, dev->image->id);
+  dt_tag_attach(tagid, dev->image_storage.id);
   // commit image ops to db
   dt_dev_write_history(dev);
 
@@ -901,9 +901,9 @@ void leave(dt_view_t *self)
   // TODO: only if changed!
   // if()
   {
-    dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image->id);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     // dump new xmp data
-    dt_image_synch_xmp(dev->image->id);
+    dt_image_synch_xmp(dev->image_storage.id);
   }
 
   // clear gui.
@@ -942,7 +942,7 @@ void mouse_leave(dt_view_t *self)
 {
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  int32_t mouse_over_id = dev->image->id;
+  int32_t mouse_over_id = dev->image_storage.id;
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
  
   // reset any changes the selected plugin might have made.
@@ -960,7 +960,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   if(mouse_over_id == -1)
   {
-    mouse_over_id = dev->image->id;
+    mouse_over_id = dev->image_storage.id;
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
   }
 

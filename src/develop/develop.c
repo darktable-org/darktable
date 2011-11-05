@@ -55,7 +55,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->height = -1;
 
   dt_image_init(&dev->image_storage);
-  dev->image = &dev->image_storage;
   dev->image_dirty = dev->preview_dirty = 1;
   dev->image_loading = dev->preview_loading = 0;
   dev->image_force_reload = 0;
@@ -123,7 +122,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
-  if(!dev->image || /*dev->image_loading ||*/ !dev->gui_attached || dev->pipe->processing) return;
+  if(/*dev->image_loading ||*/ !dev->gui_attached || dev->pipe->processing) return;
   dt_job_t job;
   dt_dev_process_image_job_init(&job, dev);
   int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_2);
@@ -132,8 +131,7 @@ void dt_dev_process_image(dt_develop_t *dev)
 
 void dt_dev_process_preview(dt_develop_t *dev)
 {
-  // if(!dev->image || !dev->image->mipf || !dev->gui_attached/* || dev->preview_pipe->processing*/) return;
-  if(!dev->image || !dev->gui_attached) return;
+  if(!dev->gui_attached) return;
   dt_job_t job;
   dt_dev_process_preview_job_init(&job, dev);
   int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_3);
@@ -167,14 +165,14 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_dirty = 1;
 
   // lock if there, issue a background load, if not (best-effort for mip f). 
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image->id, DT_MIPMAP_F, 0);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, 0);
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
   }
   // init pixel pipeline for preview.
-  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height, dev->image->width/(float)buf.width);
+  dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height, dev->image_storage.width/(float)buf.width);
 
   if(dev->preview_loading)
   {
@@ -230,12 +228,11 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_show_times(&start, "[dev]", "to load the image.");
 
-  // DREGGN
   // copy over image now that width and height are sure to be correct:
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image->id);
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image_storage.id);
   dev->image_storage = *img;
   // but don't lock the real thing, as that would avoid any writers to change stuff.
   // (such as raw loading or star rating changes)
@@ -596,14 +593,14 @@ void dt_dev_write_history(dt_develop_t *dev)
 
   gboolean changed = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   sqlite3_step(stmt);
   sqlite3_finalize (stmt);
   GList *history = dev->history;
   for(int i=0; i<dev->history_end && history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    (void)dt_dev_write_history_item(dev->image, hist, i);
+    (void)dt_dev_write_history_item(&dev->image_storage, hist, i);
     history = g_list_next(history);
     changed = TRUE;
   }
@@ -612,18 +609,18 @@ void dt_dev_write_history(dt_develop_t *dev)
   guint tagid = 0;
   dt_tag_new("darktable|changed",&tagid); 
   if(changed)
-    dt_tag_attach(tagid, dev->image->id);
+    dt_tag_attach(tagid, dev->image_storage.id);
   else
-    dt_tag_detach(tagid, dev->image->id);
+    dt_tag_detach(tagid, dev->image_storage.id);
 
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  if(!dev->image) return;
+  if(!dev->image_storage.id) return;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   dev->history_end = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -636,7 +633,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
     if(!opname)
     {
-      fprintf(stderr, "[dev_read_history] database history for image `%s' seems to be corrupted!\n", dev->image->filename);
+      fprintf(stderr, "[dev_read_history] database history for image `%s' seems to be corrupted!\n", dev->image_storage.filename);
       free(hist);
       continue;
     }
@@ -654,7 +651,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     }
     if(!hist->module)
     {
-      fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image->filename);
+      fprintf(stderr, "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n", opname, dev->image_storage.filename);
       free(hist);
       continue;
     }
@@ -671,9 +668,9 @@ void dt_dev_read_history(dt_develop_t *dev)
         free(hist->params);
         free(hist->blend_params);
         fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n", hist->module->op, modversion, hist->module->version());
-        const char *fname = dev->image->filename + strlen(dev->image->filename);
-        while(fname > dev->image->filename && *fname != '/') fname --;
-        if(fname > dev->image->filename) fname++;
+        const char *fname = dev->image_storage.filename + strlen(dev->image_storage.filename);
+        while(fname > dev->image_storage.filename && *fname != '/') fname --;
+        if(fname > dev->image_storage.filename) fname++;
         dt_control_log(_("%s: module `%s' version mismatch: %d != %d"), fname, hist->module->op, hist->module->version(), modversion);
         free(hist);
         continue;
@@ -784,7 +781,7 @@ void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, con
 int
 dt_dev_is_current_image (dt_develop_t *dev, uint32_t imgid)
 {
-  return (dev->image && dev->image->id==imgid)?1:0;
+  return (dev->image_storage.id==imgid)?1:0;
 }
 
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)

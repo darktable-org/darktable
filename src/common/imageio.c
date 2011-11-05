@@ -485,8 +485,9 @@ int dt_imageio_export_with_flags(
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_dev_load_image(&dev, imgid);
-  const int wd = dev.image->width;
-  const int ht = dev.image->height;
+  const dt_image_t *img = &dev.image_storage;
+  const int wd = img->width;
+  const int ht = img->height;
 
   dt_times_t start;
   dt_get_times(&start);
@@ -502,7 +503,7 @@ int dt_imageio_export_with_flags(
 
   if(!buf.buf)
   {
-    dt_control_log(_("image `%s' is not available!"), dev.image->filename);
+    dt_control_log(_("image `%s' is not available!"), img->filename);
     dt_dev_cleanup(&dev);
     return 1;
   }
@@ -513,8 +514,8 @@ int dt_imageio_export_with_flags(
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
   dt_show_times(&start, "[export] creating pixelpipe", NULL);
 
-  assert(((uint32_t *)buf.buf)[-4] == dev.image->width);
-  assert(((uint32_t *)buf.buf)[-3] == dev.image->height);
+  assert(((uint32_t *)buf.buf)[-4] == img->width);
+  assert(((uint32_t *)buf.buf)[-3] == img->height);
 
   // find output color profile for this image:
   int sRGB = 1;
