@@ -29,7 +29,7 @@ endif()
 
 find_path(Gettext_INCLUDE_DIR
   NAMES libintl.h
-  PATHS ${Gettext_PKGCONF_INCLUDE_DIRS}
+  PATHS ${Gettext_PKGCONF_INCLUDE_DIRS} /opt/local/include
 )
 
 set(Gettext_PROCESS_INCLUDES Gettext_INCLUDE_DIR)
