@@ -174,7 +174,6 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
   }
   // init pixel pipeline for preview.
-  // TODO: check if image->width is safe to access here (in case of async raw loading).
   dt_dev_pixelpipe_set_input(dev->preview_pipe, dev, (float *)buf.buf, buf.width, buf.height, dev->image->width/(float)buf.width);
 
   if(dev->preview_loading)
@@ -234,6 +233,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_show_times(&start, "[dev]", "to load the image.");
 
+  // DREGGN
   // copy over image now that width and height are sure to be correct:
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image->id);
   dev->image_storage = *img;

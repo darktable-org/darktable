@@ -18,6 +18,7 @@
 #ifndef DT_DEV_PIXELPIPE
 #define DT_DEV_PIXELPIPE
 
+#include "common/image.h"
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "develop/pixelpipe_cache.h"
@@ -118,6 +119,8 @@ typedef struct dt_dev_pixelpipe_t
   dt_dev_pixelpipe_type_t type;
   // opencl device that has been locked for this pipe.
   int devid;
+  // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
+  dt_image_t image;
 }
 dt_dev_pixelpipe_t;
 

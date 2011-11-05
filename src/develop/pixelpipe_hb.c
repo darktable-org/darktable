@@ -78,6 +78,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->iheight = height;
   pipe->iscale = iscale;
   pipe->input = input;
+  pipe->image = dev->image_storage;
   if(width < dev->image->width && height < dev->image->height) pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
 }
 
