@@ -119,8 +119,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
   const float scale = 1.0/(white - black);
-  const __v4sf blackv = _mm_set1_ps(black);
-  const __v4sf scalev = _mm_set1_ps(scale);
+  const __m128 blackv = _mm_set1_ps(black);
+  const __m128 scalev = _mm_set1_ps(scale);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
