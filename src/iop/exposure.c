@@ -22,9 +22,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include <xmmintrin.h>
 #include "iop/exposure.h"
 #include "common/opencl.h"
 #include "develop/develop.h"
