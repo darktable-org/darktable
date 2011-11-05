@@ -603,11 +603,11 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   if(self->dev->gui_attached && g)
   {
-    g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+    g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
     if(g->aspect_ratios[1] < 1.0f)
       g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
     
-    if(g->current_aspect > 1.0f && self->dev->image->height > self->dev->image->width)
+    if(g->current_aspect > 1.0f && self->dev->image_storage.height > self->dev->image_storage.width)
       g->current_aspect = 1.0f/g->current_aspect;
   }
   dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t)
@@ -666,7 +666,7 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   else if (which < 9)
   {
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", which);
-    if(which > 1 && self->dev->image->height > self->dev->image->width)
+    if(which > 1 && self->dev->image_storage.height > self->dev->image_storage.width)
       g->current_aspect = 1.0/g->aspect_ratios[which];
     else
       g->current_aspect = g->aspect_ratios[which];
@@ -1021,7 +1021,7 @@ void gui_init(struct dt_iop_module_t *self)
   /*-------------------------------------------*/
 
   g->aspect_ratios[0] = -1;
-  g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+  g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
   if(g->aspect_ratios[1] < 1.0)
     g->aspect_ratios[1] = 1.0 / g->aspect_ratios[1];
   g->aspect_ratios[2] = 1.6280;
@@ -1032,7 +1032,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_ratios[7] = sqrtf(2.0);
   g->aspect_ratios[8] = 16.0f/9.0f;
 
-  if(act> 0 && self->dev->image->height > self->dev->image->width)
+  if(act> 0 && self->dev->image_storage.height > self->dev->image_storage.width)
     g->current_aspect = 1.0/g->aspect_ratios[act];
   else
     g->current_aspect = g->aspect_ratios[act];

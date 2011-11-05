@@ -201,7 +201,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
   const int height = roi_in->height;
   memcpy(out, in2, width*height*sizeof(float));
   const float *const in = out;
-  const uint32_t filters = dt_image_flipped_filter(self->dev->image);
+  const uint32_t filters = dt_image_flipped_filter(&piece->pipe->image);
   const float clip_pt = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   const int TS = (width > 2024 && height > 2024) ? 256 : 64;
 
@@ -1146,8 +1146,8 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
 
   // can't be switched on for non-raw images:
-  if(module->dev->image->flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
-  else                                         module->hide_enable_button = 1;
+  if(module->dev->image_storage.flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
+  else module->hide_enable_button = 1;
 }
 
 /** init, cleanup, commit to pipeline */
@@ -1199,7 +1199,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void gui_update    (dt_iop_module_t *self)
 {
-  if(self->dev->image->flags & DT_IMAGE_RAW)
+  if(self->dev->image_storage.flags & DT_IMAGE_RAW)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
   else
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction\nonly works for raw images."));

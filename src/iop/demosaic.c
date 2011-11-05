@@ -626,10 +626,10 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   roi_in->y = MAX(0, roi_in->y & ~1);
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(self->dev->image->width - roi_in->width < 10 && self->dev->image->height - roi_in->height < 10)
+  if(piece->pipe->image.width - roi_in->width < 10 && piece->pipe->image.height - roi_in->height < 10)
   {
-    roi_in->width  = self->dev->image->width;
-    roi_in->height = self->dev->image->height;
+    roi_in->width  = piece->pipe->image.width;
+    roi_in->height = piece->pipe->image.height;
   }
 }
 
@@ -1045,8 +1045,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
-  d->filters = dt_image_flipped_filter(self->dev->image);
-  if(!(self->dev->image->flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
+  d->filters = dt_image_flipped_filter(&pipe->image);
+  if(!(pipe->image.flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
   d->green_eq = p->green_eq;
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;

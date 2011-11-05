@@ -445,26 +445,26 @@ void init_global(dt_iop_module_so_t *module)
 void reload_defaults(dt_iop_module_t *module)
 {
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)module->data;
+  const dt_image_t *img = &module->dev->image_storage;
   // reload image specific stuff
   // get all we can from exif:
   dt_iop_lensfun_params_t tmp;
-  g_strlcpy(tmp.lens, module->dev->image->exif_lens, 52);
-  g_strlcpy(tmp.camera, module->dev->image->exif_model, 52);
-  tmp.crop     = module->dev->image->exif_crop;
-  tmp.aperture = module->dev->image->exif_aperture;
-  tmp.focal    = module->dev->image->exif_focal_length;
+  g_strlcpy(tmp.lens, img->exif_lens, 52);
+  g_strlcpy(tmp.camera, img->exif_model, 52);
+  tmp.crop     = img->exif_crop;
+  tmp.aperture = img->exif_aperture;
+  tmp.focal    = img->exif_focal_length;
   tmp.scale    = 1.0;
   tmp.inverse  = 0;
   tmp.modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING |
                      LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
-  tmp.distance = module->dev->image->exif_focus_distance;
+  tmp.distance = img->exif_focus_distance;
   tmp.target_geom = LF_RECTILINEAR;
   tmp.tca_override = 0;
   tmp.tca_r = 1.0;
   tmp.tca_b = 1.0;
 
   // init crop from db:
-  const dt_image_t *img = module->dev->image;
   char model[100];  // truncate often complex descriptions.
   g_strlcpy(model, img->exif_model, 100);
   for(char cnt = 0, *c = model; c < model+100 && *c != '\0'; c++) if(*c == ' ') if(++cnt == 2) *c = '\0';
@@ -1286,7 +1286,7 @@ static float get_autoscale(dt_iop_module_t *self)
     if(lenslist && !lenslist[1])
     {
       // create dummy modifier
-      lfModifier *modifier = lf_modifier_new(lenslist[0], p->crop, self->dev->image->width, self->dev->image->height);
+      lfModifier *modifier = lf_modifier_new(lenslist[0], p->crop, self->dev->image_storage.width, self->dev->image_storage.height);
       (void)lf_modifier_initialize(
         modifier, lenslist[0], LF_PF_F32,
         p->focal, p->aperture,
@@ -1330,7 +1330,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
   g->camera_model = GTK_BUTTON(gtk_button_new());
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->camera_model));
-  gtk_button_set_label(g->camera_model, self->dev->image->exif_model);
+  gtk_button_set_label(g->camera_model, self->dev->image_storage.exif_model);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
   g_signal_connect (G_OBJECT (g->camera_model), "clicked",
                     G_CALLBACK (camera_menusearch_clicked), self);
@@ -1347,7 +1347,7 @@ void gui_init(struct dt_iop_module_t *self)
   hbox = gtk_hbox_new(FALSE, 0);
   g->lens_model = GTK_BUTTON(gtk_button_new());
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (g->lens_model));
-  gtk_button_set_label(g->lens_model, self->dev->image->exif_lens);
+  gtk_button_set_label(g->lens_model, self->dev->image_storage.exif_lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
   g_signal_connect (G_OBJECT (g->lens_model), "clicked",
                     G_CALLBACK (lens_menusearch_clicked), self);
@@ -1367,7 +1367,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 #if 0
   // if unambigious info is there, use it.
-  if(self->dev->image->exif_lens[0] != '\0')
+  if(self->dev->image_storage.exif_lens[0] != '\0')
   {
     char make [200], model [200];
     const gchar *txt = gtk_entry_get_text(GTK_ENTRY(g->lens_model));

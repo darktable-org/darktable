@@ -256,7 +256,7 @@ aspect_changed (GtkComboBox *combo, dt_iop_module_t *self)
   int which = gtk_combo_box_get_active(combo);
   if (which < 0)
   {
-    p->aspect = self->dev->image->width/(float)self->dev->image->height;
+    p->aspect = self->dev->image_storage.width/(float)self->dev->image_storage.height;
     gchar *text = gtk_combo_box_get_active_text(combo);
     if(text)
     {
@@ -273,7 +273,7 @@ aspect_changed (GtkComboBox *combo, dt_iop_module_t *self)
   }
   else if (which < 9)
   {
-    if(self->dev->image->height > self->dev->image->width)
+    if(self->dev->image_storage.height > self->dev->image_storage.width)
       p->aspect = 1.0/g->aspect_ratios[which];
     else
       p->aspect = g->aspect_ratios[which];
@@ -432,7 +432,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_table_attach(GTK_TABLE(self->widget), tb, 2, 3, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  g->aspect_ratios[0] = self->dev->image->width/(float)self->dev->image->height;
+  g->aspect_ratios[0] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
   if(g->aspect_ratios[0] < 1.0f)
     g->aspect_ratios[0] = 1.0f / g->aspect_ratios[0];
   g->aspect_ratios[1] = 1.6280f;
@@ -456,11 +456,11 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   if(self->dev->gui_attached && g)
   {
-    g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+    g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
     if(g->aspect_ratios[1] < 1.0f)
       g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
   }
-  if(self->dev->image->height > self->dev->image->width)
+  if(self->dev->image_storage.height > self->dev->image_storage.width)
     tmp.aspect = 1.0f/tmp.aspect;
   memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));

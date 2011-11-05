@@ -130,7 +130,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && (module->dev->image->flags & DT_IMAGE_RAW)) return sizeof(float);
+  if(pipe->type != DT_DEV_PIXELPIPE_PREVIEW && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
   else return 4*sizeof(float);
 }
 
@@ -198,9 +198,9 @@ FC(const int row, const int col, const unsigned int filters)
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  const int filters = dt_image_flipped_filter(self->dev->image);
+  const int filters = dt_image_flipped_filter(&piece->pipe->image);
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp != 4)
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp != 4)
   {
     const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
 #ifdef _OPENMP
@@ -233,7 +233,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     _mm_sfence();
   }
-  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && self->dev->image->bpp == 4)
+  else if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW && filters && piece->pipe->image.bpp == 4)
   {
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
@@ -272,7 +272,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
-  const int filters = dt_image_flipped_filter(self->dev->image);
+  const int filters = dt_image_flipped_filter(&piece->pipe->image);
   const int ui = ((piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW) && filters);
   float coeffs[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
   if(ui) for(int k=0; k<3; k++) coeffs[k] /= 65535.0f;
@@ -373,7 +373,7 @@ void gui_update (struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *module)
 {
   // raw images need wb (to convert from uint16_t to float):
-  if(module->dev->image->flags & DT_IMAGE_RAW)
+  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
   {
     module->default_enabled = 1;
     module->hide_enable_button = 1;
@@ -388,9 +388,9 @@ void reload_defaults(dt_iop_module_t *module)
   char filename[1024];
   int ret=0;
   /* check if file is raw / hdr */
-  if (! (module->dev->image->flags & DT_IMAGE_LDR))
+  if (! (module->dev->image_storage.flags & DT_IMAGE_LDR))
   {
-    dt_image_full_path(module->dev->image->id, filename, 1024);
+    dt_image_full_path(module->dev->image_storage.id, filename, 1024);
     libraw_data_t *raw = libraw_init(0);
   
     ret = libraw_open_file(raw, filename);
@@ -554,8 +554,8 @@ void gui_init (struct dt_iop_module_t *self)
   const char *wb_name = NULL;
   char makermodel[1024];
   char *model = makermodel;
-  dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image->exif_maker, self->dev->image->exif_model);
-  if(!dt_image_is_ldr(self->dev->image)) for(int i=0; i<wb_preset_count; i++)
+  dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
+  if(!dt_image_is_ldr(&self->dev->image_storage)) for(int i=0; i<wb_preset_count; i++)
     {
       if(g->preset_cnt >= 50) break;
       if(!strcmp(wb_preset[i].make,  makermodel) &&
@@ -713,7 +713,7 @@ apply_preset(dt_iop_module_t *self)
       {
         char makermodel[1024];
         char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image->exif_maker, self->dev->image->exif_model);
+        dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
         if(!strcmp(wb_preset[i].make,  makermodel) &&
             !strcmp(wb_preset[i].model, model) && wb_preset[i].tuning == tune)
         {
