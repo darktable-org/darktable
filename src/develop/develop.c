@@ -516,7 +516,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 #endif
 
   /* invalidate image data*/
-  dt_similarity_image_dirty(dev->image->id);
+  dt_similarity_image_dirty(dev->image_storage.id);
   
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
