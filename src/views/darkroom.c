@@ -477,6 +477,9 @@ static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
 static void
 dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 {
+  // stop crazy users from sleeping on key-repeat spacebar:
+  if(dev->image_loading) return;
+
   // get last active plugin, make sure focus out is called:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   dt_iop_request_focus(NULL);
