@@ -64,6 +64,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
 
+  const dt_image_t *img = &module->dev->image_storage;
   // select matching default:
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and op_version = ?2 and "
@@ -76,15 +77,15 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
                               "(isldr = 0 or isldr=?10) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, module->dev->image->exif_lens,  strlen(module->dev->image->exif_lens),  SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)));
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_model, strlen(img->exif_model), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->exif_maker, strlen(img->exif_maker), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_lens,  strlen(img->exif_lens),  SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, img->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, img->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, img->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, img->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, 2-dt_image_is_ldr(module->dev->image));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, 2-dt_image_is_ldr(img));
 
 #if 0 // debug the query:
   printf("select op_params, enabled from presets where operation ='%s' and "
@@ -96,14 +97,14 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
          "%f between focal_length_min and focal_length_max and "
          "(isldr = 0 or isldr=%d) order by length(model) desc, length(maker) desc, length(lens) desc;\n",
          module->op,
-         module->dev->image->exif_model,
-         module->dev->image->exif_maker,
-         module->dev->image->exif_lens,
-         fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)),
-         fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)),
-         fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)),
-         fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)),
-         2-dt_image_is_ldr(module->dev->image));
+         img->exif_model,
+         img->exif_maker,
+         img->exif_lens,
+         fmaxf(0.0f, fminf(1000000, img->exif_iso)),
+         fmaxf(0.0f, fminf(1000000, img->exif_exposure)),
+         fmaxf(0.0f, fminf(1000000, img->exif_aperture)),
+         fmaxf(0.0f, fminf(1000000, img->exif_focal_length)),
+         2-dt_image_is_ldr(img));
 #endif
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -116,7 +117,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     int bl_length = sqlite3_column_bytes(stmt, 3);
     if(op_params && (op_length == module->params_size))
     {
-      // printf("got default for image %d and operation %s\n", module->dev->image->id, sqlite3_column_text(stmt, 2));
+      // printf("got default for image %d and operation %s\n", img->id, sqlite3_column_text(stmt, 2));
       memcpy(module->default_params, op_params, op_length);
       module->default_enabled = enabled;
       if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
@@ -1111,7 +1112,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   module->header = header;
   /* connect mouse button callbacks for focus and presets */
-  g_signal_connect(G_OBJECT(module->widget), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
+  g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
 
   /* steup the header box */
   gtk_container_add(GTK_CONTAINER(header_evb), header);
@@ -1220,6 +1221,76 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
   if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
   if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
   return 0;
+}
+
+void
+dt_iop_flip_and_zoom_8(
+    const uint8_t *in,
+    int32_t iw,
+    int32_t ih,
+    uint8_t *out,
+    int32_t ow,
+    int32_t oh,
+    const int32_t orientation,
+    uint32_t *width,
+    uint32_t *height)
+{
+  // init strides:
+  const uint32_t iwd = (orientation & 4) ? ih : iw;
+  const uint32_t iht = (orientation & 4) ? iw : ih;
+  const float scale = fmaxf(iwd/(float)ow, iht/(float)oh);
+  const uint32_t wd = *width  = MIN(ow, iwd/scale);
+  const uint32_t ht = *height = MIN(oh, iht/scale);
+  const int bpp = 4; // bytes per pixel
+  int32_t ii = 0, jj = 0;
+  int32_t si = 1, sj = iw;
+  if(orientation & 2)
+  {
+    jj = ih - jj - 1;
+    sj = -sj;
+  }
+  if(orientation & 1)
+  {
+    ii = iw - ii - 1;
+    si = -si;
+  }
+  if(orientation & 4)
+  {
+    int t = sj;
+    sj = si;
+    si = t;
+  }
+  const int32_t half_pixel = .5f*scale;
+  const int32_t offm = half_pixel*bpp*MIN(MIN(0, si), MIN(sj, si+sj));
+  const int32_t offM = half_pixel*bpp*MAX(MAX(0, si), MAX(sj, si+sj));
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si, iw, ih)
+#endif
+  for(int j=0; j<ht; j++)
+  {
+    uint8_t *out2 = out + bpp*wd*j;
+    const uint8_t *in2 = in + bpp*(iw*jj + ii + sj*(int32_t)(scale*j));
+    float stepi = 0.0f;
+    for(int i=0; i<wd; i++)
+    {
+      const uint8_t *in3 = in2 + ((int32_t)stepi)*si*bpp;
+      // this should always be within the bounds of in[], due to the way
+      // wd/ht are constructed by always just rounding down. half_pixel should never
+      // add up to one pixel difference.
+      // we have this check with the hope the branch predictor will get rid of it:
+      if(in3 + offm >= in &&
+         in3 + offM < in + bpp*iw*ih)
+      {
+        for(int k=0; k<3; k++) out2[k] = // in3[2-k];
+          CLAMP(((int32_t)in3[bpp*half_pixel*sj      + 2-k] +
+                 (int32_t)in3[bpp*half_pixel*(si+sj) + 2-k] +
+                 (int32_t)in3[bpp*half_pixel*si      + 2-k] +
+                 (int32_t)in3[2-k])/4, 0, 255);
+      }
+      out2  += bpp;
+      stepi += scale;
+    }
+  }
 }
 
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,

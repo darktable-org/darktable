@@ -455,9 +455,6 @@ int dt_init(int argc, char *argv[], const int init_gui)
   if(init_gui)
   {
     dt_control_init(darktable.control);
-    
-    /* control is running lets initialize the db pool */
-    dt_database_init_pool(darktable.db);
   }
   else
   {

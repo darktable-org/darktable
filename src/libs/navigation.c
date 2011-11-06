@@ -160,7 +160,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   cairo_translate(cr, inset, inset);
 
   /* draw navigation image if available */
-  if(dev->image && dev->preview_pipe->backbuf && !dev->preview_dirty)
+  if(dev->preview_pipe->backbuf && !dev->preview_dirty)
   {
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);

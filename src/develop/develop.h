@@ -59,13 +59,13 @@ typedef struct dt_develop_t
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
 
-  // image under consideration. image* is just pointing to the storage blob, which
+  // image under consideration, which
   // is copied each time an image is changed. this means we have some information
   // always cached (might be out of sync, so stars are not reliable), but for the iops
   // it's quite a convenience to access trivial stuff which is constant anyways without
-  // calling into the cache explicitly.
+  // calling into the cache explicitly. this should never be accessed directly, but
+  // by the iop through the copy their respective pixelpipe holds, for thread-safety.
   dt_image_t image_storage;
-  const dt_image_t *image;
 
   // history stack
   dt_pthread_mutex_t history_mutex;

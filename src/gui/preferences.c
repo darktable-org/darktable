@@ -272,6 +272,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model){
 
     gchar *module             = dt_iop_get_localized_name(operation);
     if(module == NULL) module = dt_lib_get_localized_name(operation);
+    if(module == NULL) module = g_strdup(operation);
 
     if(iso_min == 0.0 && iso_max == 51200.0)
       iso = g_strdup("%");

@@ -25,10 +25,8 @@
 struct dt_database_t *dt_database_init(char *alternative);
 /** closes down database and frees memory */
 void dt_database_destroy(const struct dt_database_t *);
-/** get handle for current thread */
+/** get handle */
 struct sqlite3 *dt_database_get(const struct dt_database_t *);
-/** initialize the pool handles, needs control to be running */
-void dt_database_init_pool(const struct dt_database_t *);
 /** test if database is new */
 gboolean dt_database_is_new(const struct dt_database_t *db);
 #endif

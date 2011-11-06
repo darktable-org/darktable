@@ -24,9 +24,8 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <gdk/gdkkeysyms.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
+#include <assert.h>
+
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -43,6 +42,9 @@
 #include "gui/presets.h"
 
 DT_MODULE(3)
+
+// number of gui ratios in combo box
+#define NUM_RATIOS 9
 
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
@@ -103,7 +105,7 @@ typedef struct dt_iop_clipping_gui_data_t
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
   float old_clip_x, old_clip_y, old_clip_w, old_clip_h;
   int cropping, straightening, applied;
-  float aspect_ratios[9];
+  float aspect_ratios[NUM_RATIOS];
   float current_aspect;
 }
 dt_iop_clipping_gui_data_t;
@@ -603,11 +605,11 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   if(self->dev->gui_attached && g)
   {
-    g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+    g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
     if(g->aspect_ratios[1] < 1.0f)
       g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
     
-    if(g->current_aspect > 1.0f && self->dev->image->height > self->dev->image->width)
+    if(g->current_aspect > 1.0f && self->dev->image_storage.height > self->dev->image_storage.width)
       g->current_aspect = 1.0f/g->current_aspect;
   }
   dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t)
@@ -663,10 +665,10 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
     // reset to free aspect ratio:
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", -1);
   }
-  else if (which < 9)
+  else if (which < NUM_RATIOS)
   {
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", which);
-    if(which > 1 && self->dev->image->height > self->dev->image->width)
+    if(which > 1 && self->dev->image_storage.height > self->dev->image_storage.width)
       g->current_aspect = 1.0/g->aspect_ratios[which];
     else
       g->current_aspect = g->aspect_ratios[which];
@@ -717,7 +719,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
-  if(act < -1 || act > 7) act = 0;
+  if(act < -1 || act >= NUM_RATIOS) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
 
   // reset gui draw box to what we have in the parameters:
@@ -1021,7 +1023,7 @@ void gui_init(struct dt_iop_module_t *self)
   /*-------------------------------------------*/
 
   g->aspect_ratios[0] = -1;
-  g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+  g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
   if(g->aspect_ratios[1] < 1.0)
     g->aspect_ratios[1] = 1.0 / g->aspect_ratios[1];
   g->aspect_ratios[2] = 1.6280;
@@ -1031,8 +1033,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_ratios[6] = 1.0;
   g->aspect_ratios[7] = sqrtf(2.0);
   g->aspect_ratios[8] = 16.0f/9.0f;
+  // if adding new presets, make sure to change this as well:
+  assert(NUM_RATIOS == 9);
 
-  if(act> 0 && self->dev->image->height > self->dev->image->width)
+  if(act> 0 && self->dev->image_storage.height > self->dev->image_storage.width)
     g->current_aspect = 1.0/g->aspect_ratios[act];
   else
     g->current_aspect = g->aspect_ratios[act];
@@ -1610,5 +1614,7 @@ void connect_key_accels(dt_iop_module_t *self)
 #undef GUIDE_DIAGONAL
 #undef GUIDE_TRIANGL
 #undef GUIDE_GOLDEN
+
+#undef NUM_RATIOS
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

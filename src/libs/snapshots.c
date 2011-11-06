@@ -361,7 +361,6 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  if (!darktable.develop->image) return;
   char wdname[64];
 
   gchar *label1 = g_strdup(gtk_button_get_label (GTK_BUTTON (d->snapshot[0].button)));
@@ -388,7 +387,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   g_free(label1);
 
   /* generate a label */
-  snprintf(wdname, 64, "%s", darktable.develop->image->filename);
+  snprintf(wdname, 64, "%s", darktable.develop->image_storage.filename);
   char *fname = wdname + strlen(wdname);
   while(fname > wdname && *fname != '.') fname --;
   if(*fname != '.') fname = wdname + strlen(wdname);

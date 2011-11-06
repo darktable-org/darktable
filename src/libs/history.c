@@ -205,7 +205,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
 static void _lib_history_compress_clicked_callback (GtkWidget *widget, gpointer user_data)
 {
-  const int imgid = darktable.develop->image ? darktable.develop->image->id : 0;
+  const int imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
   // make sure the right history is in there:
   dt_dev_write_history(darktable.develop);
@@ -249,10 +249,10 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
 
 static void _lib_history_create_style_button_clicked_callback (GtkWidget *widget, gpointer user_data)
 {
-  if(darktable.develop->image)
+  if(darktable.develop->image_storage.id)
   {
     dt_dev_write_history(darktable.develop);
-    dt_gui_styles_dialog_new (darktable.develop->image->id);
+    dt_gui_styles_dialog_new (darktable.develop->image_storage.id);
   }
 }
 

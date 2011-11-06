@@ -32,19 +32,19 @@ typedef struct dt_database_t
   /* database filename */
   gchar *dbfilename;
 
-  /* main handle used as fallback */
-  sqlite3 *main_handle;
+  /* ondisk DB */
+  sqlite3 *ondisk_handle;
 
-  /* the size of pool handles */
-  uint32_t size;
-  /* array of database handles one for each thread */
-  sqlite3 **handles;
+  /* working copy */
+  sqlite3 *working_handle;
 } dt_database_t;
 
 
 /* migrates database from old place to new */
 static void _database_migrate_to_xdg_structure();
 
+/* copies a db into another */
+static int _database_backup(sqlite3 *dst, sqlite3 *src);
 
 gboolean dt_database_is_new(const dt_database_t *db)
 {
@@ -87,7 +87,7 @@ dt_database_t *dt_database_init(char *alternative)
     db->is_new_database = TRUE;
 
   /* opening / creating database */
-  if(sqlite3_open(db->dbfilename, &db->main_handle))
+  if(sqlite3_open(db->dbfilename, &db->ondisk_handle))
   {
     fprintf(stderr, "[init] could not find database ");
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
@@ -103,59 +103,49 @@ dt_database_t *dt_database_init(char *alternative)
     return NULL;
   }
 
+  if (sqlite3_open(":memory:", &db->working_handle))
+  {
+    db->working_handle = db->ondisk_handle;
+  }
+  else
+  {
+    if (_database_backup(db->working_handle, db->ondisk_handle))
+    {
+      sqlite3_close(db->working_handle);
+      db->working_handle = db->ondisk_handle;
+    }
+  }
+
+  if (db->working_handle == db->ondisk_handle)
+  {
+    fprintf(stderr, "[init] could not create an in memory db for faster collection processing. expect some slow io on your hdd\n");
+  }
+
   /* attach a memory database to db connection for use with temporary tables
      used during instance life time, which is discarded on exit.
   */
-  sqlite3_exec(db->main_handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
+  sqlite3_exec(db->working_handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
   
   return db;
 }
 
 void dt_database_destroy(const dt_database_t *db)
 {
-  for(int k=0;k<db->size;k++)
-    sqlite3_close(db->handles[k]);
-  
+  if (db->working_handle != db->ondisk_handle)
+  {
+    if (_database_backup(db->ondisk_handle, db->working_handle))
+    {
+      fprintf(stderr, "[close] could not write back in memory db to disk. your session work is only in the xmp, back them up!");
+    }
+    sqlite3_close(db->working_handle);
+  }
+  sqlite3_close(db->ondisk_handle);
   g_free((dt_database_t *)db);
-}
-
-void dt_database_init_pool(const dt_database_t *db)
-{
-  dt_database_t *idb = (dt_database_t *)db;
-  idb->size = darktable.control->num_threads+DT_CTL_WORKER_RESERVED;
-  idb->handles = (sqlite3 **)g_malloc(sizeof(sqlite3 *)*idb->size);
-  for (int k = 0;k < idb->size;k++)
-    __DT_DEBUG_ASSERT__(sqlite3_open(idb->dbfilename, &idb->handles[k]));
 }
 
 sqlite3 *dt_database_get(const dt_database_t *db)
 {
-  int threadid = 0;
-
-  return db->main_handle;
-  
-  /* if no control is running lets return mainhandler */
-  if(!darktable.control->running || !db->handles)
-    return db->main_handle;
-
-  /* compare to threads */
-  while (!pthread_equal(darktable.control->thread[threadid], pthread_self()) &&
-	 threadid < darktable.control->num_threads-1)
-    threadid++;
-
-  /* res threadsd */
-  if (!pthread_equal(darktable.control->thread[threadid],pthread_self()))
-  {
-    while(!pthread_equal(darktable.control->thread_res[threadid],pthread_self()) && threadid < DT_CTL_WORKER_RESERVED-1)
-      threadid++;
-  }
-
-  /* if its ou of range use default pool handle at 0 */
-  if(threadid > db->size-1)
-    threadid = 0;
-
-  //fprintf(stderr,"Getting database handle for thread %d\n",threadid);
-  return db->handles[threadid];
+  return db->working_handle;
 }
 
 
@@ -184,4 +174,22 @@ static void _database_migrate_to_xdg_structure()
     }
     g_free(conf_db);
   }
+}
+
+static int _database_backup(sqlite3 *dst, sqlite3 *src)
+{
+  sqlite3_backup *backup;
+
+  backup = sqlite3_backup_init(dst, "main", src, "main");
+  if (!backup)
+  {
+    return -1;
+  }
+
+  int ret = sqlite3_backup_step(backup, -1);
+  ret = !(SQLITE_DONE == ret);
+
+  sqlite3_backup_finish(backup);
+
+  return ret;
 }

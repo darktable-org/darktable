@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
+include(CheckCCompilerFlag)
+
 #
 # Add files for libdarktable
 #
@@ -246,9 +248,21 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 if(NOT BINARY_PACKAGE_BUILD)
-	set(MARCH "-march=native")	
+	MESSAGE("-- Checking for -march=native support")
+	CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
+	if (MARCHNATIVE)
+		set(MARCH "-march=native")	
+	else()
+		MESSAGE("-- Checking for -mtune=native support")
+		CHECK_C_COMPILER_FLAG("-mtune=native" MTUNENATIVE)
+		if (MTUNENATIVE)
+			set(MARCH "-mtune=native")
+		else()
+			set(MARCH "-mtune=generic")
+		endif()
+	endif()
 else()
-	set(MARCH "-mtune=generic")
+ 	set(MARCH "-mtune=generic")
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse -g")

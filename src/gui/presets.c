@@ -727,7 +727,7 @@ void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t ve
 
 void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 {
-  dt_gui_presets_popup_menu_show_internal(module->op, module->version(), module->params, module->params_size, module->blend_params, module, module->dev->image, NULL, NULL);
+  dt_gui_presets_popup_menu_show_internal(module->op, module->version(), module->params, module->params_size, module->blend_params, module, &module->dev->image_storage, NULL, NULL);
 }
 
 void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const int32_t version, const char *maker, const char *model, const char *lens)

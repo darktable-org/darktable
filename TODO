@@ -6,13 +6,5 @@ colorlabels -> cached in image_t
 
 cleanup messy non-thread-safe dt_dev_get_processed_size() behavior
 
-cap darkroom res by user defined max, not DT_IMAGE_WINDOW_SIZE
-====================================
-. mipmap_cache to initialize to new thumbnail param, too!
-. develop.c
-. also check darkroom.c
-
 check dirty bit in dt_image_write_sidecar_file
 . and in all its uses. history.c?
-
-user params for cache size, respect them!

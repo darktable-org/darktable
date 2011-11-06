@@ -265,7 +265,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
   if (d->threshold > 0.0)
-    wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, dt_image_flipped_filter(self->dev->image));
+    wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, dt_image_flipped_filter(&piece->pipe->image));
   else
     memcpy(ovoid, ivoid, roi_out->width * roi_out->height * sizeof(float));
 }
@@ -281,8 +281,8 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
 
   // can't be switched on for non-raw images:
-  if(module->dev->image->flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
-  else                                         module->hide_enable_button = 1;
+  if(module->dev->image_storage.flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
+  else module->hide_enable_button = 1;
 }
 
 void init(dt_iop_module_t *module)
@@ -312,7 +312,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)params;
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (!(self->dev->image->flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if (!(pipe->image.flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     piece->enabled = 0;
   d->threshold = p->threshold;
 }
@@ -331,7 +331,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
-  if (self->dev->image->flags & DT_IMAGE_RAW)
+  if (self->dev->image_storage.flags & DT_IMAGE_RAW)
   {
     dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
     dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)module->params;

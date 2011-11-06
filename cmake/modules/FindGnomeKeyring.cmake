@@ -12,7 +12,7 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
-find_path(GNOMEKEYRING_INCLUDE_DIR gnome-keyring.h /usr/include/gnome-keyring-1 /usr/local/include/gnome-keyring-1)
+find_path(GNOMEKEYRING_INCLUDE_DIR gnome-keyring.h /usr/include/gnome-keyring-1 /usr/local/include/gnome-keyring-1 /opt/local/include/gnome-keyring-1)
 mark_as_advanced(GNOMEKEYRING_INCLUDE_DIR)
 
 set(GNOMEKEYRING_NAMES ${GNOMEKEYRING_NAMES} gnome-keyring libgnome-keyring)
