@@ -99,7 +99,8 @@ dt_database_t *dt_database_init(char *alternative)
 #else
     fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
 #endif
-    if (dbname != NULL) g_free(dbname);
+    g_free(dbname);
+    g_free(db);
     return NULL;
   }
 
@@ -126,6 +127,7 @@ dt_database_t *dt_database_init(char *alternative)
   */
   sqlite3_exec(db->working_handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
   
+  g_free(dbname);
   return db;
 }
 
@@ -172,8 +174,9 @@ static void _database_migrate_to_xdg_structure()
 	dt_conf_set_string("database","library.db");
       }
     }
-    g_free(conf_db);
   }
+
+  g_free(conf_db);
 }
 
 static int _database_backup(sqlite3 *dst, sqlite3 *src)
