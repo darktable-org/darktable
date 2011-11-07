@@ -177,7 +177,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-      if (!plugin && !plugin->views)
+      if (!plugin->views)
         fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
 
       /* does this module belong to current view ?*/
@@ -228,7 +228,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       {
         dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-        if (!plugin && !plugin->views)
+        if (!plugin->views)
           fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
 
         /* does this module belong to current view ?*/
@@ -398,7 +398,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
       
-      if (!plugin && !plugin->views)
+      if (!plugin->views)
         fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
 	  
       /* does this module belong to current view ?*/

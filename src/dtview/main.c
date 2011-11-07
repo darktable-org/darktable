@@ -55,6 +55,11 @@ int init(int argc, char *arg[])
 
   info = SDL_GetVideoInfo( );
 
+  if (info == NULL) {
+    fprintf( stderr, "[%s] video info failed: %s\n", arg[0], SDL_GetError());
+    exit(1);
+  }
+
   width  = info->current_w;
   height = info->current_h;
   pixels = (float *)malloc(sizeof(float)*4*width*height);
