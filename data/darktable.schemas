@@ -1719,32 +1719,6 @@
     </schema>
     
     <schema>
-      <key>/schemas/apps/darktable/gamma_linear</key>
-      <applyto>/apps/darktable/gamma_linear</applyto>
-      <owner>darktable</owner>
-      <type>float</type>
-      <default>.4045f</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-    
-    <schema>
-      <key>/schemas/apps/darktable/gamma_gamma</key>
-      <applyto>/apps/darktable/gamma_gamma</applyto>
-      <owner>darktable</owner>
-      <type>float</type>
-      <default>.41f</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
-    <schema>
       <key>/schemas/apps/darktable/plugins/darkroom/groups</key>
       <applyto>/apps/darktable/plugins/darkroom/groups</applyto>
       <owner>darktable</owner>

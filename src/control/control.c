@@ -104,10 +104,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   // reasonable thumbnail res:
   dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 1300);
   dt_conf_set_int  ("plugins/lighttable/thumbnail_height", 1000);
-
-  // should be unused:
-  dt_conf_set_float("gamma_linear", .1f);
-  dt_conf_set_float("gamma_gamma", .45f);
 }
 
 void dt_ctl_settings_init(dt_control_t *s)
