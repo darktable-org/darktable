@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,27 +19,45 @@
 #ifndef DT_LIB_H
 #define DT_LIB_H
 
+#include "views/view.h"
 #include "common/darktable.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 
 struct dt_lib_module_t;
+struct dt_colorpicker_sample_t;
+
 /** struct responsible for all library related shared routines and plugins. */
 typedef struct dt_lib_t
 {
   GList *plugins;
   struct dt_lib_module_t *gui_module;
+
+  /** Proxy functions for communication with views */
+  struct
+  {
+    /** Colorpicker plugin hooks */
+    struct
+    {
+      struct dt_lib_module_t *module;
+      uint8_t *picked_color_rgb_mean;
+      uint8_t *picked_color_rgb_min;
+      uint8_t *picked_color_rgb_max;
+      float *picked_color_lab_mean;
+      float *picked_color_lab_min;
+      float *picked_color_lab_max;
+      GSList *live_samples;
+      struct dt_colorpicker_sample_t *selected_sample;
+      int size;
+      int display_samples;
+      int restrict_histogram;
+      void (*update_panel)(struct dt_lib_module_t *self);
+      void (*update_samples)(struct dt_lib_module_t *self);
+    } colorpicker;
+
+  } proxy;
 }
 dt_lib_t;
-
-typedef enum dt_lib_view_support_t
-{
-  DT_LIGHTTABLE_VIEW=1,
-  DT_DARKTABLE_VIEW=2,
-  DT_CAPTURE_VIEW=4,
-  DT_LEFT_PANEL_VIEW=8
-}
-dt_lib_view_support_t;
 
 typedef struct dt_lib_module_t
 {
@@ -53,7 +72,7 @@ typedef struct dt_lib_module_t
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
   /** expander containing the widget. */
-  GtkExpander *expander;
+  GtkWidget *expander;
 
   /** version */
   int (*version)          ();
@@ -61,6 +80,12 @@ typedef struct dt_lib_module_t
   const char* (*name)     ();
   /** get the views which the module should be loaded in. */
   uint32_t (*views)       ();
+  /** get the container which the module should be placed in */
+  uint32_t (*container)   ();
+  /** check if module should use a expander or not, default implementation
+      will make the module expandable and storing the expanding state, 
+      if not the module will always be shown without the expander. */
+  int (*expandable) ();
 
   /** callback methods for gui. */
   /** construct widget. */
@@ -103,9 +128,19 @@ int dt_lib_load_modules();
 void dt_lib_unload_module(dt_lib_module_t *module);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
+/** set a expand/collaps plugin expander */
+void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded);
+
 /** connects the reset and presets shortcuts to a lib */
 void dt_lib_connect_common_accels(dt_lib_module_t *module);
 
+/** get the visible state of a plugin */
+gboolean dt_lib_is_visible(dt_lib_module_t *module);
+/** set the visible state of a plugin */
+void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible);
+
+/** returns the localized plugin name for a given plugin_name. must not be freed. */
+gchar *dt_lib_get_localized_name(const gchar * plugin_name);
 
 /** preset stuff for lib */
 
@@ -113,3 +148,5 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module);
 void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params, const int32_t params_size);
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

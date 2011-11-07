@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 Henrik Andersson.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,17 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_GUI_IOP_MODULEGROUPS_H
-#define DT_GUI_IOP_MODULEGROUPS_H
 
-#include <inttypes.h>
+
+#ifndef DT_COMMON_RATINGS_H
+#define DT_COMMON_RATINGS_H
+
 #include <gtk/gtk.h>
-#include <glib.h>
 
-void dt_gui_iop_modulegroups_init ();
-void dt_gui_iop_modulegroups_set_list (GList *modules);
-/* switch to group IOP_GROUP_* */
-void dt_gui_iop_modulegroups_switch(int group);
-/* get currently active groups */
-int  dt_gui_iop_modulegroups_get();
+/** \brief applies specified rating to selected images */
+void dt_ratings_apply_to_selection(int rating);
+
+
 #endif

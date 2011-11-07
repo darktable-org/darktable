@@ -45,14 +45,13 @@ name ()
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW;
+  return DT_VIEW_LIGHTTABLE;
 }
 
-void
-gui_reset (dt_lib_module_t *self)
+uint32_t container()
 {
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
-
 
 static void
 button_clicked(GtkWidget *widget, gpointer user_data)
@@ -66,7 +65,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 5) dt_control_flip_images(1);
   else if(i == 6) dt_control_flip_images(2);
   else if(i == 7) dt_control_merge_hdr();
-  dt_control_queue_draw_all();
+  dt_control_queue_redraw_center();
 }
 
 int

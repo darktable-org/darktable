@@ -17,7 +17,7 @@
 				</tgroup>
 			</informaltable>
 			
-		<para>The standard way for doing digital cross-processing is to use a channel curve tool but Darktable lacks this tool
+		<para>The standard way for doing digital cross-processing is to use a channel curve tool but darktable lacks this tool
 			for the moment and another way to accomodiate the effect is used.
 		</para>
 	</sect3>

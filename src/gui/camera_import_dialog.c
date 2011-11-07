@@ -437,7 +437,7 @@ int _camera_storage_image_filename(const dt_camera_t *camera,const char *filenam
     return 0;
 
 
-  gdk_threads_enter();
+  gboolean i_own_lock = dt_control_gdk_lock();
   char exif_info[1024]= {0};
   char file_info[4096]= {0};
 
@@ -487,7 +487,8 @@ int _camera_storage_image_filename(const dt_camera_t *camera,const char *filenam
   if(pixbuf) g_object_unref(pixbuf);
   if(thumb) g_object_ref(thumb);
 
-  gdk_threads_leave();
+  if (i_own_lock) dt_control_gdk_unlock();
+
   return 1;
 }
 

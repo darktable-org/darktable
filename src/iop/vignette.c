@@ -527,7 +527,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
       float new_falloff = 100.0 * delta_y / max;
       dtgtk_slider_set_value(g->falloff_scale, new_falloff);
     }
-    dt_control_gui_queue_draw();
+    dt_control_queue_redraw_center();
     return 1;
 
   }
@@ -544,7 +544,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
     if(old_grab != grab) dt_control_change_cursor(GDK_LEFT_PTR);
   }
   old_grab = grab;
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -838,7 +838,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_enabled = 0;
-  module->priority = 869; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 874; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vignette_params_t);
   module->gui_data = NULL;
   dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t)

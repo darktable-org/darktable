@@ -1,6 +1,7 @@
 /*
 		This file is part of darktable,
 		copyright (c) 2009--2011 johannes hanika.
+		copyright (c) 2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -145,6 +146,8 @@ typedef struct dt_iop_module_t
   int32_t request_color_pick;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
+  /** single point to pick if in point mode */
+  float color_picker_point[2];
   /** place to store the picked color. */
   float picked_color[3], picked_color_min[3], picked_color_max[3];
   /** reference for dlopened libs. */
@@ -155,8 +158,6 @@ typedef struct dt_iop_module_t
   int32_t enabled, default_enabled, factory_enabled;
   /** parameters for the operation. will be replaced by history revert. */
   dt_iop_params_t *params, *default_params, *factory_params;
-  /** exclusive access to params is needed, as gui and gegl processing is async. */
-  dt_pthread_mutex_t params_mutex;
   /** size of individual params struct. */
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
@@ -171,12 +172,13 @@ typedef struct dt_iop_module_t
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
   GtkDarktableToggleButton *off;
-  /** this widget contains all of the module: expander and label decoration. */
-  GtkWidget *topwidget;
+  /** this is the module header, contains labe and buttons */
+  GtkWidget *header;
+
   /** button used to show/hide this module in the plugin list. */
   GtkWidget *showhide;
   /** expander containing the widget. */
-  GtkExpander *expander;
+  GtkWidget *expander;
   /** reset parameters button */
   GtkWidget *reset_button;
   /** show preset menu button */
@@ -187,6 +189,8 @@ typedef struct dt_iop_module_t
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
+  /** the correspoinding SO object */
+  dt_iop_module_so_t *so;
 
 
   /** version of the parameters in the database. */
@@ -272,10 +276,18 @@ void dt_iop_cleanup_module(dt_iop_module_t *module);
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
+/** set expanded state of iop */
+void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded);
+
 /** commits params and updates piece hash. */
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
+/** get the widget of plugin ui in expander */
+GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
+/** get the eventbox of plugin ui in expander */
+GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module);
+
 /** requests the focus for this plugin (to draw overlays over the center image) */
 void dt_iop_request_focus(dt_iop_module_t *module);
 /** loads default settings from database. */
@@ -298,12 +310,33 @@ dt_iop_colorspace_type_t;
 /** find which colorspace the module works within */
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module);
 
+/** flip according to orientation bits, also zoom to given size. */
+void dt_iop_flip_and_zoom_8( const uint8_t *in, int32_t iw, int32_t ih, uint8_t *out, int32_t ow, int32_t oh, const int32_t orientation, uint32_t *width, uint32_t *height);
+
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride);
 
 /** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
-void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters);
-void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters);
+void
+dt_iop_clip_and_zoom_demosaic_half_size(
+    float *out,
+    const uint16_t *const in,
+    const struct dt_iop_roi_t *const roi_out,
+    const struct dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const uint32_t filters);
+
+void
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const struct dt_iop_roi_t *const roi_out,
+    const struct dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const uint32_t filters,
+    const float clip);
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
@@ -311,6 +344,11 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
 
 void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb);
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);
+
+dt_iop_module_t *get_colorout_module();
+
+/** returns the localized plugin name for a given op name. must not be freed. */
+gchar *dt_iop_get_localized_name(const gchar * op);
 
 /** takes four points (x,y) in two arrays and fills the cubic coefficients a, such that y = [X] * a, where
   * [X] is the matrix containing all x^3 x^2 x^1 x^0 lines for all four x. */
@@ -366,3 +404,5 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

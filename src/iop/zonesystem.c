@@ -257,7 +257,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   /* thread-safe redraw */
   if(  self->dev->gui_attached && g && buffer )
-    dt_control_queue_draw(g->preview);
+    dt_control_queue_redraw_widget(g->preview);
 
 }
 
@@ -312,7 +312,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
-  module->priority = 565; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 562; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
   dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t)
@@ -621,8 +621,8 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
   cairo_t *cr = cairo_create(cst);
 
   /* clear background */
-  GtkStateType state = gtk_widget_get_state(self->topwidget);
-  GtkStyle *style = gtk_widget_get_style(self->topwidget);
+  GtkStateType state = gtk_widget_get_state(self->expander);
+  GtkStyle *style = gtk_widget_get_style(self->expander);
   cairo_set_source_rgb (cr, style->bg[state].red/65535.0, style->bg[state].green/65535.0, style->bg[state].blue/65535.0);
   cairo_paint (cr);
 

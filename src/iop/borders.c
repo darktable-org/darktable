@@ -106,6 +106,7 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
   const float size = fabsf(d->size);
+  if(size == 0) return;
   if(d->size < 0.0f)
   {
     // this means: relative to width and constant for height as well:
@@ -255,7 +256,7 @@ aspect_changed (GtkComboBox *combo, dt_iop_module_t *self)
   int which = gtk_combo_box_get_active(combo);
   if (which < 0)
   {
-    p->aspect = self->dev->image->width/(float)self->dev->image->height;
+    p->aspect = self->dev->image_storage.width/(float)self->dev->image_storage.height;
     gchar *text = gtk_combo_box_get_active_text(combo);
     if(text)
     {
@@ -272,7 +273,7 @@ aspect_changed (GtkComboBox *combo, dt_iop_module_t *self)
   }
   else if (which < 9)
   {
-    if(self->dev->image->height > self->dev->image->width)
+    if(self->dev->image_storage.height > self->dev->image_storage.width)
       p->aspect = 1.0/g->aspect_ratios[which];
     else
       p->aspect = g->aspect_ratios[which];
@@ -303,7 +304,7 @@ colorpick_callback (GtkDarktableButton *button, dt_iop_module_t *self)
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
   GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select frame color")));
-  gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(darktable.gui->widgets.main_window));
+  gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
                     G_CALLBACK (colorpick_button_callback), csd);
   g_signal_connect (G_OBJECT (csd->cancel_button), "clicked",
@@ -364,7 +365,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_borders_params_t);
   module->gui_data = NULL;
-  module->priority = 934; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 937; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -431,7 +432,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_table_attach(GTK_TABLE(self->widget), tb, 2, 3, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  g->aspect_ratios[0] = self->dev->image->width/(float)self->dev->image->height;
+  g->aspect_ratios[0] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
   if(g->aspect_ratios[0] < 1.0f)
     g->aspect_ratios[0] = 1.0f / g->aspect_ratios[0];
   g->aspect_ratios[1] = 1.6280f;
@@ -455,11 +456,11 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   if(self->dev->gui_attached && g)
   {
-    g->aspect_ratios[1] = self->dev->image->width/(float)self->dev->image->height;
+    g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
     if(g->aspect_ratios[1] < 1.0f)
       g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
   }
-  if(self->dev->image->height > self->dev->image->width)
+  if(self->dev->image_storage.height > self->dev->image_storage.width)
     tmp.aspect = 1.0f/tmp.aspect;
   memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));

@@ -48,7 +48,12 @@ name ()
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW;
+  return DT_VIEW_LIGHTTABLE;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 static void
@@ -60,7 +65,7 @@ write_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 static void
 load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
 {
-  GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("open sidecar file"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -99,8 +104,7 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
     g_free (dtfilename);
   }
   gtk_widget_destroy (filechooser);
-  win = darktable.gui->widgets.center;
-  gtk_widget_queue_draw(win);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void
@@ -111,7 +115,7 @@ copy_button_clicked (GtkWidget *widget, gpointer user_data)
 
   /* get imageid for source if history past */
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* copy history of first image in selection */
@@ -134,7 +138,7 @@ static void
 delete_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   dt_history_delete_on_selection ();
-  dt_control_gui_queue_draw ();
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -161,7 +165,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   }
 
   /* redraw */
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
 }
 
 void

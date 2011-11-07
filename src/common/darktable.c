@@ -30,13 +30,15 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
-#include "common/points.h"
+#include "common/mipmap_cache.h"
 #include "common/opencl.h"
+#include "common/points.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "libs/lib.h"
 #include "views/view.h"
 #include "control/control.h"
+#include "control/signal.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -48,6 +50,7 @@
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
+#include <locale.h>
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__)
 #include <malloc.h>
@@ -74,7 +77,7 @@ static int usage(const char *argv0)
 }
 
 typedef void (dt_signal_handler_t)(int) ;
-static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
+// static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 
 #ifdef __APPLE__
@@ -142,9 +145,11 @@ void _dt_sigsegv_handler(int param)
   _dt_sigsegv_old_handler(param);
 }
 
+#if 0
 static
 void _dt_sigill_handler(int param)
 {
+  fprintf(stderr, "[this doesn't seem to work]\n");
   GtkWidget *dlg = gtk_message_dialog_new(NULL,GTK_DIALOG_MODAL,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_(
 "darktable has trapped an illegal instruction which probably means that \
 an invalid processor optimized codepath is used for your cpu, please try reproduce the crash running 'gdb darktable' from \
@@ -170,6 +175,7 @@ the console and post the backtrace log to mailing list with information about yo
     : "0" (level) \
     )
 #endif
+
 
 static 
 void dt_check_cpu(int argc,char **argv) 
@@ -208,6 +214,24 @@ darktable will now close down.\n\n%s"),message);
     
     exit(11);
   }
+}
+#endif
+
+/*  TODO: make this case insensitive */
+gboolean dt_supported_image(const gchar *filename)
+{
+  gboolean supported = FALSE;
+  char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
+  char *ext = g_strrstr(filename,".");
+  if(!ext) return FALSE;
+  for(char **i=extensions; *i!=NULL; i++)
+    if(!g_ascii_strncasecmp(ext+1, *i,strlen(*i)))
+    {
+      supported = TRUE;
+      break;
+    }
+  g_strfreev(extensions);
+  return supported;
 }
 
 static void strip_semicolons_from_keymap(const char* path)
@@ -334,20 +358,46 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   g_type_init();
 
+  // does not work, as gtk is not inited yet.
+  // even if it were, it's a super bad idea to invoke gtk stuff from
+  // a signal handler.
   /* check cput caps */
-  dt_check_cpu(argc,argv);
+  // dt_check_cpu(argc,argv);
 
   
 #ifdef HAVE_GEGL
   (void)setenv("GEGL_PATH", DARKTABLE_DATADIR"/gegl:/usr/lib/gegl-0.0", 1);
   gegl_init(&argc, &argv);
 #endif
+
   // thread-safe init:
   dt_exif_init();
   char datadir[1024];
   dt_util_get_user_config_dir (datadir,1024);
   char filename[1024];
   snprintf(filename, 1024, "%s/darktablerc", datadir);
+
+  // intialize the config backend OBS. this needs to be done first...
+  darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
+  dt_conf_init(darktable.conf, filename);
+
+  // set the interface language
+  const gchar* lang = dt_conf_get_string("ui_last/gui_language");
+  if(lang != NULL && lang[0] != '\0')
+  {
+    gchar* LANG = g_ascii_strup(lang, -1);
+    gchar* lang_LANG = g_strconcat(lang, "_", LANG, /*".UTF-8",*/ NULL); // FIXME: this does only work for about half of our languages ...
+    setlocale(LC_ALL, lang_LANG);
+    gtk_disable_setlocale();
+    g_free(LANG);
+    g_free(lang_LANG);
+  }
+
+  // initialize the database
+  darktable.db = dt_database_init(dbfilenameFromCommand);
+
+  // Initialize the signal system
+  darktable.signals = dt_control_signal_init();
 
   // Initialize the filesystem watcher
   darktable.fswatch=dt_fswatch_new();
@@ -356,41 +406,23 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // Initialize the camera control
   darktable.camctl=dt_camctl_new();
 #endif
+
   // has to go first for settings needed by all the others.
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   memset(darktable.conf, 0, sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
 
   // get max lighttable thumbnail size:
-  darktable.thumbnail_size = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_size"), 160, 1300);
+  darktable.thumbnail_width  = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_width"),  200, 3000);
+  darktable.thumbnail_height = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_height"), 200, 3000);
   // and make sure it can be mip-mapped all the way from mip4 to mip0
-  darktable.thumbnail_size /= 16;
-  darktable.thumbnail_size *= 16;
+  darktable.thumbnail_width  /= 16;
+  darktable.thumbnail_width  *= 16;
+  darktable.thumbnail_height /= 16;
+  darktable.thumbnail_height *= 16;
 
   // Initialize the password storage engine
   darktable.pwstorage=dt_pwstorage_new();
-
-  // check and migrate database into new XDG structure
-  char dbfilename[2048]= {0};
-  gchar *conf_db = dt_conf_get_string("database");
-  if (conf_db && conf_db[0] != '/')
-  {
-    char *homedir = dt_util_get_home_dir(NULL);
-    snprintf (dbfilename,2048,"%s/%s", homedir, conf_db);
-    if (g_file_test (dbfilename, G_FILE_TEST_EXISTS))
-    {
-      fprintf(stderr, "[init] moving database into new XDG directory structure\n");
-      // move database into place
-      char destdbname[2048]= {0};
-      snprintf(destdbname,2048,"%s/%s",datadir,"library.db");
-      if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
-      {
-        rename(dbfilename,destdbname);
-        dt_conf_set_string("database","library.db");
-      }
-    }
-    g_free(conf_db);
-  }
 
   // check and migrate the cachedir
   char cachefilename[2048]= {0};
@@ -414,44 +446,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
     g_free(conf_cache);
   }
 
-  gchar * dbname = NULL;
-  if ( dbfilenameFromCommand == NULL )
-  {
-    dbname = dt_conf_get_string ("database");
-    if(!dbname)               snprintf(dbfilename, 1024, "%s/library.db", datadir);
-    else if(dbname[0] != '/') snprintf(dbfilename, 1024, "%s/%s", datadir, dbname);
-    else                      snprintf(dbfilename, 1024, "%s", dbname);
-  }
-  else
-  {
-    snprintf(dbfilename, 1024, "%s", dbfilenameFromCommand);
-    dbname = g_file_get_basename (g_file_new_for_path(dbfilenameFromCommand));
-  }
-
-  int load_cached = 1;
-  // if db file does not exist, also don't load the cache.
-  if(!g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR)) load_cached = 0;
-  if(sqlite3_open(dbfilename, &(darktable.db)))
-  {
-    fprintf(stderr, "[init] could not open database ");
-    if(dbname) fprintf(stderr, "`%s'!\n", dbname);
-    else       fprintf(stderr, "\n");
-#ifndef HAVE_GCONF
-    fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
-    dt_util_get_datadir(dbfilename, 512);
-    fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
-#else
-    fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
-#endif
-    sqlite3_close(darktable.db);
-    if (dbname != NULL) g_free(dbname);
-    return 1;
-  }
-  if (dbname != NULL) g_free(dbname);
-
+  // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
-
   darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
   memset(darktable.control, 0, sizeof(dt_control_t));
   if(init_gui)
@@ -460,12 +457,14 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
   else
   {
+#if 0 // TODO: move int dt_database_t 
     // this is in memory, so schema can't exist yet.
     if(!strcmp(dbfilename, ":memory:"))
     {
       dt_control_create_database_schema();
       dt_gui_presets_init(); // also init preset db schema.
     }
+#endif
     darktable.control->running = 0;
     darktable.control->accelerators = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
@@ -487,16 +486,15 @@ int dt_init(int argc, char *argv[], const int init_gui)
   memset(darktable.points, 0, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
-  int thumbnails = dt_conf_get_int ("mipmap_cache_thumbnails");
-  thumbnails = MIN(1000000, MAX(20, thumbnails));
+  // must come before mipmap_cache, because that one will need to access
+  // image dimensions stored in here:
+  darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
+  memset(darktable.image_cache, 0, sizeof(dt_image_cache_t));
+  dt_image_cache_init(darktable.image_cache);
 
   darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
   memset(darktable.mipmap_cache, 0, sizeof(dt_mipmap_cache_t));
-  dt_mipmap_cache_init(darktable.mipmap_cache, thumbnails);
-
-  darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  memset(darktable.image_cache, 0, sizeof(dt_image_cache_t));
-  dt_image_cache_init(darktable.image_cache, MIN(10000, MAX(500, thumbnails)), load_cached);
+  dt_mipmap_cache_init(darktable.mipmap_cache);
 
   // The GUI must be initialized before the views, because the init()
   // functions of the views depend on darktable.control->accels_* to register
@@ -607,18 +605,16 @@ int dt_init(int argc, char *argv[], const int init_gui)
       {
         dt_film_open(filmid);
         // make sure buffers are loaded (load full for testing)
-        dt_image_t *img = dt_image_cache_get(id, 'r');
-        dt_image_buffer_t buf = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
-        if(!buf)
+        dt_mipmap_buffer_t buf;
+        dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, 0);
+        if(!buf.buf)
         {
           id = 0;
-          dt_image_cache_release(img, 'r');
           dt_control_log(_("file `%s' has unknown format!"), filename);
         }
         else
         {
-          dt_image_release(img, DT_IMAGE_FULL, 'r');
-          dt_image_cache_release(img, 'r');
+          dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
           dt_ctl_switch_mode_to(DT_DEVELOP);
         }
@@ -682,7 +678,8 @@ void dt_cleanup()
   dt_pwstorage_destroy(darktable.pwstorage);
   dt_fswatch_destroy(darktable.fswatch);
 
-  sqlite3_close(darktable.db);
+  dt_database_destroy(darktable.db);
+ 
   dt_pthread_mutex_destroy(&(darktable.db_insert));
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
 

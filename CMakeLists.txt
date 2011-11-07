@@ -2,7 +2,7 @@ project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
-option(USE_GCONF_BACKEND "Detect and use gconf backend if available." ON)
+option(USE_GCONF_BACKEND "Detect and use gconf backend if available." OFF)
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
 option(USE_FLICKR "Enable Flickr support" ON)

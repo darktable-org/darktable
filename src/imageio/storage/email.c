@@ -82,7 +82,6 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
   _email_attachment_t *attachment = ( _email_attachment_t *)malloc(sizeof(_email_attachment_t));
@@ -95,15 +94,14 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   g_mkdir_with_parents(tmpdir,0700);
 
   char dirname[4096];
-  dt_image_full_path(img->id, dirname, 1024);
+  dt_image_full_path(imgid, dirname, 1024);
   const gchar * filename = g_path_get_basename( dirname );
   gchar * end = g_strrstr( filename,".")+1;
   g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
 
   attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
 
-  dt_imageio_export(img, attachment->file, format, fdata);
-  dt_image_cache_release(img, 'r');
+  dt_imageio_export(imgid, attachment->file, format, fdata);
 
   char *trunc = attachment->file + strlen(attachment->file) - 32;
   if(trunc < attachment->file) trunc = attachment->file;
@@ -199,7 +197,7 @@ proceed: ; // Let's build up uri / command
     gchar exif[256]= {0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
     const gchar *filename = g_path_get_basename( attachment->file );
-    dt_image_t *img = dt_image_cache_get( attachment->imgid, 'r');
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, attachment->imgid);
     dt_image_print_exif( img, exif, 256 );
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
 
@@ -208,7 +206,7 @@ proceed: ; // Let's build up uri / command
 
     g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), attachmentFormat, attachment->file );
     // Free attachment item and remove
-    dt_image_cache_release(img, 'r');
+    dt_image_cache_read_release(darktable.image_cache, img);
     g_free( d->images->data );
     d->images = g_list_remove( d->images, d->images->data );
   }

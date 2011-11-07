@@ -54,7 +54,7 @@ dt_iop_graduatednd_params_t;
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("neutral grey ND2 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
@@ -109,7 +109,7 @@ void init_presets (dt_iop_module_so_t *self)
     2,0,0,50,0.082927,0.25
   } , sizeof(dt_iop_graduatednd_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 typedef struct dt_iop_graduatednd_gui_data_t
@@ -268,7 +268,7 @@ int
 mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 {
   //TODO see vignette.c ...
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -512,7 +512,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 217; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 208; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t)
@@ -555,11 +555,8 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
     return;
   gtk_widget_draw(GTK_WIDGET(g->gslider2),NULL);
 
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
-  {
-    p->hue = dtgtk_gradient_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+  p->hue = dtgtk_gradient_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -568,11 +565,8 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE)
-  {
-    p->saturation = dtgtk_gradient_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-  }
+  p->saturation = dtgtk_gradient_slider_get_value(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 

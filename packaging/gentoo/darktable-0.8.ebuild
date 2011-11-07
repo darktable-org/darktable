@@ -7,7 +7,7 @@ inherit gnome2 cmake-utils
 
 SRC_URI="http://downloads.sourceforge.net/project/darktable/darktable/0.8/darktable-0.8.tar.gz"
 DESCRIPTION="Darktable is a virtual lighttable and darkroom for photographers"
-HOMEPAGE="http://darktable.sf.net/"
+HOMEPAGE="http://www.darktable.org/"
 
 LICENSE="GPL-3"
 SLOT="0"

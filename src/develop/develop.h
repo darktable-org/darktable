@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2011 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,9 +26,6 @@
 #include "control/settings.h"
 #include "develop/imageop.h"
 #include "common/image.h"
-
-extern uint8_t dt_dev_default_gamma[0x10000];
-extern float dt_dev_de_gamma[0x100];
 
 struct dt_iop_module_t;
 struct dt_iop_params_t;
@@ -62,44 +59,84 @@ typedef struct dt_develop_t
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
 
-  // image under consideration.
-  dt_image_t *image;
-  int32_t mipf_width, mipf_height;
-  float   *mipf, mipf_exact_width, mipf_exact_height;
+  // image under consideration, which
+  // is copied each time an image is changed. this means we have some information
+  // always cached (might be out of sync, so stars are not reliable), but for the iops
+  // it's quite a convenience to access trivial stuff which is constant anyways without
+  // calling into the cache explicitly. this should never be accessed directly, but
+  // by the iop through the copy their respective pixelpipe holds, for thread-safety.
+  dt_image_t image_storage;
 
   // history stack
   dt_pthread_mutex_t history_mutex;
   int32_t history_end;
   GList *history;
+
   // operations pipeline
   int32_t iop_instance;
   GList *iop;
 
   // histogram for display.
-  float *histogram, *histogram_pre;
-  float histogram_max, histogram_pre_max;
-  uint8_t gamma[0x100];
+  float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
+  float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
 
+  /* proxy for communication between plugins and develop/darkroom */
+  struct
+  {
+    // exposure plugin hooks, used by histogram dragging functions 
+    struct
+    {
+      struct dt_iop_module_t *module;
+      void  (*set_white)(struct dt_iop_module_t *exp, const float white);
+      float (*get_white)(struct dt_iop_module_t *exp);
+      void  (*set_black)(struct dt_iop_module_t *exp, const float black);
+      float (*get_black)(struct dt_iop_module_t *exp);
+    }
+    exposure;
+
+    // modulegroups plugin hooks
+    struct
+    {
+      struct dt_lib_module_t *module;
+      /* switch module group */
+      void (*set)(struct dt_lib_module_t *self, uint32_t group);
+      /* get current module group */
+      uint32_t (*get)(struct dt_lib_module_t *self);
+      /* test if iop group flags matches modulegroup */
+      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+      /* switch to modulegroup */
+      void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
+    }
+    modulegroups;
+
+    // snapshots plugin hooks 
+    struct
+    {
+      // this flag is set by snapshot plugin to signal that expose of darkroom
+      // should store cairo surface as snapshot to disk using filename.
+      gboolean request;
+      const gchar *filename;
+    }
+    snapshot;
+
+  }
+  proxy;
 }
 dt_develop_t;
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
-void dt_dev_raw_load(dt_develop_t *dev, dt_image_t *img);
-void dt_dev_raw_reload(dt_develop_t *dev);
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
-// directly in this thread process mipf->mip4..0
-void dt_dev_process_to_mip(dt_develop_t *dev);
 
-void dt_dev_load_image(dt_develop_t *dev, struct dt_image_t *img);
-void dt_dev_load_preview(dt_develop_t *dev, struct dt_image_t *image);
+void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
+void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
 /** checks if provided imgid is the image currently in develop */
-int dt_dev_is_current_image(dt_develop_t *dev, int imgid);
+int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
@@ -109,7 +146,6 @@ void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_invalidate(dt_develop_t *dev);
 // also invalidates preview (which is unaffected by resize/zoom/pan)
 void dt_dev_invalidate_all(dt_develop_t *dev);
-void dt_dev_set_gamma(dt_develop_t *dev);
 void dt_dev_set_histogram(dt_develop_t *dev);
 void dt_dev_set_histogram_pre(dt_develop_t *dev);
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt);
@@ -123,5 +159,39 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui (dt_develop_t *dev);
+
+/* 
+ * exposure plugin hook, set the white level 
+ */
+
+/** check if exposure iop hooks are available */
+gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
+/** reset exposure to defaults */
+void dt_dev_exposure_reset_defaults(dt_develop_t *dev);
+/** set exposure white level */
+void dt_dev_exposure_set_white(dt_develop_t *dev, const float white);
+/** get exposure white level */
+float dt_dev_exposure_get_white(dt_develop_t *dev);
+/** set exposure black level */
+void dt_dev_exposure_set_black(dt_develop_t *dev, const float black);
+/** get exposure black level */
+float dt_dev_exposure_get_black(dt_develop_t *dev);
+
+/*
+ * modulegroups plugin hooks
+ */
+/** check if modulegroups hooks are available */
+gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
+/** switch to modulegroup of module */
+void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
+/** set the active modulegroup */
+void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
+/** get the active modulegroup */
+uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
+/** test if iop group flags matches modulegroup */
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group);
+
+/** request snapshot */
+void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
 
 #endif

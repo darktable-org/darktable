@@ -19,14 +19,14 @@
 #define DT_IMAGEIO_EXR_H
 
 #include "common/image.h"
+#include "common/mipmap_cache.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-  dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename);
-  dt_imageio_retval_t dt_imageio_open_exr_preview (dt_image_t *img, const char *filename);
+  dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 
 #ifdef __cplusplus
 }

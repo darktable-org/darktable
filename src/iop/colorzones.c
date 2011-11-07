@@ -25,7 +25,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "gui/histogram.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -261,7 +260,7 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_colorzones_params_t p;
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   p.channel = DT_IOP_COLORZONES_h;
   for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
   {
@@ -388,7 +387,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.equalizer_y[2][5] = 0.500000;
   dt_gui_presets_add_generic(_("black & white film"), self->op, self->version(), &p, sizeof(p), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 // fills in new parameters based on mouse position (in 0,1)

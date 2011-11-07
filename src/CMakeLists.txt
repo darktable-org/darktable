@@ -6,11 +6,13 @@ include(CheckCCompilerFlag)
 # Add files for libdarktable
 #
 FILE(GLOB SOURCE_FILES
+  "common/cache.c"
   "common/collection.c" 
   "common/colorlabels.c" 
   "common/colormatrices.c" 
   "common/colorspaces.c" 
   "common/darktable.c" 
+  "common/database.c"
   "common/exif.cc" 
   "common/film.c" 
   "common/fswatch.c" 
@@ -27,6 +29,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_tiff.c" 
   "common/imageio_rawspeed.cc" 
   "common/metadata.c" 
+  "common/mipmap_cache.c"
   "common/styles.c" 
   "common/tags.c" 
   "common/utility.c" 
@@ -36,30 +39,33 @@ FILE(GLOB SOURCE_FILES
   "common/opencl.c"
   "common/dynload.c"
   "common/dlopencl.c"
+  "common/ratings.c"
   "control/control.c"  
   "control/jobs/control_jobs.c"  
   "control/jobs/develop_jobs.c"  
-  "control/jobs/film_jobs.c"
+  "control/jobs/film_jobs.c"  
   "control/jobs/image_jobs.c"
+  "control/signal.c"
   "develop/develop.c"
   "develop/imageop.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
   "develop/tiling.c"
-  "dtgtk/*.c"
+  "dtgtk/button.c"
+  "dtgtk/icon.c"
+  "dtgtk/label.c"
+  "dtgtk/slider.c"
+  "dtgtk/gradientslider.c"
+  "dtgtk/tristatebutton.c"
+  "dtgtk/togglebutton.c"
+  "dtgtk/paint.c"
+  "dtgtk/resetlabel.c"
   "gui/accelerators.c"
-  "gui/background_jobs.c"
   "gui/contrast.c"  
   "gui/gtk.c"  
-  "gui/histogram.c"  
-  "gui/iop_history.c"  
-  "gui/iop_modulegroups.c"  
-  "gui/metadata.c"  
-  "gui/navigation.c"  
   "gui/preferences.c"  
   "gui/presets.c"  
   "gui/styles_dialog.c"  
-  "gui/tool_colorlabels.c"  
   "libs/lib.c"
   "views/view.c"
   )
@@ -219,7 +225,7 @@ endif(USE_OPENCL)
 
 
 if(GPHOTO2_FOUND)
-  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" "gui/devices.c" )
+  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" )
   add_definitions("-DHAVE_GPHOTO2")
 endif(GPHOTO2_FOUND)
 
@@ -258,11 +264,11 @@ else()
  	set(MARCH "-mtune=generic")
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse ${MARCH} -g")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -mfpmath=sse -g")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -D_DEBUG")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse ${MARCH} -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fexpensive-optimizations ${MARCH}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -D_DEBUG")
   
 

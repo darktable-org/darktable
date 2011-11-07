@@ -82,4 +82,5 @@ int dt_colorspaces_find_profile(char *filename, const int filename_len, const ch
 /** common functions to change between colorspaces, used in iop modules */
 void rgb2hsl(const float rgb[3],float *h,float *s,float *l);
 void hsl2rgb(float rgb[3],float h,float s,float l);
+
 #endif

@@ -20,7 +20,11 @@
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "control/control.h"
+#include "control/signal.h"
 #include "common/opencl.h"
+#include "libs/lib.h"
+#include "libs/colorpicker.h"
+#include "iop/colorout.h"
 
 #include <assert.h>
 #include <string.h>
@@ -28,9 +32,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
-
-// cache line resolution
-#define DT_DEV_PIXELPIPE_CACHE_SIZE DT_IMAGE_WINDOW_SIZE
 
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
@@ -46,7 +47,7 @@ int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_
 
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*DT_DEV_PIXELPIPE_CACHE_SIZE*DT_DEV_PIXELPIPE_CACHE_SIZE, 5);
+  int res = dt_dev_pixelpipe_init_cached(pipe, 4*sizeof(float)*darktable.thumbnail_width*darktable.thumbnail_height, 5);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
@@ -77,7 +78,8 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->iheight = height;
   pipe->iscale = iscale;
   pipe->input = input;
-  if(width < dev->image->width && height < dev->image->height) pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
+  pipe->image = dev->image_storage;
+  if(width < pipe->image.width && height < pipe->image.height) pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
@@ -215,10 +217,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
   }
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   dt_pthread_mutex_unlock(&dev->history_mutex);
-  if(pipe == dev->preview_pipe)
-    dt_dev_pixelpipe_get_dimensions(pipe, dev, dev->mipf_exact_width, dev->mipf_exact_height, &pipe->processed_width, &pipe->processed_height);
-  else
-    dt_dev_pixelpipe_get_dimensions(pipe, dev, pipe->iwidth, pipe->iheight, &pipe->processed_width, &pipe->processed_height);
+  dt_dev_pixelpipe_get_dimensions(pipe, dev, pipe->iwidth, pipe->iheight, &pipe->processed_width, &pipe->processed_height);
 }
 
 // TODO:
@@ -237,8 +236,8 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
   {
     // first input.
     // mipf and non-raw images have 4 floats per pixel
-    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || dev->image->filters == 0) return 4*sizeof(float);
-    else return dev->image->bpp;
+    if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW || !(pipe->image.flags & DT_IMAGE_RAW)) return 4*sizeof(float);
+    else return pipe->image.bpp;
   }
   return module->output_bpp(module, pipe, piece);
 }
@@ -277,7 +276,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
     return 1;
   }
-  uint64_t hash = dt_dev_pixelpipe_cache_hash(dev->image->id, roi_out, pipe, pos);
+  uint64_t hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, roi_out, pipe, pos);
   if(dt_dev_pixelpipe_cache_available(&(pipe->cache), hash))
   {
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash);
@@ -298,7 +297,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
   // if image has changed, stop now.
   if(pipe == dev->pipe && dev->image_force_reload) return 1;
   if(pipe == dev->preview_pipe && dev->preview_loading) return 1;
-  if(pipe == dev->preview_pipe && pipe->input != dev->image->mipf) return 1;
   if(dev->gui_leaving) return 1;
 
 
@@ -396,28 +394,42 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %lX\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, (long int)*output);
 
-    // tonecurve histogram (collect luminance only):
+    // tonecurve/levels histogram (collect luminance only):
     dt_pthread_mutex_lock(&pipe->busy_mutex);
     if(pipe->shutdown)
     {
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0))
+    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "tonecurve") == 0 || strcmp(module->op, "levels") == 0))
     {
       float *pixel = (float *)input;
-      dev->histogram_pre_max = 0;
-      memset (dev->histogram_pre, 0, sizeof(float)*4*64);
+      float *histogram_pre = NULL;
+      float *histogram_pre_max = NULL;
+
+      if(!strcmp(module->op, "tonecurve"))
+      {
+        histogram_pre = dev->histogram_pre_tonecurve;
+        histogram_pre_max = &(dev->histogram_pre_tonecurve_max);
+      }
+      else
+      {
+        histogram_pre = dev->histogram_pre_levels;
+        histogram_pre_max = &(dev->histogram_pre_levels_max);
+      }
+
+      *histogram_pre_max = 0;
+      memset (histogram_pre, 0, sizeof(float)*4*64);
       for(int j=0; j<roi_in.height; j+=4) for(int i=0; i<roi_in.width; i+=4)
         {
           uint8_t L = CLAMP(63/100.0*(pixel[4*j*roi_in.width+4*i]), 0, 63);
-          dev->histogram_pre[4*L+3] ++;
+          histogram_pre[4*L+3] ++;
         }
       // don't count <= 0 pixels
-      for(int k=3; k<4*64; k+=4) dev->histogram_pre[k] = logf(1.0 + dev->histogram_pre[k]);
-      for(int k=19; k<4*64; k+=4) dev->histogram_pre_max = dev->histogram_pre_max > dev->histogram_pre[k] ? dev->histogram_pre_max : dev->histogram_pre[k];
+      for(int k=3; k<4*64; k+=4) histogram_pre[k] = logf(1.0 +histogram_pre[k]);
+      for(int k=19; k<4*64; k+=4) *histogram_pre_max = *histogram_pre_max > histogram_pre[k] ? *histogram_pre_max : histogram_pre[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      dt_control_queue_draw(module->widget);
+      dt_control_queue_redraw_widget(module->widget);
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -428,6 +440,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
+
+    // Lab color picking for module
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
         (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
         module->request_color_pick) // and they need to want to pick ;)
@@ -435,33 +449,52 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       for(int k=0; k<3; k++) module->picked_color_min[k] =  666.0f;
       for(int k=0; k<3; k++) module->picked_color_max[k] = -666.0f;
       int box[4];
+      int point[2];
       float Lab[3], *in = (float *)input;
       for(int k=0; k<3; k++) Lab[k] = 0.0f;
+
+      // Initializing bounds of colorpicker box
       for(int k=0; k<4; k+=2) box[k] = MIN(roi_in.width -1, MAX(0, module->color_picker_box[k]*roi_in.width));
       for(int k=1; k<4; k+=2) box[k] = MIN(roi_in.height-1, MAX(0, module->color_picker_box[k]*roi_in.height));
-      const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-      for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+
+      // Initializing bounds of colorpicker point
+      point[0] = MIN(roi_in.width - 1, MAX(0, module->color_picker_point[0] * roi_in.width));
+      point[1] = MIN(roi_in.height - 1, MAX(0, module->color_picker_point[1] * roi_in.height));
+
+      if(darktable.lib->proxy.colorpicker.size)
       {
-        const float L = in[4*(roi_in.width*j + i) + 0];
-        const float a = in[4*(roi_in.width*j + i) + 1];
-        const float b = in[4*(roi_in.width*j + i) + 2];
-        Lab[0] += w*L;
-        Lab[1] += w*a;
-        Lab[2] += w*b;
-        module->picked_color_min[0] = fminf(module->picked_color_min[0], L);
-        module->picked_color_min[1] = fminf(module->picked_color_min[1], a);
-        module->picked_color_min[2] = fminf(module->picked_color_min[2], b);
-        module->picked_color_max[0] = fmaxf(module->picked_color_max[0], L);
-        module->picked_color_max[1] = fmaxf(module->picked_color_max[1], a);
-        module->picked_color_max[2] = fmaxf(module->picked_color_max[2], b);
+        const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
+        for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+        {
+          const float L = in[4*(roi_in.width*j + i) + 0];
+          const float a = in[4*(roi_in.width*j + i) + 1];
+          const float b = in[4*(roi_in.width*j + i) + 2];
+          Lab[0] += w*L;
+          Lab[1] += w*a;
+          Lab[2] += w*b;
+          module->picked_color_min[0] = fminf(module->picked_color_min[0], L);
+          module->picked_color_min[1] = fminf(module->picked_color_min[1], a);
+          module->picked_color_min[2] = fminf(module->picked_color_min[2], b);
+          module->picked_color_max[0] = fmaxf(module->picked_color_max[0], L);
+          module->picked_color_max[1] = fmaxf(module->picked_color_max[1], a);
+          module->picked_color_max[2] = fmaxf(module->picked_color_max[2], b);
+          for(int k=0; k<3; k++) module->picked_color[k] = Lab[k];
+        }
       }
-      for(int k=0; k<3; k++) module->picked_color[k] = Lab[k];
+      else
+      {
+        for(int i = 0; i < 3; i++)
+          module->picked_color[i]
+              = module->picked_color_min[i]
+                = module->picked_color_max[i]
+                  = in[4*(roi_in.width*point[1] + point[0]) + i];
+      }
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-      if(needlock) gdk_threads_enter();
+
+      gboolean i_own_lock = dt_control_gdk_lock();      
       gtk_widget_queue_draw(module->widget);
-      if(needlock) gdk_threads_leave();
+      if (i_own_lock) dt_control_gdk_unlock();
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -755,37 +788,245 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
+    // Picking RGB for the live samples and converting to Lab
     if(dev->gui_attached
        && pipe == dev->preview_pipe
-       && (strcmp(module->op, "colorout") == 0) // only colorout provides meaningful RGB data
-       && module->request_color_pick)
+       && (strcmp(module->op, "gamma") == 0)
+       && darktable.lib->proxy.colorpicker.live_samples) // samples to pick
     {
-      float *pixel = (float*)*output;
+      dt_colorpicker_sample_t *sample = NULL;
+      GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
 
-      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs_min[k] =  666.0f;
-      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs_max[k] = -666.0f;
+      while(samples)
+      {
+        sample = samples->data;
+
+        if(sample->locked)
+        {
+          samples = g_slist_next(samples);
+          continue;
+        }
+
+        uint8_t *pixel = (uint8_t*)*output;
+
+        for(int k=0; k<3; k++) sample->picked_color_rgb_min[k] =  255;
+        for(int k=0; k<3; k++) sample->picked_color_rgb_max[k] = 0;
+        int box[4];
+        int point[2];
+        float rgb[3];
+        for(int k=0; k<3; k++) rgb[k] = 0.0f;
+        for(int k=0; k<4; k+=2)
+          box[k] = MIN(roi_out->width -1,
+                       MAX(0, sample->box[k]*roi_out->width));
+        for(int k=1; k<4; k+=2)
+          box[k] = MIN(roi_out->height-1,
+                       MAX(0, sample->box[k]*roi_out->height));
+        point[0] = MIN(roi_out->width -1,
+                       MAX(0, sample->point[0] * roi_out->width));
+        point[1] = MIN(roi_out->height -1,
+                       MAX(0, sample->point[1] * roi_out->height));
+        const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
+        if(sample->size == DT_COLORPICKER_SIZE_BOX)
+        {
+          for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+          {
+            for(int k=0; k<3; k++)
+            {
+              sample->picked_color_rgb_min[k] =
+                  MIN(sample->picked_color_rgb_min[k],
+                      pixel[4*(roi_out->width*j + i) + 2-k]);
+              sample->picked_color_rgb_max[k] =
+                  MAX(sample->picked_color_rgb_max[k],
+                      pixel[4*(roi_out->width*j + i) + 2-k]);
+              rgb[k] += w*pixel[4*(roi_out->width*j + i) + 2-k];
+            }
+          }
+          for(int k=0; k<3; k++) sample->picked_color_rgb_mean[k] = rgb[k];
+        }
+        else
+        {
+          for(int i = 0; i < 3; i++)
+            sample->picked_color_rgb_mean[i]
+                = sample->picked_color_rgb_min[i]
+                  = sample->picked_color_rgb_max[i]
+                    = pixel[4*(roi_out->width*point[1] + point[0]) + 2-i];
+        }
+
+        // Converting the RGB values to Lab
+
+        GList *nodes = pipe->nodes;
+        cmsHPROFILE out_profile = NULL;
+        while(nodes)
+        {
+          dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t*)nodes->data;
+          if(!strcmp(piece->module->op, "colorout"))
+          {
+            out_profile = ((dt_iop_colorout_data_t*)piece->data)->output;
+            break;
+          }
+          nodes = g_list_next(nodes);
+        }
+        if(out_profile)
+        {
+          cmsHPROFILE Lab = dt_colorspaces_create_lab_profile();
+
+          cmsHTRANSFORM xform = cmsCreateTransform(out_profile, TYPE_RGB_FLT,
+                                                  Lab, TYPE_Lab_FLT,
+                                                  INTENT_PERCEPTUAL, 0);
+
+
+          // Preparing the data for transformation
+          float rgb_data[9];
+          for(int i = 0; i < 3; i++)
+          {
+            rgb_data[i] =
+                sample->picked_color_rgb_mean[i] / 255.0;
+            rgb_data[i + 3] =
+                sample->picked_color_rgb_min[i] / 255.0;
+            rgb_data[i + 6] =
+                sample->picked_color_rgb_max[i] / 255.0;
+          }
+
+          float Lab_data[9];
+          cmsDoTransform(xform, rgb_data, Lab_data, 3);
+
+          for(int i = 0; i < 3; i++)
+          {
+            sample->picked_color_lab_mean[i] =
+                Lab_data[i];
+            sample->picked_color_lab_min[i] =
+                Lab_data[i + 3];
+            sample->picked_color_lab_max[i] =
+                Lab_data[i + 6];
+          }
+
+          cmsDeleteTransform(xform);
+          dt_colorspaces_cleanup_profile(Lab);
+        }
+
+        samples = g_slist_next(samples);
+      }
+    }
+    //Picking RGB for primary colorpicker output and converting to Lab
+    if(dev->gui_attached
+       && pipe == dev->preview_pipe
+       && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
+       && dev->gui_module
+       && !strcmp(dev->gui_module->op, "colorout")
+       && dev->gui_module->request_color_pick
+       && darktable.lib->proxy.colorpicker.picked_color_rgb_mean) // colorpicker module active
+    {
+      uint8_t *pixel = (uint8_t*)*output;
+
+      for(int k=0; k<3; k++)
+        darktable.lib->proxy.colorpicker.picked_color_rgb_min[k] =  255;
+      for(int k=0; k<3; k++)
+        darktable.lib->proxy.colorpicker.picked_color_rgb_max[k] = 0;
       int box[4];
+      int point[2];
       float rgb[3];
       for(int k=0; k<3; k++) rgb[k] = 0.0f;
-      for(int k=0; k<4; k+=2) box[k] = MIN(roi_out->width -1, MAX(0, module->color_picker_box[k]*roi_out->width));
-      for(int k=1; k<4; k+=2) box[k] = MIN(roi_out->height-1, MAX(0, module->color_picker_box[k]*roi_out->height));
+      for(int k=0; k<4; k+=2)
+        box[k] =
+            MIN(roi_out->width -1,
+                MAX(0, dev->gui_module->color_picker_box[k]
+                    * roi_out->width));
+      for(int k=1; k<4; k+=2)
+        box[k] =
+            MIN(roi_out->height-1,
+                MAX(0, dev->gui_module->color_picker_box[k]
+                    * roi_out->height));
+      point[0] = MIN(roi_out->width -1,
+                     MAX(0, dev->gui_module->color_picker_point[0]
+                         * roi_out->width));
+      point[1] = MIN(roi_out->height -1,
+                     MAX(0, dev->gui_module->color_picker_point[1]
+                         * roi_out->height));
       const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-      for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+      if(darktable.lib->proxy.colorpicker.size)
       {
-        for(int k=0; k<3; k++)
+        for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
         {
-          darktable.gui->picked_color_output_cs_min[k] = fminf(darktable.gui->picked_color_output_cs_min[k], pixel[4*(roi_out->width*j + i) + k]);
-          darktable.gui->picked_color_output_cs_max[k] = fmaxf(darktable.gui->picked_color_output_cs_max[k], pixel[4*(roi_out->width*j + i) + k]);
-          rgb[k] += w*pixel[4*(roi_out->width*j + i) + k];
+          for(int k=0; k<3; k++)
+          {
+            darktable.lib->proxy.colorpicker.picked_color_rgb_min[k] =
+                MIN(darktable.lib->proxy.colorpicker.picked_color_rgb_min[2-k],
+                    pixel[4*(roi_out->width*j + i) + 2-k]);
+            darktable.lib->proxy.colorpicker.picked_color_rgb_max[k] =
+                MAX(darktable.lib->proxy.colorpicker.picked_color_rgb_max[k],
+                    pixel[4*(roi_out->width*j + i) + 2-k]);
+            rgb[k] += w*pixel[4*(roi_out->width*j + i) + 2-k];
+          }
         }
+        for(int k=0; k<3; k++)
+          darktable.lib->proxy.colorpicker.picked_color_rgb_mean[k] = rgb[k];
       }
-      for(int k=0; k<3; k++) darktable.gui->picked_color_output_cs[k] = rgb[k];
+      else
+      {
+        for(int i = 0; i < 3; i++)
+          darktable.lib->proxy.colorpicker.picked_color_rgb_mean[i]
+              = darktable.lib->proxy.colorpicker.picked_color_rgb_min[i]
+                = darktable.lib->proxy.colorpicker.picked_color_rgb_max[i]
+                  = pixel[4*(roi_out->width*point[1] + point[0]) + 2-i];
+      }
+
+      // Converting the RGB values to Lab
+
+      GList *nodes = pipe->nodes;
+      cmsHPROFILE out_profile = NULL;
+      while(nodes)
+      {
+        dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t*)nodes->data;
+        if(!strcmp(piece->module->op, "colorout"))
+        {
+          out_profile = ((dt_iop_colorout_data_t*)piece->data)->output;
+          break;
+        }
+        nodes = g_list_next(nodes);
+      }
+      if(out_profile)
+      {
+        cmsHPROFILE Lab = dt_colorspaces_create_lab_profile();
+
+        cmsHTRANSFORM xform = cmsCreateTransform(out_profile, TYPE_RGB_FLT,
+                                                Lab, TYPE_Lab_FLT,
+                                                INTENT_PERCEPTUAL, 0);
+
+
+        // Preparing the data for transformation
+        float rgb_data[9];
+        for(int i = 0; i < 3; i++)
+        {
+          rgb_data[i] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_mean[i] / 255.0;
+          rgb_data[i + 3] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_min[i] / 255.0;
+          rgb_data[i + 6] =
+              darktable.lib->proxy.colorpicker.picked_color_rgb_max[i] / 255.0;
+        }
+
+        float Lab_data[9];
+        cmsDoTransform(xform, rgb_data, Lab_data, 3);
+
+        for(int i = 0; i < 3; i++)
+        {
+          darktable.lib->proxy.colorpicker.picked_color_lab_mean[i] =
+              Lab_data[i];
+          darktable.lib->proxy.colorpicker.picked_color_lab_min[i] =
+              Lab_data[i + 3];
+          darktable.lib->proxy.colorpicker.picked_color_lab_max[i] =
+              Lab_data[i + 6];
+        }
+
+        cmsDeleteTransform(xform);
+        dt_colorspaces_cleanup_profile(Lab);
+      }
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-      if(needlock) gdk_threads_enter();
+      
+      gboolean i_own_lock = dt_control_gdk_lock();
       gtk_widget_queue_draw(module->widget);
-      if(needlock) gdk_threads_leave();
+      if (i_own_lock) dt_control_gdk_unlock();
 
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -801,9 +1042,46 @@ post_process_collect_info:
     if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
       uint8_t *pixel = (uint8_t *)*output;
+      float box[4];
+      // Constraining the area if the colorpicker is active in area mode
+      if(dev->gui_module
+         && !strcmp(dev->gui_module->op, "colorout")
+         && dev->gui_module->request_color_pick
+         && darktable.lib->proxy.colorpicker.restrict_histogram)
+      {
+        if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
+        {
+          for(int k=0; k<4; k+=2)
+            box[k] = MIN(roi_out->width,
+                         MAX(0, dev->gui_module->color_picker_box[k]
+                             * roi_out->width));
+          for(int k=1; k<4; k+=2)
+            box[k] = MIN(roi_out->height-1,
+                         MAX(0, module->color_picker_box[k]
+                             * roi_out->height));
+        }
+        else
+        {
+          for(int k=0; k<4; k+=2)
+            box[k] = MIN(roi_out->width,
+                         MAX(0, dev->gui_module->color_picker_point[0]
+                             * roi_out->width));
+          for(int k=1; k<4; k+=2)
+            box[k] = MIN(roi_out->height-1,
+                         MAX(0, module->color_picker_point[1]
+                             * roi_out->height));
+        }
+
+      }
+      else
+      {
+        box[0] = box[1] = 0;
+        box[2] = roi_out->width;
+        box[3] = roi_out->height;
+      }
       dev->histogram_max = 0;
       memset(dev->histogram, 0, sizeof(float)*4*64);
-      for(int j=0; j<roi_out->height; j+=4) for(int i=0; i<roi_out->width; i+=4)
+      for(int j=box[1]; j<=box[3]; j+=4) for(int i=box[0]; i<=box[2]; i+=4)
       {
         uint8_t rgb[3];
         for(int k=0; k<3; k++)
@@ -818,11 +1096,22 @@ post_process_collect_info:
       // don't count <= 0 pixels
       for(int k=19; k<4*64; k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      dt_control_queue_draw(darktable.gui->widgets.histogram);
-    }
-    else dt_pthread_mutex_unlock(&pipe->busy_mutex);
-  }
+      
+      /* raise preview pipe finised signal */
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
 
+    }
+    else 
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+      /* if gui attached, lets raise pipe finish signal */
+      if (dev->gui_attached && strcmp(module->op, "gamma") == 0)
+	dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
+	
+    }
+  } 
+  
   return 0;
 }
 
@@ -961,7 +1250,7 @@ restart:
 
   // terminate
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
-  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(dev->image->id, &roi, pipe, 0);
+  pipe->backbuf_hash = dt_dev_pixelpipe_cache_hash(pipe->image.id, &roi, pipe, 0);
   pipe->backbuf = buf;
   pipe->backbuf_width  = width;
   pipe->backbuf_height = height;

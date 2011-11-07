@@ -22,7 +22,9 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
@@ -34,6 +36,8 @@ typedef struct dt_lib_tagging_t
   GtkEntry *entry;
   GtkTreeView *current, *related;
   int imgsel;
+
+  GtkWidget *attach_button, *detach_button, *new_button, *delete_button;
 }
 dt_lib_tagging_t;
 
@@ -53,7 +57,30 @@ name ()
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW|DT_CAPTURE_VIEW;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "attach"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
+
+  dt_accel_connect_button_lib(self, "attach", d->attach_button);
+  dt_accel_connect_button_lib(self, "detach", d->detach_button);
+  dt_accel_connect_button_lib(self, "new", d->new_button);
+  dt_accel_connect_button_lib(self, "delete", d->delete_button);
 }
 
 static void
@@ -118,17 +145,6 @@ set_keyword(dt_lib_module_t *self, dt_lib_tagging_t *d)
   update (self, 1);
 }
 
-static gboolean
-expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  int imgsel = -1;
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
-  if(imgsel != d->imgsel) update (self, 0);
-  return FALSE;
-}
-
 static void
 attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
@@ -150,7 +166,6 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 
   dt_tag_attach(tagid,imgsel);
   dt_image_synch_xmp(imgsel);
-
 }
 
 static void
@@ -278,7 +293,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   if( count > 0 && dt_conf_get_bool("plugins/lighttable/tagging/ask_before_delete_tag") )
   {
     GtkWidget *dialog;
-    GtkWidget *win = darktable.gui->widgets.main_window;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     const gchar *tagname=dt_tag_get_name(tagid);
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -295,7 +310,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
 
   GList *tagged_images = NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select imgid from tagged_images where tagid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from tagged_images where tagid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -335,6 +350,15 @@ position ()
   return 500;
 }
 
+static void _lib_tagging_redraw_callback(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self =(dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
+  int imgsel = -1; 
+  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  if(imgsel != d->imgsel) update (self, 0); 
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -344,9 +368,6 @@ gui_init (dt_lib_module_t *self)
 
   self->widget = gtk_vbox_new(TRUE, 5);
   gtk_widget_set_size_request(self->widget,100,-1);
-
-  g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), (gpointer)self);
-  darktable.gui->redraw_widgets = g_list_append(darktable.gui->redraw_widgets, self->widget);
 
   GtkBox *box, *hbox;
   GtkWidget *button;
@@ -379,12 +400,14 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("attach"));
+  d->attach_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("attach tag to all selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (attach_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("detach"));
+  d->detach_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("detach tag from all selected images"), (char *)NULL);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (detach_button_clicked), (gpointer)self);
@@ -433,12 +456,14 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("new"));
+  d->new_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("create a new tag with the\nname you entered"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
                    G_CALLBACK (new_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(_("delete"));
+  d->delete_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("delete selected tag"), (char *)NULL);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT (button), "clicked",
@@ -453,6 +478,8 @@ gui_init (dt_lib_module_t *self)
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(d->entry, completion);
 
+  /* connect to mouse over id */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(_lib_tagging_redraw_callback), self);
 
   set_keyword(self, d);
 }
@@ -460,7 +487,7 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
   free(self->data);
   self->data = NULL;
 }

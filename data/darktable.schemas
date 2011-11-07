@@ -78,20 +78,6 @@
       </locale>
     </schema>
 
-    <schema>
-      <key>/schemas/apps/darktable/mipmap_cache_thumbnails</key>
-      <applyto>/apps/darktable/mipmap_cache_thumbnails</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>1000</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>small thumbnails to keep in main memory cache</short>
-        <long>how many smallest-size thumbnails to keep in main memory at maximum. this also affects larger mipmap counts,
-              these get fewer by size. only read at startup.</long>
-      </locale>
-    </schema>
-
     <schema><!--tab:core-->
       <key>/schemas/apps/darktable/parallel_export</key>
       <applyto>/apps/darktable/parallel_export</applyto>
@@ -233,19 +219,6 @@
       <locale name="C">
         <short>ask before deleting images</short>
         <long>always ask the user before any image file is deleted.</long>
-      </locale>
-    </schema>
-
-    <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/preview_subsample</key>
-      <applyto>/apps/darktable/preview_subsample</applyto>
-      <owner>darktable</owner>
-      <type>float</type>
-      <default>1.0</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>downsample the preview pixels</short>
-        <long>this value smaller than 1.0 downsamples the preview pixels in darkroom mode for faster feedback.</long>
       </locale>
     </schema>
 
@@ -665,22 +638,9 @@
       </locale>
     </schema>
 
-    <schema>
-      <key>/schemas/apps/darktable/plugins/filmstrip/size</key>
-      <applyto>/apps/darktable/plugins/filmstrip/size</applyto>
-      <owner>darktable</owner>
-      <type>float</type>
-      <default>0.15</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
     <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/plugins/filmstrip/on</key>
-      <applyto>/apps/darktable/plugins/filmstrip/on</applyto>
+      <key>/schemas/apps/darktable/plugins/lighttable/filmstrip/visible</key>
+      <applyto>/apps/darktable/plugins/lighttable/filmstrip/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
       <default>TRUE</default>
@@ -691,16 +651,42 @@
       </locale>
     </schema>
     
-    <schema><!--tab:gui-->
-      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_size</key>
-      <applyto>/apps/darktable/plugins/lighttable/thumbnail_size</applyto>
+    <schema>
+      <key>/schemas/apps/darktable/plugins/lighttable/filmstrip/height</key>
+      <applyto>/apps/darktable/plugins/lighttable/filmstrip/height</applyto>
       <owner>darktable</owner>
-      <type>int</type>
-      <default>800</default>
+      <type>120</type>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>maximum resolution of lighttable thumbnails</short>
-        <long>keep this value low for fast thumbnail creation (allowed: 160-1300)\n(needs a restart and will invalidate current thumbnail caches).</long>
+        <short>height of filmstrip</short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_width</key>
+      <applyto>/apps/darktable/plugins/lighttable/thumbnail_width</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1300</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>maximum width of lighttable thumbnails</short>
+        <long>maximum lighttable width of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:gui-->
+      <key>/schemas/apps/darktable/plugins/lighttable/thumbnail_height</key>
+      <applyto>/apps/darktable/plugins/lighttable/thumbnail_height</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>1000</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>maximum height of lighttable thumbnails</short>
+        <long>maximum lighttable height of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
 
@@ -1620,7 +1606,7 @@
       <applyto>/apps/darktable/plugins/imageio/storage/gallery/file_directory</applyto>
       <owner>darktable</owner>
       <type>string</type>
-      <default>$(HOME_FOLDER)/darktable_gallery/</default>
+      <default>$(HOME_FOLDER)/darktable_gallery/img_$(SEQUENCE)</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>

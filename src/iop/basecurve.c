@@ -22,7 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include "gui/histogram.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -160,7 +159,7 @@ void init_presets (dt_iop_module_so_t *self)
 {
   // transform presets above to db entries.
   // sql begin
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   for(int k=0; k<basecurve_presets_cnt; k++)
   {
     // add the preset.
@@ -173,7 +172,7 @@ void init_presets (dt_iop_module_so_t *self)
     dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].autoapply);
   }
   // sql commit
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 #ifdef HAVE_OPENCL
@@ -301,7 +300,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 239; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 229; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t)
@@ -440,8 +439,8 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   // draw lum h istogram in background
   dt_develop_t *dev = darktable.develop;
   float *hist, hist_max;
-  hist = dev->histogram_pre;
-  hist_max = dev->histogram_pre_max;
+  hist = dev->histogram_pre_tonecurve;
+  hist_max = dev->histogram_pre_tonecurve_max;
   if(hist_max > 0)
   {
     cairo_save(cr);

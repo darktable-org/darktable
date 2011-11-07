@@ -124,7 +124,7 @@ extern "C"
 
     // if rad <= 6 use naive version!
     const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
-    if(rad <= 6 && self->dev->image->flags & DT_IMAGE_THUMBNAIL)
+    if(rad <= 6 && piece->pipe->image.flags & DT_IMAGE_THUMBNAIL)
     {
       // no use denoising the thumbnail. takes ages without permutohedral
       memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
@@ -322,7 +322,7 @@ extern "C"
     module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_bilateral_params_t));
     module->default_enabled = 0;
-  module->priority = 326; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 312; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_bilateral_params_t);
     module->gui_data = NULL;
     dt_iop_bilateral_params_t tmp = (dt_iop_bilateral_params_t)

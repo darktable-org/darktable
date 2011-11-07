@@ -82,7 +82,12 @@ name ()
 
 uint32_t views()
 {
-  return DT_CAPTURE_VIEW;
+  return DT_VIEW_TETHERING;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 
@@ -184,7 +189,7 @@ static void _camera_property_value_changed(const dt_camera_t *camera,const char 
       }
       while( gtk_tree_model_iter_next(model,&iter) == TRUE);
   }
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
 }
 
 /** Invoked when accesibility of a property is changed. */
@@ -253,7 +258,7 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void _osd_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw_center();
 }
 
 static void _property_choice_callback(GtkMenuItem *item, gpointer user_data)

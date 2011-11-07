@@ -35,7 +35,7 @@ typedef struct dt_lib_styles_t
   GtkEntry *entry;
   GtkWidget *duplicate;
   GtkTreeView *list;
-  GtkWidget *delete_button, *import_button, *export_button;
+  GtkWidget *delete_button, *import_button, *export_button, *edit_button;
 }
 dt_lib_styles_t;
 
@@ -48,14 +48,12 @@ name ()
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW;
+  return DT_VIEW_LIGHTTABLE;
 }
 
-
-void
-gui_reset (dt_lib_module_t *self)
+uint32_t container()
 {
-// dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
+  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 int
@@ -69,6 +67,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "export"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -78,6 +77,8 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "delete", d->delete_button);
   dt_accel_connect_button_lib(self, "export", d->export_button);
   dt_accel_connect_button_lib(self, "import", d->import_button);
+  if(d->edit_button)
+    dt_accel_connect_button_lib(self, "edit", d->edit_button);
 }
 
 typedef enum _styles_columns_t
@@ -215,7 +216,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
   char *name = get_style_name(d);
   if(name)
   {
-    GtkWidget *win = darktable.gui->widgets.main_window;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                              GTK_WINDOW (win),
                              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -237,7 +238,7 @@ static void export_clicked (GtkWidget *w,gpointer user_data)
 
 static void import_clicked (GtkWidget *w,gpointer user_data)
 {
-  GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select style"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -305,6 +306,7 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)malloc (sizeof (dt_lib_styles_t));
   self->data = (void *)d;
+  d->edit_button = NULL;
   self->widget = gtk_vbox_new (FALSE, 5);
   GtkWidget *w;
 
@@ -353,7 +355,8 @@ gui_init (dt_lib_module_t *self)
 #if 0
   // TODO: Unfinished stuff
   GtkWidget *widget=gtk_button_new_with_label(_("edit"));
-  also add the shortcut
+  d->edit_button = widget;
+  also add to the init function
   g_signal_connect (widget, "clicked", G_CALLBACK(edit_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox),widget,TRUE,TRUE,0);
 #endif

@@ -25,7 +25,6 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "gui/histogram.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -218,7 +217,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_lowlight_params_t));
   module->default_params = malloc(sizeof(dt_iop_lowlight_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 521; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 520; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowlight_params_t);
   module->gui_data = NULL;
   dt_iop_lowlight_params_t tmp;
@@ -241,7 +240,7 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_lowlight_params_t p;
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
@@ -397,7 +396,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.blueness = 50.0f;
   dt_gui_presets_add_generic(_("night"), self->op, self->version(), &p, sizeof(p), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 // fills in new parameters based on mouse position (in 0,1)

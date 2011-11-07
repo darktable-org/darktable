@@ -525,6 +525,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples (g->sample, d, roi_in, piece);
+    dt_control_queue_redraw_widget(GTK_WIDGET(g->area));
     // tries to acquire gdk lock and this prone to deadlock:
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
@@ -650,7 +651,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 478; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 479; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -739,7 +740,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;
   p.octaves = 7;
 
@@ -818,6 +819,20 @@ void init_presets (dt_iop_module_so_t *self)
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
     p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.y[atrous_L][k] = .5f;
+    p.y[atrous_c][k] = .5f;
+    p.y[atrous_s][k] = .0f;
+    p.x[atrous_Lt][k] = k/(BANDS-1.0);
+    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.y[atrous_Lt][k] = .0f;
+    p.y[atrous_ct][k] = .3f*k/(float)BANDS;
+  }
+  dt_gui_presets_add_generic(_("chroma denoise"), self->op, self->version(), &p, sizeof(p), 1);
+  for(int k=0; k<BANDS; k++)
+  {
+    p.x[atrous_L][k] = k/(BANDS-1.0);
+    p.x[atrous_c][k] = k/(BANDS-1.0);
+    p.x[atrous_s][k] = k/(BANDS-1.0);
     p.y[atrous_L][k] = .5f;//-.2f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.3f*k/(float)BANDS);
     p.y[atrous_s][k] = .5f;
@@ -886,7 +901,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity"), self->op, self->version(), &p, sizeof(p), 1);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 static void

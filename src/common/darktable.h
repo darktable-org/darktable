@@ -25,6 +25,7 @@
 #include "config.h"
 #endif
 #include "common/dtpthread.h"
+#include "common/database.h"
 #include "common/utility.h"
 #include <time.h>
 #include <sys/resource.h>
@@ -119,7 +120,7 @@ typedef struct darktable_t
   uint32_t cpu_flags;
   int32_t num_openmp_threads;
 	
-  int32_t thumbnail_size;
+  int32_t thumbnail_width, thumbnail_height;
   int32_t unmuted;
   GList                          *iop;
   GList                          *collection_listeners;
@@ -128,10 +129,11 @@ typedef struct darktable_t
   struct dt_lib_t                *lib;
   struct dt_view_manager_t       *view_manager;
   struct dt_control_t            *control;
+  struct dt_control_signal_t     *signals;
   struct dt_gui_gtk_t            *gui;
   struct dt_mipmap_cache_t       *mipmap_cache;
   struct dt_image_cache_t        *image_cache;
-  sqlite3                        *db;
+  const struct dt_database_t     *db;
   const struct dt_fswatch_t	     *fswatch;
   const struct dt_pwstorage_t    *pwstorage;
   const struct dt_camctl_t       *camctl;
@@ -182,6 +184,9 @@ static inline void dt_get_times(dt_times_t *t)
 }
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...);
+
+/** \brief check if file is a supported image */
+gboolean dt_supported_image(const gchar *filename);
 
 static inline int dt_get_num_threads()
 {

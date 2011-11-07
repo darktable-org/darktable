@@ -140,7 +140,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
   cl_int err = -999;
-  const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
+  const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -223,7 +223,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  const int map_blues = self->dev->image->flags & DT_IMAGE_RAW;
+  const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
 
   if(mat[0] != -666.0f)
   {
@@ -355,7 +355,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
-    dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
     if(!d->input) sprintf(p->iccprofile, "cmatrix");
   }
@@ -363,7 +363,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     // color matrix
     char makermodel[1024];
-    dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     float cam_xyz[12];
     cam_xyz[0] = -666.0f;
     dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
@@ -508,7 +508,7 @@ void reload_defaults(dt_iop_module_t *module)
   {
     "darktable", DT_INTENT_PERCEPTUAL
   };
-  if(dt_image_is_ldr(module->dev->image)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
+  if(dt_image_is_ldr(&module->dev->image_storage)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }
@@ -520,7 +520,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 347; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 333; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
 }
 
@@ -545,7 +545,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // get color matrix from raw image:
   char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image->exif_maker, self->dev->image->exif_model);
+  dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
   float cam_xyz[12];
   cam_xyz[0] = -666.0f;
   dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);

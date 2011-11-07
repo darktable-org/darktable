@@ -22,23 +22,11 @@
 #include "control/control.h"
 #include "develop/develop.h"
 
-typedef struct dt_dev_raw_load_t
-{
-  dt_develop_t *dev;
-  dt_image_t *image;
-}
-dt_dev_raw_load_t;
-
 typedef struct dt_dev_process_t
 {
   dt_develop_t *dev;
 }
 dt_dev_process_t;
-
-/** load a raw image */
-int32_t dt_dev_raw_load_job_run(dt_job_t *job);
-void dt_dev_raw_load_job_init(dt_job_t *job, dt_develop_t *dev, dt_image_t *image);
-
 
 /** process preview */
 int32_t dt_dev_process_preview_job_run(dt_job_t *job);

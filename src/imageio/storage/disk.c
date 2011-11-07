@@ -59,7 +59,7 @@ static void
 button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
-  GtkWidget *win = darktable.gui->widgets.main_window;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -152,13 +152,11 @@ gui_reset (dt_imageio_module_storage_t *self)
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total)
 {
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
-  if(!img) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
   char filename[1024]= {0};
   char dirname[1024]= {0};
-  dt_image_full_path(img->id, dirname, 1024);
+  dt_image_full_path(imgid, dirname, 1024);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -180,7 +178,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
-    d->vp->img = img;
+    d->vp->imgid = imgid;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(filename, dt_variables_get_result(d->vp), 1024);
@@ -194,7 +192,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     {
       fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", dirname);
       dt_control_log(_("could not create directory `%s'!"), dirname);
-      dt_image_cache_release(img, 'r');
       fail = 1;
       goto failed;
     }
@@ -223,8 +220,7 @@ failed:
   if(fail) return 1;
 
   /* export image to file */
-  dt_imageio_export(img, filename, format, fdata);
-  dt_image_cache_release(img, 'r');
+  dt_imageio_export(imgid, filename, format, fdata);
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;

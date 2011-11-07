@@ -125,7 +125,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  module->priority = 260; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 249; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -313,7 +313,7 @@ int mouse_moved(dt_iop_module_t *self, double x, double y, int which)
     g->selected = selected;
     g->hoover_c = hoover_c;
   }
-  if(g->dragging >= 0 || g->selected != old_sel) dt_control_gui_queue_draw();
+  if(g->dragging >= 0 || g->selected != old_sel) dt_control_queue_redraw_center();
   return 1;
 }
 

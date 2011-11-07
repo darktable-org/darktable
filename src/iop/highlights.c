@@ -1,20 +1,20 @@
 /*
-		This file is part of darktable,
-		copyright (c) 2009--2010 johannes hanika.
+   This file is part of darktable,
+   copyright (c) 2009--2010 johannes hanika.
 
-		darktable is free software: you can redistribute it and/or modify
-                it under the terms of the GNU General Public License as published by
-		the Free Software Foundation, either version 3 of the License, or
-		(at your option) any later version.
+   darktable is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-		darktable is distributed in the hope that it will be useful,
-		but WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-		GNU General Public License for more details.
+   darktable is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License
-		along with darktable.  If not, see <http://www.gnu.org/licenses/>.
-*/
+   You should have received a copy of the GNU General Public License
+   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -368,7 +368,7 @@ void gui_update(struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *module)
 {
   // only on for raw images:
-  if(module->dev->image->flags & DT_IMAGE_RAW)
+  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
     module->default_enabled = 1;
   else
     module->default_enabled = 0;
@@ -386,7 +386,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = malloc(sizeof(dt_iop_highlights_params_t));
   module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-  module->priority = 152; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 145; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;

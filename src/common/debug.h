@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010 Tobias Ellinghaus.
+    copyright (c) 2011 Henrik Andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +26,7 @@
   {\
     const int x = xin; \
 		if(x != SQLITE_OK){ \
-			fprintf(stderr, "sqlite3 error: %s:%d, function %s(): %s\n", __FILE__, __LINE__, __FUNCTION__, sqlite3_errmsg(darktable.db)); \
+		  fprintf(stderr, "sqlite3 error: %s:%d, function %s(): %s\n", __FILE__, __LINE__, __FUNCTION__, sqlite3_errmsg(dt_database_get(darktable.db))); \
 		} \
     assert(x == SQLITE_OK);\
   }
@@ -34,7 +35,7 @@
   {\
     const int x = xin; \
 		if(x != SQLITE_OK){ \
-			fprintf(stderr, "sqlite3 error: %s:%d, function %s(): %s\n", __FILE__, __LINE__, __FUNCTION__, sqlite3_errmsg(darktable.db)); \
+		  fprintf(stderr, "sqlite3 error: %s:%d, function %s(): %s\n", __FILE__, __LINE__, __FUNCTION__, sqlite3_errmsg(dt_database_get(darktable.db))); \
 		} \
   }
 

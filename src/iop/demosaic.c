@@ -626,10 +626,10 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   roi_in->y = MAX(0, roi_in->y & ~1);
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
-  if(self->dev->image->width - roi_in->width < 10 && self->dev->image->height - roi_in->height < 10)
+  if(piece->pipe->image.width - roi_in->width < 10 && piece->pipe->image.height - roi_in->height < 10)
   {
-    roi_in->width  = self->dev->image->width;
-    roi_in->height = self->dev->image->height;
+    roi_in->width  = piece->pipe->image.width;
+    roi_in->height = piece->pipe->image.height;
   }
 }
 
@@ -734,15 +734,16 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   else
   {
     // sample half-size raw
+    const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
     if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
     {
       float *tmp = (float *)dt_alloc_align(16, sizeof(float)*roi_in->width*roi_in->height);
       pre_median_b(tmp, pixels, roi_in, data->filters, 1, data->median_thrs);
-      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters);
+      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters, clip);
       free(tmp);
     }
     else
-      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters);
+      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters, clip);
   }
   if(data->color_smoothing) color_smoothing(o, roi_out, data->color_smoothing);
 }
@@ -990,7 +991,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 130; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 124; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
@@ -1044,8 +1045,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)params;
   dt_iop_demosaic_data_t *d = (dt_iop_demosaic_data_t *)piece->data;
-  d->filters = dt_image_flipped_filter(self->dev->image);
-  if(!d->filters || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
+  d->filters = dt_image_flipped_filter(&pipe->image);
+  if(!(pipe->image.flags & DT_IMAGE_RAW) || pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->enabled = 0;
   d->green_eq = p->green_eq;
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
@@ -1168,6 +1169,7 @@ void gui_init     (struct dt_iop_module_t *self)
   g->color_smoothing = gtk_spin_button_new_with_range(0, 5, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->color_smoothing), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->color_smoothing), p->color_smoothing);
+  dt_gui_key_accel_block_on_focus(g->color_smoothing);
   g_object_set(G_OBJECT(g->color_smoothing), "tooltip-text", _("how many color smoothing median steps after demosaicing"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), g->color_smoothing, 1, 2, 2, 3, GTK_FILL|GTK_EXPAND, 0, 0, 0);
 

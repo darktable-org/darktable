@@ -69,7 +69,7 @@ typedef struct dt_camera_import_t
 {
   GList *images;
   struct dt_camera_t *camera;
-  const dt_gui_job_t *bgj;
+  const guint *bgj;
   double fraction;
   dt_variables_params_t *vp;
   dt_film_t *film;

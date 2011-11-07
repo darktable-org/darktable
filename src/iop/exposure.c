@@ -117,6 +117,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
   const float scale = 1.0/(white - black);
+  const __m128 blackv = _mm_set1_ps(black);
+  const __m128 scalev = _mm_set1_ps(scale);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
@@ -124,9 +126,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     const float *in = ((float *)i) + ch*k*roi_out->width;
     float *out = ((float *)o) + ch*k*roi_out->width;
-    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
-      for(int i=0; i<3; i++)
-        out[i] = (in[i]-black)*scale;
+    for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
+      _mm_store_ps(out, (_mm_load_ps(in)-blackv)*scalev);
   }
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
 }
@@ -167,7 +168,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 195; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 187; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t)
@@ -360,12 +361,14 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  // register with histogram
-  darktable.gui->histogram.exposure = self;
-  darktable.gui->histogram.set_white = dt_iop_exposure_set_white;
-  darktable.gui->histogram.get_white = dt_iop_exposure_get_white;
-  darktable.gui->histogram.set_black = dt_iop_exposure_set_black;
-  darktable.gui->histogram.get_black = dt_iop_exposure_get_black;
+  /* register hooks with current dev so that  histogram 
+     can interact with this module.
+   */
+  darktable.develop->proxy.exposure.module = self;
+  darktable.develop->proxy.exposure.set_white = dt_iop_exposure_set_white;
+  darktable.develop->proxy.exposure.get_white = dt_iop_exposure_get_white;
+  darktable.develop->proxy.exposure.set_black = dt_iop_exposure_set_black;
+  darktable.develop->proxy.exposure.get_black = dt_iop_exposure_get_black;
 
   self->request_color_pick = 0;
 
@@ -417,9 +420,6 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  darktable.gui->histogram.exposure  = NULL;
-  darktable.gui->histogram.set_white = NULL;
-  darktable.gui->histogram.get_white = NULL;
   free(self->gui_data);
   self->gui_data = NULL;
 }

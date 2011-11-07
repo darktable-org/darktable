@@ -21,6 +21,7 @@
 #include "common/collection.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_dng.h"
 #include "common/exif.h"
@@ -57,13 +58,13 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    char dtfilename[520];
-    dt_image_full_path(img->id, dtfilename, 512);
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
+    char dtfilename[DT_MAX_PATH_LEN+4];
+    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN);
     char *c = dtfilename + strlen(dtfilename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, dtfilename);
-    dt_image_cache_release(img, 'r');
+    dt_image_cache_read_release(darktable.image_cache, img);
     t = g_list_delete_link(t, t);
   }
   return 0;
@@ -78,7 +79,9 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("merging %d image", "merging %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message); 
+ 
   float *pixels = NULL;
   float *weight = NULL;
   int wd = 0, ht = 0, first_imgid = -1;
@@ -88,22 +91,24 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_t *img = dt_image_cache_get(imgid, 'r');
-    dt_image_buffer_t mip = dt_image_get_blocking(img, DT_IMAGE_FULL, 'r');
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, img->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
     if(img->filters == 0 || img->bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
     }
     filter = dt_image_flipped_filter(img);
-    if(mip != DT_IMAGE_FULL)
+    if(buf.size != DT_MIPMAP_FULL)
     {
       dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
@@ -124,8 +129,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       dt_control_log(_("images have to be of same size!"));
       free(pixels);
       free(weight);
-      dt_image_release(img, DT_IMAGE_FULL, 'r');
-      dt_image_cache_release(img, 'r');
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_image_cache_read_release(darktable.image_cache, img);
       goto error;
     }
     // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in the system => f/22
@@ -138,21 +143,24 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float cal = 100.0f/(aperture*exp*iso);
     whitelevel = fmaxf(whitelevel, cal);
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(img, pixels, weight, wd, ht)
+    #pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht)
 #endif
     for(int k=0; k<wd*ht; k++)
     {
-      const uint16_t in = ((uint16_t *)img->pixels)[k];
+      const uint16_t in = ((uint16_t *)buf.buf)[k];
       const float w = .001f + (in >= 1000 ? (in < 65000 ? in/65000.0f : 0.0f) : exp * 0.01f);
       pixels[k] += w * in * cal;
       weight[k] += w;
     }
 
     t = g_list_delete_link(t, t);
+    
+    /* update backgroundjob ui plate */
     fraction+=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
-    dt_image_release(img, DT_IMAGE_FULL, 'r');
-    dt_image_cache_release(img, 'r');
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_image_cache_read_release(darktable.image_cache, img);
   }
   // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
 #ifdef _OPENMP
@@ -169,7 +177,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname)-(c-pathname));
   dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, whitelevel);
-  dt_gui_background_jobs_set_progress(j, 1.0f);
+  
+  dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
 
   while(*c != '/' && c > pathname) c--;
   dt_control_log(_("wrote merged hdr `%s'"), c+1);
@@ -184,7 +193,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   free(pixels);
   free(weight);
 error:
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
 }
 
@@ -197,39 +206,44 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("duplicating %d image", "duplicating %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
     imgid = (long int)t->data;
     dt_image_duplicate(imgid);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   return 0;
 }
 
 int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
+#if 0
+  // FIXME: replace with proper crop/rotate history stack pasting
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  const int cw = t1->flag;
+  // const int cw = t1->flag;
   GList *t = t1->index;
   int total = g_list_length(t);
-  char message[512]= {0};
   double fraction=0;
-  snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+  // char message[512]= {0};
+  // snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
+  // const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, "flipping has been disabled!");
   while(t)
   {
     imgid = (long int)t->data;
-    dt_image_flip(imgid, cw);
+    // FIXME: disabled for now!
+    // dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
+#endif
   return 0;
 }
 
@@ -242,20 +256,20 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   char query[1024];
   sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
   dt_collection_update(darktable.collection);
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw();
 
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = NULL;
   sqlite3_stmt *stmt = NULL;
   
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
@@ -268,7 +282,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     dt_image_remove(imgid);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
 
   char *imgname;
@@ -279,7 +293,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     list = g_list_delete_link(list, list);
   } 
   g_list_free(list);  
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
   return 0;
 }
@@ -294,28 +308,29 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("deleting %d image", "deleting %d images", total), total );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new(DT_JOB_PROGRESS, message);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   sqlite3_stmt *stmt;
 
   char query[1024];
   sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, query, NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
   dt_collection_update(darktable.collection);
-  dt_control_gui_queue_draw();
+  dt_control_queue_redraw();
 
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = NULL;
   
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
+
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
   }
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
   while(t)
   {
     imgid = (long int)t->data;
@@ -336,16 +351,12 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
     (void)g_unlink(filename);
-    sprintf(c, ".dt");
-    (void)g_unlink(filename);
-    sprintf(c, ".dttags");
-    (void)g_unlink(filename);
 
     dt_image_remove(imgid);
 
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
-    dt_gui_background_jobs_set_progress(j, fraction);
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   sqlite3_finalize(stmt);
   
@@ -357,7 +368,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     list = g_list_delete_link(list, list);
   } 
   g_list_free(list);
-  dt_gui_background_jobs_destroy (j);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
   return 0;
 }
@@ -436,12 +447,12 @@ void dt_control_remove_images()
   if(dt_conf_get_bool("ask_before_remove"))
   {
     GtkWidget *dialog;
-    GtkWidget *win = darktable.gui->widgets.main_window;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     
     sqlite3_stmt *stmt = NULL;
     int number = 0;
     
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(imgid) from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       number = sqlite3_column_int(stmt, 0);
@@ -468,12 +479,12 @@ void dt_control_delete_images()
   if(dt_conf_get_bool("ask_before_delete"))
   {
     GtkWidget *dialog;
-    GtkWidget *win = darktable.gui->widgets.main_window;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
     sqlite3_stmt *stmt = NULL;
     int number = 0;
     
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(imgid) from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(imgid) from selected_images", -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       number = sqlite3_column_int(stmt, 0);
@@ -529,8 +540,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   char message[512]= {0};
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
-  const dt_gui_job_t *j = dt_gui_background_jobs_new( DT_JOB_PROGRESS, message );
-  dt_gui_background_jobs_can_cancel (j,job);
+  
+  /* create a cancellable bgjob ui template */
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
+  dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
+  const dt_control_t *control = darktable.control;
 
   double fraction=0;
 #ifdef _OPENMP
@@ -539,8 +553,8 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   const int full_entries = dt_conf_get_int ("parallel_export");
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
-  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, darktable.mipmap_cache->num_entries[DT_IMAGE_FULL]) - 1);
-  #pragma omp parallel default(none) private(imgid, size) shared(j, fraction, stderr, w, h, mformat, mstorage, t, sdata, job) num_threads(num_threads) if(num_threads > 1)
+  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
+#pragma omp parallel default(none) private(imgid, size) shared(control, fraction, stderr, w, h, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
@@ -573,7 +587,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
       dt_tag_detach(tagid, imgid);
       // check if image still exists:
       char imgfilename[1024];
-      dt_image_t *image = dt_image_cache_get(imgid, 'r');
+      const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
         dt_image_full_path(image->id, imgfilename, 1024);
@@ -582,11 +596,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);
           fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
           // dt_image_remove(imgid);
-          dt_image_cache_release(image, 'r');
+          dt_image_cache_read_release(darktable.image_cache, image);
         }
         else
         {
-          dt_image_cache_release(image, 'r');
+          dt_image_cache_read_release(darktable.image_cache, image);
           mstorage->store(sdata, imgid, mformat, fdata, num, total);
         }
       }
@@ -595,7 +609,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #endif
       {
         fraction+=1.0/total;
-        dt_gui_background_jobs_set_progress( j, fraction );
+        dt_control_backgroundjobs_progress(control, jid, fraction);
       }
     }
 #ifdef _OPENMP
@@ -603,7 +617,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
     #pragma omp master
 #endif
     {
-      dt_gui_background_jobs_destroy (j);
+      dt_control_backgroundjobs_destroy(control, jid);
       if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
       mstorage->free_params(mstorage, sdata);
     }

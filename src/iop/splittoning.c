@@ -117,7 +117,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   // shadows: #ED7212
   // highlights: #ECA413
@@ -155,7 +155,7 @@ void init_presets (dt_iop_module_so_t *self)
       28.0/360.0, 39.0/100.0, 28.0/360.0, 8.0/100.0, 0.60, 0.0
   } , sizeof(dt_iop_splittoning_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -225,7 +225,7 @@ balance_callback (GtkDarktableSlider *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
-  p->balance= dtgtk_slider_get_value(slider);
+  p->balance = dtgtk_slider_get_value(slider)/100.0f;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -280,7 +280,7 @@ hue_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   gtk_widget_draw(GTK_WIDGET(sslider),NULL);
 
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
@@ -318,7 +318,7 @@ saturation_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
   gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // Update color preview
 
   if(self->dt->gui->reset) return;
-  if(dtgtk_gradient_slider_is_dragging(slider)==FALSE) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
@@ -338,7 +338,7 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
   dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
 
   GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select tone color")));
-  gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(darktable.gui->widgets.main_window));
+  gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
                     G_CALLBACK (colorpick_button_callback), csd);
   g_signal_connect (G_OBJECT (csd->cancel_button), "clicked",
@@ -425,7 +425,7 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_set_value(g->gslider3,p->highlight_hue);
   dtgtk_gradient_slider_set_value(g->gslider4,p->highlight_saturation);
   dtgtk_gradient_slider_set_value(g->gslider2,p->shadow_saturation);
-  dtgtk_slider_set_value(g->scale1, p->balance);
+  dtgtk_slider_set_value(g->scale1, p->balance*100.0);
   dtgtk_slider_set_value(g->scale2, p->compress);
 
   float color[3];
@@ -452,7 +452,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_enabled = 0;
-  module->priority = 891; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 895; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
   dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t)
@@ -603,7 +603,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.010, p->balance, 2));
+  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.0, 0.1, p->balance*100.0, 2));
   dtgtk_slider_set_format_type(g->scale1,DARKTABLE_SLIDER_FORMAT_RATIO);
   dtgtk_slider_set_label(g->scale1,_("balance"));
   dtgtk_slider_set_unit(g->scale1,"");

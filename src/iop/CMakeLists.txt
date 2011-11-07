@@ -7,12 +7,12 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma colorcontrast
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
-	cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans)
+  cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels)
 
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer lowpass invert)
+set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer colorize lowpass invert vibrance)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -57,7 +57,10 @@ add_library(rawdenoise MODULE "rawdenoise.c")
 add_library(borders MODULE "borders.c")
 add_library(nlmeans MODULE "nlmeans.c")
 add_library(colorcontrast MODULE "colorcontrast.c")
+add_library(levels MODULE "levels.c")
+add_library(colorize MODULE "colorize.c")
 add_library(invert MODULE "invert.c")
+add_library(vibrance MODULE "vibrance.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")

@@ -161,12 +161,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if (g != NULL)
   {
     // lock gui thread mutex, if we are not called from gui thread (very likely)
-    int needlock = !pthread_equal(pthread_self(),darktable.control->gui_thread);
-    if(needlock) gdk_threads_enter();
+    gboolean i_have_lock = dt_control_gdk_lock();
     char buf[256];
     snprintf(buf, sizeof buf, _("fixed %d pixels"), fixed);
     gtk_label_set_text(g->message, buf);
-    if(needlock) gdk_threads_leave();
+    if(i_have_lock) dt_control_gdk_unlock();
   }
 }
 
@@ -176,7 +175,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_hotpixels_params_t));
   module->default_params = malloc(sizeof(dt_iop_hotpixels_params_t));
   module->default_enabled = 0;
-  module->priority = 65; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 62; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_hotpixels_params_t);
   module->gui_data = NULL;
   const dt_iop_hotpixels_params_t tmp =
@@ -202,12 +201,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
   dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;
-  d->filters = dt_image_flipped_filter(self->dev->image);
+  d->filters = dt_image_flipped_filter(&pipe->image);
   d->multiplier = p->strength/2.0;
   d->threshold = p->threshold;
   d->permissive = p->permissive;
   d->markfixed = p->markfixed && (pipe->type != DT_DEV_PIXELPIPE_EXPORT);
-  if (!d->filters || pipe->type == DT_DEV_PIXELPIPE_PREVIEW || p->strength == 0.0)
+  if (!(pipe->image.flags & DT_IMAGE_RAW)|| pipe->type == DT_DEV_PIXELPIPE_PREVIEW || p->strength == 0.0)
     piece->enabled = 0;
 }
 

@@ -316,8 +316,11 @@ static inline int dt_conf_key_exists (const char *key)
   int res = 0;
 #ifdef HAVE_GCONF
   GError *error=NULL;
-  GConfValue *value = gconf_client_get (darktable.conf->gconf,key,&error);
+  char var[1024];
+  snprintf(var,1024,"%s/%s", DT_GCONF_DIR, key);
+  GConfValue *value = gconf_client_get (darktable.conf->gconf,var,&error);
   if( value != NULL && error == NULL ) res = 1;
+  if (error) fprintf(stderr,"%s\n", error->message);
 #else
   /* lookup in stringtable for match of key name */
   for (int i=0; i<darktable.conf->num; i++)

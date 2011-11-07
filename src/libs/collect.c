@@ -166,10 +166,14 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 }
 
 
-uint32_t
-views()
+uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW | DT_LEFT_PANEL_VIEW;
+  return DT_VIEW_LIGHTTABLE;
+}
+
+uint32_t container()
+{
+  return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
 static dt_lib_collect_t*
@@ -284,13 +288,21 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
       snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
-
+    case 11: // lens
+      snprintf(query, 1024, "select distinct lens, 1 from images where lens like '%%%s%%'", escaped_text);
+      break;
+    case 12: // iso
+      snprintf(query, 1024, "select distinct cast(iso as integer), 1 from images where iso like '%%%s%%'", escaped_text);
+      break;
+    case 13: // aperature
+      snprintf(query, 1024, "select distinct round(aperture,1), 1 from images where aperture like '%%%s%%'", escaped_text);
+      break;
     default: // case 3: // day
       snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", escaped_text);
       break;
   }
   g_free(escaped_text);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
@@ -299,10 +311,12 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
     {
       folder = dt_image_film_roll_name(folder);
     }
+    gchar *value =  (gchar *)sqlite3_column_text(stmt, 0);
+    gchar *escaped_text = g_markup_escape_text(value, strlen(value));
     gtk_list_store_set (GTK_LIST_STORE(model), &iter,
                         DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
-                        DT_LIB_COLLECT_COL_TOOLTIP, sqlite3_column_text(stmt, 0),
+                        DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
                         -1);
   }
   sqlite3_finalize(stmt);
@@ -405,6 +419,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   g_free(text);
   entry_key_press (NULL, NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
+  dt_control_queue_redraw_center();
 }
 
 static void
@@ -569,7 +584,7 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 }
 
 static void
-collection_updated(void *d)
+collection_updated(gpointer instance,gpointer d)
 {
   _lib_collect_gui_update((dt_lib_collect_t *)d);
 }
@@ -668,7 +683,12 @@ void
 gui_init (dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)malloc(sizeof(dt_lib_collect_t));
-  dt_collection_listener_register(collection_updated, d);
+
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_COLLECTION_CHANGED,
+			    G_CALLBACK(collection_updated),
+			    (gpointer)d);
+
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
   gtk_widget_set_size_request(self->widget, 100, -1);
@@ -736,7 +756,7 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_collection_listener_unregister(collection_updated);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self->data);
   free(((dt_lib_collect_t*)self->data)->params);
   free(self->data);
   self->data = NULL;

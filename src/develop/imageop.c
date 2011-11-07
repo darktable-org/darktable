@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,9 +26,10 @@
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "gui/iop_modulegroups.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
+#include "dtgtk/icon.h"
+#include "dtgtk/tristatebutton.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/tristatebutton.h"
 
@@ -46,7 +48,9 @@ typedef struct _iop_gui_blend_data_t
   GtkVBox *box;
   GtkComboBox *blend_modes_combo;
   GtkWidget *opacity_slider;
-} _iop_gui_blend_data_t;
+}
+_iop_gui_blend_data_t;
+
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
@@ -60,9 +64,10 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
 
+  const dt_image_t *img = &module->dev->image_storage;
   // select matching default:
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and op_version = ?2 and "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and op_version = ?2 and "
                               "autoapply=1 and "
                               "?3 like model and ?4 like maker and ?5 like lens and "
                               "?6 between iso_min and iso_max and "
@@ -72,15 +77,15 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
                               "(isldr = 0 or isldr=?10) order by length(model) desc, length(maker) desc, length(lens) desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->dev->image->exif_model, strlen(module->dev->image->exif_model), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, module->dev->image->exif_maker, strlen(module->dev->image->exif_maker), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, module->dev->image->exif_lens,  strlen(module->dev->image->exif_lens),  SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)));
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_model, strlen(img->exif_model), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->exif_maker, strlen(img->exif_maker), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_lens,  strlen(img->exif_lens),  SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, img->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, img->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, img->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, img->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, 2-dt_image_is_ldr(module->dev->image));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, 2-dt_image_is_ldr(img));
 
 #if 0 // debug the query:
   printf("select op_params, enabled from presets where operation ='%s' and "
@@ -92,14 +97,14 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
          "%f between focal_length_min and focal_length_max and "
          "(isldr = 0 or isldr=%d) order by length(model) desc, length(maker) desc, length(lens) desc;\n",
          module->op,
-         module->dev->image->exif_model,
-         module->dev->image->exif_maker,
-         module->dev->image->exif_lens,
-         fmaxf(0.0f, fminf(1000000, module->dev->image->exif_iso)),
-         fmaxf(0.0f, fminf(1000000, module->dev->image->exif_exposure)),
-         fmaxf(0.0f, fminf(1000000, module->dev->image->exif_aperture)),
-         fmaxf(0.0f, fminf(1000000, module->dev->image->exif_focal_length)),
-         2-dt_image_is_ldr(module->dev->image));
+         img->exif_model,
+         img->exif_maker,
+         img->exif_lens,
+         fmaxf(0.0f, fminf(1000000, img->exif_iso)),
+         fmaxf(0.0f, fminf(1000000, img->exif_exposure)),
+         fmaxf(0.0f, fminf(1000000, img->exif_aperture)),
+         fmaxf(0.0f, fminf(1000000, img->exif_focal_length)),
+         2-dt_image_is_ldr(img));
 #endif
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -112,7 +117,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     int bl_length = sqlite3_column_bytes(stmt, 3);
     if(op_params && (op_length == module->params_size))
     {
-      // printf("got default for image %d and operation %s\n", module->dev->image->id, sqlite3_column_text(stmt, 2));
+      // printf("got default for image %d and operation %s\n", img->id, sqlite3_column_text(stmt, 2));
       memcpy(module->default_params, op_params, op_length);
       module->default_enabled = enabled;
       if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
@@ -128,7 +133,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     // global default
     sqlite3_finalize(stmt);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select op_params, enabled, blendop_params from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
 
@@ -157,7 +162,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   if(op_params == (void *)1 || bl_params == (void *)1)
   {
     printf("[iop_load_defaults]: module param sizes have changed! removing default :(\n");
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
     sqlite3_step(stmt);
@@ -277,11 +282,10 @@ error:
 static int
 dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
-  dt_pthread_mutex_init(&module->params_mutex, NULL);
   module->dt = &darktable;
   module->dev = dev;
   module->widget = NULL;
-  module->topwidget = NULL;
+  module->header = NULL;
   module->showhide = NULL;
   module->off = NULL;
   module->priority = 0;
@@ -295,6 +299,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   }
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
+  module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;
   module->enabled = module->default_enabled = 1; // all modules enabled by default.
   g_strlcpy(module->op, so->op, 20);
 
@@ -390,54 +395,31 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     else module->enabled = 0;
     dt_dev_add_history_item(module->dev, module, FALSE);
     // close parent expander.
-    gtk_expander_set_expanded(module->expander, module->enabled);
+    dt_iop_gui_set_expanded(module, module->enabled);
   }
   char tooltip[512];
   snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
-static void
-update_topwidget(dt_iop_module_t *module)
+
+static void _iop_gui_update_header(dt_iop_module_t *module)
 {
-  // update/insert/remove module->off:
-  if(!module->hide_enable_button && !module->off)
-  {
-    // insert new
-    // module->topwidget [evb] -> vbox -> hbox -> leftmost entry
-    GtkWidget *vbox = gtk_bin_get_child(GTK_BIN(module->topwidget));
-    GList *vboxlist = gtk_container_get_children(GTK_CONTAINER(vbox));
-    GtkWidget *hbox = GTK_WIDGET(vboxlist->data);
-
-    GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-    gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
-    char tooltip[512];
-    snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
-    gtk_box_reorder_child(GTK_BOX(hbox), GTK_WIDGET(button), 0);
-    g_signal_connect (G_OBJECT (button), "toggled",
-                      G_CALLBACK (dt_iop_gui_off_callback), module);
-    module->off = button;
-
-    GtkWidget *w = gtk_expander_get_label_widget (module->expander);
-    gtk_misc_set_padding(GTK_MISC(w), 0, 0);
-  }
-  else if(module->hide_enable_button && module->off)
-  {
-    // remove widget
-    gtk_widget_destroy(GTK_WIDGET(module->off));
-    module->off = NULL;
-
-    GtkWidget *w = gtk_expander_get_label_widget (module->expander);
-    gtk_misc_set_padding(GTK_MISC(w), 13, 0);
-  }
-  else if(module->off)
-  {
-    // just toggle with current module->enabled value.
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-  }
+    /* get the enable button spacer and button */
+    GtkWidget *eb = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),0);
+    GtkWidget *ebs = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),1);
+    
+    if (module->hide_enable_button)
+    {
+      gtk_widget_hide(eb);
+      gtk_widget_show(ebs);
+    }
+    else
+    {
+      gtk_widget_show(eb);
+      gtk_widget_hide(ebs);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+    }
 }
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
@@ -450,7 +432,9 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
     module->factory_enabled = module->default_enabled;
   }
   dt_iop_load_default_params(module);
-  if(module->topwidget) update_topwidget(module);
+
+  if(module->header) 
+    _iop_gui_update_header(module);
 }
 
 static void
@@ -464,7 +448,7 @@ init_presets(dt_iop_module_so_t *module_so)
   int32_t module_version = module_so->version();
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, op_version, op_params from presets where operation = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_version, op_params from presets where operation = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -481,7 +465,7 @@ init_presets(dt_iop_module_so_t *module_so)
         // the module version from that.
 
         sqlite3_stmt *stmt2;
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select module from history where operation = ?1 and op_params = ?2", -1, &stmt2, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select module from history where operation = ?1 and op_params = ?2", -1, &stmt2, NULL);
         DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 1, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT );
         DT_DEBUG_SQLITE3_BIND_BLOB( stmt2, 2, old_params, old_params_size, SQLITE_TRANSIENT );
 
@@ -502,7 +486,7 @@ init_presets(dt_iop_module_so_t *module_so)
         
         fprintf(stderr, "[imageop_init_presets] Found version %d for '%s' preset '%s'\n", old_params_version, module_so->op, name );
 
-        DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update presets set op_version=?1 where operation=?2 and name=?3", -1, &stmt2, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set op_version=?1 where operation=?2 and name=?3", -1, &stmt2, NULL);
         DT_DEBUG_SQLITE3_BIND_INT( stmt2, 1, old_params_version );
         DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 2, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT );
         DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 3, name, strlen(name), SQLITE_TRANSIENT );
@@ -534,7 +518,7 @@ init_presets(dt_iop_module_so_t *module_so)
 
       // and write the new params back to the database
       sqlite3_stmt *stmt2;
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "update presets "
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets "
               "set op_version=?1, op_params=?2 "
               "where operation=?3 and name=?4", -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
@@ -551,6 +535,25 @@ init_presets(dt_iop_module_so_t *module_so)
     {
       fprintf(stderr, "[imageop_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, no legacy_params() implemented \n", module_so->op, name, old_params_version, module_version );
     }
+  }
+  sqlite3_finalize(stmt);
+}
+
+static void init_key_accels(dt_iop_module_so_t *module)
+{
+    // Calling the accelerator initialization callback, if present
+  if(module->init_key_accels)
+    (module->init_key_accels)(module);
+  /** load shortcuts for presets **/
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char path[1024];
+    snprintf(path,1024,"preset/%s",(const char *)sqlite3_column_text(stmt, 0));
+    dt_accel_register_iop(module, FALSE, NC_("accel", path), 0, 0);
+
   }
   sqlite3_finalize(stmt);
 }
@@ -585,8 +588,7 @@ void dt_iop_load_modules_so()
     res = g_list_append(res, module);
     init_presets(module);
     // Calling the accelerator initialization callback, if present
-    if(module->init_key_accels)
-      (module->init_key_accels)(module);
+    init_key_accels(module);
 
     if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
     {
@@ -633,6 +635,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     // stay constant for all images).
     memcpy(module->factory_params, module->params, module->params_size);
     module->factory_enabled = module->default_enabled;
+    module->so = module_so;
     dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
@@ -663,7 +666,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
     free(module->default_blendop_params) ; 
     module->default_blendop_params = NULL ; 
   }
-  dt_pthread_mutex_destroy(&module->params_mutex);
 }
 
 void dt_iop_unload_modules_so()
@@ -768,64 +770,6 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
   return iop_cs_rgb;
 }
 
-static gboolean
-expander_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
-{
-  if(event->button == 1 && (event->state & GDK_SHIFT_MASK)) // TODO: this can also be done when some auto-collapse option is set ...
-  {
-    int current_group = dt_gui_iop_modulegroups_get();
-    GList *iop = g_list_first(module->dev->iop);
-    while(iop)
-    {
-      dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-
-      /* if module is the current, always expand it */
-      if(m==module)
-        gtk_expander_set_expanded(m->expander, TRUE);
-      else if((current_group == 0 || (current_group & m->groups()) || (current_group == IOP_SPECIAL_GROUP_ACTIVE_PIPE && m->enabled) /* || (current_group == IOP_SPECIAL_GROUP_USER_DEFINED && module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2) */ )) //FIXME
-        gtk_expander_set_expanded(m->expander, FALSE);
-
-      iop = g_list_next(iop);
-    }
-
-    /* prevent expander to handle the button press because we alread did :) */
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static void
-dt_iop_gui_expander_callback(GObject *object, GParamSpec *param_spec, gpointer user_data)
-{
-  GtkExpander *expander = GTK_EXPANDER (object);
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  GtkWidget *content = gtk_widget_get_parent(module->widget);
-  if (gtk_expander_get_expanded (expander))
-  {
-    gtk_widget_show(content);
-    // Hack: in views/darkroom.c we use gtk_widget_show_all() which also shows the to be hidden blend box when entering darkroom mode.
-    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
-    if(bd != NULL && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->enable)) == FALSE)
-      gtk_widget_hide(GTK_WIDGET(bd->box));
-
-    // register to receive draw events
-    dt_iop_request_focus(module);
-    GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
-    gtk_container_set_focus_child(box, module->topwidget);
-    // redraw gui (in case post expose is set)
-    gtk_widget_queue_resize(darktable.gui->widgets.plugins_vbox);
-    dt_control_gui_queue_draw();
-  }
-  else
-  {
-    if(module->dev->gui_module == module)
-    {
-      dt_iop_request_focus(NULL);
-      dt_control_gui_queue_draw();
-    }
-    gtk_widget_hide(content);
-  }
-}
 
 static void
 dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
@@ -834,44 +778,26 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
   memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_gui_update(module);
-  if(strcmp(module->op, "rawimport")) dt_dev_add_history_item(module->dev, module, TRUE);
+  dt_dev_add_history_item(module->dev, module, TRUE);
 }
 
 static void
-_preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
+_preset_popup_position(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
   gint w,h;
   GtkRequisition requisition;
   gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
   gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
-  (*x)+=w-requisition.width;
+  
   (*y)+=GTK_WIDGET(data)->allocation.height;
-}
-
-static gboolean
-popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *module)
-{
-  if(event->button == 1)
-  {
-    dt_iop_request_focus(module);
-    return TRUE;
-  }
-  else if(event->button == 3)
-  {
-    dt_gui_presets_popup_menu_show_for_module(module);
-    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, event->button, event->time);
-    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
-    return TRUE;
-  }
-  return FALSE;
 }
 
 static void
 popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
   dt_gui_presets_popup_menu_show_for_module(module);
-  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,gtk_get_current_event_time());
+  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0, gtk_get_current_event_time());
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 }
@@ -879,27 +805,55 @@ popup_callback(GtkButton *button, dt_iop_module_t *module)
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
-  if(darktable.develop->gui_module)
+
+  /* lets loose the focus of previous focus module*/
+  if (darktable.develop->gui_module)
   {
-    if(darktable.develop->gui_module->gui_focus) darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
-    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
+    if (darktable.develop->gui_module->gui_focus) 
+      darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
+
+    gtk_widget_set_state(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_NORMAL);
+
+  //    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
+
+    /*
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
-    if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+
+    if (off) 
+      gtk_widget_set_state(off, 
+			   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? 
+			   GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    */
+
     if (darktable.develop->gui_module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
+
     dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
   }
+
   darktable.develop->gui_module = module;
+
+  /* set the focus on module */
   if(module)
   {
-    gtk_widget_set_state(module->topwidget, GTK_STATE_SELECTED);
-    gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
+    gtk_widget_set_state(dt_iop_gui_get_pluginui(module), GTK_STATE_SELECTED);
+      
+    //gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
+
+    /*
     GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
-    if(off) gtk_widget_set_state(off, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    if (off) 
+      gtk_widget_set_state(off, 
+			   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ? 
+			   GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
+    */
     if (module->operation_tags_filter())
       dt_dev_invalidate_from_gui(darktable.develop);
+
     dt_accel_connect_locals_iop(module);
-    if(module->gui_focus) module->gui_focus(module, TRUE);
+
+    if(module->gui_focus) 
+      module->gui_focus(module, TRUE);
   }
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
@@ -941,55 +895,141 @@ _blendop_opacity_callback (GtkDarktableSlider *slider, _iop_gui_blend_data_t *da
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+/*
+ * NEW EXPANDER
+ */
 
-GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
+void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
 {
-  char name[1024];
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
-  snprintf(name, 1024, "%s%s",module->name(),(module->flags() & IOP_FLAGS_DEPRECATED)?_(" (deprecated)"):"");
-  module->expander = GTK_EXPANDER(gtk_expander_new((const gchar *)name));
-  // gamma is always needed for display (down to uint8_t)
-  // colorin/colorout are essential for La/Lb/L conversion.
-  if(!module->hide_enable_button)
+  if(!module->expander) return;
+
+  /* update expander arrow state */
+  GtkWidget *icon;
+  GtkWidget *header = gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),0)));
+  GtkWidget *pluginui = dt_iop_gui_get_widget(module);
+  gint flags = CPF_DIRECTION_DOWN;
+
+  /* get arrow icon widget */
+  icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
+  if(!expanded)
+    flags=CPF_DIRECTION_LEFT;
+ 
+  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
+
+  /* show / hide plugin widget */
+  if (expanded) 
   {
-    GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-    gtk_widget_set_size_request(GTK_WIDGET(button), 13, 13);
-    char tooltip[512];
-    snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
-    g_object_set(G_OBJECT(button), "tooltip-text", tooltip, (char *)NULL);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), module->enabled);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(button), FALSE, FALSE, 0);
-    g_signal_connect (G_OBJECT (button), "toggled",
-                      G_CALLBACK (dt_iop_gui_off_callback), module);
-    module->off = button;
+    /* show plugin ui */
+    gtk_widget_show(pluginui);
+
+    /* ensure that blending widgets are show as the should */
+    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+    if (bd != NULL && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bd->enable)) == FALSE)
+      gtk_widget_hide(GTK_WIDGET(bd->box));
+
+    /* set this module to receive focus / draw events*/
+    dt_iop_request_focus(module);
+
+    /* focus the current module */
+    for(int k=0;k<DT_UI_CONTAINER_SIZE;k++)
+      dt_ui_container_focus_widget(darktable.gui->ui, k, module->expander);
+    
+    /* redraw center, iop might have post expose */
+    dt_control_queue_redraw_center();
+
   }
   else
   {
-    GtkWidget *w = gtk_expander_get_label_widget (module->expander);
-    gtk_misc_set_padding(GTK_MISC(w), 13, 0);
+    gtk_widget_hide(pluginui);
+
+    if(module->dev->gui_module == module)
+    {
+      dt_iop_request_focus(NULL);
+      dt_control_queue_redraw_center();
+    }
   }
 
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(module->expander), TRUE, TRUE, 0);
-  GtkDarktableButton *resetbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  module->reset_button = GTK_WIDGET(resetbutton);
-  GtkDarktableButton *presetsbutton = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  module->presets_button = GTK_WIDGET(presetsbutton);
-  gtk_widget_set_size_request(GTK_WIDGET(presetsbutton),13,13);
-  gtk_widget_set_size_request(GTK_WIDGET(resetbutton),13,13);
-  g_object_set(G_OBJECT(resetbutton), "tooltip-text", _("reset parameters"), (char *)NULL);
-  g_object_set(G_OBJECT(presetsbutton), "tooltip-text", _("presets"), (char *)NULL);
-  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(resetbutton), FALSE, FALSE, 0);
-  gtk_box_pack_end  (GTK_BOX(hbox), GTK_WIDGET(presetsbutton), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 10, 10, 10, 5);
+  /* store expanded state of module */
+  char var[1024];
+  snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
+  dt_conf_set_bool(var, gtk_widget_get_visible(pluginui));
 
-  /* add module widget to container */
-  GtkWidget * iopw = gtk_vbox_new(FALSE,4);
-  gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
+}
 
+static gboolean
+_iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  if (e->button == 1)
+  {
+    dt_iop_request_focus(module);
+    return TRUE;
+  }
+  else if (e->button == 3)
+  {
+    dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+    return TRUE;
+  }
+  return FALSE;
+}
 
+static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  GtkWidget *pluginui = dt_iop_gui_get_widget(module);
+
+  if (e->button == 1) 
+  {
+    /* handle shiftclick on expander, hide all except this */
+    if ((e->state & GDK_SHIFT_MASK))
+    {
+      int current_group = dt_dev_modulegroups_get(module->dev);
+      GList *iop = g_list_first(module->dev->iop);
+      while (iop)
+      {
+        dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+        uint32_t additional_flags=0;
+
+        /* add special group flag for moduel in active pipe */
+        if(module->enabled)
+          additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
+
+        /* add special group flag for favorite */
+        if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
+          additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+
+        /* if module is the current, always expand it */
+        if (m == module)
+          dt_iop_gui_set_expanded(m, TRUE);
+        else if ((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+          dt_iop_gui_set_expanded(m, FALSE);
+
+        iop = g_list_next(iop);
+      }
+    }
+    else
+    {
+      /* else just toggle */
+      dt_iop_gui_set_expanded(module, !gtk_widget_get_visible(pluginui));
+    }
+
+    return TRUE;
+  }
+  else if (e->button == 3)
+  {
+    dt_gui_presets_popup_menu_show_for_module(module);
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, e->button, e->time);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+
+    return TRUE;
+  }
+  return FALSE;
+}
+
+void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
+{
   /* create and add blend mode if module supports it */
   if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
   {
@@ -1056,29 +1096,123 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
     gtk_box_pack_end(GTK_BOX(iopw), btb,TRUE,TRUE,0);
     
   }
+}
 
-  /* add the iopw widget to aligment widget */
+GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
+{
+  int bs = 12;
+  char tooltip[512];
+  GtkWidget *expander = gtk_vbox_new(FALSE, 3);
+  GtkWidget *header_evb = gtk_event_box_new();
+  GtkWidget *header = gtk_hbox_new(FALSE, 0);
+  GtkWidget *pluginui_frame = gtk_frame_new(NULL);
+  GtkWidget *pluginui = gtk_event_box_new();
+
+  gtk_widget_set_name(pluginui,"dt-plugin-ui");
+
+  module->header = header;
+  /* connect mouse button callbacks for focus and presets */
+  g_signal_connect(G_OBJECT(pluginui), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
+
+  /* steup the header box */
+  gtk_container_add(GTK_CONTAINER(header_evb), header);
+  g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_iop_plugin_header_button_press), module);
+
+  /* setup plugin content frame */
+  gtk_frame_set_shadow_type(GTK_FRAME(pluginui_frame),GTK_SHADOW_IN);
+  gtk_container_add(GTK_CONTAINER(pluginui_frame),pluginui);
+
+  /* layout the main expander widget */
+  gtk_box_pack_start(GTK_BOX(expander), header_evb, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(expander), pluginui_frame, TRUE, FALSE,0);
+
+  /*
+   * initialize the header widgets
+   */
+  int idx = 0;
+  GtkWidget *hw[6]={NULL,NULL,NULL,NULL,NULL,NULL};
+
+  /* add the expand indicator icon */
+  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+  
+  /* add module label */
+  char label[128];
+  g_snprintf(label,128,"<span size=\"larger\">%s</span>",module->name());
+  hw[idx] = gtk_label_new("");
+  gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
+
+  /* add reset button */
+  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  module->reset_button = GTK_WIDGET(hw[idx]);
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("reset parameters"), (char *)NULL);
+  g_signal_connect (G_OBJECT (hw[idx]), "clicked",
+		    G_CALLBACK (dt_iop_gui_reset_callback), module);  
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+  
+
+  /* add preset button if module has implementation */
+  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  module->presets_button = GTK_WIDGET(hw[idx]);
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", _("presets"), (char *)NULL);
+  g_signal_connect (G_OBJECT (hw[idx]), "clicked", G_CALLBACK (popup_callback), module);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
+  /* add enabled button spacer */
+  hw[idx] = gtk_fixed_new();
+  gtk_widget_set_no_show_all(hw[idx],TRUE);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
+  /* add enabled button */
+  hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  gtk_widget_set_no_show_all(hw[idx],TRUE);
+  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
+  g_signal_connect (G_OBJECT (hw[idx]), "toggled",
+		    G_CALLBACK (dt_iop_gui_off_callback), module);  
+  module->off = DTGTK_TOGGLEBUTTON(hw[idx]);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);
+
+ 
+  /* reorder header, for now, iop are always int right panel */
+  for(int i=5;i>=0;i--)
+    if (hw[i])
+      gtk_box_pack_start(GTK_BOX(header), hw[i],i==1?TRUE:FALSE,i==1?TRUE:FALSE,2);
+  gtk_misc_set_alignment(GTK_MISC(hw[1]),1.0,0.5);
+  dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);    
+
+  /* add the blending ui if supported */
+  GtkWidget * iopw = gtk_vbox_new(FALSE,4);
+  gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
+  dt_iop_gui_init_blending(iopw,module);
+  
+
+  /* add module widget into an alignment */
+  GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 8);
+  gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), iopw);
-  gtk_box_pack_start(GTK_BOX(vbox), al, TRUE, TRUE, 0);
+
+  gtk_widget_hide_all(pluginui);
+  
+  module->expander = expander;
+
+  /* update header */
+  _iop_gui_update_header(module);
 
 
-  g_signal_connect (G_OBJECT (resetbutton), "clicked",
-                    G_CALLBACK (dt_iop_gui_reset_callback), module);
-  g_signal_connect (G_OBJECT (presetsbutton), "clicked",
-                    G_CALLBACK (popup_callback), module);
-  g_signal_connect (G_OBJECT (module->expander), "notify::expanded",
-                    G_CALLBACK (dt_iop_gui_expander_callback), module);
-  gtk_expander_set_spacing(module->expander, 10);
-  gtk_widget_hide_all(al);
-  gtk_expander_set_expanded(module->expander, FALSE);
-  GtkWidget *evb = gtk_event_box_new();
-  gtk_container_set_border_width(GTK_CONTAINER(evb), 0);
-  gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(vbox));
+  return module->expander;
+}
 
-  gtk_widget_set_events(evb, GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(popup_button_callback), module);
-  g_signal_connect(G_OBJECT(module->expander), "button-press-event", G_CALLBACK(expander_button_callback), module);
-  return evb;
+GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)
+{
+  return gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),1)))));
+}
+
+GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
+{
+  return gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),1)));
 }
 
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
@@ -1087,6 +1221,76 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
   if(pipe != dev->preview_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
   if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving) return 1;
   return 0;
+}
+
+void
+dt_iop_flip_and_zoom_8(
+    const uint8_t *in,
+    int32_t iw,
+    int32_t ih,
+    uint8_t *out,
+    int32_t ow,
+    int32_t oh,
+    const int32_t orientation,
+    uint32_t *width,
+    uint32_t *height)
+{
+  // init strides:
+  const uint32_t iwd = (orientation & 4) ? ih : iw;
+  const uint32_t iht = (orientation & 4) ? iw : ih;
+  const float scale = fmaxf(iwd/(float)ow, iht/(float)oh);
+  const uint32_t wd = *width  = MIN(ow, iwd/scale);
+  const uint32_t ht = *height = MIN(oh, iht/scale);
+  const int bpp = 4; // bytes per pixel
+  int32_t ii = 0, jj = 0;
+  int32_t si = 1, sj = iw;
+  if(orientation & 2)
+  {
+    jj = ih - jj - 1;
+    sj = -sj;
+  }
+  if(orientation & 1)
+  {
+    ii = iw - ii - 1;
+    si = -si;
+  }
+  if(orientation & 4)
+  {
+    int t = sj;
+    sj = si;
+    si = t;
+  }
+  const int32_t half_pixel = .5f*scale;
+  const int32_t offm = half_pixel*bpp*MIN(MIN(0, si), MIN(sj, si+sj));
+  const int32_t offM = half_pixel*bpp*MAX(MAX(0, si), MAX(sj, si+sj));
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si, iw, ih)
+#endif
+  for(int j=0; j<ht; j++)
+  {
+    uint8_t *out2 = out + bpp*wd*j;
+    const uint8_t *in2 = in + bpp*(iw*jj + ii + sj*(int32_t)(scale*j));
+    float stepi = 0.0f;
+    for(int i=0; i<wd; i++)
+    {
+      const uint8_t *in3 = in2 + ((int32_t)stepi)*si*bpp;
+      // this should always be within the bounds of in[], due to the way
+      // wd/ht are constructed by always just rounding down. half_pixel should never
+      // add up to one pixel difference.
+      // we have this check with the hope the branch predictor will get rid of it:
+      if(in3 + offm >= in &&
+         in3 + offM < in + bpp*iw*ih)
+      {
+        for(int k=0; k<3; k++) out2[k] = // in3[2-k];
+          CLAMP(((int32_t)in3[bpp*half_pixel*sj      + 2-k] +
+                 (int32_t)in3[bpp*half_pixel*(si+sj) + 2-k] +
+                 (int32_t)in3[bpp*half_pixel*si      + 2-k] +
+                 (int32_t)in3[2-k])/4, 0, 255);
+      }
+      out2  += bpp;
+      stepi += scale;
+    }
+  }
 }
 
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,
@@ -1197,8 +1401,14 @@ FC(const int row, const int col, const unsigned int filters)
  * resamping is done via bilateral filtering and respecting the input mosaic pattern.
  */
 void
-dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
-                                        const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+dt_iop_clip_and_zoom_demosaic_half_size(
+    float *out,
+    const uint16_t *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters)
 {
 #if 0
   printf("scale: %f\n",roi_out->scale);
@@ -1264,7 +1474,7 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
           const uint16_t p3 = in[i   + in_stride*(j + 1)];
           const uint16_t p4 = in[i+1 + in_stride*(j + 1)];
 
-          if (!((pc == 65535) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) == 65535)))
+          if (!((pc >= 60000) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) >= 60000)))
           {
             sum = _mm_add_epi32(sum, _mm_set_epi32(0,p4,p3+p2,p1));
             num++;
@@ -1285,9 +1495,101 @@ dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
 #endif
 }
 
+#if 0 // gets rid of pink artifacts, but doesn't do sub-pixel sampling, so shows some staircasing artifacts.
 void
-dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
-    const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride, const unsigned int filters)
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters,
+    const float clip)
+{
+  // adjust to pixel region and don't sample more than scale/2 nbs!
+  // pixel footprint on input buffer, radius:
+  const float px_footprint = 1.f/roi_out->scale;
+  // how many 2x2 blocks can be sampled inside that area
+  const int samples = round(px_footprint/2);
+
+  // move p to point to an rggb block:
+  int trggbx = 0, trggby = 0;
+  if(FC(trggby, trggbx+1, filters) != 1) trggbx ++;
+  if(FC(trggby, trggbx,   filters) != 0)
+  {
+    trggbx = (trggbx + 1)&1;
+    trggby ++;
+  }
+  const int rggbx = trggbx, rggby = trggby;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    float *outc = out + 4*(out_stride*y);
+
+    float fy = (y + roi_out->y)*px_footprint;
+    int py = (int)fy & ~1;
+    py = MIN(((roi_in->height-4) & ~1u), py) + rggby;
+
+    int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
+
+    float fx = roi_out->x*px_footprint;
+      
+    for(int x=0; x<roi_out->width; x++)
+    {
+      __m128 col = _mm_setzero_ps();
+
+      fx += px_footprint;
+      int px = (int)fx & ~1;
+      px = MIN(((roi_in->width -4) & ~1u), px) + rggbx;
+
+      int maxi = MIN(((roi_in->width -3)&~1u)+rggbx, px+2*samples);
+
+      int num = 0;
+
+      const int idx = px + in_stride*py;
+      const float pc = MAX(MAX(in[idx], in[idx+1]), MAX(in[idx + in_stride], in[idx+1 + in_stride]));
+
+      // 2x2 blocks in the middle of sampling region
+      __m128 sum = _mm_setzero_ps();
+
+      for(int j=py; j<=maxj; j+=2)
+        for(int i=px; i<=maxi; i+=2)
+        {
+          const float p1 = in[i   + in_stride*j];
+          const float p2 = in[i+1 + in_stride*j];
+          const float p3 = in[i   + in_stride*(j + 1)];
+          const float p4 = in[i+1 + in_stride*(j + 1)];
+
+          if (!((pc >= clip) ^ (MAX(MAX(p1,p2),MAX(p3,p4)) >= clip)))
+          {
+            sum = _mm_add_ps(sum, _mm_set_ps(0,p4,p3+p2,p1));
+            num++;
+          }
+        }
+
+      col = _mm_mul_ps(sum, _mm_div_ps(_mm_set_ps(0.0f,1.0f,0.5f,1.0f),_mm_set1_ps(num)));
+      _mm_stream_ps(outc, col);
+      outc += 4;
+    }
+  }
+  _mm_sfence();
+}
+
+#else // very fast and smooth, but doesn't handle highlights:
+void
+dt_iop_clip_and_zoom_demosaic_half_size_f(
+    float *out,
+    const float *const in,
+    const dt_iop_roi_t *const roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const int32_t out_stride,
+    const int32_t in_stride,
+    const unsigned int filters,
+    const float clip)
 {
   // adjust to pixel region and don't sample more than scale/2 nbs!
   // pixel footprint on input buffer, radius:
@@ -1461,6 +1763,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in,
   }
   _mm_sfence();
 }
+#endif
 
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {
@@ -1474,6 +1777,18 @@ void dt_iop_YCbCr_to_RGB(const float *yuv, float *rgb)
   rgb[0] = yuv[0]                + 1.140*yuv[2];
   rgb[1] = yuv[0] - 0.394*yuv[1] - 0.581*yuv[2];
   rgb[2] = yuv[0] + 2.028*yuv[1];
+}
+
+dt_iop_module_t *get_colorout_module()
+{
+  GList *modules = darktable.develop->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    if(!strcmp(module->op, "colorout")) return module;
+    modules = g_list_next(modules);
+  }
+  return NULL;
 }
 
 static inline void
@@ -1569,8 +1884,9 @@ static void show_module_callback(GtkAccelGroup *accel_group,
     gtk_widget_queue_draw(module->showhide);
   }
 
-  dt_gui_iop_modulegroups_switch(module->groups());
-  gtk_expander_set_expanded(GTK_EXPANDER(module->expander), TRUE);
+  // FIXME
+  //dt_gui_iop_modulegroups_switch(module->groups());
+  dt_iop_gui_set_expanded(module, TRUE);
   dt_iop_request_focus(module);
 }
 
@@ -1584,6 +1900,8 @@ static void enable_module_callback(GtkAccelGroup *accel_group,
   gboolean active= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 }
+
+
 
 void dt_iop_connect_common_accels(dt_iop_module_t *module)
 {
@@ -1609,6 +1927,39 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
 
   if(module->fusion_slider)
     dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
+
+  sqlite3_stmt *stmt;
+  // don't know for which image. show all we got:
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+	dt_accel_connect_preset_iop(module,(char *)sqlite3_column_text(stmt, 0));
+  }
+  sqlite3_finalize(stmt);
+}
+
+gchar *
+dt_iop_get_localized_name(const gchar * op)
+{
+  // Prepare mapping op -> localized name
+  static GHashTable *module_names = NULL;
+  if(module_names == NULL)
+  {
+    module_names = g_hash_table_new(g_str_hash, g_str_equal);
+    GList *iop = g_list_first(darktable.iop);
+    if(iop != NULL)
+    {
+      do
+      {
+        dt_iop_module_so_t * module = (dt_iop_module_so_t *)iop->data;
+        g_hash_table_insert(module_names, module->op, _(module->name()));
+      }
+      while((iop=g_list_next(iop)) != NULL);
+    }
+  }
+
+  return (gchar*)g_hash_table_lookup(module_names, op);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

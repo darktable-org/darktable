@@ -634,7 +634,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_lowpass_params_t));
   module->default_params = malloc(sizeof(dt_iop_lowpass_params_t));
   module->default_enabled = 0;
-  module->priority = 695; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 708; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowpass_params_t);
   module->gui_data = NULL;
   dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t)
@@ -658,14 +658,14 @@ void init_global(dt_iop_module_so_t *module)
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("local contrast mask"), self->op, self->version(), &(dt_iop_lowpass_params_t)
   {
     0, 50.0f, -1.0f, 0.0f
   }, sizeof(dt_iop_lowpass_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void cleanup(dt_iop_module_t *module)

@@ -65,8 +65,7 @@ static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *
 // Slider entry events
 static gboolean _slider_entry_key_event(GtkWidget *widget,GdkEventKey *event, gpointer data);
 
-static guint _signals[SLIDER_LAST_SIGNAL] = { 0 };
-//static char accel_name_builder[1024];
+static guint _slider_signals[SLIDER_LAST_SIGNAL] = { 0 };
 
 void _slider_get_value_area(GtkWidget *widget,GdkRectangle *rect)
 {
@@ -104,9 +103,10 @@ static void _slider_class_init (GtkDarktableSliderClass *klass)
   widget_class->enter_notify_event = _slider_enter_notify_event;
   widget_class->leave_notify_event = _slider_enter_notify_event;
   //object_class->destroy = _slider_destroy;
-  _signals[VALUE_CHANGED] = g_signal_new(
+  _slider_signals[VALUE_CHANGED] = g_signal_new(
                               "value-changed",
-                              G_TYPE_OBJECT, G_SIGNAL_RUN_LAST,
+                              G_TYPE_FROM_CLASS(klass), 
+			      G_SIGNAL_RUN_LAST,
                               0,NULL,NULL,
                               g_cclosure_marshal_VOID__VOID,
                               GTK_TYPE_NONE,0);
@@ -143,14 +143,17 @@ static void _slider_init (GtkDarktableSlider *slider)
 
 static gboolean _slider_postponed_value_change(gpointer data)
 {
-  gdk_threads_enter();
-  if(DTGTK_SLIDER(data)->is_changed==TRUE)
+  gboolean i_own_lock = dt_control_gdk_lock();
+
+  if (DTGTK_SLIDER(data)->is_changed==TRUE)
   {
     g_signal_emit_by_name(G_OBJECT(data),"value-changed");
     if(DTGTK_SLIDER(data)->type==DARKTABLE_SLIDER_VALUE)
       DTGTK_SLIDER(data)->is_changed=FALSE;
   }
-  gdk_threads_leave();
+
+  if (i_own_lock) dt_control_gdk_unlock();
+
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
 }
 

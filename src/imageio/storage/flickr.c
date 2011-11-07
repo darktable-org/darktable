@@ -189,7 +189,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     text1 = g_strdup(_("step 1: a new window or tab of your browser should have been loaded. you have to login into your flickr account there and authorize darktable to upload photos before continuing."));
     text2 = g_strdup(_("step 2: click the ok button once you are done."));
 
-    GtkWidget *window = darktable.gui->widgets.main_window;
+    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
     GtkWidget *flickr_auth_dialog = gtk_message_dialog_new (GTK_WINDOW (window),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_INFO,
@@ -668,7 +668,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     return 1;
   }
   close(fd);
-  dt_image_t *img = dt_image_cache_get(imgid, 'r');
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   caption = g_path_get_basename( img->filename );
 
   // If title is not existing, then use the filename without extension. If not, then use title instead
@@ -687,9 +687,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   {
     description = desc->data;
   }
+  dt_image_cache_read_release(darktable.image_cache, img);
 
-  dt_imageio_export(img, fname, format, fdata);
-  dt_image_cache_release(img, 'r');
+  dt_imageio_export(imgid, fname, format, fdata);
 
 #ifdef _OPENMP
   #pragma omp critical

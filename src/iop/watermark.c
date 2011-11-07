@@ -175,7 +175,7 @@ static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *
   return result;
 }
 
-static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_data_t *data)
+static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_data_t *data, const dt_image_t *image)
 {
   gsize length;
 
@@ -215,7 +215,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
 
     // Current image ID
     gchar buffer[1024];
-    g_snprintf(buffer,1024,"%d",self->dev->image->id);
+    g_snprintf(buffer,1024,"%d",image->id);
     svgdoc = _string_substitute(svgdata,"$(IMAGE.ID)",buffer);
     if( svgdoc != svgdata )
     {
@@ -224,7 +224,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
 
     // Current image
-    dt_image_print_exif(self->dev->image,buffer,1024);
+    dt_image_print_exif(image,buffer,1024);
     svgdoc = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
     if( svgdoc != svgdata )
     {
@@ -233,25 +233,25 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
 
     // Image exif
-    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",self->dev->image->exif_datetime_taken);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.DATE)",image->exif_datetime_taken);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",self->dev->image->exif_maker);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.MAKER)",image->exif_maker);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.MODEL)",self->dev->image->exif_model);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.MODEL)",image->exif_model);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
       svgdata = svgdoc;
     }
-    svgdoc = _string_substitute(svgdata,"$(EXIF.LENS)",self->dev->image->exif_lens);
+    svgdoc = _string_substitute(svgdata,"$(EXIF.LENS)",image->exif_lens);
     if( svgdoc != svgdata )
     {
       g_free(svgdata);
@@ -267,7 +267,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
 
     // TODO: auto generate that code?
     GList * res;
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.creator", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.creator", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.creator)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -280,7 +280,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       g_list_free(res);
     }
 
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.publisher", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.publisher", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.publisher)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -293,7 +293,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       g_list_free(res);
     }
 
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.title", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.title", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.title)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -306,7 +306,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       g_list_free(res);
     }
 
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.description", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.description", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.description)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -319,7 +319,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
       g_list_free(res);
     }
 
-    res = dt_metadata_get(self->dev->image->id, "Xmp.dc.rights", NULL);
+    res = dt_metadata_get(image->id, "Xmp.dc.rights", NULL);
     svgdoc = _string_substitute(svgdata,"$(Xmp.dc.rights)",(res?res->data:""));
     if( svgdoc != svgdata )
     {
@@ -345,7 +345,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   /* Load svg if not loaded */
-  gchar *svgdoc = _watermark_get_svgdoc (self, data);
+  gchar *svgdoc = _watermark_get_svgdoc (self, data, &piece->pipe->image);
   if (!svgdoc)
   {
     memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
@@ -665,7 +665,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->default_params = malloc(sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
-  module->priority = 978; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 979; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)

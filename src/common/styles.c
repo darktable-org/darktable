@@ -74,7 +74,7 @@ dt_styles_create_style_header(const char *name, const char *description)
     return FALSE;
   }
   /* first create the style header */
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into styles (name,description) values (?1,?2)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into styles (name,description) values (?1,?2)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name,strlen (name),SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, description,strlen (description),SQLITE_STATIC);
   sqlite3_step (stmt);
@@ -111,10 +111,10 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       g_strlcat(include,")", 2048);
       char query[4096]= {0};
       sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params) select ?1, num,module,operation,op_params,enabled,blendop_params from history where imgid=?2 and %s",include);
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, query, -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params) select ?1, num,module,operation,op_params,enabled,blendop_params from history where imgid=?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params) select ?1, num,module,operation,op_params,enabled,blendop_params from history where imgid=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step (stmt);
@@ -137,7 +137,7 @@ dt_styles_apply_to_selection(const char *name,gboolean duplicate)
 {
   /* for each selected image apply style */
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select * from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int (stmt, 0);
@@ -163,14 +163,14 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 #if 1
     {
       /* apply on top of history stack */
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
       if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
     }
 #else
     {
       /* replace history stack */
-      DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from history where imgid = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
       sqlite3_step (stmt);
     }
@@ -178,7 +178,7 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     sqlite3_finalize (stmt);
 
     /* copy history items from styles onto image */
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into history (imgid,num,module,operation,op_params,enabled,blendop_params) select ?1, num+?2,module,operation,op_params,enabled,blendop_params from style_items where styleid=?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid,num,module,operation,op_params,enabled,blendop_params) select ?1, num+?2,module,operation,op_params,enabled,blendop_params from style_items where styleid=?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
@@ -196,13 +196,8 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     if (dt_dev_is_current_image(darktable.develop, imgid))
       dt_dev_reload_history_items (darktable.develop);
 
-    /* reimport image */
-    dt_image_t *img = dt_image_cache_get (imgid, 'r');
-    if(img != NULL)
-    {
-      img->force_reimport = 1;
-      dt_image_cache_flush(img);
-    }
+    /* remove old obsolete thumbnails */
+    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   }
 }
 
@@ -214,13 +209,13 @@ dt_styles_delete_by_name(const char *name)
   {
     /* delete the style */
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from styles where rowid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from styles where rowid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
 
     /* delete style_items belonging to style */
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "delete from style_items where styleid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from style_items where styleid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
@@ -236,7 +231,7 @@ dt_styles_get_item_list (const char *name)
   int id=0;
   if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num, operation, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -258,7 +253,7 @@ dt_styles_get_list (const char *filter)
   char filterstring[512]= {0};
   sqlite3_stmt *stmt;
   sprintf (filterstring,"%%%s%%",filter);
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select name, description from styles where name like ?1 or description like ?1 order by name", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description from styles where name like ?1 or description like ?1 order by name", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   GList *result = NULL;
   while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -322,7 +317,7 @@ dt_styles_save_to_file(const char *style_name,const char *filedir)
   xmlTextWriterEndElement(writer);
 
   xmlTextWriterStartElement(writer, BAD_CAST "style");
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select num,module,operation,op_params,enabled,blendop_params from style_items where styleid =?1",-1, &stmt,NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num,module,operation,op_params,enabled,blendop_params from style_items where styleid =?1",-1, &stmt,NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt,1,dt_styles_get_id_by_name(style_name));
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
@@ -476,7 +471,7 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
 {
   int id = GPOINTER_TO_INT(styleId);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params) values(?1,?2,?3,?4,?5,?6,?7)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params) values(?1,?2,?3,?4,?5,?6,?7)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, plugin->num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, plugin->module);
@@ -587,7 +582,7 @@ dt_styles_get_description (const char *name)
   gchar *description = NULL;
   if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select description from styles where rowid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select description from styles where rowid=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
     description = (char *)sqlite3_column_text (stmt, 0);
@@ -603,7 +598,7 @@ dt_styles_get_id_by_name (const char *name)
 {
   int id=0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select rowid from styles where name=?1 order by rowid desc limit 1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid from styles where name=?1 order by rowid desc limit 1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name,strlen (name),SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {

@@ -50,7 +50,7 @@ dt_iop_relight_params_t;
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "begin", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("fill-light 0.25EV with 4 zones"), self->op, self->version(), &(dt_iop_relight_params_t)
   {
@@ -61,7 +61,7 @@ void init_presets (dt_iop_module_so_t *self)
     -0.25,0.25,4.0
   } , sizeof(dt_iop_relight_params_t), 1);
 
-  DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 typedef struct dt_iop_relight_gui_data_t
@@ -243,6 +243,8 @@ void gui_update(struct dt_iop_module_t *self)
   self->request_color_pick = 0;
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
+  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
+
 
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)module->params;
@@ -256,7 +258,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_enabled = 0;
-  module->priority = 608; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 624; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t)

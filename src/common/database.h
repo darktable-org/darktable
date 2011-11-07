@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 Henrik Andersson.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,22 +15,18 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_GUI_IOP_HISTORY_H
-#define DT_GUI_IOP_HISTORY_H
 
-#include <inttypes.h>
-#include <gtk/gtk.h>
+#ifndef DATABASE_H
+#define DATABASE_H
+
 #include <glib.h>
 
-void dt_gui_iop_history_init ();
-
-/** resets ui history */
-void dt_gui_iop_history_reset ();
-/** add history item to ui */
-GtkWidget * dt_gui_iop_history_add_item (long int, const gchar *label);
-long int dt_gui_iop_history_get_top();
-/** removes item on top */
-void dt_gui_iop_history_pop_top ();
-void dt_gui_iop_history_update_labels ();
-
+/** allocates and initializes database */
+struct dt_database_t *dt_database_init(char *alternative);
+/** closes down database and frees memory */
+void dt_database_destroy(const struct dt_database_t *);
+/** get handle */
+struct sqlite3 *dt_database_get(const struct dt_database_t *);
+/** test if database is new */
+gboolean dt_database_is_new(const struct dt_database_t *db);
 #endif

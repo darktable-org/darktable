@@ -66,12 +66,10 @@ typedef struct _GtkDarktableSlider
   darktable_slider_format_type_t fmt_type;
 } GtkDarktableSlider;
 
-typedef void  (* ValueChanged)  (GtkRange *,gpointer user_data);
 
 typedef struct _GtkDarktableSliderClass
 {
   GtkEventBoxClass parent_class;
-  ValueChanged *value_changed;
 } GtkDarktableSliderClass;
 
 enum
@@ -79,7 +77,6 @@ enum
   VALUE_CHANGED,
   SLIDER_LAST_SIGNAL
 };
-
 
 GType dtgtk_slider_get_type (void);
 
@@ -107,10 +104,6 @@ void dtgtk_slider_set_digits(GtkDarktableSlider *slider, gint digits);
 void dtgtk_slider_set_format_type(GtkDarktableSlider *slider, darktable_slider_format_type_t type);
 /** set step size to snap values to. 0 for no snapping (default). */
 void dtgtk_slider_set_snap(GtkDarktableSlider *slider, gint snapsize);
-/** add unmapped accelerators to increase and decrease slider */
-void dtgtk_slider_set_accel(GtkDarktableSlider *slider, GtkAccelGroup *accel_group, const gchar *accel_path);
-/** register the slider shortcuts, can be called before the slider is created */
-void dtgtk_slider_init_accel(GtkAccelGroup *accel_group, const gchar *accel_path);
 
 G_END_DECLS
 #endif
