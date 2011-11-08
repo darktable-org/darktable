@@ -91,14 +91,16 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, img->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
-    if(img->filters == 0 || img->bpp != sizeof(uint16_t))
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+    // just take a copy. also do it after blocking read, so filters and bpp will make sense.
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_t image = *img;
+    dt_image_cache_read_release(darktable.image_cache, img);
+    if(image.filters == 0 || image.bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
@@ -106,9 +108,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     filter = dt_image_flipped_filter(img);
     if(buf.size != DT_MIPMAP_FULL)
     {
-      dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
+      dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
@@ -117,29 +118,28 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     if(!pixels)
     {
       first_imgid = imgid;
-      pixels = (float *)malloc(sizeof(float)*img->width*img->height);
-      weight = (float *)malloc(sizeof(float)*img->width*img->height);
-      memset(pixels, 0x0, sizeof(float)*img->width*img->height);
-      memset(weight, 0x0, sizeof(float)*img->width*img->height);
-      wd = img->width;
-      ht = img->height;
+      pixels = (float *)malloc(sizeof(float)*image.width*image.height);
+      weight = (float *)malloc(sizeof(float)*image.width*image.height);
+      memset(pixels, 0x0, sizeof(float)*image.width*image.height);
+      memset(weight, 0x0, sizeof(float)*image.width*image.height);
+      wd = image.width;
+      ht = image.height;
     }
-    else if(img->width != wd || img->height != ht)
+    else if(image.width != wd || image.height != ht)
     {
       dt_control_log(_("images have to be of same size!"));
       free(pixels);
       free(weight);
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-      dt_image_cache_read_release(darktable.image_cache, img);
       goto error;
     }
     // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in the system => f/22
-    const float eap = img->exif_aperture > 0.0f ? img->exif_aperture : 22.0f;
-    const float efl = img->exif_focal_length > 0.0f ? img->exif_focal_length : 8.0f;
+    const float eap = image.exif_aperture > 0.0f ? image.exif_aperture : 22.0f;
+    const float efl = image.exif_focal_length > 0.0f ? image.exif_focal_length : 8.0f;
     const float rad = .5f * efl/eap;
     const float aperture = M_PI * rad * rad;
-    const float iso = img->exif_iso > 0.0f ? img->exif_iso : 100.0f;
-    const float exp = img->exif_exposure > 0.0f ? img->exif_exposure : 1.0f;
+    const float iso = image.exif_iso > 0.0f ? image.exif_iso : 100.0f;
+    const float exp = image.exif_exposure > 0.0f ? image.exif_exposure : 1.0f;
     const float cal = 100.0f/(aperture*exp*iso);
     whitelevel = fmaxf(whitelevel, cal);
 #ifdef _OPENMP
@@ -160,7 +160,6 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
 
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-    dt_image_cache_read_release(darktable.image_cache, img);
   }
   // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
 #ifdef _OPENMP
