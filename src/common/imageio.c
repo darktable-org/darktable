@@ -514,9 +514,6 @@ int dt_imageio_export_with_flags(
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
   dt_show_times(&start, "[export] creating pixelpipe", NULL);
 
-  assert(((uint32_t *)buf.buf)[-4] == img->width);
-  assert(((uint32_t *)buf.buf)[-3] == img->height);
-
   // find output color profile for this image:
   int sRGB = 1;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
