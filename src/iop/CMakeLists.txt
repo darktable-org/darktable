@@ -12,7 +12,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer colorize shrecovery lowpass invert vibrance)
+set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer colorize lowpass invert vibrance)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -23,7 +23,6 @@ add_library(tonecurve MODULE "tonecurve.c")
 add_library(gamma MODULE "gamma.c")
 add_library(temperature MODULE "temperature.c")
 add_library(colorcorrection MODULE "colorcorrection.c")
-add_library(shrecovery MODULE "shrecovery.c")
 add_library(exposure MODULE "exposure.c")
 add_library(equalizer MODULE "equalizer.c")
 add_library(colorin MODULE "colorin.c")
