@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <glib.h>
+#include <glib/gprintf.h>
 #include "common/darktable.h"
 
 #ifdef HAVE_GCONF
@@ -148,7 +150,7 @@ static inline float dt_conf_get_float(const char *name)
   return gconf_client_get_float (darktable.conf->gconf, var, NULL);
 #else
   const int num = dt_conf_get_var_pos(name);
-  const float val = atof(darktable.conf->varval[num]);
+  const float val = g_ascii_strtod(darktable.conf->varval[num], NULL);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 #endif
