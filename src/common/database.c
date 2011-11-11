@@ -33,18 +33,12 @@ typedef struct dt_database_t
   gchar *dbfilename;
 
   /* ondisk DB */
-  sqlite3 *ondisk_handle;
-
-  /* working copy */
-  sqlite3 *working_handle;
+  sqlite3 *handle;
 } dt_database_t;
 
 
 /* migrates database from old place to new */
 static void _database_migrate_to_xdg_structure();
-
-/* copies a db into another */
-static int _database_backup(sqlite3 *dst, sqlite3 *src);
 
 gboolean dt_database_is_new(const dt_database_t *db)
 {
@@ -87,7 +81,7 @@ dt_database_t *dt_database_init(char *alternative)
     db->is_new_database = TRUE;
 
   /* opening / creating database */
-  if(sqlite3_open(db->dbfilename, &db->ondisk_handle))
+  if(sqlite3_open(db->dbfilename, &db->handle))
   {
     fprintf(stderr, "[init] could not find database ");
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
@@ -104,28 +98,10 @@ dt_database_t *dt_database_init(char *alternative)
     return NULL;
   }
 
-  if (sqlite3_open(":memory:", &db->working_handle))
-  {
-    db->working_handle = db->ondisk_handle;
-  }
-  else
-  {
-    if (_database_backup(db->working_handle, db->ondisk_handle))
-    {
-      sqlite3_close(db->working_handle);
-      db->working_handle = db->ondisk_handle;
-    }
-  }
-
-  if (db->working_handle == db->ondisk_handle)
-  {
-    fprintf(stderr, "[init] could not create an in memory db for faster collection processing. expect some slow io on your hdd\n");
-  }
-
   /* attach a memory database to db connection for use with temporary tables
      used during instance life time, which is discarded on exit.
   */
-  sqlite3_exec(db->working_handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
+  sqlite3_exec(db->handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
   
   g_free(dbname);
   return db;
@@ -133,21 +109,13 @@ dt_database_t *dt_database_init(char *alternative)
 
 void dt_database_destroy(const dt_database_t *db)
 {
-  if (db->working_handle != db->ondisk_handle)
-  {
-    if (_database_backup(db->ondisk_handle, db->working_handle))
-    {
-      fprintf(stderr, "[close] could not write back in memory db to disk. your session work is only in the xmp, back them up!");
-    }
-    sqlite3_close(db->working_handle);
-  }
-  sqlite3_close(db->ondisk_handle);
+  sqlite3_close(db->handle);
   g_free((dt_database_t *)db);
 }
 
 sqlite3 *dt_database_get(const dt_database_t *db)
 {
-  return db->working_handle;
+  return db->handle;
 }
 
 
@@ -177,22 +145,4 @@ static void _database_migrate_to_xdg_structure()
   }
 
   g_free(conf_db);
-}
-
-static int _database_backup(sqlite3 *dst, sqlite3 *src)
-{
-  sqlite3_backup *backup;
-
-  backup = sqlite3_backup_init(dst, "main", src, "main");
-  if (!backup)
-  {
-    return -1;
-  }
-
-  int ret = sqlite3_backup_step(backup, -1);
-  ret = !(SQLITE_DONE == ret);
-
-  sqlite3_backup_finish(backup);
-
-  return ret;
 }
