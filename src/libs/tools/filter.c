@@ -210,5 +210,5 @@ static void _lib_filter_update_query(dt_lib_module_t *self)
   dt_collection_update_query (darktable.collection);
 
   /* update film strip, jump to currently opened image, if any: */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, darktable.develop->image_storage.id);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, darktable.develop->image_storage.id, FALSE);
 }

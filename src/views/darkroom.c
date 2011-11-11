@@ -614,7 +614,7 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       }
 
       dt_dev_change_image(dev, imgid);
-      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid);
+      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
 
     }
     sqlite3_finalize(stmt);
@@ -831,7 +831,7 @@ void enter(dt_view_t *self)
   dt_dev_pop_history_items(dev, dev->history_end);
 
   /* ensure that filmstrip shows current image */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id, FALSE);
 
   // switch on groups as they where last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));

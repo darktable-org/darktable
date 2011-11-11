@@ -103,11 +103,7 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer
 {
   int32_t imgid = -1;
   if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager)) >= 0)
-  {
-    dt_view_filmstrip_set_active_image(darktable.view_manager,imgid);
-    dt_view_filmstrip_prefetch();
     dt_control_queue_redraw_center();
-  }
 }
 
 void capture_view_switch_key_accel(void *p)
@@ -370,11 +366,23 @@ int try_enter(dt_view_t *self)
   return 1;
 }
 
+static void _capture_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+}
+
+
 void enter(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
 
   lib->mode = dt_conf_get_int("plugins/capture/mode");
+
+  /* connect signal for mipmap update for a redraw */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+			    G_CALLBACK(_capture_mipamps_updated_signal_callback), 
+          (gpointer)self);
+
 
   /* connect signal for fimlstrip image activate */
   dt_control_signal_connect(darktable.signals, 
@@ -382,7 +390,7 @@ void enter(dt_view_t *self)
 			    G_CALLBACK(_view_capture_filmstrip_activate_callback),
 			    self);
 
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id, TRUE);
 
 
   // initialize a default session...
