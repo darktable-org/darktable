@@ -242,7 +242,8 @@ void gui_init(dt_lib_module_t *self)
 
   d->last_selected_id = -1;
   d->history_copy_imgid = -1;
-  
+  d->activated_image = -1;
+
   /* create drawingarea */
   self->widget = gtk_vbox_new(FALSE,0);
   
