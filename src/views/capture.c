@@ -180,26 +180,31 @@ const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const ch
 
   gchar* fixed_path=dt_util_fix_path(cv->path);
   g_free(cv->path);
-  cv->path=fixed_path;
+  cv->path = fixed_path;
   dt_variables_expand( cv->vp, cv->path, FALSE );
-  const gchar *storage=dt_variables_get_result(cv->vp);
+  gchar *storage = g_strdup(dt_variables_get_result(cv->vp));
 
   dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
-  const gchar *file = dt_variables_get_result(cv->vp);
+  gchar *file = g_strdup(dt_variables_get_result(cv->vp));
 
   // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
-  gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
+  gchar *fullfile = g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
+  
   if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
   {
     do
     {
       g_free(fullfile);
+      g_free(file);
       dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
-      file = dt_variables_get_result(cv->vp);
+      file = g_strdup(dt_variables_get_result(cv->vp));
       fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
     }
     while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
   }
+
+  g_free(fullfile);
+  g_free(storage);
 
   return file;
 }
