@@ -140,7 +140,7 @@ static void _lib_import_tethered_callback(GtkToggleButton *button,gpointer data)
 
 
 /** update the device list */
-static void _lib_import_ui_devices_update(dt_lib_module_t *self)
+void _lib_import_ui_devices_update(dt_lib_module_t *self)
 {
 
   dt_lib_import_t *d = (dt_lib_import_t*)self->data;
