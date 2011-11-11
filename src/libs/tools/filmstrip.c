@@ -55,7 +55,7 @@ typedef struct dt_lib_filmstrip_t
 dt_lib_filmstrip_t;
 
 /* proxy function to center filmstrip on imgid */
-static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid);
+static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate);
 /* proxy function for retrieving last activate request image id */
 static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self);
 
@@ -573,7 +573,7 @@ static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpoint
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid)
+static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
  
@@ -595,6 +595,13 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid)
       strip->offset = sqlite3_column_int(stmt, 0) - 1;
     }
     sqlite3_finalize(stmt);
+  }
+
+  /* activate the image if requested */
+  if (activate)
+  {
+    strip->activated_image = imgid;
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE);
   }
 
   /* redraw filmstrip */

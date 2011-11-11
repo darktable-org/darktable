@@ -160,7 +160,7 @@ typedef struct dt_view_manager_t
     /* filmstrip proxy object */
     struct {
       struct dt_lib_module_t *module;
-      void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid);
+      void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid, gboolean activate);
       int32_t (*activated_image)(struct dt_lib_module_t *);
     } filmstrip;
 
@@ -222,7 +222,7 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
  * NEW filmstrip api
  */
 /** scrolls filmstrip to the specified image */
-void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid);
+void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate);
 /** get the imageid from last filmstrip activate request */
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
 
