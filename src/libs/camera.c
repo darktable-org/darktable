@@ -189,7 +189,6 @@ static void _camera_property_value_changed(const dt_camera_t *camera,const char 
       }
       while( gtk_tree_model_iter_next(model,&iter) == TRUE);
   }
-  dt_control_queue_redraw_center();
 }
 
 /** Invoked when accesibility of a property is changed. */
