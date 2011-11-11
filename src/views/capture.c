@@ -148,12 +148,6 @@ void init(dt_view_t *self)
   lib->subdirectory = dt_conf_get_string("plugins/capture/storage/subpath");
   lib->filenamepattern = dt_conf_get_string("plugins/capture/storage/namepattern");
 
-  /* connect signal for fimlstrip image activate */
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-			    G_CALLBACK(_view_capture_filmstrip_activate_callback),
-			    self);
-
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
 }
@@ -308,7 +302,7 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
   lib->image_over = DT_VIEW_DESERT;
-  lib->image_id=dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  lib->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
 
   // First of all draw image if availble
   if( lib->image_id >= 0 )
@@ -382,8 +376,15 @@ void enter(dt_view_t *self)
 
   lib->mode = dt_conf_get_int("plugins/capture/mode");
 
+  /* connect signal for fimlstrip image activate */
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+			    G_CALLBACK(_view_capture_filmstrip_activate_callback),
+			    self);
+
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id);
-  
+
+
   // initialize a default session...
   char* tmp = dt_conf_get_string("plugins/capture/jobcode");
   dt_capture_view_set_jobcode(self, tmp);
