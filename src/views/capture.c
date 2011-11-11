@@ -101,11 +101,12 @@ uint32_t view(dt_view_t *self)
 
 static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer user_data)
 {
-  int32_t imgid = 0;
-  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager))>0)
+  int32_t imgid = -1;
+  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager)) >= 0)
   {
     dt_view_filmstrip_set_active_image(darktable.view_manager,imgid);
     dt_view_filmstrip_prefetch();
+    dt_control_queue_redraw_center();
   }
 }
 
@@ -302,8 +303,7 @@ void configure(dt_view_t *self, int wd, int ht)
   //dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
-#define TOP_MARGIN		20
-#define BOTTOM_MARGIN	20
+#define MARGIN	20
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
@@ -313,10 +313,10 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   // First of all draw image if availble
   if( lib->image_id >= 0 )
   {
-    const float wd = width/1.0;
-    cairo_translate(cr,0.0f, TOP_MARGIN);
-    dt_view_image_expose(&(lib->image_over), lib->image_id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
-    cairo_translate(cr,0.0f, -BOTTOM_MARGIN);
+    cairo_translate(cr,MARGIN, MARGIN);
+    dt_view_image_expose(&(lib->image_over), lib->image_id, 
+			 cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1, 
+			 pointerx, pointery);
   }
 }
 
@@ -339,6 +339,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
 
   // Mode dependent expose of center view
+  cairo_save(cri);
   switch(lib->mode)
   {
     case DT_CAPTURE_MODE_TETHERED: // tethered mode
@@ -346,6 +347,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
       _expose_tethered_mode(self, cri, width, height, pointerx, pointery);
       break;
   }
+  cairo_restore(cri);
 
   // post expose to modules
   GList *modules = darktable.lib->plugins;
@@ -413,119 +415,9 @@ void reset(dt_view_t *self)
   //DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 }
 
-
-void mouse_leave(dt_view_t *self)
-{
-  /*dt_library_t *lib = (dt_library_t *)self->data;
-  if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
-  {
-  	DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  	dt_control_queue_draw_all(); // remove focus
-  }*/
-}
-
-
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
-  // update stars/etc :(
-  //dt_control_queue_draw_all();
-}
-
-
-int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
-{
-  /*dt_library_t *lib = (dt_library_t *)self->data;
-  lib->pan = 0;
-  if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);*/
-  return 1;
-}
-
-
-int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
-{
-  /*dt_library_t *lib = (dt_library_t *)self->data;
-  lib->modifiers = state;
-  lib->button = which;
-  lib->select_offset_x = lib->zoom_x;
-  lib->select_offset_y = lib->zoom_y;
-  lib->select_offset_x += x;
-  lib->select_offset_y += y;
-  lib->pan = 1;
-  if(which == 1) dt_control_change_cursor(GDK_HAND1);
-  if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
-  // image button pressed?
-  switch(lib->image_over)
-  {
-  	case DT_LIB_DESERT: break;
-  	case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4:
-  	{
-  		int32_t mouse_over_id;
-  		DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  		dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-  		image->dirty = 1;
-  		if(lib->image_over == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
-  		else
-  		{
-  			image->flags &= ~0x7;
-  			image->flags |= lib->image_over;
-  		}
-  		dt_image_cache_flush(image);
-  		dt_image_cache_release(image, 'r');
-  		break;
-  	}
-  	default:
-  		return 0;
-  }*/
-  return 1;
-}
-
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
-  return 1;
-}
-
-void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
-{
-  /*dt_library_t *lib = (dt_library_t *)view->data;
-  if(which == 0 || which == 1)
-  {
-  	if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
-  	else   lib->track =  DT_LIBRARY_MAX_ZOOM;
-  }
-  else if(which == 2 || which == 3)
-  {
-  	if(up) lib->track = -1;
-  	else   lib->track =  1;
-  }*/
-  dt_control_queue_redraw();
-}
-
-void scrolled(dt_view_t *view, double x, double y, int up)
-{
-  /*dt_library_t *lib = (dt_library_t *)view->data;
-  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == 1)
-  {
-  	if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
-  	else   lib->track =  DT_LIBRARY_MAX_ZOOM;
-  }
-  else
-  { // zoom
-  	int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  	if(up)
-  	{
-  		zoom--;
-  		if(zoom < 1) zoom = 1;
-  	}
-  	else
-  	{
-  		zoom++;
-  		if(zoom > 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-  	}
-  	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
-  }*/
+  dt_control_queue_redraw_center();
 }
 
 void init_key_accels(dt_view_t *self)
