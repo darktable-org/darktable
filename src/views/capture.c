@@ -66,7 +66,7 @@ typedef struct dt_capture_t
   /** The current image activated in capture view, either latest tethered shoot
   	or manually picked from filmstrip view...
   */
-  uint32_t image_id;
+  int32_t image_id;
 
   dt_view_image_over_t image_over;
 
@@ -99,18 +99,14 @@ uint32_t view(dt_view_t *self)
   return DT_VIEW_TETHERING;
 }
 
-static void
-film_strip_activated(const int imgid, void *data)
-{
-  dt_view_filmstrip_set_active_image(darktable.view_manager,imgid);
-  dt_view_filmstrip_prefetch();
-}
-
 static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer user_data)
 {
   int32_t imgid = 0;
   if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager))>0)
-    film_strip_activated(imgid,user_data);
+  {
+    dt_view_filmstrip_set_active_image(darktable.view_manager,imgid);
+    dt_view_filmstrip_prefetch();
+  }
 }
 
 void capture_view_switch_key_accel(void *p)
@@ -157,6 +153,8 @@ void init(dt_view_t *self)
 			    G_CALLBACK(_view_capture_filmstrip_activate_callback),
 			    self);
 
+  // prefetch next few from first selected image on.
+  dt_view_filmstrip_prefetch();
 }
 
 void cleanup(dt_view_t *self)
