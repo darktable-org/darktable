@@ -263,7 +263,7 @@ dt_imageio_open_raw(
   raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
-  raw->params.user_flip = 0;
+  raw->params.user_flip = -1;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
