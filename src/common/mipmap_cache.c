@@ -37,7 +37,7 @@
 #include <xmmintrin.h>
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
-#define DT_MIPMAP_CACHE_FILE_VERSION 20
+#define DT_MIPMAP_CACHE_FILE_VERSION 21
 #define DT_MIPMAP_CACHE_FILE_NAME "mipmaps"
 
 #define DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE (1<<0)
@@ -128,6 +128,7 @@ typedef struct _iterate_data_t
 {
   FILE *f;
   uint8_t *blob;
+  dt_mipmap_size_t mip;
 }
 _iterate_data_t;
 
@@ -140,7 +141,9 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
   if(dsc->width <= 8 && dsc->height <= 8) return 0;
 
   _iterate_data_t *d = (_iterate_data_t *)user_data;
-  int written = fwrite(&key, sizeof(uint32_t), 1, d->f);
+  int written = fwrite(&(d->mip), sizeof(dt_mipmap_size_t), 1, d->f);
+  if(written != 1) return 1;
+  written = fwrite(&key, sizeof(uint32_t), 1, d->f);
   if(written != 1) return 1;
 
   dt_mipmap_buffer_t buf;
@@ -157,7 +160,8 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
   written = fwrite(d->blob, sizeof(uint8_t), length, d->f);
   if(written != length) return 1;
 
-  // fprintf(stderr, "[mipmap_cache] serializing image %u (%d x %d) with %d bytes\n", get_imgid(key), buf.width, buf.height, length);
+
+//  fprintf(stderr, "[mipmap_cache] serializing image %u (%d x %d) with %d bytes in level %d\n", get_imgid(key), buf.width, buf.height, length, d->mip);
 
   return 0;
 }
@@ -176,7 +180,7 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
   g_free(filename);
 
   // only store smallest thumbs.
-  const dt_mipmap_size_t mip = DT_MIPMAP_0;
+  const dt_mipmap_size_t mip = DT_MIPMAP_2;
 
   _iterate_data_t d;
   d.f = NULL;
@@ -192,13 +196,20 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
   written = fwrite(&magic, sizeof(int32_t), 1, f);
   if(written != 1) goto write_error;
 
-  // print max sizes for this cache
-  written = fwrite(&cache->mip[mip].max_width, sizeof(int32_t), 1, f);
-  if(written != 1) goto write_error;
-  written = fwrite(&cache->mip[mip].max_height, sizeof(int32_t), 1, f);
-  if(written != 1) goto write_error;
+  for(int i=0;i<=mip;i++)
+  {
+    // print max sizes for this cache
+    written = fwrite(&cache->mip[i].max_width, sizeof(int32_t), 1, f);
+    if(written != 1) goto write_error;
+    written = fwrite(&cache->mip[i].max_height, sizeof(int32_t), 1, f);
+    if(written != 1) goto write_error;
+  }
 
-  if(dt_cache_for_all(&cache->mip[mip].cache, _write_buffer, &d)) goto write_error;
+  for(int i=0;i<=mip;i++)
+  {
+    d.mip = (dt_mipmap_size_t)i;
+    if(dt_cache_for_all(&cache->mip[i].cache, _write_buffer, &d)) goto write_error;
+  }
 
   free(d.blob);
   fclose(f);
@@ -214,9 +225,10 @@ write_error:
 static int
 dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
 {
-  uint8_t *blob = NULL;
   int32_t rd = 0;
-  const dt_mipmap_size_t mip = DT_MIPMAP_0;
+  const dt_mipmap_size_t mip = DT_MIPMAP_2;
+  uint8_t *blob = NULL;
+  int file_width[mip], file_height[mip];
 
   char cachedir[1024];
   char dbfilename[1024];
@@ -254,40 +266,47 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
         fprintf(stderr, "[mipmap_cache] invalid cache file, dropping `%s' cache\n", dbfilename);
     goto read_finalize;
   }
-  int file_width = 0, file_height = 0;
-  rd = fread(&file_width, sizeof(int32_t), 1, f);
-  if(rd != 1) goto read_error;
-  rd = fread(&file_height, sizeof(int32_t), 1, f);
-  if(rd != 1) goto read_error;
-  if(file_width  != cache->mip[mip].max_width ||
-     file_height != cache->mip[mip].max_height)
+
+  for (int i=0; i<=mip; i++)
   {
-    fprintf(stderr, "[mipmap_cache] cache settings changed, dropping `%s' cache\n", dbfilename);
-    goto read_finalize;
+    rd = fread(&file_width[i], sizeof(int32_t), 1, f);
+    if(rd != 1) goto read_error;
+    rd = fread(&file_height[i], sizeof(int32_t), 1, f);
+    if(rd != 1) goto read_error;
+    if(file_width[i]  != cache->mip[i].max_width ||
+       file_height[i] != cache->mip[i].max_height)
+    {
+      fprintf(stderr, "[mipmap_cache] cache settings changed, dropping `%s' cache\n", dbfilename);
+      goto read_finalize;
+    }
   }
-  blob = (uint8_t *)malloc(4*sizeof(uint8_t)*file_width*file_height);
+  blob = (uint8_t *)malloc(4*sizeof(uint8_t)*file_width[mip]*file_height[mip]);
 
   while(!feof(f))
   {
+    int level = 0;
+    rd = fread(&level, sizeof(int), 1, f);
+    if (level > mip) break;
+    
     int32_t key = 0;
     rd = fread(&key, sizeof(int32_t), 1, f);
     if(rd != 1) break; // first value is break only, goes to eof.
     int32_t length = 0;
     rd = fread(&length, sizeof(int32_t), 1, f);
-    // fprintf(stderr, "[mipmap_cache] thumbnail for image %d length %d bytes (%d x %d)\n", get_imgid(key), length, file_width, file_height);
-    if(rd != 1 || length > 4*sizeof(uint8_t)*file_width*file_height)
+//    fprintf(stderr, "[mipmap_cache] thumbnail for image %d length %d bytes (%d x %d) in level %d\n", get_imgid(key), length, file_width[level], file_height[level], level);
+    if(rd != 1 || length > 4*sizeof(uint8_t)*file_width[level]*file_height[level])
       goto read_error;
     rd = fread(blob, sizeof(uint8_t), length, f);
     if(rd != length) goto read_error;
 
     dt_imageio_jpeg_t jpg;
-    uint8_t *data = (uint8_t *)dt_cache_read_get(&cache->mip[mip].cache, key);
+    uint8_t *data = (uint8_t *)dt_cache_read_get(&cache->mip[level].cache, key);
 
     struct dt_mipmap_buffer_dsc* dsc = (struct dt_mipmap_buffer_dsc*)data;
     if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
     {
       if(dt_imageio_jpeg_decompress_header(blob, length, &jpg) ||
-          (jpg.width > file_width || jpg.height > file_height) ||
+          (jpg.width > file_width[level] || jpg.height > file_height[level]) ||
           dt_imageio_jpeg_decompress(&jpg, data+sizeof(*dsc)))
       {
         fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(key));
@@ -296,9 +315,9 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
       dsc->height = jpg.height;
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
       // these come write locked in case idata[3] == 1, so release that!
-      dt_cache_write_release(&cache->mip[mip].cache, key);
+      dt_cache_write_release(&cache->mip[level].cache, key);
     }
-    dt_cache_read_release(&cache->mip[mip].cache, key);
+    dt_cache_read_release(&cache->mip[level].cache, key);
   }
 
   fclose(f);
