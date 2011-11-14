@@ -402,17 +402,19 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
-gboolean dt_iop_have_gui(dt_iop_module_t *module)
+gboolean dt_iop_is_hidden(dt_iop_module_t *module)
 {
-  gboolean have_gui = FALSE;
-  if (module->gui_init)
+  gboolean is_hidden = TRUE;
+  if ( !(module->flags() & IOP_FLAGS_HIDDEN) )
   {
-    if (!module->gui_cleanup)
-      g_debug("Module '%s' do have an gui_init() implementaion but no gui_cleanup()...", module->op);
+    if(!module->gui_init)
+      g_debug("Module '%s' is not hidden and lacks implementation of gui_init()...", module->op);
+    else if (!module->gui_cleanup)
+      g_debug("Module '%s' is not hidden and lacks implementation of gui_cleanup()...", module->op);
     else
-      have_gui = TRUE;
+      is_hidden = FALSE;
   }
-  return have_gui;
+  return is_hidden;
 }
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
@@ -729,7 +731,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
 {
   int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
-  if (dt_iop_have_gui(module))
+  if (!dt_iop_is_hidden(module))
   {
     module->gui_update(module);
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)

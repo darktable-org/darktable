@@ -804,7 +804,7 @@ void enter(dt_view_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
     /* initialize gui if iop have one defined */
-    if (dt_iop_have_gui(module))
+    if (!dt_iop_is_hidden(module))
     {
       module->gui_init(module);
     
@@ -932,7 +932,7 @@ void leave(dt_view_t *self)
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
-    if (dt_iop_have_gui(module))
+    if (!dt_iop_is_hidden(module))
       module->gui_cleanup(module);
  
     dt_dev_cleanup_module_accels(module);

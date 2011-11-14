@@ -228,7 +228,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       GtkWidget *w = module->expander;
       
       /* skip modules without an gui */
-      if(!dt_iop_have_gui(module)) continue;
+      if(dt_iop_is_hidden(module)) continue;
 
       /* lets show/hide modules dependent on current group*/
       switch(d->current)

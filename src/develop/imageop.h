@@ -52,9 +52,10 @@ struct dt_develop_tiling_t;
 /** Flag for the iop module to be enabled/included by default when creating a style */
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
 #define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
-#define	IOP_FLAGS_DEPRECATED	4
+#define	IOP_FLAGS_DEPRECATED	        4
 #define IOP_FLAGS_BLEND_ONLY_LIGHTNESS	8			// Does only blend with L-channel in Lab space. Keeps a, b of original image.
 #define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (currently only via opencl)
+#define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
 
 typedef struct dt_iop_params_t
 {
@@ -275,7 +276,7 @@ void dt_iop_cleanup_module(dt_iop_module_t *module);
 /** initialize pipe. */
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** checks if iop do have an ui */
-gboolean dt_iop_have_gui(dt_iop_module_t *module);
+gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
 /** set expanded state of iop */

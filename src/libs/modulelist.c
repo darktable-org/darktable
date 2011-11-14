@@ -147,7 +147,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(dt_iop_have_gui(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
+    if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
       char filename[1024], datadir[1024];
