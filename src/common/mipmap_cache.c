@@ -527,8 +527,9 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
       dt_cache_size(&cache->mip[k].cache),
       dt_cache_capacity(&cache->mip[k].cache));
   }
+  printf("\n\n");
   // very verbose stats about locks/users
-  dt_cache_print(&cache->mip[DT_MIPMAP_3].cache);
+  //dt_cache_print(&cache->mip[DT_MIPMAP_3].cache);
 }
 
 void
