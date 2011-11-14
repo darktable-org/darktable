@@ -368,7 +368,7 @@ void gui_update(struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *module)
 {
   // only on for raw images:
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&module->dev->image_storage))
     module->default_enabled = 1;
   else
     module->default_enabled = 0;

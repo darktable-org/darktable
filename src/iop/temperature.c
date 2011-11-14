@@ -373,7 +373,7 @@ void gui_update (struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *module)
 {
   // raw images need wb (to convert from uint16_t to float):
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&module->dev->image_storage))
   {
     module->default_enabled = 1;
     module->hide_enable_button = 1;
@@ -388,7 +388,7 @@ void reload_defaults(dt_iop_module_t *module)
   char filename[1024];
   int ret=0;
   /* check if file is raw / hdr */
-  if (! (module->dev->image_storage.flags & DT_IMAGE_LDR))
+  if(dt_image_is_raw(&module->dev->image_storage))
   {
     dt_image_full_path(module->dev->image_storage.id, filename, 1024);
     libraw_data_t *raw = libraw_init(0);

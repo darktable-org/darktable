@@ -1146,7 +1146,7 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
 
   // can't be switched on for non-raw images:
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
+  if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
 }
 
@@ -1199,7 +1199,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void gui_update    (dt_iop_module_t *self)
 {
-  if(self->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&self->dev->image_storage))
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
   else
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction\nonly works for raw images."));

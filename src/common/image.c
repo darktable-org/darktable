@@ -40,7 +40,24 @@ int dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
-  if(!strcasecmp(c, ".jpg") || !strcasecmp(c, ".png") || !strcasecmp(c, ".ppm") || (img->flags & DT_IMAGE_LDR)) return 1;
+  if((img->flags & DT_IMAGE_LDR) || !strcasecmp(c, ".jpg") || !strcasecmp(c, ".png") || !strcasecmp(c, ".ppm")) return 1;
+  else return 0;
+}
+
+int dt_image_is_hdr(const dt_image_t *img)
+{
+  const char *c = img->filename + strlen(img->filename);
+  while(*c != '.' && c > img->filename) c--;
+  if((img->flags & DT_IMAGE_HDR) || !strcasecmp(c, ".exr") || !strcasecmp(c, ".hdr") || !strcasecmp(c, ".pfm")) return 1;
+  else return 0;
+}
+
+int dt_image_is_raw(const dt_image_t *img)
+{
+  const char *c = img->filename + strlen(img->filename);
+  while(*c != '.' && c > img->filename) c--;
+  if((img->flags & DT_IMAGE_RAW) || (strcasecmp(c, ".jpg") && strcasecmp(c, ".png") && strcasecmp(c, ".ppm") &&
+     strcasecmp(c, ".hdr") && strcasecmp(c, ".exr") && strcasecmp(c, ".pfm"))) return 1;
   else return 0;
 }
 

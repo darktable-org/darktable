@@ -262,7 +262,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
   void reload_defaults(dt_iop_module_t *module)
   {
-    if(module->dev->image_storage.flags & DT_IMAGE_HDR)
+    if(dt_image_is_hdr(&module->dev->image_storage))
       module->default_enabled = 1;
     else
       module->default_enabled = 0;
