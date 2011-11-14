@@ -20,7 +20,6 @@ src/develop/imageop.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
 src/gui/accelerators.c
-src/gui/background_jobs.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c
 src/gui/preferences.c
@@ -109,9 +108,9 @@ src/libs/select.c
 src/libs/snapshots.c
 src/libs/styles.c
 src/libs/tagging.c
+src/libs/tools/filmstrip.c
 src/views/capture.c
 src/views/darkroom.c
-src/views/filmstrip.c
 src/views/lighttable.c
 src/views/view.c
 
