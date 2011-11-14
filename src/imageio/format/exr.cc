@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,10 +71,16 @@ extern "C"
     int width, height;
   }
   dt_imageio_exr_t;
+ 
+  void init(dt_imageio_module_format_t *self) 
+  {
+    Imf::BlobAttribute::registerAttributeType();
+  }
+
+  void cleanup(dt_imageio_module_format_t *self) {}
 
   int write_image (dt_imageio_exr_t *exr, const char *filename, const float *in, void *exif, int exif_len, int imgid)
   {
-    Imf::BlobAttribute::registerAttributeType();
     Imf::Blob exif_blob= {0};
     exif_blob.size=exif_len;
     exif_blob.data=(uint8_t *)exif;

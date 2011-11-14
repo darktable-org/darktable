@@ -66,6 +66,11 @@ typedef struct dt_imageio_module_format_t
   /* reset options to defaults */
   void (*gui_reset)   (struct dt_imageio_module_format_t *self);
 
+  /* construct widget above */
+  void (*init)    (struct dt_imageio_module_format_t *self);
+  /* construct widget above */
+  void (*cleanup)    (struct dt_imageio_module_format_t *self);
+
   /* gets the current export parameters from gui/gconf and stores in this struct for later use. */
   void* (*get_params)   (struct dt_imageio_module_format_t *self, int *size);
   void  (*free_params)  (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);

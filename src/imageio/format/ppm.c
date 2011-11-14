@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010-2011 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,9 @@
 #include "common/imageio_module.h"
 
 DT_MODULE(1)
+
+void init(dt_imageio_module_format_t *self) {}
+void cleanup(dt_imageio_module_format_t *self) {}
 
 int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint16_t *in, void *exif, int exif_len, int imgid)
 {

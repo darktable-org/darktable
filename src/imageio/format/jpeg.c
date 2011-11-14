@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -620,6 +621,8 @@ extension(dt_imageio_module_data_t *data)
   return "jpg";
 }
 
+void init(dt_imageio_module_format_t *self) {}
+void cleanup(dt_imageio_module_format_t *self) {}
 
 // =============================================================================
 //  gui stuff:

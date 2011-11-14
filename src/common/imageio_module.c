@@ -59,6 +59,8 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
     goto error;
   }
   if(!g_module_symbol(module->module, "name",                         (gpointer)&(module->name)))                         goto error;
+  if(!g_module_symbol(module->module, "init",                         (gpointer)&(module->init)))                         goto error;
+  if(!g_module_symbol(module->module, "cleanup",                         (gpointer)&(module->cleanup)))                         goto error;
   if(!g_module_symbol(module->module, "gui_reset",                    (gpointer)&(module->gui_reset)))                    goto error;
   if(!g_module_symbol(module->module, "gui_init",                     (gpointer)&(module->gui_init)))                     goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",                  (gpointer)&(module->gui_cleanup)))                  goto error;
@@ -78,6 +80,8 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
 
   if(!g_module_symbol(module->module, "read_header",                  (gpointer)&(module->read_header)))                  module->read_header = NULL;
   if(!g_module_symbol(module->module, "read_image",                   (gpointer)&(module->read_image)))                   module->read_image = NULL;
+
+  module->init(module);
 
   return 0;
 error:
@@ -226,6 +230,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
   while(iio->plugins_format)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
+    module->cleanup(module);
     if(module->widget) gtk_widget_unref(module->widget);
     if(module->module) g_module_close(module->module);
     free(module);
