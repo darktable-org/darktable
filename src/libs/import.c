@@ -35,8 +35,10 @@ DT_MODULE(1)
 // #ifdef HAVE_GPHOTO2
 
 
+#ifdef HAVE_GPHOTO2
 /** helper function to update ui with available cameras and ther actionbuttons */
 static void _lib_import_ui_devices_update(dt_lib_module_t *self);
+#endif
 
 
 typedef struct dt_lib_import_t
