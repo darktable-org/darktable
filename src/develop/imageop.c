@@ -238,9 +238,9 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "operation_tags_filter",  (gpointer)&(module->operation_tags_filter)))  module->operation_tags_filter = _default_operation_tags_filter;
   if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = _default_output_bpp;
   if(!g_module_symbol(module->module, "tiling_callback",        (gpointer)&(module->tiling_callback)))        module->tiling_callback = default_tiling_callback;
-  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
-  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
-  if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
+  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             module->gui_update = NULL;
+  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               module->gui_init = NULL;
+  if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            module->gui_cleanup = NULL;
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
   if(!g_module_symbol(module->module, "gui_focus",              (gpointer)&(module->gui_focus)))              module->gui_focus = NULL;
@@ -402,6 +402,18 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
+gboolean dt_iop_have_gui(dt_iop_module_t *module)
+{
+  gboolean have_gui = FALSE;
+  if (module->gui_init)
+  {
+    if (!module->gui_cleanup)
+      g_debug("Module '%s' do have an gui_init() implementaion but no gui_cleanup()...", module->op);
+    else
+      have_gui = TRUE;
+  }
+  return have_gui;
+}
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
 {
@@ -717,16 +729,19 @@ void dt_iop_gui_update(dt_iop_module_t *module)
 {
   int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
-  module->gui_update(module);
-  if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+  if (dt_iop_have_gui(module))
   {
-    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
-
-    gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode - 1);
-    gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
-    dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
+    module->gui_update(module);
+    if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    {
+      _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+      
+      gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode - 1);
+      gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
+      dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
+    }
+    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   darktable.gui->reset = reset;
 }
 

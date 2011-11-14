@@ -523,9 +523,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(strcmp(module->op, "gamma"))
-      dt_iop_reload_defaults(module);
-
+    dt_iop_reload_defaults(module);
     modules = g_list_previous(modules);
   }
 
@@ -804,20 +802,26 @@ void enter(dt_view_t *self)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    module->gui_init(module);
+
+    /* initialize gui if iop have one defined */
+    if (dt_iop_have_gui(module))
+    {
+      module->gui_init(module);
     
-    /* add module to right panel */
-    GtkWidget *expander = dt_iop_gui_get_expander(module);
+      /* add module to right panel */
+      GtkWidget *expander = dt_iop_gui_get_expander(module);
+      dt_ui_container_add_widget(darktable.gui->ui,
+                               DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+
+      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+      dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
+    }
+
+    /* setup key accelerators */
     module->accel_closures = NULL;
     if(module->connect_key_accels)
       module->connect_key_accels(module);
     dt_iop_connect_common_accels(module);
-
-    dt_ui_container_add_widget(darktable.gui->ui,
-                               DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-
-    snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-    dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
 
     modules = g_list_previous(modules);
   }
@@ -928,7 +932,9 @@ void leave(dt_view_t *self)
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
-    module->gui_cleanup(module);
+    if (dt_iop_have_gui(module))
+      module->gui_cleanup(module);
+ 
     dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;
     dt_iop_cleanup_module(module) ;
