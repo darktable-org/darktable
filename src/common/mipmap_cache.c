@@ -51,6 +51,10 @@ struct dt_mipmap_buffer_dsc
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
 }  __attribute__((packed));
 
+// last resort mem alloc for dead images. sizeof(dt_mipmap_buffer_dsc) + dead image pixels (8x8)
+// __m128 type for sse alignment.
+static __m128 dt_mipmap_cache_static_dead_image[1 + 64];
+
 static inline void
 dead_image_8(dt_mipmap_buffer_t *buf)
 {
@@ -380,12 +384,18 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
-  if(!(*dsc) || ((*dsc)->size < buffer_size))
+  if(!(*dsc) || ((*dsc)->size < buffer_size) || ((void *)*dsc == (void *)dt_mipmap_cache_static_dead_image))
   {
     free(*dsc);
     *dsc = dt_alloc_align(64, buffer_size);
     // fprintf(stderr, "[mipmap cache] alloc for key %u %lX\n", get_key(img->id, size), (uint64_t)*buf);
-    if(!(*dsc)) return NULL;
+    if(!(*dsc))
+    {
+      // return fallback: at least alloc size for a dead image:
+      *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
+      // allocator holds the pointer. but imageio client is tricked to believe allocation failed:
+      return NULL;
+    }
     // set buffer size only if we're making it larger.
     (*dsc)->size = buffer_size;
   }
@@ -404,7 +414,7 @@ int32_t
 dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
   // for full image buffers
-    struct dt_mipmap_buffer_dsc* dsc = *buf;
+  struct dt_mipmap_buffer_dsc* dsc = *buf;
   // alloc mere minimum for the header + broken image buffer:
   if(!dsc)
   {
@@ -440,6 +450,10 @@ dt_mipmap_cache_deallocate_dynamic(void *data, const uint32_t key, void *payload
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
+  // make sure static memory is initialized
+  struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
+  dead_image_f((dt_mipmap_buffer_t *)(dsc+1));
+
   // FIXME: adjust numbers to be large enough to hold what mem limit suggests!
   const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100*1024*1024, 2000*1024*1024)/5;
   const int32_t max_size = 2048, min_size = 32;
@@ -617,17 +631,18 @@ dt_mipmap_cache_read_get(
           {
             // fprintf(stderr, "[mipmap cache] realloc %lX\n", (uint64_t)data);
             // write back to cache, too.
+            // in case something went wrong, still keep the buffer and return it to the hashtable
+            // so we don't produce mem leaks or unnecessary mem fragmentation.
             dt_cache_realloc(&cache->mip[mip].cache, key, dsc->size, (void*)dsc);
           }
           if(ret != DT_IMAGEIO_OK)
           {
             // fprintf(stderr, "[mipmap read get] error loading image: %d\n", ret);
-            // in case something went wrong, still keep the buffer and return it to the hashtable
-            // so we don't produce mem leaks or unnecessary mem fragmentation.
             // 
-            // but we can return a zero dimension buffer, so cache_read_get will return
-            // an invalid buffer to the user:
-            if(dsc) dsc->width = dsc->height = 0;
+            // we can only return a zero dimension buffer if the buffer has been allocated.
+            // in case dsc couldn't be allocated and points to the static buffer, it contains
+            // a dead image already.
+            if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dsc->width = dsc->height = 0;
           }
           else
           {
@@ -659,8 +674,9 @@ dt_mipmap_cache_read_get(
       if(dsc->width == 0 || dsc->height == 0)
       {
         // fprintf(stderr, "[mipmap cache get] got a zero-sized image for img %u mip %d!\n", imgid, mip);
-        if(mip < DT_MIPMAP_F) dead_image_8(buf);
-        else                  dead_image_f(buf);
+        if(mip < DT_MIPMAP_F)       dead_image_8(buf);
+        else if(mip == DT_MIPMAP_F) dead_image_f(buf);
+        else buf->buf = NULL; // full images with NULL buffer have to be handled, indicates `missing image'
       }
     }
   }
