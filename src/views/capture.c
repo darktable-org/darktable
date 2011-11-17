@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2010 henrik andersson.
+		copyright (c) 2010-2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -89,6 +89,12 @@ dt_capture_t;
 /* signal handler for filmstrip image switching */
 static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer user_data);
 
+static const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char *filename);
+static const gchar *_capture_view_get_session_path(const dt_view_t *view);
+static uint32_t _capture_view_get_film_id(const dt_view_t *view);
+static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
+static const char *_capture_view_get_jobcode(const dt_view_t *view);
+
 const char *name(dt_view_t *self)
 {
   return _("tethering");
@@ -146,6 +152,16 @@ void init(dt_view_t *self)
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
+
+
+  /* setup the tethering view proxy */
+  darktable.view_manager->proxy.tethering.view = self;
+  darktable.view_manager->proxy.tethering.get_film_id = _capture_view_get_film_id;
+  darktable.view_manager->proxy.tethering.get_session_filename = _capture_view_get_session_filename;
+  darktable.view_manager->proxy.tethering.get_session_path = _capture_view_get_session_path;
+  darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
+  darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
+
 }
 
 void cleanup(dt_view_t *self)
@@ -153,7 +169,8 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-uint32_t dt_capture_view_get_film_id(const dt_view_t *view)
+
+uint32_t _capture_view_get_film_id(const dt_view_t *view)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
@@ -164,14 +181,15 @@ uint32_t dt_capture_view_get_film_id(const dt_view_t *view)
   return 1;
 }
 
-const gchar *dt_capture_view_get_session_path(const dt_view_t *view)
+
+const gchar *_capture_view_get_session_path(const dt_view_t *view)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
   return cv->film->dirname;
 }
 
-const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const char *filename)
+const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char *filename)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
@@ -209,7 +227,7 @@ const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const ch
   return file;
 }
 
-void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name)
+void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
@@ -285,7 +303,7 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name)
 
 }
 
-const char *dt_capture_view_get_jobcode(const dt_view_t *view)
+const char *_capture_view_get_jobcode(const dt_view_t *view)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
@@ -400,7 +418,7 @@ void enter(dt_view_t *self)
 
   // initialize a default session...
   char* tmp = dt_conf_get_string("plugins/capture/jobcode");
-  dt_capture_view_set_jobcode(self, tmp);
+  _capture_view_set_jobcode(self, tmp);
   g_free(tmp);
 }
 

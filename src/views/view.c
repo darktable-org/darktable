@@ -1131,4 +1131,40 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
 }
 
 
+int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_film_id(vm->proxy.tethering.view);
+
+  return -1;
+}
+
+
+const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_session_path(vm->proxy.tethering.view);
+  return NULL;
+}
+
+const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, const char *filename)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_session_filename(vm->proxy.tethering.view, filename);
+  return NULL;
+}
+
+void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name)
+{
+  if (vm->proxy.tethering.view)
+    vm->proxy.tethering.set_job_code(vm->proxy.tethering.view, name);
+}
+
+const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_job_code(vm->proxy.tethering.view);
+  return NULL;
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

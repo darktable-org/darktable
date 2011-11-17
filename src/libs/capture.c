@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
+    copyright (c) 2010-2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ create_callback(GtkButton *button, gpointer user_data)
   dt_conf_set_string("plugins/capture/jobcode", gtk_entry_get_text(lib->gui.entry1) );
   dt_conf_set_int("plugins/capture/current_filmroll", -1);
 
-  dt_capture_view_set_jobcode(dt_view_manager_get_current_view( darktable.view_manager ), gtk_entry_get_text( lib->gui.entry1 ) );
+  dt_view_tethering_set_job_code(darktable.view_manager, gtk_entry_get_text( lib->gui.entry1 ) );
 }
 
 void
