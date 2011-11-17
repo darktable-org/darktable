@@ -15,7 +15,7 @@
 find_path(GPHOTO2_INCLUDE_DIR gphoto2/gphoto2.h)
 mark_as_advanced(GPHOTO2_INCLUDE_DIR)
 
-set(GPHOTO2_NAMES ${GPHOTO2_NAMES} gphoto2 libgphoto2)
+set(GPHOTO2_NAMES ${GPHOTO2_NAMES} gphoto2 libgphoto2 libgphoto2_port)
 find_library(GPHOTO2_LIBRARY NAMES ${GPHOTO2_NAMES} )
 mark_as_advanced(GPHOTO2_LIBRARY)
 
