@@ -35,7 +35,7 @@ if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
 	set(USE_GCONF_BACKEND OFF) 
 	set(USE_OPENCL OFF)
-	set(USE_CAMERA_SUPPORT OFF)
+	set(USE_CAMERA_SUPPORT ON)
 	set(BUILD_SLIDESHOW OFF)
 
 	# setup mac ports path...

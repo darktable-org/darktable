@@ -26,7 +26,11 @@
 
 void* _aligned_malloc(size_t bytes, size_t alignment) {
   void* ret= NULL;
+#if defined(__APPLE__)
+  if ((ret = malloc(bytes)))
+#else
   if (0==posix_memalign(&ret, alignment, bytes))
+#endif
     return ret;
   else
     return NULL;
