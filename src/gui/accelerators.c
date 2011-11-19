@@ -580,19 +580,19 @@ void dt_accel_cleanup_locals_iop(dt_iop_module_t *module)
 typedef struct {
 	dt_iop_module_t* module;
 	char *name;
-}preset_module_callback_description;
+}preset_iop_module_callback_description;
 
-static void preset_module_callback_destroyer(gpointer data, GClosure *closure) {
-	preset_module_callback_description *callback_description = (preset_module_callback_description*)data;
+static void preset_iop_module_callback_destroyer(gpointer data, GClosure *closure) {
+	preset_iop_module_callback_description *callback_description = (preset_iop_module_callback_description*)data;
 	g_free(callback_description->name);
 }
-static void preset_module_callback(GtkAccelGroup *accel_group,
+static void preset_iop_module_callback(GtkAccelGroup *accel_group,
                                    GObject *acceleratable,
                                    guint keyval, GdkModifierType modifier,
                                    gpointer data)
 
 {
-  preset_module_callback_description *callback_description = (preset_module_callback_description*)data;
+  preset_iop_module_callback_description *callback_description = (preset_iop_module_callback_description*)data;
   dt_iop_module_t *module = callback_description->module;
   const char* name = callback_description->name;
 
@@ -634,13 +634,90 @@ void dt_accel_connect_preset_iop(dt_iop_module_t *module,  const gchar *path)
   char build_path[1024];
   gchar* name =g_strdup(path);
   snprintf(build_path,1024,"preset/%s",name);
-  preset_module_callback_description *callback_description = malloc(sizeof(preset_module_callback_description));
+  preset_iop_module_callback_description *callback_description = malloc(sizeof(preset_iop_module_callback_description));
   callback_description->module = module;
   callback_description->name = name;
 
-  closure = g_cclosure_new(G_CALLBACK(preset_module_callback),
-                         callback_description, preset_module_callback_destroyer);
+  closure = g_cclosure_new(G_CALLBACK(preset_iop_module_callback),
+                         callback_description, preset_iop_module_callback_destroyer);
   dt_accel_connect_iop(module, build_path, closure);
+
+}
+
+
+
+
+typedef struct {
+	dt_lib_module_t* module;
+	char *name;
+}preset_lib_module_callback_description;
+
+static void preset_lib_module_callback_destroyer(gpointer data, GClosure *closure) {
+	preset_lib_module_callback_description *callback_description = (preset_lib_module_callback_description*)data;
+	g_free(callback_description->name);
+}
+static void preset_lib_module_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+
+{
+  preset_lib_module_callback_description *callback_description = (preset_lib_module_callback_description*)data;
+  dt_lib_module_t *module = callback_description->module;
+  const char* pn = callback_description->name;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, pn, strlen(pn), SQLITE_TRANSIENT);
+
+  int res = 0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const void *blob = sqlite3_column_blob(stmt, 0);
+    int length  = sqlite3_column_bytes(stmt, 0);
+    if(blob)
+    {
+      GList *it = darktable.lib->plugins;
+      while(it)
+      {
+        dt_lib_module_t *search_module = (dt_lib_module_t *)it->data;
+        if(!strncmp(search_module->plugin_name, module->plugin_name, 128))
+        {
+          res = module->set_params(module, blob, length);
+          break;
+        }
+        it = g_list_next(it);
+      }
+    }
+  }
+  sqlite3_finalize(stmt);
+  if(res)
+  {
+    dt_control_log(_("deleting preset for obsolete module"));
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where operation = ?1 and op_version = ?2 and name = ?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, strlen(module->plugin_name), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, pn, strlen(pn), SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+}
+
+void dt_accel_connect_preset_lib(dt_lib_module_t *module,  const gchar *path)
+{
+  GClosure* closure = NULL;
+  char build_path[1024];
+  gchar* name =g_strdup(path);
+  snprintf(build_path,1024,"preset/%s",name);
+  preset_lib_module_callback_description *callback_description = malloc(sizeof(preset_lib_module_callback_description));
+  callback_description->module = module;
+  callback_description->name = name;
+
+  closure = g_cclosure_new(G_CALLBACK(preset_lib_module_callback),
+                         callback_description, preset_lib_module_callback_destroyer);
+  dt_accel_connect_lib(module, build_path, closure);
 
 }
 
@@ -687,6 +764,36 @@ void dt_accel_deregister_iop(dt_iop_module_t *module,const gchar *path)
 	}
 }
 
+void dt_accel_deregister_lib(dt_lib_module_t *module,const gchar *path)
+{
+	dt_accel_closure_t *accel;
+	GSList *l;
+	char build_path[1024];
+	dt_accel_path_lib(build_path, 1024, module->plugin_name, path);
+	l = darktable.control->accelerator_list;
+	while(l)
+	{
+		dt_accel_t *accel = (dt_accel_t*)l->data;
+		if(!strcmp(accel->path, build_path)) {
+			darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
+			l = NULL;
+		} else {
+			l = g_slist_next(l);
+		}
+	}
+	l = module->accel_closures;
+	while(l)
+	{
+		accel = (dt_accel_closure_t*)l->data;
+		if(!strcmp(accel->accel->path, build_path)) {
+			module->accel_closures = g_slist_delete_link(module->accel_closures, l);
+			l = NULL;
+			free(accel);
+		} else {
+			l = g_slist_next(l);
+		}
+	}
+}
 
 gboolean find_accel_internal  (GtkAccelKey *key, GClosure *closure, gpointer data) 
 {
@@ -695,7 +802,7 @@ gboolean find_accel_internal  (GtkAccelKey *key, GClosure *closure, gpointer dat
 
 }
 
-void dt_accel_rename_iop(dt_iop_module_t *module,const gchar *path,const gchar *new_path)
+void dt_accel_rename_preset_iop(dt_iop_module_t *module,const gchar *path,const gchar *new_path)
 {
 	dt_accel_closure_t *accel;
 	GSList * l = module->accel_closures;
@@ -711,6 +818,28 @@ void dt_accel_rename_iop(dt_iop_module_t *module,const gchar *path,const gchar *
 			snprintf(build_path,1024,"preset/%s",new_path);
 			dt_accel_register_iop(module->so,local,build_path,tmp_key.accel_key,tmp_key.accel_mods);
 			dt_accel_connect_preset_iop(module,new_path);
+			l = NULL;
+		} else {
+			l = g_slist_next(l);
+		}
+	}
+}
+
+void dt_accel_rename_preset_lib(dt_lib_module_t *module,const gchar *path,const gchar *new_path)
+{
+	dt_accel_closure_t *accel;
+	GSList * l = module->accel_closures;
+	char build_path[1024];
+	dt_accel_path_lib(build_path, 1024, module->plugin_name, path);
+	while(l)
+	{
+		accel = (dt_accel_closure_t*)l->data;
+		if(!strcmp(accel->accel->path, build_path)) {
+			GtkAccelKey tmp_key = *(gtk_accel_group_find(darktable.control->accelerators,find_accel_internal,accel->closure));
+			dt_accel_deregister_lib(module,path);
+			snprintf(build_path,1024,"preset/%s",new_path);
+			dt_accel_register_lib(module,build_path,tmp_key.accel_key,tmp_key.accel_mods);
+			dt_accel_connect_preset_lib(module,new_path);
 			l = NULL;
 		} else {
 			l = g_slist_next(l);

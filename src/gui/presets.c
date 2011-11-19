@@ -178,7 +178,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 	//rename accerelartors
     char path[1024];
     snprintf(path,1024,"preset/%s",g->original_name);
-    dt_accel_rename_iop(g->module,path,gtk_entry_get_text(g->name));
+    dt_accel_rename_preset_iop(g->module,path,gtk_entry_get_text(g->name));
   // commit all the user input fields
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, enabled, blendop_params, "
