@@ -232,7 +232,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   int32_t rd = 0;
   const dt_mipmap_size_t mip = DT_MIPMAP_2;
   uint8_t *blob = NULL;
-  int file_width[mip], file_height[mip];
+  int file_width[mip+1], file_height[mip+1];
 
   char cachedir[1024];
   char dbfilename[1024];
