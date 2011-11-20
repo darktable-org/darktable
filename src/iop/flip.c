@@ -272,6 +272,16 @@ rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
 {
   do_rotate(self, 0);
 }
+static void
+rotate_cw_key(dt_iop_module_t *self)
+{
+  do_rotate(self, 1);
+}
+static void
+rotate_ccw_key(dt_iop_module_t *self)
+{
+  do_rotate(self, 0);
+}
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -286,13 +296,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
   gtk_widget_set_size_request(button, -1, 24);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees ccw"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox2), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
   gtk_widget_set_size_request(button, -1, 24);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees cw"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox2), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox2, TRUE, TRUE, 0);
@@ -305,31 +315,20 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-#if 0 // TODO:
-  dt_accel_register_iop(self, TRUE, NC_("accel", "commit"),
-                        GDK_Return, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "swap the aspect ratio"),
-                        GDK_x, 0);
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "angle"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "keystone h"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "keystone v"));
-#endif
+  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees ccw"),
+                        0, 0);
+  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees cw"),
+                        0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-#if 0 // TODO:
-  dt_iop_flip_gui_data_t *g = (dt_iop_flip_gui_data_t*)self->gui_data;
   GClosure *closure;
-
-  closure = g_cclosure_new(G_CALLBACK(key_commit_callback),
+  closure = g_cclosure_new(G_CALLBACK(rotate_cw_key),
                            (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "commit", closure);
-
-  dt_accel_connect_button_iop(self, "swap the aspect ratio", g->swap_button);
-  dt_accel_connect_slider_iop(self, "angle", GTK_WIDGET(g->scale5));
-  dt_accel_connect_slider_iop(self, "keystone h", GTK_WIDGET(g->keystone_h));
-  dt_accel_connect_slider_iop(self, "keystone v", GTK_WIDGET(g->keystone_v));
-#endif
+  dt_accel_connect_iop(self, "rotate 90 degrees cw", closure);
+  closure = g_cclosure_new(G_CALLBACK(rotate_ccw_key),
+                           (gpointer)self, NULL);
+  dt_accel_connect_iop(self, "rotate 90 degrees ccw", closure);
 }
 
