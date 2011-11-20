@@ -584,22 +584,6 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
   }
 }
 
-void init_presets (dt_iop_module_so_t *self)
-{
-  dt_iop_clipping_params_t p = (dt_iop_clipping_params_t)
-  {
-    0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0
-  };
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
-  p.angle = 90.0f;
-  dt_gui_presets_add_generic(_("rotate by  90"), self->op, self->version(), &p, sizeof(p), 1);
-  p.angle = -90.0f;
-  dt_gui_presets_add_generic(_("rotate by -90"), self->op, self->version(), &p, sizeof(p), 1);
-  p.angle = 180.0f;
-  dt_gui_presets_add_generic(_("rotate by 180"), self->op, self->version(), &p, sizeof(p), 1);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
-}
-
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -684,7 +668,7 @@ angle_callback (GtkDarktableSlider *slider, dt_iop_module_t *self)
   if(self->dt->gui->reset) return;
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  p->angle = dtgtk_slider_get_value(slider);
+  p->angle = - dtgtk_slider_get_value(slider);
   commit_box (self, g, p);
 }
 
@@ -713,7 +697,7 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  dtgtk_slider_set_value(g->scale5, p->angle);
+  dtgtk_slider_set_value(g->scale5, -p->angle);
   dtgtk_slider_set_value(g->keystone_h, p->k_h);
   dtgtk_slider_set_value(g->keystone_v, p->k_v);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
@@ -738,7 +722,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 374; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 387; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -1557,7 +1541,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(a < -180.0) a += 360.0;
     if(a >  180.0) a -= 360.0;
     if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-    dtgtk_slider_set_value(g->scale5, a);
+    dtgtk_slider_set_value(g->scale5, -a);
     dt_control_change_cursor(GDK_LEFT_PTR);
   }
   g->straightening = g->cropping = 0;
