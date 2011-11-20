@@ -167,7 +167,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_profile_gamma_params_t);
   module->gui_data = NULL;
-  module->priority = 291; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 306; // module order created by iop_dependencies.py, do not edit!
   dt_iop_profile_gamma_params_t tmp = (dt_iop_profile_gamma_params_t)
   {
     1.0, 1.0

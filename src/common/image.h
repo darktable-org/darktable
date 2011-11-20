@@ -132,7 +132,6 @@ int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image, exif or user override, if set. */
 static inline int dt_image_orientation(const dt_image_t *img)
 {
-  // return img->user_flip > 0 ? img->user_flip : (img->orientation > 0 ?img->orientation : 0);
   return img->orientation > 0 ? img->orientation : 0;
 }
 /** returns the (flipped) filter string for the demosaic pattern. */

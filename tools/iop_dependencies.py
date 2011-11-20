@@ -68,6 +68,10 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'lens'))
   gr.add_edge(('colorin', 'profile_gamma'))
   
+  # flip before spatial dependent things come into play,
+  # but after buffer has been downscaled.
+  gr.add_edge(('flip', 'demosaic'))
+  gr.add_edge(('graduatednd', 'flip'))
   # handle highlights correctly:
   # we want highlights as early as possible, to avoid
   # pink highlights in plugins (happens only before highlight clipping)
@@ -251,15 +255,15 @@ def add_edges(gr):
 
 gr = digraph()
 gr.add_nodes([
-'anlfyeni',
+'anlfyeni', # deprecated
 'atrous',
 'basecurve',
-'bilateral', # deprecated
+'bilateral',
 'bloom',
 'borders',
 'cacorrect',
 'channelmixer',
-'clahe',
+'clahe', # deprecated
 'clipping',
 'colorcorrection',
 'colorin',
@@ -271,6 +275,7 @@ gr.add_nodes([
 'demosaic',
 'equalizer', # deprecated
 'exposure',
+'flip',
 'gamma',
 'graduatednd',
 'grain',
