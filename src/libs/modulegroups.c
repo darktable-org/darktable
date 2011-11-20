@@ -238,7 +238,10 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
             if(module->enabled)
               gtk_widget_show(w);
             else
+            {
+              if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
               gtk_widget_hide(w);
+            }
           } break;
 
         case DT_MODULEGROUP_FAVORITES:
@@ -246,7 +249,10 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
             if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
               gtk_widget_show(w);
             else
+            {
+              if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
               gtk_widget_hide(w);
+            }
           } break;
 
         case DT_MODULEGROUP_NONE:
@@ -262,7 +268,10 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                 (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
               gtk_widget_show(w);
             else
+            {
+              if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
               gtk_widget_hide(w);
+            }
           }
       }
     } while((modules = g_list_next(modules))!=NULL);
