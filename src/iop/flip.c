@@ -49,13 +49,6 @@ typedef struct dt_iop_flip_params_t
 }
 dt_iop_flip_params_t;
 
-
-typedef struct dt_iop_flip_gui_data_t
-{
-  int32_t nothing;
-}
-dt_iop_flip_gui_data_t;
-
 typedef struct dt_iop_flip_data_t
 {
   int32_t orientation;
@@ -250,7 +243,7 @@ void cleanup(dt_iop_module_t *module)
 }
 
 static void
-rotate(dt_iop_module_t *self, uint32_t cw)
+do_rotate(dt_iop_module_t *self, uint32_t cw)
 {
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
   int32_t orientation = p->orientation;
@@ -266,38 +259,47 @@ rotate(dt_iop_module_t *self, uint32_t cw)
     else                orientation ^= 1; // flip y
   }
   orientation ^= 4;             // flip axes
+  p->orientation = orientation;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 static void
 rotate_cw(GtkWidget *widget, dt_iop_module_t *self)
 {
-  rotate(self, 1);
+  do_rotate(self, 1);
 }
 static void
 rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
 {
-  rotate(self, 0);
+  do_rotate(self, 0);
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_flip_gui_data_t));
+  self->gui_data = NULL;
+  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
   self->widget = gtk_hbox_new(TRUE, 5);
+  GtkWidget *hbox2 = gtk_hbox_new(TRUE, 5);
+
+  GtkWidget *label = dtgtk_reset_label_new (_("rotate"), self, &p->orientation, sizeof(int32_t));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
+  gtk_widget_set_size_request(button, -1, 24);
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
+  gtk_widget_set_size_request(button, -1, 24);
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox2, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  free(self->gui_data);
   self->gui_data = NULL;
 }
 
