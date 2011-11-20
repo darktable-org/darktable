@@ -220,29 +220,24 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 
 int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
-#if 0
-  // FIXME: replace with proper crop/rotate history stack pasting
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  // const int cw = t1->flag;
+  const int cw = t1->flag;
   GList *t = t1->index;
   int total = g_list_length(t);
   double fraction=0;
-  // char message[512]= {0};
-  // snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
-  // const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
-  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, "flipping has been disabled!");
+  char message[512]= {0};
+  snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
     imgid = (long int)t->data;
-    // FIXME: disabled for now!
-    // dt_image_flip(imgid, cw);
+    dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
-#endif
   return 0;
 }
 

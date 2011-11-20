@@ -249,13 +249,50 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static void
+rotate(dt_iop_module_t *self, uint32_t cw)
+{
+  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  int32_t orientation = p->orientation;
+
+  if(cw == 1)
+  {
+    if(orientation & 4) orientation ^= 1;
+    else                orientation ^= 2; // flip x
+  }
+  else
+  {
+    if(orientation & 4) orientation ^= 2;
+    else                orientation ^= 1; // flip y
+  }
+  orientation ^= 4;             // flip axes
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+static void
+rotate_cw(GtkWidget *widget, dt_iop_module_t *self)
+{
+  rotate(self, 1);
+}
+static void
+rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
+{
+  rotate(self, 0);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_flip_gui_data_t));
-  // dt_iop_flip_gui_data_t *g = (dt_iop_flip_gui_data_t *)self->gui_data;
-  // dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
-  // TODO: two rotate buttons from lib thing
+  self->widget = gtk_hbox_new(TRUE, 5);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
+
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

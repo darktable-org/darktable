@@ -145,12 +145,20 @@ void dt_image_print_exif(const dt_image_t *img, char *line, int len)
     snprintf(line, len, "1/%.0f f/%.1f %dmm iso %d", 1.0/img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
-// FIXME: use a history stack item for this.
-#if 0
 void dt_image_flip(const int32_t imgid, const int32_t cw)
 {
-  dt_image_t *img = dt_image_cache_get (imgid, 'r');
-  int8_t orientation = dt_image_orientation(img);
+  // this is light table only:
+  if(darktable.develop->image_storage.id == imgid) return;
+  int32_t orientation = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 and operation = 'flip' and num in (select MAX(num) from history where imgid = ?1 and operation = 'flip')", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    if(sqlite3_column_bytes(stmt, 4) >= 4)
+      orientation = *(int32_t *)sqlite3_column_blob(stmt, 4);
+  }
+  sqlite3_finalize(stmt);
 
   if(cw == 1)
   {
@@ -165,15 +173,24 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   orientation ^= 4;             // flip axes
 
   if(cw == 2) orientation = -1; // reset
-  img->raw_params.user_flip = orientation;
-  img->force_reimport = 1;
-  img->dirty = 1;
-  dt_image_invalidate(img, DT_IMAGE_MIPF);
-  dt_image_invalidate(img, DT_IMAGE_FULL);
-  dt_image_cache_flush(img);
-  dt_image_cache_release(img, 'r');
+  // push new orientation to sql
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), " select MAX(num) from history where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  int num = 0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    num = 1 + sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params) values"
+      " (?1, ?2, 1, 'flip', ?3, 1, 0) ", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);
+  sqlite3_step (stmt);
+  sqlite3_finalize(stmt);
+  dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 }
-#endif
 
 int32_t dt_image_duplicate(const int32_t imgid)
 {
