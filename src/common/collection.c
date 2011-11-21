@@ -78,14 +78,22 @@ static inline gchar *_dstrcat(gchar *str,const gchar *format, ...)
 {  
   va_list args;
   gchar *ns;
-  va_start(args,format);
-  int clen = str?strlen(str):0;
+  va_start(args, format);
+  int clen = str ? strlen(str) : 0;
   int alen = g_vsnprintf(NULL, 0, format, args);
-  int nsize = clen+alen+1; 
-  ns = g_realloc(str,nsize);
-  g_vsnprintf(ns+clen, alen, format,args);
+  int nsize = alen + clen + 1; 
+
+  /* realloc for new string */
+  ns = g_realloc(str, nsize);
+  if (str == NULL) ns[0] = '\0';
   va_end(args);
-  str[nsize-1]='\0';
+
+  /* append string */
+  va_start(args, format);
+  g_vsnprintf(ns+clen, alen+1, format, args);
+  va_end(args);
+
+  ns[nsize-1]='\0';
   
   return ns;
 }
