@@ -7,12 +7,12 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma colorcontrast
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
-  cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels)
+  cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels flip)
 
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer colorize lowpass invert vibrance flip)
+set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer colorize lowpass invert vibrance)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
