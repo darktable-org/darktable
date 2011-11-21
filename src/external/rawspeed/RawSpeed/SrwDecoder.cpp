@@ -33,6 +33,9 @@ SrwDecoder::SrwDecoder(TiffIFD *rootIFD, FileMap* file):
 }
 
 SrwDecoder::~SrwDecoder(void) {
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
 RawImage SrwDecoder::decodeRaw() {
@@ -112,7 +115,12 @@ void SrwDecoder::decodeMetaData(CameraMetaData *meta) {
     }
     printf("Camera CFA: %s\n", mRaw->cfa.asString().c_str());
   }
-  setMetaData(meta, make, model, "");
+
+  int iso = 0;
+  if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
+    iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
+  setMetaData(meta, make, model, "", iso);
 }
 
 } // namespace RawSpeed

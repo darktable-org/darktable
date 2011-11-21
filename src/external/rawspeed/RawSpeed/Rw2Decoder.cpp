@@ -32,6 +32,9 @@ Rw2Decoder::~Rw2Decoder(void) {
   if (input_start)
     delete input_start;
   input_start = 0;
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
 RawImage Rw2Decoder::decodeRaw() {
@@ -168,7 +171,7 @@ void Rw2Decoder::checkSupport(CameraMetaData *meta) {
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
-  if (!this->checkCameraSupported(meta, make, model, getMode(model)))
+  if (!this->checkCameraSupported(meta, make, model, guessMode()))
     this->checkCameraSupported(meta, make, model, "");
 }
 
@@ -181,40 +184,54 @@ void Rw2Decoder::decodeMetaData(CameraMetaData *meta) {
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
-  string mode = getMode(model);
-  if (this->checkCameraSupported(meta, make, model, getMode(model)))
-    setMetaData(meta, make, model, mode);
-  else
-    setMetaData(meta, make, model, "");
+  string mode = guessMode();
+  int iso = 0;
+  if (mRootIFD->hasEntryRecursive(PANASONIC_ISO_SPEED))
+    iso = mRootIFD->getEntryRecursive(PANASONIC_ISO_SPEED)->getInt();
+
+  if (this->checkCameraSupported(meta, make, model, mode)) {
+    setMetaData(meta, make, model, mode, iso);
+  } else {
+    mRaw->mode = mode;
+    _RPT1(0, "Mode not found in DB: %s", mode.c_str());
+    setMetaData(meta, make, model, "", iso);
+  }
 }
 
-bool Rw2Decoder::almostEqualRelative(float A, float B, float maxRelativeError) {
-  if (A == B)
-    return true;
 
-  float relativeError = fabs((A - B) / B);
-  if (relativeError <= maxRelativeError)
-    return true;
-  return false;
-}
 
-std::string Rw2Decoder::getMode(const string model) {
+std::string Rw2Decoder::guessMode() {
   float ratio = 3.0f / 2.0f;  // Default
-  if (mRaw->isAllocated()) {
-    ratio = (float)mRaw->dim.x / (float)mRaw->dim.y;
+
+  if (!mRaw->isAllocated())
+    return "";
+
+  ratio = (float)mRaw->dim.x / (float)mRaw->dim.y;
+
+  float min_diff = fabs(ratio - 16.0f / 9.0f);
+  std::string closest_match = "16:9";
+
+  float t = fabs(ratio - 3.0f / 2.0f);
+  if (t < min_diff) {
+    closest_match = "3:2";
+    min_diff  = t;
   }
 
-  if (almostEqualRelative(ratio, 16.0f / 9.0f, 0.02f))
-    return "16:9";
-  if (almostEqualRelative(ratio, 3.0f / 2.0f, 0.02f))
-    return "3:2";
-  if (almostEqualRelative(ratio, 4.0f / 3.0f, 0.02f))
-    return "4:3";
-  if (almostEqualRelative(ratio, 1.0f, 0.02f))
-    return "1:1";
+  t = fabs(ratio - 4.0f / 3.0f);
+  if (t < min_diff) {
+    closest_match =  "4:3";
+    min_diff  = t;
+  }
 
-  return "";
+  t = fabs(ratio - 1.0f);
+  if (t < min_diff) {
+    closest_match = "1:1";
+    min_diff  = t;
+  }
+  _RPT1(0, "Mode guess: '%s'\n", closest_match.c_str());
+  return closest_match;
 }
+
 
 PanaBitpump::PanaBitpump(ByteStream* _input) : input(_input), vbits(0) {
 }

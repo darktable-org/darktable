@@ -33,6 +33,9 @@ OrfDecoder::OrfDecoder(TiffIFD *rootIFD, FileMap* file):
 }
 
 OrfDecoder::~OrfDecoder(void) {
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
 RawImage OrfDecoder::decodeRaw() {
@@ -73,16 +76,18 @@ RawImage OrfDecoder::decodeRaw() {
   TiffEntry *makernoteEntry = exif->getEntry(MAKERNOTE);
   const uchar8* makernote = makernoteEntry->getData();
   FileMap makermap((uchar8*)&makernote[8], makernoteEntry->count - 8);
-  TiffParserOlympus makertiff(&makermap);
-  makertiff.parseData();
-
-  data = makertiff.RootIFD()->getIFDsWithTag((TiffTag)0x2010);
-
-  if (data.empty())
-    ThrowRDE("ORF Decoder: Unsupported compression");
-  TiffEntry *oly = data[0]->getEntry((TiffTag)0x2010);
-  if (oly->type == TIFF_UNDEFINED)
-    ThrowRDE("ORF Decoder: Unsupported compression");
+  try {
+    TiffParserOlympus makertiff(&makermap);
+    makertiff.parseData();
+    data = makertiff.RootIFD()->getIFDsWithTag((TiffTag)0x2010);
+    if (data.empty())
+      ThrowRDE("ORF Decoder: Unsupported compression");
+    TiffEntry *oly = data[0]->getEntry((TiffTag)0x2010);
+    if (oly->type == TIFF_UNDEFINED)
+      ThrowRDE("ORF Decoder: Unsupported compression");
+  } catch (TiffParserException) {
+    ThrowRDE("ORF Decoder: Unable to parse makernote");
+  }
 
   // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
   ByteStream s(mFile->getData(offsets->getInt()), counts->getInt() + 3);
@@ -250,6 +255,7 @@ void OrfDecoder::checkSupport(CameraMetaData *meta) {
 }
 
 void OrfDecoder::decodeMetaData(CameraMetaData *meta) {
+  int iso = 0;
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
@@ -259,7 +265,10 @@ void OrfDecoder::decodeMetaData(CameraMetaData *meta) {
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
 
-  setMetaData(meta, make, model, "");
+  if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
+    iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
+  setMetaData(meta, make, model, "", iso);
 }
 
 } // namespace RawSpeed

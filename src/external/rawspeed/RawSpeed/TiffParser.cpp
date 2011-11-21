@@ -64,6 +64,9 @@ void TiffParser::parseData() {
       throw TiffParserException("Not a TIFF file (magic 42)");
   }
 
+  if (mRootIFD)
+    delete mRootIFD;
+
   if (tiff_endian == host_endian)
     mRootIFD = new TiffIFD();
   else
@@ -89,17 +92,22 @@ void TiffParser::parseData() {
 }
 
 RawDecoder* TiffParser::getDecoder() {
+  if (!mRootIFD)
+    parseData();
+
   vector<TiffIFD*> potentials;
   potentials = mRootIFD->getIFDsWithTag(DNGVERSION);
+
+  /* Copy, so we can pass it on and not have it destroyed with ourselves */
+  TiffIFD* root = mRootIFD;
 
   if (!potentials.empty()) {  // We have a dng image entry
     TiffIFD *t = potentials[0];
     const unsigned char* c = t->getEntry(DNGVERSION)->getData();
     if (c[0] > 1)
       throw TiffParserException("DNG version too new.");
-    if (c[1] > 2)
-      throw TiffParserException("DNG version not supported.");
-    return new DngDecoder(mRootIFD, mInput);
+    mRootIFD = NULL;
+    return new DngDecoder(root, mInput);
   }
 
   potentials = mRootIFD->getIFDsWithTag(MAKE);
@@ -109,31 +117,40 @@ RawDecoder* TiffParser::getDecoder() {
       string make = (*i)->getEntry(MAKE)->getString();
       TrimSpaces(make);
       if (!make.compare("Canon")) {
-        return new Cr2Decoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new Cr2Decoder(root, mInput);
       }
       if (!make.compare("NIKON CORPORATION")) {
-        return new NefDecoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new NefDecoder(root, mInput);
       }
       if (!make.compare("NIKON")) {
-        return new NefDecoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new NefDecoder(root, mInput);
       }
       if (!make.compare("OLYMPUS IMAGING CORP.")) {
-        return new OrfDecoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new OrfDecoder(root, mInput);
       }
       if (!make.compare("SONY")) {
-        return new ArwDecoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new ArwDecoder(root, mInput);
       }
       if (!make.compare("PENTAX Corporation ")) {
-        return new PefDecoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new PefDecoder(root, mInput);
       }
       if (!make.compare("PENTAX")) {
-        return new PefDecoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new PefDecoder(root, mInput);
       }
       if (!make.compare("Panasonic")) {
-        return new Rw2Decoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new Rw2Decoder(root, mInput);
       }
       if (!make.compare("SAMSUNG")) {
-        return new SrwDecoder(mRootIFD, mInput);
+        mRootIFD = NULL;
+        return new SrwDecoder(root, mInput);
       }
     }
   }

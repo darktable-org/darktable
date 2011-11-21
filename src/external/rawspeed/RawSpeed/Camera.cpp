@@ -79,8 +79,6 @@ Camera::Camera( const Camera* camera, uint32 alias_num)
   model = camera->aliases[alias_num];
   mode = camera->mode;
   cfa = camera->cfa;
-  black = camera->black;
-  white = camera->white;
   supported = camera->supported;
   cropSize = camera->cropSize;
   cropPos = camera->cropPos;
@@ -88,7 +86,9 @@ Camera::Camera( const Camera* camera, uint32 alias_num)
   for (uint32 i = 0; i < camera->blackAreas.size(); i++) {
     blackAreas.push_back(camera->blackAreas[i]);
   }
-
+  for (uint32 i = 0; i < camera->sensorInfo.size(); i++) {
+    sensorInfo.push_back(camera->sensorInfo[i]);
+  }
   map<string,string>::const_iterator mi = camera->hints.begin();
   for (; mi != camera->hints.end(); ++mi) {
     hints.insert(make_pair((*mi).first, (*mi).second));
@@ -129,8 +129,7 @@ void Camera::parseCameraChild(xmlDocPtr doc, xmlNodePtr cur) {
   }
 
   if (!xmlStrcmp(cur->name, (const xmlChar *) "Sensor")) {
-    black = getAttributeAsInt(cur, cur->name, "black");
-    white = getAttributeAsInt(cur, cur->name, "white");
+    parseSensorInfo(doc, cur);
     return;
   }
 
@@ -276,6 +275,51 @@ void Camera::parseHint( xmlDocPtr doc, xmlNodePtr cur )
 
     hints.insert(make_pair(hint_name, hint_value));
   }
+}
+
+void Camera::parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur )
+{
+  int min_iso = 0;
+  int max_iso = 0;
+  int black = getAttributeAsInt(cur, cur->name, "black");
+  int white = getAttributeAsInt(cur, cur->name, "white");
+
+  xmlChar *key = xmlGetProp(cur, (const xmlChar *)"iso_min");
+  if (key)
+    min_iso = StringToInt(key, cur->name, "iso_min");
+
+  key = xmlGetProp(cur, (const xmlChar *)"iso_max");
+  if (key)
+    max_iso = StringToInt(key, cur->name, "iso_max");
+
+  sensorInfo.push_back(CameraSensorInfo(black, white, min_iso, max_iso));
+}
+
+const CameraSensorInfo* Camera::getSensorInfo( int iso )
+{
+  /* If only one, just return that */
+  if (sensorInfo.size() == 1)
+    return &sensorInfo[0];
+
+  vector<CameraSensorInfo*> candidates;
+  vector<CameraSensorInfo>::iterator i = sensorInfo.begin();
+  do 
+  {
+    if (i->isIsoWithin(iso))
+      candidates.push_back(&(*i));
+  } while (++i != sensorInfo.end());
+
+  if (candidates.size() == 1)
+    return candidates[0];
+
+  vector<CameraSensorInfo*>::iterator j = candidates.begin();
+  do 
+  {
+    if (!(*j)->isDefault())
+      return *j;
+  } while (++j != candidates.end());
+  /* Several defaults??? Just return first */
+  return candidates[0];
 }
 
 } // namespace RawSpeed

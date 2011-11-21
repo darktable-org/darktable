@@ -112,7 +112,7 @@ protected:
 
   /* Helper function for decodeMetaData(), that find the camera in the CameraMetaData DB */
   /* and sets common settings such as crop, black- white level, and sets CFA information */
-  virtual void setMetaData(CameraMetaData *meta, string make, string model, string mode);
+  virtual void setMetaData(CameraMetaData *meta, string make, string model, string mode, int iso_speed = 0);
 
   /* Helper function for decoders, that will unpack uncompressed image data */
   /* input: Input image, positioned at first pixel */

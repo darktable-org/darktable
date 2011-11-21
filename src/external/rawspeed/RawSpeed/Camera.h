@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "ColorFilterArray.h"
+#include "CameraSensorInfo.h"
 #include <libxml/parser.h>
 #include "BlackArea.h"
 #include "CameraMetadataException.h"
@@ -35,18 +36,18 @@ public:
   Camera(xmlDocPtr doc, xmlNodePtr cur);
   Camera(const Camera* camera, uint32 alias_num);
   void parseCameraChild(xmlDocPtr doc, xmlNodePtr cur);
+  const CameraSensorInfo* getSensorInfo(int iso);
   virtual ~Camera(void);
   string make;
   string model;
   string mode;
   vector<string> aliases;
   ColorFilterArray cfa;
-  uint32 black;
-  uint32 white;
   bool supported;
   iPoint2D cropSize;
   iPoint2D cropPos;
   vector<BlackArea> blackAreas;
+  vector<CameraSensorInfo> sensorInfo;
   int decoderVersion;
   map<string,string> hints;
 private:
@@ -57,6 +58,7 @@ protected:
   void parseAlias( xmlDocPtr doc, xmlNodePtr cur );
   void parseHint( xmlDocPtr doc, xmlNodePtr cur );
   void parseBlackAreas( xmlDocPtr doc, xmlNodePtr cur );
+  void parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur );
 };
 
 } // namespace RawSpeed

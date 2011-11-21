@@ -282,6 +282,7 @@
       <Color x="1" y="1">GREEN</Color>
     </CFA>
     <Crop x="158" y="52" width="5202" height="3464"/>
+    <Sensor black="1025" white="8150" iso_min="12800" iso_max="12800"/>
     <Sensor black="2050" white="16300"/>
 	<BlackAreas>
 		<Vertical x="0" width="156"/>
@@ -555,6 +556,19 @@
 		<Horizontal y="2774" height="10"/>
 	</BlackAreas>
   </Camera>
+  <Camera make="Canon" model="Canon PowerShot S100">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="104" y="12" width="-10" height="-66"/>
+    <Sensor black="125" white="4095"/>
+	<BlackAreas>
+		<Vertical x="0" width="100"/>
+		<Horizontal y="0" height="10"/>
+		<Horizontal y="3062" height="60"/>
+	</BlackAreas>
+  </Camera>	
   <Camera make="NIKON CORPORATION" model="NIKON D100">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color>
@@ -825,6 +839,26 @@
     <Crop x="0" y="0" width="4310" height="2868"/>
     <Sensor black="0" white="3767"/>
   </Camera>
+  <Camera make="NIKON CORPORATION" model="NIKON 1 J1" supported="no">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color>
+      <Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color>
+      <Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="0"/>
+  </Camera>
+  <Camera make="NIKON CORPORATION" model="NIKON 1 V1" supported="no">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color>
+      <Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color>
+      <Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="0"/>
+  </Camera>
   <Camera make="NIKON" model="E5400" decoder_version="3">
     <CFA width="2" height="2">
       <Color x="0" y="0">BLUE</Color>
@@ -878,6 +912,19 @@
   </Hints>
   </Camera>
   <Camera make="NIKON" model="COOLPIX P7000" supported="yes" decoder_version="1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="0" white="4095"/>
+  <Hints>
+    <Hint name="coolpixmangled" value=""/>
+  </Hints>
+  </Camera>  
+  <Camera make="NIKON" model="COOLPIX P7100" supported="yes" decoder_version="1">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -1182,7 +1229,15 @@
     <Crop x="0" y="0" width="0" height="-2"/>
     <Sensor black="55" white="3972"/>
   </Camera>
-  <Camera make="Panasonic" model = "DMC-FX150" mode = "4:3">
+  <Camera make="Panasonic" model = "DMC-FX150">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
+    </CFA>
+    <Crop x="0" y="0" width="4429" height="3324"/>
+    <Sensor black="15" white="3986"/>
+  </Camera>  
+	<Camera make="Panasonic" model = "DMC-FX150" mode = "4:3">
     <CFA width="2" height="2">
       <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
       <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
@@ -1198,12 +1253,44 @@
     <Crop x="0" y="0" width="3668" height="2754"/>
     <Sensor black="15" white="3986"/>
   </Camera>
+  <Camera make="Panasonic" model = "DMC-FZ28" mode = "16:9">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
+    </CFA>
+    <Crop x="0" y="0" width="3668" height="2754"/>
+    <Sensor black="15" white="3986"/>
+  </Camera>
   <Camera make="Panasonic" model = "DMC-FZ28">
     <CFA width="2" height="2">
         <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
         <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
     </CFA>
     <Crop x="0" y="0" width="-56" height="-4"/>
+    <Sensor black="15" white="3986"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-FZ150">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-128" height="0"/>
+    <Sensor black="0" white="4095"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-FZ150" mode="4:3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-128" height="0"/>
+    <Sensor black="0" white="4095"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-G1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="4018" height="3016" />
     <Sensor black="15" white="3986"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-G1" mode="4:3">
@@ -1238,8 +1325,8 @@
     <Crop x="0" y="0" width="-44" height="0" />
     <Sensor black="0" white="5300"/>
   </Camera>
-  <Camera make="Panasonic" model = "DMC-G2" mode="3:2">
-	<!-- Guess -->
+  <Camera make="Panasonic" model = "DMC-G2">
+	<!-- Default Guess -->
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
@@ -1247,25 +1334,14 @@
     <Crop x="0" y="0" width="-44" height="0" />
     <Sensor black="0" white="5300"/>
   </Camera>
-  <Camera make="Panasonic" model = "DMC-G2" mode="16:9">
-	<!-- Guess -->
+  <Camera make="Panasonic" model = "DMC-G10">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
     </CFA>
     <Crop x="0" y="0" width="-44" height="0" />
-    <Sensor black="0" white="5300"/>
-  </Camera>
-  <Camera make="Panasonic" model = "DMC-G2" mode="1:1">
-	<!-- Guess -->
-    <CFA width="2" height="2">
-      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
-      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
-    </CFA>
-    <Crop x="0" y="0" width="-44" height="0" />
-    <Sensor black="0" white="5300"/>
-  </Camera>
-  <Camera make="Panasonic" model = "DMC-G10" mode="4:3">
+    <Sensor black="0" white="4800"/>
+  </Camera>  <Camera make="Panasonic" model = "DMC-G10" mode="4:3">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
@@ -1281,8 +1357,8 @@
     <Crop x="0" y="0" width="-44" height="0"/>
     <Sensor black="0" white="5111"/>
   </Camera>
-  <Camera make="Panasonic" model = "DMC-GH1" mode="3:2">
-	<!-- Guess -->
+  <Camera make="Panasonic" model = "DMC-GH1">
+	<!-- Default Guess -->
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
@@ -1290,14 +1366,13 @@
     <Crop x="0" y="0" width="-44" height="0"/>
     <Sensor black="0" white="5111"/>
   </Camera>
-  <Camera make="Panasonic" model = "DMC-GH1" mode="1:1">
-	<!-- Guess -->
+  <Camera make="Panasonic" model = "DMC-GF1">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
     </CFA>
     <Crop x="0" y="0" width="-44" height="0"/>
-    <Sensor black="0" white="5111"/>
+    <Sensor black="0" white="4096"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-GF1" mode="4:3">
     <CFA width="2" height="2">
@@ -1330,6 +1405,14 @@
     </CFA>
     <Crop x="0" y="0" width="-44" height="0"/>
     <Sensor black="0" white="4096"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-GF2">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-74" height="0"/>
+    <Sensor black="150" white="4096"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-GF2" mode="4:3">
     <CFA width="2" height="2">
@@ -1371,7 +1454,23 @@
     <Crop x="0" y="0" width="-154" height="0"/>
     <Sensor black="150" white="4096"/>
   </Camera>
+  <Camera make="Panasonic" model = "DMC-G3" mode="4:3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
+      <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-154" height="0"/>
+    <Sensor black="150" white="4096"/>
+  </Camera>
   <Camera make="Panasonic" model = "DMC-GF3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-72" height="0"/>
+    <Sensor black="150" white="4096"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-GF3" mode= "4:3">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
@@ -1385,6 +1484,22 @@
       <Color x="1" y="1">RED</Color><Color x="0" y="1">GREEN</Color>
     </CFA>
     <Crop x="0" y="0" width="-216" height="0"/>
+    <Sensor black="0" white="4096"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-GH2" mode="16:9">
+    <CFA width="2" height="2">
+      <Color x="1" y="0">GREEN</Color><Color x="0" y="0">BLUE</Color>
+      <Color x="1" y="1">RED</Color><Color x="0" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-216" height="0"/>
+    <Sensor black="0" white="4096"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-GH2" mode="4:3">
+    <CFA width="2" height="2">
+      <Color x="1" y="0">GREEN</Color><Color x="0" y="0">BLUE</Color>
+      <Color x="1" y="1">RED</Color><Color x="0" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-140" height="0"/>
     <Sensor black="0" white="4096"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-GH1" mode="16:9">
@@ -1406,8 +1521,8 @@
 		<Alias>DMC-FZ38</Alias>
 	</Aliases>
   </Camera>
-  <Camera make="Panasonic" model = "DMC-FZ35" mode="3:2">
-	<!-- Guess -->
+  <Camera make="Panasonic" model = "DMC-FZ35">
+	<!-- Default Guess -->
     <CFA width="2" height="2">
         <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
         <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
@@ -1418,16 +1533,15 @@
 		<Alias>DMC-FZ38</Alias>
 	</Aliases>
   </Camera>
-  <Camera make="Panasonic" model = "DMC-FZ35" mode="16:9">
-	<!-- Guess -->
+  <Camera make="Panasonic" model = "DMC-FZ45">
     <CFA width="2" height="2">
-        <Color x="0" y="0">BLUE</Color><Color x="1" y="0">GREEN</Color>
-        <Color x="0" y="1">GREEN</Color><Color x="1" y="1">RED</Color>
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
     </CFA>
-    <Crop x="0" y="0" width="-44" height="0"/>
-    <Sensor black="150" white="4800"/>
+    <Crop x="0" y="0" width="-58" height="-10"/>
+    <Sensor black="150" white="4097"/>
     <Aliases>
-		<Alias>DMC-FZ38</Alias>
+		<Alias>DMC-FZ40</Alias>
 	</Aliases>
   </Camera>
   <Camera make="Panasonic" model = "DMC-FZ45" mode = "4:3">
@@ -1450,6 +1564,14 @@
     <Sensor black="0" white="65535"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-FZ100">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
+      <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-200" height="0"/>
+    <Sensor black="120" white="5400"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-FZ100" mode="4:3">
     <CFA width="2" height="2">
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">BLUE</Color>
       <Color x="0" y="1">RED</Color><Color x="1" y="1">GREEN</Color>
@@ -1497,7 +1619,31 @@
     <Crop x="0" y="0" width="-200" height="-4"/>
     <Sensor black="150" white="4095"/>
   </Camera>  
-  <Camera make="PENTAX Corporation" model="PENTAX K100D">
+  <Camera make="Panasonic" model = "DMC-LX5" mode="4:3">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
+      <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-200" height="-4"/>
+    <Sensor black="150" white="4095"/>
+  </Camera>  
+  <Camera make="Panasonic" model = "DMC-LX5" mode="3:2">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
+      <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-74" height="-4"/>
+    <Sensor black="150" white="4095"/>
+  </Camera>
+  <Camera make="Panasonic" model = "DMC-LX5" mode="1:1">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
+      <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-220" height="-4"/>
+    <Sensor black="150" white="4095"/>
+  </Camera>
+	<Camera make="PENTAX Corporation" model="PENTAX K100D">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
       <Color x="1" y="0">GREEN</Color>
@@ -1804,7 +1950,7 @@
       <Color x="0" y="0">RED</Color>
     </CFA>
     <Crop x="0" y="0" width="0" height="0"/>
-    <Sensor black="500" white="15000"/>
+    <Sensor black="512" white="16372"/>
   </Camera>
   <Camera make="SONY" model="DSLR-A560">
     <CFA width="2" height="2">

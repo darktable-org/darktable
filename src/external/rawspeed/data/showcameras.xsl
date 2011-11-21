@@ -12,7 +12,7 @@
 				font-family:Verdana;font-size:12pt;background-color:#ffffff;
 			}
 			h1 {
-				font-size:16pt;padding:8px;
+				font-size:16pt;padding:0px;padding-top:8px;padding-bottom:8px;
 			}
 			h2 {
 				background-color:teal;color:white;padding:8px;font-size:13pt;
@@ -23,11 +23,14 @@
 			div.text {
 				margin-left:20px;margin-bottom:15px;font-size:10pt;margin-top:0px;line-height:120%;
 			}
+			div.toptext {
+				margin-bottom:15px;font-size:10pt;margin-top:0px;line-height:120%;
+			}
 		</style>
 	</head>
 
 	<body>
-		<h1>The <xsl:value-of select="count(Cameras/Camera)"/> Known RawSpeed Cameras and Modes:</h1>
+		<h1>The <xsl:value-of select="count(Cameras/Camera)"/> Known RawSpeed Cameras and Modes</h1>
 		<xsl:for-each select="Cameras/Camera">
 		<xsl:sort data-type = "text" select = "concat(@make,@model)"/>
 			<h2>
@@ -81,6 +84,7 @@
 			</div>
 		 <br/>
 		</xsl:for-each>
+		<div class="toptext">There are a total of <xsl:value-of select="count(Cameras/Camera[not(@model=preceding-sibling::Camera/@model)]/@model)"/> unique cameras.</div>
 
 	</body>
 </html>

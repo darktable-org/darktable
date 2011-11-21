@@ -213,7 +213,7 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
   return true;
 }
 
-void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode) {
+void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode, int iso_speed) {
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, mode);
@@ -240,10 +240,10 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
   if (cam->cropPos.y & 1)
     mRaw->cfa.shiftDown();
 
-  mRaw->blackLevel = cam->black;
-  mRaw->whitePoint = cam->white;
+  const CameraSensorInfo *sensor = cam->getSensorInfo(iso_speed);
+  mRaw->blackLevel = sensor->mBlackLevel;
+  mRaw->whitePoint = sensor->mWhiteLevel;
   mRaw->blackAreas = cam->blackAreas;
-
 }
 
 

@@ -32,6 +32,9 @@ Cr2Decoder::Cr2Decoder(TiffIFD *rootIFD, FileMap* file) :
 }
 
 Cr2Decoder::~Cr2Decoder(void) {
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
 RawImage Cr2Decoder::decodeRaw() {
@@ -141,6 +144,7 @@ void Cr2Decoder::checkSupport(CameraMetaData *meta) {
 }
 
 void Cr2Decoder::decodeMetaData(CameraMetaData *meta) {
+  int iso = 0;
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
@@ -157,7 +161,10 @@ void Cr2Decoder::decodeMetaData(CameraMetaData *meta) {
   if (mRaw->subsampling.y == 1 && mRaw->subsampling.x == 2)
     mode = "sRaw2";
 
-  setMetaData(meta, make, model, mode);
+  if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
+    iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
+  setMetaData(meta, make, model, mode, iso);
 
 }
 
