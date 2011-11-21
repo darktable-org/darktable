@@ -827,6 +827,22 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       }
     }
 
+    // convert legacy flip bits (will not be written anymore, convert to flip history item here):
+    if ((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.raw_params"))) != xmpData.end() )
+    {
+      int32_t i = pos->toLong();
+      dt_image_raw_parameters_t raw_params = *(dt_image_raw_parameters_t *)&i;
+      int32_t user_flip = raw_params.user_flip;
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 and operation = 'flip' and num in (select MAX(num) from history where imgid = ?1 and operation = 'flip')", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
+      int convert = 0;
+      if(sqlite3_step(stmt) != SQLITE_ROW)
+        convert = 1;
+      sqlite3_finalize(stmt);
+      if(convert) dt_image_set_flip(img->id, user_flip);
+    }
+
     // history
     Exiv2::XmpData::iterator ver;
     Exiv2::XmpData::iterator en;
@@ -939,16 +955,13 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
       //to remove these so that we don't end up with a string of duplicates
       dt_remove_known_keys(xmpData);
     }
-    int stars = 1, raw_params = 0;
+    int stars = 1;
     // get stars and raw params from db
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select flags, raw_parameters from images where id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select flags from images where id = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
       stars      = sqlite3_column_int(stmt, 0);
-      raw_params = sqlite3_column_int(stmt, 1);
-    }
     sqlite3_finalize(stmt);
     xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); //rejected image = -1, others = 0..5
 
@@ -981,7 +994,6 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     sqlite3_finalize(stmt);
 
     xmpData["Xmp.darktable.xmp_version"] = xmp_version;
-    xmpData["Xmp.darktable.raw_params"] = raw_params;
 
     // get tags from db, store in dublin core
     Exiv2::Value::AutoPtr v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.

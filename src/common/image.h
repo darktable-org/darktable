@@ -126,6 +126,7 @@ void dt_image_remove(const int32_t imgid);
 int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */
 void dt_image_flip(const int32_t imgid, const int32_t cw);
+void dt_image_set_flip(const int32_t imgid, const int32_t user_flip);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image, exif or user override, if set. */
