@@ -159,7 +159,7 @@ dt_collection_update (const dt_collection_t *collection)
   }
 
   /* store the new query */
-  query = _dstrcat(query, "%s %s%s", selq, sq, (collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT)?" "LIMIT_QUERY:"");
+  query = _dstrcat(query, "%s %s%s", selq, sq?sq:"", (collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT)?" "LIMIT_QUERY:"");
   result = _dt_collection_store(collection, query);
 
   /* free memory used */
