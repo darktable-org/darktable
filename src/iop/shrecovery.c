@@ -51,16 +51,15 @@ typedef struct dt_iop_shrecovery_params_t
     float strength;
 
     // Weights
-    float contrast;
-    float saturation;
-    float exposedness;
+    float mu;
+    float sigma;
 
     int size_limit;  // Gauss and Laplace pyramide size limit
 } dt_iop_shrecovery_params_t;
 
 typedef struct dt_iop_shrecovery_data_t
 {
-    float strength, contrast, saturation, exposedness;
+    float strength, mu, sigma;
     int size_limit;
 
 } dt_iop_shrecovery_data_t;
@@ -69,7 +68,7 @@ typedef struct dt_iop_shrecovery_data_t
 typedef struct dt_iop_shrecovery_gui_data_t
 {
     GtkVBox   *vbox1,  *vbox2;
-    GtkDarktableSlider *scale1,*scale2,*scale3,*scale4, *scale5;       // strength, contrast, saturation, exposedness
+    GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;       // strength, sigma, mu
 }
     dt_iop_shrecovery_gui_data_t;
 
@@ -92,9 +91,8 @@ groups ()
 void init_key_accels(dt_iop_module_so_t *self)
 {
     dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposedness"));
+    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mu"));
+    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "sigma"));
     dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size_limit"));
 }
 
@@ -103,57 +101,33 @@ void connect_key_accels(dt_iop_module_t *self)
     dt_iop_shrecovery_gui_data_t *g = (dt_iop_shrecovery_gui_data_t*)self->gui_data;
 
     dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale1));
-    dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->scale2));
-    dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale3));
-    dt_accel_connect_slider_iop(self, "exposedness", GTK_WIDGET(g->scale4));
+    dt_accel_connect_slider_iop(self, "mu", GTK_WIDGET(g->scale2));
+    dt_accel_connect_slider_iop(self, "sigma", GTK_WIDGET(g->scale3));
     dt_accel_connect_slider_iop(self, "size_limit", GTK_WIDGET(g->scale4));
 }
 
 static
 const float _w_[5] = {0.05, 0.25, 0.4, 0.25, 0.05};
 
+
 static
-void create_image_weight(int height, int width, int ch, float *in, float *W, float scale, float wc, float ws, float we) {
-    float c1, s1, e1, c2, s2, e2, r, g, b, m, w1, w2;
-    float *l[3];
-    int s[3];
+void create_image_weight(int height, int width, int ch, float *in, float *W, float scale, float mu, float sigma) {
+    float e1, e2, r, g, b, factor = -0.5/sqr(sigma), t1, t2;
     for(int i = 0; i < height; i++) {
-        l[0] = in + max(i-1,0)*width*ch;
-        l[1] = in + i*width*ch;
-        l[2] = in + min(i,height-1)*width*ch;
         for(int j = 0; j < width; j++) {
-            s[0] = max(j-1,0)*ch;
-            s[1] = j*ch;
-            s[2] = min(j,width-1)*ch;
-#define A(i,j,S) l[i][s[j]+S]
-            c1 = 0.3*(A(0,0,0) + A(0,1,0) + A(0,2,0) + A(1,0,0) + A(1,2,0) + A(2,0,0) + A(2,1,0) + A(2,2,0) - 8*A(1,1,0));
-            c1 += 0.59*(A(0,0,1) + A(0,1,1) + A(0,2,1) + A(1,0,1) + A(1,2,1) + A(2,0,1) + A(2,1,1) + A(2,2,1) - 8*A(1,1,1));
-            c1 += 0.11*(A(0,0,2) + A(0,1,2) + A(0,2,2) + A(1,0,2) + A(1,2,2) + A(2,0,2) + A(2,1,2) + A(2,2,2) - 8*A(1,1,2));
-            c1 = powf(fabs(c1),wc);
-            c2 = 0.3*scale*(A(0,0,0) + A(0,1,0) + A(0,2,0) + A(1,0,0) + A(1,2,0) + A(2,0,0) + A(2,1,0) + A(2,2,0) - 8*A(1,1,0));
-            c2 += 0.59*scale*(A(0,0,1) + A(0,1,1) + A(0,2,1) + A(1,0,1) + A(1,2,1) + A(2,0,1) + A(2,1,1) + A(2,2,1) - 8*A(1,1,1));
-            c2 += 0.11*scale*(A(0,0,2) + A(0,1,2) + A(0,2,2) + A(1,0,2) + A(1,2,2) + A(2,0,2) + A(2,1,2) + A(2,2,2) - 8*A(1,1,2));
-            c2 = powf(fabs(c2),wc);
-#undef A
-            r = l[1][s[1]];
-            g = l[1][s[1]+1];
-            b = l[1][s[1]+2];
-            m = (r + g + b)/3.0;
-            s1 = powf(sqrt((sqr(r-m) + sqr(g-m) + sqr(b-m))/3.0),ws);
-            e1 = exp(-(sqr(r-0.5) + sqr(g-0.5) + sqr(b-0.5))/0.08*we);
-            r *= scale;
-            g *= scale;
-            b *= scale;
-            m = (r + g + b)/3.0;
-            s2 = powf(sqrt((sqr(r-m) + sqr(g-m) + sqr(b-m))/3.0),ws);
-            e2 = exp(-(sqr(r-0.5) + sqr(g-0.5) + sqr(b-0.5))/0.08*we);
-            w1 = c1*s1*e1;
-            w2 = c2*s2*e2;
-            if(fabs(w1 + w2) < 1e-6) {
-                w1 = 1.;
-                w2 = 0.;
+            r = in[(i*width+j)*ch];
+            g = in[(i*width+j)*ch+1];
+            b = in[(i*width+j)*ch+2];
+            t1 = factor*(sqr(r-mu) + sqr(g-mu) + sqr(b-mu));
+            t2 = factor*(sqr(r*scale-mu) + sqr(g*scale-mu) + sqr(b*scale-mu));
+            if(t2 < t1) {
+                e1 = 1.0;
+                e2 = exp(t2 - t1);
+            } else {
+                e1 = exp(t1 - t2);
+                e2 = 1.0;
             }
-            W[i*width+j] = w1/(w1+w2);
+            W[i*width+j] = e1/(e1+e2);
         }
     }
 }
@@ -293,10 +267,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 #pragma omp parallel for default(none) shared(roi_out,i,o) schedule(static)
 #endif
     */
-    printf("%d\n", d->size_limit);
     float *in = (float*)i, *out = (float*)o;
     float *W = (float*)malloc(2*sizeof(float)*roi_out->height*roi_out->width);
-    create_image_weight(roi_out->width, roi_out->height, ch, in, W, scale, d->contrast, d->saturation, d->exposedness);
+    float t1, t2, t3, mx;
+    create_image_weight(roi_out->width, roi_out->height, ch, in, W, scale, d->mu, d->sigma);
     gauss_image_weight(d->size_limit, roi_out->width, roi_out->height, W);
 
     float *im1 = (float*)malloc(6*sizeof(float)*roi_out->height*roi_out->width);
@@ -307,22 +281,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         im1[i*3] = in[i*ch];
         im1[i*3+1] = in[i*ch+1];
         im1[i*3+2] = in[i*ch+2];
-        im2[i*3] = min(in[i*ch]*scale,1.0);
-        im2[i*3+1] = min(in[i*ch+1]*scale,1.0);
-        im2[i*3+2] = min(in[i*ch+2]*scale,1.0);
-        /* im2[i*3] = in[i*ch]*scale; */
-        /* im2[i*3+1] = in[i*ch+1]*scale; */
-        /* im2[i*3+2] = in[i*ch+2]*scale; */
+        t1 = in[i*ch]*scale;
+        t2 = in[i*ch+1]*scale;
+        t3 = in[i*ch+2]*scale;
+        mx = 1.0;
+        mx = max(mx,t1);
+        mx = max(mx,t2);
+        mx = max(mx,t3);
+        im2[i*3] = t1/mx;
+        im2[i*3+1] = t2/mx;
+        im2[i*3+2] = t3/mx;
     }
     laplace_image(d->size_limit, roi_out->width, roi_out->height, im1);
     laplace_image(d->size_limit, roi_out->width, roi_out->height, im2);
     weighted_image(d->size_limit, roi_out->width, roi_out->height, im1, im2, W);
+
 
     for(int i = 0; i < LENGTH; i++) {
         out[i*ch] = im1[3*i];
         out[i*ch + 1] = im1[3*i+1];
         out[i*ch + 2] = im1[3*i+2];
     }
+
 
     free(W);
     free(im1);
@@ -340,32 +320,22 @@ strength_callback (GtkDarktableSlider *slider, gpointer user_data)
 }
 
 static void
-contrast_callback (GtkDarktableSlider *slider, gpointer user_data)
+mu_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     if(self->dt->gui->reset) return;
     dt_iop_shrecovery_params_t *p = (dt_iop_shrecovery_params_t *)self->params;
-    p->contrast = dtgtk_slider_get_value(slider);
+    p->mu = dtgtk_slider_get_value(slider);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-saturation_callback (GtkDarktableSlider *slider, gpointer user_data)
+sigma_callback (GtkDarktableSlider *slider, gpointer user_data)
 {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     if(self->dt->gui->reset) return;
     dt_iop_shrecovery_params_t *p = (dt_iop_shrecovery_params_t *)self->params;
-    p->saturation = dtgtk_slider_get_value(slider);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void
-exposedness_callback (GtkDarktableSlider *slider, gpointer user_data)
-{
-    dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-    if(self->dt->gui->reset) return;
-    dt_iop_shrecovery_params_t *p = (dt_iop_shrecovery_params_t *)self->params;
-    p->exposedness = dtgtk_slider_get_value(slider);
+    p->sigma = dtgtk_slider_get_value(slider);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -389,9 +359,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 #else
     dt_iop_shrecovery_data_t *d = (dt_iop_shrecovery_data_t *)piece->data;
     d->strength= p->strength;
-    d->contrast = p->contrast;
-    d->saturation = p->saturation;
-    d->exposedness = p->exposedness;
+    d->mu = p->mu;
+    d->sigma = p->sigma;
     d->size_limit = p->size_limit;
 #endif
 }
@@ -414,10 +383,9 @@ void gui_update(struct dt_iop_module_t *self)
     dt_iop_shrecovery_gui_data_t *g = (dt_iop_shrecovery_gui_data_t *)self->gui_data;
     dt_iop_shrecovery_params_t *p = (dt_iop_shrecovery_params_t *)module->params;
     dtgtk_slider_set_value(g->scale1, p->strength);
-    dtgtk_slider_set_value(g->scale2, p->contrast);
-    dtgtk_slider_set_value(g->scale3, p->saturation);
-    dtgtk_slider_set_value(g->scale4, p->exposedness);
-    dtgtk_slider_set_value(g->scale5, p->size_limit);
+    dtgtk_slider_set_value(g->scale2, p->mu);
+    dtgtk_slider_set_value(g->scale3, p->sigma);
+    dtgtk_slider_set_value(g->scale4, p->size_limit);
 }
 
 void init(dt_iop_module_t *module)
@@ -430,7 +398,7 @@ void init(dt_iop_module_t *module)
     module->gui_data = NULL;
     dt_iop_shrecovery_params_t tmp = (dt_iop_shrecovery_params_t)
         {
-            2.0, 1.0, 1.0, 1.0, 4
+            2.0, 0.5, 0.2, 4
         };
     memcpy(module->params, &tmp, sizeof(dt_iop_shrecovery_params_t));
     memcpy(module->default_params, &tmp, sizeof(dt_iop_shrecovery_params_t));
@@ -455,39 +423,33 @@ void gui_init(struct dt_iop_module_t *self)
     g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
 
-    g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 10.0, 0.01, p->strength, 2));
-    g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->contrast, 2));
-    g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->saturation, 2));
-    g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->exposedness, 2));
-    g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 1.0, 0.01, p->exposedness, 2));
-    g->scale5 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 2.0, 64.0, 1, p->size_limit, 0));
-    dtgtk_slider_set_snap(g->scale5, 1);
+    g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,-2.0, 6.0, 0.01, p->strength, 2));
+    g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 0.9, 0.01, p->mu, 2));
+    g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.05, 0.6, 0.01, p->sigma, 2));
+    g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 2.0, 64.0, 1, p->size_limit, 0));
+    dtgtk_slider_set_snap(g->scale4, 1);
     dtgtk_slider_set_label(g->scale1,_("strength"));
-    dtgtk_slider_set_label(g->scale2,_("contrast"));
-    dtgtk_slider_set_label(g->scale3,_("saturation"));
-    dtgtk_slider_set_label(g->scale4,_("well exposedness"));
-    dtgtk_slider_set_label(g->scale5,_("minimal pyramid limit"));
+    dtgtk_slider_set_label(g->scale2,_("mean"));
+    dtgtk_slider_set_label(g->scale3,_("deviation"));
+    dtgtk_slider_set_label(g->scale4,_("minimal pyramid limit"));
 
     gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale5), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
     g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the strength of lighten"), (char *)NULL);
-    g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the contrast weight"), (char *)NULL);
-    g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the saturation weight"), (char *)NULL);
-    g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("the well exposedness weight"), (char *)NULL);
-    g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("minimal pyramid limit size"), (char *)NULL);
+    g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("optimal exposedness"), (char *)NULL);
+    g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("exposedness deviation"), (char *)NULL);
+    g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("minimal pyramid limit size"), (char *)NULL);
 
     g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                       G_CALLBACK (strength_callback), self);
     g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                      G_CALLBACK (contrast_callback), self);
+                      G_CALLBACK (mu_callback), self);
     g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                      G_CALLBACK (saturation_callback), self);
+                      G_CALLBACK (sigma_callback), self);
     g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-                      G_CALLBACK (exposedness_callback), self);
-    g_signal_connect (G_OBJECT (g->scale5), "value-changed",
                       G_CALLBACK (size_limit_callback), self);
 
 }
