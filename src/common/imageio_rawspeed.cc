@@ -174,6 +174,12 @@ dt_imageio_open_rawspeed(
     if (m) delete m;
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
+  catch (RawDecoderException e)
+  {
+    if (d) delete d;
+    if (m) delete m;
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   // clean up raw stuff.
   if (d) delete d;
