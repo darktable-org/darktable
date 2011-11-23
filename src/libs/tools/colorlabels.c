@@ -67,10 +67,10 @@ void gui_init(dt_lib_module_t *self)
 
   /* setup list of tooltips */
   d->tooltips[0] = _("toggle red label\nof selected images (f1)");
-  d->tooltips[1] = _("toggle yellow label\nof selected images (f1)");
-  d->tooltips[2] = _("toggle green label\nof selected images (f1)");
-  d->tooltips[3] = _("toggle blue label\nof selected images (f1)");
-  d->tooltips[4] = _("toggle purple label\nof selected images (f1)");
+  d->tooltips[1] = _("toggle yellow label\nof selected images (f2)");
+  d->tooltips[2] = _("toggle green label\nof selected images (f3)");
+  d->tooltips[3] = _("toggle blue label\nof selected images (f4)");
+  d->tooltips[4] = _("toggle purple label\nof selected images (f5)");
   d->tooltips[5] = _("clear all labels of selected images");
 
   /* create buttons */
