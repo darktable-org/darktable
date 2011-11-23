@@ -122,28 +122,27 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   if (!strcmp(source,dest)) return;
 
   char query[1024];
-  gchar *ps = g_strdup(source);
+  gchar *tag;
 
   fprintf(stderr,"Moving '%s' into '%s'\n",source,dest);
-
-  if (g_strrstr(ps,"|"))
-  {
-    *g_strrstr(ps,"|")='\0';
-
-    g_snprintf(query,1024,
-	       "update tags set name=replace(name,'%s','%s') where name like '%s%%'",
-	       ps,
+  
+  if (g_strrstr(source,"|")) tag = g_strrstr (source,"|");
+  else tag = g_strconcat("|", source, NULL);
+  
+  fprintf(stderr,"Update tags set name=replace(name,'%s','%s%s') where name like '%s%%'\n",
+	       source,
 	       dest,
+	       tag,
 	       source);
-  }
-  else
-    g_snprintf(query, 1024,
-	       "update tags set name='%s|%s' where name = '%s'",
-	       dest, ps, ps);
-
+  
+  g_snprintf(query,1024,
+	       "update tags set name=replace(name,'%s','%s%s') where name like '%s%%'",
+	       source,
+	       dest,
+	       tag,
+	       source);
+  
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-
-  g_free(ps);
 
 }
 
