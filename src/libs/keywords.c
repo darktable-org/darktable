@@ -311,6 +311,9 @@ static void _lib_keywords_string_from_path(char *dest,size_t ds,
 
   /* build the tag string from components */
   int dcs = 0;
+
+  if(g_list_length(components) == 0) dcs += g_snprintf(dest+dcs, ds-dcs," ");
+		      
   for(int i=0;i<g_list_length(components);i++) 
   {
     dcs += g_snprintf(dest+dcs, ds-dcs,
@@ -318,7 +321,7 @@ static void _lib_keywords_string_from_path(char *dest,size_t ds,
 		      (gchar *)g_list_nth_data(components, i),
 		      (i < g_list_length(components)-1) ? "|" : "");
   }
-
+  
   /* free data */
   gtk_tree_path_free(wp);
   
@@ -353,8 +356,8 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
       
       _lib_keywords_string_from_path(dtag, 1024, model, dpath);
       _lib_keywords_string_from_path(stag, 1024, model, spath);
-      
-      /* updated tags in database */
+
+       /* updated tags in database */
       dt_tag_reorganize(stag,dtag);
 
       /* lets move the source iter into dest iter */

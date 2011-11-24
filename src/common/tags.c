@@ -124,16 +124,10 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   char query[1024];
   gchar *tag;
 
-  fprintf(stderr,"Moving '%s' into '%s'\n",source,dest);
-  
   if (g_strrstr(source,"|")) tag = g_strrstr (source,"|");
   else tag = g_strconcat("|", source, NULL);
   
-  fprintf(stderr,"Update tags set name=replace(name,'%s','%s%s') where name like '%s%%'\n",
-	       source,
-	       dest,
-	       tag,
-	       source);
+  if (!strcmp(dest," ")) { tag++; dest++; }
   
   g_snprintf(query,1024,
 	       "update tags set name=replace(name,'%s','%s%s') where name like '%s%%'",
