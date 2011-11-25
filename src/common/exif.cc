@@ -827,6 +827,16 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
       }
     }
 
+    // convert legacy flip bits (will not be written anymore, convert to flip history item here):
+    if ((pos=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.raw_params"))) != xmpData.end() )
+    {
+      int32_t i = pos->toLong();
+      dt_image_raw_parameters_t raw_params = *(dt_image_raw_parameters_t *)&i;
+      int32_t user_flip = raw_params.user_flip;
+      img->legacy_flip.user_flip = user_flip;
+      img->legacy_flip.legacy = 0;
+    }
+
     // history
     Exiv2::XmpData::iterator ver;
     Exiv2::XmpData::iterator en;

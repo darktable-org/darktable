@@ -214,6 +214,21 @@ void init_presets (dt_iop_module_so_t *self)
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_flip_params_t tmp = (dt_iop_flip_params_t) { 0 };
+  if(self->dev->image_storage.legacy_flip.user_flip >= 0)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 and operation = 'flip'", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, self->dev->image_storage.id);
+    int convert = 0;
+    if(sqlite3_step(stmt) != SQLITE_ROW)
+      convert = 1;
+    sqlite3_finalize(stmt);
+    if(convert)
+    {
+      self->default_enabled = 1;
+      tmp.orientation = self->dev->image_storage.legacy_flip.user_flip;
+    }
+  }
   memcpy(self->params, &tmp, sizeof(dt_iop_flip_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_flip_params_t));
 }
