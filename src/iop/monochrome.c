@@ -241,6 +241,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     p->a = 128.0f*(mouse_x - width  * 0.5f)/(float)width;
     p->b = 128.0f*(mouse_y - height * 0.5f)/(float)height;
     g->dragging = 1;
+    gtk_widget_queue_draw(self->widget);
     return TRUE;
   }
   return FALSE;
