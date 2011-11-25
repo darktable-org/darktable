@@ -47,7 +47,7 @@ DngDecoder::~DngDecoder(void) {
   mRootIFD = NULL;
 }
 
-RawImage DngDecoder::decodeRaw() {
+RawImage DngDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(COMPRESSION);
 
   if (data.empty())

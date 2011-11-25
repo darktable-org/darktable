@@ -35,7 +35,7 @@ ArwDecoder::~ArwDecoder(void) {
   mRootIFD = NULL;
 }
 
-RawImage ArwDecoder::decodeRaw() {
+RawImage ArwDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
   if (data.empty())

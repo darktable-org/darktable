@@ -35,7 +35,7 @@ PefDecoder::~PefDecoder(void) {
   mRootIFD = NULL;
 }
 
-RawImage PefDecoder::decodeRaw() {
+RawImage PefDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
   if (data.empty())

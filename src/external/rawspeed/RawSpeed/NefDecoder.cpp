@@ -37,7 +37,7 @@ NefDecoder::~NefDecoder(void) {
   mRootIFD = NULL;
 }
 
-RawImage NefDecoder::decodeRaw() {
+RawImage NefDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
 
   if (data.empty())

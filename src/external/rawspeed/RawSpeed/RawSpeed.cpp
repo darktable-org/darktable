@@ -29,7 +29,7 @@
 
 using namespace RawSpeed;
 
-//#define _USE_GFL_
+#define _USE_GFL_
 #ifdef _USE_GFL_
 #include "libgfl.h"
 #pragma comment(lib, "libgfl.lib") 
@@ -38,7 +38,7 @@ using namespace RawSpeed;
 int startTime;
 
 // Open file, or test corrupt file
-#if 1
+#if 0
 // Open file and save as tiff
 void OpenFile(FileReader f, CameraMetaData *meta) {
   RawDecoder *d = 0;
@@ -102,9 +102,16 @@ void OpenFile(FileReader f, CameraMetaData *meta) {
     char ascii[1024];
     WideCharToMultiByte(CP_ACP, 0, f.Filename(), -1, ascii, 1024, NULL, NULL);
     string savename(ascii);
+
     size_t index = savename.rfind('.');
-    replace(r->mode.begin(), r->mode.end(), ':', '-');
-    savename = savename.substr(0,index).append("[").append(r->mode).append("].tiff");
+    if (r->mode.length() > 0) {
+      int idx;
+      while( (idx = (int)r->mode.find_first_of(':')) >= 0 )
+        r->mode.replace( idx, 1, "-" );
+      savename = savename.substr(0,index).append("[").append(r->mode).append("].tiff");
+    } else {
+      savename = savename.substr(0,index).append(".tiff");
+    }
 
     gflSaveBitmap((char*)savename.c_str(),b,&s);
     gflFreeBitmap(b);
@@ -220,6 +227,101 @@ int wmain(int argc, _TCHAR* argv[])
 #endif
   try {
     CameraMetaData meta("..\\data\\cameras.xml");
+    OpenFile(FileReader(L"..\\testimg\\E-620-NO-DF.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\E-620-WITH-DF.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-E620_NF-Std_ISO100.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hVFATB.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hSLI0200NR0.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hREST.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hMULTII0200NR2D.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hHOUSE.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-VFAI0200.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-SLI0400NR0.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-RESM.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-L02007.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-NBI6400.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-NBI0400.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-ARWTM.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-L01004.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-L02006.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-HOUSE.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-SLI0200_NR_STD.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-VFAI00200.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E30.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hVFAI00200.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL002003.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL004003.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL008003.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL016003.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL032003.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hHOUSE.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hREST.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL064003.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hSLI00200NR_OFF.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL128003.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hVFAI00200.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_31.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_30.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_24.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_29.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_28.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_27.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_26.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_25.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_17.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_20.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_11.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_02.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3INBI00200.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3INBI00800.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL002004.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3INBI12800.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL004005.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL008007.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL016007XNR.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL128007.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3hSLI00400NR0.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3hSLI01600NR0.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3hVFAI00200.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3hVFAWB.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_26.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_06.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_05.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_08.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_01.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\samsung_ex1_07.srw"),&meta);
+
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2hVFAO.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2hSLI0200NR0.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2hRESM.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2FARWTT.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2FARI0200.ORF"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_500UZ.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_C7070WZ.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_C8080.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E1.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E10.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E20.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E3-2.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E3-3.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E3-4.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E3.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E300.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E330.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E400.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E410-2.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E410.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E420.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E500.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E510-2.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E510.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E520-2.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E520-3.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E520-4.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E520-5.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_E520.orf"),&meta);
+    OpenFile(FileReader(L"..\\testimg\\Olympus_SP350.orf"),&meta);
+
     OpenFile(FileReader(L"..\\testimg\\panasonic_lumix_dmc_fz150_18.rw2"),&meta);
     OpenFile(FileReader(L"..\\testimg\\panasonic_lumix_dmc_fz150_17.rw2"),&meta);
     OpenFile(FileReader(L"..\\testimg\\panasonic_lumix_dmc_fz150_16.rw2"),&meta);
@@ -238,7 +340,6 @@ int wmain(int argc, _TCHAR* argv[])
     OpenFile(FileReader(L"..\\testimg\\Canon_PowerShot_S100-PS100LL00806.CR2"),&meta);
     OpenFile(FileReader(L"..\\testimg\\Canon_PowerShot_S100-PS100hVFATB.CR2"),&meta);
     OpenFile(FileReader(L"..\\testimg\\samsung_ex1_07.srw"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hVFAI00200.ORF"),&meta);
     OpenFile(FileReader(L"..\\testimg\\Pentax_Kx_IGP2252.PEF"),&meta);
     OpenFile(FileReader(L"..\\testimg\\nikon-p7100-200iso-nrstan-big.NRW"),&meta);
     OpenFile(FileReader(L"..\\testimg\\nikon-p7100-400iso-nrstan-big.NRW"),&meta);
@@ -369,17 +470,6 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\Nikon_J1-J1LL04003.NEF"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Nikon_J1-J1LL08003.NEF"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Nikon_J1-J1LL16003.NEF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL002003.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL004003.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL008003.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL016003.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL032003.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hHOUSE.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hREST.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL064003.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hSLI00200NR_OFF.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1LL128003.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_E-PM1-EPM1hVFAI00200.ORF"),&meta);
     OpenFile(FileReader(L"..\\testimg\\Pentax_Kx_IGP2252.PEF"),&meta);
     OpenFile(FileReader(L"..\\testimg\\pentax_kx_03.pef"),&meta);
     OpenFile(FileReader(L"..\\testimg\\pentax_kx_04.pef"),&meta);
@@ -400,18 +490,6 @@ int wmain(int argc, _TCHAR* argv[])
     OpenFile(FileReader(L"..\\testimg\\Sony SLT-A35-AA35LL001003.ARW"),&meta);
     OpenFile(FileReader(L"..\\testimg\\Sony SLT-A35-AA35INBI00200.ARW"),&meta);
     OpenFile(FileReader(L"..\\testimg\\Sony SLT-A35-AA35FARI0200.ARW"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\olympus_epl3_31.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_30.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_24.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_29.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_28.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_27.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_26.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_25.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_17.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_20.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_11.orf"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\olympus_epl3_02.orf"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Sony NEX-5N-NEX5NLL004003.ARW"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Sony NEX-5N-NEX5NINBI00100.ARW"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Sony NEX-5N-NEX5NhSLI00200_NR_LOW.ARW"),&meta);
@@ -452,18 +530,6 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\Phase One H25 Capture One PRO 5.2.1 TIF-001.TIF"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Phase One H25 Capture One PRO 6.0.1 IIQ-001.IIQ"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Phase One H25 Capture One PRO 6.0.1 TIF-001.TIF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3INBI00200.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3INBI00800.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL002004.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3INBI12800.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL004005.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL008007.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL016007XNR.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3LL128007.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3hSLI00400NR0.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3hSLI01600NR0.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3hVFAI00200.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_PEN_E-P3-EP3hVFAWB.ORF"),&meta);
     OpenFile(FileReader(L"..\\testimg\\dng\\_DSC5230.dng"),&meta);
     OpenFile(FileReader(L"..\\testimg\\Nikon_D5100-dsc_0081.NEF"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Nikon_D5100-dsc_0064.NEF"),&meta);
@@ -484,43 +550,6 @@ int wmain(int argc, _TCHAR* argv[])
     OpenFile(FileReader(L"..\\testimg\\350d-color_problem.cr2"),&meta);
     OpenFile(FileReader(L"..\\testimg\\samsung_nx100_02.srw"),&meta);
     OpenFile(FileReader(L"..\\testimg\\samsung_ex1_10.srw"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_26.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_06.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_05.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_08.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\olympus_xz1_01.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\samsung_ex1_07.srw"),&meta);
-
-    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2hVFAO.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2hSLI0200NR0.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2hRESM.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2FARWTT.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus-EP2FARI0200.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_500UZ.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_C7070WZ.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_C8080.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E1.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E10.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E20.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E3-2.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E3-3.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E3-4.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E3.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E300.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E330.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E400.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E410-2.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E410.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E420.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E500.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E510-2.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E510.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E520-2.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E520-3.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E520-4.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E520-5.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E520.orf"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_SP350.orf"),&meta);
       OpenFile(FileReader(L"..\\testimg\\samsung_nx10_05.srw"),&meta);
       OpenFile(FileReader(L"..\\testimg\\samsung_nx10_08.srw"),&meta);
       OpenFile(FileReader(L"..\\testimg\\samsung_nx10_11.srw"),&meta);
@@ -749,13 +778,6 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\Canon_EOS_60D-E60DLL001006.CR2"),&meta);
 
     OpenFile(FileReader(L"..\\testimg\\Canon_EOS_400D.cr2"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-VFAI0200.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-SLI0400NR0.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-RESM.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-L02007.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-NBI6400.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-NBI0400.ORF"),&meta);
-      OpenFile(FileReader(L"..\\testimg\\Olympus_EPL2-ARWTM.ORF"),&meta);
       OpenFile(FileReader(L"..\\testimg\\5d-ISO-200.CR2"),&meta);
   OpenFile(FileReader(L"..\\testimg\\5d-ISO-H2.CR2"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Canon_EOS_40D.cr2"),&meta);
@@ -830,11 +852,6 @@ int wmain(int argc, _TCHAR* argv[])
     OpenFile(FileReader(L"..\\testimg\\Canon_EOS_5D.cr2"),&meta);
     OpenFile(FileReader(L"..\\testimg\\20101222_IMGP3849.PEF"),&meta);
     OpenFile(FileReader(L"..\\testimg\\20101204_IMGP2730.PEF"),&meta);
-  OpenFile(FileReader(L"..\\testimg\\Olympus_E5-L01004.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-L02006.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-HOUSE.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-SLI0200_NR_STD.ORF"),&meta);
-    OpenFile(FileReader(L"..\\testimg\\Olympus_E5-VFAI00200.ORF"),&meta);
     OpenFile(FileReader(L"..\\testimg\\Pentax_K-5-IMGP2058.PEF"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Pentax_K-5-IMGP2032.PEF"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Pentax_K-5-IMGP2028.PEF"),&meta);
@@ -959,19 +976,12 @@ OpenFile(FileReader(L"..\\testimg\\sony_a390_ISO200.ARW"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Nikon-D3000hMULTII0200.NEF"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Nikon-D3000hSLI0200.NEF"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Nikon-D3x_ISO100.NEF"),&meta);
-  OpenFile(FileReader(L"..\\testimg\\Olympus-E620_NF-Std_ISO100.ORF"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Sony-A500-hMULTII00200.ARW"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Sony-A500-hSLI00200_NR_1D.ARW"),&meta);
-  OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hVFATB.ORF"),&meta);
-  OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hSLI0200NR0.ORF"),&meta);
-  OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hREST.ORF"),&meta);
-  OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hMULTII0200NR2D.ORF"),&meta);
-  OpenFile(FileReader(L"..\\testimg\\Olympus-EPL1hHOUSE.ORF"),&meta);
+
+
   OpenFile(FileReader(L"..\\testimg\\camera_dngs\\Ricoh_GXR-A12-real_iso200.DNG"),&meta);
   OpenFile(FileReader(L"..\\testimg\\Nikon_D50.nef"),&meta);
-  OpenFile(FileReader(L"..\\testimg\\Olympus_E30.orf"),&meta);
-
-
   OpenFile(FileReader(L"..\\testimg\\camera_dngs\\ricoh_gr_digital_iii_01.dng"),&meta);
   OpenFile(FileReader(L"..\\testimg\\camera_dngs\\ricoh_gr_digital_iii_07.dng"),&meta);
   OpenFile(FileReader(L"..\\testimg\\camera_dngs\\ricoh_gr_digital_iii_09.dng"),&meta);

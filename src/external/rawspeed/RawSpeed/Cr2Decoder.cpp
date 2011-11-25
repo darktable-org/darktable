@@ -37,7 +37,7 @@ Cr2Decoder::~Cr2Decoder(void) {
   mRootIFD = NULL;
 }
 
-RawImage Cr2Decoder::decodeRaw() {
+RawImage Cr2Decoder::decodeRawInternal() {
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
 

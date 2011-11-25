@@ -38,7 +38,7 @@ OrfDecoder::~OrfDecoder(void) {
   mRootIFD = NULL;
 }
 
-RawImage OrfDecoder::decodeRaw() {
+RawImage OrfDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
   if (data.empty())
@@ -269,6 +269,71 @@ void OrfDecoder::decodeMetaData(CameraMetaData *meta) {
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
   setMetaData(meta, make, model, "", iso);
+
+  TiffIFD *ImageProcessing = 0;
+  try {
+    data = mRootIFD->getIFDsWithTag(MAKERNOTE);
+
+    if (!data.empty()) {
+      TiffIFD* exif = data[0];
+      TiffEntry *makernoteEntry = exif->getEntry(MAKERNOTE);
+      const uchar8* makernote = makernoteEntry->getData();
+      FileMap makermap((uchar8*)&makernote[8], makernoteEntry->count - 8);
+      TiffParserOlympus makertiff(&makermap);
+      makertiff.parseData();
+      TiffEntry *blackEntry = 0;
+
+      // Try reading black level from tag 0x2040 (Olympus Imageprocessing)
+      if (makertiff.RootIFD()->hasEntryRecursive((TiffTag)0x2040)) {
+        try {
+          TiffEntry *imagep = makertiff.RootIFD()->getEntryRecursive((TiffTag)0x2040);
+
+          int32 offset;
+          const uchar8* data = imagep->getData();
+          if (makertiff.tiff_endian == makertiff.getHostEndian())
+            offset = *(int32*)data;
+          else
+            offset = (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
+
+          // It seems like Olympus doesn't mind data pointing out of the makernote, 
+          // so we give it the entire remaining file
+          FileMap makermap2((uchar8*)&makernote[0], mFile->getSize()-makernoteEntry->getDataOffset());
+          if (makertiff.getHostEndian() == makertiff.tiff_endian)
+            ImageProcessing = new TiffIFD(&makermap2, offset);
+          else
+            ImageProcessing = new TiffIFDBE(&makermap2, offset);
+          blackEntry = ImageProcessing->getEntry((TiffTag)0x600);
+        } catch (TiffParserException) {
+        }
+      }
+
+      // Otherwise try 0x1012
+      if (!blackEntry && makertiff.RootIFD()->hasEntryRecursive((TiffTag)0x1012)) {
+        blackEntry = makertiff.RootIFD()->getEntryRecursive((TiffTag)0x1012);
+      }
+
+      // Order is assumed to be RGGB
+      if (blackEntry && blackEntry->count == 4) {
+        const ushort16* black = blackEntry->getShortArray();
+        for (int i = 0; i < 4; i++) {
+          if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_RED)
+            mRaw->blackLevelSeparate[i] = black[0];
+          else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_BLUE)
+            mRaw->blackLevelSeparate[i] = black[3];
+          else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN && i<2)
+            mRaw->blackLevelSeparate[i] = black[1];
+          else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN)
+            mRaw->blackLevelSeparate[i] = black[2];
+        }
+        // Adjust whitelevel based on the read black (we assume the dynamic range is the same)
+        mRaw->whitePoint -= (mRaw->blackLevel - mRaw->blackLevelSeparate[0]);
+      }
+    }
+  } catch (TiffParserException) {
+  }
+  if (ImageProcessing)
+    delete ImageProcessing;
+
 }
 
 } // namespace RawSpeed

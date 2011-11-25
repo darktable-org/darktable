@@ -37,7 +37,7 @@ Rw2Decoder::~Rw2Decoder(void) {
   mRootIFD = NULL;
 }
 
-RawImage Rw2Decoder::decodeRaw() {
+RawImage Rw2Decoder::decodeRawInternal() {
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(PANASONIC_STRIPOFFSET);
 

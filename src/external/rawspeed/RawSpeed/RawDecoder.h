@@ -66,8 +66,7 @@ public:
   /* Attempt to decode the image */
   /* A RawDecoderException will be thrown if the image cannot be decoded, */
   /* and there will not be any data in the mRaw image. */
-  /* This function must be overridden by actual decoders. */
-  virtual RawImage decodeRaw() = 0;
+  RawImage decodeRaw();
 
   /* This will apply metadata information from the camera database, */
   /* such as crop, black+white level, etc. */
@@ -99,6 +98,12 @@ public:
 
 
 protected:
+  /* Attempt to decode the image */
+  /* A RawDecoderException will be thrown if the image cannot be decoded, */
+  /* and there will not be any data in the mRaw image. */
+  /* This function must be overridden by actual decoders. */
+  virtual RawImage decodeRawInternal() = 0;
+
   /* Helper function for decoders - splits the image vertically and starts of decoder threads */
   /* The function returns when all threads are done */
   /* All errors are silently pushed into the "errors" array.*/
