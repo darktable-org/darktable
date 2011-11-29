@@ -1301,7 +1301,11 @@ int dt_control_key_released(guint key, guint state)
   return 0;
 }
 
-
+void dt_control_hinter_message(const struct dt_control_t *s, const char *message)
+{
+  if (s->proxy.hinter.module)
+    return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
+}
 
 const guint *dt_control_backgroundjobs_create(const struct dt_control_t *s, guint type,const gchar *message)
 {

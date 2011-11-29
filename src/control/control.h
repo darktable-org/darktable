@@ -124,6 +124,9 @@ void dt_control_backgroundjobs_progress(const struct dt_control_t *s, const guin
 /** assign a dt_job_t to a bgjob which makes it cancellable thru ui interaction */
 void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, const guint *key,struct dt_job_t *job);
 
+/** sets the hinter message */
+void dt_control_hinter_message(const struct dt_control_t *s, const char *message);
+
 /** turn the use of key accelerators on */
 void dt_control_key_accelerators_on(struct dt_control_t *s);
 /** turn the use of key accelerators on */
@@ -256,6 +259,12 @@ typedef struct dt_control_t
       void (*progress)(dt_lib_module_t *self, const guint *key, double progress);
       void (*set_cancellable)(dt_lib_module_t *self, const guint *key, dt_job_t *job);
     } backgroundjobs;
+
+    struct {
+      dt_lib_module_t *module;
+      void (*set_message)(dt_lib_module_t *self, const gchar *message);
+    } hinter;
+
   } proxy;
 
 }
