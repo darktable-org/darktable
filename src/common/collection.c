@@ -264,8 +264,11 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   gchar *count_query = NULL;
   count_query = dt_util_dstrcat(count_query, "select count(id) %s", query + 18);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+  if ((collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT)) 
+  {
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+  }
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
