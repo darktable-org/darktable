@@ -84,6 +84,8 @@ typedef struct dt_library_t
   int full_preview;
   int32_t full_preview_id;
 
+  int32_t collection_count;
+
   /* prepared and reusable statements */
   struct {
     /* main query statment, should be update on listener signal of collection */
@@ -112,6 +114,9 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  /* query new collection count */
+  lib->collection_count = dt_collection_get_count (darktable.collection);
 
   /* check if we can get a query from collection */
   const gchar *query=dt_collection_get_query (darktable.collection);
@@ -207,7 +212,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   lib->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
   cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
 
@@ -244,9 +248,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   int clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
   /* get the count of current collection */
-  int count = dt_collection_get_count (darktable.collection);
-
-  if(count == 0)
+  
+  if(lib->collection_count == 0)
   {
     const float fs = 15.0f;
     const float ls = 1.5f*fs;
@@ -287,11 +290,11 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     return;
 
   if(offset < 0) lib->offset = offset = 0;
-  while(offset >= count) lib->offset = (offset -= iir);
-  dt_view_set_scrollbar(self, 0, 1, 1, offset, count, max_rows*iir);
+  while(offset >= lib->collection_count) lib->offset = (offset -= iir);
+  dt_view_set_scrollbar(self, 0, 1, 1, offset, lib->collection_count, max_rows*iir);
 
   int32_t imgids_num = 0;
-  int32_t imgids[count];
+  int32_t imgids[lib->collection_count];
 
   if(clicked1)
   {
@@ -538,8 +541,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   if(!pan && zoom != 1) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
   // set scrollbar positions, clamp zoom positions
-  int count = dt_collection_get_count (darktable.collection);
-  if(count == 0)
+
+  if(lib->collection_count == 0)
   {
     zoom_x = zoom_y = 0.0f;
   }
@@ -548,16 +551,16 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
     if(zoom_x < 0)                         zoom_x = 0;
     if(zoom_x > wd*DT_LIBRARY_MAX_ZOOM-wd) zoom_x = wd*DT_LIBRARY_MAX_ZOOM-wd;
     if(zoom_y < 0)                         zoom_y = 0;
-    if(zoom_y > ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht)
-      zoom_y =  ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht;
+    if(zoom_y > ht*lib->collection_count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht)
+      zoom_y =  ht*lib->collection_count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht;
   }
   else
   {
     if(zoom_x < -wd*DT_LIBRARY_MAX_ZOOM/2)  zoom_x = -wd*DT_LIBRARY_MAX_ZOOM/2;
     if(zoom_x >  wd*DT_LIBRARY_MAX_ZOOM-wd) zoom_x =  wd*DT_LIBRARY_MAX_ZOOM-wd;
     if(zoom_y < -height+ht)                 zoom_y = -height+ht;
-    if(zoom_y >  ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht)
-      zoom_y =  ht*count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht;
+    if(zoom_y >  ht*lib->collection_count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht)
+      zoom_y =  ht*lib->collection_count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht;
   }
 
   int offset_i = (int)(zoom_x/wd);
@@ -593,7 +596,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   int id, clicked1, last_seli = 1<<30, last_selj = 1<<30;
   clicked1 = (oldpan == 0 && pan == 1 && lib->button == 1);
 
-  dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, count, DT_LIBRARY_MAX_ZOOM*max_cols);
+  dt_view_set_scrollbar(self, MAX(0, offset_i), DT_LIBRARY_MAX_ZOOM, zoom, DT_LIBRARY_MAX_ZOOM*offset_j, 
+			lib->collection_count, DT_LIBRARY_MAX_ZOOM*max_cols);
 
   cairo_translate(cr, -offset_x*wd, -offset_y*ht);
   cairo_translate(cr, -MIN(offset_i*wd, 0.0), 0.0);
@@ -752,10 +756,9 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
   const int scroll_by_rows = 4; /* This should be the number of visible rows. */
   const int offset_delta = scroll_by_rows * iir;
-  int count = dt_collection_get_count (darktable.collection);
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  lib->offset = MIN(lib->offset + offset_delta, count);
+  lib->offset = MIN(lib->offset + offset_delta, lib->collection_count);
   dt_control_queue_redraw_center();
 }
 
