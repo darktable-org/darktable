@@ -74,30 +74,6 @@ dt_collection_params (const dt_collection_t *collection)
   return &collection->params;
 }
 
-static inline gchar *_dstrcat(gchar *str,const gchar *format, ...)
-{  
-  va_list args;
-  gchar *ns;
-  va_start(args, format);
-  int clen = str ? strlen(str) : 0;
-  int alen = g_vsnprintf(NULL, 0, format, args);
-  int nsize = alen + clen + 1; 
-
-  /* realloc for new string */
-  ns = g_realloc(str, nsize);
-  if (str == NULL) ns[0] = '\0';
-  va_end(args);
-
-  /* append string */
-  va_start(args, format);
-  g_vsnprintf(ns+clen, alen+1, format, args);
-  va_end(args);
-
-  ns[nsize-1]='\0';
-  
-  return ns;
-}
-
 int
 dt_collection_update (const dt_collection_t *collection)
 {
@@ -115,51 +91,51 @@ dt_collection_update (const dt_collection_t *collection)
     /* add default filters */
     if (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
-      wq = _dstrcat(wq, "(film_id = %d)", collection->params.film_id);
+      wq = dt_util_dstrcat(wq, "(film_id = %d)", collection->params.film_id);
       need_operator = 1;
     }
     // DON'T SELECT IMAGES MAKED TO BE DELETED.
-    wq = _dstrcat(wq, " %s (flags & %d) != %d", (need_operator)?"and":((need_operator=1)?"":""), DT_IMAGE_REMOVE, DT_IMAGE_REMOVE);
+    wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d", (need_operator)?"and":((need_operator=1)?"":""), DT_IMAGE_REMOVE, DT_IMAGE_REMOVE);
     
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      wq = _dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
     else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      wq = _dstrcat(wq, " %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      wq = _dstrcat(wq, " %s id in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
+      wq = dt_util_dstrcat(wq, " %s id in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
     else if (collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      wq = _dstrcat(wq, " %s id not in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
+      wq = dt_util_dstrcat(wq, " %s id not in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
 
     /* add where ext if wanted */
     if ((collection->params.query_flags&COLLECTION_QUERY_USE_WHERE_EXT))
-      wq = _dstrcat(wq, " %s %s", (need_operator)?"and":"", collection->where_ext);
+      wq = dt_util_dstrcat(wq, " %s %s", (need_operator)?"and":"", collection->where_ext);
   }
   else
-    wq = _dstrcat(wq, "%s", collection->where_ext);
+    wq = dt_util_dstrcat(wq, "%s", collection->where_ext);
 
 
 
   /* build select part includes where */
   if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    selq = _dstrcat(selq, "select distinct id from (select * from images where %s) as a left outer join color_labels as b on a.id = b.imgid", wq);
+    selq = dt_util_dstrcat(selq, "select distinct id from (select * from images where %s) as a left outer join color_labels as b on a.id = b.imgid", wq);
   else
-    selq = _dstrcat(selq, "select distinct id from images where %s",wq);
+    selq = dt_util_dstrcat(selq, "select distinct id from images where %s",wq);
 
 
   /* build sort order part */
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
   {
-    if (sort == DT_LIB_SORT_DATETIME)           sq = _dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-    else if(sort == DT_LIB_SORT_RATING)         sq = _dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-    else if(sort == DT_LIB_SORT_FILENAME)       sq = _dstrcat(sq, ORDER_BY_QUERY, "filename");
-    else if(sort == DT_LIB_SORT_ID)             sq = _dstrcat(sq, ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)          sq = _dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
+    if (sort == DT_LIB_SORT_DATETIME)           sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
+    else if(sort == DT_LIB_SORT_RATING)         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
+    else if(sort == DT_LIB_SORT_FILENAME)       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
+    else if(sort == DT_LIB_SORT_ID)             sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
+    else if(sort == DT_LIB_SORT_COLOR)          sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
   }
 
   /* store the new query */
-  query = _dstrcat(query, "%s %s%s", selq, sq?sq:"", (collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT)?" "LIMIT_QUERY:"");
+  query = dt_util_dstrcat(query, "%s %s%s", selq, sq?sq:"", (collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT)?" "LIMIT_QUERY:"");
   result = _dt_collection_store(collection, query);
 
   /* free memory used */
@@ -279,7 +255,7 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   uint32_t count=1;
   const gchar *query = dt_collection_get_query(collection);
   gchar *count_query = NULL;
-  count_query = _dstrcat(count_query, "select count(id) %s", query + 18);
+  count_query = dt_util_dstrcat(count_query, "select count(id) %s", query + 18);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
@@ -311,20 +287,20 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   /* get collection order */
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
   {
-    if (sort == DT_LIB_SORT_DATETIME)           sq = _dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-    else if(sort == DT_LIB_SORT_RATING)         sq = _dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-    else if(sort == DT_LIB_SORT_FILENAME)       sq = _dstrcat(sq, ORDER_BY_QUERY, "filename");
-    else if(sort == DT_LIB_SORT_ID)             sq = _dstrcat(sq, ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)          sq = _dstrcat(sq, ORDER_BY_QUERY, "color desc,id");
+    if (sort == DT_LIB_SORT_DATETIME)           sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
+    else if(sort == DT_LIB_SORT_RATING)         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
+    else if(sort == DT_LIB_SORT_FILENAME)       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
+    else if(sort == DT_LIB_SORT_ID)             sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
+    else if(sort == DT_LIB_SORT_COLOR)          sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc,id");
   }
 
 
   sqlite3_stmt *stmt = NULL;
     
   if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = _dstrcat(query, "select distinct a.imgid as id from (select imgid from selected_images) as a left outer join color_labels as b on a.imgid = b.imgid %s",sq);
+    query = dt_util_dstrcat(query, "select distinct a.imgid as id from (select imgid from selected_images) as a left outer join color_labels as b on a.imgid = b.imgid %s",sq);
   else
-    query = _dstrcat(query, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
+    query = dt_util_dstrcat(query, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
 
@@ -425,7 +401,7 @@ dt_collection_update_query(const dt_collection_t *collection)
   const int num_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
   char *conj[] = {"and", "or", "and not"};
   
-  complete_query = _dstrcat(complete_query, "(");
+  complete_query = dt_util_dstrcat(complete_query, "(");
 
   for(int i=0; i<num_rules; i++)
   {
@@ -441,15 +417,15 @@ dt_collection_update_query(const dt_collection_t *collection)
     get_query_string(property, escaped_text, query);
 
     if(i > 0) 
-      complete_query = _dstrcat(complete_query, " %s %s", conj[mode], query);
+      complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
     else 
-      complete_query = _dstrcat(complete_query, "%s", query);
+      complete_query = dt_util_dstrcat(complete_query, "%s", query);
 
     g_free(escaped_text);
     g_free(text);
   }
 
-  complete_query = _dstrcat(complete_query, ")");
+  complete_query = dt_util_dstrcat(complete_query, ")");
 
   // printf("complete query: `%s'\n", complete_query);
 
@@ -472,7 +448,7 @@ dt_collection_update_query(const dt_collection_t *collection)
   complete_query = NULL;
   if(cquery && cquery[0] != '\0')
   {
-    complete_query = _dstrcat(complete_query, "delete from selected_images where imgid not in (%s)", cquery);
+    complete_query = dt_util_dstrcat(complete_query, "delete from selected_images where imgid not in (%s)", cquery);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), complete_query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
