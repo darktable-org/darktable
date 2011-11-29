@@ -85,8 +85,7 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_darktable_button_press_callback), self);
   
   /* set size of draw area */
-  int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, panel_width*2, 48);
+  gtk_widget_set_size_request(self->widget, 220, 48);
 
   /* create a cairo surface of dt icon */
   d->image = cairo_image_surface_create_from_png(DARKTABLE_DATADIR"/pixmaps/idbutton.png");
