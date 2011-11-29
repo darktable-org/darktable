@@ -80,12 +80,12 @@ typedef void (dt_signal_handler_t)(int) ;
 // static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 800071)
 static int dprintf(int fd,const char *fmt, ...)
 {
   va_list ap;
   FILE *f = fdopen(fd,"a");
-  va_start(ap, &fmt);
+  va_start(ap, fmt);
   int rc = vfprintf(f, fmt, ap);
   fclose(f);
   va_end(ap);
