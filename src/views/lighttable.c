@@ -204,6 +204,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  gboolean offset_changed = FALSE;
+
   if(darktable.gui->center_tooltip == 1)
     darktable.gui->center_tooltip = 2;
 
@@ -212,6 +214,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   lib->image_over = DT_VIEW_DESERT;
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+
+  /* fill background */
   cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
 
@@ -221,12 +225,18 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   }
   lib->first_visible_zoomable = -1;
 
+  /* check if offset has been changed */
   if(lib->track >  2) lib->offset += iir;
   if(lib->track < -2) lib->offset -= iir;
   lib->track = 0;
   if(lib->center) lib->offset = 0;
   lib->center = 0;
   int offset = lib->offset;
+  
+  /* if offset differs then flag as changed */
+  if (offset != lib->first_visible_filemanager)
+    offset_changed = TRUE;
+
   lib->first_visible_filemanager = offset;
   static int oldpan = 0;
   const int pan = lib->pan;
@@ -283,6 +293,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
     cairo_rel_line_to(cr, - offx + 10.0f, 0.0f);
     cairo_set_source_rgba(cr, .7, .7, .7, at);
     cairo_stroke(cr);
+
+    return;
   }
 
   /* do we have a main query collection statement */
@@ -292,9 +304,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(offset < 0) lib->offset = offset = 0;
   while(offset >= lib->collection_count) lib->offset = (offset -= iir);
   dt_view_set_scrollbar(self, 0, 1, 1, offset, lib->collection_count, max_rows*iir);
-
-  int32_t imgids_num = 0;
-  int32_t imgids[lib->collection_count];
 
   if(clicked1)
   {
@@ -392,41 +401,42 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   // End of loop; do post-loop update
   if (clicked1) lib->last_selected_idx = selidx;
 
-  // launch prefetching.
-  // cost should be only what you see here, actual loading is done in a separate thread
-  // through the job system:
 
-  /* clear and reset main query */
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
-  DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
-
-  /* setup offest and row for prefetch */
-  const int prefetchrows = .5*max_rows+1;
-  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset + max_rows*iir);
-  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, prefetchrows*iir);
-
-  // prefetch jobs in inverse order: supersede previous jobs: most important last
-  while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
-    imgids[imgids_num++] = sqlite3_column_int(lib->statements.main_query, 0);
- 
-  /* lets prefetch images thumbs */
-  while(imgids_num > 0)
+  /* check if offset was changed and we need to prefetch thumbs */
+  if (offset_changed)
   {
-    imgids_num --;
-    dt_mipmap_buffer_t buf;
-    float imgwd = iir == 1 ? 0.97 : 0.8;
-    dt_mipmap_size_t mip = 
-      dt_mipmap_cache_get_matching_size(
-          darktable.mipmap_cache, 
-          imgwd*wd, imgwd*(iir==1?height:ht));
+    int32_t imgids_num = 0;
+    int32_t imgids[lib->collection_count];
+    /* clear and reset main query */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+    DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
+    
+    /* setup offest and row for prefetch */
+    const int prefetchrows = .5*max_rows+1;
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset + max_rows*iir);
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, prefetchrows*iir);
 
-    dt_mipmap_cache_read_get(
-        darktable.mipmap_cache,
-        &buf,
-        imgids[imgids_num],
-        mip,
-        DT_MIPMAP_PREFETCH);
+    // prefetch jobs in inverse order: supersede previous jobs: most important last
+    while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+      imgids[imgids_num++] = sqlite3_column_int(lib->statements.main_query, 0);
+
+    float imgwd = iir == 1 ? 0.97 : 0.8;
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(
+							     darktable.mipmap_cache, 
+							     imgwd*wd, imgwd*(iir==1?height:ht));
+    while(imgids_num > 0)
+    {
+      imgids_num --;
+      dt_mipmap_buffer_t buf;
+      dt_mipmap_cache_read_get(
+			       darktable.mipmap_cache,
+			       &buf,
+			       imgids[imgids_num],
+			       mip,
+			       DT_MIPMAP_PREFETCH);
+    }
   }
+
 
 failure:
 
