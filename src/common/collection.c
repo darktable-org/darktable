@@ -50,7 +50,7 @@ dt_collection_new (const dt_collection_t *clone)
     memcpy (&collection->store,&clone->store,sizeof (dt_collection_params_t));
     collection->where_ext = g_strdup(clone->where_ext);
     collection->query = g_strdup(clone->query);
-    collection->clone =1;
+    collection->clone = 1;
   }
   else  /* else we just initialize using the reset */
     dt_collection_reset (collection);
@@ -470,8 +470,9 @@ dt_collection_update_query(const dt_collection_t *collection)
   }
 
 
-  /* raise signal of collection change */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  /* raise signal of collection change, only if this is an orginal */
+  if (!collection->clone)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 
 }
 
