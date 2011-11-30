@@ -179,7 +179,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 
   /* get start and end rows for range selection */
   int rc=0;
-  uint32_t sr=0,er=0;
+  uint32_t sr=-1,er=-1;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
 			      dt_collection_get_query(selection->collection), -1, &stmt, NULL);
   
@@ -190,10 +190,10 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
       sr = rc;
   
     if (id == imgid)
-    {
-      er = rc;
+       er = rc;
+ 
+    if (sr != -1 && er != -1 )
       break;
-    }
 
     rc++;
   }
