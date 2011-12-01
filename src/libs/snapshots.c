@@ -361,43 +361,37 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  char wdname[64];
+  /* backup last snapshot slot */
+  dt_lib_snapshot_t last = d->snapshot[d->size-1];
 
-  gchar *label1 = g_strdup(gtk_button_get_label (GTK_BUTTON (d->snapshot[0].button)));
-  const gchar *oldfilename = g_strdup(d->snapshot[d->size-1].filename);
-
-  for (int k=1; k<d->size; k++)
+  /* rotate slots down to make room for new one on top */
+  for (int k = d->size-1; k > 0; k--)
   {
-    if (k < MIN (d->size,d->num_snapshots+1)) 
-      gtk_widget_show(d->snapshot[k].button);
-
-    gchar *label2 = g_strdup(gtk_button_get_label (GTK_BUTTON (d->snapshot[k].button)));
-    gtk_button_set_label (GTK_BUTTON (d->snapshot[k].button), label1);
-    g_free (label1);
-    label1 = label2;
-
-    /* move data */
-    GtkWidget *tmp = d->snapshot[k].button;
+    GtkWidget *b = d->snapshot[k].button;
     d->snapshot[k] = d->snapshot[k-1];
-    d->snapshot[k].button = tmp;
+    d->snapshot[k].button = b;
+    gtk_button_set_label(GTK_BUTTON(d->snapshot[k].button),
+			 gtk_button_get_label(GTK_BUTTON(d->snapshot[k-1].button)));
   }
 
-  /* rotate filenames, so we don't waste hd space */
-  snprintf(d->snapshot[0].filename, 512, "%s", oldfilename);
-  g_free(label1);
+  /* update top slot with new snapshot */
+  char label[64];
+  GtkWidget *b = d->snapshot[0].button;
+  d->snapshot[0] = last;
+  d->snapshot[0].button = b;
+  const gchar *name = _("orginal");
+  if (darktable.develop->history_end > 0)
+  {
+    dt_iop_module_t *module  = ((dt_dev_history_item_t *)g_list_nth_data(darktable.develop->history, 
+									 darktable.develop->history_end-1))->module;
+    if (module)
+      name = module->name();
+    else
+      name = _("unknown");
+  }
+  g_snprintf(label,64,"%s (%d)", name, darktable.develop->history_end);
+  gtk_button_set_label(GTK_BUTTON(d->snapshot[0].button), label);
 
-  /* generate a label */
-  snprintf(wdname, 64, "%s", darktable.develop->image_storage.filename);
-  char *fname = wdname + strlen(wdname);
-  while(fname > wdname && *fname != '.') fname --;
-  if(*fname != '.') fname = wdname + strlen(wdname);
-  if(wdname + 64 - fname > 4) sprintf(fname, "(%d)", darktable.develop->history_end);
-
-  /* set new snapshot button label and display button */
-  gtk_button_set_label (GTK_BUTTON (d->snapshot[0].button), wdname);
-  gtk_widget_show (d->snapshot[0].button);
-
-  /* get zoom pos from develop */
   dt_lib_snapshot_t *s = d->snapshot + 0;
   DT_CTL_GET_GLOBAL (s->zoom_y, dev_zoom_y);
   DT_CTL_GET_GLOBAL (s->zoom_x, dev_zoom_x);
@@ -405,8 +399,15 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   DT_CTL_GET_GLOBAL (s->closeup, dev_closeup);
   DT_CTL_GET_GLOBAL (s->zoom_scale, dev_zoom_scale);
 
-  /* set take snap bit for darkroom */
-  d->num_snapshots++;
+  /* update slots used */
+  if (d->num_snapshots != d->size)
+    d->num_snapshots++;
+  
+  /* show active snapshot slots */
+  for (int k=0; k < d->num_snapshots; k++)
+    gtk_widget_show(d->snapshot[k].button);
+
+  /* request a new snapshot for top slot */
   dt_dev_snapshot_request(darktable.develop, (const char *)&d->snapshot[0].filename);
 
 }
