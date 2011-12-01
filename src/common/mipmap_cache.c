@@ -487,7 +487,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     cache->mip[k].size = k;
     uint32_t thumbnails = (uint32_t)(1.2f * max_mem/cache->mip[k].buffer_size);
 
-    dt_cache_init(&cache->mip[k].cache, thumbnails, 8, 64, 100*1024*1024);
+    dt_cache_init(&cache->mip[k].cache, thumbnails, 8, 64, max_mem);
 
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
