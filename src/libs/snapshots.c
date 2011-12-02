@@ -316,8 +316,12 @@ void gui_init(dt_lib_module_t *self)
    * initialize snapshots 
    */
   char wdname[32]={0};
-  char localdir[4096]={0};
-  dt_util_get_user_local_dir (localdir,4096);
+  char localtmpdir[4096]={0};
+  dt_util_get_user_local_dir (localtmpdir,4096);
+  strcat(localtmpdir,"/tmp");
+
+  /* make ensure that tmp directory exists */
+  g_mkdir_with_parents(localtmpdir,0700);
 
   for (long k=0;k<d->size;k++)
   {
@@ -331,7 +335,7 @@ void gui_init(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(d->snapshot[k].button),"snapshot",(gpointer)(k+1));
 
     /* setup filename for snapshot */
-    snprintf(d->snapshot[k].filename, 512, "%s/tmp/dt_snapshot_%ld.png",localdir,k);
+    snprintf(d->snapshot[k].filename, 512, "%s/dt_snapshot_%ld.png",localtmpdir,k);
 
     /* add button to snapshot box */
     gtk_box_pack_start(GTK_BOX(d->snapshots_box),d->snapshot[k].button,TRUE,TRUE,0);
