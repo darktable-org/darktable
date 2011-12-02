@@ -423,33 +423,20 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   /* get current snapshot index */
   long which = (long)g_object_get_data(G_OBJECT(widget),"snapshot");
 
-  /* check if snapshot is activated or inactivated */
-  if(!gtk_toggle_button_get_active(widget) && d->selected == which)
+  /* free current snapshot image if exists */
+  if (d->snapshot_image)
   {
-    /* if we have a snapshot surface lets destroy it*/
-    if(d->snapshot_image)
-    {
-      cairo_surface_destroy(d->snapshot_image);
-      d->snapshot_image = NULL;
-      dt_control_queue_redraw_center();
-    }
+    cairo_surface_destroy(d->snapshot_image);
+    d->snapshot_image = NULL;
   }
-  else if(gtk_toggle_button_get_active(widget))
-  { 
-    /* get current snapshot index */
-    long which = (long)g_object_get_data(G_OBJECT(widget),"snapshot");
 
+  /* check if snapshot is activated */
+  if (gtk_toggle_button_get_active(widget))
+  { 
     /* lets inactivate all togglebuttons except for self */
     for(int k=0; k<d->size; k++)
       if(GTK_WIDGET(widget) != d->snapshot[k].button) 
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
-
-    /* just in case free surface if any */
-    if(d->snapshot_image)
-    {
-      cairo_surface_destroy(d->snapshot_image);
-      d->snapshot_image = NULL;
-    }
 
     /* setup snapshot */
     d->selected = which;
@@ -461,9 +448,12 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
     DT_CTL_SET_GLOBAL(dev_zoom_scale, s->zoom_scale);
 
     dt_dev_invalidate(darktable.develop);
+
     d->snapshot_image = cairo_image_surface_create_from_png(s->filename);
 
-    dt_control_queue_redraw_center();
   }
+
+  /* redraw center view */
+  dt_control_queue_redraw_center();
 }
 
