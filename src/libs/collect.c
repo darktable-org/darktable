@@ -69,6 +69,7 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_TEXT=0,
   DT_LIB_COLLECT_COL_ID,
   DT_LIB_COLLECT_COL_TOOLTIP,
+  DT_LIB_COLLECT_COL_PATH,
   DT_LIB_COLLECT_NUM_COLS
 }
 dt_lib_collect_cols_t;
@@ -317,6 +318,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
                         DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
                         DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
+                        DT_LIB_COLLECT_COL_PATH, value,
                         -1);
   }
   sqlite3_finalize(stmt);
@@ -412,7 +414,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   const int active = d->active_rule;
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   if(item == 0) // get full path for film rolls:
-    gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TOOLTIP, &text, -1);
+    gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
   else
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
@@ -438,7 +440,7 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
       gchar *text;
       const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
       if(item == 0) // get full path for film rolls:
-        gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TOOLTIP, &text, -1);
+        gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
       else
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
       gtk_entry_set_text(GTK_ENTRY(d->text), text);
@@ -739,7 +741,7 @@ gui_init (dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
   gtk_tree_view_set_headers_visible(view, FALSE);
-  liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+  liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
