@@ -60,6 +60,7 @@ add_library(colorize MODULE "colorize.c")
 add_library(invert MODULE "invert.c")
 add_library(vibrance MODULE "vibrance.c")
 add_library(flip MODULE "flip.c")
+add_library(bauhaus MODULE "bauhaus.c")
 
 if(RSVG2_FOUND)
 	add_library(watermark MODULE "watermark.c")
