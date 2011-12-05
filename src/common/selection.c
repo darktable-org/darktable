@@ -210,7 +210,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   dt_collection_update(selection->collection);
 
   fullq = dt_util_dstrcat(fullq, "%s", "insert into selected_images ");
-  fullq = dt_util_dstrcat(fullq, "%x", dt_collection_get_query(selection->collection));
+  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
 			      fullq, -1, &stmt, NULL);
