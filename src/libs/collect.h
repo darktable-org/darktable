@@ -31,7 +31,7 @@ const char *dt_lib_collect_string[] =
   N_("tag"),
   N_("date"),
   N_("history"),
-  N_("colorlabel"),
+  N_("color label"),
   N_("title"),
   N_("description"),
   N_("creator"),
@@ -39,7 +39,7 @@ const char *dt_lib_collect_string[] =
   N_("rights"),
   N_("lens"),
   N_("iso"),
-  N_("aperature") 
+  N_("aperture") 
 };
 const int dt_lib_collect_string_cnt = 14;
 
