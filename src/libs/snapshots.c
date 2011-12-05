@@ -383,7 +383,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   GtkWidget *b = d->snapshot[0].button;
   d->snapshot[0] = last;
   d->snapshot[0].button = b;
-  const gchar *name = _("orginal");
+  const gchar *name = _("original");
   if (darktable.develop->history_end > 0)
   {
     dt_iop_module_t *module  = ((dt_dev_history_item_t *)g_list_nth_data(darktable.develop->history, 
