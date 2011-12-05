@@ -85,8 +85,8 @@ void dt_selection_invert(dt_selection_t *selection)
   if (!selection->collection)
     return;
 
-  fullq = dt_util_dstrcat(fullq, "insert into selected_images ");
-  fullq = dt_util_dstrcat(fullq, dt_collection_get_query(selection->collection));
+  fullq = dt_util_dstrcat(fullq, "%s", "insert into selected_images ");
+  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), 
 			"insert into memory.tmp_selection select imgid from selected_images", 
@@ -159,8 +159,8 @@ void dt_selection_select_all(dt_selection_t *selection)
   if (!selection->collection)
     return;
 
-  fullq = dt_util_dstrcat(fullq, "insert into selected_images ");
-  fullq = dt_util_dstrcat(fullq, dt_collection_get_query(selection->collection));
+  fullq = dt_util_dstrcat(fullq, "%s", "insert into selected_images ");
+  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
@@ -209,8 +209,8 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 
   dt_collection_update(selection->collection);
 
-  fullq = dt_util_dstrcat(fullq, "insert into selected_images ");
-  fullq = dt_util_dstrcat(fullq, dt_collection_get_query(selection->collection));
+  fullq = dt_util_dstrcat(fullq, "%s", "insert into selected_images ");
+  fullq = dt_util_dstrcat(fullq, "%x", dt_collection_get_query(selection->collection));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
 			      fullq, -1, &stmt, NULL);
@@ -262,8 +262,8 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
   dt_collection_update(selection->collection);
 
 
-  fullq = dt_util_dstrcat(fullq, "insert into selected_images ");
-  fullq = dt_util_dstrcat(fullq, dt_collection_get_query(selection->collection));
+  fullq = dt_util_dstrcat(fullq, "%s", "insert into selected_images ");
+  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
 
 
   /* clean current selection and select unaltered images */
