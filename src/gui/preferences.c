@@ -102,6 +102,8 @@ static void edit_preset (GtkTreeView * tree, const gint rowid, const gchar * nam
 static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g);
 
 static GtkWidget *_preferences_dialog;
+
+/*
 static GList *language_codes = NULL;
 static gint sys_default = -1;
 
@@ -203,6 +205,7 @@ static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
   gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
 }
+*/
 
 void dt_gui_preferences_show()
 {
@@ -223,7 +226,8 @@ void dt_gui_preferences_show()
   darktable.control->accel_remap_str = NULL;
   darktable.control->accel_remap_path = NULL;
 
-  init_tab_gui(notebook, &hardcoded_gui);
+//   init_tab_gui(notebook, &hardcoded_gui);
+  init_tab_gui(notebook, NULL);
   init_tab_core(notebook, NULL);
   init_tab_accels(notebook);
   init_tab_presets(notebook);
