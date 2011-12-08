@@ -818,7 +818,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         dt_colorlabels_set_label(img->id, 4);
     }
     
-    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.lr.HierarchicalSubject"))) != xmpData.end() )
+    if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"))) != xmpData.end() )
       _exif_import_tags(img,pos);
 
     if (!history_only && (pos=xmpData.findKey(Exiv2::XmpKey("Xmp.dc.subject"))) != xmpData.end() )
@@ -1018,7 +1018,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
     sqlite3_finalize(stmt);
     
     xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
-    xmpData.add(Exiv2::XmpKey("Xmp.lr.HierarchicalSubject"), v2.get());
+    xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
 
     // color labels
     char val[2048];
