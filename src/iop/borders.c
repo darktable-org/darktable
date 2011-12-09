@@ -128,8 +128,8 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   }
 
   // sanity check.
-  if(roi_out->width  < 1) roi_out->width  = 1;
-  if(roi_out->height < 1) roi_out->height = 1;
+  roi_out->width = CLAMP(roi_out->width, 1, 2*roi_in->width);
+  roi_out->height = CLAMP(roi_out->height, 1, 2*roi_in->height);
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -408,6 +408,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("16:9"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("constant border"));
+  dt_gui_key_accel_block_on_focus(gtk_bin_get_child(GTK_BIN(g->aspect)));
 
   g_signal_connect (G_OBJECT (g->aspect), "changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), (char *)NULL);
