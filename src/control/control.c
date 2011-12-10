@@ -505,6 +505,7 @@ void dt_control_shutdown(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->run_mutex);
   dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
+
   // gdk_threads_leave();
   int k;
   for(k=0; k<s->num_threads; k++)
@@ -1202,16 +1203,12 @@ void _control_queue_redraw_wrapper(dt_signal_t signal)
 
 void dt_control_queue_redraw()
 {
-  gboolean i_own_lock = dt_control_gdk_lock();
   _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_ALL);
-  if (i_own_lock) dt_control_gdk_unlock();
 }
 
 void dt_control_queue_redraw_center() 
-{
-  gboolean i_own_lock = dt_control_gdk_lock();
+{  
   _control_queue_redraw_wrapper(DT_SIGNAL_CONTROL_REDRAW_CENTER);
-  if (i_own_lock) dt_control_gdk_unlock();
 }
 
 void dt_control_queue_redraw_widget(GtkWidget *widget)
