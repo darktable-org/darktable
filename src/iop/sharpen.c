@@ -504,7 +504,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t)
   {
-    2.0, 0.5, 0.004
+    2.0, 0.5, 0.1
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_sharpen_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_sharpen_params_t));
