@@ -52,6 +52,7 @@ src/iop/clipping.c
 src/iop/colorcontrast.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
+src/iop/colorize.c
 src/iop/colorout.c
 src/iop/colortransfer.c
 src/iop/colorzones.c
@@ -84,6 +85,7 @@ src/iop/temperature.c
 src/iop/tonecurve.c
 src/iop/tonemap.cc
 src/iop/velvia.c
+src/iop/vibrance.c
 src/iop/vignette.c
 src/iop/watermark.c
 src/iop/wb_presets.c
