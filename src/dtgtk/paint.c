@@ -398,13 +398,19 @@ void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 
 void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
+  gboolean def = FALSE;
   gint s = (w<h?w:h);
+  double r = 0.4;
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale (cr,s,s);
 
   /* fill base color */
-  cairo_arc (cr, 0.5, 0.5, 0.5, 0.0, 2.0*M_PI);
-  float alpha = (flags&8)?0.6:1.0;
+  cairo_arc (cr, 0.5, 0.5, r, 0.0, 2.0*M_PI);
+  float alpha = 1.0;
+
+  if ((flags & 8) && !(flags & CPF_PRELIGHT))
+    alpha = 0.6;
+
   switch((flags&7))
   {
     case  0:
@@ -424,6 +430,7 @@ void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
       break; // purple
     default:
       cairo_set_source_rgba (cr,1,1,1,alpha);
+      def = TRUE;
       break; // gray
   }
   cairo_fill (cr);
@@ -431,8 +438,20 @@ void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
   /* draw outline */
   cairo_set_source_rgba (cr,0.5,0.5,0.5,0.5);
   cairo_set_line_width(cr, 0.1);
-  cairo_arc (cr, 0.5, 0.5, 0.5, 0.0, 2.0*M_PI);
+  cairo_arc (cr, 0.5, 0.5, r, 0.0, 2.0*M_PI);
   cairo_stroke (cr);
+
+  /* draw cross overlay if highlighted */
+  if (def == TRUE && (flags & CPF_PRELIGHT))
+  {
+    cairo_set_line_width(cr, 0.15);
+    cairo_set_source_rgba (cr, 0.5, 0.0, 0.0, 0.8);
+    cairo_move_to(cr, 0.0, 0.0);
+    cairo_line_to(cr, 1.0, 1.0);
+    cairo_move_to(cr, 0.9, 0.1);
+    cairo_line_to(cr, 0.1, 0.9);
+    cairo_stroke(cr);
+  }
 
 }
 
