@@ -113,7 +113,7 @@ void gui_init(dt_lib_module_t *self)
                     (gpointer)self);
 
   /* sort by label */
-  widget = gtk_label_new(_("images sorted by"));
+  widget = gtk_label_new(_("sorted by"));
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 7);
   
   /* sort combobox */
