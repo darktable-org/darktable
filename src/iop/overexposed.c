@@ -299,7 +299,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->upper), "value-changed", G_CALLBACK (upper_callback), self);
 
   /* add quicktool button for enable/disable the plugin */
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(G_OBJECT(button), "tooltip-text", _("toggle over/under exposed indication"),
                (char *)NULL);
   g_signal_connect (G_OBJECT (button), "clicked",

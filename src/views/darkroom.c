@@ -773,7 +773,7 @@ void enter(dt_view_t *self)
    */
 
   /* create favorite plugin preset popup tool */
-  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT);
+  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
                (char *)NULL);
   g_signal_connect (G_OBJECT (favorite_presets), "clicked",
@@ -784,7 +784,7 @@ void enter(dt_view_t *self)
   /* add IOP modules to plugin list */
 
   /* create quick styles popup menu tool */
-  GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT);
+  GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect (G_OBJECT (styles), "clicked", 
 		    G_CALLBACK (_darkroom_ui_apply_style_popupmenu),
 		    NULL);
