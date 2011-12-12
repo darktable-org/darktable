@@ -23,7 +23,6 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "gui/preferences.h"
 #include "dtgtk/button.h"
 
 DT_MODULE(1)
@@ -39,8 +38,6 @@ dt_lib_tool_filter_t;
 static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data);
 /* callback for sort combobox change */
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data);
-/* callback for preference button */
-static void _lib_filter_preferences_button_clicked(GtkWidget *widget, gpointer user_data);
 /* updates the query and redraws the view */
 static void _lib_filter_update_query(dt_lib_module_t *self);
 
@@ -134,16 +131,6 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_filter_sort_combobox_changed),
                     (gpointer)self);
 
-
-  /* create the preference button */
-  widget = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
-  gtk_box_pack_end(GTK_BOX(self->widget), widget, FALSE, FALSE, 20);
-  g_object_set(G_OBJECT(widget), "tooltip-text", _("show global preferences"),
-               (char *)NULL);
-  g_signal_connect (G_OBJECT (widget), "clicked",
-                    G_CALLBACK (_lib_filter_preferences_button_clicked),
-                    NULL);
-
   /* lets update query */
   _lib_filter_update_query(self);
 }
@@ -194,11 +181,6 @@ static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user
   
   /* update the query and view */
   _lib_filter_update_query(user_data);
-}
-
-static void _lib_filter_preferences_button_clicked (GtkWidget *widget, gpointer user_data)
-{
-  dt_gui_preferences_show();
 }
 
 static void _lib_filter_update_query(dt_lib_module_t *self)
