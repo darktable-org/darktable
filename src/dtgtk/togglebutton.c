@@ -134,6 +134,11 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   else
     flags &=~(CPF_ACTIVE);
 
+  /* prelight */
+  if (state == GTK_STATE_PRELIGHT)
+    flags |= CPF_PRELIGHT;
+  else
+    flags &=~CPF_PRELIGHT;
 
   /* begin cairo drawing */
   cairo_t *cr;
