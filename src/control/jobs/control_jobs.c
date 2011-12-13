@@ -17,7 +17,6 @@
 */
 #include <glib.h>
 #include <glib/gstdio.h>
-
 #include "common/collection.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -30,6 +29,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/gpx.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
 
@@ -365,6 +365,85 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   return 0;
 }
 
+int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  struct dt_gpx_t *gpx = NULL;
+  const gchar *filename = (const gchar *)t1->data;
+
+  /* do we have any selected images */
+  if (!t)
+    goto bail_out;
+
+  /* try parse the gpx data */
+  gpx = dt_gpx_new(filename);
+  if (!gpx)
+  {
+    dt_control_log(_("failed to parse gpx file"));
+    goto bail_out;
+  }
+
+  /* go thru each selected image and lookup location in gpx */
+  do
+  {
+    GTimeVal timestamp;
+    gdouble lon,lat;
+    uint32_t imgid = (long int)t->data;
+
+    /* get image */
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    if (!cimg)
+      continue;
+
+    /* convert exif datetime
+       TODO: exiv2 dates should be iso8601 and we are probably doing some ugly 
+       convertion before inserting into database.
+     */
+    gint year;
+    gint month;
+    gint day;
+    gint hour;
+    gint minute;
+    gint  seconds;
+    gchar datetime[32];
+    
+    if (sscanf(cimg->exif_datetime_taken, "%i:%i:%i %i:%i:%i", 
+	       (int*)&year, (int*)&month, (int*)&day, 
+	       (int*)&hour,(int*)&minute,(int*)&seconds) != 6)
+    {
+      fprintf(stderr,"broken exif time in db, '%s'\n", cimg->exif_datetime_taken);
+      dt_image_cache_read_release(darktable.image_cache, cimg);
+      continue;
+    }
+
+    /* release the lock */
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+
+    snprintf(datetime, 32, "%4d%.2d%.2dT%.2d%.2d%.2dZ",year, month, day, hour, minute, seconds);
+
+    /* get image datetime taken and release */
+    if (!g_time_val_from_iso8601(datetime, &timestamp))
+      continue;
+
+    /* only update image location if time is within gpx tack range */
+    if (dt_gpx_get_location(gpx, &timestamp, &lon, &lat))
+      dt_image_set_location(imgid, lon, lat);
+      
+  } while ((t = g_list_next(t)) != NULL);
+
+  dt_gpx_destroy(gpx);
+  g_free(t1->data);
+  return 0;
+
+bail_out:
+  if (gpx)
+    dt_gpx_destroy(gpx);
+
+  g_free(t1->data);
+  return 1;
+}
+
 void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
 {
   /* get sorted list of selected images */
@@ -413,10 +492,26 @@ void dt_control_delete_images_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_init(t);
 }
 
+void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename)
+{
+  dt_control_job_init(job, "gpx apply");
+  job->execute = &dt_control_gpx_apply_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_init(t);
+  t->data = g_strdup(filename);
+}
+
 void dt_control_merge_hdr()
 {
   dt_job_t j;
   dt_control_merge_hdr_job_init(&j);
+  dt_control_add_job(darktable.control, &j);
+}
+
+void dt_control_gpx_apply(const gchar *filename)
+{
+  dt_job_t j;
+  dt_control_gpx_apply_job_init(&j, filename);
   dt_control_add_job(darktable.control, &j);
 }
 
