@@ -121,6 +121,7 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
 
   if (gpx->track)
     g_list_foreach(gpx->track, (GFunc)g_free, NULL);
+
   g_free(gpx);
 }
 
@@ -138,11 +139,8 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
 
     _gpx_track_point_t *tp = (_gpx_track_point_t *)item->data;
 
-    fprintf(stderr,"Comparing %ld with %ld (diff = %ld)\n",timestamp->tv_sec, tp->time.tv_sec,
-	    timestamp->tv_sec - tp->time.tv_sec );
-
     /* if timestamp is out of time range return false but fill
-       closest location value */
+       closest location value start or end point */
     if ((!item->next && timestamp->tv_sec >= tp->time.tv_sec)
 	|| (timestamp->tv_sec <= tp->time.tv_sec))
     {

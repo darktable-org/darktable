@@ -16,6 +16,7 @@ FILE(GLOB SOURCE_FILES
   "common/exif.cc" 
   "common/film.c" 
   "common/fswatch.c" 
+  "common/gpx.c"
   "common/history.c" 
   "common/image.c" 
   "common/image_cache.c" 
