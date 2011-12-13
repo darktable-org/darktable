@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # The modules
-set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker keywords hinter)
+set(MODULES import export copy_history styles tagging image gps select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker keywords hinter)
 
 # The tools
 set(MODULES ${MODULES} viewswitcher)
@@ -27,6 +27,7 @@ add_library(styles MODULE "styles.c")
 add_library(image MODULE "image.c")
 add_library(tagging MODULE "tagging.c")
 add_library(select MODULE "select.c")
+add_library(gps MODULE "gps.c")
 add_library(collect MODULE "collect.c")
 add_library(recentcollect MODULE "recentcollect.c")
 add_library(metadata MODULE "metadata.c")
