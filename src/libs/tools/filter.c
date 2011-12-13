@@ -86,8 +86,8 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *widget;
 
   /* list label */
-  widget = gtk_label_new(_("list"));
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 7);
+  widget = gtk_label_new(_("view"));
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
   
   /* create the filter combobox */
   d->filter = widget = gtk_combo_box_new_text();
@@ -110,8 +110,8 @@ void gui_init(dt_lib_module_t *self)
                     (gpointer)self);
 
   /* sort by label */
-  widget = gtk_label_new(_("sorted by"));
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 7);
+  widget = gtk_label_new(_("sort by"));
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
   
   /* sort combobox */
   d->sort = widget = gtk_combo_box_new_text();
