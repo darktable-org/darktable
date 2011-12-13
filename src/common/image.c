@@ -145,6 +145,23 @@ void dt_image_print_exif(const dt_image_t *img, char *line, int len)
     snprintf(line, len, "1/%.0f f/%.1f %dmm iso %d", 1.0/img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
+void dt_image_set_location(const int32_t imgid, double lon, double lat)
+{
+  /* fetch image from cache */
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  if (!cimg)
+    return;
+  dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+  
+  /* set image location */
+  image->longitude = lon;
+  image->latitude = lat;
+
+  /* store */
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+  dt_image_cache_read_release(darktable.image_cache, image);
+}
+
 void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
 {
   sqlite3_stmt *stmt;
@@ -457,6 +474,8 @@ void dt_image_init(dt_image_t *img)
   g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00", sizeof(img->exif_datetime_taken));
   img->exif_crop = 1.0;
   img->exif_exposure = img->exif_aperture = img->exif_iso = img->exif_focal_length = img->exif_focus_distance = 0;
+  img->latitude = img->longitude = 0.0;
+
 }
 
 
