@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
 */
 #include "common/darktable.h"
 #include "control/control.h"
+#include "control/jobs/control_jobs.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
@@ -33,7 +35,8 @@ typedef struct dt_lib_image_t
 {
   GtkWidget
       *rotate_cw_button, *rotate_ccw_button, *remove_button,
-      *delete_button, *create_hdr_button, *duplicate_button, *reset_button;
+    *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
+    *gpx_button;
 }
 dt_lib_image_t;
 
@@ -65,6 +68,36 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 5) dt_control_flip_images(1);
   else if(i == 6) dt_control_flip_images(2);
   else if(i == 7) dt_control_merge_hdr();
+  else if(i == 8) 
+  { 
+    /* bring a filechooser to select the gpx file to apply to selection */
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+    GtkWidget *filechooser = gtk_file_chooser_dialog_new ("open gpx file",
+							  GTK_WINDOW (win),
+							  GTK_FILE_CHOOSER_ACTION_OPEN,
+							  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+							  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+							  (char *)NULL);
+    GtkFileFilter *filter;
+    filter = GTK_FILE_FILTER(gtk_file_filter_new());
+    gtk_file_filter_add_pattern(filter, "*.gpx");
+    gtk_file_filter_set_name(filter, _("GPS Data Exchange Format"));
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+    
+    filter = GTK_FILE_FILTER(gtk_file_filter_new());
+    gtk_file_filter_add_pattern(filter, "*");
+    gtk_file_filter_set_name(filter, _("all files"));
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+  
+    if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+    {
+      gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (filechooser));
+      dt_control_gpx_apply(filename);
+      g_free(filename);
+    }
+    
+    gtk_widget_destroy(filechooser);
+  }
   dt_control_queue_redraw_center();
 }
 
@@ -134,6 +167,13 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
 
+  button = gtk_button_new_with_label(_("apply gpx track file"));
+  d->gpx_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("parses a gpx file and updates location of selected images"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)8);
+
+  
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }
 
