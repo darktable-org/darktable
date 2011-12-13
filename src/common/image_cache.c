@@ -229,8 +229,8 @@ dt_image_cache_write_release(
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 14, img->exif_crop);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->orientation);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, *(uint32_t*)(&img->legacy_flip));
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->longitude);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, img->latitude);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 17, img->longitude);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->latitude);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 19, img->id);
   int rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
