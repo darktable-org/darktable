@@ -127,11 +127,33 @@ dt_collection_update (const dt_collection_t *collection)
   /* build sort order part */
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
   {
-    if (sort == DT_LIB_SORT_DATETIME)           sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-    else if(sort == DT_LIB_SORT_RATING)         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-    else if(sort == DT_LIB_SORT_FILENAME)       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
-    else if(sort == DT_LIB_SORT_ID)             sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)          sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
+    switch(sort)
+    {
+    case DT_LIB_SORT_DATETIME:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
+      break;
+
+    case DT_LIB_SORT_DATETIME_REV:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken desc");
+      break;
+
+    case DT_LIB_SORT_RATING:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
+      break;
+
+    case DT_LIB_SORT_FILENAME:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
+      break;
+
+    case DT_LIB_SORT_ID:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
+      break;
+
+    case DT_LIB_SORT_COLOR:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
+      break;
+
+    }
   }
 
   /* store the new query */
@@ -292,11 +314,32 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   /* get collection order */
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
   {
-    if (sort == DT_LIB_SORT_DATETIME)           sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-    else if(sort == DT_LIB_SORT_RATING)         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-    else if(sort == DT_LIB_SORT_FILENAME)       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
-    else if(sort == DT_LIB_SORT_ID)             sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)          sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc,id");
+    switch(sort)
+    {
+    case DT_LIB_SORT_DATETIME:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
+      break;
+
+    case DT_LIB_SORT_DATETIME_REV:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken desc");
+      break;
+
+    case DT_LIB_SORT_RATING:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
+      break;
+
+    case DT_LIB_SORT_FILENAME:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
+      break;
+
+    case DT_LIB_SORT_ID:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
+      break;
+
+    case DT_LIB_SORT_COLOR:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc,id");
+      break;
+    }
   }
 
 

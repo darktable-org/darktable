@@ -117,7 +117,8 @@ void gui_init(dt_lib_module_t *self)
   d->sort = widget = gtk_combo_box_new_text();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("filename"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("time"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("oldest"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("most recent"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rating"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("id"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("color label"));
@@ -172,12 +173,7 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
   /* update the ui last settings */
-  int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
-  else if(i == 1)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_DATETIME);
-  else if(i == 2)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_RATING);
-  else if(i == 3)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_ID);
-  else if(i == 4)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_COLOR);
+  dt_conf_set_int("ui_last/combo_sort", gtk_combo_box_get_active(widget));
   
   /* update the query and view */
   _lib_filter_update_query(user_data);
