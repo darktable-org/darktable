@@ -34,7 +34,10 @@ enum dt_view_type_flags_t {
   DT_VIEW_LIGHTTABLE = 1,
   DT_VIEW_DARKROOM = 2,
   DT_VIEW_TETHERING = 4,
+  DT_VIEW_MAP = 8
 };
+
+#define DT_VIEW_ALL (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP)
 
 /**
  * main dt view module (as lighttable or darkroom)

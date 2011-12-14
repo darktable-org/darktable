@@ -47,7 +47,13 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select color from color_labels where imgid=?1", -1, &vm->statements.get_color, NULL); 
 
   int res=0, midx=0;
-  char *modules[] = {"lighttable","darkroom","capture",NULL};
+  char *modules[] = {
+    "map",
+    "lighttable",
+    "darkroom",
+    "capture",
+    NULL
+  };
   char *module = modules[midx];
   while(module != NULL)
   {
