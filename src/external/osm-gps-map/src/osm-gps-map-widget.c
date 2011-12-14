@@ -749,7 +749,7 @@ osm_gps_map_blit_tile(OsmGpsMap *map, GdkPixbuf *pixbuf, int offset_x, int offse
 #define MSG_RESPONSE_LEN_FORMAT "%u"
 #else
 #define MSG_RESPONSE_BODY(a)    ((a)->response_body->data)
-#define MSG_RESPONSE_LEN(a)     ((a)->response_body->length)
+#define MSG_RESPONSE_LEN(a)     ((long int)(a)->response_body->length)
 #define MSG_RESPONSE_LEN_FORMAT "%ld"
 #endif
 
@@ -1069,10 +1069,13 @@ osm_gps_map_load_tile (OsmGpsMap *map, int zoom, int x, int y, int offset_x, int
 
     g_debug("Load virtual tile %d,%d (%d,%d) z:%d", x, y, offset_x, offset_y, zoom);
 
+    target_x = x;
+    target_y = y;
+
     if (zoom > MIN_ZOOM) {
       zoom -= zoom_offset;
-      target_x = x; x >>= zoom_offset;
-      target_y = y; y >>= zoom_offset;
+      x >>= zoom_offset;
+      y >>= zoom_offset;
     }
 
     g_debug("Load actual tile %d,%d (%d,%d) z:%d", x, y, offset_x, offset_y, zoom);
