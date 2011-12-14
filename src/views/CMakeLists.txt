@@ -6,10 +6,11 @@ set(MODULES darkroom lighttable)
 add_library(darkroom MODULE "darkroom.c")
 add_library(lighttable MODULE "lighttable.c")
 
-if(USE_GEO)
-  add_library(map MODULE "map.c")
-  set(MODULES ${MODULES} map)
-endif(USE_GEO)
+if(LIBSOUP2_FOUND)
+    add_library(map MODULE "map.c")
+    set(MODULES ${MODULES} map)
+endif(LIBSOUP2_FOUND)
+
 
 if(GPHOTO2_FOUND)
 	add_library(views_capture MODULE "capture.c")

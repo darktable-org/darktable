@@ -353,16 +353,15 @@ if(NOT DONT_USE_RAWSPEED)
 endif(NOT DONT_USE_RAWSPEED)
 
 # osm gps map library
-if(USE_GEO)
-  if(LIBSOUP2_FOUND)
+if(LIBSOUP2_FOUND)
     add_dependencies(lib_darktable osmgpsmap)
     add_library(osmgpsmap_static STATIC IMPORTED)
     set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
     target_link_libraries(lib_darktable osmgpsmap_static)
     add_subdirectory(external/osm-gps-map)
     list(APPEND STATIC_LIBS osmgpsmap_static)
-  endif(LIBSOUP2_FOUND)
-endif(USE_GEO)
+endif(LIBSOUP2_FOUND)
+
 
 target_link_libraries(lib_darktable ${LIBS})
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
