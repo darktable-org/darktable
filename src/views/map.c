@@ -1,7 +1,7 @@
 
 /*
 		This file is part of darktable,
-		copyright (c) 2010-2011 henrik andersson.
+		copyright (c) 2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -22,12 +22,15 @@
 #include "views/view.h"
 #include "libs/lib.h"
 
+#include "osm-gps-map.h"
+
 DT_MODULE(1)
 
 
 typedef struct dt_map_t
 {
-
+  GtkWidget *center;
+  OsmGpsMap *map;
 }
 dt_map_t;
 
@@ -48,7 +51,22 @@ void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_map_t));
   memset(self->data,0,sizeof(dt_map_t));
-  //  dt_map_t *lib = (dt_map_t *)self->data;
+
+
+  dt_map_t *lib = (dt_map_t *)self->data;
+
+  lib->map = g_object_new (OSM_TYPE_GPS_MAP,
+		      "map-source", OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+		      "tile-cache", "dt.map.cache",
+		      "tile-cache-base", "/tmp",
+		      "proxy-uri",g_getenv("http_proxy"),
+		      NULL);
+
+  OsmGpsMapLayer *osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
+				 "show-scale",TRUE, NULL);
+
+  osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), osd);
+  g_object_unref(G_OBJECT(osd));
 
 }
 
@@ -105,7 +123,18 @@ int try_enter(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
-  //  dt_map_t *lib = (dt_map_t *)self->data;
+  dt_map_t *lib = (dt_map_t *)self->data;
+
+  lib->map = OSM_GPS_MAP(osm_gps_map_new());
+
+  /* replace center widget */
+  GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
+  gtk_widget_hide(dt_ui_center(darktable.gui->ui));  
+  gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
+
+  gtk_box_reorder_child(GTK_BOX(parent), GTK_WIDGET(lib->map), 2);
+
+  gtk_widget_show_all(GTK_WIDGET(lib->map));
 
   /* setup proxy functions */
   darktable.view_manager->proxy.map.view = self;
@@ -115,7 +144,9 @@ void enter(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
-  //  dt_map_t *cv = (dt_map_t *)self->data;
+  dt_map_t *lib = (dt_map_t *)self->data;
+  gtk_widget_destroy(GTK_WIDGET(lib->map));
+  gtk_widget_show_all(dt_ui_center(darktable.gui->ui));
 
   /* reset proxy */
   darktable.view_manager->proxy.map.view = NULL;
@@ -148,7 +179,6 @@ void connect_key_accels(dt_view_t *self)
 
 void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom)
 {
-  // dt_map_t *map = (dt_map_t *)view->data;
-
-  
+  dt_map_t *lib = (dt_map_t *)view->data;
+  osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
 }
