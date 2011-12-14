@@ -158,6 +158,13 @@ if(USE_FLICKR)
   endif(FLICKCURL_FOUND)
 endif(USE_FLICKR)
 
+if(USE_GEO)
+  find_package(LibSoup2)
+  include_directories(${LIBSOUP2_INCLUDE_DIRS})
+  list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
+  add_definitions(${LIBSOUP2_DEFINITIONS})
+endif(USE_GEO)
+
 #
 # Detect compile of optional pwstorage backends
 #
@@ -341,6 +348,15 @@ if(NOT DONT_USE_RAWSPEED)
   # compile rawspeed
   add_subdirectory(external/rawspeed)
 endif(NOT DONT_USE_RAWSPEED)
+
+# osm gps map library
+if(USE_GEO)
+add_dependencies(lib_darktable osmgpsmap)
+add_library(osmgpsmap_static STATIC IMPORTED)
+set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
+target_link_libraries(lib_darktable ${LIBS} osmgpsmap_static)
+add_subdirectory(external/osm-gps-map)
+endif(USE_GEO)
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 list(APPEND LIBS lib_darktable)

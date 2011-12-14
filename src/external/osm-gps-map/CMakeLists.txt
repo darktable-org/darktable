@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 2.6)
+
+set(OSM_GPS_MAP_SOURCES
+	"src/converter.c"
+	"src/osd-utils.c"
+	"src/osm-gps-map-compat.c"
+	"src/osm-gps-map-image.c"
+	"src/osm-gps-map-layer.c"
+	"src/osm-gps-map-osd.c"
+	"src/osm-gps-map-point.c"
+	"src/osm-gps-map-source.c"
+	"src/osm-gps-map-track.c"
+	"src/osm-gps-map-widget.c"
+    )
+add_definitions("-D M_PI=3.14159265358979323846" "-D M_LN2=0.69314718055994530942" "-D M_LOG10E=0.43429448190325182765" )
+add_library(osmgpsmap STATIC ${OSM_GPS_MAP_SOURCES})
+target_link_libraries(osmgpsmap)
+
