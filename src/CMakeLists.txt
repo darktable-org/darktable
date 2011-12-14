@@ -337,7 +337,8 @@ else(APPLE)
   set(LIBRAW_STATIC_LIBS libraw_static)
 endif(APPLE)
 
-target_link_libraries(lib_darktable ${LIBS} ${LIBRAW_STATIC_LIBS})
+target_link_libraries(lib_darktable ${LIBRAW_STATIC_LIBS})
+list(APPEND STATIC_LIBS ${LIBRAW_STATIC_LIBS})
 
 # same for librawspeed (can switch it off with -DDONT_USE_RAWSPEED, for macs):
 if(NOT DONT_USE_RAWSPEED)
@@ -345,9 +346,10 @@ if(NOT DONT_USE_RAWSPEED)
   add_dependencies(lib_darktable rawspeed)
   add_library(rawspeed_static STATIC IMPORTED)
   set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
-  target_link_libraries(lib_darktable ${LIBS} rawspeed_static)
+  target_link_libraries(lib_darktable rawspeed_static)
   # compile rawspeed
   add_subdirectory(external/rawspeed)
+  list(APPEND STATIC_LIBS rawspeed_static)
 endif(NOT DONT_USE_RAWSPEED)
 
 # osm gps map library
@@ -355,12 +357,15 @@ if(USE_GEO)
 add_dependencies(lib_darktable osmgpsmap)
 add_library(osmgpsmap_static STATIC IMPORTED)
 set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
-target_link_libraries(lib_darktable ${LIBS} osmgpsmap_static)
+target_link_libraries(lib_darktable osmgpsmap_static)
 add_subdirectory(external/osm-gps-map)
+list(APPEND STATIC_LIBS osmgpsmap_static)
 endif(USE_GEO)
 
+target_link_libraries(lib_darktable ${LIBS})
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
-list(APPEND LIBS lib_darktable)
+# make sure static libs is first
+list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
 
 # Compile libraw modules
 add_subdirectory(external/LibRaw)
