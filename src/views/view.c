@@ -1173,4 +1173,11 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
   return NULL;
 }
 
+
+void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom)
+{
+  if (vm->proxy.map.view)
+    vm->proxy.map.center_on_location(vm->proxy.map.view, lon, lat, zoom);
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

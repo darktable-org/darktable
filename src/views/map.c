@@ -31,6 +31,9 @@ typedef struct dt_map_t
 }
 dt_map_t;
 
+/* proxy function to center map view on location at a zoom level */
+static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
+
 const char *name(dt_view_t *self)
 {
   return _("map");
@@ -104,11 +107,18 @@ void enter(dt_view_t *self)
 {
   //  dt_map_t *lib = (dt_map_t *)self->data;
 
+  /* setup proxy functions */
+  darktable.view_manager->proxy.map.view = self;
+  darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
+  
 }
 
 void leave(dt_view_t *self)
 {
   //  dt_map_t *cv = (dt_map_t *)self->data;
+
+  /* reset proxy */
+  darktable.view_manager->proxy.map.view = NULL;
 }
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
@@ -133,4 +143,12 @@ void connect_key_accels(dt_view_t *self)
                                      (gpointer)self, NULL);
   dt_accel_connect_view(self, "toggle film strip", closure);
 #endif
+}
+
+
+void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom)
+{
+  // dt_map_t *map = (dt_map_t *)view->data;
+
+  
 }

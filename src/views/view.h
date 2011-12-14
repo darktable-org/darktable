@@ -183,6 +183,12 @@ typedef struct dt_view_manager_t
       void (*set_job_code)(const dt_view_t *view, const char *name);
     } tethering;
 
+    /* map view proxy object */
+    struct {
+      struct dt_view_t *view;
+      void (*center_on_location)(const dt_view_t *view, gdouble lon, gdouble lat, double zoom);
+    } map;
+
   } proxy;
 
 
@@ -262,5 +268,9 @@ void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid);
 void dt_view_filmstrip_prefetch();
 
 
+/*
+ * Map View Proxy
+ */
+void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom);
 
 #endif
