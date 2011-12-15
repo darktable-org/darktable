@@ -83,6 +83,14 @@ GtkWidget*      osm_gps_map_new                         (void);
 
 gchar*          osm_gps_map_get_default_cache_directory (void);
 
+/* post expose callback */
+typedef void (*osm_gps_map_expose_func_t)(cairo_t *cri, 
+                                     int32_t width_i, int32_t height_i, 
+                                          int32_t pointerx, int32_t pointery, gpointer user_data);
+void            osm_gps_map_set_post_expose_callback(OsmGpsMap *map, osm_gps_map_expose_func_t post_expose, 
+                                                     gpointer user_data);
+
+
 void            osm_gps_map_download_maps               (OsmGpsMap *map, OsmGpsMapPoint *pt1, OsmGpsMapPoint *pt2, int zoom_start, int zoom_end);
 void            osm_gps_map_download_cancel_all         (OsmGpsMap *map);
 void            osm_gps_map_get_bbox                    (OsmGpsMap *map, OsmGpsMapPoint *pt1, OsmGpsMapPoint *pt2);

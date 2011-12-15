@@ -203,6 +203,10 @@ struct _OsmGpsMapPrivate
 #ifdef OSD_DOUBLE_BUFFER
     GdkPixmap *dbuf_pixmap;
 #endif
+
+    osm_gps_map_expose_func_t post_expose_func;
+    gpointer post_expose_func_data;
+
     //additional images or tracks added to the map
     GSList *tracks;
     GSList *images;
@@ -1530,6 +1534,8 @@ osm_gps_map_init (OsmGpsMap *object)
     priv->images = NULL;
     priv->layers = NULL;
 
+    priv->post_expose_func = NULL;
+
     priv->drag_counter = 0;
     priv->drag_mouse_dx = 0;
     priv->drag_mouse_dy = 0;
@@ -2172,6 +2178,28 @@ osm_gps_map_configure (GtkWidget *widget, GdkEventConfigure *event)
     return FALSE;
 }
 
+void 
+osm_gps_map_set_post_expose_callback(OsmGpsMap *map, osm_gps_map_expose_func_t post_expose, gpointer user_data)
+{
+  map->priv->post_expose_func = (gpointer)post_expose;
+  map->priv->post_expose_func_data = user_data;
+}
+
+static void 
+osm_gps_map_post_expose(OsmGpsMap *map, GdkDrawable *drawable, GdkEventExpose *event)
+{
+  if (!map->priv->post_expose_func)
+    return;
+
+  cairo_t *cr;
+  int32_t w,h;
+  gdk_drawable_get_size(drawable,&w,&h);
+
+  cr = gdk_cairo_create (drawable);
+  map->priv->post_expose_func(cr,w,h,0,0,map->priv->post_expose_func_data);
+  cairo_destroy (cr);
+}
+
 static gboolean
 osm_gps_map_expose (GtkWidget *widget, GdkEventExpose  *event)
 {
@@ -2264,6 +2292,10 @@ osm_gps_map_expose (GtkWidget *widget, GdkEventExpose  *event)
 #endif
         }
     }
+
+
+    /* post expose */
+    osm_gps_map_post_expose(map, drawable, event);
 
     return FALSE;
 }
