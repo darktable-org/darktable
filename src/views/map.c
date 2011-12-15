@@ -18,6 +18,7 @@
 */
 
 #include "control/control.h"
+#include "control/conf.h"
 #include "common/debug.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -94,17 +95,21 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 				  int32_t pointerx, int32_t pointery, gpointer user_data)
 {
   const int ts = 64;
-  OsmGpsMapPoint bb[2], *l=NULL;
+  OsmGpsMapPoint bb[2], *l=NULL, *center=NULL;
   int px,py;
   dt_map_t *lib = (dt_map_t *)user_data;
 
+  /* get bounding box coords */
   osm_gps_map_get_bbox(lib->map, &bb[0], &bb[1]);
 
-  cairo_set_source_rgba(cri, 0, 0, 0, 0.4);
+  /* get map view state and store  */
+  int zoom = osm_gps_map_get_zoom(lib->map);
+  center = osm_gps_map_get_center(lib->map);
+  dt_conf_set_float("plugins/map/longitude", center->rlon);
+  dt_conf_set_float("plugins/map/latitude", center->rlat);
+  dt_conf_set_int("plugins/map/zoom", zoom);
+  osm_gps_map_point_free(center);
 
-  /* check which scale we have  */
-  float scale = osm_gps_map_get_scale(lib->map);
-  
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
   DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
@@ -117,6 +122,8 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
   while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
     int32_t imgid = sqlite3_column_int(lib->statements.main_query, 0);
+
+    cairo_set_source_rgba(cri, 0, 0, 0, 0.4);
 
     /* free l if allocated */
     if (l)
@@ -132,7 +139,7 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 
 
     /* dependent on scale draw different overlays */
-    if (scale < 2.0)
+    if (zoom >= 17)
     {
 	dt_mipmap_buffer_t buf;
 	dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
@@ -145,22 +152,37 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 	  float ms = fminf(
 			   ts/(float)buf.width,
 			   ts/(float)buf.height);
-	    const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+	  const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
 	  surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, 
 							 buf.width, buf.height, stride);
 	  
-	    cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_NEAREST);
-	    cairo_save(cri);
+	  cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_NEAREST);
+	  cairo_save(cri);
+	  
+	  /* first of lets draw a pin */
+	  cairo_move_to(cri, px, py);
+	  cairo_line_to(cri, px+8, py-8);
+	  cairo_line_to(cri, px+4, py-8);
+	  cairo_fill(cri);
 
-	    cairo_translate(cri, px-(ts*0.5), py-(ts*0.5));
-	    cairo_scale(cri, ms, ms);
-	    cairo_set_source_surface (cri, surface, 0, 0);
-	    cairo_paint(cri);
+	  /* and the frame around image */
+	  cairo_move_to(cri, px+2, py-8);
+	  cairo_line_to(cri, px+2 + (buf.width*ms) + 4, py-8);
+	  cairo_line_to(cri, px+2 + (buf.width*ms) + 4 , py-8-(buf.height*ms) - 4);
+	  cairo_line_to(cri, px+2 , py-8-(buf.height*ms) - 4);
+	  cairo_fill(cri);
+	   
 
-	    cairo_restore(cri);
-
-	    cairo_surface_destroy(surface);
-	    
+	  /* draw image*/
+	  cairo_translate(cri, px+4, py - 8 - (buf.height*ms) - 2);
+	  cairo_scale(cri, ms, ms);
+	  cairo_set_source_surface (cri, surface, 0, 0);
+	  cairo_paint(cri);
+	  
+	  cairo_restore(cri);
+	  
+	  cairo_surface_destroy(surface);
+	  
 	}
     }
     else
@@ -185,6 +207,11 @@ void enter(dt_view_t *self)
 
   lib->map = OSM_GPS_MAP(osm_gps_map_new());
 
+  /* restore last view center and zoom */
+  const float lon = dt_conf_get_float("plugins/map/longitude");
+  const float lat = dt_conf_get_float("plugins/map/latitude");
+  const int zoom = dt_conf_get_int("plugins/map/zoom");  
+
   /* replace center widget */
   GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
   gtk_widget_hide(dt_ui_center(darktable.gui->ui));  
@@ -206,10 +233,11 @@ void enter(dt_view_t *self)
 
 
   osm_gps_map_set_post_expose_callback(lib->map, _view_map_post_expose, lib);
-  
+
+  osm_gps_map_set_center(lib->map, lat, lon);
+  osm_gps_map_set_zoom(lib->map, zoom);
 
   _view_map_collection_changed(NULL, self);
-
 }
 
 void leave(dt_view_t *self)
