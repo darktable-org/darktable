@@ -22,6 +22,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
+#include "common/mipmap_cache.h"
 #include "views/view.h"
 #include "libs/lib.h"
 
@@ -92,7 +93,8 @@ void configure(dt_view_t *self, int wd, int ht)
 static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_i, 
 				  int32_t pointerx, int32_t pointery, gpointer user_data)
 {
-  OsmGpsMapPoint bb[2], *l;
+  const int ts = 64;
+  OsmGpsMapPoint bb[2], *l=NULL;
   int px,py;
   dt_map_t *lib = (dt_map_t *)user_data;
 
@@ -100,6 +102,9 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 
   cairo_set_source_rgba(cri, 0, 0, 0, 0.4);
 
+  /* check which scale we have  */
+  float scale = osm_gps_map_get_scale(lib->map);
+  
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
   DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
@@ -111,20 +116,59 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
   /* query collection ids */
   while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
+    int32_t imgid = sqlite3_column_int(lib->statements.main_query, 0);
+
+    /* free l if allocated */
+    if (l)
+      osm_gps_map_point_free(l);
+
     /* for each image check if within bbox */
-    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, 
-						     sqlite3_column_int(lib->statements.main_query, 0));
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
     l = osm_gps_map_point_new_degrees(cimg->latitude, cimg->longitude);
     dt_image_cache_read_release(darktable.image_cache, cimg);
 
-    
-
+    /* translate l into screen coords */
     osm_gps_map_convert_geographic_to_screen(lib->map, l, &px, &py);
 
-    osm_gps_map_point_free(l);
 
-    cairo_rectangle(cri, px-8, py-8, 16, 16);
-    cairo_fill(cri);
+    /* dependent on scale draw different overlays */
+    if (scale < 2.0)
+    {
+	dt_mipmap_buffer_t buf;
+	dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
+								 ts, ts);
+	dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
+
+	cairo_surface_t *surface = NULL;
+	if(buf.buf)
+	{
+	  float ms = fminf(
+			   ts/(float)buf.width,
+			   ts/(float)buf.height);
+	    const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+	  surface = cairo_image_surface_create_for_data (buf.buf, CAIRO_FORMAT_RGB24, 
+							 buf.width, buf.height, stride);
+	  
+	    cairo_pattern_set_filter(cairo_get_source(cri), CAIRO_FILTER_NEAREST);
+	    cairo_save(cri);
+
+	    cairo_translate(cri, px-(ts*0.5), py-(ts*0.5));
+	    cairo_scale(cri, ms, ms);
+	    cairo_set_source_surface (cri, surface, 0, 0);
+	    cairo_paint(cri);
+
+	    cairo_restore(cri);
+
+	    cairo_surface_destroy(surface);
+	    
+	}
+    }
+    else
+    {
+      /* just draw a patch indicating that there is images at the location */
+      cairo_rectangle(cri, px-8, py-8, 16, 16);
+      cairo_fill(cri);
+    }
   }
 
 }
