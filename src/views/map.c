@@ -114,8 +114,10 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
     /* for each image check if within bbox */
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, 
 						     sqlite3_column_int(lib->statements.main_query, 0));
-
     l = osm_gps_map_point_new_degrees(cimg->latitude, cimg->longitude);
+    dt_image_cache_read_release(darktable.image_cache, cimg);
+
+    
 
     osm_gps_map_convert_geographic_to_screen(lib->map, l, &px, &py);
 
