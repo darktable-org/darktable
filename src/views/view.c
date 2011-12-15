@@ -48,10 +48,10 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 
   int res=0, midx=0;
   char *modules[] = {
-    "map",
     "lighttable",
     "darkroom",
     "capture",
+    "map",
     NULL
   };
   char *module = modules[midx];
