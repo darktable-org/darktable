@@ -18,7 +18,10 @@
 */
 
 #include "control/control.h"
+#include "common/debug.h"
+#include "common/collection.h"
 #include "common/darktable.h"
+#include "common/image_cache.h"
 #include "views/view.h"
 #include "libs/lib.h"
 
@@ -31,11 +34,16 @@ typedef struct dt_map_t
 {
   GtkWidget *center;
   OsmGpsMap *map;
+  struct {
+    sqlite3_stmt *main_query;
+  }statements;
 }
 dt_map_t;
 
 /* proxy function to center map view on location at a zoom level */
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom);
+/* callback when collection has change, needs to update map */
+static void _view_map_collection_changed(gpointer instance, gpointer user_data);
 
 const char *name(dt_view_t *self)
 {
@@ -81,36 +89,40 @@ void configure(dt_view_t *self, int wd, int ht)
   //dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
-void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
+static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_i, 
+				  int32_t pointerx, int32_t pointery, gpointer user_data)
 {
-  //  dt_map_t *lib = (dt_map_t *)self->data;
+  OsmGpsMapPoint bb[2], *l;
+  int px,py;
+  dt_map_t *lib = (dt_map_t *)user_data;
 
-  const int32_t capwd = darktable.thumbnail_width;
-  const int32_t capht = darktable.thumbnail_height;
-  int32_t width  = MIN(width_i,  capwd);
-  int32_t height = MIN(height_i, capht);
+  osm_gps_map_get_bbox(lib->map, &bb[0], &bb[1]);
 
-  cairo_set_source_rgb (cri, .2, .2, .2);
-  cairo_rectangle(cri, 0, 0, width_i, height_i);
-  cairo_fill (cri);
+  cairo_set_source_rgba(cri, 0, 0, 0, 0.4);
 
+  /* let's reset and reuse the main_query statement */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
+  DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
 
-  if(width_i  > capwd) cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
-  if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
+  /* setup offset and row for the main query */
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, 100);
 
-  // Mode dependent expose of center view
-  cairo_save(cri);
-
-  
-  cairo_restore(cri);
-
-  GList *modules = darktable.lib->plugins;
-  while(modules)
+  /* query collection ids */
+  while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
-    dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
-    if( (module->views() & self->view(self)) && module->gui_post_expose )
-      module->gui_post_expose(module,cri,width,height,pointerx,pointery);
-    modules = g_list_next(modules);
+    /* for each image check if within bbox */
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, 
+						     sqlite3_column_int(lib->statements.main_query, 0));
+
+    l = osm_gps_map_point_new_degrees(cimg->latitude, cimg->longitude);
+
+    osm_gps_map_convert_geographic_to_screen(lib->map, l, &px, &py);
+
+    osm_gps_map_point_free(l);
+
+    cairo_rectangle(cri, px-8, py-8, 16, 16);
+    cairo_fill(cri);
   }
 
 }
@@ -139,7 +151,19 @@ void enter(dt_view_t *self)
   /* setup proxy functions */
   darktable.view_manager->proxy.map.view = self;
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
+
+  /* setup collection listener and initialize main_query statement */
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_COLLECTION_CHANGED, 
+			    G_CALLBACK(_view_map_collection_changed),
+			    (gpointer) self);
+
+
+  osm_gps_map_set_post_expose_callback(lib->map, _view_map_post_expose, lib);
   
+
+  _view_map_collection_changed(NULL, self);
+
 }
 
 void leave(dt_view_t *self)
@@ -150,6 +174,11 @@ void leave(dt_view_t *self)
 
   /* reset proxy */
   darktable.view_manager->proxy.map.view = NULL;
+
+  /* disconnect from signals */
+  dt_control_signal_disconnect(darktable.signals, 
+			       G_CALLBACK(_view_map_collection_changed), (gpointer)self);
+
 }
 
 void mouse_moved(dt_view_t *self, double x, double y, int which)
@@ -181,4 +210,26 @@ void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble la
 {
   dt_map_t *lib = (dt_map_t *)view->data;
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
+}
+
+
+void _view_map_collection_changed(gpointer instance, gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_map_t *lib = (dt_map_t *)self->data;
+  
+  /* check if we can get a query from collection */
+  const gchar *query = dt_collection_get_query (darktable.collection);
+  if(!query)
+    return;
+
+  /* if we have a statment lets clean it */
+  if(lib->statements.main_query)
+    sqlite3_finalize(lib->statements.main_query);
+
+  /* prepare a new main query statement for collection */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &lib->statements.main_query, NULL);
+
+  dt_control_queue_redraw_widget(GTK_WIDGET(lib->map));
+
 }
