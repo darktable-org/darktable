@@ -53,7 +53,7 @@ name ()
 uint32_t
 views()
 {
-  return DT_VIEW_LIGHTTABLE;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP;
 }
 
 uint32_t container()
