@@ -81,7 +81,6 @@ int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void
   TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.0);
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.0);
   TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
-  TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
 
   const uint8_t  *in8 =(const uint8_t  *)in_void;
   const uint16_t *in16=(const uint16_t *)in_void;
