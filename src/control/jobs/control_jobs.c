@@ -433,6 +433,8 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
       
   } while ((t = g_list_next(t)) != NULL);
 
+  dt_control_log(_("applied matched gpx location onto %d image(s)"), g_list_length(t1->index));
+
   dt_gpx_destroy(gpx);
   g_free(t1->data);
   return 0;
