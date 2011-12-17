@@ -108,7 +108,6 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
   dt_conf_set_float("plugins/map/longitude", center->rlon);
   dt_conf_set_float("plugins/map/latitude", center->rlat);
   dt_conf_set_int("plugins/map/zoom", zoom);
-  fprintf(stderr, "location %f %f\n",center->rlon, center->rlat);
   osm_gps_map_point_free(center);
 
   /* let's reset and reuse the main_query statement */
