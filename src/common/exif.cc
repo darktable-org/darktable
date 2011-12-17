@@ -159,6 +159,40 @@ int dt_exif_read(dt_image_t *img, const char* path)
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
 
+    /* read gps location */
+    if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude")))
+	 != exifData.end() )
+    {
+      Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
+      std::string sref = ref->toString();
+
+      img->latitude = 
+	(pos->toRational(0).first / pos->toRational(0).second) + // degrees
+	((pos->toRational(1).first / pos->toRational(1).second) / 60.0) + // minutes
+	((pos->toRational(2).first / pos->toRational(2).second) / 3600.0); // seconds     
+
+      if (sref ==  "S")
+	img->latitude = -img->latitude;
+
+
+    }
+
+    if ( (pos = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude")))
+	 != exifData.end() )
+    {
+      Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
+      std::string sref = ref->toString();
+      
+      img->longitude = 
+	(pos->toRational(0).first / pos->toRational(0).second) + // degrees
+	((pos->toRational(1).first / pos->toRational(1).second) / 60.0) + // minutes
+	((pos->toRational(2).first / pos->toRational(2).second) / 3600.0); // seconds
+
+      if (sref  == "W")
+	img->longitude = -img->longitude;
+
+    }
+
     /* Read lens name */
     if (((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
         ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end()))
