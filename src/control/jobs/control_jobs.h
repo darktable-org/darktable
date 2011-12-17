@@ -39,7 +39,8 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job);
 void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw);
 int32_t dt_control_flip_images_job_run(dt_job_t *job);
 
-void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t);
+void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid);
+void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t);
 
 int32_t dt_control_remove_images_job_run(dt_job_t *job);
 void dt_control_remove_images_job_init(dt_job_t *job);
@@ -47,7 +48,7 @@ void dt_control_remove_images_job_init(dt_job_t *job);
 void dt_control_delete_images_job_init(dt_job_t *job);
 int32_t dt_control_delete_images_job_run(dt_job_t *job);
 
-void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename);
+void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid);
 int32_t dt_control_gpx_apply_job_run(dt_job_t *job);
 
 void dt_control_export_job_init(dt_job_t *job);
@@ -61,5 +62,5 @@ void dt_control_flip_images(const int32_t cw);
 void dt_control_remove_images();
 void dt_control_export();
 void dt_control_merge_hdr();
-void dt_control_gpx_apply(const gchar *filename);
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid);
 #endif

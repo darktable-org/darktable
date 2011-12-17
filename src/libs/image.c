@@ -92,7 +92,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
     if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
     {
       gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (filechooser));
-      dt_control_gpx_apply(filename);
+      dt_control_gpx_apply(filename, -1);
       g_free(filename);
     }
     

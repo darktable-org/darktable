@@ -29,6 +29,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/debug.h"
 #include "common/gpx.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
@@ -47,7 +48,7 @@ void dt_control_write_sidecar_files_job_init(dt_job_t *job)
   dt_control_job_init(job, "write sidecar files");
   job->execute = &dt_control_write_sidecar_files_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
 }
 
 int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
@@ -444,19 +445,37 @@ bail_out:
   return 1;
 }
 
-void dt_control_image_enumerator_job_init(dt_control_image_enumerator_t *t)
+/* enumerator of images from filmroll */
+void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
+{
+  sqlite3_stmt *stmt;
+  /* get a list of images in filmroll */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), 
+			      "select * from images where film_id = ?1", 
+			      -1, &stmt, NULL); 
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    long int imgid = sqlite3_column_int(stmt, 0);
+    t->index = g_list_append(t->index, (gpointer)imgid);
+  }
+  sqlite3_finalize(stmt);
+}
+
+/* enumerator of selected images */
+void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
 {
   /* get sorted list of selected images */
   t->index = dt_collection_get_selected(darktable.collection);
 }
-
 
 void dt_control_merge_hdr_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "merge hdr image");
   job->execute = &dt_control_merge_hdr_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
 }
 
 void dt_control_duplicate_images_job_init(dt_job_t *job)
@@ -464,7 +483,7 @@ void dt_control_duplicate_images_job_init(dt_job_t *job)
   dt_control_job_init(job, "duplicate images");
   job->execute = &dt_control_duplicate_images_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
 }
 
 void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw)
@@ -472,7 +491,7 @@ void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw)
   dt_control_job_init(job, "flip images");
   job->execute = &dt_control_flip_images_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
   t->flag = cw;
 }
 
@@ -481,7 +500,7 @@ void dt_control_remove_images_job_init(dt_job_t *job)
   dt_control_job_init(job, "remove images");
   job->execute = &dt_control_remove_images_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
 }
 
 void dt_control_delete_images_job_init(dt_job_t *job)
@@ -489,15 +508,19 @@ void dt_control_delete_images_job_init(dt_job_t *job)
   dt_control_job_init(job, "delete images");
   job->execute = &dt_control_delete_images_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
 }
 
-void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename)
+void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid)
 {
   dt_control_job_init(job, "gpx apply");
   job->execute = &dt_control_gpx_apply_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  if (filmid != -1)
+    dt_control_image_enumerator_job_film_init(t, filmid);
+  else
+    dt_control_image_enumerator_job_selected_init(t);
+
   t->data = g_strdup(filename);
 }
 
@@ -508,10 +531,10 @@ void dt_control_merge_hdr()
   dt_control_add_job(darktable.control, &j);
 }
 
-void dt_control_gpx_apply(const gchar *filename)
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid)
 {
   dt_job_t j;
-  dt_control_gpx_apply_job_init(&j, filename);
+  dt_control_gpx_apply_job_init(&j, filename, filmid);
   dt_control_add_job(darktable.control, &j);
 }
 
@@ -721,7 +744,7 @@ void dt_control_export_job_init(dt_job_t *job)
   dt_control_job_init(job, "export");
   job->execute = &dt_control_export_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_init(t);
+  dt_control_image_enumerator_job_selected_init(t);
 }
 
 void dt_control_export()
