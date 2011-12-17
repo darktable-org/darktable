@@ -108,6 +108,7 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
   dt_conf_set_float("plugins/map/longitude", center->rlon);
   dt_conf_set_float("plugins/map/latitude", center->rlat);
   dt_conf_set_int("plugins/map/zoom", zoom);
+  fprintf(stderr, "location %f %f\n",center->rlon, center->rlat);
   osm_gps_map_point_free(center);
 
   /* let's reset and reuse the main_query statement */
@@ -139,7 +140,7 @@ static void _view_map_post_expose(cairo_t *cri, int32_t width_i, int32_t height_
 
 
     /* dependent on scale draw different overlays */
-    if (zoom >= 17)
+    if (zoom >= 14)
     {
 	dt_mipmap_buffer_t buf;
 	dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
@@ -207,11 +208,6 @@ void enter(dt_view_t *self)
 
   lib->map = OSM_GPS_MAP(osm_gps_map_new());
 
-  /* restore last view center and zoom */
-  const float lon = dt_conf_get_float("plugins/map/longitude");
-  const float lat = dt_conf_get_float("plugins/map/latitude");
-  const int zoom = dt_conf_get_int("plugins/map/zoom");  
-
   /* replace center widget */
   GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
   gtk_widget_hide(dt_ui_center(darktable.gui->ui));  
@@ -234,8 +230,17 @@ void enter(dt_view_t *self)
 
   osm_gps_map_set_post_expose_callback(lib->map, _view_map_post_expose, lib);
 
-  osm_gps_map_set_center(lib->map, lat, lon);
-  osm_gps_map_set_zoom(lib->map, zoom);
+  /* restore last zoom,location in map */
+  OsmGpsMapPoint *pt;
+  float lon, lat;
+  const float rlon = dt_conf_get_float("plugins/map/longitude");
+  const float rlat = dt_conf_get_float("plugins/map/latitude");
+  const int zoom = dt_conf_get_int("plugins/map/zoom");  
+
+  pt = osm_gps_map_point_new_radians(rlat,rlon);
+  osm_gps_map_point_get_degrees (pt, &lat, &lon);
+  osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
+  osm_gps_map_point_free(pt);
 
   _view_map_collection_changed(NULL, self);
 }
