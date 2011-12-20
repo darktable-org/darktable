@@ -48,7 +48,7 @@ typedef enum _lib_location_type_t
   LOCATION_TYPE_VILLAGE,
   LOCATION_TYPE_HAMLET,
   LOCATION_TYPE_CITY,
-  LOCATION_TYPE_ADMINISTATIVE,
+  LOCATION_TYPE_ADMINISTRATIVE,
   LOCATION_TYPE_RESIDENTAL,
   LOCATION_TYPE_UNKNOWN
 } _lib_location_type_t;
@@ -159,6 +159,57 @@ static GMarkupParser _lib_location_parser = {
 };
 
 
+static int32_t _lib_location_place_get_zoom(_lib_location_result_t *place)
+{
+  switch(place->type)
+  {
+    case LOCATION_TYPE_RESIDENTAL:
+      return 18;
+
+    case LOCATION_TYPE_ADMINISTRATIVE:
+      return 17;
+
+    case LOCATION_TYPE_VILLAGE:
+      return 16;
+
+    case LOCATION_TYPE_HAMLET:
+    case LOCATION_TYPE_CITY:
+    case LOCATION_TYPE_UNKNOWN:
+    default:
+      return 12;
+  }
+
+  /* should never get here */
+  return 0;
+}
+
+/* called when search job has been processed and 
+   result has been parsed */
+static void _lib_location_search_finish(gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_location_t *lib   = (dt_lib_location_t *)self->data;
+
+  /* check if search gave us some result */
+  if (!lib->places)
+    return;
+
+  /* for each location found populate the result list */
+
+
+  /* if we only got one search result back lets
+     set center location and zoom based on place type  */
+  if (g_list_length(lib->places) == 1)
+  {
+    int32_t zoom = 0;
+    _lib_location_result_t *item = (_lib_location_result_t*)lib->places->data;
+    zoom = _lib_location_place_get_zoom(item);
+    dt_view_map_center_on_location(darktable.view_manager, 
+				   item->lon, item->lat, zoom);
+  }
+
+}
+
 static gboolean _lib_location_search(gpointer user_data)
 {
   GMarkupParseContext *ctx = NULL;
@@ -174,6 +225,16 @@ static gboolean _lib_location_search(gpointer user_data)
 
   if (!text || strlen(text) < 1)
     goto bail_out;
+
+  /* clean up previous results before adding new */
+  if (lib->response)
+    g_free(lib->response);
+  lib->response = NULL;
+  lib->response_size = 0;
+
+  if (lib->places)
+    g_list_free_full(lib->places, g_free);
+  lib->places = NULL;
 
   /* build the query url */
   query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d", 
@@ -194,12 +255,6 @@ static gboolean _lib_location_search(gpointer user_data)
 
   if (!lib->response)
     goto bail_out;
-
-
-  /* clean up previous results before adding new */
-  if (lib->places)
-    g_list_free_full(lib->places, g_free);
-  lib->places = NULL;
  
   /* parse xml response and populate the result list */
   GError *err = NULL;
@@ -208,7 +263,6 @@ static gboolean _lib_location_search(gpointer user_data)
   if (err)
     goto bail_out;
   
-
   /* add the places into the result list */
   GList *item = lib->places;
   if (!item)
@@ -222,7 +276,6 @@ static gboolean _lib_location_search(gpointer user_data)
     item = g_list_next(item);
   }
   
-
   /* cleanup an exit search job */
 bail_out:
   if (err)
@@ -262,7 +315,7 @@ void _lib_location_entry_activated (GtkButton *button, gpointer user_data)
   // gtk_widget_set_sensitive(lib->result, FALSE);
 
   /* start a bg job for fetching results of a search */
-  g_idle_add(_lib_location_search,user_data);
+  g_idle_add_full( G_PRIORITY_DEFAULT_IDLE, _lib_location_search, user_data, _lib_location_search_finish);
   
 
 }
@@ -308,7 +361,7 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
 	else if (strcmp(*avalue, "city") == 0)
 	  place->type = LOCATION_TYPE_CITY;	
 	else if (strcmp(*avalue, "administrative") == 0)
-	  place->type = LOCATION_TYPE_administrative;
+	  place->type = LOCATION_TYPE_ADMINISTRATIVE;
 	else if (strcmp(*avalue, "residental") == 0)
 	  place->type = LOCATION_TYPE_RESIDENTAL;
 	
