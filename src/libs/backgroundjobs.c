@@ -238,7 +238,10 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
   if(j)
   {
     /* check if progress is above 1.0 and destroy bgjob if finished */
-    if (progress >= 1.0)
+    /* FIXME: actually we are having some rounding issues, where the */
+    /* FIXME: last item doesn't bring to total to 1.0 flat */
+    /* FIXME: so this is why we have the ugly kludge below */
+    if (progress > 0.999999)
     {
       if (GTK_IS_WIDGET(j->widget))
 	gtk_container_remove( GTK_CONTAINER(d->jobbox), j->widget );
