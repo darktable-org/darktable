@@ -27,6 +27,10 @@
 #include "dtgtk/button.h"
 #include "gui/draw.h"
 
+#ifdef HAVE_UNITY
+#  include <unity/unity/unity.h>
+#endif
+
 DT_MODULE(1)
 
 #define DT_MODULE_LIST_SPACING 2
@@ -36,6 +40,9 @@ GStaticMutex _lib_backgroundjobs_mutex = G_STATIC_MUTEX_INIT;
 typedef struct dt_bgjob_t {
   uint32_t type;
   GtkWidget *widget,*progressbar,*label;
+#ifdef HAVE_UNITY
+  UnityLauncherEntry *darktable_launcher;
+#endif
 } dt_bgjob_t;
 
 typedef struct dt_lib_backgroundjobs_t
@@ -148,6 +155,12 @@ static const guint * _lib_backgroundjobs_create(dt_lib_module_t *self,int type,c
   {
     j->progressbar = gtk_progress_bar_new();
     gtk_box_pack_start( GTK_BOX( vbox ), j->progressbar, TRUE, FALSE, 2);
+
+#ifdef HAVE_UNITY
+    j->darktable_launcher = unity_launcher_entry_get_for_desktop_id("darktable.desktop");
+    unity_launcher_entry_set_progress( j->darktable_launcher, 0.0 );
+    unity_launcher_entry_set_progress_visible( j->darktable_launcher, TRUE );
+#endif
   }
 
   /* lets show jobbox if its hidden */
@@ -229,6 +242,11 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
     {
       if (GTK_IS_WIDGET(j->widget))
 	gtk_container_remove( GTK_CONTAINER(d->jobbox), j->widget );
+
+#ifdef HAVE_UNITY
+        unity_launcher_entry_set_progress( j->darktable_launcher, 1.0 );
+	unity_launcher_entry_set_progress_visible( j->darktable_launcher, FALSE );
+#endif
       
       /* hide jobbox if theres no jobs left */
       if (g_list_length(gtk_container_get_children(GTK_CONTAINER(d->jobbox))) == 0 )
@@ -238,6 +256,10 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
     {
       if( j->type == 0 )
 	gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR(j->progressbar), progress );
+
+#ifdef HAVE_UNITY
+	unity_launcher_entry_set_progress( j->darktable_launcher, progress );
+#endif
     }
   }
 
