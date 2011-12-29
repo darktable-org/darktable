@@ -59,15 +59,19 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   switch((long int)user_data)
   {
     case 0:  // all 
-      return dt_selection_select_all(darktable.selection);
+      dt_selection_select_all(darktable.selection);
+      break;
     case 1: // none
-      return dt_selection_clear(darktable.selection);
+      dt_selection_clear(darktable.selection);
+      break;
     case 2: // invert
-      return dt_selection_invert(darktable.selection);
+      dt_selection_invert(darktable.selection);
+      break;
     case 4: // untouched
-      return dt_selection_select_unaltered(darktable.selection);
+      dt_selection_select_unaltered(darktable.selection);
+      break;
     default: // case 3: same film roll
-      return dt_selection_select_filmroll(darktable.selection);
+      dt_selection_select_filmroll(darktable.selection);
   }
 
   dt_control_queue_redraw_center();
