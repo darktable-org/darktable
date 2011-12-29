@@ -67,7 +67,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "export"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
+  //dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -164,6 +164,7 @@ _styles_row_activated_callback (GtkTreeView *view, GtkTreePath *path, GtkTreeVie
 #if 0
 static void edit_clicked(GtkWidget *w,gpointer user_data)
 {
+#error	if this code is reactivated also reactivate the commented line in init_key_accels
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
 
   GtkTreeIter iter;
