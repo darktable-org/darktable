@@ -3134,6 +3134,13 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "SP510UZ", NeutralFluorescent, 0, { 1.644531, 1, 1.843750, 0 } },
   { "OLYMPUS", "SP510UZ", DaylightFluorescent, 0, { 1.628906, 1, 2.210938, 0 } },
 
+  { "OLYMPUS", "XZ-1", Daylight, 0,		{ 1.8437, 1, 1.8750, 0 } },
+  { "OLYMPUS", "XZ-1", Shade, 0,		{ 2.1875, 1, 1.5703, 0 } },
+  { "OLYMPUS", "XZ-1", Cloudy, 0,		{ 1.9766, 1, 1.7422, 0 } },
+  { "OLYMPUS", "XZ-1", Incandescent, 0,		{ 1.1172, 1, 3.1875, 0 } },
+  { "OLYMPUS", "XZ-1", Fluorescent, 0,		{ 1.8125, 1, 2.5938, 0 } },
+  { "OLYMPUS", "XZ-1", Underwater, 0,		{ 1.4844, 1, 2.2188, 0 } },
+
   { "Panasonic", "DMC-FZ8", Daylight, 0,	{ 1.904943, 1, 1.596958, 0 } },
   { "Panasonic", "DMC-FZ8", Cloudy, 0,		{ 2.060836, 1, 1.498099, 0 } },
   { "Panasonic", "DMC-FZ8", Shade, 0,		{ 2.258555, 1, 1.391635, 0 } },
