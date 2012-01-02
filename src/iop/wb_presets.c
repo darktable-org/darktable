@@ -2,7 +2,7 @@
  * UFRaw - Unidentified Flying Raw converter for digital camera images
  *
  * wb_presets.c - White balance preset values for various cameras
- * Copyright 2004-2011 by Udi Fuchs
+ * Copyright 2004-2012 by Udi Fuchs
  *
  * Thanks goes for all the people who sent in the preset values
  * for their cameras.
@@ -2727,19 +2727,19 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-10", Cloudy, 0,		{ 1.687500, 1, 1.437500, 0 } }, /*6500K*/
   { "OLYMPUS", "E-10", Shade, 0,		{ 1.812500, 1, 1.312500, 0 } }, /*7500K*/
 
-  { "OLYMPUS", "E-3", Daylight, 0,		{ 2.007813, 1, 1.390625, 0 } },
-  { "OLYMPUS", "E-3", Shade, 0,			{ 2.421875, 1, 1.085937, 0 } },
-  { "OLYMPUS", "E-3", Cloudy, 0,		{ 2.218750, 1, 1.257812, 0 } },
-  { "OLYMPUS", "E-3", Incandescent, 0,		{ 1.156250, 1, 2.679687, 0 } },
-  { "OLYMPUS", "E-3", WhiteFluorescent, 0,	{ 1.828125, 1, 2.078125, 0 } },
-  { "OLYMPUS", "E-3", NeutralFluorescent, 0,	{ 1.867188, 1, 1.679688, 0 } },
-  { "OLYMPUS", "E-3", DaylightFluorescent, 0,	{ 2.195313, 1, 1.406250, 0 } },
-  { "OLYMPUS", "E-3", Flash, 0,			{ 2.210937, 1, 1.265625, 0 } },
-  { "OLYMPUS", "E-3", "2700K", 0,		{ 1.093750, 1, 2.820313, 0 } },
-  { "OLYMPUS", "E-3", "3000K", 0,		{ 1.273437, 1, 2.414062, 0 } },
-  { "OLYMPUS", "E-3", "3300K", 0,		{ 1.429688, 1, 2.070312, 0 } },
-  { "OLYMPUS", "E-3", "5000K", 0,		{ 1.937500, 1, 1.460938, 0 } },
-  { "OLYMPUS", "E-3", "13000K", 0,		{ 3.504950, 1.267327, 1, 0 } },
+  { "OLYMPUS", "E-3", Daylight, 0,		{ 1.7812, 1, 1.4688, 0 } },
+  { "OLYMPUS", "E-3", Shade, 0,			{ 2.1406, 1, 1.1484, 0 } },
+  { "OLYMPUS", "E-3", Cloudy, 0,		{ 1.9531, 1, 1.3359, 0 } },
+  { "OLYMPUS", "E-3", Incandescent, 0,		{ 1.0312, 1, 2.8125, 0 } },
+  { "OLYMPUS", "E-3", WhiteFluorescent, 0,	{ 1.6328, 1, 2.1953, 0 } },
+  { "OLYMPUS", "E-3", NeutralFluorescent, 0,	{ 1.6641, 1, 1.7734, 0 } },
+  { "OLYMPUS", "E-3", DaylightFluorescent, 0,	{ 1.9531, 1, 1.4844, 0 } },
+  { "OLYMPUS", "E-3", Flash, 0,			{ 1.9609, 1, 1.3359, 0 } },
+  { "OLYMPUS", "E-3", "2700K", 0,		{ 1, 1.0240, 3.0080, 0 } },
+  { "OLYMPUS", "E-3", "3000K", 0,		{ 1.1328, 1, 2.5156, 0 } },
+  { "OLYMPUS", "E-3", "3300K", 0,		{ 1.2734, 1, 2.1641, 0 } },
+  { "OLYMPUS", "E-3", "5000K", 0,		{ 1.7266, 1, 1.5156, 0 } },
+  { "OLYMPUS", "E-3", "13000K", 0,		{ 2.9811, 1.2075, 1, 0 } },
 
   { "OLYMPUS", "E-5", Daylight, 0,		{ 1.7031, 1, 1.3672, 0 } },
   { "OLYMPUS", "E-5", Shade, 0,			{ 2.0547, 1, 1.0625, 0 } },
@@ -3085,14 +3085,14 @@ const wb_data wb_preset[] = {
   { "OLYMPUS", "E-P3", Fluorescent, 0,		{ 1.9766, 1, 1.9766, 0 } },
   { "OLYMPUS", "E-P3", Flash, 0,		{ 2.2109, 1, 1.3672, 0 } },
 
-  { "OLYMPUS", "E-PL1", Daylight, 0,		{ 1.742187, 1, 1.343750, 0 } },
-  { "OLYMPUS", "E-PL1", Shade, 0,		{ 2.101563, 1, 1.031250, 0 } },
-  { "OLYMPUS", "E-PL1", Cloudy, 0,		{ 1.921875, 1, 1.203125, 0 } },
-  { "OLYMPUS", "E-PL1", Incandescent, 0,	{ 1, 1.007874, 2.606299, 0 } },
-  { "OLYMPUS", "E-PL1", WhiteFluorescent, 0,	{ 1.664062, 1, 1.960937, 0 } },
-  { "OLYMPUS", "E-PL1", NeutralFluorescent, 0,	{ 1.625000, 1, 1.703125, 0 } },
-  { "OLYMPUS", "E-PL1", DaylightFluorescent, 0,	{ 2.039063, 1, 1.320313, 0 } },
-  { "OLYMPUS", "E-PL1", Flash, 0,		{ 1.914063, 1, 1.203125, 0 } },
+  { "OLYMPUS", "E-PL1", Daylight, 0,		{ 1.726562, 1, 1.343750, 0 } },
+  { "OLYMPUS", "E-PL1", Shade, 0,		{ 2.085937, 1, 1.039062, 0 } },
+  { "OLYMPUS", "E-PL1", Cloudy, 0,		{ 1.906250, 1, 1.210938, 0 } },
+  { "OLYMPUS", "E-PL1", Incandescent, 0,	{ 1, 1.015873, 2.619048, 0 } },
+  { "OLYMPUS", "E-PL1", WhiteFluorescent, 0,	{ 1.648437, 1, 1.960937, 0 } },
+  { "OLYMPUS", "E-PL1", NeutralFluorescent, 0,	{ 1.609375, 1, 1.710938, 0 } },
+  { "OLYMPUS", "E-PL1", DaylightFluorescent, 0,	{ 2.015625, 1, 1.328125, 0 } },
+  { "OLYMPUS", "E-PL1", Flash, 0,		{ 1.898438, 1, 1.203125, 0 } },
   { "OLYMPUS", "E-PL1", "2700K", 0,		{ 1, 1.066667, 2.908333, 0 } },
   { "OLYMPUS", "E-PL1", "3000K", 0,		{ 1.093750, 1, 2.320313, 0 } },
   { "OLYMPUS", "E-PL1", "3300K", 0,		{ 1.234375, 1, 1.976562, 0 } },
