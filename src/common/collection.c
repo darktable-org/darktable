@@ -280,7 +280,7 @@ uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
 {
   sqlite3_stmt *stmt = NULL;
   uint32_t count=0;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct count(imgid) from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count (distinct imgid) from selected_images", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
