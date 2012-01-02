@@ -103,4 +103,7 @@ uint32_t dt_collection_get_selected_count (const dt_collection_t *collection);
 /** update query by gconf vars */
 void dt_collection_update_query(const dt_collection_t *collection);
 
+/** updates the hint message for collection */
+void dt_collection_hint_message(const dt_collection_t *collection);
+
 #endif

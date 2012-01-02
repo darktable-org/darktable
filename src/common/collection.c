@@ -145,12 +145,7 @@ dt_collection_update (const dt_collection_t *collection)
   g_free(selq);
   g_free (query);
 
-  /* collection hinting */
-  gchar message[1024];
-  int c = dt_collection_get_count(collection);
-  int cs = dt_collection_get_selected_count(collection);
-  g_snprintf(message, 1024, _("collection is currently viewing %d images where %d of them is selected."), c, cs);
-  dt_control_hinter_message(darktable.control, message);
+  dt_collection_hint_message(collection);
 
   return result;
 }
@@ -474,6 +469,16 @@ dt_collection_update_query(const dt_collection_t *collection)
   if (!collection->clone)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 
+}
+
+void dt_collection_hint_message(const dt_collection_t *collection)
+{
+  /* collection hinting */
+  gchar message[1024];
+  int c = dt_collection_get_count(collection);
+  int cs = dt_collection_get_selected_count(collection);
+  g_snprintf(message, 1024, _("collection is currently viewing %d images where %d of them is selected."), c, cs);
+  dt_control_hinter_message(darktable.control, message);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
