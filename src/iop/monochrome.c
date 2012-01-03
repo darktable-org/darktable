@@ -84,17 +84,17 @@ void init_presets (dt_iop_module_so_t *self)
   p.b = 64.0f;
   dt_gui_presets_add_generic(_("red filter"), self->op, self->version(), &p, sizeof(p), 1);
 
-  #p.a = 64.0f;
-  #p.b = -32.0f;
-  #dt_gui_presets_add_generic(_("purple filter"), self->op, self->version(), &p, sizeof(p), 1);
+  // p.a = 64.0f;
+  // p.b = -32.0f;
+  // dt_gui_presets_add_generic(_("purple filter"), self->op, self->version(), &p, sizeof(p), 1);
 
-  #p.a = -32.0f;
-  #p.b = -64.0f;
-  #dt_gui_presets_add_generic(_("blue filter"), self->op, self->version(), &p, sizeof(p), 1);
+  // p.a = -32.0f;
+  // p.b = -64.0f;
+  // dt_gui_presets_add_generic(_("blue filter"), self->op, self->version(), &p, sizeof(p), 1);
 
-  #p.a = -64.0f;
-  #p.b = 32.0f;
-  #dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
+  // p.a = -64.0f;
+  // p.b = 32.0f;
+  // dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 static float
