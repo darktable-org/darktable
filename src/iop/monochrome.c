@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "develop/imageop.h"
 
 DT_MODULE(1)
@@ -73,7 +74,28 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+void init_presets (dt_iop_module_so_t *self)
+{
+  dt_iop_monochrome_params_t p;
 
+  p.size = 2.3f;
+
+  p.a = 32.0f;
+  p.b = 64.0f;
+  dt_gui_presets_add_generic(_("red filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  #p.a = 64.0f;
+  #p.b = -32.0f;
+  #dt_gui_presets_add_generic(_("purple filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  #p.a = -32.0f;
+  #p.b = -64.0f;
+  #dt_gui_presets_add_generic(_("blue filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  #p.a = -64.0f;
+  #p.b = 32.0f;
+  #dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
+}
 
 static float
 color_filter(const float L, const float ai, const float bi, const float a, const float b, const float size)
