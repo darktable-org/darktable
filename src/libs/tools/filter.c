@@ -121,7 +121,7 @@ void gui_init(dt_lib_module_t *self)
   d->sort = widget = gtk_combo_box_new_text();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("filename"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("oldest"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("time"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rating"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("id"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("color label"));
