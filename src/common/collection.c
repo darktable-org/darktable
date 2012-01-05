@@ -301,6 +301,7 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
      case DT_COLLECTION_SORT_RATING:
      {
        g_free(sq);
+       sq = NULL;
        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7");
      }
      break;
@@ -308,6 +309,7 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
      case DT_COLLECTION_SORT_COLOR:
      {
        g_free(sq);
+       sq = NULL;
        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename");
      }
      break;
