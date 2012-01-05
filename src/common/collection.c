@@ -160,6 +160,8 @@ dt_collection_reset(const dt_collection_t *collection)
   params->rating       = dt_conf_get_int("plugins/collection/rating");
   params->query_flags  = dt_conf_get_int("plugins/collection/query_flags");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
+  params->sort         = dt_conf_get_int("plugins/collection/sort");
+  params->descending   = dt_conf_get_bool("plugins/collection/descending");
   dt_collection_update_query (collection);
 }
 
