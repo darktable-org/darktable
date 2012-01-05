@@ -77,8 +77,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("ui_last/expander_histogram",  -1);
   dt_conf_set_int  ("ui_last/expander_history",    -1);
 
-  dt_conf_set_int  ("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
-  dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
   dt_conf_set_int  ("ui_last/initial_rating", DT_LIB_FILTER_STAR_1);
 
   // import settings
