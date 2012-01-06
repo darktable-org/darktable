@@ -1922,8 +1922,9 @@ static void enable_module_callback(GtkAccelGroup *accel_group,
 
 void dt_iop_connect_common_accels(dt_iop_module_t *module)
 {
-  GClosure* closure = NULL;
 
+  GClosure* closure = NULL;
+  if(module->flags() & IOP_FLAGS_DEPRECATED) return;
   // Connecting the (optional) module show accelerator
   closure = g_cclosure_new(G_CALLBACK(show_module_callback),
                            module, NULL);
