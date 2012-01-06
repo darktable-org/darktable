@@ -33,6 +33,7 @@ typedef struct dt_accel_t
   gchar module[256];
   guint views;
   gboolean local;
+  GClosure *closure;
 
 } dt_accel_t;
 

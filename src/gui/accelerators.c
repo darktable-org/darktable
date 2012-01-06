@@ -26,12 +26,6 @@
 #include "common/debug.h"
 #include "develop/blend.h"
 
-typedef struct dt_accel_closure_t
-{
-  dt_accel_t *accel;
-  GClosure *closure;
-} dt_accel_closure_t;
-
 void dt_accel_path_global(char *s, size_t n, const char* path)
 {
   snprintf(s, n, "<Darktable>/%s/%s",
@@ -283,24 +277,16 @@ void dt_accel_connect_view(dt_view_t *self, const gchar *path,
   dt_accel_path_view(accel_path, 256, self->module_name, path);
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
                                   closure);
-  dt_accel_closure_t *laccel =
-      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = _lookup_accel(accel_path);
+  dt_accel_t *laccel = _lookup_accel(accel_path);
   laccel->closure = closure;
 
   self->accel_closures = g_slist_prepend(self->accel_closures, laccel);
 }
 
-static void _connect_local_accel(dt_iop_module_t *module, dt_accel_t *accel,
-                                 GClosure *closure)
+static void _connect_local_accel(dt_iop_module_t *module, dt_accel_t *accel)
 {
-  dt_accel_closure_t *laccel =
-      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel;
-  laccel->closure = closure;
-  g_closure_ref(closure);
   module->accel_closures_local =
-      g_slist_prepend(module->accel_closures_local, laccel);
+      g_slist_prepend(module->accel_closures_local, accel);
 }
 
 void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path,
@@ -312,22 +298,19 @@ void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path,
   // Looking up the entry in the global accelerators list
   accel = _lookup_accel(accel_path);
 
-  dt_accel_closure_t *laccel =
-      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel;
-  laccel->closure = closure;
+  accel->closure = closure;
 
   if(accel && accel->local)
   {
     // Local accelerators don't actually get connected, just added to the list
     // They will be connected if/when the module gains focus
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
                                     closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, laccel);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 }
 
@@ -339,12 +322,11 @@ void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path,
   gtk_accel_group_connect_by_path(darktable.control->accelerators, accel_path,
                                   closure);
 
-  dt_accel_closure_t *laccel =
-      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = _lookup_accel(accel_path);
-  laccel->closure = closure;
+  dt_accel_t *accel =_lookup_accel(accel_path);
 
-  module->accel_closures = g_slist_prepend(module->accel_closures, laccel);
+  accel->closure = closure;
+
+  module->accel_closures = g_slist_prepend(module->accel_closures, accel);
 }
 
 static void _press_button_callback(GtkAccelGroup *accel_group,
@@ -441,87 +423,75 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                             (gpointer)slider, NULL);
   accel = _lookup_accel(increase_path);
 
-  dt_accel_closure_t *laccel =
-      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel;
-  laccel->closure = closure;
+  accel->closure = closure;
 
   if(accel && accel->local)
   {
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     increase_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, laccel);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
   closure = g_cclosure_new(G_CALLBACK(slider_decrease_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(decrease_path);
-  laccel =
-      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel;
-  laccel->closure = closure;
+  accel->closure = closure;
   if(accel && accel->local)
   {
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     decrease_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, laccel);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
   closure = g_cclosure_new(G_CALLBACK(slider_reset_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(reset_path);
-  laccel =
-      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel;
-  laccel->closure = closure;
+  accel->closure = closure;
   if(accel && accel->local)
   {
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     reset_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, laccel);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
   closure = g_cclosure_new(G_CALLBACK(slider_edit_callback),
                            (gpointer)slider, NULL);
   accel = _lookup_accel(edit_path);
-  laccel =
-      (dt_accel_closure_t*)malloc(sizeof(dt_accel_closure_t));
-  laccel->accel = accel;
-  laccel->closure = closure;
+  accel->closure = closure;
   if(accel && accel->local)
   {
-    _connect_local_accel(module, accel, closure);
+    _connect_local_accel(module, accel);
   }
   else
   {
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
                                     edit_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, laccel);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 }
 
 void dt_accel_connect_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_closure_t *accel;
+  dt_accel_t *accel;
   GSList *l = module->accel_closures_local;
 
   while(l)
   {
-    accel = (dt_accel_closure_t*)l->data;
+    accel = (dt_accel_t*)l->data;
     gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    accel->accel->path, accel->closure);
+                                    accel->path, accel->closure);
     l = g_slist_next(l);
   }
 
@@ -530,19 +500,18 @@ void dt_accel_connect_locals_iop(dt_iop_module_t *module)
 
 void dt_accel_disconnect_list(GSList *list)
 {
-  dt_accel_closure_t *accel;
+  dt_accel_t *accel;
   while(list)
   {
-    accel = (dt_accel_closure_t*)list->data;
+    accel = (dt_accel_t*)list->data;
     gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
-    free(accel);
     list = g_slist_delete_link(list, list);
   }
 }
 
 void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_closure_t *accel;
+  dt_accel_t *accel;
   GSList *l = module->accel_closures_local;
 
   if(!module->local_closures_connected)
@@ -550,7 +519,7 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
 
   while(l)
   {
-    accel = (dt_accel_closure_t*)l->data;
+    accel = (dt_accel_t*)l->data;
     gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
     l = g_slist_next(l);
   }
@@ -560,16 +529,14 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
 
 void dt_accel_cleanup_locals_iop(dt_iop_module_t *module)
 {
-  dt_accel_closure_t *accel;
+  dt_accel_t *accel;
   GSList *l = module->accel_closures_local;
   while(l)
   {
-    accel = (dt_accel_closure_t*)l->data;
+    accel = (dt_accel_t*)l->data;
     if(module->local_closures_connected)
       gtk_accel_group_disconnect(darktable.control->accelerators,
                                  accel->closure);
-    g_closure_unref(accel->closure);
-    free(accel);
     l = g_slist_delete_link(l, l);
   }
   module->accel_closures_local = NULL;
@@ -723,16 +690,14 @@ void dt_accel_connect_preset_lib(dt_lib_module_t *module,  const gchar *path)
 
 void dt_accel_deregister_iop(dt_iop_module_t *module,const gchar *path)
 {
-	dt_accel_closure_t *accel;
+	dt_accel_t *accel;
 	GSList *l = module->accel_closures_local;
 	char build_path[1024];
 	dt_accel_path_iop(build_path, 1024, module->op, path);
 	while(l)
 	{
-		accel = (dt_accel_closure_t*)l->data;
-		if(!strcmp(accel->accel->path,build_path)) {
-			g_closure_unref(accel->closure);
-			free(accel);
+		accel = (dt_accel_t*)l->data;
+		if(!strcmp(accel->path,build_path)) {
 			module->accel_closures_local = g_slist_delete_link(module->accel_closures_local, l);
 			l = NULL;
 		}
@@ -751,9 +716,9 @@ void dt_accel_deregister_iop(dt_iop_module_t *module,const gchar *path)
 	l = module->accel_closures;
 	while(l)
 	{
-		accel = (dt_accel_closure_t*)l->data;
-		if(!strcmp(accel->accel->path, build_path)) {
-			if(!accel->accel->local || !module->local_closures_connected)
+		accel = (dt_accel_t*)l->data;
+		if(!strcmp(accel->path, build_path)) {
+			if(!accel->local || !module->local_closures_connected)
 				gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
 			module->accel_closures = g_slist_delete_link(module->accel_closures, l);
 			l = NULL;
@@ -766,7 +731,7 @@ void dt_accel_deregister_iop(dt_iop_module_t *module,const gchar *path)
 
 void dt_accel_deregister_lib(dt_lib_module_t *module,const gchar *path)
 {
-	dt_accel_closure_t *accel;
+	dt_accel_t *accel;
 	GSList *l;
 	char build_path[1024];
 	dt_accel_path_lib(build_path, 1024, module->plugin_name, path);
@@ -784,8 +749,8 @@ void dt_accel_deregister_lib(dt_lib_module_t *module,const gchar *path)
 	l = module->accel_closures;
 	while(l)
 	{
-		accel = (dt_accel_closure_t*)l->data;
-		if(!strcmp(accel->accel->path, build_path)) {
+		accel = (dt_accel_t*)l->data;
+		if(!strcmp(accel->path, build_path)) {
 			module->accel_closures = g_slist_delete_link(module->accel_closures, l);
 			l = NULL;
 			free(accel);
@@ -804,16 +769,16 @@ gboolean find_accel_internal  (GtkAccelKey *key, GClosure *closure, gpointer dat
 
 void dt_accel_rename_preset_iop(dt_iop_module_t *module,const gchar *path,const gchar *new_path)
 {
-	dt_accel_closure_t *accel;
+	dt_accel_t *accel;
 	GSList * l = module->accel_closures;
 	char build_path[1024];
 	dt_accel_path_iop(build_path, 1024, module->op, path);
 	while(l)
 	{
-		accel = (dt_accel_closure_t*)l->data;
-		if(!strcmp(accel->accel->path, build_path)) {
+		accel = (dt_accel_t*)l->data;
+		if(!strcmp(accel->path, build_path)) {
 			GtkAccelKey tmp_key = *(gtk_accel_group_find(darktable.control->accelerators,find_accel_internal,accel->closure));
-			gboolean local = accel->accel->local;
+			gboolean local = accel->local;
 			dt_accel_deregister_iop(module,path);
 			snprintf(build_path,1024,"preset/%s",new_path);
 			dt_accel_register_iop(module->so,local,build_path,tmp_key.accel_key,tmp_key.accel_mods);
@@ -827,14 +792,14 @@ void dt_accel_rename_preset_iop(dt_iop_module_t *module,const gchar *path,const 
 
 void dt_accel_rename_preset_lib(dt_lib_module_t *module,const gchar *path,const gchar *new_path)
 {
-	dt_accel_closure_t *accel;
+	dt_accel_t *accel;
 	GSList * l = module->accel_closures;
 	char build_path[1024];
 	dt_accel_path_lib(build_path, 1024, module->plugin_name, path);
 	while(l)
 	{
-		accel = (dt_accel_closure_t*)l->data;
-		if(!strcmp(accel->accel->path, build_path)) {
+		accel = (dt_accel_t*)l->data;
+		if(!strcmp(accel->path, build_path)) {
 			GtkAccelKey tmp_key = *(gtk_accel_group_find(darktable.control->accelerators,find_accel_internal,accel->closure));
 			dt_accel_deregister_lib(module,path);
 			snprintf(build_path,1024,"preset/%s",new_path);
