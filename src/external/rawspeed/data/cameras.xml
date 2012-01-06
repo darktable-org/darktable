@@ -228,7 +228,8 @@
       <Color x="1" y="1">GREEN</Color>
     </CFA>
     <Crop x="146" y="54" width="0" height="0"/>
-    <Sensor black="2026" white="15303"/>
+    <Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
+    <Sensor black="2026" white="15304"/>
 	<BlackAreas>
 		<Vertical x="0" width="140"/>
 		<Horizontal y="4" height="44"/>
@@ -305,7 +306,8 @@
       <Color x="1" y="1">BLUE</Color>
     </CFA>
     <Crop x="42" y="18" width="3906" height="2602"/>
-    <Sensor black="255" white="4030"/>
+    <Sensor black="255" white="3650" iso_min="0" iso_max="199"/>
+    <Sensor black="255" white="4036"/>
 	<BlackAreas>
 		<Vertical x="0" width="41"/>
 		<Horizontal y="2" height="14"/>

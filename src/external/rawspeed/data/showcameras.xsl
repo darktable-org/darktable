@@ -57,9 +57,28 @@
 					Crop Right,Bottom: <span class="param"><xsl:value-of select="-(Crop/@width)"/>,<xsl:value-of select="-(Crop/@height)"/></span> pixels.
 					</xsl:if>
 					<br/>
-					Sensor Black: <span class="param"><xsl:value-of select="Sensor/@black"/></span>, White:
-					<span class="param"><xsl:value-of select="Sensor/@white"/>.</span>
-					<br/>
+					<xsl:for-each select="Sensor">
+						Sensor, 
+						<xsl:choose>
+							<xsl:when test ="@iso_min != ''">
+								<xsl:if test ="@iso_max = ''">
+									ISO <xsl:value-of select="@iso_min"/> - Maximum ISO
+								</xsl:if>
+								<xsl:if test ="@iso_max != ''">
+									ISO <xsl:value-of select="@iso_min"/> - <xsl:value-of select="@iso_max"/> 
+								</xsl:if>
+							</xsl:when>
+							<xsl:when test ="@iso_max != ''">
+								ISO 0 - <xsl:value-of select="@iso_max"/> 
+							</xsl:when>
+							<xsl:otherwise>
+								Default 
+							</xsl:otherwise>
+						</xsl:choose>
+						Black: <span class="param"><xsl:value-of select="@black"/></span>, White:
+						<span class="param"><xsl:value-of select="@white"/>.</span>
+						<br/>
+					</xsl:for-each>
 					Uncropped Sensor Colors Positions:<br/>
 					<xsl:for-each select="CFA/Color">
 						<xsl:sort data-type = "number" select = "@y*2+@x"/>
