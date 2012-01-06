@@ -98,7 +98,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend L"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend C"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend h"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend H"));
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
