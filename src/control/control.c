@@ -77,8 +77,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("ui_last/expander_histogram",  -1);
   dt_conf_set_int  ("ui_last/expander_history",    -1);
 
-  dt_conf_set_int  ("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
-  dt_conf_set_int  ("ui_last/combo_filter",   DT_LIB_FILTER_STAR_1);
   dt_conf_set_int  ("ui_last/initial_rating", DT_LIB_FILTER_STAR_1);
 
   // import settings
@@ -93,6 +91,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("plugins/collection/query_flags",       3);
   dt_conf_set_int  ("plugins/collection/rating",            1);
   dt_conf_set_int  ("plugins/lighttable/collect/num_rules", 0);
+  dt_conf_set_int  ("plugins/collection/sort",              0);
+  dt_conf_set_bool ("plugins/collection/descending",        0);
 
   // reasonable thumbnail res:
   dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 1300);

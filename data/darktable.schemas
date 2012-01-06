@@ -1497,32 +1497,6 @@
       </locale>
     </schema>
     
-    <schema>
-      <key>/schemas/apps/darktable/ui_last/combo_sort</key>
-      <applyto>/apps/darktable/ui_last/combo_sort</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>0</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-    
-    <schema>
-      <key>/schemas/apps/darktable/ui_last/combo_filter</key>
-      <applyto>/apps/darktable/ui_last/combo_filter</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>2</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
     <schema><!--tab:core-->
       <key>/schemas/apps/darktable/plugins/lighttable/export/force_lcms2</key>
       <applyto>/apps/darktable/plugins/lighttable/export/force_lcms2</applyto>

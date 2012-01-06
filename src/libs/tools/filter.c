@@ -31,6 +31,7 @@ typedef struct dt_lib_tool_filter_t
 {
   GtkWidget *filter;
   GtkWidget *sort;
+  GtkWidget *reverse;
 }
 dt_lib_tool_filter_t;
 
@@ -38,6 +39,8 @@ dt_lib_tool_filter_t;
 static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data);
 /* callback for sort combobox change */
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data);
+/* callback for reverse sort check button change */
+static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget, gpointer user_data);
 /* updates the query and redraws the view */
 static void _lib_filter_update_query(dt_lib_module_t *self);
 
@@ -103,7 +106,8 @@ void gui_init(dt_lib_module_t *self)
   
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
-			    dt_conf_get_int("ui_last/combo_filter"));
+//			    dt_conf_get_int("ui_last/combo_filter"));
+                           dt_collection_get_rating(darktable.collection));
 
   g_signal_connect (G_OBJECT (widget), "changed",
                     G_CALLBACK (_lib_filter_combobox_changed),
@@ -124,11 +128,22 @@ void gui_init(dt_lib_module_t *self)
   
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
-			    dt_conf_get_int("ui_last/combo_sort"));
-
+                          dt_collection_get_sort_field(darktable.collection));
 
   g_signal_connect (G_OBJECT (widget), "changed",
                     G_CALLBACK (_lib_filter_sort_combobox_changed),
+                    (gpointer)self);
+
+  /* reverse order checkbutton */
+  d->reverse = widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX|CPF_DIRECTION_UP); 
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+
+  /* select the last value and connect callback */
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+                              dt_collection_get_sort_descending(darktable.collection));
+
+  g_signal_connect (G_OBJECT (widget), "toggled",
+                    G_CALLBACK (_lib_filter_reverse_button_changed),
                     (gpointer)self);
 
   /* lets update query */
@@ -145,7 +160,7 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
 {
   /* update last settings */
   int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_ALL);
+/*  if     (i == 0)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_ALL);
   else if(i == 1)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_NO);
   else if(i == 2)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_1);
   else if(i == 3)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_2);
@@ -153,7 +168,7 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
   else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
   else if(i == 6)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_5);
   else if(i == 7)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_REJECT);
-
+*/
   /* update collection star filter flags */
   if (i == 0)
     dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_RATING|COLLECTION_FILTER_EQUAL_RATING));
@@ -169,15 +184,32 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
   _lib_filter_update_query(user_data);
 }
 
+static void 
+_lib_filter_reverse_button_changed (GtkDarktableToggleButton *widget, gpointer user_data)
+{
+  gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+  if(reverse)
+  {
+    widget->icon_flags &= ~CPF_DIRECTION_UP;
+    widget->icon_flags |= CPF_DIRECTION_DOWN;
+  }
+  else
+  {
+    widget->icon_flags &= ~CPF_DIRECTION_DOWN;
+    widget->icon_flags |= CPF_DIRECTION_UP;
+  }
+  /* update last settings */
+  dt_collection_set_sort(darktable.collection, -1, reverse);
+
+  /* update query and view */
+  _lib_filter_update_query(user_data);
+}
+
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
   /* update the ui last settings */
-  int i = gtk_combo_box_get_active(widget);
-  if     (i == 0)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_FILENAME);
-  else if(i == 1)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_DATETIME);
-  else if(i == 2)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_RATING);
-  else if(i == 3)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_ID);
-  else if(i == 4)  dt_conf_set_int("ui_last/combo_sort",     DT_LIB_SORT_COLOR);
+  dt_collection_set_sort(darktable.collection, gtk_combo_box_get_active(widget), -1);
   
   /* update the query and view */
   _lib_filter_update_query(user_data);
