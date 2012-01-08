@@ -645,8 +645,7 @@ void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flag
 
 }
 
-void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
-                            gint flags)
+void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
 {
   gint s=w<h?w:h;
   cairo_translate(cr, x+(w/2.)-(s/2.), y+(h/2.)-(s/2.));
@@ -662,6 +661,20 @@ void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
   cairo_translate(cr, .5, .5);
   cairo_scale(cr, .2, .4);
   cairo_arc(cr, 0, 0, 1, M_PI, 0);
+  cairo_stroke(cr);
+
+}
+
+void dtgtk_cairo_paint_check_mark(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags)
+{
+  gint s=w<h?w:h;
+  cairo_translate(cr, x+(w/2.)-(s/2.), y+(h/2.)-(s/2.));
+  cairo_scale(cr, s, s);
+
+  cairo_set_line_width(cr, 0.15);
+  cairo_move_to(cr, 0.20, 0.45);
+  cairo_line_to(cr, 0.45, 0.90);
+  cairo_line_to(cr, 0.90, 0.20);
   cairo_stroke(cr);
 
 }
@@ -686,3 +699,5 @@ void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_stroke(cr);
 
 }
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

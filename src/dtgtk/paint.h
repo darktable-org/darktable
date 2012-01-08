@@ -94,9 +94,12 @@ void dtgtk_cairo_paint_dropdown(cairo_t *cr,gint x,gint y,gint w,gint h,gint fla
 /** paint bracket capture */
 void dtgtk_cairo_paint_bracket(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint lock icon */
-void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h,
-                            gint flags);
+void dtgtk_cairo_paint_lock(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
+/** paint check mark icon */
+void dtgtk_cairo_paint_check_mark(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 /** paint a over/under exposure icon */
 void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 
 #endif
+
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
