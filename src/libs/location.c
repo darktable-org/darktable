@@ -24,7 +24,7 @@
 #include "control/conf.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "dtgtk/label.h"
+#include "dtgtk/icon.h"
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -69,6 +69,8 @@ typedef struct _lib_location_result_t
 /* entry value commited, perform a search */
 static void _lib_location_entry_activated (GtkButton *button, gpointer user_data);
 
+static gboolean _lib_location_result_item_activated (GtkButton *button, GdkEventButton *ev, gpointer user_data);
+
 static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
 					       const char *element_name, const char **attribute_names,
 					       const gchar **attribute_values, gpointer user_data,
@@ -112,19 +114,20 @@ gui_init (dt_lib_module_t *self)
   memset(self->data, 0, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
 
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, 5);
 
   /* add search box */
   lib->search = GTK_ENTRY(gtk_entry_new());
   dt_gui_key_accel_block_on_focus (GTK_WIDGET (lib->search));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->search), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->search), FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT (lib->search), "activate",
                    G_CALLBACK (_lib_location_entry_activated), (gpointer)self);
 
-  /* add result list */
-
-
+  /* add result vbox */
+  lib->result = gtk_vbox_new(FALSE,2);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->result), TRUE, FALSE, 2);
+  
 }
 
 void
@@ -132,6 +135,44 @@ gui_cleanup (dt_lib_module_t *self)
 {
 }
 
+static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
+{
+  GtkWidget *eb, *hb, *vb, *w;
+  char location[512];
+  eb = gtk_event_box_new();
+  hb = gtk_hbox_new(FALSE,2);
+  vb = gtk_vbox_new(FALSE,2);
+
+  /* add name */
+  w = gtk_label_new(place->name);
+  gtk_label_set_line_wrap(GTK_LABEL(w), TRUE);
+  gtk_misc_set_alignment(GTK_MISC(w), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
+
+  /* add location coord */
+  g_snprintf(location, 512, "lat: %.4f lon: %.4f", place->lat, place->lon);
+  w = gtk_label_new(location);
+  gtk_label_set_line_wrap(GTK_LABEL(w), TRUE);
+  gtk_misc_set_alignment(GTK_MISC(w), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
+
+  /* type icon */
+  GtkWidget *icon = dtgtk_icon_new(dtgtk_cairo_paint_store, 0);
+
+  /* setup layout */
+  gtk_box_pack_start(GTK_BOX(hb), icon, FALSE, FALSE, 2);
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 2);
+  gtk_container_add(GTK_CONTAINER(eb), hb);
+
+  gtk_widget_show_all(eb);
+
+  /* connect button press signal for result item */
+  g_signal_connect(G_OBJECT (eb), "button-press-event",
+                   G_CALLBACK (_lib_location_result_item_activated), (gpointer)place);
+
+  
+  return eb;
+}
 
 static size_t _lib_location_curl_write_data(void *buffer, size_t size, size_t nmemb, void *userp)
 {
@@ -145,7 +186,7 @@ static size_t _lib_location_curl_write_data(void *buffer, size_t size, size_t nm
   g_free( lib->response );
   lib->response = newdata;
   lib->response_size += nmemb;
-
+  
   return nmemb;
 }
 
@@ -170,13 +211,13 @@ static int32_t _lib_location_place_get_zoom(_lib_location_result_t *place)
       return 17;
 
     case LOCATION_TYPE_VILLAGE:
-      return 16;
+      return 12;
 
     case LOCATION_TYPE_HAMLET:
     case LOCATION_TYPE_CITY:
     case LOCATION_TYPE_UNKNOWN:
     default:
-      return 12;
+      return 8;
   }
 
   /* should never get here */
@@ -195,7 +236,12 @@ static void _lib_location_search_finish(gpointer user_data)
     return;
 
   /* for each location found populate the result list */
-
+  GList *item = lib->places;
+  do {
+    _lib_location_result_t *place = (_lib_location_result_t *)item->data;
+    gtk_box_pack_start(GTK_BOX(lib->result), _lib_location_place_widget_new(place), TRUE, TRUE, 2);
+    gtk_widget_show(lib->result);
+  } while ((item = g_list_next(item)) != NULL);
 
   /* if we only got one search result back lets
      set center location and zoom based on place type  */
@@ -236,6 +282,8 @@ static gboolean _lib_location_search(gpointer user_data)
     g_list_free_full(lib->places, g_free);
   lib->places = NULL;
 
+  gtk_container_foreach(GTK_CONTAINER(lib->result),(GtkCallback)gtk_widget_destroy,NULL);
+
   /* build the query url */
   query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d", 
 			  text, LIMIT_RESULT);
@@ -272,7 +320,6 @@ static gboolean _lib_location_search(gpointer user_data)
   {
     _lib_location_result_t *p = (_lib_location_result_t *)item->data; 
     fprintf(stderr, "(%f,%f) %s\n", p->lon, p->lat, p->name);
-
     item = g_list_next(item);
   }
   
@@ -303,6 +350,16 @@ bail_out:
   return FALSE;
 }
 
+gboolean _lib_location_result_item_activated(GtkButton *button, GdkEventButton *ev, gpointer user_data)
+{
+  _lib_location_result_t *p = (_lib_location_result_t *)user_data;
+  int32_t zoom = _lib_location_place_get_zoom(p);
+  fprintf(stderr,"zoom to: %d\n",zoom);
+  dt_view_map_center_on_location(darktable.view_manager, 
+				   p->lon, p->lat, zoom);
+  return TRUE;
+}
+
 void _lib_location_entry_activated (GtkButton *button, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -317,7 +374,6 @@ void _lib_location_entry_activated (GtkButton *button, gpointer user_data)
   /* start a bg job for fetching results of a search */
   g_idle_add_full( G_PRIORITY_DEFAULT_IDLE, _lib_location_search, user_data, _lib_location_search_finish);
   
-
 }
 
 
