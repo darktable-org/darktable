@@ -714,8 +714,6 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
     c->x_move = -1;
   }
   gtk_widget_queue_draw(widget);
-  gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
 

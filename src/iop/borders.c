@@ -167,7 +167,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int by = MAX(bh/2 - roi_out->y, 0);
 
   // sse-friendly color copy (stupidly copy whole buffer, /me lazy ass)
-  const float col[4] = {d->color[0], d->color[1], d->color[2], 0.0f};
+  const float col[4] = {d->color[0], d->color[1], d->color[2], 1.0f};
   float *buf = (float *)ovoid;
   for(int k=0;k<roi_out->width*roi_out->height;k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
   // blit image inside border and fill border with bg color
@@ -202,11 +202,11 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_borders_params_t p = (dt_iop_borders_params_t)
   {
-    {0.0f, 0.0f, 0.0f}, 3.0f/2.0f, 0.1f
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, 0.1f
   };
-  dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, self->version(), &p, sizeof(p), 1);
-  p.color[0] = p.color[1] = p.color[2] = 1.0f;
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, self->version(), &p, sizeof(p), 1);
+  p.color[0] = p.color[1] = p.color[2] = 0.0f;
+  dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 static void
@@ -452,7 +452,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
   {
-    {0.0f, 0.0f, 0.0f}, 3.0f/2.0f, 0.1f
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, 0.1f
   };
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   if(self->dev->gui_attached && g)

@@ -136,16 +136,22 @@ void init_presets (dt_iop_module_so_t *self)
   dt_iop_tonecurve_params_t p;
   p.tonecurve_preset = 0;
 
-  float linear[6] = {0.0, 0.08, 0.4, 0.6, 0.92, 1.0};
-  for(int k=0; k<6; k++) p.tonecurve_x[k] = linear[k];
-  for(int k=0; k<6; k++) p.tonecurve_y[k] = linear[k];
-  p.tonecurve_y[1] += 0.03;
-  p.tonecurve_y[4] -= 0.03;
-  p.tonecurve_y[2] += 0.03;
-  p.tonecurve_y[3] -= 0.03;
-  for(int k=1; k<5; k++) p.tonecurve_y[k] = powf(p.tonecurve_y[k], 2.2f);
-  for(int k=1; k<5; k++) p.tonecurve_x[k] = powf(p.tonecurve_x[k], 2.2f);
+  // More useful low contrast curve (based on Samsung NX -2 Contrast)
+  p.tonecurve_x[0] = 0.000000;
+  p.tonecurve_x[1] = 0.003862;
+  p.tonecurve_x[2] = 0.076613;
+  p.tonecurve_x[3] = 0.169355;
+  p.tonecurve_x[4] = 0.774194;
+  p.tonecurve_x[5] = 1.000000;
+  p.tonecurve_y[0] = 0.000000;
+  p.tonecurve_y[1] = 0.007782;
+  p.tonecurve_y[2] = 0.156182;
+  p.tonecurve_y[3] = 0.290352;
+  p.tonecurve_y[4] = 0.773852;
+  p.tonecurve_y[5] = 1.000000;
   dt_gui_presets_add_generic(_("low contrast"), self->op, self->version(), &p, sizeof(p), 1);
+
+  float linear[6] = {0.0, 0.08, 0.4, 0.6, 0.92, 1.0};
 
   for(int k=0; k<6; k++) p.tonecurve_x[k] = linear[k];
   for(int k=0; k<6; k++) p.tonecurve_y[k] = linear[k];
@@ -554,9 +560,6 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
   }
   gtk_widget_queue_draw(widget);
-
-  gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
 

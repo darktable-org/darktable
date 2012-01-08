@@ -81,8 +81,6 @@ dt_collection_update (const dt_collection_t *collection)
   gchar *wq, *sq, *selq, *query;
   wq = sq = selq = query = NULL;
 
-  dt_lib_sort_t sort = dt_conf_get_int ("ui_last/combo_sort");
-
   /* build where part */
   if (!(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
@@ -115,10 +113,10 @@ dt_collection_update (const dt_collection_t *collection)
   else
     wq = dt_util_dstrcat(wq, "%s", collection->where_ext);
 
-
+  
 
   /* build select part includes where */
-  if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  if (collection->params.sort == DT_COLLECTION_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
     selq = dt_util_dstrcat(selq, "select distinct id from (select * from images where %s) as a left outer join color_labels as b on a.id = b.imgid", wq);
   else
     selq = dt_util_dstrcat(selq, "select distinct id from images where %s",wq);
@@ -127,11 +125,7 @@ dt_collection_update (const dt_collection_t *collection)
   /* build sort order part */
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
   {
-    if (sort == DT_LIB_SORT_DATETIME)           sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-    else if(sort == DT_LIB_SORT_RATING)         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-    else if(sort == DT_LIB_SORT_FILENAME)       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
-    else if(sort == DT_LIB_SORT_ID)             sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)          sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
+    sq = dt_collection_get_sort_query(collection);
   }
 
   /* store the new query */
@@ -145,12 +139,7 @@ dt_collection_update (const dt_collection_t *collection)
   g_free(selq);
   g_free (query);
 
-  /* collection hinting */
-  gchar message[1024];
-  int c = dt_collection_get_count(collection);
-  int cs = dt_collection_get_selected_count(collection);
-  g_snprintf(message, 1024, _("collection is currently viewing %d images where %d of them is selected."), c, cs);
-  dt_control_hinter_message(darktable.control, message);
+  dt_collection_hint_message(collection);
 
   return result;
 }
@@ -171,6 +160,8 @@ dt_collection_reset(const dt_collection_t *collection)
   params->rating       = dt_conf_get_int("plugins/collection/rating");
   params->query_flags  = dt_conf_get_int("plugins/collection/query_flags");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
+  params->sort         = dt_conf_get_int("plugins/collection/sort");
+  params->descending   = dt_conf_get_bool("plugins/collection/descending");
   dt_collection_update_query (collection);
 }
 
@@ -235,6 +226,101 @@ dt_collection_set_rating (const dt_collection_t *collection, uint32_t rating)
   params->rating = rating;
 }
 
+uint32_t
+dt_collection_get_rating (const dt_collection_t *collection)
+{
+  uint32_t i;
+  dt_collection_params_t *params=(dt_collection_params_t *)&collection->params;
+  i = params->rating;
+  i++; /* The enum starts on 0 */
+  return i;
+}
+
+void
+dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t sort, gboolean reverse)
+{
+  dt_collection_params_t *params=(dt_collection_params_t *)&collection->params;
+
+  if(sort != -1)
+    params->sort = sort;
+  if(reverse != -1)
+    params->descending = reverse;
+}
+
+dt_collection_sort_t
+dt_collection_get_sort_field(const dt_collection_t *collection)
+{
+  return collection->params.sort;
+}
+
+gboolean
+dt_collection_get_sort_descending(const dt_collection_t *collection)
+{
+  return collection->params.descending;
+}
+
+gchar *  
+dt_collection_get_sort_query(const dt_collection_t *collection)
+{ 
+  gchar *sq = NULL;
+
+  switch(collection->params.sort)
+  {
+    case DT_COLLECTION_SORT_DATETIME:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
+    break;
+ 
+    case DT_COLLECTION_SORT_RATING:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
+    break;
+
+    case DT_COLLECTION_SORT_FILENAME:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
+    break;
+
+    case DT_COLLECTION_SORT_ID:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
+    break;
+
+    case DT_COLLECTION_SORT_COLOR:
+      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
+    break;
+  }
+ 
+ if (collection->params.descending)
+ {
+   switch(collection->params.sort)
+   {
+     case DT_COLLECTION_SORT_DATETIME:
+     case DT_COLLECTION_SORT_FILENAME:
+     case DT_COLLECTION_SORT_ID:
+     {
+       sq = dt_util_dstrcat(sq, " %s", "desc");
+     }
+     break;
+
+     /* These two are special as they are descending in the default view */
+     case DT_COLLECTION_SORT_RATING:
+     {
+       g_free(sq);
+       sq = NULL;
+       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7");
+     }
+     break;
+
+     case DT_COLLECTION_SORT_COLOR:
+     {
+       g_free(sq);
+       sq = NULL;
+       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename");
+     }
+     break;
+   }
+ }
+ return sq;
+}
+
+
 static int
 _dt_collection_store (const dt_collection_t *collection, gchar *query)
 {
@@ -245,6 +331,8 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
     dt_conf_set_int ("plugins/collection/filter_flags",collection->params.filter_flags);
     dt_conf_set_int ("plugins/collection/film_id",collection->params.film_id);
     dt_conf_set_int ("plugins/collection/rating",collection->params.rating);
+    dt_conf_set_int ("plugins/collection/sort",collection->params.sort);
+    dt_conf_set_bool ("plugins/collection/descending",collection->params.descending);
   }
 
   /* store query in context */
@@ -280,7 +368,7 @@ uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
 {
   sqlite3_stmt *stmt = NULL;
   uint32_t count=0;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct count(imgid) from selected_images", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count (distinct imgid) from selected_images", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
@@ -290,24 +378,17 @@ uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
 GList *dt_collection_get_selected (const dt_collection_t *collection)
 {
   GList *list=NULL;
-  dt_lib_sort_t sort = dt_conf_get_int ("ui_last/combo_sort");
   gchar *query = NULL;
   gchar *sq = NULL;
 
   /* get collection order */
   if ((collection->params.query_flags&COLLECTION_QUERY_USE_SORT))
-  {
-    if (sort == DT_LIB_SORT_DATETIME)           sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-    else if(sort == DT_LIB_SORT_RATING)         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-    else if(sort == DT_LIB_SORT_FILENAME)       sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
-    else if(sort == DT_LIB_SORT_ID)             sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
-    else if(sort == DT_LIB_SORT_COLOR)          sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc,id");
-  }
+    sq = dt_collection_get_sort_query(collection);
 
 
   sqlite3_stmt *stmt = NULL;
     
-  if (sort == DT_LIB_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  if (collection->params.sort == DT_COLLECTION_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
     query = dt_util_dstrcat(query, "select distinct a.imgid as id from (select imgid from selected_images) as a left outer join color_labels as b on a.imgid = b.imgid %s",sq);
   else
     query = dt_util_dstrcat(query, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
@@ -474,6 +555,16 @@ dt_collection_update_query(const dt_collection_t *collection)
   if (!collection->clone)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 
+}
+
+void dt_collection_hint_message(const dt_collection_t *collection)
+{
+  /* collection hinting */
+  gchar message[1024];
+  int c = dt_collection_get_count(collection);
+  int cs = dt_collection_get_selected_count(collection);
+  g_snprintf(message, 1024, _("collection is currently viewing %d images where %d of them is selected."), c, cs);
+  dt_control_hinter_message(darktable.control, message);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

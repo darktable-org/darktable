@@ -192,6 +192,15 @@ endif(USE_GNOME_KEYRING)
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
 
+if(USE_UNITY)
+  find_package(Unity)
+  if(UNITY_FOUND)
+    add_definitions(-DHAVE_UNITY)
+    include_directories(${UNITY_INCLUDE_DIRS})
+    list(APPEND LIBS ${UNITY_LIBRARIES})
+  endif(UNITY_FOUND)
+endif(USE_UNITY)
+
 # build opengl slideshow viewer?
 if(BUILD_SLIDESHOW) 
   find_package(SDL)
