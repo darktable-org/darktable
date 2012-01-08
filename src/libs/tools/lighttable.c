@@ -38,7 +38,7 @@ static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom);
 /* lightable layout changed */
 static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_data);
 /* zoom spinbutton change callback */
-static void _lib_lighttable_zoom_changed (GtkAdjustment *adjustment, gpointer user_data);
+static void _lib_lighttable_zoom_changed (GtkRange *range, gpointer user_data);
 /* zoom key accel callback */
 static void _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                         guint keyval, GdkModifierType modifier, gpointer data);
@@ -98,13 +98,14 @@ void gui_init(dt_lib_module_t *self)
                     (gpointer)self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
-  
 
-  /* create zoom spin button */
-  GtkAdjustment *adj = GTK_ADJUSTMENT(gtk_adjustment_new(7,1,26,1,3,0));
-  d->zoom = gtk_spin_button_new(adj, 1, 0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), dt_conf_get_int("plugins/lighttable/images_in_row"));
-  g_signal_connect (G_OBJECT(adj), "value-changed",
+
+  /* create horizontal zoom slider */
+  d->zoom = gtk_hscale_new_with_range(1, 26, 1);
+  gtk_widget_set_size_request (GTK_WIDGET(d->zoom), 160, -1);
+  gtk_scale_set_value_pos(GTK_SCALE(d->zoom), GTK_POS_RIGHT);
+  gtk_range_set_value(GTK_RANGE(d->zoom), dt_conf_get_int("plugins/lighttable/images_in_row"));
+  g_signal_connect (G_OBJECT(d->zoom), "value-changed",
                     G_CALLBACK (_lib_lighttable_zoom_changed),
                     (gpointer)self);
 
@@ -159,9 +160,9 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_lighttable_zoom_changed (GtkAdjustment *adjustment, gpointer user_data)
+static void _lib_lighttable_zoom_changed (GtkRange *range, gpointer user_data)
 {
-  const int i = gtk_adjustment_get_value(adjustment);
+  const int i = gtk_range_get_value(range);
   dt_conf_set_int("plugins/lighttable/images_in_row", i);
   dt_control_queue_redraw_center();
 }
@@ -177,7 +178,7 @@ static void _lib_lighttable_layout_changed (GtkComboBox *widget, gpointer user_d
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
+  gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
 }
 
 static void _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -185,7 +186,7 @@ static void _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_gro
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), 1);
+  gtk_range_set_value(GTK_RANGE(d->zoom), 1);
 }
 
 static void _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -193,7 +194,7 @@ static void _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_gro
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), DT_LIBRARY_MAX_ZOOM);
+  gtk_range_set_value(GTK_RANGE(d->zoom), DT_LIBRARY_MAX_ZOOM);
 }
 
 static void _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -204,7 +205,7 @@ static void _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_grou
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   if(zoom <= 1) zoom = 1;
   else zoom--;
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
+  gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
 }
 
 static void _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -213,10 +214,10 @@ static void _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_gro
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  if(zoom >= 2*DT_LIBRARY_MAX_ZOOM) 
+  if(zoom >= 2*DT_LIBRARY_MAX_ZOOM)
     zoom = 2*DT_LIBRARY_MAX_ZOOM;
   else
     zoom++;
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->zoom), zoom);
+  gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
 }
 
