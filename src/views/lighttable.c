@@ -658,7 +658,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   dt_library_t *lib = (dt_library_t *)self->data;
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  if( lib->full_preview && lib->full_preview_id!=-1 )
+  if( lib->full_preview_id!=-1 )
   {
     lib->image_over = DT_VIEW_DESERT;
     cairo_set_source_rgb (cr, .1, .1, .1);
@@ -952,7 +952,7 @@ int key_released(dt_view_t *self, guint key, guint state)
     return 0;
 
   if(key == accels->lighttable_preview.accel_key
-     && state == accels->lighttable_preview.accel_mods)
+     && state == accels->lighttable_preview.accel_mods && lib->full_preview_id !=-1)
   {
 
     lib->full_preview_id = -1;
@@ -985,7 +985,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   {
     int32_t mouse_over_id;
     DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-    if(!lib->full_preview && mouse_over_id != -1 )
+    if(lib->full_preview_id == -1 && mouse_over_id != -1 )
     {
       // encode panel visibility into full_preview
       lib->full_preview = 0;
