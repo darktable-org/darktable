@@ -387,12 +387,16 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
 
 
   sqlite3_stmt *stmt = NULL;
-    
-  if (collection->params.sort == DT_COLLECTION_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query, "select distinct a.imgid as id from (select imgid from selected_images) as a left outer join color_labels as b on a.imgid = b.imgid %s",sq);
-  else
-    query = dt_util_dstrcat(query, "select distinct id from images where id in (select imgid from selected_images) %s",sq);
 
+  /* build the query string */
+  query = dt_util_dstrcat(query, "select distinct id from images ");
+
+  if (collection->params.sort == DT_COLLECTION_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+    query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
+
+  query = dt_util_dstrcat(query, "where id in (select imgid from selected_images) %s", sq);
+
+    
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
