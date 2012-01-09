@@ -292,16 +292,6 @@ int dt_image_altered(const uint32_t imgid)
   sqlite3_finalize(stmt);
   if(altered) return 1;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select raw_parameters from images where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    uint32_t tmpi = sqlite3_column_int(stmt, 0);
-    dt_image_raw_parameters_t tmp = *(dt_image_raw_parameters_t *)&tmpi;
-    if(tmp.user_flip != -1) altered = 1;
-  }
-  sqlite3_finalize(stmt);
-
   return altered;
 }
 
