@@ -60,6 +60,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkComboBox *aperture_min, *aperture_max;
   GtkSpinButton *focal_length_min, *focal_length_max;
   gchar *original_name;
+  gint old_id;
 }
 dt_gui_presets_edit_dialog_t;
 
@@ -177,12 +178,18 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
   {
+    // now delete preset, so we can re-insert the new values:
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->old_id );
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
     //rename accerelartors
     char path[1024];
     snprintf(path,1024,"preset/%s",g->original_name);
     dt_accel_rename_preset_iop(g->module,path,gtk_entry_get_text(g->name));
     // commit all the user input fields
-    sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, enabled, blendop_params, "
             "model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
             "focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr) "
@@ -266,6 +273,7 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   GtkBox *vbox4 = GTK_BOX(gtk_vbox_new(TRUE, 5));
 
   dt_gui_presets_edit_dialog_t *g = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
+  g->old_id = -1;
   g->original_name = name;
   g->module = module;
   g->name = GTK_ENTRY(gtk_entry_new());
@@ -375,45 +383,65 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select description, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, autoapply, filter from presets where name = ?1 and operation = ?2 and op_version = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, description, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, autoapply, filter from presets where name = ?1 and operation = ?2 and op_version = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version() );
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 0));
-    gtk_entry_set_text(g->model, (const char *)sqlite3_column_text(stmt, 1));
-    gtk_entry_set_text(g->maker, (const char *)sqlite3_column_text(stmt, 2));
-    gtk_entry_set_text(g->lens,  (const char *)sqlite3_column_text(stmt, 3));
-    gtk_spin_button_set_value(g->iso_min, sqlite3_column_double(stmt, 4));
-    gtk_spin_button_set_value(g->iso_max, sqlite3_column_double(stmt, 5));
+    g->old_id = sqlite3_column_int(stmt, 0);
+    gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 1));
+    gtk_entry_set_text(g->model, (const char *)sqlite3_column_text(stmt, 2));
+    gtk_entry_set_text(g->maker, (const char *)sqlite3_column_text(stmt, 3));
+    gtk_entry_set_text(g->lens,  (const char *)sqlite3_column_text(stmt, 4));
+    gtk_spin_button_set_value(g->iso_min, sqlite3_column_double(stmt, 5));
+    gtk_spin_button_set_value(g->iso_max, sqlite3_column_double(stmt, 6));
 
-    float val = sqlite3_column_double(stmt, 6);
+    float val = sqlite3_column_double(stmt, 7);
     int k=0;
     for(; k<dt_gui_presets_exposure_value_cnt&&val>dt_gui_presets_exposure_value[k]; k++);
     gtk_combo_box_set_active(g->exposure_min, k);
-    val = sqlite3_column_double(stmt, 7);
+    val = sqlite3_column_double(stmt, 8);
     for(k=0; k<dt_gui_presets_exposure_value_cnt&&val>dt_gui_presets_exposure_value[k]; k++);
     gtk_combo_box_set_active(g->exposure_max, k);
-    val = sqlite3_column_double(stmt, 8);
-    for(k=0; k<dt_gui_presets_aperture_value_cnt&&val>dt_gui_presets_aperture_value[k]; k++);
-    gtk_combo_box_set_active(g->aperture_min, k);
     val = sqlite3_column_double(stmt, 9);
     for(k=0; k<dt_gui_presets_aperture_value_cnt&&val>dt_gui_presets_aperture_value[k]; k++);
+    gtk_combo_box_set_active(g->aperture_min, k);
+    val = sqlite3_column_double(stmt, 10);
+    for(k=0; k<dt_gui_presets_aperture_value_cnt&&val>dt_gui_presets_aperture_value[k]; k++);
     gtk_combo_box_set_active(g->aperture_max, k);
-    gtk_spin_button_set_value(g->focal_length_min, sqlite3_column_double(stmt, 10));
-    gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 11));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 12));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    sqlite3_column_int(stmt, 13));
+    gtk_spin_button_set_value(g->focal_length_min, sqlite3_column_double(stmt, 11));
+    gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 12));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 13));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    sqlite3_column_int(stmt, 14));
   }
-  sqlite3_finalize(stmt);
+  else
+  {
+    gtk_entry_set_text(g->description, "");
+    gtk_entry_set_text(g->model, "%");
+    gtk_entry_set_text(g->maker, "%");
+    gtk_entry_set_text(g->lens,  "%");
+    gtk_spin_button_set_value(g->iso_min, 0);
+    gtk_spin_button_set_value(g->iso_max, 51200);
 
-  // now delete preset, so we can re-insert the new values:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version() );
-  sqlite3_step(stmt);
+    float val = 0;
+    int k=0;
+    for(; k<dt_gui_presets_exposure_value_cnt&&val>dt_gui_presets_exposure_value[k]; k++);
+    gtk_combo_box_set_active(g->exposure_min, k);
+    val = 100000000;
+    for(k=0; k<dt_gui_presets_exposure_value_cnt&&val>dt_gui_presets_exposure_value[k]; k++);
+    gtk_combo_box_set_active(g->exposure_max, k);
+    val = 0;
+    for(k=0; k<dt_gui_presets_aperture_value_cnt&&val>dt_gui_presets_aperture_value[k]; k++);
+    gtk_combo_box_set_active(g->aperture_min, k);
+    val = 100000000;
+    for(k=0; k<dt_gui_presets_aperture_value_cnt&&val>dt_gui_presets_aperture_value[k]; k++);
+    gtk_combo_box_set_active(g->aperture_max, k);
+    gtk_spin_button_set_value(g->focal_length_min, 0);
+    gtk_spin_button_set_value(g->focal_length_max, 1000);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), 0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    0);
+  }
   sqlite3_finalize(stmt);
 
   g_signal_connect (dialog, "response", G_CALLBACK (edit_preset_response), g);
@@ -437,21 +465,9 @@ menuitem_new_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version());
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, enabled, "
-         "blendop_params, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-         "focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr) "
-         "values (?1, '', ?2, ?3, ?4, ?5, ?6, '%', '%', '%', 0, 51200, 0, 100000000, 0, 100000000, 0, 1000, 0, 0, 0, 0, 0)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, _("new preset"), strlen(_("new preset")), SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version());
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->params, module->params_size, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, module->enabled);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, module->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
   // create a shortcut for the new entry
-    char path[1024];
-    snprintf(path,1024,"preset/%s",_("new preset"));
+  char path[1024];
+  snprintf(path,1024,"preset/%s",_("new preset"));
   dt_accel_register_iop(module->so,FALSE,path,0,0);
   dt_accel_connect_preset_iop(module,_("new preset"));
   // then show edit dialog
