@@ -161,16 +161,28 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_stmt *stmt;
   gchar *name = get_active_preset_name(module);
   if(name == NULL) return;
-  char tmp_path[1024];
-  snprintf(tmp_path,1024,"preset/%s",name);
-  dt_accel_deregister_iop(module,tmp_path);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3 and writeprotect=0", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version());
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+                                            GTK_DIALOG_DESTROY_WITH_PARENT,
+                                            GTK_MESSAGE_QUESTION,
+                                            GTK_BUTTONS_YES_NO,
+                                            _("do you really want to delete the preset `%s'?"), name);
+  gtk_window_set_title(GTK_WINDOW (dialog), _("delete preset?"));
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+  {
+    char tmp_path[1024];
+    snprintf(tmp_path,1024,"preset/%s",name);
+    dt_accel_deregister_iop(module,tmp_path);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3 and writeprotect=0", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version());
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
   g_free(name);
+  gtk_widget_destroy (dialog);
 }
 
 static void
