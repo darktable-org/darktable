@@ -94,7 +94,7 @@ int flags()
 int
 groups ()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_TONE;
 }
 
 /* get the zone index of pixel lightness from zonemap */

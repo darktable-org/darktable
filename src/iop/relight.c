@@ -95,7 +95,7 @@ int flags()
 int
 groups ()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_TONE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)

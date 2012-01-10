@@ -37,6 +37,7 @@ typedef enum dt_lib_modulegroup_t
   DT_MODULEGROUP_BASIC,
   DT_MODULEGROUP_CORRECT,
   DT_MODULEGROUP_COLOR,
+  DT_MODULEGROUP_TONE,
   DT_MODULEGROUP_EFFECT,
 
   /* dont touch the following */
@@ -139,6 +140,11 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect (d->buttons[DT_MODULEGROUP_COLOR], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
   g_object_set (d->buttons[DT_MODULEGROUP_COLOR],"tooltip-text",_("color group"),(char *)NULL);
   
+  /* tone */
+  d->buttons[DT_MODULEGROUP_TONE] = gtk_toggle_button_new_with_label(_("tone"));
+  g_signal_connect (d->buttons[DT_MODULEGROUP_TONE], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
+  g_object_set (d->buttons[DT_MODULEGROUP_TONE],"tooltip-text",_("tone group"),(char *)NULL);
+  
   /* effect */
   d->buttons[DT_MODULEGROUP_EFFECT] = gtk_toggle_button_new_with_label(_("effect"));
   g_signal_connect (d->buttons[DT_MODULEGROUP_EFFECT], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
@@ -154,9 +160,10 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *table = self->widget;
   gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_ACTIVE_PIPE],0,1,0,1,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
   gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_FAVORITES],1,2,0,1,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
+  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_BASIC],2,3,0,1,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
 
   /* second row */
-  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_BASIC],0,1,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
+  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_TONE],0,1,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
   gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_COLOR],1,2,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
   gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_CORRECT],2,3,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
   gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_EFFECT],3,4,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
@@ -205,6 +212,7 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, ui
   if      (iop_group & IOP_SPECIAL_GROUP_ACTIVE_PIPE && group == DT_MODULEGROUP_ACTIVE_PIPE) return TRUE;
   else if (iop_group & IOP_SPECIAL_GROUP_USER_DEFINED && group == DT_MODULEGROUP_FAVORITES) return TRUE;
   else if (iop_group & IOP_GROUP_BASIC && group == DT_MODULEGROUP_BASIC) return TRUE;
+  else if (iop_group & IOP_GROUP_TONE && group == DT_MODULEGROUP_TONE) return TRUE;
   else if (iop_group & IOP_GROUP_COLOR && group == DT_MODULEGROUP_COLOR) return TRUE;
   else if (iop_group & IOP_GROUP_CORRECT && group == DT_MODULEGROUP_CORRECT) return TRUE;
   else if (iop_group & IOP_GROUP_EFFECT && group == DT_MODULEGROUP_EFFECT) return TRUE;
