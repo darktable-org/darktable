@@ -261,4 +261,12 @@ GtkType dtgtk_togglebutton_get_type()
   return dtgtk_togglebutton_type;
 }
 
+
+void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button,
+                            DTGTKCairoPaintIconFunc paint,
+                            gint paintflags)
+{
+  button->icon = paint;
+  button->icon_flags = paintflags;
+}
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

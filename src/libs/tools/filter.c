@@ -106,7 +106,6 @@ void gui_init(dt_lib_module_t *self)
   
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
-//			    dt_conf_get_int("ui_last/combo_filter"));
                            dt_collection_get_rating(darktable.collection));
 
   g_signal_connect (G_OBJECT (widget), "changed",
@@ -136,6 +135,11 @@ void gui_init(dt_lib_module_t *self)
 
   /* reverse order checkbutton */
   d->reverse = widget = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX|CPF_DIRECTION_UP); 
+  if (darktable.collection->params.descending)
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget),
+                           dtgtk_cairo_paint_solid_arrow,
+                           CPF_STYLE_BOX|CPF_DIRECTION_DOWN);
+  
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 
   /* select the last value and connect callback */
@@ -160,15 +164,7 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
 {
   /* update last settings */
   int i = gtk_combo_box_get_active(widget);
-/*  if     (i == 0)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_ALL);
-  else if(i == 1)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_NO);
-  else if(i == 2)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_1);
-  else if(i == 3)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_2);
-  else if(i == 4)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_3);
-  else if(i == 5)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_4);
-  else if(i == 6)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_STAR_5);
-  else if(i == 7)  dt_conf_set_int("ui_last/combo_filter",     DT_LIB_FILTER_REJECT);
-*/
+  
   /* update collection star filter flags */
   if (i == 0)
     dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) & ~(COLLECTION_FILTER_ATLEAST_RATING|COLLECTION_FILTER_EQUAL_RATING));
@@ -190,15 +186,14 @@ _lib_filter_reverse_button_changed (GtkDarktableToggleButton *widget, gpointer u
   gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(reverse)
-  {
-    widget->icon_flags &= ~CPF_DIRECTION_UP;
-    widget->icon_flags |= CPF_DIRECTION_DOWN;
-  }
+    dtgtk_togglebutton_set_paint(widget,
+                           dtgtk_cairo_paint_solid_arrow,
+                           CPF_STYLE_BOX|CPF_DIRECTION_DOWN);
   else
-  {
-    widget->icon_flags &= ~CPF_DIRECTION_DOWN;
-    widget->icon_flags |= CPF_DIRECTION_UP;
-  }
+    dtgtk_togglebutton_set_paint(widget,
+                           dtgtk_cairo_paint_solid_arrow,
+                           CPF_STYLE_BOX|CPF_DIRECTION_UP);
+  
   /* update last settings */
   dt_collection_set_sort(darktable.collection, -1, reverse);
 
