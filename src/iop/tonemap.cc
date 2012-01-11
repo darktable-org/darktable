@@ -81,7 +81,7 @@ extern "C"
   int
   groups ()
   {
-    return IOP_GROUP_BASIC;
+    return IOP_GROUP_TONE;
   }
  
   int
