@@ -829,14 +829,46 @@ void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, g
   cairo_arc(cr, 0.5, 0.5, 0.40, -M_PI, M_PI);
   cairo_stroke(cr);
 
-  cairo_pattern_t *pat = NULL;
-  pat = cairo_pattern_create_radial(0.5, 0.5, 0.2, 0.5, 0.5, 1.0);
-  cairo_pattern_add_color_stop_rgba(pat, 0.0, 1 ,1 ,1, 0.8);
-  cairo_pattern_add_color_stop_rgba(pat, 1.0, 1 ,1 ,1, 0.0);
-  cairo_set_source(cr, pat);
-  cairo_arc(cr, 0.78, 0.2, 0.20, -M_PI, M_PI);
-  cairo_fill(cr);
+  /* sparkles */
+  cairo_set_line_width(cr,0.06);
 
+  cairo_move_to(cr, 0.378, 0.502);
+  cairo_line_to(cr, 0.522, 0.549);
+  cairo_line_to(cr, 0.564, 0.693);
+  cairo_line_to(cr, 0.653, 0.569);
+  cairo_line_to(cr, 0.802, 0.573);
+  cairo_line_to(cr, 0.712, 0.449);
+  cairo_line_to(cr, 0.762, 0.308);
+  cairo_line_to(cr, 0.618, 0.356);
+  cairo_line_to(cr, 0.500, 0.264);
+  cairo_line_to(cr, 0.500, 0.417);
+  cairo_close_path(cr);
+
+  cairo_move_to(cr, 0.269, 0.717);
+  cairo_line_to(cr, 0.322, 0.735);
+  cairo_line_to(cr, 0.337, 0.787);
+  cairo_line_to(cr, 0.370, 0.742);
+  cairo_line_to(cr, 0.424, 0.743);
+  cairo_line_to(cr, 0.391, 0.698);
+  cairo_line_to(cr, 0.409, 0.646);
+  cairo_line_to(cr, 0.357, 0.664);
+  cairo_line_to(cr, 0.314, 0.630);
+  cairo_line_to(cr, 0.314, 0.686);
+
+  cairo_move_to(cr, 0.217, 0.366);
+  cairo_line_to(cr, 0.271, 0.384);
+  cairo_line_to(cr, 0.286, 0.437);
+  cairo_line_to(cr, 0.319, 0.391);
+  cairo_line_to(cr, 0.374, 0.393);
+  cairo_line_to(cr, 0.341, 0.347);
+  cairo_line_to(cr, 0.360, 0.295);
+  cairo_line_to(cr, 0.306, 0.312);
+  cairo_line_to(cr, 0.263, 0.279);
+  cairo_line_to(cr, 0.263, 0.335);
+
+  cairo_close_path(cr);
+
+  cairo_stroke(cr);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
