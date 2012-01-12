@@ -119,7 +119,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_hbox_new(TRUE,2);
 
-  dtgtk_cairo_paint_flags_t pf = CPF_DO_NOT_USE_BORDER;
+  dtgtk_cairo_paint_flags_t pf = 0;
 
   /* favorites */
   d->buttons[DT_MODULEGROUP_FAVORITES] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_favorites, pf);
@@ -162,7 +162,7 @@ void gui_init(dt_lib_module_t *self)
   /*
    * layout button row
    */
-  int iconsize = 20;
+  int iconsize = 28;
   GtkWidget *br = self->widget;
   for (int k=0; k<DT_MODULEGROUP_SIZE; k++)
   {
