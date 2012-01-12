@@ -704,6 +704,11 @@ apply_preset(dt_iop_module_t *self)
       for(int k=0; k<3; k++) p->coeffs[k] = fp->coeffs[k];
       dt_iop_request_focus(self);
       self->request_color_pick = 1;
+
+      /* set the area sample size*/
+      if (self->request_color_pick)
+	dt_lib_colorpicker_set_area(darktable.lib, 0.9);
+
       break;
     case 2: // passthrough mode, raw data
       for(int k=0; k<3; k++) p->coeffs[k] = 1.0;

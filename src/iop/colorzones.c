@@ -810,6 +810,11 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
+  
+  /* set the area sample size*/
+  if (self->request_color_pick)
+    dt_lib_colorpicker_set_area(darktable.lib, 0.8);
+  
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 }
