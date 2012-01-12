@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Robert Bieber, Johannes Hanika.
+    copyright (c) 2011-2012 Robert Bieber, Johannes Hanika, Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -398,6 +398,35 @@ static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
   dt_dev_invalidate_from_gui(darktable.develop);
 }
 
+/* set sample area proxy impl */
+static void _set_sample_area(dt_lib_module_t *self, float size)
+{
+  dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
+  
+  if (darktable.develop->gui_module)
+  {
+    darktable.develop->gui_module->color_picker_box[0] = 
+      darktable.develop->gui_module->color_picker_box[1] = 1.0 - size;
+    darktable.develop->gui_module->color_picker_box[2] =
+      darktable.develop->gui_module->color_picker_box[3] = size;
+  }
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), 1);
+}
+
+static void _set_sample_point(dt_lib_module_t *self, float x, float y)
+{
+  dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
+    
+  if (darktable.develop->gui_module)
+  {
+    darktable.develop->gui_module->color_picker_point[0] = x;
+    darktable.develop->gui_module->color_picker_point[1] = y;
+  }
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), 0);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   unsigned int i;
@@ -447,6 +476,8 @@ void gui_init(dt_lib_module_t *self)
           = darktable.lib->proxy.colorpicker.picked_color_lab_max[i] = 0;
   darktable.lib->proxy.colorpicker.update_panel =  _update_picker_output;
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
+  darktable.lib->proxy.colorpicker.set_sample_area = _set_sample_area;
+  darktable.lib->proxy.colorpicker.set_sample_point = _set_sample_point;
 
   // Setting up the GUI
   self->widget = container;
@@ -598,6 +629,8 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.module = NULL;
   darktable.lib->proxy.colorpicker.update_panel = NULL;
   darktable.lib->proxy.colorpicker.update_samples = NULL;
+
+  darktable.lib->proxy.colorpicker.set_sample_area = NULL;
 
   free(darktable.lib->proxy.colorpicker.picked_color_rgb_mean);
   free(darktable.lib->proxy.colorpicker.picked_color_rgb_min);

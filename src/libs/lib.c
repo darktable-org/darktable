@@ -851,4 +851,18 @@ dt_lib_get_localized_name(const gchar * plugin_name)
   return (gchar*)g_hash_table_lookup(module_names, plugin_name);
 }
 
+void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size)
+{
+  if (!lib->proxy.colorpicker.module || ! lib->proxy.colorpicker.set_sample_area)
+    return;
+  lib->proxy.colorpicker.set_sample_area(lib->proxy.colorpicker.module, size);
+}
+
+void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y)
+{
+  if (!lib->proxy.colorpicker.module || ! lib->proxy.colorpicker.set_sample_point)
+    return;
+  lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, x, y);
+}
+
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
