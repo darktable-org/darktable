@@ -119,7 +119,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_hbox_new(TRUE,2);
 
-  dtgtk_cairo_paint_flags_t pf = 0;
+  dtgtk_cairo_paint_flags_t pf = CPF_NONE;
 
   /* favorites */
   d->buttons[DT_MODULEGROUP_FAVORITES] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_favorites, pf);

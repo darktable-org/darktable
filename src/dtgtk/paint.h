@@ -25,6 +25,7 @@
 
 typedef enum dtgtk_cairo_paint_flags_t
 {
+  CPF_NONE=0,
   CPF_DIRECTION_UP=1,
   CPF_DIRECTION_DOWN=2,
   CPF_DIRECTION_LEFT=4,
