@@ -225,7 +225,7 @@ const wb_data wb_preset[] = {
 
   { "Canon", "PowerShot S100", Daylight, 0,	{ 2.077707, 1, 2.551592, 0 } },
   { "Canon", "PowerShot S100", Cloudy, 0,	{ 2.276402, 1, 2.393742, 0 } },
-  { "Canon", "PowerShot S100", Tungste", 0,	{ 1.267936, 1, 4.224012, 0 } },
+  { "Canon", "PowerShot S100", Tungsten, 0,	{ 1.267936, 1, 4.224012, 0 } },
   { "Canon", "PowerShot S100", Fluorescent, 0,	{ 1.815115, 1, 3.093117, 0 } },
   { "Canon", "PowerShot S100", FluorescentHigh, 0, { 2.398148, 1, 2.374339, 0 } },
   { "Canon", "PowerShot S100", Flash, 0,	{ 2.615783, 1, 2.001294, 0 } },
