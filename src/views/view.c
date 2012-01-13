@@ -625,7 +625,7 @@ dt_view_image_expose(
     int32_t py)
 {
   cairo_save (cr);
-  float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
+  float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
