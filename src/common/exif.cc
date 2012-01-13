@@ -203,7 +203,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
         guint tagid = 0;
         dt_tag_new(str.c_str(),&tagid);
         dt_tag_attach(tagid, img->id);
-        iptcPos++;
+        ++iptcPos;
       }
     }
 

@@ -105,7 +105,7 @@ dt_imageio_open_rawspeed(
     {
       m = f.readFile();
     }
-    catch (FileIOException e)
+    catch (FileIOException &e)
     {
       return DT_IMAGEIO_FILE_CORRUPTED;
     }
@@ -159,7 +159,7 @@ dt_imageio_open_rawspeed(
       }
       dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
     }
-    catch (RawDecoderException e)
+    catch (RawDecoderException &e)
     {
       // printf("failed decoding raw `%s'\n", e.what());
       if (d) delete d;
@@ -167,14 +167,14 @@ dt_imageio_open_rawspeed(
       return DT_IMAGEIO_FILE_CORRUPTED;
     }
   }
-  catch (CameraMetadataException e)
+  catch (CameraMetadataException &e)
   {
     // printf("failed meta data `%s'\n", e.what());
     if (d) delete d;
     if (m) delete m;
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
-  catch (RawDecoderException e)
+  catch (RawDecoderException &e)
   {
     if (d) delete d;
     if (m) delete m;
