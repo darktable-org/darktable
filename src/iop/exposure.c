@@ -292,7 +292,7 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
   self->request_color_pick = gtk_toggle_button_get_active(button);
 
   if (self->request_color_pick)
-    dt_lib_colorpicker_set_area(darktable.lib, 0.95);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
   dt_iop_request_focus(self);
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));

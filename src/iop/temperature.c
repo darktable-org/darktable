@@ -707,7 +707,7 @@ apply_preset(dt_iop_module_t *self)
 
       /* set the area sample size*/
       if (self->request_color_pick)
-	dt_lib_colorpicker_set_area(darktable.lib, 0.95);
+	dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
       break;
     case 2: // passthrough mode, raw data

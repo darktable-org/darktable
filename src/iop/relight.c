@@ -162,7 +162,7 @@ picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
     self->request_color_pick = 1;
     
     /* set the area sample size*/
-    dt_lib_colorpicker_set_area(darktable.lib, 0.95);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     
   }
   else
