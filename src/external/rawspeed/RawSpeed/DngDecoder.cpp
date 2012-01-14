@@ -215,7 +215,7 @@ RawImage DngDecoder::decodeRawInternal() {
             big_endian = true;
           try {
             readUncompressedRaw(in, size, pos, width*bps / 8, bps, big_endian);
-          } catch(IOException ex) {
+          } catch(IOException &ex) {
             if (i > 0)
               errors.push_back(_strdup(ex.what()));
             else

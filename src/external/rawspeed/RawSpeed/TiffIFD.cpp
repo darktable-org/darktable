@@ -54,7 +54,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
           TiffIFD *maker_ifd = parseDngPrivateData(t);
           mSubIFD.push_back(maker_ifd);
           delete(t);
-        } catch (TiffParserException e) {
+        } catch (TiffParserException) {
           // Unparsable private data are added as entries
           mEntry[t->tag] = t;
         }
@@ -62,7 +62,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
         try {
           mSubIFD.push_back(parseMakerNote(f, t->getDataOffset(), endian));
           delete(t);
-        } catch (TiffParserException e) {
+        } catch (TiffParserException) {
           // Unparsable makernotes are added as entries
           mEntry[t->tag] = t;
         }
@@ -73,7 +73,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
             mSubIFD.push_back(new TiffIFD(f, sub_offsets[j]));
           }
           delete(t);
-        } catch (TiffParserException e) {
+        } catch (TiffParserException) {
           // Unparsable subifds are added as entries
           mEntry[t->tag] = t;
         }
@@ -142,7 +142,7 @@ TiffIFD* TiffIFD::parseDngPrivateData(TiffEntry *t) {
   TiffIFD *maker_ifd;
   try {
     maker_ifd = parseMakerNote(maker_map, org_offset, makernote_endian);
-  } catch (TiffParserException e) {
+  } catch (TiffParserException &e) {
     delete[] maker_data;
     delete maker_map;
     throw e;

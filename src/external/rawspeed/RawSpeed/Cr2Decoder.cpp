@@ -116,12 +116,12 @@ RawImage Cr2Decoder::decodeRawInternal() {
       l.addSlices(s_width);
       l.mUseBigtable = true;
       l.startDecoder(slice.offset, slice.count, 0, offY);
-    } catch (RawDecoderException e) {
+    } catch (RawDecoderException &e) {
       if (i == 0)
         throw;
       // These may just be single slice error - store the error and move on
       errors.push_back(_strdup(e.what()));
-    } catch (IOException e) {
+    } catch (IOException &e) {
       // Let's try to ignore this - it might be truncated data, so something might be useful.
       errors.push_back(_strdup(e.what()));
     }

@@ -124,7 +124,7 @@ RawImage NefDecoder::decodeRawInternal() {
     decompressor.DecompressNikon(metastream, width, height, bitPerPixel, offsets->getInt(), counts->getInt());
 
     delete metastream;
-  } catch (IOException e) {
+  } catch (IOException &e) {
     errors.push_back(_strdup(e.what()));
     // Let's ignore it, it may have delivered somewhat useful data.
   }
