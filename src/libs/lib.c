@@ -801,7 +801,12 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
   if (module->expander)
     gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);  
   else if (module->widget)
-    gtk_widget_set_visible(GTK_WIDGET(module->widget), visible);
+    {
+      if (visible)
+        gtk_widget_show_all(GTK_WIDGET(module->widget));
+      else
+        gtk_widget_hide(GTK_WIDGET(module->widget));
+    }
 }
 
 void dt_lib_connect_common_accels(dt_lib_module_t *module)
