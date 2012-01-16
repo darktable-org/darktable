@@ -34,13 +34,14 @@ cat ${TEMP_FILE} | while read LINE; do
     echo 'wb_data;'
   else
     echo "${LINE}" | grep -v 'K", ' | grep -v ', uf_'
-    echo "${LINE}" | grep '2700K'
-    echo "${LINE}" | grep '3000K'
-    echo "${LINE}" | grep '3300K'
-    echo "${LINE}" | grep '5000K'
-    echo "${LINE}" | grep '5500K'
-    echo "${LINE}" | grep '6500K'
+    echo "${LINE}" | grep '"2700K",'
+    echo "${LINE}" | grep '"3000K",'
+    echo "${LINE}" | grep '"3300K",'
+    echo "${LINE}" | grep '"5000K",'
+    echo "${LINE}" | grep '"5500K",'
+    echo "${LINE}" | grep '"6500K",'
   fi
 done > ${OUT_FILE}
 
 rm ${TEMP_FILE}
+
