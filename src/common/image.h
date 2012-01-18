@@ -63,7 +63,7 @@ dt_image_flags_t;
 typedef struct dt_image_raw_parameters_t
 {
   unsigned legacy    : 24;
-  signed   user_flip : 8; // +8 = 32 bits.
+  unsigned user_flip : 8; // +8 = 32 bits.
 }
 dt_image_raw_parameters_t;
 
