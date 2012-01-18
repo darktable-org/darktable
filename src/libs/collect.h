@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2012 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,8 +40,8 @@ const char *dt_lib_collect_string[] =
   N_("rights"),
   N_("lens"),
   N_("iso"),
-  N_("aperture") 
+  N_("aperture"),
+  N_("filename")
 };
-const int dt_lib_collect_string_cnt = 14;
-
+const int dt_lib_collect_string_cnt = 15;
 

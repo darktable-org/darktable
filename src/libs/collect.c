@@ -298,6 +298,10 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
     case 13: // aperature
       snprintf(query, 1024, "select distinct round(aperture,1), 1 from images where aperture like '%%%s%%'", escaped_text);
       break;
+    case 14: // filename
+      snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%'", escaped_text);
+      break;
+
     default: // case 3: // day
       snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", escaped_text);
       break;

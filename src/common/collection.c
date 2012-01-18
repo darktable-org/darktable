@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 Henrik Andersson.
+    copyright (c) 2010-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -479,7 +479,9 @@ get_query_string(const int property, const gchar *escaped_text, char *query)
     case 13: // aperature
       snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
       break;
-
+    case 14: // filename
+      snprintf(query, 1024, "(filename like '%%%s%%')", escaped_text);
+      break;
 
     default: // case 3: // day
       snprintf(query, 1024, "(datetime_taken like '%%%s%%')", escaped_text);
