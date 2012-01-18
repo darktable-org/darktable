@@ -448,14 +448,22 @@ dt_mipmap_cache_deallocate_dynamic(void *data, const uint32_t key, void *payload
 }
 #endif
 
+static uint32_t
+nearest_power_of_two(const uint32_t value)
+{
+  uint32_t rc = 1;
+  while(rc < value) rc <<= 1;
+  return rc;
+}
+
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
   // make sure static memory is initialized
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
   dead_image_f((dt_mipmap_buffer_t *)(dsc+1));
 
-  // FIXME: adjust numbers to be large enough to hold what mem limit suggests!
-  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100*1024*1024, 2000*1024*1024)/5;
+  // adjust numbers to be large enough to hold what mem limit suggests!
+  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100*1024*1024, 2000*1024*1024)/6;
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
   int32_t ht = darktable.thumbnail_height;
@@ -485,9 +493,15 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     else
       cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
     cache->mip[k].size = k;
-    uint32_t thumbnails = (uint32_t)(1.2f * max_mem/cache->mip[k].buffer_size);
+    // is rounded to a power of two by the cache anyways, we might as well.
+    uint32_t thumbnails = nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size));
+    while(thumbnails > 2 && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
 
-    dt_cache_init(&cache->mip[k].cache, thumbnails, 8, 64, max_mem);
+    // level of parallelism (thread num 2 or 8) also gives minimum size (which is twice that)
+    // so reduce it for the expensive float buffers.
+    // also try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
+    // even more than that.
+    dt_cache_init(&cache->mip[k].cache, thumbnails, (k==DT_MIPMAP_F)?2:8, 64, 0.9f*thumbnails*cache->mip[k].buffer_size);
 
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
@@ -506,8 +520,10 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // full buffer needs dynamic alloc:
   const int32_t max_mem_full = max_mem;
   // assume very small full buffers of 20MB to get slot count:
-  const int32_t max_mem_bufs = max_mem_full/(20*1024*1024);
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, 8, 64, max_mem_full);
+  const uint32_t full_buf_size = 20*1024*1024; // rough estimate of average raw file
+  int32_t max_mem_bufs = nearest_power_of_two(max_mem_full/full_buf_size);
+  while(max_mem_bufs > 2 && max_mem_bufs * full_buf_size > max_mem_full);
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, 2, 64, 0.9f*max_mem_bufs*full_buf_size);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
