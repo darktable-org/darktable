@@ -107,79 +107,61 @@ dt_imageio_open_rawspeed(
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     }
 
-    try
-    {
-      m = auto_ptr<FileMap>(f.readFile());
-    }
-    catch (FileIOException &e)
-    {
-      return DT_IMAGEIO_FILE_CORRUPTED;
-    }
+    m = auto_ptr<FileMap>(f.readFile());
 
     RawParser t(m.get());
     d = auto_ptr<RawDecoder>(t.getDecoder());
+
     if(!d.get()) 
       return DT_IMAGEIO_FILE_CORRUPTED;
 
-    try
+    d->failOnUnknown = true;
+    d->checkSupport(meta);
+    d->decodeRaw();
+    d->decodeMetaData(meta);
+    RawImage r = d->mRaw;
+
+    /* free auto pointers on spot */
+    d.reset();
+    m.reset();
+    
+    img->filters = 0;
+    if( r->subsampling.x > 1 || r->subsampling.y > 1 )
     {
-      d->failOnUnknown = true;
-      d->checkSupport(meta);
-
-      d->decodeRaw();
-      d->decodeMetaData(meta);
-      RawImage r = d->mRaw;
-
-      /* free auto pointers on spot */
-      d.reset();
-      m.reset();
-
-      img->filters = 0;
-      if( r->subsampling.x > 1 || r->subsampling.y > 1 )
-      {
-        img->flags &= ~DT_IMAGE_LDR;
-        img->flags |= DT_IMAGE_RAW;
-
-        dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
-        return ret;
-      }
-
-      // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
-      // if(r->getDataType() != TYPE_FLOAT32) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->getBpp());
-      if(r->getDataType() != TYPE_FLOAT32) r->scaleBlackWhite();
-      img->bpp = r->getBpp();
-      img->filters = r->cfa.getDcrawFilter();
-      if(img->filters)
-      {
-        img->flags &= ~DT_IMAGE_LDR;
-        img->flags |= DT_IMAGE_RAW;
-        if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
-      }
-
-      // also include used override in orient:
-      const int orientation = dt_image_orientation(img);
-      img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
-      img->height = (orientation & 4) ? r->dim.x : r->dim.y;
-
-      void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
-      if(!buf)
-        return DT_IMAGEIO_CACHE_FULL;
-
-      dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
+      img->flags &= ~DT_IMAGE_LDR;
+      img->flags |= DT_IMAGE_RAW;
+      
+      dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
+      return ret;
     }
-    catch (RawDecoderException &e)
+    
+    // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
+    // if(r->getDataType() != TYPE_FLOAT32) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->getBpp());
+    if(r->getDataType() != TYPE_FLOAT32) r->scaleBlackWhite();
+    img->bpp = r->getBpp();
+    img->filters = r->cfa.getDcrawFilter();
+    if(img->filters)
     {
-      // printf("failed decoding raw `%s'\n", e.what());
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      img->flags &= ~DT_IMAGE_LDR;
+      img->flags |= DT_IMAGE_RAW;
+      if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
     }
+    
+    // also include used override in orient:
+    const int orientation = dt_image_orientation(img);
+    img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
+    img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+    
+    void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+    if(!buf)
+      return DT_IMAGEIO_CACHE_FULL;
+    
+    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
   }
-  catch (CameraMetadataException &e)
-  {
-    // printf("failed meta data `%s'\n", e.what());
-    return DT_IMAGEIO_FILE_CORRUPTED;
-  }
-  catch (RawDecoderException &e)
+  catch (...)
   {    
+    /* if an exception is rasied lets not retry or handle the
+     specific ones, consider the file as corrupted */
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
