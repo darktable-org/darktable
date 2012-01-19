@@ -29,4 +29,6 @@ void dt_database_destroy(const struct dt_database_t *);
 struct sqlite3 *dt_database_get(const struct dt_database_t *);
 /** test if database is new */
 gboolean dt_database_is_new(const struct dt_database_t *db);
+/** Returns database path */
+const gchar *dt_database_get_path(const struct dt_database_t *db);
 #endif

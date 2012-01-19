@@ -121,6 +121,10 @@ sqlite3 *dt_database_get(const dt_database_t *db)
   return db->handle;
 }
 
+const gchar *dt_database_get_path(const struct dt_database_t *db)
+{
+  return db->dbfilename;
+}
 
 static void _database_migrate_to_xdg_structure()
 {

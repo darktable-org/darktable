@@ -14,19 +14,6 @@
     </schema>
 
     <schema><!--tab:core-->
-      <key>/schemas/apps/darktable/cachefile</key>
-      <applyto>/apps/darktable/cachefile</applyto>
-      <owner>darktable</owner>
-      <type>string</type>
-      <default>mipmaps</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>image cache file</short>
-        <long>filename relative to ~/.cache/darktable or starting with a slash (needs a restart).</long>
-      </locale>
-    </schema>
-    
-    <schema><!--tab:core-->
       <key>/schemas/apps/darktable/cachefile_backup</key>
       <applyto>/apps/darktable/cachefile_backup</applyto>
       <owner>darktable</owner>

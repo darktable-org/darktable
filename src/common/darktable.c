@@ -421,28 +421,6 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // Initialize the password storage engine
   darktable.pwstorage=dt_pwstorage_new();
 
-  // check and migrate the cachedir
-  char cachefilename[2048]= {0};
-  char cachedir[2048]= {0};
-  gchar *conf_cache = dt_conf_get_string("cachefile");
-  if (conf_cache && conf_cache[0] != '/')
-  {
-    char *homedir = dt_util_get_home_dir(NULL);
-    snprintf (cachefilename,2048,"%s/%s",homedir, conf_cache);
-    if (g_file_test (cachefilename,G_FILE_TEST_EXISTS))
-    {
-      fprintf(stderr, "[init] moving cache into new XDG directory structure\n");
-      char destcachename[2048]= {0};
-      snprintf(destcachename,2048,"%s/%s",cachedir,"mipmaps");
-      if(!g_file_test (destcachename,G_FILE_TEST_EXISTS))
-      {
-        rename(cachefilename,destcachename);
-        dt_conf_set_string("cachefile","mipmaps");
-      }
-    }
-    g_free(conf_cache);
-  }
-
   // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);

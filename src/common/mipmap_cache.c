@@ -32,13 +32,14 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
+#include <glib.h>
 #include <glib/gstdio.h>
 #include <errno.h>
 #include <xmmintrin.h>
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
 #define DT_MIPMAP_CACHE_FILE_VERSION 21
-#define DT_MIPMAP_CACHE_FILE_NAME "mipmaps"
+#define DT_MIPMAP_CACHE_DEFAULT_FILE_NAME "mipmaps"
 
 #define DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE (1<<0)
 
@@ -170,18 +171,36 @@ _write_buffer(const uint32_t key, const void *data, void *user_data)
   return 0;
 }
 
+static void
+dt_mipmap_cache_get_filename(
+  gchar* mipmapfilename, size_t size)
+{
+  // Directory
+  char cachedir[1024];
+  dt_util_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  // Build the mipmap filename
+  const gchar *dbfilename = dt_database_get_path(darktable.db);
+  char* abspath = realpath(dbfilename, NULL);
+  if (!abspath)
+    abspath = strdup(dbfilename);
+  GChecksum* chk = g_checksum_new(G_CHECKSUM_SHA1);
+  g_checksum_update(chk, (guchar*)abspath, strlen(abspath));
+  const gchar *filename = g_checksum_get_string(chk);
+
+  if(!filename || filename[0] == '\0')
+    snprintf(mipmapfilename, size, "%s/%s", cachedir, DT_MIPMAP_CACHE_DEFAULT_FILE_NAME);
+  else
+    snprintf(mipmapfilename, size, "%s/%s-%s", cachedir, DT_MIPMAP_CACHE_DEFAULT_FILE_NAME, filename);
+  free(abspath);
+  g_checksum_free(chk);
+}
+
 static int
 dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
 {
-  char cachedir[1024];
-  char dbfilename[1024];
-  dt_util_get_user_cache_dir(cachedir,1024);
-  gchar *filename = dt_conf_get_string("cachefile");
-
-  if(!filename || filename[0] == '\0') snprintf(dbfilename, 512, "%s/%s", cachedir, DT_MIPMAP_CACHE_FILE_NAME);
-  else if(filename[0] != '/')          snprintf(dbfilename, 512, "%s/%s", cachedir, filename);
-  else                                 snprintf(dbfilename, 512, "%s", filename);
-  g_free(filename);
+  gchar dbfilename[1024];
+  dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename));
 
   // only store smallest thumbs.
   const dt_mipmap_size_t mip = DT_MIPMAP_2;
@@ -234,14 +253,8 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   uint8_t *blob = NULL;
   int file_width[mip+1], file_height[mip+1];
 
-  char cachedir[1024];
-  char dbfilename[1024];
-  dt_util_get_user_cache_dir(cachedir, 1024);
-  gchar *filename = dt_conf_get_string ("cachefile");
-  if(!filename || filename[0] == '\0') snprintf (dbfilename, 512, "%s/%s", cachedir, DT_MIPMAP_CACHE_FILE_NAME);
-  else if(filename[0] != '/')          snprintf (dbfilename, 512, "%s/%s", cachedir, filename);
-  else                                 snprintf (dbfilename, 512, "%s", filename);
-  g_free(filename);
+  gchar dbfilename[1024];
+  dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename));
 
   FILE *f = fopen(dbfilename, "rb");
   if(!f) 
