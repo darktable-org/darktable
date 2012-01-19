@@ -19,6 +19,9 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#include <memory>
+
 #include "rawspeed/RawSpeed/StdAfx.h"
 #include "rawspeed/RawSpeed/FileReader.h"
 #include "rawspeed/RawSpeed/RawDecoder.h"
@@ -84,10 +87,12 @@ dt_imageio_open_rawspeed(
   snprintf(filen, 1024, "%s", filename);
   FileReader f(filen);
 
-  RawDecoder *d = NULL;
-  FileMap* m = NULL;
+  std::auto_ptr<RawDecoder> d;
+  std::auto_ptr<FileMap> m;
+
   try
   {
+    /* Load rawspeed cameras.xml meta file once */
     if(meta == NULL)
     {
       dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -101,17 +106,21 @@ dt_imageio_open_rawspeed(
       }
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     }
+
     try
     {
-      m = f.readFile();
+      m = auto_ptr<FileMap>(f.readFile());
     }
     catch (FileIOException &e)
     {
       return DT_IMAGEIO_FILE_CORRUPTED;
     }
-    RawParser t(m);
-    d = t.getDecoder();
-    if(!d) return DT_IMAGEIO_FILE_CORRUPTED;
+
+    RawParser t(m.get());
+    d = auto_ptr<RawDecoder>(t.getDecoder());
+    if(!d.get()) 
+      return DT_IMAGEIO_FILE_CORRUPTED;
+
     try
     {
       d->failOnUnknown = true;
@@ -121,6 +130,10 @@ dt_imageio_open_rawspeed(
       d->decodeMetaData(meta);
       RawImage r = d->mRaw;
 
+      /* free auto pointers on spot */
+      d.reset();
+      m.reset();
+
       img->filters = 0;
       if( r->subsampling.x > 1 || r->subsampling.y > 1 )
       {
@@ -128,8 +141,6 @@ dt_imageio_open_rawspeed(
         img->flags |= DT_IMAGE_RAW;
 
         dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
-        if (d) delete d;
-        if (m) delete m;
         return ret;
       }
 
@@ -152,38 +163,26 @@ dt_imageio_open_rawspeed(
 
       void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
       if(!buf)
-      {
-        if (d) delete d;
-        if (m) delete m;
         return DT_IMAGEIO_CACHE_FULL;
-      }
+
       dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
     }
     catch (RawDecoderException &e)
     {
       // printf("failed decoding raw `%s'\n", e.what());
-      if (d) delete d;
-      if (m) delete m;
       return DT_IMAGEIO_FILE_CORRUPTED;
     }
   }
   catch (CameraMetadataException &e)
   {
     // printf("failed meta data `%s'\n", e.what());
-    if (d) delete d;
-    if (m) delete m;
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   catch (RawDecoderException &e)
-  {
-    if (d) delete d;
-    if (m) delete m;
+  {    
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  // clean up raw stuff.
-  if (d) delete d;
-  if (m) delete m;
   return DT_IMAGEIO_OK;
 }
 
