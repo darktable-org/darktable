@@ -535,7 +535,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // assume very small full buffers of 20MB to get slot count:
   const uint32_t full_buf_size = 20*1024*1024; // rough estimate of average raw file
   int32_t max_mem_bufs = nearest_power_of_two(max_mem_full/full_buf_size);
-  while(max_mem_bufs > 2 && max_mem_bufs * full_buf_size > max_mem_full);
+  while(max_mem_bufs > 2 && max_mem_bufs * full_buf_size > max_mem_full) max_mem_bufs /= 2;
+
   dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, 2, 64, 0.9f*max_mem_bufs*full_buf_size);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
