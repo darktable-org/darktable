@@ -446,9 +446,9 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
   assert(dsc->size >= sizeof(*dsc));
   dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
-  // cost is always what we alloced in this realloc buffer, regardless of what the
-  // image actually uses (could be less than this)
-  *cost = dsc->size;
+  // cost is just flat one for the buffer, as the buffers might have different sizes,
+  // to make sure quota is meaningful.
+  *cost = 1;
   // fprintf(stderr, "dummy allocing %lX\n", (uint64_t)*buf);
   return 1; // request write lock
 }
@@ -539,7 +539,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   int32_t max_mem_bufs = MAX(2*parallel, nearest_power_of_two(max_mem_full/full_buf_size));
   while(max_mem_bufs > 2*parallel && max_mem_bufs * full_buf_size > max_mem_full) max_mem_bufs /= 2;
 
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, parallel, 64, 0.9f*max_mem_bufs*full_buf_size);
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, parallel, 64, 0.9f*max_mem_bufs);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
@@ -565,7 +565,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
 
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
-  for(int k=0; k<=(int)DT_MIPMAP_FULL; k++)
+  for(int k=0; k<(int)DT_MIPMAP_FULL; k++)
   {
     printf("[mipmap_cache] level %d fill %.2f/%.2f MB (%.2f%% in %u/%u buffers)\n", k, cache->mip[k].cache.cost/(1024.0*1024.0),
       cache->mip[k].cache.cost_quota/(1024.0*1024.0),
@@ -573,6 +573,12 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
       dt_cache_size(&cache->mip[k].cache),
       dt_cache_capacity(&cache->mip[k].cache));
   }
+  const int k = DT_MIPMAP_FULL;
+  printf("[mipmap_cache] level [full] fill %d/%d quota (%.2f%% in %u/%u buffers)\n", cache->mip[k].cache.cost,
+    cache->mip[k].cache.cost_quota,
+    100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
+    dt_cache_size(&cache->mip[k].cache),
+    dt_cache_capacity(&cache->mip[k].cache));
   printf("\n\n");
   // very verbose stats about locks/users
   //dt_cache_print(&cache->mip[DT_MIPMAP_3].cache);
@@ -665,7 +671,7 @@ dt_mipmap_cache_read_get(
             // write back to cache, too.
             // in case something went wrong, still keep the buffer and return it to the hashtable
             // so we don't produce mem leaks or unnecessary mem fragmentation.
-            dt_cache_realloc(&cache->mip[mip].cache, key, dsc->size, (void*)dsc);
+            dt_cache_realloc(&cache->mip[mip].cache, key, 1, (void*)dsc);
           }
           if(ret != DT_IMAGEIO_OK)
           {

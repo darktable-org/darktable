@@ -833,7 +833,6 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     dt_cache_print(cache);
   }
 #endif
-  assert(fill_ratio <= 1.0f);
   int32_t curr;
   // get least recently used bucket
   dt_cache_lock(&cache->lru_lock);
