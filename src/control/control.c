@@ -56,6 +56,7 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_bool ("write_sidecar_files", TRUE);
   dt_conf_set_bool ("ask_before_delete", TRUE);
   dt_conf_set_int  ("parallel_export", 1);
+  dt_conf_set_int  ("worker_threads", 2);
   dt_conf_set_int  ("cache_memory", 536870912);
   dt_conf_set_int  ("database_cache_quality", 89);
 
@@ -348,7 +349,7 @@ void dt_control_init(dt_control_t *s)
   s->idle_top = DT_CONTROL_MAX_JOBS;
   s->queued_top = 0;
   // start threads
-  s->num_threads = MIN(4, dt_ctl_get_num_procs()+1);
+  s->num_threads = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
   s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
   dt_pthread_mutex_lock(&s->run_mutex);
   s->running = 1;

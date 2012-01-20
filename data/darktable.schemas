@@ -66,6 +66,19 @@
     </schema>
 
     <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/worker_threads</key>
+      <applyto>/apps/darktable/worker_threads</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>2</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>how many threads to use in background</short>
+        <long>this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart).</long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:core-->
       <key>/schemas/apps/darktable/parallel_export</key>
       <applyto>/apps/darktable/parallel_export</applyto>
       <owner>darktable</owner>

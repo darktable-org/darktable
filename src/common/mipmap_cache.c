@@ -476,7 +476,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   dead_image_f((dt_mipmap_buffer_t *)(dsc+1));
 
   // adjust numbers to be large enough to hold what mem limit suggests!
-  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100*1024*1024, 2000*1024*1024)/6;
+  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100*1024*1024, 2000*1024*1024)/5;
+  const uint32_t parallel = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
   int32_t ht = darktable.thumbnail_height;
@@ -506,9 +507,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     else
       cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
     cache->mip[k].size = k;
-    // level of parallelism (thread num 2 or 8) also gives minimum size (which is twice that)
-    // so reduce it for the expensive float buffers.
-    const uint32_t parallel = (k==DT_MIPMAP_F)?2:8;
+    // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
     uint32_t thumbnails = MAX(2*parallel, nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size)));
     while(thumbnails > 2*parallel && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
@@ -532,12 +531,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
         thumbnails, k, thumbnails * cache->mip[k].buffer_size/(1024.0*1024.0));
   }
   // full buffer needs dynamic alloc:
-  const int32_t max_mem_full = max_mem;
-  // assume very small full buffers of 20MB to get slot count:
-  const uint32_t full_buf_size = 45*1024*1024; // rough estimate of average raw file
-  const uint32_t parallel = 2;
-  int32_t max_mem_bufs = MAX(2*parallel, nearest_power_of_two(max_mem_full/full_buf_size));
-  while(max_mem_bufs > 2*parallel && max_mem_bufs * full_buf_size > max_mem_full) max_mem_bufs /= 2;
+  const int full_entries = 2*parallel;
+  int32_t max_mem_bufs = nearest_power_of_two(full_entries);
 
   dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, parallel, 64, 0.9f*max_mem_bufs);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
@@ -574,7 +569,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
       dt_cache_capacity(&cache->mip[k].cache));
   }
   const int k = DT_MIPMAP_FULL;
-  printf("[mipmap_cache] level [full] fill %d/%d quota (%.2f%% in %u/%u buffers)\n", cache->mip[k].cache.cost,
+  printf("[mipmap_cache] level [full] fill %d/%d slots (%.2f%% in %u/%u buffers)\n", cache->mip[k].cache.cost,
     cache->mip[k].cache.cost_quota,
     100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
     dt_cache_size(&cache->mip[k].cache),
@@ -642,7 +637,7 @@ dt_mipmap_cache_read_get(
     }
     else
     {
-      // fprintf(stderr, "[mipmap cache get] found data in cache for imgid %u size %d (%lX)\n", imgid, mip, (uint64_t)data);
+      // fprintf(stderr, "[mipmap cache get] found data in cache for imgid %u size %d\n", imgid, mip);
       // uninitialized?
       //assert(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE || dsc->size == 0);
       if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)

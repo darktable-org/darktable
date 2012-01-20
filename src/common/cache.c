@@ -820,6 +820,78 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   return 1;
 }
 
+#if 0
+// debug helper functions, in case we want a big fat lock for dt_cache_gc():
+static int
+dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
+{
+  const uint32_t hash = key;
+  dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
+  dt_cache_lock(&segment->lock);
+
+  dt_cache_bucket_t *const start_bucket = cache->table + (hash & cache->bucket_mask);
+  dt_cache_bucket_t *last_bucket = NULL;
+  dt_cache_bucket_t *curr_bucket = start_bucket;
+  int16_t next_delta = curr_bucket->first_delta;
+  while(1)
+  {
+    if(next_delta == DT_CACHE_NULL_DELTA)
+    {
+      // fprintf(stderr, "[cache remove] key not found %u!\n", key);
+      dt_cache_unlock(&segment->lock);
+      return 1;
+    }
+    curr_bucket += next_delta;
+
+    if(hash == curr_bucket->hash && key == curr_bucket->key)
+    {
+      if(curr_bucket->read || curr_bucket->write)
+      {
+        // fprintf(stderr, "[cache remove] key still in use %u!\n", key);
+        dt_cache_unlock(&segment->lock);
+        return 1;
+      }
+      void *rc = curr_bucket->data;
+      const int32_t cost = curr_bucket->cost;
+      remove_key(segment, start_bucket, curr_bucket, last_bucket, hash);
+      if(cache->optimize_cacheline)
+        optimize_cacheline_use(cache, segment, curr_bucket);
+      // put back into unused part of the cache: remove from lru list.
+      dt_cache_unlock(&segment->lock);
+      lru_remove(cache, curr_bucket);
+      // clean up the user data
+      if(cache->cleanup)
+        cache->cleanup(cache->cleanup_data, key, rc);
+      // keep track of cost
+      add_cost(cache, -cost);
+      // fprintf(stderr, "[cache remove] freeing %d for %u\n", cost, key);
+      return 0;
+    }
+    last_bucket = curr_bucket;
+    next_delta = curr_bucket->next_delta;
+  }
+  dt_cache_unlock(&segment->lock);
+  return 1;
+}
+
+static int
+dt_cache_remove_bucket_no_lru_lock(dt_cache_t *cache, const uint32_t num)
+{
+  const uint32_t hash = num;
+  dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
+  dt_cache_lock(&segment->lock);
+
+  dt_cache_bucket_t *const curr_bucket = cache->table + (hash & cache->bucket_mask);
+  const uint32_t key = curr_bucket->key;
+  dt_cache_unlock(&segment->lock);
+  // actually remove by key
+  if(key != DT_CACHE_EMPTY_KEY)
+    return dt_cache_remove_no_lru_lock(cache, key);
+  else
+    return 2;
+}
+#endif
+
 int32_t
 dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
@@ -833,6 +905,8 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     dt_cache_print(cache);
   }
 #endif
+  // sorry, bfl
+  // dt_cache_lock(&cache->lru_lock);
   int32_t curr;
   // get least recently used bucket
   dt_cache_lock(&cache->lru_lock);
@@ -849,7 +923,11 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     {
       // damn, we walked the whole list and not enough free space,
       // can you believe this? yell out:
-      if(cache->cost > fill_ratio * cache->cost_quota) return 1;
+      if(cache->cost > fill_ratio * cache->cost_quota)
+      {
+        // dt_cache_unlock(&cache->lru_lock);
+        return 1;
+      }
       break;
     }
     // fprintf(stderr, "[cache gc] from %u to %u\n", cache->cost, (uint32_t)(0.8*cache->cost_quota));
@@ -863,6 +941,7 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     // and the lru not cleaned up yet, but another image already occupies that slot...
     // it will be read locked and we go on. very worst case we clean up the wrong image.
     const int err = dt_cache_remove_bucket(cache, curr);
+    // const int err = dt_cache_remove_bucket_no_lru_lock(cache, curr);
     if(err == 2)
     {
       // fprintf(stderr, "[cache gc] remove failed %d\n", err);
@@ -873,6 +952,7 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     }
     i++;
   }
+  // dt_cache_unlock(&cache->lru_lock);
 #if 0
   if(cache->bucket_mask <= 4)
   {
