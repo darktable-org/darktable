@@ -506,15 +506,16 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     else
       cache->mip[k].buffer_size = (4 + width * height)*sizeof(uint32_t);
     cache->mip[k].size = k;
-    // is rounded to a power of two by the cache anyways, we might as well.
-    uint32_t thumbnails = nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size));
-    while(thumbnails > 2 && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
-
     // level of parallelism (thread num 2 or 8) also gives minimum size (which is twice that)
     // so reduce it for the expensive float buffers.
-    // also try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
+    const uint32_t parallel = (k==DT_MIPMAP_F)?2:8;
+    // is rounded to a power of two by the cache anyways, we might as well.
+    uint32_t thumbnails = MAX(2*parallel, nearest_power_of_two((uint32_t)((float)max_mem/cache->mip[k].buffer_size)));
+    while(thumbnails > 2*parallel && thumbnails * cache->mip[k].buffer_size > max_mem) thumbnails /= 2;
+
+    // try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
     // even more than that.
-    dt_cache_init(&cache->mip[k].cache, thumbnails, (k==DT_MIPMAP_F)?2:8, 64, 0.9f*thumbnails*cache->mip[k].buffer_size);
+    dt_cache_init(&cache->mip[k].cache, thumbnails, parallel, 64, 0.9f*thumbnails*cache->mip[k].buffer_size);
 
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
@@ -533,11 +534,12 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // full buffer needs dynamic alloc:
   const int32_t max_mem_full = max_mem;
   // assume very small full buffers of 20MB to get slot count:
-  const uint32_t full_buf_size = 20*1024*1024; // rough estimate of average raw file
-  int32_t max_mem_bufs = nearest_power_of_two(max_mem_full/full_buf_size);
-  while(max_mem_bufs > 2 && max_mem_bufs * full_buf_size > max_mem_full) max_mem_bufs /= 2;
+  const uint32_t full_buf_size = 45*1024*1024; // rough estimate of average raw file
+  const uint32_t parallel = 2;
+  int32_t max_mem_bufs = MAX(2*parallel, nearest_power_of_two(max_mem_full/full_buf_size));
+  while(max_mem_bufs > 2*parallel && max_mem_bufs * full_buf_size > max_mem_full) max_mem_bufs /= 2;
 
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, 2, 64, 0.9f*max_mem_bufs*full_buf_size);
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, parallel, 64, 0.9f*max_mem_bufs*full_buf_size);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
