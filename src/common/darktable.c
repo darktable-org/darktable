@@ -584,7 +584,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
         dt_film_open(filmid);
         // make sure buffers are loaded (load full for testing)
         dt_mipmap_buffer_t buf;
-        dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, 0);
+        dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
         if(!buf.buf)
         {
           id = 0;
