@@ -49,6 +49,7 @@
 #include "control/conf.h"
 #include "control/signal.h"
 #include "views/view.h"
+#include "common/styles.h"
 
 /*                                                                                         
  * NEW UI API                                                             
@@ -783,6 +784,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
       g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                      (gpointer)DT_GUI_VIEW_SWITCH_TO_DARKROOM, NULL));
 
+  // register_keys for applying styles
+  init_styles_key_accels();
+  connect_styles_key_accels();
   // register ctrl-q to quit:
   dt_accel_register_global(NC_("accel", "quit"), GDK_q, GDK_CONTROL_MASK);
 

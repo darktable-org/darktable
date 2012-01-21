@@ -28,6 +28,7 @@
 
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
+#include "gui/accelerators.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -55,6 +56,19 @@ typedef struct
   GList           *plugins;
   gboolean        in_plugin;
 } StyleData;
+
+static void _apply_style_shortcut_callback(GtkAccelGroup *accel_group,
+                                   GObject *acceleratable,
+                                   guint keyval, GdkModifierType modifier,
+                                   gpointer data)
+{
+    dt_styles_apply_to_selection (data,0);
+}
+
+static void _destroy_style_shortcut_callback(gpointer data,GClosure *closure)
+{
+	g_free(data);
+}
 
 static int32_t dt_styles_get_id_by_name (const char *name);
 
@@ -128,6 +142,15 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
 
     dt_styles_save_to_file(name,stylesdir);
 
+      char tmp_accel[1024];
+      gchar* tmp_name = g_strdup(name); // freed by _destro_style_shortcut_callback
+      snprintf(tmp_accel,1024,"styles/Apply %s",name);
+      dt_accel_register_global( tmp_accel, 0, 0);
+      GClosure *closure;
+      closure = g_cclosure_new(
+          G_CALLBACK(_apply_style_shortcut_callback),
+          tmp_name, _destroy_style_shortcut_callback);
+      dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"),name);
   }
 }
@@ -223,6 +246,9 @@ dt_styles_delete_by_name(const char *name)
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
 
+    char tmp_accel[1024];
+    snprintf(tmp_accel,1024,"styles/Apply %s",name);
+    dt_accel_deregister_global(tmp_accel);
   }
 }
 
@@ -611,4 +637,47 @@ dt_styles_get_id_by_name (const char *name)
   return id;
 }
 
+void init_styles_key_accels()
+{
+  GList *result = dt_styles_get_list("");
+  if (result)
+  {
+    do
+    {
+      dt_style_t *style = (dt_style_t *)result->data;
+      char tmp_accel[1024];
+      snprintf(tmp_accel,1024,"styles/Apply %s",style->name);
+      dt_accel_register_global( tmp_accel, 0, 0);
+
+      g_free(style->name);
+      g_free(style->description);
+      g_free(style);
+    }
+    while ((result=g_list_next(result))!=NULL);
+  }
+}
+
+void connect_styles_key_accels()
+{
+  GList *result = dt_styles_get_list("");
+  if (result)
+  {
+    do
+    {
+      GClosure *closure;
+      dt_style_t *style = (dt_style_t *)result->data;
+      closure = g_cclosure_new(
+          G_CALLBACK(_apply_style_shortcut_callback),
+          style->name, _destroy_style_shortcut_callback);
+      char tmp_accel[1024];
+      snprintf(tmp_accel,1024,"styles/Apply %s",style->name);
+      dt_accel_connect_global(tmp_accel, closure);
+
+      //g_free(style->name); freed at closure destruction
+      g_free(style->description);
+      g_free(style);
+    }
+    while ((result=g_list_next(result))!=NULL);
+  }
+}
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
