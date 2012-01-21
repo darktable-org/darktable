@@ -618,6 +618,7 @@ aspect_free_activated (GtkEntry *entry, dt_iop_module_t *self)
       *c = '\0';
       c++;
       g->current_aspect = atof(text) / atof(c);
+      dt_conf_set_int("plugins/darkroom/clipping/custom_aspect", g->current_aspect);
       apply_box_aspect(self, 5);
       dt_control_queue_redraw_center();
       dt_iop_request_focus(self);
