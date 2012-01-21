@@ -486,8 +486,8 @@ void dt_control_delete_images()
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
                                     GTK_BUTTONS_YES_NO,
-                                    ngettext("do you really want to PHYSICALLY delete %d selected image from disk?",
-                                             "do you really want to PHYSICALLY delete %d selected images from disk?", number), number);
+                                    ngettext("do you really want to physically delete %d selected image from disk?",
+                                             "do you really want to physically delete %d selected images from disk?", number), number);
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);

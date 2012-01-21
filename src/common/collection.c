@@ -569,7 +569,8 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   gchar message[1024];
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
-  g_snprintf(message, 1024, _("collection is currently viewing %d images where %d of them is selected."), c, cs);
+  g_snprintf(message, 1024,
+      ngettext("%d image of %d in current collection is selected", "%d images of %d in current collection are selected", cs), cs, c);
   dt_control_hinter_message(darktable.control, message);
 }
 
