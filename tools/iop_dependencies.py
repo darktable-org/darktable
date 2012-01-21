@@ -60,13 +60,14 @@ def add_edges(gr):
   # inversion should be really early in the pipe
   gr.add_edge(('temperature', 'invert'))
 
-  # these need to be in camera color space (input rgb):
+  # these need to be in camera color space (linear input rgb):
   gr.add_edge(('colorin', 'exposure'))
   gr.add_edge(('colorin', 'highlights'))
   gr.add_edge(('colorin', 'graduatednd'))
   gr.add_edge(('colorin', 'basecurve'))
   gr.add_edge(('colorin', 'lens'))
   gr.add_edge(('colorin', 'profile_gamma'))
+  gr.add_edge(('colorin', 'shrecovery'))
   
   # flip before spatial dependent things come into play,
   # but after buffer has been downscaled.
@@ -81,6 +82,10 @@ def add_edges(gr):
   gr.add_edge(('basecurve', 'highlights'))
   gr.add_edge(('lens', 'highlights'))
   gr.add_edge(('tonemap', 'highlights'))
+  gr.add_edge(('shrecovery', 'highlights'))
+  # gives the ability to change the space of shadow recovery fusion.
+  # maybe this has to go the other way round, let's see what experience shows!
+  gr.add_edge(('shrecovery', 'basecurve'))
   
   # this evil hack for nikon crap profiles needs to come
   # as late as possible before the input profile:
@@ -89,6 +94,8 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'graduatednd'))
   gr.add_edge(('profile_gamma', 'basecurve'))
   gr.add_edge(('profile_gamma', 'lens'))
+  gr.add_edge(('profile_gamma', 'shrecovery'))
+  gr.add_edge(('profile_gamma', 'bilateral'))
   
   # these need Lab (between color in/out): 
   gr.add_edge(('colorout', 'bloom'))
@@ -246,7 +253,7 @@ def add_edges(gr):
   # want to do highpass filtering after lowpass:
   gr.add_edge(('highpass', 'lowpass'))
 
-  # deprecated:
+  # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
   gr.add_edge(('bilateral', 'demosaic'))
   gr.add_edge(('colorout', 'equalizer'))
@@ -294,6 +301,7 @@ gr.add_nodes([
 'rawdenoise',
 'relight',
 'sharpen',
+'shrecovery',
 'soften',
 'splittoning',
 'spots',
