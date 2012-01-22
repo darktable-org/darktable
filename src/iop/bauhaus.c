@@ -125,10 +125,14 @@ dt_bauhaus_popup_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoint
 static gboolean
 dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  bauhaus.end_mouse_x = event->x;
-  bauhaus.end_mouse_y = event->y;
+  if(event->button == 1)
+  {
+    // only accept left mouse click
+    bauhaus.end_mouse_x = event->x;
+    bauhaus.end_mouse_y = event->y;
+    dt_bauhaus_widget_accept(bauhaus.current);
+  }
   gtk_widget_hide(bauhaus.popup_window);
-  dt_bauhaus_widget_accept(bauhaus.current);
   return TRUE;
 }
 
