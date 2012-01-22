@@ -3104,7 +3104,19 @@ const wb_data wb_preset[] = {
   { "Panasonic", "DMC-GF1", Shade, 0,		{ 2.395437, 1, 1.193916, 0 } },
   { "Panasonic", "DMC-GF1", Incandescent, 0,	{ 1.365019, 1, 2.117871, 0 } },
   { "Panasonic", "DMC-GF1", Flash, 0,		{ 2.353612, 1, 1.231939, 0 } },
-
+  
+  { "Panasonic", "DMC-GX1", Daylight, 0,	{ 2.7925, 1, 1.5472, 0 } },
+  { "Panasonic", "DMC-GX1", Cloudy, 0,		{ 2.9660, 1, 1.4528, 0 } },
+  { "Panasonic", "DMC-GX1", Shade, 0,		{ 3.2642, 1, 1.3698, 0 } },
+  { "Panasonic", "DMC-GX1", Incandescent, 0,	{ 1.8491, 1, 2.2566, 0 } },
+  { "Panasonic", "DMC-GX1", Flash, 0,		{ 3.2868, 1, 1.3547, 0 } },
+  { "Panasonic", "DMC-GX1", "2700K", 0,		{ 1.5283, 1, 2.6717, 0 } },
+  { "Panasonic", "DMC-GX1", "3000K", 0,		{ 1.7094, 1, 2.4189, 0 } },
+  { "Panasonic", "DMC-GX1", "3300K", 0,		{ 1.8792, 1, 2.1849, 0 } },
+  { "Panasonic", "DMC-GX1", "5000K", 0,		{ 2.6679, 1, 1.6264, 0 } },
+  { "Panasonic", "DMC-GX1", "5500K", 0,		{ 2.7925, 1, 1.5472, 0 } },
+  { "Panasonic", "DMC-GX1", "6500K", 0,		{ 3.0679, 1, 1.4189, 0 } },
+  
   { "Panasonic", "DMC-L1", Daylight, 0,		{ 1.980989, 1, 1.444867, 0 } },
   { "Panasonic", "DMC-L1", Cloudy, 0,		{ 2.129278, 1, 1.300380, 0 } },
   { "Panasonic", "DMC-L1", Shade, 0,		{ 2.361217, 1, 1.167300, 0 } },
