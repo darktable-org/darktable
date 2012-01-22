@@ -821,9 +821,9 @@ popup_callback(GtkButton *button, dt_iop_module_t *module)
 
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset || (darktable.develop->gui_module == module)) return;
 
-  /* lets loose the focus of previous focus module*/
+  /* lets lose the focus of previous focus module*/
   if (darktable.develop->gui_module)
   {
     if (darktable.develop->gui_module->gui_focus) 
