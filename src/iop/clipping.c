@@ -711,13 +711,15 @@ void gui_update(struct dt_iop_module_t *self)
   if (act < -1 || act >= NUM_RATIOS) 
     act = 0;
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
+
 
   /* special handling the combobox when current act is already selected
      callback is not called, let do it our self then..
    */
   if (gtk_combo_box_get_active(GTK_COMBO_BOX(g->aspect_presets)) == act)
     aspect_presets_changed(GTK_COMBO_BOX(g->aspect_presets), self);
+  else
+    gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
 
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
