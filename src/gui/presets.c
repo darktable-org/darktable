@@ -565,6 +565,7 @@ void dt_gui_favorite_presets_menu_show()
     gtk_widget_destroy(GTK_WIDGET(menu));
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
+  gboolean presets = FALSE; /* TRUE if we have at least one menu entry */
 
   GList *modules = darktable.develop->iop;
   if (modules)
@@ -596,13 +597,21 @@ void dt_gui_favorite_presets_menu_show()
 	
 	/* add submenu to main menu if we got any presets */
 	if(g_list_length(gtk_container_get_children(GTK_CONTAINER(sm))) > 0)
+        {
 	  gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi));
+          presets = TRUE;
+        }  
 	
       }
 
     } while ((modules=g_list_next(modules))!=NULL);
   }
 
+  if (!presets)
+  {
+    gtk_widget_destroy(GTK_WIDGET(menu));
+    darktable.gui->presets_popup_menu = NULL;
+  }
 
 }
 
