@@ -592,9 +592,10 @@ void reload_defaults(dt_iop_module_t *self)
     g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
     if(g->aspect_ratios[1] < 1.0f)
       g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
-    
-    if(g->current_aspect > 1.0f && self->dev->image_storage.height > self->dev->image_storage.width)
-      g->current_aspect = 1.0f/g->current_aspect;
+
+    /* reset current aspect to image aspect */
+    g->current_aspect = g->aspect_ratios[1];
+
   }
   dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t)
   {
