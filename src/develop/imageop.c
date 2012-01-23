@@ -239,6 +239,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = _default_output_bpp;
   if(!g_module_symbol(module->module, "tiling_callback",        (gpointer)&(module->tiling_callback)))        module->tiling_callback = default_tiling_callback;
   if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             module->gui_update = NULL;
+  if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               module->gui_init = NULL;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            module->gui_cleanup = NULL;
 
@@ -315,6 +316,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->output_bpp  = so->output_bpp;
   module->tiling_callback = so->tiling_callback;
   module->gui_update  = so->gui_update;
+  module->gui_reset  = so->gui_reset;
   module->gui_init    = so->gui_init;
   module->gui_cleanup = so->gui_cleanup;
 
@@ -747,6 +749,15 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
+void dt_iop_gui_reset(dt_iop_module_t *module)
+{
+  int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+  if (module->gui_reset && !dt_iop_is_hidden(module))
+    module->gui_reset(module);
+  darktable.gui->reset = reset;
+}
+
 static int _iop_module_demosaic=0,_iop_module_colorout=0,_iop_module_colorin=0;
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 {
@@ -794,9 +805,17 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
   /* reset to default params */
   memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+
+  /* reset ui to its defaults */
+  dt_iop_gui_reset(module);
+
+  /* update ui to default params*/
   dt_iop_gui_update(module);
+
   dt_dev_add_history_item(module->dev, module, TRUE);
 }
+
+
 
 static void
 _preset_popup_position(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
