@@ -60,6 +60,8 @@ typedef struct dt_iop_clipping_params_t
 }
 dt_iop_clipping_params_t;
 
+/* calculate the aspect ratios for current image */
+static void _iop_clipping_update_ratios(dt_iop_module_t *self);
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
@@ -586,17 +588,6 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  if(self->dev->gui_attached && g)
-  {
-    g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
-    if(g->aspect_ratios[1] < 1.0f)
-      g->aspect_ratios[1] = 1.0f / g->aspect_ratios[1];
-
-    /* reset current aspect to image aspect */
-    g->current_aspect = g->aspect_ratios[1];
-
-  }
   dt_iop_clipping_params_t tmp = (dt_iop_clipping_params_t)
   {
     0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f
@@ -654,10 +645,9 @@ aspect_presets_changed (GtkComboBox *combo, dt_iop_module_t *self)
   else if (which < NUM_RATIOS)
   {
     dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", which);
-    if(which > 1 && self->dev->image_storage.height > self->dev->image_storage.width)
-      g->current_aspect = 1.0/g->aspect_ratios[which];
-    else
-      g->current_aspect = g->aspect_ratios[which];
+
+    g->current_aspect = g->aspect_ratios[which];
+
     apply_box_aspect(self, 5);
     dt_control_queue_redraw_center();
     dt_iop_request_focus(self);
@@ -695,18 +685,41 @@ keystone_callback_v (GtkWidget *widget, dt_iop_module_t *self)
   commit_box (self, g, p);
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  /* reset aspect preset to default */
+  dt_conf_set_int("plugins/darkroom/clipping/aspect_preset", 1);
+
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+
+  /* recalc aspect ratios for image */
+  _iop_clipping_update_ratios(self);
+
+  /* update ui elements */
   dtgtk_slider_set_value(g->scale5, -p->angle);
   dtgtk_slider_set_value(g->keystone_h, p->k_h);
   dtgtk_slider_set_value(g->keystone_v, p->k_v);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->hflip), p->cw < 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->vflip), p->ch < 0);
+  
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
-  if(act < -1 || act >= NUM_RATIOS) act = 0;
-  gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
+  if (act < -1 || act >= NUM_RATIOS) 
+    act = 0;
+
+
+
+  /* special handling the combobox when current act is already selected
+     callback is not called, let do it our self then..
+   */
+  if (gtk_combo_box_get_active(GTK_COMBO_BOX(g->aspect_presets)) == act)
+    aspect_presets_changed(GTK_COMBO_BOX(g->aspect_presets), self);
+  else
+    gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
 
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
@@ -714,6 +727,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->clip_w = p->cw - p->cx;
   g->clip_y = p->cy;
   g->clip_h = p->ch - p->cy;
+
 }
 
 void init(dt_iop_module_t *module)
@@ -921,7 +935,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
   g_signal_connect (G_OBJECT (gtk_bin_get_child(GTK_BIN(g->aspect_presets))), "activate",
-                    G_CALLBACK (aspect_free_activated), self);
+		    G_CALLBACK (aspect_free_activated), self);
   g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), (char *)NULL);
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
@@ -1008,10 +1022,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   /*-------------------------------------------*/
 
+  _iop_clipping_update_ratios(self);
+
+  /* set default aspect ratio */
+  g->current_aspect = g->aspect_ratios[act];
+}
+
+void _iop_clipping_update_ratios(dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = self->gui_data;
+
   g->aspect_ratios[0] = -1;
-  g->aspect_ratios[1] = self->dev->image_storage.width/(float)self->dev->image_storage.height;
-  if(g->aspect_ratios[1] < 1.0)
-    g->aspect_ratios[1] = 1.0 / g->aspect_ratios[1];
+  g->aspect_ratios[1] = self->dev->image_storage.width / (float)self->dev->image_storage.height;
   g->aspect_ratios[2] = 1.6280;
   g->aspect_ratios[3] = 2.0/1.0;
   g->aspect_ratios[4] = 3.0/2.0;
@@ -1019,13 +1041,17 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_ratios[6] = 1.0;
   g->aspect_ratios[7] = sqrtf(2.0);
   g->aspect_ratios[8] = 16.0f/9.0f;
+
   // if adding new presets, make sure to change this as well:
   assert(NUM_RATIOS == 9);
 
-  if(act> 0 && self->dev->image_storage.height > self->dev->image_storage.width)
-    g->current_aspect = 1.0/g->aspect_ratios[act];
-  else
-    g->current_aspect = g->aspect_ratios[act];
+  /* swap default fixed ratios for portraits */
+  if (g->aspect_ratios[1] < 1.0)
+  {
+    for (int k=2; k<NUM_RATIOS; k++)
+      g->aspect_ratios[k] = 1.0 / g->aspect_ratios[k];
+  }
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

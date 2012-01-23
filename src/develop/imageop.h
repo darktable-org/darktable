@@ -98,6 +98,7 @@ typedef struct dt_iop_module_so_t
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
+  void (*gui_reset)       (struct dt_iop_module_t *self);
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
@@ -215,6 +216,8 @@ typedef struct dt_iop_module_t
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
   void (*gui_update)      (struct dt_iop_module_t *self);
+  /** reset ui to defaults */
+  void (*gui_reset)       (struct dt_iop_module_t *self);
   /** construct widget. */
   void (*gui_init)        (struct dt_iop_module_t *self);
   /** destroy widget. */
@@ -280,6 +283,8 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
 gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
+/** reset the ui to its defaults */
+void dt_iop_gui_reset(dt_iop_module_t *module);
 /** set expanded state of iop */
 void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded);
 
