@@ -711,7 +711,7 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
   }
-  else dt_control_log(_("no styles in favorite modules have been created yet"));
+  else dt_control_log(_("no userdefined presets for favorite modules were found"));
 }
 
 static void _darkroom_ui_apply_style_activate_callback(gchar *name)
