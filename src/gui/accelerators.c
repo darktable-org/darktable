@@ -526,6 +526,7 @@ void dt_accel_disconnect_locals_iop(dt_iop_module_t *module)
     l = g_slist_next(l);
   }
 
+  module->accel_closures_local = NULL;
   module->local_closures_connected = FALSE;
 }
 
