@@ -791,7 +791,10 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 static void
 dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  // module->enabled = module->default_enabled; // will not propagate correctly anyways ;)
+  /* reload defaults */
+  dt_iop_reload_defaults(module);
+
+  /* reset to default params */
   memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_gui_update(module);
