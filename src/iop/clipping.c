@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2012 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -104,9 +105,14 @@ typedef struct dt_iop_clipping_gui_data_t
 
   float button_down_x, button_down_y;
   float button_down_zoom_x, button_down_zoom_y, button_down_angle; // position in image where the button has been pressed.
+  /* current clip box */
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
+  /* last committed clip box */
   float old_clip_x, old_clip_y, old_clip_w, old_clip_h;
-  int cropping, straightening, applied;
+  /* last box before change */
+  float prev_clip_x, prev_clip_y, prev_clip_w, prev_clip_h;
+
+  int cropping, straightening, applied, center_lock;
   float aspect_ratios[NUM_RATIOS];
   float current_aspect;
 }
@@ -871,6 +877,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->cropping = 0;
   g->straightening = 0;
   g->applied = 1;
+  g->center_lock = 0;
 
   self->widget = gtk_table_new(10, 6, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), DT_GUI_IOP_MODULE_CONTROL_SPACING);
@@ -1468,29 +1475,60 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 
       if(grab == 15)
       {
+	/* moving the crop window */
         g->clip_x = fminf(1.0 - g->clip_w, fmaxf(0.0, g->handle_x + pzx - bzx));
         g->clip_y = fminf(1.0 - g->clip_h, fmaxf(0.0, g->handle_y + pzy - bzy));
       }
       else
       {
-        if(grab & 1)
-        {
-          const float old_clip_x = g->clip_x;
-          g->clip_x = fmaxf(0.0, pzx - g->handle_x);
-          g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
-        }
-        if(grab & 2)
-        {
-          const float old_clip_y = g->clip_y;
-          g->clip_y = fmaxf(0.0, pzy - g->handle_y);
-          g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
-        }
-        if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
-        if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
-      }
+	/* changing the crop window */
+	if (g->center_lock)
+	{
+	  /* the center is locked, scale crop radial with locked ratio */
+	  gboolean flag = FALSE;
+	  float length = 0.0;
+	  float xx = 0.0;
+	  float yy = 0.0;
 
-      if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
-      if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
+	  if (grab & 1 || grab & 4) 
+	    xx = (grab & 1) ? (pzx-bzx) : (bzx-pzx);
+	  if (grab & 2 || grab & 8)
+	    yy = (grab & 2) ? (pzy-bzy) : (bzy-pzy);
+	  
+	  length = (fabs(xx) > fabs(yy)) ? xx : yy;
+
+	  if ((g->prev_clip_w - (length+length)) < 0.1 ||
+	      (g->prev_clip_h - (length+length)) < 0.1)
+	    flag = TRUE;
+
+	  g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
+	  g->clip_y = flag ? g->clip_y : g->prev_clip_y + length;
+	  g->clip_w = fmax(0.1, g->prev_clip_w - (length+length));
+	  g->clip_h = fmax(0.1, g->prev_clip_h - (length+length));
+	 	  
+	}
+	else
+	{
+
+	  if(grab & 1)
+	  {
+	    const float old_clip_x = g->clip_x;
+	    g->clip_x = fmaxf(0.0, pzx - g->handle_x);
+	    g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
+	  }
+	  if(grab & 2)
+          {
+	    const float old_clip_y = g->clip_y;
+	    g->clip_y = fmaxf(0.0, pzy - g->handle_y);
+	    g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
+	  }
+	  if(grab & 4) g->clip_w = fmaxf(0.1, fminf(1.0, pzx - g->clip_x - g->handle_x));
+	  if(grab & 8) g->clip_h = fmaxf(0.1, fminf(1.0, pzy - g->clip_y - g->handle_y));
+	}
+
+	if(g->clip_x + g->clip_w > 1.0) g->clip_w = 1.0 - g->clip_x;
+	if(g->clip_y + g->clip_h > 1.0) g->clip_h = 1.0 - g->clip_y;
+      }
       apply_box_aspect(self, grab);
     }
     dt_control_queue_redraw_center();
@@ -1572,7 +1610,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     dtgtk_slider_set_value(g->scale5, -a);
     dt_control_change_cursor(GDK_LEFT_PTR);
   }
-  g->straightening = g->cropping = 0;
+
+  /* reset internal ui states*/
+  g->center_lock = g->straightening = g->cropping = 0;
   return 1;
 }
 
@@ -1582,11 +1622,24 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
   dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
   if(which == 3 || which == 1)
   {
-    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+    if (self->off) 
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+
     g->button_down_x = x;
     g->button_down_y = y;
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
     g->button_down_angle = p->angle;
+
+    /* update prev clip box with current */
+    g->prev_clip_x = g->clip_x;
+    g->prev_clip_y = g->clip_y;
+    g->prev_clip_w = g->clip_w;
+    g->prev_clip_h = g->clip_h;
+
+    /* if shift is pressed, then lock crop on center */
+    if ((state&GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      g->center_lock = 1;
+
     return 1;
   }
   else return 0;
