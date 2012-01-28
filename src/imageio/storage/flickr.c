@@ -62,13 +62,14 @@ typedef struct _flickr_api_context_t
 typedef struct dt_storage_flickr_gui_data_t
 {
 
-  GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7; // username, password, albums, status, albumtitle, albumsummary, albumrights
-  GtkEntry *entry1,*entry2,*entry3,*entry4;        // username, password, albumtitle,albumsummary
-  GtkComboBox *comboBox1;                          // album box
-  GtkCheckButton *checkButton1,*checkButton2;      // public album, export tags
-  GtkDarktableButton *dtbutton1;                   // refresh albums
-  GtkButton *button;				   // login button. These buttons call the same functions
-  GtkBox *hbox1;                                   // Create album options...
+  GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7,*labelPerms;    // username, password, albums, status, albumtitle, albumsummary, albumrights
+  GtkEntry *entry1,*entry2,*entry3,*entry4;                             // username, password, albumtitle,albumsummary
+  GtkComboBox *comboBox1;                                               // album box
+  GtkCheckButton *checkButton2;                                         // export tags
+  GtkDarktableButton *dtbutton1;                                        // refresh albums
+  GtkButton *button;                                                    // login button. These buttons call the same functions
+  GtkBox *hbox1;                                                        // Create album options...
+  GtkComboBoxText *permsComboBox;                                       // Permissions for flickr
 
   char *user_token;
 
@@ -86,7 +87,9 @@ typedef struct dt_storage_flickr_params_t
   int64_t hash;
   _flickr_api_context_t *flickr_api;
   gboolean export_tags;
-  gboolean public_image;
+  gboolean public_perm;
+  gboolean friend_perm;
+  gboolean family_perm;
 } dt_storage_flickr_params_t;
 
 
@@ -303,7 +306,9 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
   }
   params->photo_file = fname; //fname should be the URI of temp file
 
-  params->is_public = (int) p->public_image;
+  params->is_public = (int) p->public_perm;
+  params->is_friend = (int) p->friend_perm;
+  params->is_family = (int) p->family_perm;
 
   status = flickcurl_photos_upload_params(p->flickr_api->fc, params);
   if (!status)
@@ -495,20 +500,22 @@ gui_init (dt_imageio_module_storage_t *self)
   GtkWidget *hbox1=gtk_hbox_new(FALSE,5);
   GtkWidget *hbox0=gtk_hbox_new(FALSE,5);
   GtkWidget *vbox1=gtk_vbox_new(FALSE,0);
-  GtkWidget *vbox2=gtk_vbox_new(FALSE,0);
+  GtkWidget *vbox2=gtk_vbox_new(FALSE,5);
 
   ui->label1 = GTK_LABEL(  gtk_label_new( _("flickr user") ) );
   ui->label3 = GTK_LABEL(  gtk_label_new( _("photosets") ) );
+  ui->labelPerms = GTK_LABEL(  gtk_label_new( _("visible to") ) );
   ui->label4 = GTK_LABEL(  gtk_label_new( NULL ) );
 
   set_status(ui,_("click login button to start"), "#ffffff");
   
   ui->label5 = GTK_LABEL(  gtk_label_new( _("title") ) );
   ui->label6 = GTK_LABEL(  gtk_label_new( _("summary") ) );
-  gtk_misc_set_alignment(GTK_MISC(ui->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label5), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label6), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(ui->label1),      0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(ui->labelPerms),  0.0, 0.9);
+  gtk_misc_set_alignment(GTK_MISC(ui->label3),      0.0, 0.7);
+  gtk_misc_set_alignment(GTK_MISC(ui->label5),      0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(ui->label6),      0.0, 0.5);
 
   ui->entry1 = GTK_ENTRY( gtk_entry_new() );
   ui->entry3 = GTK_ENTRY( gtk_entry_new() );  // Album title
@@ -564,10 +571,17 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->dtbutton1), FALSE, FALSE, 0);
 
-  ui->checkButton1 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("make images public")) );
   ui->checkButton2 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("export tags")) );
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON( ui->checkButton2 ),TRUE);
-  
+
+  ui->permsComboBox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("you"));
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("friends"));
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("family"));
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("friends + family"));
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("everyone"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(ui->permsComboBox), 0); // Set default permission to private
+
   gtk_box_pack_start(GTK_BOX(self->widget), hbox0, TRUE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( hbox0 ), GTK_WIDGET( ui->label1 ), TRUE, TRUE, 0);
@@ -576,12 +590,13 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX( hbox1 ), vbox1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( hbox1 ), vbox2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( gtk_label_new("")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->labelPerms ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox1 ), GTK_WIDGET( ui->label3 ), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->label4 ), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton1 ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->checkButton2 ), TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( ui->permsComboBox ), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX( vbox2 ), GTK_WIDGET( albumlist ), TRUE, FALSE, 0);
+
 
   // Create Album
   ui->hbox1=GTK_BOX(gtk_hbox_new(FALSE,5));
@@ -810,8 +825,38 @@ get_params(dt_imageio_module_storage_t *self, int *size)
       return NULL;
     }
 
-    d->public_image = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton1));
     d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
+
+    /* Handle the permissions */
+    int perm_index = (int) gtk_combo_box_get_active(GTK_COMBO_BOX(ui->permsComboBox));
+    switch(perm_index)
+    {
+      case 0: // Private
+        d->public_perm = 0;
+        d->friend_perm = 0;
+        d->family_perm = 0;
+        break;
+      case 1: // Friends
+        d->public_perm = 0;
+        d->friend_perm = 1;
+        d->family_perm = 0;
+        break;
+      case 2: // Family
+        d->public_perm = 0;
+        d->friend_perm = 0;
+        d->family_perm = 1;
+        break;
+      case 3: // Friend + Family
+        d->public_perm = 0;
+        d->friend_perm = 1;
+        d->family_perm = 1;
+        break;
+      case 4: //Public
+        d->public_perm = 1;
+        d->friend_perm = 0;
+        d->family_perm = 0;
+        break;
+    }
 
     // Let UI forget about this api context and recreate a new one for further usage...
     ui->flickr_api = _flickr_api_authenticate(ui);
