@@ -27,6 +27,7 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "libs/collect.h"
+#include "views/view.h"
 
 DT_MODULE(1)
 
@@ -75,7 +76,7 @@ typedef enum dt_lib_collect_cols_t
 dt_lib_collect_cols_t;
 
 
-static void _lib_collect_gui_update (dt_lib_collect_t *d);
+static void _lib_collect_gui_update (dt_lib_module_t *d);
 
 
 const char*
@@ -158,7 +159,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   dt_conf_set_int(confname, p->rules);
   
   /* update ui */
-  _lib_collect_gui_update((dt_lib_collect_t*)self->data);
+  _lib_collect_gui_update(self);
 
   /* update view */
   dt_collection_update_query(darktable.collection);
@@ -334,8 +335,10 @@ entry_key_press_exit:
 }
 
 static void
-_lib_collect_gui_update (dt_lib_collect_t *d)
+_lib_collect_gui_update (dt_lib_module_t *self)
 {
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+
   const int old = darktable.gui->reset;
   darktable.gui->reset = 1;
   const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1, 0, (MAX_RULES-1));
@@ -590,9 +593,9 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 }
 
 static void
-collection_updated(gpointer instance,gpointer d)
+collection_updated(gpointer instance,gpointer self)
 {
-  _lib_collect_gui_update((dt_lib_collect_t *)d);
+  _lib_collect_gui_update((dt_lib_module_t *)self);
 }
 
 
@@ -690,16 +693,16 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)malloc(sizeof(dt_lib_collect_t));
 
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_COLLECTION_CHANGED,
-			    G_CALLBACK(collection_updated),
-			    (gpointer)d);
-
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
   gtk_widget_set_size_request(self->widget, 100, -1);
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t*)malloc(sizeof(dt_lib_collect_params_t));
+
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_COLLECTION_CHANGED,
+			    G_CALLBACK(collection_updated),
+			    self);
   
   GtkBox *box;
   GtkWidget *w;
@@ -756,13 +759,18 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
 
-  _lib_collect_gui_update(d);
+  /* setup proxy */
+  darktable.view_manager->proxy.module_collect.module = self;
+  darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
+
+  _lib_collect_gui_update(self);
 }
 
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self->data);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
+  darktable.view_manager->proxy.module_collect.module = NULL;
   free(((dt_lib_collect_t*)self->data)->params);
   free(self->data);
   self->data = NULL;

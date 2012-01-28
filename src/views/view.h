@@ -157,6 +157,12 @@ typedef struct dt_view_manager_t
       void (*add)(struct dt_lib_module_t *,GtkWidget *);
     } module_toolbox;
 
+    /* module collection proxy object */
+    struct {
+      struct dt_lib_module_t *module;
+      void (*update)(struct dt_lib_module_t *);
+    } module_collect;
+
     /* filmstrip proxy object */
     struct {
       struct dt_lib_module_t *module;
@@ -239,6 +245,9 @@ const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, 
 void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name);
 /** get the current jobcode for tethering session */
 const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
+
+/** update the collection module */
+void dt_view_collection_update(const dt_view_manager_t *vm);
 
 /*
  * NEW filmstrip api

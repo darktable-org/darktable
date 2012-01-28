@@ -1130,6 +1130,11 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
     vm->proxy.lighttable.set_zoom(vm->proxy.lighttable.module, zoom);
 }
 
+void dt_view_collection_update(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.module_collect.module)
+    vm->proxy.module_collect.update(vm->proxy.module_collect.module);
+}
 
 int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm)
 {
