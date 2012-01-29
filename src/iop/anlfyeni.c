@@ -185,7 +185,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_anlfyeni_params_t));
   module->default_params = malloc(sizeof(dt_iop_anlfyeni_params_t));
   module->default_enabled = 0;
-  module->priority = 700; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 680; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_anlfyeni_params_t);
   module->gui_data = NULL;
   // TODO: check the defaults if there's better ones

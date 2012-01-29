@@ -69,10 +69,12 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'profile_gamma'))
   gr.add_edge(('colorin', 'shrecovery'))
   
-  # flip before spatial dependent things come into play,
-  # but after buffer has been downscaled.
+  # flip is a distortion plugin, and as such has to go after spot removal
+  # and lens correction, which depend on original input buffers.
+  # and after buffer has been downscaled/demosaiced
   gr.add_edge(('flip', 'demosaic'))
-  gr.add_edge(('graduatednd', 'flip'))
+  gr.add_edge(('flip', 'lens'))
+  gr.add_edge(('flip', 'spots'))
   # handle highlights correctly:
   # we want highlights as early as possible, to avoid
   # pink highlights in plugins (happens only before highlight clipping)
