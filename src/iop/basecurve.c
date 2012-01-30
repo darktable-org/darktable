@@ -56,6 +56,8 @@ static const char panasonic[] = N_("panasonic like");
 static const char leica[] = N_("leica like");
 static const char kodak_easyshare[] = N_("kodak easyshare like");
 static const char konica_minolta[] = N_("konica minolta like");
+static const char samsung[] = N_("samsung like");
+static const char fujifilm[] = N_("fujifilm like");
 static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
 static const char fotogenetic_v42[] = N_("fotogenetic (ev3)");
 
@@ -70,7 +72,8 @@ typedef struct basecurve_preset_t
 }
 basecurve_preset_t;
 
-static const basecurve_preset_t basecurve_presets[] = {
+static const basecurve_preset_t basecurve_presets[] =
+{
   {linear, "", "", 0, 51200, {{0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, {0.0, 0.08, 0.4, 0.6, 0.92, 1.0}, 0}, 0},
   {dark_contrast, "", "", 0, 51200, {{0.000000, 0.072581, 0.157258, 0.491935, 0.758065, 1.000000}, {0.000000, 0.040000, 0.138710, 0.491935, 0.758065, 1.000000}, 0}, 0},
   // pascals canon eos curve (well tested):
@@ -90,6 +93,10 @@ static const basecurve_preset_t basecurve_presets[] = {
   {kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, 51200, {{0.000000, 0.044355, 0.133065, 0.209677, 0.572581, 1.000000}, {0.000000, 0.020967, 0.154322, 0.300301, 0.753477, 1.000000}, 0}, 1},
   // pascals minolta curve
   {konica_minolta, "MINOLTA", "", 0, 51200, {{0.000000, 0.020161, 0.112903, 0.500000, 0.899194, 1.000000}, {0.000000, 0.010322, 0.167742, 0.711291, 0.956855, 1.000000}, 0}, 1},
+  // pascals samsung curve (needs testing):
+  {samsung, "SAMSUNG", "", 0, 51200, {{0.000000, 0.040323, 0.133065, 0.447581, 0.842742, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
+  // pascals fujifilm curve
+  {fujifilm, "FUJIFILM", "", 0, 51200, {{0.000000, 0.028226, 0.104839, 0.387097, 0.754032, 1.000000}, {0.000000, 0.029677, 0.232258, 0.747581, 0.967742, 1.000000}, 0}, 1},
   // Fotogenetic - Point and shoot v4.1
   {fotogenetic_v41, "", "", 0, 51200, {{0.000000, 0.087879, 0.175758, 0.353535, 0.612658, 1.000000}, {0.000000, 0.125252, 0.250505, 0.501010, 0.749495, 0.876573}, 0}, 0},
   // Fotogenetic - EV3 v4.2
