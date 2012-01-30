@@ -25,7 +25,6 @@ libvelvia_la_SOURCES=velvia.c
 libvignette_la_SOURCES=vignette.c
 libsplittoning_la_SOURCES=splittoning.c
 libgrain_la_SOURCES=grain.c
-libclahe_la_SOURCES=clahe.c
 libbilateral_la_SOURCES=bilateral.cc
 libprofile_gamma_la_SOURCES=profile_gamma.c
 libprofile_gamma_la_CFLAGS=-I$(srcdir)/../LibRaw
@@ -56,7 +55,6 @@ dtplugins_LTLIBRARIES=libtonecurve.la\
                       libsplittoning.la\
                       libgrain.la\
                       libbilateral.la\
-                      libclahe.la\
                       libprofile_gamma.la\
                       libcolortransfer.la\
                       libchannelmixer.la\
