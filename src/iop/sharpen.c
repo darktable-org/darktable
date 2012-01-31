@@ -239,7 +239,7 @@ void init(dt_iop_module_t *module)
   module->priority = 850;
   module->params_size = sizeof(dt_iop_sharpen_params_t);
   module->gui_data = NULL;
-  dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){2.0, 0.5, 0.004};
+  dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){2.0, 0.5, 0.005};
   memcpy(module->params, &tmp, sizeof(dt_iop_sharpen_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_sharpen_params_t));
 }
