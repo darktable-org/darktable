@@ -172,7 +172,7 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
     char tmp_path[1024];
-    snprintf(tmp_path,1024,"preset/%s",name);
+    snprintf(tmp_path,1024,"%s/%s",_("preset"),name);
     dt_accel_deregister_iop(module,tmp_path);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3 and writeprotect=0", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
@@ -199,7 +199,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 
     //rename accerelartors
     char path[1024];
-    snprintf(path,1024,"preset/%s",g->original_name);
+    snprintf(path,1024,"%s/%s",_("preset"),g->original_name);
     dt_accel_rename_preset_iop(g->module,path,gtk_entry_get_text(g->name));
     // commit all the user input fields
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, enabled, blendop_params, "

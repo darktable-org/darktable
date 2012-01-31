@@ -603,7 +603,7 @@ void dt_accel_connect_preset_iop(dt_iop_module_t *module,  const gchar *path)
   GClosure* closure = NULL;
   char build_path[1024];
   gchar* name =g_strdup(path);
-  snprintf(build_path,1024,"preset/%s",name);
+  snprintf(build_path,1024,"%s/%s",_("preset"),name);
   preset_iop_module_callback_description *callback_description = malloc(sizeof(preset_iop_module_callback_description));
   callback_description->module = module;
   callback_description->name = name;
@@ -680,7 +680,7 @@ void dt_accel_connect_preset_lib(dt_lib_module_t *module,  const gchar *path)
   GClosure* closure = NULL;
   char build_path[1024];
   gchar* name =g_strdup(path);
-  snprintf(build_path,1024,"preset/%s",name);
+  snprintf(build_path,1024,"%s/%s",_("preset"),name);
   preset_lib_module_callback_description *callback_description = malloc(sizeof(preset_lib_module_callback_description));
   callback_description->module = module;
   callback_description->name = name;
@@ -804,7 +804,7 @@ void dt_accel_rename_preset_iop(dt_iop_module_t *module,const gchar *path,const 
 			GtkAccelKey tmp_key = *(gtk_accel_group_find(darktable.control->accelerators,find_accel_internal,accel->closure));
 			gboolean local = accel->local;
 			dt_accel_deregister_iop(module,path);
-			snprintf(build_path,1024,"preset/%s",new_path);
+			snprintf(build_path,1024,"%s/%s",_("preset"),new_path);
 			dt_accel_register_iop(module->so,local,build_path,tmp_key.accel_key,tmp_key.accel_mods);
 			dt_accel_connect_preset_iop(module,new_path);
 			l = NULL;
@@ -826,7 +826,7 @@ void dt_accel_rename_preset_lib(dt_lib_module_t *module,const gchar *path,const 
 		if(!strcmp(accel->path, build_path)) {
 			GtkAccelKey tmp_key = *(gtk_accel_group_find(darktable.control->accelerators,find_accel_internal,accel->closure));
 			dt_accel_deregister_lib(module,path);
-			snprintf(build_path,1024,"preset/%s",new_path);
+			snprintf(build_path,1024,"%s/%s",_("preset"),new_path);
 			dt_accel_register_lib(module,build_path,tmp_key.accel_key,tmp_key.accel_mods);
 			dt_accel_connect_preset_lib(module,new_path);
 			l = NULL;

@@ -206,7 +206,7 @@ menuitem_new_preset (GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
     char path[1024];
-    snprintf(path,1024,"preset/%s",_("new preset"));
+    snprintf(path,1024,"%s/%s",_("preset"), _("new preset"));
   dt_accel_register_lib(minfo->module,path,0,0);
   dt_accel_connect_preset_lib(minfo->module,_("new preset"));
   // then show edit dialog
@@ -226,7 +226,7 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
   gchar *name = get_active_preset_name(minfo);
   if(name == NULL) return;
   char tmp_path[1024];
-  snprintf(tmp_path,1024,"preset/%s",name);
+  snprintf(tmp_path,1024,"%s/%s",_("preset"), name);
   dt_accel_deregister_lib(minfo->module,tmp_path);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3 and writeprotect=0", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
@@ -825,7 +825,7 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module)
 		while(sqlite3_step(stmt) == SQLITE_ROW)
 		{
 			char path[1024];
-			snprintf(path,1024,"preset/%s",(char *)sqlite3_column_text(stmt, 0));
+			snprintf(path,1024,"%s/%s", _("preset"), (char *)sqlite3_column_text(stmt, 0));
 			dt_accel_register_lib(module,path,0,0);
 			dt_accel_connect_preset_lib(module,(char *)sqlite3_column_text(stmt, 0));
 		}
