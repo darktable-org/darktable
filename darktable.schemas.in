@@ -565,7 +565,7 @@
       <applyto>/apps/darktable/plugins/lighttable/images_in_row</applyto>
       <owner>darktable</owner>
       <type>int</type>
-      <default>7</default>
+      <default>3</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>how many images are in one row</short>
