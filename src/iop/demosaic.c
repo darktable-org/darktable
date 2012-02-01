@@ -1181,7 +1181,7 @@ void gui_init     (struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->greeneq, _("local average"));
   gtk_combo_box_append_text(g->greeneq, _("full average"));
   gtk_combo_box_append_text(g->greeneq, _("full and local average"));
-  g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("green channels mathing method"), (char *)NULL);
+  g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("green channels matching method"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->greeneq), 1, 2, 3, 4, GTK_FILL|GTK_EXPAND, 0, 0, 0);
   ////////////////////////////
 
