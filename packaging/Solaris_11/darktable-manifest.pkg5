@@ -1,0 +1,477 @@
+#
+# Copyright (c) 2012, James C. McPherson. All rights reserved.
+#
+
+set name=pkg.fmri value=pkg:/darktable/darktable-git@0.9.3,1.0.0
+set name=pkg.summary value="darktable (built from git 39a6c55fbb56d506)"
+set name=pkg.description value="darktable (built from git 39a6c55fbb56d506)"
+set name=info.classification \
+    value="org.opensolaris.category.2008:Development/Distribution Tools"
+
+#
+# This package should not be incorporated.  This allows the tools
+# to be upgraded without upgrading the entire system.
+#
+set name=org.opensolaris.noincorp value=true
+set name=variant.arch value=i386
+set name=variant.opensolaris.zone value=global value=nonglobal
+#dir  path=etc owner=root group=sys mode=0755
+#dir  path=etc/gconf owner=root group=sys mode=0755
+#dir  path=etc/gconf/schemas owner=root group=sys mode=0755
+#file path=etc/gconf/schemas/darktable.schemas owner=root group=root mode=644 \
+#    restart_fmri=svc:/application/desktop-cache/gconf-cache:default
+dir  path=opt owner=root group=sys mode=755
+dir  path=opt/darktable owner=root group=root mode=755
+dir  path=opt/darktable/bin owner=root group=root mode=755
+file path=opt/darktable/bin/darktable owner=root group=root mode=755
+file path=opt/darktable/bin/darktable-cltest owner=root group=root mode=755
+file path=opt/darktable/bin/darktable-viewer owner=root group=root mode=755
+dir  path=opt/darktable/include owner=root group=root mode=755
+dir  path=opt/darktable/include/OpenEXR owner=root group=root mode=755
+dir  path=opt/darktable/lib owner=root group=root mode=755
+dir  path=opt/darktable/lib/darktable owner=root group=root mode=755
+dir  path=opt/darktable/lib/darktable/views owner=root group=root mode=755
+dir  path=opt/darktable/lib/darktable/plugins owner=root group=root mode=755
+dir  path=opt/darktable/lib/darktable/plugins/imageio owner=root group=root mode=755
+dir  path=opt/darktable/lib/darktable/plugins/imageio/storage owner=root group=root mode=755
+dir  path=opt/darktable/lib/darktable/plugins/imageio/format owner=root group=root mode=755
+dir  path=opt/darktable/lib/darktable/plugins/lighttable owner=root group=root mode=755
+
+file path=opt/darktable/lib/darktable/views/liblighttable.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/views/libdarkroom.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/views/libcapture.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libtonecurve.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libhighpass.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libexposure.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libmonochrome.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libcolorcorrection.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libvibrance.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libflip.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/liblevels.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libprofile_gamma.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libchannelmixer.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libtonemap.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/liboverexposed.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/librelight.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libhotpixels.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libcolorcontrast.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libcolorize.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libanlfyeni.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libsoften.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libhighlights.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/storage/libpicasa.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/storage/libgallery.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/storage/libemail.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/storage/libdisk.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/format/libexr.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/format/libjpeg.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/format/libtiff.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/format/libpfm.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/format/libppm.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/format/libcopy.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/imageio/format/libpng.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libgrain.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libborders.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libbilateral.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libclipping.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libclahe.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libcollect.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libmetadata.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libcolorlabels.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libhistory.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libviewswitcher.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libview_toolbox.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libcolorpicker.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libmetadata_view.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libkeywords.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libcapture.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libsnapshots.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libratings.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libselect.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libmodulelist.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libstyles.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libmodulegroups.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libhinter.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libtagging.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libimage.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/liblighttable_mode.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libexport.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libcopy_history.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libnavigation.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libmodule_toolbox.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libdarktable_label.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libhistogram.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/librecentcollect.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libimport.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libbackgroundjobs.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libcamera.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libglobal_toolbox.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libfilter.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/lighttable/libfilmstrip.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libcolorout.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libnlmeans.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libdemosaic.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libvelvia.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libcolortransfer.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libvignette.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libsharpen.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libcolorzones.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libgraduatednd.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libequalizer.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libspots.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libcolorin.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libsplittoning.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libbasecurve.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libbloom.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/liblens.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libshrecovery.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/liblowlight.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libtemperature.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libzonesystem.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/librawdenoise.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libinvert.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libwatermark.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libgamma.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/liblowpass.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libcacorrect.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/plugins/libatrous.so owner=root group=root mode=755
+file path=opt/darktable/lib/darktable/libdarktable.so owner=root group=root mode=755
+
+
+dir  path=opt/darktable/share owner=root group=root mode=755
+dir  path=opt/darktable/share/aclocal owner=root group=root mode=755
+dir  path=usr owner=root group=sys mode=0755
+dir  path=usr/share owner=root group=sys mode=755
+dir  path=usr/share/applications owner=root group=other mode=755
+file path=usr/share/applications/darktable.desktop owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/darktable owner=root group=root mode=755
+file path=opt/darktable/share/darktable/darktable.gtkrc owner=root group=root \
+    mode=644
+file path=opt/darktable/share/darktable/gdb_commands owner=root group=root \
+    mode=644
+dir  path=opt/darktable/share/darktable/kernels owner=root group=root mode=755
+file path=opt/darktable/share/darktable/kernels/atrous.cl owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/kernels/basic.cl owner=root group=root \
+    mode=644
+file path=opt/darktable/share/darktable/kernels/blendop.cl owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/kernels/demosaic_ppg.cl owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/kernels/gaussian.cl owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/kernels/highpass.cl owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/kernels/nlmeans.cl owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/kernels/programs.conf owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/kernels/sharpen.cl owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/darktable/pixmaps owner=root group=root mode=755
+dir  path=opt/darktable/share/darktable/pixmaps/plugins owner=root group=root \
+    mode=755
+dir  path=opt/darktable/share/darktable/pixmaps/plugins/darkroom owner=root \
+    group=root mode=755
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/anlfyeni.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/atrous.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/basecurve.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/bilateral.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/bloom.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/borders.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/cacorrect.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/channelmixer.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/clahe.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/clipping.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/colorcorrection.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/colorin.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/colorout.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/colortransfer.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/colorzones.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/demosaic.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/exposure.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/graduatednd.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/grain.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/highlights.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/highpass.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/hotpixels.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/invert.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/lens.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/lowlight.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/lowpass.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/monochrome.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/nlmeans.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/overexposed.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/profile_gamma.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/rawdenoise.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/rawimport.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/relight.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/sharpen.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/soften.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/splittoning.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/spots.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/temperature.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/template.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/tonecurve.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/tonemap.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/velvia.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/vignette.png \
+    owner=root group=root mode=644
+file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/watermark.png \
+    owner=root group=root mode=644
+file \
+    path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/zonesystem.png \
+    owner=root group=root mode=644
+dir  path=opt/darktable/share/darktable/rawspeed owner=root group=root mode=755
+file path=opt/darktable/share/darktable/rawspeed/cameras.xml owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/rawspeed/showcameras.xsl owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/darktable/style owner=root group=root mode=755
+file path=opt/darktable/share/darktable/style/favicon.ico owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/style/style.css owner=root group=root \
+    mode=644
+dir  path=opt/darktable/share/darktable/watermarks owner=root group=root mode=755
+file path=opt/darktable/share/darktable/watermarks/darktable.svg owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/watermarks/hasselblad.svg owner=root \
+    group=root mode=644
+file path=opt/darktable/share/darktable/watermarks/promo.svg owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/doc owner=root group=root mode=755
+dir  path=opt/darktable/share/doc/OpenEXR-1.7.0 owner=root group=root mode=755
+dir  path=opt/darktable/share/doc/OpenEXR-1.7.0/examples owner=root group=root \
+    mode=755
+dir  path=opt/darktable/share/doc/darktable owner=root group=root mode=755
+file path=opt/darktable/share/doc/darktable/AUTHORS owner=root group=root \
+    mode=644
+file path=opt/darktable/share/doc/darktable/LICENSE owner=root group=root \
+    mode=644
+file path=opt/darktable/share/doc/darktable/README owner=root group=root \
+    mode=644
+file path=opt/darktable/share/doc/darktable/README.Solaris owner=root \
+    group=root mode=644
+file path=opt/darktable/share/doc/darktable/Solaris_diffs owner=root \
+    group=root mode=644
+file path=opt/darktable/share/doc/darktable/TRANSLATORS owner=root group=root \
+    mode=644
+dir  path=opt/darktable/share/doc/ilmbase-1.0.2 owner=root group=root mode=755
+dir  path=opt/darktable/share/doc/lcms2 owner=root group=root mode=755
+dir  path=opt/darktable/share/doc/tiff-4.0.0 owner=root group=root mode=755
+dir  path=opt/darktable/share/doc/tiff-4.0.0/html owner=root group=root mode=755
+dir  path=opt/darktable/share/doc/tiff-4.0.0/html/images owner=root group=root \
+    mode=755
+dir  path=opt/darktable/share/doc/tiff-4.0.0/html/man owner=root group=root \
+    mode=755
+dir  path=usr owner=root group=sys mode=755
+dir  path=usr/share owner=root group=sys mode=755
+dir  path=usr/share/icons owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor/16x16 owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor/16x16/apps owner=root group=other \
+    mode=755
+file path=usr/share/icons/hicolor/16x16/apps/darktable.png \
+    owner=root group=root mode=644
+dir  path=usr/share/icons/hicolor/22x22 owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor/22x22/apps owner=root group=other \
+    mode=755
+file path=usr/share/icons/hicolor/22x22/apps/darktable.png \
+    owner=root group=root mode=644
+dir  path=usr/share/icons/hicolor/24x24 owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor/24x24/apps owner=root group=other \
+    mode=755
+file path=usr/share/icons/hicolor/24x24/apps/darktable.png \
+    owner=root group=root mode=644
+dir  path=usr/share/icons/hicolor/256x256 owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor/256x256/apps owner=root group=other \
+    mode=755
+file path=usr/share/icons/hicolor/256x256/apps/darktable.png \
+    owner=root group=root mode=644
+dir  path=usr/share/icons/hicolor/32x32 owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor/32x32/apps owner=root group=other \
+    mode=755
+file path=usr/share/icons/hicolor/32x32/apps/darktable.png \
+    owner=root group=root mode=644
+dir  path=usr/share/icons/hicolor/48x48 owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor/48x48/apps owner=root group=other \
+    mode=755
+file path=usr/share/icons/hicolor/48x48/apps/darktable.png \
+    owner=root group=root mode=644
+dir  path=usr/share/icons/hicolor/64x64 owner=root group=other mode=755
+dir  path=usr/share/icons/hicolor/64x64/apps owner=root group=other \
+    mode=755
+file path=usr/share/icons/hicolor/64x64/apps/darktable.png \
+    owner=root group=root mode=644
+dir  path=usr/share/icons/hicolor/scalable owner=root group=other \
+    mode=755
+dir  path=usr/share/icons/hicolor/scalable/apps owner=root group=other \
+    mode=755
+file path=usr/share/icons/hicolor/scalable/apps/darktable.svg \
+    owner=root group=root mode=644
+dir  path=opt/darktable/share/locale owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/ca owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/ca/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/ca/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/cs owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/cs/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/cs/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/de owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/de/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/de/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/es owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/es/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/es/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/fi owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/fi/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/fi/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/fr owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/fr/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/fr/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/gl owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/gl/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/gl/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/it owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/it/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/it/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/ja owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/ja/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/ja/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/nl owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/nl/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/nl/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/pl owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/pl/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/pl/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/ro owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/ro/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/ro/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/ru owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/ru/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/ru/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/sq owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/sq/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/sq/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/sv owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/sv/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/sv/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/locale/th owner=root group=root mode=755
+dir  path=opt/darktable/share/locale/th/LC_MESSAGES owner=root group=root \
+    mode=755
+file path=opt/darktable/share/locale/th/LC_MESSAGES/darktable.mo owner=root \
+    group=root mode=644
+dir  path=opt/darktable/share/man owner=root group=root mode=755
+dir  path=opt/darktable/share/man/man1 owner=root group=root mode=755
+file path=opt/darktable/share/man/man1/darktable.1 owner=root group=root \
+    mode=644
+dir  path=opt/darktable/share/man/man3 owner=root group=root mode=755
+depend type=require fmri=pkg://JMCP/darktable/library/OpenEXR
+depend type=require fmri=pkg://JMCP/darktable/library/exiv2
+depend type=require fmri=pkg://JMCP/darktable/library/flickcurl
+depend type=require fmri=pkg://JMCP/darktable/library/ilmbase
+depend type=require fmri=pkg://JMCP/darktable/library/lcms2
+depend type=require fmri=pkg://JMCP/darktable/library/lensfun
+depend type=require fmri=pkg://JMCP/darktable/library/tiff4
+
+
+# If C++ wasn't so crazy, we could require either the SFE or Solaris
+# versions of the runtime.
+#depend type=require-any fmri=pkg://sfe/runtime/gcc fmri=pkg://system/library/gcc-45-runtime
+depend type=require fmri=pkg://sfe/runtime/gcc
+depend type=require fmri=pkg://solaris/image/library/libjpeg
+depend type=require fmri=pkg://solaris/library/libxml2
+depend type=require fmri=pkg://solaris/system/library
+depend type=require fmri=pkg://solaris/web/curl
+depend type=require fmri=pkg://solaris/x11/library/libxevie
+depend type=require fmri=pkg://solaris/database/sqlite-3
+depend type=require fmri=pkg://solaris/library/zlib
+depend type=require fmri=pkg://sfe/library/libiconv
+
+depend type=require fmri=pkg://solaris/x11/library/mesa
+depend type=require fmri=pkg://solaris/service/opengl/ogl-select
+
