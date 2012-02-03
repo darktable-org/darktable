@@ -45,7 +45,7 @@
 DT_MODULE(3)
 
 // number of gui ratios in combo box
-#define NUM_RATIOS 9
+#define NUM_RATIOS 10
 
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
@@ -934,10 +934,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("5:4"));
+  
   dt_gui_key_accel_block_on_focus(gtk_bin_get_child(GTK_BIN(g->aspect_presets)));
 
   int act = dt_conf_get_int("plugins/darkroom/clipping/aspect_preset");
-  if(act < 0 || act >= 9) act = 0;
+  if(act < 0 || act >= NUM_RATIOS) act = 0;
   gtk_combo_box_set_active(GTK_COMBO_BOX(g->aspect_presets), act);
   g_signal_connect (G_OBJECT (g->aspect_presets), "changed",
                     G_CALLBACK (aspect_presets_changed), self);
@@ -1048,9 +1050,10 @@ void _iop_clipping_update_ratios(dt_iop_module_t *self)
   g->aspect_ratios[6] = 1.0;
   g->aspect_ratios[7] = sqrtf(2.0);
   g->aspect_ratios[8] = 16.0f/9.0f;
+  g->aspect_ratios[9] = 5.0f/4.0f;
 
   // if adding new presets, make sure to change this as well:
-  assert(NUM_RATIOS == 9);
+  assert(NUM_RATIOS == 10);
 
   /* swap default fixed ratios for portraits */
   if (g->aspect_ratios[1] < 1.0)
