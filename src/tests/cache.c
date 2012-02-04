@@ -17,8 +17,10 @@
 */
 
 
+#define DT_UNIT_TEST
 // define dt alloc, so we don't need to include the rest of dt:
 #define dt_alloc_align(A, B) malloc(B)
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // unit test for the concurrent hopscotch hashmap and the LRU cache built on top of it.
 #include "common/cache.h"
@@ -31,10 +33,12 @@
 #  include <omp.h>
 #endif
 
-void *alloc_dummy(void *data, const uint32_t key, int32_t *cost)
+int32_t
+alloc_dummy(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
   *cost = 1; // also the default
-  return (void *)(long int)key;
+  *buf = (void *)(long int)key;
+  return 1;
 }
 
 int main(int argc, char *arg[])
@@ -56,7 +60,7 @@ int main(int argc, char *arg[])
     dt_cache_read_release(&cache, k);
     dt_cache_read_release(&cache, k);
     const int con2 = dt_cache_contains(&cache, k);
-    // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
+    fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
     assert (con1 == 0);
     assert (con2 == 1);
     assert (val2 == k);

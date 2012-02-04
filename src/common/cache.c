@@ -16,7 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/darktable.h"
+#ifndef DT_UNIT_TEST
+  #include "common/darktable.h"
+#endif
 #include "common/cache.h"
 
 #include <limits.h>
