@@ -1304,12 +1304,22 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   xThird = cwidth  / 3;
   yThird = cheight / 3;
 
-  // save context and draw guides
+  // save context
   cairo_save(cr);
   cairo_rectangle (cr, left, top, cwidth, cheight);
   cairo_clip(cr);
   cairo_set_line_width(cr, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
+    
+  // draw border
+  cairo_set_dash (cr, &dashes, 0, 0);
+  drawLine(cr, left, top, right, top);
+  drawLine(cr, right, top, right, bottom);
+  drawLine(cr, right, bottom, left, bottom);
+  drawLine(cr, left, bottom, left, top);
+  cairo_stroke (cr);
+
+  // draw guides
   cairo_set_dash(cr, &dashes, 1, 0);
 
   int which = gtk_combo_box_get_active(g->guide_lines);
