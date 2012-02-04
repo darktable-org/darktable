@@ -69,7 +69,7 @@ typedef struct dt_storage_flickr_gui_data_t
   GtkDarktableButton *dtbutton1;                                        // refresh albums
   GtkButton *button;                                                    // login button. These buttons call the same functions
   GtkBox *hbox1;                                                        // Create album options...
-  GtkComboBoxText *permsComboBox;                                       // Permissions for flickr
+  GtkComboBox *permsComboBox;                                           // Permissions for flickr
 
   char *user_token;
 
@@ -574,12 +574,12 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->checkButton2 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("export tags")) );
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON( ui->checkButton2 ),TRUE);
 
-  ui->permsComboBox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("you"));
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("friends"));
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("family"));
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("friends + family"));
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("everyone"));
+  ui->permsComboBox = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  gtk_combo_box_append_text(ui->permsComboBox, _("you"));
+  gtk_combo_box_append_text(ui->permsComboBox, _("friends"));
+  gtk_combo_box_append_text(ui->permsComboBox, _("family"));
+  gtk_combo_box_append_text(ui->permsComboBox, _("friends + family"));
+  gtk_combo_box_append_text(ui->permsComboBox, _("everyone"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(ui->permsComboBox), 0); // Set default permission to private
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox0, TRUE, FALSE, 5);
