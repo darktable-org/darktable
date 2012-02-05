@@ -906,7 +906,7 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     const int cnt = dt_cache_size(cache);
     fprintf(stderr, "[cache gc] pre consistency: %d %d %d\n", fwd, bwd, cnt);
     dt_cache_print_locked(cache);
-    fprintf(stderr, "[cache gc %u] current cost: %u/%u\n", omp_get_thread_num(), cache->cost, cache->cost_quota);
+    fprintf(stderr, "[cache gc] current cost: %u/%u\n", cache->cost, cache->cost_quota);
   }
 #endif
   // sorry, bfl
@@ -929,7 +929,7 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
       if(add_cost(cache, 0) > fill_ratio * cache->cost_quota)
       {
         // dt_cache_unlock(&cache->lru_lock);
-        // fprintf(stderr, "[cache gc %u] failed to free space!\n", omp_get_thread_num());
+        // fprintf(stderr, "[cache gc] failed to free space!\n");
         // dt_cache_print_locked(cache);
         return 1;
       }
@@ -1154,8 +1154,7 @@ void dt_cache_print_locked(dt_cache_t *cache)
   {
     if(cache->table[curr].key != DT_CACHE_EMPTY_KEY && (cache->table[curr].read || cache->table[curr].write))
     {
-      fprintf(stderr, "[cache %u] bucket[%d|%d] holds key %u with locks r %d w %d\n",
-          omp_get_thread_num(),
+      fprintf(stderr, "[cache] bucket[%d|%d] holds key %u with locks r %d w %d\n",
           i, curr, (cache->table[curr].key & 0x1fffffff)+1, cache->table[curr].read, cache->table[curr].write);
     }
     if(curr == cache->mru) break;
