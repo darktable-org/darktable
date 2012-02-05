@@ -144,11 +144,11 @@ remove_key(dt_cache_segment_t *segment,
   key_bucket->next_delta = DT_CACHE_NULL_DELTA;
 }
 
-static void
+static int32_t
 add_cost(dt_cache_t    *cache,
          const int32_t  cost)
 {
-  __sync_fetch_and_add(&cache->cost, cost);
+  return __sync_fetch_and_add(&cache->cost, cost);
 }
 
 // unexposed helpers to increase the read lock count.
@@ -822,7 +822,7 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   return 1;
 }
 
-#if 0
+#if 1
 // debug helper functions, in case we want a big fat lock for dt_cache_gc():
 static int
 dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
@@ -879,6 +879,7 @@ dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
 static int
 dt_cache_remove_bucket_no_lru_lock(dt_cache_t *cache, const uint32_t num)
 {
+  // dt_cache_remove works on key, not bucket number, so translate that:
   const uint32_t hash = num;
   dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
   dt_cache_lock(&segment->lock);
@@ -898,36 +899,38 @@ int32_t
 dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
 #if 0
-  if(cache->bucket_mask <= 4)
+  if(1)//cache->bucket_mask <= 4)
   {
     const int fwd = lru_check_consistency(cache);
     const int bwd = lru_check_consistency_reverse(cache);
     const int cnt = dt_cache_size(cache);
     fprintf(stderr, "[cache gc] pre consistency: %d %d %d\n", fwd, bwd, cnt);
-    dt_cache_print(cache);
+    dt_cache_print_locked(cache);
+    fprintf(stderr, "[cache gc %u] current cost: %u/%u\n", omp_get_thread_num(), cache->cost, cache->cost_quota);
   }
 #endif
   // sorry, bfl
-  // dt_cache_lock(&cache->lru_lock);
+  dt_cache_lock(&cache->lru_lock);
   int32_t curr;
   // get least recently used bucket
-  dt_cache_lock(&cache->lru_lock);
+  // dt_cache_lock(&cache->lru_lock);
   curr = cache->lru;
-  dt_cache_unlock(&cache->lru_lock);
+  // dt_cache_unlock(&cache->lru_lock);
   int i = 0;
   // while still too full:
-  while(cache->cost > fill_ratio * cache->cost_quota)
+  while(add_cost(cache, 0) > fill_ratio * cache->cost_quota)
   {
-    dt_cache_lock(&cache->lru_lock);
-    curr = cache->lru;
-    dt_cache_unlock(&cache->lru_lock);
-    if(curr < 0 || i > 10)
+    // this i has to be > parallel threads * sane amount to work on for start up times to work
+    // we want to allow at least that many entries in the cache before we start cleaning up
+    if(curr < 0 || i > (1<<cache->segment_shift))
     {
       // damn, we walked the whole list and not enough free space,
       // can you believe this? yell out:
-      if(cache->cost > fill_ratio * cache->cost_quota)
+      if(add_cost(cache, 0) > fill_ratio * cache->cost_quota)
       {
-        // dt_cache_unlock(&cache->lru_lock);
+        dt_cache_unlock(&cache->lru_lock);
+        // fprintf(stderr, "[cache gc %u] failed to free space!\n", omp_get_thread_num());
+        // dt_cache_print_locked(cache);
         return 1;
       }
       break;
@@ -942,19 +945,19 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     // in the very unlikely case the bucket in question got just removed,
     // and the lru not cleaned up yet, but another image already occupies that slot...
     // it will be read locked and we go on. very worst case we clean up the wrong image.
-    const int err = dt_cache_remove_bucket(cache, curr);
-    // const int err = dt_cache_remove_bucket_no_lru_lock(cache, curr);
-    if(err == 2)
+    // const int err = dt_cache_remove_bucket(cache, curr);
+    const int err = dt_cache_remove_bucket_no_lru_lock(cache, curr);
+    if(err)
     {
       // fprintf(stderr, "[cache gc] remove failed %d\n", err);
       // in case we failed, try next entry
-      dt_cache_lock(&cache->lru_lock);
+      // dt_cache_lock(&cache->lru_lock);
       curr = cache->table[curr].mru;
-      dt_cache_unlock(&cache->lru_lock);
+      // dt_cache_unlock(&cache->lru_lock);
     }
     i++;
   }
-  // dt_cache_unlock(&cache->lru_lock);
+  dt_cache_unlock(&cache->lru_lock);
 #if 0
   if(cache->bucket_mask <= 4)
   {
@@ -1137,6 +1140,29 @@ void dt_cache_print(dt_cache_t *cache)
     int32_t next = cache->table[curr].mru;
     assert(cache->table[next].lru == curr);
     curr = next;
+  }
+  dt_cache_unlock(&cache->lru_lock);
+}
+
+void dt_cache_print_locked(dt_cache_t *cache)
+{
+  fprintf(stderr, "[cache] locked lru entries:\n");
+  dt_cache_lock(&cache->lru_lock);
+  int32_t curr = cache->lru;
+  int32_t i = 0;
+  while(curr >= 0)
+  {
+    if(cache->table[curr].key != DT_CACHE_EMPTY_KEY && (cache->table[curr].read || cache->table[curr].write))
+    {
+      fprintf(stderr, "[cache %u] bucket[%d|%d] holds key %u with locks r %d w %d\n",
+          omp_get_thread_num(),
+          i, curr, (cache->table[curr].key & 0x1fffffff)+1, cache->table[curr].read, cache->table[curr].write);
+    }
+    if(curr == cache->mru) break;
+    int32_t next = cache->table[curr].mru;
+    assert(cache->table[next].lru == curr);
+    curr = next;
+    i++;
   }
   dt_cache_unlock(&cache->lru_lock);
 }
