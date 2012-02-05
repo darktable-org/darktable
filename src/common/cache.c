@@ -822,7 +822,7 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   return 1;
 }
 
-#if 1
+#if 0
 // debug helper functions, in case we want a big fat lock for dt_cache_gc():
 static int
 dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
@@ -910,12 +910,12 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
   }
 #endif
   // sorry, bfl
-  dt_cache_lock(&cache->lru_lock);
+  // dt_cache_lock(&cache->lru_lock);
   int32_t curr;
   // get least recently used bucket
-  // dt_cache_lock(&cache->lru_lock);
+  dt_cache_lock(&cache->lru_lock);
   curr = cache->lru;
-  // dt_cache_unlock(&cache->lru_lock);
+  dt_cache_unlock(&cache->lru_lock);
   int i = 0;
   // while still too full:
   while(add_cost(cache, 0) > fill_ratio * cache->cost_quota)
@@ -928,7 +928,7 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
       // can you believe this? yell out:
       if(add_cost(cache, 0) > fill_ratio * cache->cost_quota)
       {
-        dt_cache_unlock(&cache->lru_lock);
+        // dt_cache_unlock(&cache->lru_lock);
         // fprintf(stderr, "[cache gc %u] failed to free space!\n", omp_get_thread_num());
         // dt_cache_print_locked(cache);
         return 1;
@@ -945,19 +945,19 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     // in the very unlikely case the bucket in question got just removed,
     // and the lru not cleaned up yet, but another image already occupies that slot...
     // it will be read locked and we go on. very worst case we clean up the wrong image.
-    // const int err = dt_cache_remove_bucket(cache, curr);
-    const int err = dt_cache_remove_bucket_no_lru_lock(cache, curr);
+    const int err = dt_cache_remove_bucket(cache, curr);
+    // =const int err = dt_cache_remove_bucket_no_lru_lock(cache, curr);
     if(err)
     {
       // fprintf(stderr, "[cache gc] remove failed %d\n", err);
       // in case we failed, try next entry
-      // dt_cache_lock(&cache->lru_lock);
+      dt_cache_lock(&cache->lru_lock);
       curr = cache->table[curr].mru;
-      // dt_cache_unlock(&cache->lru_lock);
+      dt_cache_unlock(&cache->lru_lock);
     }
     i++;
   }
-  dt_cache_unlock(&cache->lru_lock);
+  // dt_cache_unlock(&cache->lru_lock);
 #if 0
   if(cache->bucket_mask <= 4)
   {
