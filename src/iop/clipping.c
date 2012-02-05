@@ -931,10 +931,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("1:2"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("3:2"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("4:3"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("5:4"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("square"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("16:9"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect_presets), _("5:4"));
   
   dt_gui_key_accel_block_on_focus(gtk_bin_get_child(GTK_BIN(g->aspect_presets)));
 
@@ -1047,10 +1047,10 @@ void _iop_clipping_update_ratios(dt_iop_module_t *self)
   g->aspect_ratios[3] = 2.0/1.0;
   g->aspect_ratios[4] = 3.0/2.0;
   g->aspect_ratios[5] = 4.0/3.0;
-  g->aspect_ratios[6] = 1.0;
-  g->aspect_ratios[7] = sqrtf(2.0);
-  g->aspect_ratios[8] = 16.0f/9.0f;
-  g->aspect_ratios[9] = 5.0f/4.0f;
+  g->aspect_ratios[6] = 5.0f/4.0f;
+  g->aspect_ratios[7] = 1.0;
+  g->aspect_ratios[8] = sqrtf(2.0);
+  g->aspect_ratios[9] = 16.0f/9.0f;
 
   // if adding new presets, make sure to change this as well:
   assert(NUM_RATIOS == 10);
