@@ -144,11 +144,11 @@ remove_key(dt_cache_segment_t *segment,
   key_bucket->next_delta = DT_CACHE_NULL_DELTA;
 }
 
-static int32_t
+static void 
 add_cost(dt_cache_t    *cache,
          const int32_t  cost)
 {
-  return __sync_fetch_and_add(&cache->cost, cost);
+  __sync_fetch_and_add(&cache->cost, cost);
 }
 
 // unexposed helpers to increase the read lock count.
@@ -918,7 +918,7 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
   dt_cache_unlock(&cache->lru_lock);
   int i = 0;
   // while still too full:
-  while(add_cost(cache, 0) > fill_ratio * cache->cost_quota)
+  while(cache->cost > fill_ratio * cache->cost_quota)
   {
     // this i has to be > parallel threads * sane amount to work on for start up times to work
     // we want to allow at least that many entries in the cache before we start cleaning up
@@ -926,7 +926,7 @@ dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     {
       // damn, we walked the whole list and not enough free space,
       // can you believe this? yell out:
-      if(add_cost(cache, 0) > fill_ratio * cache->cost_quota)
+      if(cache->cost > fill_ratio * cache->cost_quota)
       {
         // dt_cache_unlock(&cache->lru_lock);
         // fprintf(stderr, "[cache gc] failed to free space!\n");
