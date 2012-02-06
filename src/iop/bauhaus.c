@@ -32,6 +32,7 @@
 #include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -98,6 +99,9 @@ typedef struct dt_bauhaus_t
   float mouse_x, mouse_y;
   // pointer position when popup window is closed
   float end_mouse_x, end_mouse_y;
+  // key input buffer
+  char keys[64];
+  int keys_cnt;
 }
 dt_bauhaus_t;
 
@@ -134,6 +138,7 @@ dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton *event, gpointer
     bauhaus.end_mouse_y = event->y;
     dt_bauhaus_widget_accept(bauhaus.current);
   }
+  // dt_control_key_accelerators_on(darktable.control);
   gtk_widget_hide(bauhaus.popup_window);
   return TRUE;
 }
@@ -141,15 +146,20 @@ dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton *event, gpointer
 // fwd declare
 static gboolean
 dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean
+dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
 void
 dt_bauhaus_init()
 {
+  memset(bauhaus.keys, 0, 64);
+  bauhaus.keys_cnt = 0;
   bauhaus.current = NULL;
   bauhaus.popup_area = gtk_drawing_area_new();
-  bauhaus.popup_window = gtk_window_new(GTK_WINDOW_POPUP);
-  dt_gui_key_accel_block_on_focus(bauhaus.popup_area);
-  dt_gui_key_accel_block_on_focus(bauhaus.popup_window);
+  bauhaus.popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);//POPUP);
+  // FIXME: this is needed for popup, not for toplevel
+  // dt_gui_key_accel_block_on_focus(bauhaus.popup_area);
+  // dt_gui_key_accel_block_on_focus(bauhaus.popup_window);
 
   gtk_widget_set_size_request(bauhaus.popup_area, 300, 300);
   gtk_window_set_resizable(GTK_WINDOW(bauhaus.popup_window), FALSE);
@@ -165,7 +175,15 @@ dt_bauhaus_init()
   gtk_window_set_keep_above(GTK_WINDOW(bauhaus.popup_window), TRUE);
   gtk_window_set_gravity(GTK_WINDOW(bauhaus.popup_window), GDK_GRAVITY_STATIC);
 
-  gtk_widget_add_events(GTK_WIDGET(bauhaus.popup_area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
+  gtk_widget_set_can_focus(bauhaus.popup_area, TRUE);
+  gtk_widget_add_events(bauhaus.popup_area,
+      GDK_POINTER_MOTION_MASK |
+      GDK_POINTER_MOTION_HINT_MASK |
+      GDK_BUTTON_PRESS_MASK |
+      GDK_BUTTON_RELEASE_MASK |
+      GDK_KEY_PRESS_MASK |
+      GDK_LEAVE_NOTIFY_MASK);
+
   g_signal_connect (G_OBJECT (bauhaus.popup_area), "expose-event",
                     G_CALLBACK (dt_bauhaus_popup_expose), (gpointer)NULL);
   g_signal_connect (G_OBJECT (bauhaus.popup_area), "motion-notify-event",
@@ -174,6 +192,8 @@ dt_bauhaus_init()
                     G_CALLBACK (dt_bauhaus_popup_leave_notify), (gpointer)NULL);
   g_signal_connect (G_OBJECT (bauhaus.popup_area), "button-press-event",
                     G_CALLBACK (dt_bauhaus_popup_button_press), (gpointer)NULL);
+  g_signal_connect (G_OBJECT (bauhaus.popup_area), "key-press-event",
+                    G_CALLBACK (dt_bauhaus_popup_key_press), (gpointer)NULL);
 }
 
 void
@@ -206,7 +226,7 @@ static void
 dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
 {
   w->area = gtk_drawing_area_new();
-  dt_gui_key_accel_block_on_focus(w->area);
+  // dt_gui_key_accel_block_on_focus(w->area);
   w->module = self;
 
   gtk_widget_set_size_request(w->area, 260, 18);
@@ -472,6 +492,20 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         snprintf(text, 256, d->format, d->pos+mouse_off);
         cairo_show_text(cr, text);
         cairo_restore(cr);
+
+        // draw currently typed text
+        if(bauhaus.keys_cnt)
+        {
+          cairo_save(cr);
+          cairo_text_extents_t ext;
+          cairo_set_source_rgb(cr, 1., 1., 1.);
+          cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+          cairo_set_font_size (cr, .2*height);
+          cairo_text_extents (cr, bauhaus.keys, &ext);
+          cairo_move_to (cr, wd-4-ht-ext.width, height*0.5);
+          cairo_show_text(cr, bauhaus.keys);
+          cairo_restore(cr);
+        }
       }
       break;
     case DT_BAUHAUS_COMBOBOX:
@@ -505,8 +539,6 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_t *cr = cairo_create(cst);
 
   dt_bauhaus_clear(w, cr);
-  dt_bauhaus_draw_label(w, cr);
-  dt_bauhaus_draw_quad(w, cr);
 
   // draw type specific content:
   cairo_save(cr);
@@ -531,7 +563,8 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         cairo_save(cr);
         cairo_set_source_rgb(cr, .6, .6, .6);
         cairo_translate(cr, d->pos*width, height*.5f);
-        draw_equilateral_triangle(cr, height*0.30f);
+        // draw_equilateral_triangle(cr, height*0.30f);
+        draw_equilateral_triangle(cr, height*0.5f);
         cairo_fill(cr);
         cairo_restore(cr);
 
@@ -553,6 +586,10 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   }
   cairo_restore(cr);
 
+  // draw label and quad area at right end
+  dt_bauhaus_draw_label(w, cr);
+  dt_bauhaus_draw_quad(w, cr);
+
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
   cairo_set_source_surface (cr_pixmap, cst, 0, 0);
@@ -568,6 +605,8 @@ dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpoin
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)user_data;
   dt_iop_request_focus(w->module);
+  bauhaus.keys_cnt = 0;
+  memset(bauhaus.keys, 0, 64);
   bauhaus.current = w;
   bauhaus.mouse_x = event->x;
   bauhaus.mouse_y = event->y;
@@ -577,8 +616,55 @@ dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpoin
   GtkAllocation tmp;
   gtk_widget_get_allocation(w->area, &tmp);
   gtk_widget_set_size_request(bauhaus.popup_area, tmp.width, tmp.width);
+  // dt_control_key_accelerators_off (darktable.control);
   gtk_widget_show_all(bauhaus.popup_window);
+  gtk_widget_grab_focus(bauhaus.popup_area);
   return TRUE;
+}
+
+static void
+dt_bauhaus_slider_set(dt_bauhaus_widget_t *w, float pos)
+{
+  dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
+  d->pos = CLAMP(pos, 0.0f, 1.0f);
+  gtk_widget_queue_draw(w->area);
+}
+
+static gboolean
+dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  switch(bauhaus.current->type)
+  {
+    case DT_BAUHAUS_SLIDER:
+    {
+      if(bauhaus.keys_cnt + 2 < 64 &&
+        (event->string[0] == 46 ||
+        (event->string[0] >= 48 && event->string[0] <= 57)))
+      {
+        bauhaus.keys[bauhaus.keys_cnt++] = event->string[0];
+        gtk_widget_queue_draw(bauhaus.popup_area);
+      }
+      else if(bauhaus.keys_cnt > 0 &&
+             (event->keyval == GDK_KEY_BackSpace || event->keyval == GDK_KEY_Delete))
+      {
+        bauhaus.keys[--bauhaus.keys_cnt] = 0;
+        gtk_widget_queue_draw(bauhaus.popup_area);
+      }
+      else if(bauhaus.keys_cnt > 0 && bauhaus.keys_cnt + 1 < 64 &&
+             (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
+      {
+        bauhaus.keys[bauhaus.keys_cnt] = 0;
+        dt_bauhaus_slider_set(bauhaus.current, atof(bauhaus.keys));
+        bauhaus.keys_cnt = 0;
+        memset(bauhaus.keys, 0, 64);
+        // TODO: encapsulate that as well, if there's some more work to be done here.
+        gtk_widget_hide(bauhaus.popup_window);
+      }
+      return TRUE;
+    }
+    default:
+      return FALSE;
+  }
 }
 
 static gboolean
@@ -593,20 +679,25 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
     bauhaus.current = w;
     bauhaus.mouse_x = event->x;
     bauhaus.mouse_y = event->y;
+    bauhaus.keys_cnt = 0;
+    memset(bauhaus.keys, 0, 64);
     gint wx, wy;
     gdk_window_get_origin (gtk_widget_get_window (w->area), &wx, &wy);
     gtk_window_move(GTK_WINDOW(bauhaus.popup_window), wx, wy);
     gtk_widget_set_size_request(bauhaus.popup_area, tmp.width, tmp.width);
+    // dt_control_key_accelerators_off (darktable.control);
     gtk_widget_show_all(bauhaus.popup_window);
-    // TODO: also connect keyboard type event handlers
+    gtk_widget_grab_focus(bauhaus.popup_area);
     return TRUE;
   }
   else if(event->button == 1)
   {
-    // TODO: encapsulate in bauhaus_slider_set()
-    dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
-    d->pos = CLAMP(event->x/tmp.width, 0.0f, 1.0f);
-    gtk_widget_queue_draw(w->area);
+      // reset to default.
+    if(event->type == GDK_2BUTTON_PRESS)
+      // TODO: get default from slider data!
+      dt_bauhaus_slider_set(w, 0.5f);
+    else
+      dt_bauhaus_slider_set(w, event->x/tmp.width);
     return TRUE;
   }
   return FALSE;
@@ -618,13 +709,10 @@ dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpoint
   // remember mouse position for motion effects in draw
   if(event->state & GDK_BUTTON1_MASK)
   {
-    // TODO: encapsulate in bauhaus_slider_set()
     dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)user_data;
-    dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
     GtkAllocation tmp;
     gtk_widget_get_allocation(w->area, &tmp);
-    d->pos = CLAMP(event->x/tmp.width, 0.0f, 1.0f);
-    gtk_widget_queue_draw(w->area);
+    dt_bauhaus_slider_set(w, event->x/tmp.width);
   }
   return TRUE;
 }
