@@ -574,7 +574,7 @@ gui_init (dt_imageio_module_storage_t *self)
   ui->checkButton2 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("export tags")) );
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON( ui->checkButton2 ),TRUE);
 
-  ui->permsComboBox = GTK_COMBO_BOX(gtk_combo_box_new());
+  ui->permsComboBox = GTK_COMBO_BOX(gtk_combo_box_new_text());
   gtk_combo_box_append_text(ui->permsComboBox, _("you"));
   gtk_combo_box_append_text(ui->permsComboBox, _("friends"));
   gtk_combo_box_append_text(ui->permsComboBox, _("family"));
