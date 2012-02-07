@@ -13,7 +13,7 @@ Version:	0.8
 Release:	1.1
 License:	GPLv3+
 Summary:	Raw Photo Viewer and Organiser
-URL:		http://darktable.sourceforge.net/
+URL:		http://www.darktable.org/
 Group:		Productivity/Graphics/Viewers
 Source0:	%{name}-%{version}.tar.gz
 BuildRequires:	gcc-c++ libglade2-devel libtiff-devel cairo-devel libexiv2-devel

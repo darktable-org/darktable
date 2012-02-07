@@ -80,7 +80,7 @@ For openmp builds only. Overrides the default number of threads (= number of cor
 
 =head1 OTHER INFO
 
-Please visit B<darktable>'s website for news, bug tracker and forum: L<http://darktable.sourceforge.net>
+Please visit B<darktable>'s website for news, bug tracker and forum: L<http://www.darktable.org>
 
 =head1 KEYBINDINGS
 
