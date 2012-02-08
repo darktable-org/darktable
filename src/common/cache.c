@@ -333,7 +333,9 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
   cache->optimize_cacheline = 0;//1;
   cache->segment_mask = adj_num_threads - 1;
   // cache->segment_shift = calc_div_shift(nearest_power_of_two(num_threads/(float)adj_num_threads)-1);
-  const uint32_t adj_init_cap = nearest_power_of_two(MAX(adj_num_threads*2, capacity));
+  // we want a minimum of four entries, as the hopscotch code below proceeds by disregarding the first bucket in the list,
+  // so we need to have some space to jump around. not sure if the implementation could be changed to avoid this.
+  const uint32_t adj_init_cap = MAX(4, nearest_power_of_two(MAX(adj_num_threads*2, capacity)));
   const uint32_t num_buckets = adj_init_cap;
   cache->bucket_mask = adj_init_cap - 1;
   uint32_t segment_bits = 0;
