@@ -141,11 +141,6 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
 
   dt_develop_t *dev = darktable.develop;
 
-  /* bail out if dirty */
-  if(dev->preview_dirty) return FALSE;
-
-  /* generate image into cairo surface*/
-  
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
