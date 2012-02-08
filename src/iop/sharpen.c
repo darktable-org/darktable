@@ -266,7 +266,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
   __attribute__((aligned(16))) float mat[wd4*4];
 
-  bzero(mat,sizeof(mat));
+  memset(mat, 0, sizeof(mat));
 
   const float sigma2 = (1.0f/(2.5*2.5))*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;

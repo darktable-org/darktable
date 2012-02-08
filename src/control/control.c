@@ -18,10 +18,10 @@
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
+#include "common/darktable.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"

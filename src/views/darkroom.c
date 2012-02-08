@@ -17,6 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
+#include "common/darktable.h"
 #include "common/collection.h"
 #include "views/view.h"
 #include "develop/develop.h"

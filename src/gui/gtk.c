@@ -16,17 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 600 // for setenv
-#endif
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <math.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-#include <pthread.h>
-
 #include "common/darktable.h"
 #ifdef HAVE_GPHOTO2
 #   include "common/camera_control.h"
@@ -50,6 +39,15 @@
 #include "control/signal.h"
 #include "views/view.h"
 #include "common/styles.h"
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <math.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+#include <pthread.h>
+
 
 /*                                                                                         
  * NEW UI API                                                             

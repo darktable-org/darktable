@@ -18,15 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <strings.h>
-#include <gtk/gtk.h>
-#include <inttypes.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -36,6 +27,12 @@
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <strings.h>
+#include <gtk/gtk.h>
+#include <inttypes.h>
 
 /**
  * color transfer somewhat based on the glorious paper `color transfer between images'

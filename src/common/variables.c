@@ -15,16 +15,17 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
+#include "common/darktable.h"
 #include "common/colorlabels.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/variables.h"
 #include "common/utility.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
 typedef struct dt_variables_data_t
 {

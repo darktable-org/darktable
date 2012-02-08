@@ -16,9 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
 #include "common/metadata.h"
 #include "common/debug.h"
+
+#include <stdlib.h>
 
 static void dt_metadata_set_xmp(int id, const char* key, const char* value)
 {

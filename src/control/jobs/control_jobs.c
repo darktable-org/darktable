@@ -15,9 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <glib.h>
-#include <glib/gstdio.h>
-
+#include "common/darktable.h"
 #include "common/collection.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -27,13 +25,15 @@
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/imageio_module.h"
-#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
-
 #include "gui/gtk.h"
+
+#include <glib.h>
+#include <glib/gstdio.h>
+
 
 void dt_control_write_sidecar_files()
 {

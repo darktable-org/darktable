@@ -16,12 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <memory.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <glib.h>
-
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/collection.h"
@@ -29,6 +23,13 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/image.h"
+
+#include <stdio.h>
+#include <memory.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <glib.h>
+
 
 #define SELECT_QUERY "select distinct * from %s"
 #define ORDER_BY_QUERY "order by %s"

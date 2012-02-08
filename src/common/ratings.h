@@ -20,6 +20,7 @@
 #ifndef DT_COMMON_RATINGS_H
 #define DT_COMMON_RATINGS_H
 
+#include "common/darktable.h"
 #include <gtk/gtk.h>
 
 /** \brief applies specified rating to selected images */

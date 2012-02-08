@@ -18,14 +18,14 @@
 
 #ifdef HAVE_OPENCL
 
-#include <string.h>
-#include <stdio.h>
-#include <assert.h>
-
 #include "common/darktable.h"
 #include "common/opencl.h"
 #include "common/dlopencl.h"
 #include "control/conf.h"
+
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 

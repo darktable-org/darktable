@@ -30,13 +30,15 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
+#include "common/dlopencl.h"
+#include "control/conf.h"
+
 // #pragma GCC diagnostic push
 // #pragma GCC diagnostic ignored "-Wcomment"
 #include <CL/cl.h>
 // #pragma GCC diagnostic
-#include "common/dtpthread.h"
-#include "common/dlopencl.h"
-#include "control/conf.h"
 
 
 /**

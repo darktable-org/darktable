@@ -190,6 +190,9 @@ endif(NOT DT_GCONF_SCHEMA_DIR)
 set(THEME hicolor)
 set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
 
+# we need some specific functions:
+add_definitions("-D_XOPEN_SOURCE=700")
+
 # lets continue into build directories
 add_subdirectory(src)
 add_subdirectory(data)

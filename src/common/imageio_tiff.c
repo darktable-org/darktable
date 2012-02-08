@@ -15,19 +15,20 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/darktable.h"
+#include "imageio.h"
+#include "imageio_tiff.h"
+#include "develop/develop.h"
+#include "common/exif.h"
+#include "common/colorspaces.h"
+#include "control/conf.h"
+
 #include <memory.h>
 #include <stdio.h>
 #include <tiffio.h>
 #include <inttypes.h>
 #include <strings.h>
 #include <assert.h>
-#include "imageio.h"
-#include "imageio_tiff.h"
-#include "common/darktable.h"
-#include "develop/develop.h"
-#include "common/exif.h"
-#include "common/colorspaces.h"
-#include "control/conf.h"
 
 dt_imageio_retval_t
 dt_imageio_open_tiff(

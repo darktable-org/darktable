@@ -18,8 +18,11 @@
 #ifndef DT_CTL_SETTINGS_H
 #define DT_CTL_SETTINGS_H
 
+#include "common/darktable.h"
 #include "control/signal.h"
 #include "common/dtpthread.h"
+
+#include <inttypes.h>
 
 // thread-safe interface between core and gui.
 // also serves to store user settings.

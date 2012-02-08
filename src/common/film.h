@@ -18,9 +18,11 @@
 #ifndef DT_FILM_H
 #define DT_FILM_H
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
+
 #include <inttypes.h>
 #include <glib.h>
-#include "common/dtpthread.h"
 
 /**
  * film roll.

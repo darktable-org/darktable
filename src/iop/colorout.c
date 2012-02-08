@@ -19,13 +19,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#include <gdk/gdkkeysyms.h>
-#include "iop/colorout.h"
 #include "develop/develop.h"
+#include "iop/colorout.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/accelerators.h"
@@ -33,7 +28,13 @@
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 #include "dtgtk/resetlabel.h"
+
 #include <xmmintrin.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
+#include <gdk/gdkkeysyms.h>
 
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 

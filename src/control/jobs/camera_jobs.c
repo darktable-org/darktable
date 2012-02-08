@@ -15,17 +15,17 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include <stdio.h>
-#include <glib.h>
-
-#include "common/camera_control.h"
 #include "common/darktable.h"
+#include "common/camera_control.h"
 #include "common/utility.h"
 #include "views/view.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
 #include "gui/gtk.h"
+
+#include <stdio.h>
+#include <glib.h>
+
 
 int32_t dt_captured_image_import_job_run(dt_job_t *job)
 {

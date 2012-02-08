@@ -18,8 +18,8 @@
 #ifndef DTGTK_TOGGLEBUTTON_H
 #define DTGTK_TOGGLEBUTTON_H
 
-#include <gtk/gtk.h>
 #include "paint.h"
+#include <gtk/gtk.h>
 G_BEGIN_DECLS
 #define DTGTK_TOGGLEBUTTON(obj) GTK_CHECK_CAST(obj, dtgtk_togglebutton_get_type (), GtkDarktableToggleButton)
 #define DTGTK_TOGGLEBUTTON_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_togglebutton_get_type(), GtkDarktableToggleButtonClass)

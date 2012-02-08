@@ -16,13 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _XOPEN_SOURCE 500
-#include <stdlib.h>
-double drand48(void);
-void srand48(long int);
-#include <sys/time.h>
-#include <unistd.h>
-#include <inttypes.h>
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/collection.h"
@@ -32,9 +25,17 @@ void srand48(long int);
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "control/conf.h"
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL/SDL.h>
+#include <stdlib.h>
+double drand48(void);
+void srand48(long int);
+#include <sys/time.h>
+#include <unistd.h>
+int usleep(useconds_t usec);
+#include <inttypes.h>
 
 int running;
 int width, height;

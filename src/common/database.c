@@ -16,14 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <sqlite3.h>
-#include <glib.h>
-#include <gio/gio.h>
-
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/database.h"
 #include "control/control.h"
 #include "control/conf.h"
+
+#include <sqlite3.h>
+#include <glib.h>
+#include <gio/gio.h>
 
 typedef struct dt_database_t
 {

@@ -18,14 +18,15 @@
 #ifndef DARKTABLE_DEVELOP_H
 #define DARKTABLE_DEVELOP_H
 
-#include <inttypes.h>
-#include <cairo.h>
-#include <glib.h>
-
+#include "common/darktable.h"
 #include "common/dtpthread.h"
 #include "control/settings.h"
 #include "develop/imageop.h"
 #include "common/image.h"
+
+#include <inttypes.h>
+#include <cairo.h>
+#include <glib.h>
 
 struct dt_iop_module_t;
 struct dt_iop_params_t;

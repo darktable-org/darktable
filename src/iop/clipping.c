@@ -19,14 +19,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <gtk/gtk.h>
-#include <inttypes.h>
-#include <gdk/gdkkeysyms.h>
-#include <assert.h>
-
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -41,6 +33,14 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <gtk/gtk.h>
+#include <inttypes.h>
+#include <gdk/gdkkeysyms.h>
+#include <assert.h>
 
 DT_MODULE(3)
 

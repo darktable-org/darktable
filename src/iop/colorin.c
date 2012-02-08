@@ -19,10 +19,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "iop/colorin.h"
 #include "develop/develop.h"
 #include "control/control.h"
@@ -33,6 +29,10 @@
 #include "dtgtk/resetlabel.h"
 #include "external/adobe_coeff.c"
 #include <xmmintrin.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 

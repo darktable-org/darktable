@@ -11,7 +11,7 @@ Options:
 
     --help        
     --version
-    -d {cache,control,dev,fswatch,perf,all}
+    -d {all,cache,camctl,control,dev,fswatch,memory,opencl,perf,pwstorage,sql}
     --library override.db
     --disable-opencl
     -t num_threads

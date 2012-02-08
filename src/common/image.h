@@ -21,9 +21,10 @@
 #include "config.h"
 #endif
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
 #include <glib.h>
 #include <inttypes.h>
-#include "common/dtpthread.h"
 
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256

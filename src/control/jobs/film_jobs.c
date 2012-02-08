@@ -15,9 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <stdlib.h>
+#include "common/darktable.h"
 #include "common/film.h"
 #include "control/jobs/film_jobs.h"
+#include <stdlib.h>
 
 void dt_film_import1_init(dt_job_t *job, dt_film_t *film)
 {

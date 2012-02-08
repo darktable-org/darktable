@@ -70,7 +70,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d {all,cache,control,dev,fswatch,camctl,perf,pwstorage,opencl,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
+  printf("usage: %s [-d {all,cache,camctl,control,dev,fswatch,memory,opencl,perf,pwstorage,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
 #ifdef HAVE_OPENCL
   printf(" [--disable-opencl]");
 #endif
@@ -338,6 +338,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
         else if(!strcmp(argv[k+1], "pwstorage")) darktable.unmuted |= DT_DEBUG_PWSTORAGE; // pwstorage module
         else if(!strcmp(argv[k+1], "opencl"))    darktable.unmuted |= DT_DEBUG_OPENCL;    // gpu accel via opencl
         else if(!strcmp(argv[k+1], "sql"))       darktable.unmuted |= DT_DEBUG_SQL; // SQLite3 queries
+        else if(!strcmp(argv[k+1], "memory"))    darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
         else return usage(argv[0]);
         k ++;
       }
@@ -352,6 +353,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
     {
       image_to_load = argv[k];
     }
+  }
+
+  if(darktable.unmuted & DT_DEBUG_MEMORY)
+  {
+    fprintf(stderr, "[memory] at startup\n");
+    dt_print_mem_usage();
   }
 
 #ifdef _OPENMP
@@ -609,6 +616,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
+  if(darktable.unmuted & DT_DEBUG_MEMORY)
+  {
+    fprintf(stderr, "[memory] after successful startup\n");
+    dt_print_mem_usage();
+  }
   return 0;
 }
 

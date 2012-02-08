@@ -97,6 +97,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
 {
+  // FIXME: either this or all process() -> gdk mutices have to be changed!
+  //        (this is a circular dependency on busy_mutex and the gdk mutex)
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   pipe->shutdown = 1;
   // destroy all nodes
@@ -1184,6 +1186,12 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->devid = pipe->opencl_enabled ? dt_opencl_lock_device(-1) : -1;  // try to get/lock opencl resource
 
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
+
+  if(darktable.unmuted & DT_DEBUG_MEMORY)
+  {
+    fprintf(stderr, "[memory] before pixelpipe process\n");
+    dt_print_mem_usage();
+  }
 
   if(pipe->devid >= 0) dt_opencl_events_reset(pipe->devid);
 

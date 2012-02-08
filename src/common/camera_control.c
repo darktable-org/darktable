@@ -18,10 +18,11 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "common/camera_control.h"
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/fcntl.h>
-#include "common/camera_control.h"
 
 /***/
 typedef enum _camctl_camera_job_type_t

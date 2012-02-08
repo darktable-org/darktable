@@ -18,11 +18,12 @@
 #ifndef DARKTABLE_H
 #define DARKTABLE_H
 
+// just to be sure. the build system should set this for us already:
 #ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 700 // for localtime_r and dprintf
+  #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 #include "common/dtpthread.h"
 #include "common/database.h"
@@ -30,6 +31,7 @@
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <stdio.h>
 #include <inttypes.h>
 #include <sqlite3.h>
 #include <glib/gi18n.h>
@@ -108,6 +110,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PWSTORAGE = 64,
   DT_DEBUG_OPENCL = 128,
   DT_DEBUG_SQL = 256,
+  DT_DEBUG_MEMORY = 512,
 }
 dt_debug_thread_t;
 
@@ -229,6 +232,44 @@ static inline float dt_fast_expf(const float x)
   const int k = k0 > 0 ? k0 : 0;
   const float f = *(const float *)&k;
   return f;
+}
+
+static inline void dt_print_mem_usage()
+{
+  char *line = NULL;
+  size_t len = 128;
+  char vmsize[64];
+  char vmpeak[64];
+  char vmrss[64];
+  char vmhwm[64];
+  FILE *f;
+
+  char pidstatus[128];
+  snprintf(pidstatus, 128, "/proc/%u/status", (uint32_t)getpid());
+
+  f = fopen(pidstatus, "r");
+  if (!f) return;
+
+  /* read memory size data from /proc/pid/status */
+  while (getline(&line, &len, f) != -1)
+  {
+    if (!strncmp(line, "VmPeak:", 7))
+      strncpy(vmpeak, line + 8, 64);
+    else if (!strncmp(line, "VmSize:", 7))
+      strncpy(vmsize, line + 8, 64);
+    else if (!strncmp(line, "VmRSS:", 6))
+      strncpy(vmrss, line + 8, 64);
+    else if (!strncmp(line, "VmHWM:", 6))
+      strncpy(vmhwm, line + 8, 64);
+  }
+  free(line);
+  fclose(f);
+
+  fprintf(stderr, "[memory] max address space (vmpeak): %15s"
+                  "[memory] cur address space (vmsize): %15s"
+                  "[memory] max used memory   (vmhwm ): %15s"
+                  "[memory] cur used memory   (vmrss ): %15s",
+                  vmpeak, vmsize, vmhwm, vmrss);
 }
 
 #endif

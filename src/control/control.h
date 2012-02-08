@@ -19,14 +19,16 @@
 #ifndef DT_CONTROL_H
 #define DT_CONTROL_H
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
+#include "control/settings.h"
+
 #include <inttypes.h>
 #include <gtk/gtk.h>
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
 
-#include "common/dtpthread.h"
-#include "control/settings.h"
 #include <gtk/gtk.h>
 #include "libs/lib.h"
 // #include "control/job.def"

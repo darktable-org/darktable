@@ -18,6 +18,9 @@
 
 #ifndef DT_STYLES_H
 #define DT_STYLES_H
+
+#include "common/darktable.h"
+
 #include <sqlite3.h>
 #include <glib.h>
 #include <inttypes.h>

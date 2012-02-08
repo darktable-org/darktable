@@ -19,8 +19,8 @@
 #ifndef DT_LIB_H
 #define DT_LIB_H
 
-#include "views/view.h"
 #include "common/darktable.h"
+#include "views/view.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 

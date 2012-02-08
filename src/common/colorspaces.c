@@ -16,12 +16,13 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <lcms2.h>
+#include "common/darktable.h"
 #include "iop/colorout.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/colormatrices.c"
 #include "common/debug.h"
+#include <lcms2.h>
 
 
 /** inverts the given 3x3 matrix */

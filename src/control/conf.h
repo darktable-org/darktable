@@ -22,12 +22,12 @@
 #include "config.h"
 #endif
 
+#include "common/darktable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <glib.h>
 #include <glib/gprintf.h>
-#include "common/darktable.h"
 
 #ifdef HAVE_GCONF
 #include <gconf/gconf-client.h>

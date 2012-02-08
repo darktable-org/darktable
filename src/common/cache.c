@@ -373,6 +373,13 @@ dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threa
     cache->table[k].mru         = -2;
   }
   cache->lru = cache->mru = -1;
+#ifndef DT_UNIT_TEST
+  if(darktable.unmuted & DT_DEBUG_MEMORY)
+  {
+    fprintf(stderr, "[memory] after cache initialization\n");
+    dt_print_mem_usage();
+  }
+#endif
 }
 
 void

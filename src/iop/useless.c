@@ -18,9 +18,11 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+// our includes go first:
 #include "develop/imageop.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 

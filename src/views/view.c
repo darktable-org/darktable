@@ -17,8 +17,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/collection.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/debug.h"
@@ -30,6 +30,7 @@
 #include "views/view.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <glib.h>
