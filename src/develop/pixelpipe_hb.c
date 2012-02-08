@@ -1041,7 +1041,8 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
+    if(dev->gui_attached && !dev->gui_leaving && 
+       pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
       uint8_t *pixel = (uint8_t *)*output;
       float box[4];
@@ -1108,7 +1109,7 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
       /* if gui attached, lets raise pipe finish signal */
-      if (dev->gui_attached && strcmp(module->op, "gamma") == 0)
+      if (dev->gui_attached && !dev->gui_leaving && strcmp(module->op, "gamma") == 0)
 	dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
 	
     }
