@@ -255,10 +255,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   _mm_sfence();
 
-  /* thread-safe redraw */
-  if(  self->dev->gui_attached && g && buffer )
-    dt_control_queue_redraw_widget(g->preview);
-
 }
 
 
@@ -337,6 +333,8 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return 1;
 }
 
+static void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data);
+
 static gboolean dt_iop_zonesystem_preview_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self);
 
 static gboolean dt_iop_zonesystem_bar_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self);
@@ -386,10 +384,22 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_container_add(GTK_CONTAINER(aspect), g->preview);
   gtk_box_pack_start (GTK_BOX (self->widget),aspect,TRUE,TRUE,0);
   gtk_box_pack_start (GTK_BOX (self->widget),g->zones,TRUE,TRUE,0);
+
+  /* add signal handler for preview pipe finish to redraw the preview */
+  dt_control_signal_connect(darktable.signals,
+			    DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, 
+			    G_CALLBACK(_iop_zonesystem_redraw_preview_callback), 
+			    self);
+
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_control_signal_disconnect(darktable.signals, 
+			       G_CALLBACK(_iop_zonesystem_redraw_preview_callback), 
+			       self);
+
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
   self->request_color_pick = 0;
@@ -679,6 +689,14 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
   cairo_surface_destroy(cst);
 
   return TRUE;
+}
+
+void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;  
+
+  dt_control_queue_redraw_widget(g->preview);
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
