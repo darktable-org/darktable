@@ -24,20 +24,44 @@
 #include <inttypes.h>
 
 #define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_MAXNODES 25
+
+typedef enum tonecurve_channel_t
+{
+  tonecurve_L    = 0,
+  tonecurve_a    = 1,
+  tonecurve_b    = 2
+}
+tonecurve_channel_t;
 
 typedef struct dt_iop_tonecurve_params_t
 {
-  float tonecurve_x[6], tonecurve_y[6];
+  float tonecurve[3][2][DT_IOP_TONECURVE_MAXNODES];  // three curves (L, a, b) with x, y and max number of nodes
+  int tonecurve_nodes[3];
+  int tonecurve_autoscale_ab;
   int tonecurve_preset;
 }
 dt_iop_tonecurve_params_t;
 
+
+// parameter structure of tonecurve 1st version, needed for use in legacy_params()
+typedef struct dt_iop_tonecurve_1_params_t
+{
+  float tonecurve_x[6], tonecurve_y[6];
+  int tonecurve_preset;
+}
+dt_iop_tonecurve_1_params_t;
+
+
 typedef struct dt_iop_tonecurve_gui_data_t
 {
-  dt_draw_curve_t *minmax_curve;        // curve for gui to draw
+  dt_draw_curve_t *minmax_curve[3];        // curves for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkLabel *label;
+  GtkToggleButton *autoscale_ab;
+  GtkNotebook* channel_tabs;
+  tonecurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected, dragging, x_move;
   double selected_offset, selected_y, selected_min, selected_max;
@@ -49,9 +73,10 @@ dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
 {
-  dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
-  float table[0x10000];        // precomputed look-up table for tone curve
-  float unbounded_coeffs[2];   // approximation for extrapolation
+  dt_draw_curve_t *curve[3];   // curves for gegl nodes and pixel processing
+  float table[3][0x10000];     // precomputed look-up tables for tone curve
+  float unbounded_coeffs[2];   // approximation for extrapolation of L
+  int autoscale_ab;
 }
 dt_iop_tonecurve_data_t;
 
