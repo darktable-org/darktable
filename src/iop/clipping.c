@@ -1276,22 +1276,24 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   double dashes = 5.0/zoom_scale;
 
-  // draw cropping window handles:
+  // draw cropping window
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
   cairo_set_dash (cr, &dashes, 0, 0);
-  if(g->applied)
-    cairo_set_source_rgba(cr, .0, .0, .0, .8);
-  else
-    cairo_set_source_rgba(cr, .0, .0, .0, .5);
+  cairo_set_source_rgba(cr, .2, .2, .2, .8);
   cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
   cairo_rectangle (cr, -1, -1, wd+2, ht+2);
   cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
   cairo_fill (cr);
 
-  cairo_stroke (cr);
+  if(g->clip_x > .0f || g->clip_y > .0f || g->clip_w < 1.0f || g->clip_h < 1.0f)
+  {
+    cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, g->clip_h*ht);
+    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_stroke (cr);
+  }
 
   // draw crop area guides
   float left, top, right, bottom, xThird, yThird;
@@ -1310,15 +1312,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_clip(cr);
   cairo_set_line_width(cr, 1.0/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
-    
-  // draw border
-  cairo_set_dash (cr, &dashes, 0, 0);
-  drawLine(cr, left, top, right, top);
-  drawLine(cr, right, top, right, bottom);
-  drawLine(cr, right, bottom, left, bottom);
-  drawLine(cr, left, bottom, left, top);
-  cairo_stroke (cr);
-
+ 
   // draw guides
   cairo_set_dash(cr, &dashes, 1, 0);
 
