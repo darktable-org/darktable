@@ -407,10 +407,10 @@ void gui_init(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->x_move = -1;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
-  // tabs
-  //GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
 
+  // tabs
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("  L  ")));
@@ -425,7 +425,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_object_set(G_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page",
                    G_CALLBACK (tab_switch), self);
@@ -438,6 +439,10 @@ void gui_init(struct dt_iop_module_t *self)
   // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_drawing_area_size(c->area, 258, 258);
   g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("double click to reset curve"), (char *)NULL);
+
+  c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
+  gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));
+  gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->channel_tabs));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -453,7 +458,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->autoscale_ab  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("autoscale Lab chroma values according to L")));
   gtk_toggle_button_set_active(c->autoscale_ab, p->tonecurve_autoscale_ab);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->autoscale_ab), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->autoscale_ab), TRUE, TRUE, 5);
   g_object_set (GTK_OBJECT(c->autoscale_ab), "tooltip-text", _("if checked a and b curves have no effect and are\nnot displayed. chroma values (a and b) of each pixel\nare then adjusted based on L curve data."), (char *)NULL);
   g_signal_connect(G_OBJECT(c->autoscale_ab), "toggled", G_CALLBACK(autoscale_ab_callback), self);
 }
@@ -461,6 +466,8 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  // this one we need to unref manually. not so the initially unowned widgets.
+  g_object_unref(c->sizegroup);
   dt_draw_curve_destroy(c->minmax_curve[ch_L]);
   dt_draw_curve_destroy(c->minmax_curve[ch_a]);
   dt_draw_curve_destroy(c->minmax_curve[ch_b]);

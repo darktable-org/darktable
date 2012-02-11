@@ -20,6 +20,7 @@
 
 #include "develop/imageop.h"
 #include "gui/draw.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
@@ -69,6 +70,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   int minmax_curve_type[3];
   GtkHBox *hbox;
   GtkDrawingArea *area;
+  GtkSizeGroup *sizegroup;
   GtkLabel *label;
   GtkToggleButton *autoscale_ab;
   GtkNotebook* channel_tabs;
