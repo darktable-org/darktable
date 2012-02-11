@@ -563,8 +563,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         cairo_save(cr);
         cairo_set_source_rgb(cr, .6, .6, .6);
         cairo_translate(cr, d->pos*width, height*.5f);
-        // draw_equilateral_triangle(cr, height*0.30f);
-        draw_equilateral_triangle(cr, height*0.5f);
+        draw_equilateral_triangle(cr, height*0.30f);
         cairo_fill(cr);
         cairo_restore(cr);
 
