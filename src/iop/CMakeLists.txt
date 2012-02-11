@@ -5,14 +5,14 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DI
 set(MODULES tonecurve gamma temperature colorcorrection exposure 
 	colorin colorout clipping sharpen monochrome basecurve colorzones
 	basecurve highlights velvia vignette splittoning grain bilateral
-	profile_gamma colorcontrast
+	profile_gamma colorcontrast lowpass vibrance 
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
   cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels flip)
 
 
 
 # new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colorcontrast colortransfer colorize lowpass invert vibrance shrecovery)
+set(EXPERIMENTAL_MODULES anlfyeni colortransfer colorize invert shrecovery)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
