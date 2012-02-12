@@ -123,14 +123,23 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     char infostr[1024];
     size_t infoint;
     size_t infointtab[1024];
+    cl_device_type type;
     cl_bool image_support = 0;
 
     // test GPU memory and image support:
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_NAME, sizeof(infostr), &infostr, NULL);
+    (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_TYPE, sizeof(cl_device_type), &type,  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &image_support, NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &(cl->dev[dev].max_image_height), NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_IMAGE2D_MAX_WIDTH,  sizeof(size_t), &(cl->dev[dev].max_image_width),  NULL);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_MEM_ALLOC_SIZE,  sizeof(cl_ulong), &(cl->dev[dev].max_mem_alloc),  NULL);
+
+    if(type == CL_DEVICE_TYPE_CPU)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding CPU device %d `%s' as it will not deliver any performance gain.\n", k, infostr);
+      continue;
+    }
+
     if(!image_support)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to missing image support.\n", k, infostr);
@@ -187,10 +196,17 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         int rd = fscanf(f, "%[^\n]\n", programname);
         if(rd != 1) continue;
         // remove comments:
-        for(int k=0; k<strlen(programname); k++) if(programname[k] == '#')
+        for(int k=0; k<strlen(programname); k++)
+          if(programname[k] == '#')
           {
             programname[k] = '\0';
-            while(programname[--k] == ' ') programname[k] = '\0';
+            for(int l=k-1; l>=0; l--)
+            {   
+              if (programname[l] == ' ')
+	        programname[l] = '\0';
+              else
+	        break;
+            }
             break;
           }
         if(programname[0] == '\0') continue;
