@@ -533,8 +533,24 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
       }
       break;
     case DT_BAUHAUS_COMBOBOX:
-      // TODO: combo box: draw label top left + options below
-      // TODO: need mouse over highlights
+      {
+        cairo_save(cr);
+        // TODO: combo box: draw label top left + options below
+        // TODO: need mouse over highlights
+        cairo_set_source_rgb(cr, 1., 1., 1.);
+        cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size (cr, .8*ht);
+        cairo_text_extents_t ext;
+        char text[256];
+        for(int k=0;k<5;k++)
+        {
+          snprintf(text, 256, "complicated setting %d", k);
+          cairo_text_extents (cr, text, &ext);
+          cairo_move_to (cr, wd-4-ht-ext.width, ht*0.8 + ht*k);
+          cairo_show_text(cr, text);
+        }
+        cairo_restore(cr);
+      }
       break;
     case DT_BAUHAUS_CHECKBOX:
       break;
@@ -575,9 +591,9 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         cairo_set_source_rgb(cr, 1., 1., 1.);
         cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
         cairo_set_font_size (cr, .8*height);
-        cairo_text_extents (cr, _("complicated setting"), &ext);
+        cairo_text_extents (cr, _("complicated setting 0"), &ext);
         cairo_move_to (cr, width-4-height-ext.width, height*0.8);
-        cairo_show_text(cr, _("complicated setting"));
+        cairo_show_text(cr, _("complicated setting 0"));
       }
       break;
     case DT_BAUHAUS_SLIDER:
