@@ -651,11 +651,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   memset(gui,0,sizeof(dt_gui_gtk_t));
 
 #if GLIB_MAJOR_VERSION <= 2
-#if GLIB_MINOR_VERSION < 32
+#if GLIB_MINOR_VERSION < 31
   if (!g_thread_supported ()) g_thread_init(NULL);
+#endif
+#endif
   gdk_threads_init();
-#endif
-#endif
 
   gdk_threads_enter();
 

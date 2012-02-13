@@ -86,14 +86,6 @@ operation_tags ()
   return IOP_TAG_DISTORT;
 }
 
-int
-operation_tags_filter ()
-{
-  // switch off watermark, it gets confused.
-  return IOP_TAG_DECORATION;
-}
-
-
 static void
 backtransform(const int32_t *x, int32_t *o, const int32_t orientation, int32_t iw, int32_t ih)
 {
@@ -245,7 +237,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_flip_params_t);
   module->gui_data = NULL;
-  module->priority = 980; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 240; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
