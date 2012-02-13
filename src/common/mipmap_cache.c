@@ -475,8 +475,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
   dead_image_f((dt_mipmap_buffer_t *)(dsc+1));
 
-  // adjust numbers to be large enough to hold what mem limit suggests!
-  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100*1024*1024, 2000*1024*1024)/5;
+  // adjust numbers to be large enough to hold what mem limit suggests.
+  // we want at least 100MB, and consider 2G just still reasonable.
+  const uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100u<<20, 2u<<30)/5;
   const uint32_t parallel = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
@@ -534,7 +535,10 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   const int full_entries = 2*parallel;
   int32_t max_mem_bufs = nearest_power_of_two(full_entries);
 
-  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, max_mem_bufs, parallel, 64, 0.9f*max_mem_bufs);
+  // for this buffer, because it can be very busy during import, we want the minimum
+  // number of entries in the hashtable to be 16, but leave the quota as is. the dynamic
+  // alloc/free properties of this cache take care that no more memory is required.
+  dt_cache_init(&cache->mip[DT_MIPMAP_FULL].cache, MAX(16, max_mem_bufs), parallel, 64, 0.9f*max_mem_bufs);
   dt_cache_set_allocate_callback(&cache->mip[DT_MIPMAP_FULL].cache,
       dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_FULL]);
   // dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_FULL].cache,
