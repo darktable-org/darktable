@@ -37,6 +37,10 @@
 #include <glib/gi18n.h>
 #include <glib.h>
 #include <math.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+
 #ifdef _OPENMP
 #include <omp.h>
 #else
