@@ -247,6 +247,7 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
       }
     }
     slider->is_dragging=FALSE;
+    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
   }
   return TRUE;
 }
