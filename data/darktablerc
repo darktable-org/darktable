@@ -1,6 +1,5 @@
 database=library.db
 cachefile=mipmaps
-cachefile_backup=true
 themefile=darktable.gtkrc
 panel_width=300
 cache_memory=536870912

@@ -13,19 +13,6 @@
       </locale>
     </schema>
 
-    <schema><!--tab:core-->
-      <key>/schemas/apps/darktable/cachefile_backup</key>
-      <applyto>/apps/darktable/cachefile_backup</applyto>
-      <owner>darktable</owner>
-      <type>bool</type>
-      <default>true</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>image cache file backup</short>
-        <long>creates a backup of the cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart).</long>
-      </locale>
-    </schema>
-
     <schema><!--tab:gui-->
       <key>/schemas/apps/darktable/themefile</key>
       <applyto>/apps/darktable/themefile</applyto>
