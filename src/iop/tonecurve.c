@@ -436,13 +436,8 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
-  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_drawing_area_size(c->area, 258, 258);
   g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("double click to reset curve"), (char *)NULL);
-
-  c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
-  gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));
-  gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->channel_tabs));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -456,11 +451,19 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_tonecurve_leave_notify), self);
 
-  c->autoscale_ab  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("autoscale Lab chroma values according to L")));
+  c->autoscale_ab  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("auto scale chroma")));
   gtk_toggle_button_set_active(c->autoscale_ab, p->tonecurve_autoscale_ab);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->autoscale_ab), TRUE, TRUE, 5);
+  hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->autoscale_ab), TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 10);
   g_object_set (GTK_OBJECT(c->autoscale_ab), "tooltip-text", _("if checked a and b curves have no effect and are\nnot displayed. chroma values (a and b) of each pixel\nare then adjusted based on L curve data."), (char *)NULL);
   g_signal_connect(G_OBJECT(c->autoscale_ab), "toggled", G_CALLBACK(autoscale_ab_callback), self);
+
+  c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
+  gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));
+  gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->channel_tabs));
+  gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->autoscale_ab));
+
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -540,13 +543,21 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_fill(cr);
 
   // draw color labels
-  cairo_set_source_rgb (cr, color_labels_left[ch][0], color_labels_left[ch][1], color_labels_left[ch][2]);
-  cairo_rectangle(cr, 0, 7*width/8, width/8, height/8);
-  cairo_fill(cr);
-
-  cairo_set_source_rgb (cr, color_labels_right[ch][0], color_labels_right[ch][1], color_labels_right[ch][2]);
-  cairo_rectangle(cr, 7*width/8, 0, width/8, height/8);
-  cairo_fill(cr);
+  const int cells = 8;
+  for(int j=0; j<cells; j++)
+  {
+    for(int i=0; i<cells; i++)
+    {
+      const float f = (cells-1-j+i)/(2.0f*cells-2.0f);
+      cairo_set_source_rgba (cr,
+          (1.0f-f)*color_labels_left[ch][0] + f*color_labels_right[ch][0],
+          (1.0f-f)*color_labels_left[ch][1] + f*color_labels_right[ch][1],
+          (1.0f-f)*color_labels_left[ch][2] + f*color_labels_right[ch][2],
+          .5f); // blend over to make colors darker, so the overlay is more visible
+      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells, height/(float)cells);
+      cairo_fill(cr);
+    }
+  }
 
   if(c->mouse_y > 0 || c->dragging)
   {
