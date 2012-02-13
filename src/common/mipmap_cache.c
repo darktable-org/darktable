@@ -181,7 +181,7 @@ dt_mipmap_cache_get_filename(
 
   // Build the mipmap filename
   const gchar *dbfilename = dt_database_get_path(darktable.db);
-  if (strcmp(dbfilename, "memory"))
+  if (!strcmp(dbfilename, ":memory:"))
   {
     snprintf(mipmapfilename, size, "%s", dbfilename);
     return;
@@ -207,7 +207,7 @@ dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
 {
   gchar dbfilename[1024];
   dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename));
-  if (strcmp(dbfilename, "memory"))
+  if (!strcmp(dbfilename, ":memory:"))
   {
     fprintf(stderr, "[mipmap_cache] library is in memory; not serializing\n");
     return 0;
@@ -266,7 +266,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
 
   gchar dbfilename[1024];
   dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename));
-  if (strcmp(dbfilename, "memory"))
+  if (!strcmp(dbfilename, ":memory:"))
   {
     fprintf(stderr, "[mipmap_cache] library is in memory; not deserializing\n");
     return 0;
