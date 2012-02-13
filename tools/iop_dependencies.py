@@ -75,6 +75,10 @@ def add_edges(gr):
   gr.add_edge(('flip', 'demosaic'))
   gr.add_edge(('flip', 'lens'))
   gr.add_edge(('flip', 'spots'))
+  # plus, it confuses crop/rotate, vignetting and graduated density
+  gr.add_edge(('clipping', 'flip'))
+  gr.add_edge(('graduatednd', 'flip'))
+  gr.add_edge(('vignette', 'flip'))
   # handle highlights correctly:
   # we want highlights as early as possible, to avoid
   # pink highlights in plugins (happens only before highlight clipping)
@@ -336,7 +340,8 @@ for n in sorted_nodes:
   if not os.path.isfile(filename):
     filename="../src/iop/%s.cc"%n
   if not os.path.isfile(filename):
-    print "could not find file `%s', maybe you're not running inside tools/?"%filename
+    if not n == "rawspeed":
+      print "could not find file `%s', maybe you're not running inside tools/?"%filename
     continue
   replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
   priority -= 1000.0/(length-1.0)
