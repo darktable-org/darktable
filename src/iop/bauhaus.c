@@ -18,10 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -30,6 +26,12 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+
+#include <sys/select.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <gdk/gdkkeysyms.h>
@@ -149,6 +151,23 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
 static gboolean
 dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
+static void
+window_show(GtkWidget *w, gpointer user_data)
+{
+  /* grabbing might not succeed immediately... */
+  if (gdk_keyboard_grab(w->window, FALSE, GDK_CURRENT_TIME) != GDK_GRAB_SUCCESS) 
+  {
+    // never happened so far:
+    /* ...wait a while and try again */
+    fprintf(stderr, "failed to get keyboard focus for popup window!\n");
+    // struct timeval s;
+    // s.tv_sec = 0;
+    // s.tv_usec = 5000;
+    // select(0, NULL, NULL, NULL, &s);
+    // sched_yield();
+  }
+}
+
 void
 dt_bauhaus_init()
 {
@@ -156,10 +175,14 @@ dt_bauhaus_init()
   bauhaus.keys_cnt = 0;
   bauhaus.current = NULL;
   bauhaus.popup_area = gtk_drawing_area_new();
-  bauhaus.popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);//POPUP);
-  // FIXME: this is needed for popup, not for toplevel
-  // dt_gui_key_accel_block_on_focus(bauhaus.popup_area);
-  // dt_gui_key_accel_block_on_focus(bauhaus.popup_window);
+  // this easily gets keyboard input:
+  // bauhaus.popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  // but this doesn't flicker, and the above hack with key input seems to work well.
+  bauhaus.popup_window = gtk_window_new(GTK_WINDOW_POPUP);
+  // this is needed for popup, not for toplevel.
+  // since popup_area gets the focus if we show the window, this is all
+  // we need.
+  dt_gui_key_accel_block_on_focus(bauhaus.popup_area);
 
   gtk_widget_set_size_request(bauhaus.popup_area, 300, 300);
   gtk_window_set_resizable(GTK_WINDOW(bauhaus.popup_window), FALSE);
@@ -184,6 +207,7 @@ dt_bauhaus_init()
       GDK_KEY_PRESS_MASK |
       GDK_LEAVE_NOTIFY_MASK);
 
+  g_signal_connect (G_OBJECT (bauhaus.popup_window), "show", G_CALLBACK(window_show), (gpointer)NULL);
   g_signal_connect (G_OBJECT (bauhaus.popup_area), "expose-event",
                     G_CALLBACK (dt_bauhaus_popup_expose), (gpointer)NULL);
   g_signal_connect (G_OBJECT (bauhaus.popup_area), "motion-notify-event",
@@ -599,16 +623,15 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   return TRUE;
 }
 
-static gboolean
-dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static void
+dt_bauhaus_show_popup()
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)user_data;
-  dt_iop_request_focus(w->module);
   bauhaus.keys_cnt = 0;
   memset(bauhaus.keys, 0, 64);
-  bauhaus.current = w;
-  bauhaus.mouse_x = event->x;
-  bauhaus.mouse_y = event->y;
+
+  dt_bauhaus_widget_t *w = bauhaus.current;
+  dt_iop_request_focus(w->module);
+
   gint wx, wy;
   gdk_window_get_origin (gtk_widget_get_window (w->area), &wx, &wy);
   gtk_window_move(GTK_WINDOW(bauhaus.popup_window), wx, wy);
@@ -618,6 +641,16 @@ dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpoin
   // dt_control_key_accelerators_off (darktable.control);
   gtk_widget_show_all(bauhaus.popup_window);
   gtk_widget_grab_focus(bauhaus.popup_area);
+}
+
+static gboolean
+dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)user_data;
+  bauhaus.current = w;
+  bauhaus.mouse_x = event->x;
+  bauhaus.mouse_y = event->y;
+  dt_bauhaus_show_popup();
   return TRUE;
 }
 
@@ -678,15 +711,7 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
     bauhaus.current = w;
     bauhaus.mouse_x = event->x;
     bauhaus.mouse_y = event->y;
-    bauhaus.keys_cnt = 0;
-    memset(bauhaus.keys, 0, 64);
-    gint wx, wy;
-    gdk_window_get_origin (gtk_widget_get_window (w->area), &wx, &wy);
-    gtk_window_move(GTK_WINDOW(bauhaus.popup_window), wx, wy);
-    gtk_widget_set_size_request(bauhaus.popup_area, tmp.width, tmp.width);
-    // dt_control_key_accelerators_off (darktable.control);
-    gtk_widget_show_all(bauhaus.popup_window);
-    gtk_widget_grab_focus(bauhaus.popup_area);
+    dt_bauhaus_show_popup();
     return TRUE;
   }
   else if(event->button == 1)
