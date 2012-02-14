@@ -22,6 +22,9 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#if defined(__SUNOS__)
+#include <fcntl.h>
+#endif
 #include <sys/fcntl.h>
 
 /***/

@@ -61,6 +61,9 @@
 #include <sys/malloc.h>
 #endif
 
+#if defined(__SUNOS__)
+#include <sys/varargs.h>
+#endif
 #ifdef _OPENMP
 #  include <omp.h>
 #endif
@@ -82,7 +85,8 @@ typedef void (dt_signal_handler_t)(int) ;
 // static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
 
-#if defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 800071)
+#if defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 800071) || \
+    defined(__SUNOS__)
 static int dprintf(int fd,const char *fmt, ...)
 {
   va_list ap;
@@ -108,7 +112,7 @@ void _dt_sigsegv_handler(int param)
     fout = STDOUT_FILENO; // just print everything to stdout
 
   dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
-  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, getpid(), DARKTABLE_DATADIR);
+  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, (int)getpid(), DARKTABLE_DATADIR);
 
   if((fd = popen(command, "r")) != NULL)
   {
