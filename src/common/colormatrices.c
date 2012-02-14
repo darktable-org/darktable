@@ -162,6 +162,12 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "SONY DSLR-A700",               { 895737, 374771, -10330}, { 251389, 1076294, -176910}, {-33203, -356445, 1182465}, {742783, 773407, 637604}},
 
+  // Alexander Rabtchevich, Wolf Faust IT8, direct sunlight, well lit
+  { "SONY DSLR-A850",               { 968216, 463638,  -4883}, { 279083, 1156906, -230194}, {-21851, -379623, 1297455}, {749298, 799271, 638580}},
+
+  // Copied from A850
+  { "SONY DSLR-A900",               { 968216, 463638,  -4883}, { 279083, 1156906, -230194}, {-21851, -379623, 1297455}, {749298, 799271, 638580}},
+
   // David Meier, Wolf Faust IT8, direct sunlight, well lit
   { "SONY SLT-A55V",                { 969696, 407043,  40268}, { 218201, 1182556, -285400}, { 21042, -342819, 1260223}, {762085, 793961, 670151}},
 
