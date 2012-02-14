@@ -41,6 +41,9 @@ typedef struct dt_database_t
 /* migrates database from old place to new */
 static void _database_migrate_to_xdg_structure();
 
+/* delete old mipmaps files */
+static void _database_delete_mipmaps_files();
+
 gboolean dt_database_is_new(const dt_database_t *db)
 {
   return db->is_new_database;
@@ -50,6 +53,9 @@ dt_database_t *dt_database_init(char *alternative)
 {
   /* migrate default database location to new default */
   _database_migrate_to_xdg_structure();
+
+  /* delete old mipmaps files */
+  _database_delete_mipmaps_files();
 
   /* lets construct the db filename  */
   gchar * dbname = NULL;
@@ -154,3 +160,27 @@ static void _database_migrate_to_xdg_structure()
 
   g_free(conf_db);
 }
+
+/* delete old mipmaps files */
+static void _database_delete_mipmaps_files()
+{
+  /* This migration is intended to be run only from 0.9.x to new cache in 1.0 */
+
+  // Directory
+  char cachedir[1024], mipmapfilename[1024];
+  dt_util_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  snprintf(mipmapfilename, 1024, "%s/mipmaps", cachedir);
+
+  if(access(mipmapfilename, F_OK) != -1)
+  {
+    fprintf(stderr, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
+    unlink(mipmapfilename);
+
+    snprintf(mipmapfilename, 1024, "%s/mipmaps.fallback", cachedir);
+    
+    if(access(mipmapfilename, F_OK) != -1)
+      unlink(mipmapfilename);
+  }
+}
+
