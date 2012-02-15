@@ -953,30 +953,31 @@ _init_8(
     int ret;
     char filename[DT_MAX_PATH_LEN];
     dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
-    dt_imageio_jpeg_t jpg;
-    if(!dt_imageio_jpeg_read_header(filename, &jpg))
+    const char *c = filename + strlen(filename);
+    while(*c != '.' && c > filename) c--;
+    if(!strcasecmp(c, ".jpg"))
     {
-      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-      if(dt_imageio_jpeg_read(&jpg, tmp))
+      // try to load jpg
+      dt_imageio_jpeg_t jpg;
+      if(!dt_imageio_jpeg_read_header(filename, &jpg))
       {
+        uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+        if(!dt_imageio_jpeg_read(&jpg, tmp))
+        {
+          // scale to fit
+          const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+          const int orientation = dt_image_orientation(cimg);
+          dt_image_cache_read_release(darktable.image_cache, cimg);
+
+          dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
+          res = 0;
+        }
         free(tmp);
-        res = 1;
-        goto jpeg_fail; /* We have decided yet that it is a jpeg file, and it fails */
       }
-
-      // scale to fit
-      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-      const int orientation = dt_image_orientation(cimg);
-      dt_image_cache_read_release(darktable.image_cache, cimg);
-
-      dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
-
-      free(tmp);
-      res = 0;
     }
-
-    else {
-      // no history stack: get thumbnail
+    else
+    {
+      // raw image thumbnail
       libraw_data_t *raw = libraw_init(0);
       libraw_processed_image_t *image = NULL;
       ret = libraw_open_file(raw, filename);
@@ -991,26 +992,26 @@ _init_8(
       const int orientation = raw->sizes.flip;
       if(image->type == LIBRAW_IMAGE_JPEG)
       {
-	// JPEG: decode (directly rescaled to mip4)
-	dt_imageio_jpeg_t jpg;
-	if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
-	uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-	if(dt_imageio_jpeg_decompress(&jpg, tmp))
-	{
-	  free(tmp);
-	  goto libraw_fail;
-	}
-	// scale to fit
-	dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
+        // JPEG: decode (directly rescaled to mip4)
+        dt_imageio_jpeg_t jpg;
+        if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
+        uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+        if(dt_imageio_jpeg_decompress(&jpg, tmp))
+        {
+          free(tmp);
+          goto libraw_fail;
+        }
+        // scale to fit
+        dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
 
-	free(tmp);
-	res = 0;
+        free(tmp);
+        res = 0;
       }
       else
       {
-	// bmp
-	dt_iop_flip_and_zoom_8(image->data, image->width, image->height, buf, wd, ht, orientation, width, height);
-	res = 0;
+        // bmp
+        dt_iop_flip_and_zoom_8(image->data, image->width, image->height, buf, wd, ht, orientation, width, height);
+        res = 0;
       }
 
       // clean up raw stuff.
@@ -1019,15 +1020,14 @@ _init_8(
       free(image);
       if(0)
       {
-  libraw_fail:
-	// fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
-	libraw_close(raw);
-	res = 1;
+libraw_fail:
+        // fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
+        libraw_close(raw);
+        res = 1;
       }
     }
   }
 
-jpeg_fail:  
   if(res)
   {
     // try the real thing: rawspeed + pixelpipe
