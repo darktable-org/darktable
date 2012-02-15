@@ -75,7 +75,7 @@ dt_iop_shrecovery_gui_data_t;
 
 const char *name()
 {
-  return _("shadow recovery");
+  return _("shadow recovery (experimental)");
 }
 
 int flags()

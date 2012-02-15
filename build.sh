@@ -37,7 +37,7 @@ if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
 	MAKE_TASKS=1
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DINSTALL_IOP_EXPERIMENTAL=Off -DINSTALL_IOP_LEGACY=Off .. && make -j $MAKE_TASKS 
+cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DINSTALL_IOP_LEGACY=Off .. && make -j $MAKE_TASKS 
 
 if [ $? = 0 ]; then
 	echo "Darktable finished building, to actually install darktable you need to type:"

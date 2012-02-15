@@ -7,12 +7,8 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma colorcontrast lowpass vibrance 
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
+  colortransfer colorize invert shrecovery
   cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels flip)
-
-
-
-# new/unfinshed/unstable plugins:
-set(EXPERIMENTAL_MODULES anlfyeni colortransfer colorize invert shrecovery)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")

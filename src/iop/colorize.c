@@ -70,7 +70,7 @@ dt_iop_colorize_data_t;
 
 const char *name()
 {
-  return _("colorize");
+  return _("colorize (experimental)");
 }
 
 int flags()

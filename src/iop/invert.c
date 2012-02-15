@@ -51,7 +51,7 @@ typedef struct dt_iop_invert_params_t dt_iop_invert_data_t;
 
 const char *name()
 {
-  return _("invert");
+  return _("invert (experimental)");
 }
 
 int

@@ -102,7 +102,7 @@ dt_iop_colortransfer_data_t;
 
 const char *name()
 {
-  return _("color transfer");
+  return _("color transfer (experimental)");
 }
 
 int
