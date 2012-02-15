@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 ulrich pegelow.
+    copyright (c) 2011-2012 ulrich pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -138,3 +138,83 @@ lowpass_mix(global float4 *in, global float4 *out, unsigned int width, unsigned 
 }
 
 
+
+float4
+overlay(const float4 in_a, const float4 in_b, const float opacity, const float transform)
+{
+  /* a contains underlying image; b contains mask */
+
+  const float4 scale = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  const float4 min = (float4)(0.0f, -1.0f, -1.0f, 0.0f);
+  const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);
+  const float lmin = 0.0f;
+  const float lmax = 1.0f;       /* max + fabs(min) */
+  const float halfmax = 0.5f;    /* lmax / 2.0f */
+  const float doublemax = 2.0f;  /* lmax * 2.0f */
+
+  float4 a = in_a / scale;
+  float4 b = in_b / scale;
+
+  float lb = clamp(b.x + fabs(min.x), lmin, lmax);
+  float opacity2 = opacity*opacity;
+
+  while(opacity2 > 0.0f)
+  {
+    float ax = a.x;
+    float la = clamp(a.x + fabs(min.x), lmin, lmax);
+
+    float chunk = opacity2 > 1.0f ? 1.0f : opacity2;
+    float optrans = chunk * transform;
+    opacity2 -= 1.0f;
+
+    a.x = clamp(la * (1.0f - optrans) + (la > halfmax ? 
+                                            lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : 
+                                            doublemax * la * lb) * optrans, lmin, lmax) - fabs(min.x);
+    if (ax > 0.01f)
+    {
+      a.y = clamp(a.y * (1.0f - optrans) + (a.y + b.y) * a.x/ax * optrans, min.y, max.y);
+      a.z = clamp(a.z * (1.0f - optrans) + (a.z + b.z) * a.x/ax * optrans, min.z, max.z);
+    }
+    else
+    { 
+      a.y = clamp(a.y * (1.0f - optrans) + (a.y + b.y) * a.x/0.01f * optrans, min.y, max.y);
+      a.z = clamp(a.z * (1.0f - optrans) + (a.z + b.z) * a.x/0.01f * optrans, min.z, max.z);
+    }
+
+  }
+  /* output scaled back pixel */
+  return a * scale;
+}
+
+
+kernel void 
+shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int width, unsigned int height, 
+                       const float shadows, const float highlights, const float compress)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 io = inout[x + y*width];
+  float4 m;
+  float xform;
+
+  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
+  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+
+  /* blurred, inverted and desaturaed mask in m */
+  m.x = 100.0f - mask[x + y*width].x;
+  m.y = 0.0f;
+  m.z = 0.0f;
+
+  /* overlay highlights */
+  xform = clamp(1.0f - 0.01f * m.x/(1.0f-compress), 0.0f, 1.0f);
+  io = overlay(io, m, highlights, xform);
+
+  /* overlay shadows */
+  xform = clamp(compress/(compress-1.0f) - 0.01f * m.x/(compress-1.0f), 0.0f, 1.0f);
+  io = overlay(io, m, shadows, xform);
+
+  inout[x + y*width] = clamp(io, Labmin, Labmax);
+}
