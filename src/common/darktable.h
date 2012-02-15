@@ -48,7 +48,7 @@
 #define omp_get_thread_num() 0
 #endif
 
-#define DT_MODULE_VERSION 5   // version of dt's module interface
+#define DT_MODULE_VERSION 6   // version of dt's module interface
 #define DT_VERSION 36         // version of dt's database tables
 #define DT_CONFIG_VERSION 34  // dt gconf var version
 
