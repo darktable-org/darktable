@@ -498,9 +498,13 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         cairo_save(cr);
         cairo_set_source_rgb(cr, .6, .6, .6);
         cairo_set_line_width(cr, 1.);
-        cairo_translate(cr, (d->pos+mouse_off)*wd, ht*.5f);
-        draw_equilateral_triangle(cr, ht*0.30f);
-        cairo_fill(cr);
+        cairo_translate(cr, (d->pos+mouse_off)*wd, ht*.8f);
+        cairo_scale(cr, 1.0f, -1.0f);
+        draw_equilateral_triangle(cr, ht*0.35f);
+        cairo_fill_preserve(cr);
+        cairo_set_line_width(cr, 1.0f);
+        cairo_set_source_rgb(cr, .1f, .1f, .1f);
+        cairo_stroke(cr);
         cairo_restore(cr);
 
         // draw numerical value:
@@ -580,6 +584,10 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   dt_bauhaus_clear(w, cr);
 
+  // draw label and quad area at right end
+  dt_bauhaus_draw_label(w, cr);
+  dt_bauhaus_draw_quad(w, cr);
+
   // draw type specific content:
   cairo_save(cr);
   cairo_set_line_width(cr, 1.0);
@@ -599,22 +607,39 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     case DT_BAUHAUS_SLIDER:
       {
         dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
+
+#if 0
+        // line for orientation? looks crappy:
+        cairo_save(cr);
+        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+        cairo_set_line_width(cr, 1.);
+        cairo_move_to(cr, 2, 0.8*height);
+        cairo_line_to(cr, width-4-height, 0.9*height);
+        cairo_stroke(cr);
+        cairo_restore(cr);
+#endif
+
         // draw scale indicator
         cairo_save(cr);
         cairo_set_source_rgb(cr, .6, .6, .6);
-        cairo_translate(cr, d->pos*width, height*.5f);
-        draw_equilateral_triangle(cr, height*0.30f);
-        cairo_fill(cr);
+        cairo_translate(cr, d->pos*width, height*.8f);
+        cairo_scale(cr, 1.0f, -1.0f);
+        draw_equilateral_triangle(cr, height*0.35f); // 0.3
+        // cairo_fill(cr);
+        cairo_fill_preserve(cr);
+        cairo_set_line_width(cr, 1.);
+        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+        cairo_stroke(cr);
         cairo_restore(cr);
 
         // TODO: merge that text with combo
         char text[256];
         snprintf(text, 256, d->format, 0.0f);
         cairo_text_extents_t ext;
-        cairo_set_source_rgb(cr, 1., 1., 1.);
         cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
         cairo_set_font_size (cr, .8*height);
         cairo_text_extents (cr, text, &ext);
+        cairo_set_source_rgb(cr, 1., 1., 1.);
         cairo_move_to (cr, width-4-height-ext.width, height*0.8);
         snprintf(text, 256, d->format, d->pos);
         cairo_show_text(cr, text);
@@ -624,10 +649,6 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       break;
   }
   cairo_restore(cr);
-
-  // draw label and quad area at right end
-  dt_bauhaus_draw_label(w, cr);
-  dt_bauhaus_draw_quad(w, cr);
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
@@ -790,6 +811,7 @@ typedef struct dt_iop_bauhaus_gui_data_t
   // TODO: glib ref counting + new/destroy!
   dt_bauhaus_widget_t *combobox;
   dt_bauhaus_widget_t *slider;
+  dt_bauhaus_widget_t *slider2;
 }
 dt_iop_bauhaus_gui_data_t;
 
@@ -859,6 +881,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->slider = dt_bauhaus_slider_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), c->slider->area, TRUE, TRUE, 0);
+
+  c->slider2 = dt_bauhaus_slider_new(self);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->slider2->area, TRUE, TRUE, 0);
 
   c->combobox = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), c->combobox->area, TRUE, TRUE, 0);
