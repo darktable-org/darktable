@@ -298,16 +298,17 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
-    char subfilename[1024];
+    char subfilename[1024], relsubfilename[256];
     snprintf(subfilename, 1024, "%s", d->cached_dirname);
     char* sc = subfilename + strlen(subfilename);
     sprintf(sc, "/img_%d.html", num);
+    sprintf(relsubfilename, "img_%d.html", num);
 
     snprintf(pair->line, 4096,
              "\n"
              "      <div><a class=\"dia\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
              "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", subfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "      %s<br/><span class=\"tags\">%s</span></div>\n", relsubfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
 
     char next[256];
     sprintf(next, "img_%d.html", (num)%total+1);
