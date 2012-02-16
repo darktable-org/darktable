@@ -268,12 +268,14 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   FILE *f = fopen(filename, "rb");
   char line[1024];
   int read = 0;
+  int defaults = 0;
   if(!f)
   {
     char buf[1024], defaultrc[1024];
     dt_util_get_datadir(buf, 1024);
     snprintf(defaultrc, 1024, "%s/darktablerc", buf);
     f = fopen(defaultrc, "rb");
+    defaults = 1;
   }
   if(!f) return;
   while(!feof(f))
@@ -284,13 +286,14 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
       char *c = line;
       while(*c != '=' && c < line + strlen(line)) c++;
       if(*c == '=')
-	{
-	  *c = '\0';
-	  dt_conf_set_string(line, c+1);
-	}
+      {
+        *c = '\0';
+        dt_conf_set_string(line, c+1);
+      }
     }
   }
   fclose(f);
+  if(defaults) dt_configure_defaults();
   return;
 #endif
 }

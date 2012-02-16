@@ -276,4 +276,20 @@ static inline void dt_print_mem_usage()
                   vmpeak, vmsize, vmhwm, vmrss);
 }
 
+static inline size_t
+dt_get_total_memory()
+{
+  FILE *f = fopen("/proc/meminfo", "rb");
+  if(!f) return 0;
+  size_t mem = 0;
+  char *line = NULL;
+  size_t len = 128;
+  if(getline(&line, &len, f) != -1)
+    mem = atol(line + 10);
+  fclose(f);
+  return mem;
+}
+
+void dt_configure_defaults();
+
 #endif

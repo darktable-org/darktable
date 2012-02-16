@@ -7,13 +7,14 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma colorcontrast lowpass vibrance 
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap 
-  colortransfer colorize invert shrecovery
+  colortransfer colorize invert shadhi
   cacorrect overexposed bloom soften clahe equalizer highpass hotpixels lowlight spots rawdenoise borders nlmeans levels flip)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
 add_library(highpass MODULE "highpass.c")
 add_library(lowpass MODULE "lowpass.c")
+add_library(shadhi MODULE "shadhi.c")
 add_library(tonemap MODULE "tonemap.cc")
 add_library(tonecurve MODULE "tonecurve.c")
 add_library(gamma MODULE "gamma.c")

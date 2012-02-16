@@ -389,8 +389,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   char filename[1024];
   snprintf(filename, 1024, "%s/darktablerc", datadir);
 
-  // intialize the config backend OBS. this needs to be done first...
+  // intialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
+  memset(darktable.conf, 0, sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
 
   // set the interface language
@@ -414,11 +415,6 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // Initialize the camera control
   darktable.camctl=dt_camctl_new();
 #endif
-
-  // has to go first for settings needed by all the others.
-  darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
-  memset(darktable.conf, 0, sizeof(dt_conf_t));
-  dt_conf_init(darktable.conf, filename);
 
   // get max lighttable thumbnail size:
   darktable.thumbnail_width  = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_width"),  200, 3000);
@@ -738,6 +734,30 @@ void dt_show_times(const dt_times_t *start, const char *prefix, const char *suff
       va_end(ap);
     }
     dt_print(DT_DEBUG_PERF, "%s\n", buf);
+  }
+}
+
+void dt_configure_defaults()
+{
+  const int threads = dt_get_num_threads();
+  const size_t mem = dt_get_total_memory();
+  const int bits = (sizeof(void*) == 4) ? 32 : 64;
+  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores\n", bits, mem, threads);
+  if(mem > (2u<<20) && threads > 4)
+  {
+    fprintf(stderr, "[defaults] setting high quality defaults\n");
+    dt_conf_set_int("worker_threads", 8);
+    dt_conf_set_int("cache_memory", 1u<<30);
+    dt_conf_set_int("plugins/lighttable/thumbnail_width", 1300);
+    dt_conf_set_int("plugins/lighttable/thumbnail_height", 1000);
+  }
+  if(mem < (1u<<20) || threads <= 2 || bits < 64)
+  {
+    fprintf(stderr, "[defaults] setting very conservative defaults\n");
+    dt_conf_set_int("worker_threads", 1);
+    dt_conf_set_int("cache_memory", 200u<<10);
+    dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);
+    dt_conf_set_int("plugins/lighttable/thumbnail_height", 500);
   }
 }
 
