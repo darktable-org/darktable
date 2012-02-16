@@ -197,7 +197,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float shadows = fmin(fmax(0,(data->shadows/100.0)), 2.0f);
   const float highlights = fmin(fmax(0,(data->highlights/100.0)), 2.0f);
-  const float compress = fmin(fmax(0,(data->compress/100.0)), 0.99f);
+  const float compress = fmin(fmax(0,(data->compress/100.0)), 0.99f);   // upper limit 0.99f to avoid division by zero later
 
   // as the function name implies
   compute_gauss_params(sigma, data->order, &a0, &a1, &a2, &a3, &b1, &b2, &coefp, &coefn);
@@ -380,7 +380,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     while(opacity > 0.0f)
     {
-      float tt0 = ta[0];
+      float ta0 = ta[0];
       float la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
 
 
@@ -388,14 +388,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float optrans = chunk * xform;
       opacity -= 1.0f;
       
-      ta[0] = CLAMP_RANGE( ((la * (1.0 - optrans)) + (
-         (la>halfmax) ? ( lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) ) : ( ( doublemax*la) * lb )
-         ) * optrans), lmin, lmax)-fabs(min[0]);
+      ta[0] = CLAMP_RANGE( la * (1.0 - optrans) + 
+                          ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans, lmin, lmax) - 
+                          fabs(min[0]);
 
-      if (tt0 > 0.01f)
+      if (ta0 > 0.01f)
       {
-        ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * ta[0]/tt0 * optrans, min[1], max[1]);
-        ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * ta[0]/tt0 * optrans, min[2], max[2]);
+        ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * ta[0]/ta0 * optrans, min[1], max[1]);
+        ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * ta[0]/ta0 * optrans, min[2], max[2]);
       }
       else
       { 
@@ -419,25 +419,26 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     float lb = CLAMP_RANGE(tb[0]+fabs(min[0]), lmin, lmax);
     float opacity = shadows*shadows;
-    float xform = CLAMP_RANGE(compress/(compress-1.0f) - tb[0]/(compress-1.0f), 0.0f, 1.0f);
+    float xform = CLAMP_RANGE(tb[0]/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
 
     while(opacity > 0.0f)
     {
-      float tt0 = ta[0];
+      float ta0 = ta[0];
       float la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+
 
       float chunk = opacity > 1.0f ? 1.0f : opacity;
       float optrans = chunk * xform;
       opacity -= 1.0f;
       
-      ta[0] = CLAMP_RANGE( ((la * (1.0 - optrans)) + (
-         (la>halfmax) ? ( lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) ) : ( ( doublemax*la) * lb )
-         ) * optrans), lmin, lmax)-fabs(min[0]);
+      ta[0] = CLAMP_RANGE( la * (1.0 - optrans) + 
+                          ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans, lmin, lmax) - 
+                          fabs(min[0]);
 
-      if (tt0 > 0.01f)
+      if (ta0 > 0.01f)
       {
-        ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * ta[0]/tt0 * optrans, min[1], max[1]);
-        ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * ta[0]/tt0 * optrans, min[2], max[2]);
+        ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * ta[0]/ta0 * optrans, min[1], max[1]);
+        ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * ta[0]/ta0 * optrans, min[2], max[2]);
       }
       else
       { 
@@ -498,7 +499,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float shadows = fmin(fmax(0,(d->shadows/100.0f)), 2.0f);
   const float highlights = fmin(fmax(0,(d->highlights/100.0f)), 2.0f);
-  const float compress = fmin(fmax(0,(d->compress/100.0)), 0.99f);
+  const float compress = fmin(fmax(0,(d->compress/100.0)), 0.99f);  // upper limit 0.99f to avoid division by zero later
 
   size_t origin[] = {0, 0, 0};
   size_t region[] = {width, height, 1};
@@ -730,9 +731,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->radius);
-  dtgtk_slider_set_value(g->scale2, p->shadows);
-  dtgtk_slider_set_value(g->scale3, p->highlights);
+  dtgtk_slider_set_value(g->scale1, p->shadows);
+  dtgtk_slider_set_value(g->scale2, p->highlights);
+  dtgtk_slider_set_value(g->scale3, p->radius);
   dtgtk_slider_set_value(g->scale4, p->compress);
 }
 
@@ -746,7 +747,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_shadhi_params_t tmp = (dt_iop_shadhi_params_t)
   {
-    DT_IOP_GAUSSIAN_ZERO, 100.0f, 100.0f, 0.0f, 100.0f, 0.0f, 0.0f
+    DT_IOP_GAUSSIAN_ZERO, 100.0f, 100.0f, 0.0f, 100.0f, 0.0f, 50.0f
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_shadhi_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_shadhi_params_t));
@@ -793,7 +794,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 200.0, 0.1, p->shadows, 2));
   g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 200.0, 0.1, p->highlights, 2));
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 200.0, 0.1, p->radius, 2));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 99.0, 0.1, p->compress, 2));
+  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 100.0, 0.1, p->compress, 2));
   dtgtk_slider_set_label(g->scale1,_("shadows"));
   dtgtk_slider_set_label(g->scale2,_("highlights"));
   dtgtk_slider_set_label(g->scale3,_("radius"));
