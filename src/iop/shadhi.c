@@ -34,6 +34,7 @@
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include <gtk/gtk.h>
@@ -107,6 +108,24 @@ int
 groups ()
 {
   return IOP_GROUP_EFFECT;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t*)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->scale4));
 }
 
 
