@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2010--2011 henrik andersson.
+    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2010--2012 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@
 #include "control/conf.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "bauhaus/bauhaus.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -490,6 +491,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
     darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
     memset(darktable.gui,0,sizeof(dt_gui_gtk_t));
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
+    dt_bauhaus_init();
   }
   else darktable.gui = NULL;
 
@@ -669,6 +671,8 @@ void dt_cleanup()
   dt_fswatch_destroy(darktable.fswatch);
 
   dt_database_destroy(darktable.db);
+
+  dt_bauhaus_cleanup();
  
   dt_pthread_mutex_destroy(&(darktable.db_insert));
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));

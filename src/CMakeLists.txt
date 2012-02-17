@@ -6,11 +6,13 @@ include(CheckCCompilerFlag)
 # Add files for libdarktable
 #
 FILE(GLOB SOURCE_FILES
+  "bauhaus/bauhaus.c"
   "common/cache.c"
   "common/collection.c" 
   "common/colorlabels.c" 
   "common/colormatrices.c" 
   "common/colorspaces.c" 
+  "common/curve_tools.c"
   "common/darktable.c" 
   "common/database.c"
   "common/exif.cc" 

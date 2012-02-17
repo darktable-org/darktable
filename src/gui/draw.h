@@ -25,12 +25,7 @@
 
 #include <stdlib.h>
 #include <math.h>
-// this is a dirty hack, this way nikon_curve will not even be compiled if we don't need it:
-#ifdef DT_CONTROL_H
-#include "common/curve_tools.c"
-#else
 #include "common/curve_tools.h"
-#endif
 #include <cairo.h>
 
 /** wrapper around nikon curve or gegl. */

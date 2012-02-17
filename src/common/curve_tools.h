@@ -19,6 +19,9 @@
     Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
 
+#ifndef DT_COMMON_CURVE_TOOLS_H
+#define DT_COMMON_CURVE_TOOLS_H
+
 //Curve Types
 #define CUBIC_SPLINE      0
 #define CATMULL_ROM     1
@@ -123,3 +126,5 @@ float *interpolate_set( int n, float x[], float y[], unsigned int type);
  *      yval  - interpolated value at xval
  *******************************************************************/
 float interpolate_val( int n, float x[], float xval, float y[], float tangents[], unsigned int type);
+
+#endif

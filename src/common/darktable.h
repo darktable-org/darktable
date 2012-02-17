@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,6 +114,7 @@ struct dt_lib_t;
 struct dt_conf_t;
 struct dt_points_t;
 struct dt_imageio_t;
+struct dt_bauhaus_t;
 
 typedef enum dt_debug_thread_t
 {
@@ -153,6 +154,7 @@ typedef struct darktable_t
   struct dt_gui_gtk_t            *gui;
   struct dt_mipmap_cache_t       *mipmap_cache;
   struct dt_image_cache_t        *image_cache;
+  struct dt_bauhaus_t            *bauhaus;
   const struct dt_database_t     *db;
   const struct dt_fswatch_t	     *fswatch;
   const struct dt_pwstorage_t    *pwstorage;
