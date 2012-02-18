@@ -213,7 +213,7 @@ shadows_highlights_mix(global float4 *inout, global float4 *mask, unsigned int w
   io = overlay(io, m, highlights, xform);
 
   /* overlay shadows */
-  xform = clamp(compress/(compress-1.0f) - 0.01f * m.x/(compress-1.0f), 0.0f, 1.0f);
+  xform = clamp(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
   io = overlay(io, m, shadows, xform);
 
   inout[x + y*width] = clamp(io, Labmin, Labmax);
