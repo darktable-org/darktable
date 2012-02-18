@@ -256,37 +256,7 @@ dt_film_import_blocking(const char *dirname, const int blocking)
   dt_film_import1_init(&j, film);
   dt_control_add_job(darktable.control, &j);
 
-
   return filmid;
-
-#if 0
-  // TODO: set film->num_images for progress bar!
-
-  const int ret = film->id;
-  if(blocking)
-  {
-    dt_film_import1(film);
-    dt_film_cleanup(film);
-    free(film);
-  }
-  else
-  {
-    // darktable.control->progress = .001f;
-    // not more than one job: recursive import is not thread-safe, and multiple
-    // threads accessing the harddisk at once is not a good idea performance wise.
-    // for(int k=0;k<MAX(1,dt_ctl_get_num_procs());k++)
-    {
-      // last job will destroy film struct.
-      dt_job_t j;
-      dt_film_import1_init(&j, film);
-      dt_control_add_job(darktable.control, &j);
-    }
-  }
-
-  return ret;
-
-#endif
-
 }
 
 
@@ -398,53 +368,6 @@ void dt_film_import1(dt_film_t *film)
   dt_control_backgroundjobs_destroy(darktable.control, jid);
 
 }
-
-
-#if 0 // OLD IMPLEMENTATION
-//FIXME: recursion messes up the progress counter.
-void dt_film_import1(dt_film_t *film)
-{
-  const gchar *d_name;
-  char filename[1024];
-
-  gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
-
-  while(1)
-  {
-    dt_pthread_mutex_lock(&film->images_mutex);
-    if (film->dir && (d_name = g_dir_read_name(film->dir)) && dt_control_running())
-    {
-      snprintf(filename, 1024, "%s/%s", film->dirname, d_name);
-      film->last_loaded++;
-    }
-    else
-    {
-      if(film->dir)
-      {
-        g_dir_close(film->dir);
-        film->dir = NULL;
-      }
-      darktable.control->progress = 200.0f;
-      dt_pthread_mutex_unlock(&film->images_mutex);
-      return;
-    }
-    dt_pthread_mutex_unlock(&film->images_mutex);
-
-    if(recursive && g_file_test(filename, G_FILE_TEST_IS_DIR))
-    {
-      // import in this thread (recursive import is not thread-safe):
-      dt_film_import_blocking(filename, 1);
-    }
-    else if(dt_image_import(film->id, filename, FALSE))
-    {
-      dt_pthread_mutex_lock(&film->images_mutex);
-      darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
-      dt_pthread_mutex_unlock(&film->images_mutex);
-      dt_control_queue_redraw_center();
-    } // else not an image.
-  }
-}
-#endif
 
 int dt_film_import(const char *dirname)
 {
