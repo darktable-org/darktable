@@ -116,9 +116,6 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  /* query new collection count */
-  lib->collection_count = dt_collection_get_count (darktable.collection);
-
   /* check if we can get a query from collection */
   const gchar *query=dt_collection_get_query (darktable.collection);
   if(!query)
@@ -195,6 +192,9 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   dt_library_t *lib = (dt_library_t *)self->data;
 
   gboolean offset_changed = FALSE;
+
+  /* query new collection count */
+  lib->collection_count = dt_collection_get_count (darktable.collection);
 
   if(darktable.gui->center_tooltip == 1)
     darktable.gui->center_tooltip = 2;

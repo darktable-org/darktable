@@ -40,12 +40,12 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
 uint32_t container()
 {
-  return DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT;
+  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
 int expandable() 
