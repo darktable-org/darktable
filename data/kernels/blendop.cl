@@ -103,7 +103,7 @@ float blendif_factor(iop_cs_t cst, const float4 lower, float4 upper, const unsig
     }
     else if (scaled[ch] >  parameters[4*ch+2] && scaled[ch] <  parameters[4*ch+3])
     {
-      factor = (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
+      factor = 1.0f - (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
     }
     else factor = 0.0f;
 
@@ -585,7 +585,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
 
-  float opacity = gopacity * blendif_factor(iop_cs_Lab, a, b, blendif, blendif_parameters);
+  float opacity = gopacity * blendif_factor(iop_cs_rgb, a, b, blendif, blendif_parameters);
 
   const float4 min = (float4)(0.0f, 0.0f, 0.0f, 1.0f);
   const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);

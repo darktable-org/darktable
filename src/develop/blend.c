@@ -76,7 +76,7 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *lo
     }
     else if (scaled[ch] >  parameters[4*ch+2] && scaled[ch] <  parameters[4*ch+3])
     {
-      factor = (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
+      factor = 1.0f - (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
     }
     else factor = 0.0f;
 
