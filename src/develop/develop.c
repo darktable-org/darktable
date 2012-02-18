@@ -403,7 +403,7 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   }
   // printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op, *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize (stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blendop_params = ?7 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, module = ?3, enabled = ?4, blendop_params = ?7, blendop_version = ?8 where imgid = ?5 and num = ?6", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, strlen(h->module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, h->module->version());
@@ -411,6 +411,7 @@ int dt_dev_write_history_item(const dt_image_t *image, dt_dev_history_item_t *h,
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, image->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, num);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, h->blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
 
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
@@ -619,13 +620,13 @@ void dt_dev_read_history(dt_develop_t *dev)
 {
   if(!dev->image_storage.id) return;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version from history where imgid = ?1 order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   dev->history_end = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     // db record:
-    // 0-img, 1-num, 2-module_instance, 3-operation char, 4-params blob, 5-enabled, 6-blend_params
+    // 0-img, 1-num, 2-module_instance, 3-operation char, 4-params blob, 5-enabled, 6-blend_params, 7-blendop_version
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
     hist->enabled = sqlite3_column_int(stmt, 5);
 
@@ -681,10 +682,22 @@ void dt_dev_read_history(dt_develop_t *dev)
       memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     }
 
-    if(sqlite3_column_bytes(stmt, 6) == sizeof(dt_develop_blend_params_t))
-      memcpy(hist->blend_params, sqlite3_column_blob(stmt, 6), sizeof(dt_develop_blend_params_t));
+    const void *blendop_params = sqlite3_column_blob(stmt, 6);
+    int bl_length = sqlite3_column_bytes(stmt, 6);
+    int blendop_version = sqlite3_column_int(stmt, 7);
+
+    if (blendop_params && (blendop_version == dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
+    {
+      memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+    else if (!blendop_params || dt_develop_blend_legacy_params(hist->module, blendop_params, blendop_version, hist->blend_params, dt_develop_blend_version(), bl_length))
+    {
+      memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    }
     else
-      memset(hist->blend_params, 0, sizeof(dt_develop_blend_params_t));
+    {
+      assert(FALSE); // should not happen
+    }
 
     // memcpy(hist->module->params, hist->params, hist->module->params_size);
     // hist->module->enabled = hist->enabled;

@@ -45,14 +45,15 @@ extern "C"
 #include <cassert>
 #include <glib.h>
 
-#define DT_XMP_KEYS_NUM 12 // the number of XmpBag XmpSeq keys that dt uses
+#define DT_XMP_KEYS_NUM 13 // the number of XmpBag XmpSeq keys that dt uses
 
 //this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
 {
   "Xmp.dc.subject", "Xmp.darktable.colorlabels",
   "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
-  "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params",
+  "Xmp.darktable.history_operation", "Xmp.darktable.history_params", 
+  "Xmp.darktable.blendop_params", "Xmp.darktable.blendop_version",
   "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights"
 };
 
@@ -858,6 +859,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     Exiv2::XmpData::iterator op;
     Exiv2::XmpData::iterator param;
     Exiv2::XmpData::iterator blendop = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.blendop_params"));
+    Exiv2::XmpData::iterator blendop_version = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.blendop_version"));
          
     if ( (ver=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_modversion"))) != xmpData.end() &&
          (en=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_enabled")))     != xmpData.end() &&
@@ -875,7 +877,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         sqlite3_stmt *stmt_sel_num, *stmt_ins_hist, *stmt_upd_hist;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num from history where imgid = ?1 and num = ?2", -1, &stmt_sel_num, NULL);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num) values (?1, ?2)", -1, &stmt_ins_hist, NULL);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, blendop_params = ?7, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set operation = ?1, op_params = ?2, blendop_params = ?7, blendop_version = ?8, module = ?3, enabled = ?4 where imgid = ?5 and num = ?6", -1, &stmt_upd_hist, NULL);
         for(int i=0; i<cnt; i++)
         {
           const int modversion = ver->toLong(i);
@@ -915,6 +917,14 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
             DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 7, blendop_params, blendop_size, SQLITE_TRANSIENT);
           } else
             sqlite3_bind_null(stmt_upd_hist, 7);
+
+          /* check if we got blendop_version from xmp; if not assume 1 as default */
+          int blversion = 1;
+          if(blendop_version != xmpData.end())
+          {
+            blversion = blendop_version->toLong(i);
+          }
+          DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 8, blversion);
           
           sqlite3_step (stmt_upd_hist);
           free(params);
@@ -1034,11 +1044,12 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_operation"), &tv);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history_params"), &tv);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.blendop_params"), &tv);
+  xmpData.add(Exiv2::XmpKey("Xmp.darktable.blendop_version"), &tv);
 
   // reset tv
   tv.setXmpArrayType(Exiv2::XmpValue::xaNone);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from history where imgid = ?1 order by num", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version from history where imgid = ?1 order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1076,6 +1087,13 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     snprintf(key, 1024, "Xmp.darktable.blendop_params[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);
     free(vparams);
+
+    /* read and add blendop version */
+    int32_t blversion = sqlite3_column_int(stmt, 7);
+    snprintf(val, 2048, "%d", blversion);
+    tv.read(val);
+    snprintf(key, 1024, "Xmp.darktable.blendop_version[%d]", num);
+    xmpData.add(Exiv2::XmpKey(key), &tv);
 
     num ++;
   }

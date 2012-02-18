@@ -67,7 +67,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   const dt_image_t *img = &module->dev->image_storage;
   // select matching default:
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, operation, blendop_params from presets where operation = ?1 and op_version = ?2 and "
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, operation, blendop_params, blendop_version from presets where operation = ?1 and op_version = ?2 and "
                               "autoapply=1 and "
                               "?3 like model and ?4 like maker and ?5 like lens and "
                               "?6 between iso_min and iso_max and "
@@ -115,14 +115,23 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     int enabled = sqlite3_column_int(stmt, 1);
     bl_params = sqlite3_column_blob(stmt, 3);
     int bl_length = sqlite3_column_bytes(stmt, 3);
+    int bl_version = sqlite3_column_int(stmt, 4);
     if(op_params && (op_length == module->params_size))
     {
       // printf("got default for image %d and operation %s\n", img->id, sqlite3_column_text(stmt, 2));
       memcpy(module->default_params, op_params, op_length);
       module->default_enabled = enabled;
-      if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+      if(bl_params &&  (bl_version = dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
       {
         memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
+      }
+      else if (!bl_params || dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length))
+      {
+        // do nothing
+      }
+      else
+      {
+        assert(FALSE); // should not happen
       }
     }
     else
@@ -133,7 +142,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
     // global default
     sqlite3_finalize(stmt);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params, enabled, blendop_params, blendop_version from presets where operation = ?1 and op_version = ?2 and def=1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
 
@@ -144,13 +153,22 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
       int enabled = sqlite3_column_int(stmt, 1);
       bl_params = sqlite3_column_blob(stmt, 2);
       int bl_length = sqlite3_column_bytes(stmt, 2);
+      int bl_version = sqlite3_column_int(stmt, 3);
       if(op_params && (op_length == module->params_size))
       {
         memcpy(module->default_params, op_params, op_length);
         module->default_enabled = enabled;
-        if(bl_params && (bl_length == sizeof(dt_develop_blend_params_t)))
+        if(bl_params &&  (bl_version = dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
         {
           memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
+        }
+        else if (!bl_params || dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length))
+        {
+          // do nothing
+        }
+        else
+        {
+          assert(FALSE); // should not happen
         }
       }
       else

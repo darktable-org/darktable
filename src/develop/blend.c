@@ -1324,3 +1324,35 @@ void dt_develop_blend_init(dt_blendop_t *gd)
 #endif
 }
 
+/** blend version */
+int
+dt_develop_blend_version(void)
+{
+  return DEVELOP_BLEND_VERSION;
+}
+
+
+/** update blendop params from older versions */
+int
+dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int lenght)
+{
+#if 0
+  if(old_version == 1 && new_version == 2)
+  {
+    if(length != sizeof(dt_develop_blend_1_params)) return 1;
+
+    dt_develop_blend_1_params_t *o = (dt_develop_blend_1_params_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)modules->default_blendop_params;
+
+    *n = *d;  // start with a fresh copy of default parameters
+    n->mode = o->mode;
+    n->opacity = o->opacity;
+    n->mask_id = o->mask_id;
+    return 0;
+  }
+#endif
+
+  return 1;
+}
+

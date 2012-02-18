@@ -22,6 +22,9 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
+#define DEVELOP_BLEND_VERSION				(1)
+
+
 #define DEVELOP_BLEND_MASK_FLAG				0x80
 #define DEVELOP_BLEND_DISABLED				0x00
 #define DEVELOP_BLEND_NORMAL				0x01
@@ -71,6 +74,12 @@ void dt_develop_blend_init(dt_blendop_t *gd);
 
 /** apply blend */
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
+
+/** get blend version */
+int dt_develop_blend_version (void);
+
+/** update blendop params from older versions */
+int dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int lenght);
 
 #ifdef HAVE_OPENCL
 /** apply blend for opencl modules*/
