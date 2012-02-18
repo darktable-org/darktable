@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/film.h"
+#include "common/collection.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "control/control.h"
@@ -413,22 +414,32 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
     dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ignore_jpeg)));
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
 
-    char *filename;
+    char *filename = NULL, *first_filename = NULL;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
     GSList *it = list;
-    int id = 0;
+
+    /* for each selected folder add import job */
     while(it)
     {
       filename = (char *)it->data;
-      id = dt_film_import(filename);
+      dt_film_import(filename);
+      if (!first_filename)
+	first_filename = dt_util_dstrcat(g_strdup(filename), "%%");
       g_free (filename);
       it = g_slist_next(it);
     }
-    if(id)
+
+    /* update collection to view import */
+    if (first_filename)
     {
-      dt_film_open(id);
-      dt_ctl_switch_mode_to(DT_LIBRARY);
+	dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+	dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+	dt_conf_set_string("plugins/lighttable/collect/string0",first_filename);
+	dt_collection_update_query(darktable.collection);
+	g_free(first_filename);
     }
+
+
     g_slist_free (list);
   }
   gtk_widget_destroy(recursive);
