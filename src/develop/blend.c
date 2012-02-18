@@ -39,11 +39,11 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *lo
       scaled[DEVELOP_BLENDIF_L_low] = lower[0] / 100.0f;			// L scaled to 0..1
       scaled[DEVELOP_BLENDIF_A_low] = (lower[1] + 128.0f)/256.0f;		// a scaled to 0..1
       scaled[DEVELOP_BLENDIF_B_low] = (lower[2] + 128.0f)/256.0f;		// b scaled to 0..1
-      scaled[3] = 0.0f;								// dummy
+      scaled[3] = 0.5f;								// dummy
       scaled[DEVELOP_BLENDIF_L_up] = upper[0] / 100.0f;				// L scaled to 0..1
       scaled[DEVELOP_BLENDIF_A_up] = (upper[1] + 128.0f)/256.0f;		// a scaled to 0..1
       scaled[DEVELOP_BLENDIF_B_up] = (upper[2] + 128.0f)/256.0f;		// b scaled to 0..1
-      scaled[7] = 0.0f;								// dummy
+      scaled[7] = 0.5f;								// dummy
     break;
     case iop_cs_rgb:
       scaled[DEVELOP_BLENDIF_GRAY_low]   = 0.3f*lower[0] + 0.59f*lower[1] + 0.11f*lower[2];	// Gray scaled to 0..1

@@ -66,11 +66,11 @@ float blendif_factor(iop_cs_t cst, const float4 lower, float4 upper, const unsig
       scaled[0] = lower.x / 100.0f;			// L scaled to 0..1
       scaled[1] = (lower.y + 128.0f)/256.0f;		// a scaled to 0..1
       scaled[2] = (lower.z + 128.0f)/256.0f;		// b scaled to 0..1
-      scaled[3] = 0.0f;					// dummy
+      scaled[3] = 0.5f;					// dummy
       scaled[4] = upper.x / 100.0f;			// L scaled to 0..1
       scaled[5] = (upper.y + 128.0f)/256.0f;		// a scaled to 0..1
       scaled[6] = (upper.z + 128.0f)/256.0f;		// b scaled to 0..1
-      scaled[7] = 0.0f;					// dummy
+      scaled[7] = 0.5f;					// dummy
     break;
     case iop_cs_rgb:
       scaled[0] = 0.3f*lower.x + 0.59f*lower.y + 0.11f*lower.z;	        // Gray scaled to 0..1
