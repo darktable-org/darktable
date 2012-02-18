@@ -1,6 +1,7 @@
 /*
    This file is part of darktable,
    copyright (c) 2009--2010 johannes hanika.
+   copyright (c) 2011-2012 henrik andersson.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -354,8 +355,6 @@ void dt_film_import1(dt_film_t *film)
 
   /* we got ourself a list of images, lets sort and start import */
   images = g_list_sort(images,(GCompareFunc)_film_filename_cmp);
-
-  /* lets create a list of */
 
   /* let's start import of images */
   gchar message[512] = {0};
