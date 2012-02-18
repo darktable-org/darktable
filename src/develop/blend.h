@@ -22,7 +22,7 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
-#define DEVELOP_BLEND_VERSION				(1)
+#define DEVELOP_BLEND_VERSION				(2)
 
 
 #define DEVELOP_BLEND_MASK_FLAG				0x80
@@ -47,6 +47,33 @@
 #define DEVELOP_BLEND_HUE				0x12
 #define DEVELOP_BLEND_COLOR				0x13
 
+
+typedef enum dt_develop_blendif_channels_t
+{
+  DEVELOP_BLENDIF_L_low     = 0,
+  DEVELOP_BLENDIF_A_low     = 1,
+  DEVELOP_BLENDIF_B_low     = 2,
+
+  DEVELOP_BLENDIF_L_up      = 4,
+  DEVELOP_BLENDIF_A_up      = 5,
+  DEVELOP_BLENDIF_B_up      = 6,
+
+  DEVELOP_BLENDIF_GRAY_low  = 0,
+  DEVELOP_BLENDIF_RED_low   = 1,
+  DEVELOP_BLENDIF_GREEN_low = 2,
+  DEVELOP_BLENDIF_BLUE_low  = 3,
+
+  DEVELOP_BLENDIF_GRAY_up   = 4,
+  DEVELOP_BLENDIF_RED_up    = 5,
+  DEVELOP_BLENDIF_GREEN_up  = 6,
+  DEVELOP_BLENDIF_BLUE_up   = 7,
+
+
+  DEVELOP_BLENDIF_MAX   = 8
+}
+dt_develop_blendif_channels_t;
+
+
 typedef struct dt_develop_blend_params_t
 {
   /** blending mode */
@@ -55,7 +82,12 @@ typedef struct dt_develop_blend_params_t
   float opacity;
   /** id of mask in current pipeline */
   uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** blendif parameters */
+  float blendif_parameters[4*DEVELOP_BLENDIF_MAX];
 } dt_develop_blend_params_t;
+
 
 
 typedef struct dt_blendop_t
@@ -65,6 +97,15 @@ typedef struct dt_blendop_t
   int kernel_blendop_rgb;
 }
 dt_blendop_t;
+
+
+/** blend legacy parameters version 1 */
+typedef struct dt_develop_blend_1_params_t
+{
+  uint32_t mode;
+  float opacity;
+  uint32_t mask_id;
+} dt_develop_blend_1_params_t;
 
 
 #define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)

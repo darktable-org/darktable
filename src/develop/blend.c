@@ -22,7 +22,71 @@
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
-typedef void (_blend_row_func)(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag);
+typedef void (_blend_row_func)(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag);
+
+
+
+static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *lower, const float *upper,const unsigned int blendif,const float *parameters)
+{
+  float result = 1.0f;
+  float scaled[DEVELOP_BLENDIF_MAX];
+
+  if(blendif == 0) return 1.0f;
+
+  switch(cst)
+  {
+    case iop_cs_Lab:
+      scaled[DEVELOP_BLENDIF_L_low] = lower[0] / 100.0f;			// L scaled to 0..1
+      scaled[DEVELOP_BLENDIF_A_low] = (lower[1] + 128.0f)/256.0f;		// a scaled to 0..1
+      scaled[DEVELOP_BLENDIF_B_low] = (lower[2] + 128.0f)/256.0f;		// b scaled to 0..1
+      scaled[3] = 0.0f;								// dummy
+      scaled[DEVELOP_BLENDIF_L_up] = upper[0] / 100.0f;				// L scaled to 0..1
+      scaled[DEVELOP_BLENDIF_A_up] = (upper[1] + 128.0f)/256.0f;		// a scaled to 0..1
+      scaled[DEVELOP_BLENDIF_B_up] = (upper[2] + 128.0f)/256.0f;		// b scaled to 0..1
+      scaled[7] = 0.0f;								// dummy
+    break;
+    case iop_cs_rgb:
+      scaled[DEVELOP_BLENDIF_GRAY_low]   = 0.3f*lower[0] + 0.59f*lower[1] + 0.11f*lower[2];	// Gray scaled to 0..1
+      scaled[DEVELOP_BLENDIF_RED_low]    = lower[0];						// Red
+      scaled[DEVELOP_BLENDIF_GREEN_low]  = lower[1];						// Green
+      scaled[DEVELOP_BLENDIF_BLUE_low]   = lower[2];						// Blue
+      scaled[DEVELOP_BLENDIF_GRAY_up]    = 0.3f*upper[0] + 0.59f*upper[1] + 0.11f*upper[2];	// Gray scaled to 0..1
+      scaled[DEVELOP_BLENDIF_RED_up]     = upper[0];						// Red
+      scaled[DEVELOP_BLENDIF_GREEN_up]   = upper[1];						// Green
+      scaled[DEVELOP_BLENDIF_BLUE_up]   = upper[2];						// Blue
+    break;
+    default:
+      return 1.0f;					// not implemented for other color spaces
+  }
+
+
+  for(int ch=0; ch<DEVELOP_BLENDIF_MAX; ch++)
+  {
+    if((blendif & (1<<ch)) == 0) continue;
+    if(result == 0.0f) break;				// no need to continue if we are already at zero
+
+    float factor;
+    if      (scaled[ch] >= parameters[4*ch+1] && scaled[ch] <= parameters[4*ch+2])
+    {
+      factor = 1.0f;
+    }
+    else if (scaled[ch] >  parameters[4*ch+0] && scaled[ch] <  parameters[4*ch+1])
+    {
+      factor = (scaled[ch] - parameters[4*ch+0])/fmax(0.01f, parameters[4*ch+1]-parameters[4*ch+0]);
+    }
+    else if (scaled[ch] >  parameters[4*ch+2] && scaled[ch] <  parameters[4*ch+3])
+    {
+      factor = (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
+    }
+    else factor = 0.0f;
+
+    result *= factor;
+  }
+
+  return result;
+}
+
+
 
 static inline void _blend_colorspace_channel_range(dt_iop_colorspace_type_t cst,float *min,float *max)
 {
@@ -177,22 +241,24 @@ static inline void _LCH_2_Lab(const float *LCH, float *Lab)
 
 
 /* normal blend */
-static void _blend_normal(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_normal(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
   for(int j=0;j<stride;j+=4)
   {
+    float local_opacity = opacity*_blendif_factor(cst,&a[j],&b[j],blendif,blendif_parameters);
+
     if(cst==iop_cs_Lab)
     {
        _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
 
-       tb[0] =  (ta[0] * (1.0 - opacity)) + tb[0] * opacity;
+       tb[0] =  (ta[0] * (1.0 - local_opacity)) + tb[0] * local_opacity;
 
        if (flag == 0)
        {
-         tb[1] =  (ta[1] * (1.0 - opacity)) + tb[1] * opacity;
-         tb[2] =  (ta[2] * (1.0 - opacity)) + tb[2] * opacity;
+         tb[1] =  (ta[1] * (1.0 - local_opacity)) + tb[1] * local_opacity;
+         tb[2] =  (ta[2] * (1.0 - local_opacity)) + tb[2] * local_opacity;
        }
        else
        {
@@ -204,12 +270,12 @@ static void _blend_normal(dt_iop_colorspace_type_t cst,const float opacity,const
     }
     else
       for(int k=0;k<channels;k++)
-        b[j+k] =  (a[j+k] * (1.0 - opacity)) + b[j+k] * opacity;
+        b[j+k] =  (a[j+k] * (1.0 - local_opacity)) + b[j+k] * local_opacity;
   }
 }
 
 /* lighten */
-static void _blend_lighten(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_lighten(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   int channels = _blend_colorspace_channels(cst);
   float ta[3], tb[3], tbo;
@@ -247,7 +313,7 @@ static void _blend_lighten(dt_iop_colorspace_type_t cst,const float opacity,cons
 }
 
 /* darken */
-static void _blend_darken(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_darken(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   int channels = _blend_colorspace_channels(cst);
   float ta[3], tb[3], tbo;
@@ -287,7 +353,7 @@ static void _blend_darken(dt_iop_colorspace_type_t cst,const float opacity,const
 
 
 /* multiply */
-static void _blend_multiply(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_multiply(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -343,7 +409,7 @@ static void _blend_multiply(dt_iop_colorspace_type_t cst,const float opacity,con
 
 
 /* average */
-static void _blend_average(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_average(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -380,7 +446,7 @@ static void _blend_average(dt_iop_colorspace_type_t cst,const float opacity,cons
 
 
 /* add */
-static void _blend_add(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_add(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -420,7 +486,7 @@ static void _blend_add(dt_iop_colorspace_type_t cst,const float opacity,const fl
 
 
 /* substract */
-static void _blend_substract(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_substract(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -462,7 +528,7 @@ static void _blend_substract(dt_iop_colorspace_type_t cst,const float opacity,co
 
 
 /* difference */
-static void _blend_difference(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_difference(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -510,7 +576,7 @@ static void _blend_difference(dt_iop_colorspace_type_t cst,const float opacity,c
 
 
 /* screen */
-static void _blend_screen(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_screen(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -570,7 +636,7 @@ static void _blend_screen(dt_iop_colorspace_type_t cst,const float opacity,const
 }
 
 /* overlay */
-static void _blend_overlay(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_overlay(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -642,7 +708,7 @@ static void _blend_overlay(dt_iop_colorspace_type_t cst,const float opacity,cons
 }
 
 /* softlight */
-static void _blend_softlight(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_softlight(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -710,7 +776,7 @@ static void _blend_softlight(dt_iop_colorspace_type_t cst,const float opacity,co
 }
 
 /* hardlight */
-static void _blend_hardlight(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_hardlight(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -783,7 +849,7 @@ static void _blend_hardlight(dt_iop_colorspace_type_t cst,const float opacity,co
 
 
 /* vividlight */
-static void _blend_vividlight(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_vividlight(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -853,7 +919,7 @@ static void _blend_vividlight(dt_iop_colorspace_type_t cst,const float opacity,c
 }
 
 /* linearlight */
-static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_linearlight(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -917,7 +983,7 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float opacity,
 }
 
 /* pinlight */
-static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_pinlight(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -972,7 +1038,7 @@ static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float opacity,con
 
 
 /* lightness blend */
-static void _blend_lightness(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_lightness(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
@@ -1008,7 +1074,7 @@ static void _blend_lightness(dt_iop_colorspace_type_t cst,const float opacity,co
 
 
 /* chroma blend */
-static void _blend_chroma(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_chroma(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
@@ -1045,7 +1111,7 @@ static void _blend_chroma(dt_iop_colorspace_type_t cst,const float opacity,const
 
 
 /* hue blend */
-static void _blend_hue(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_hue(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
@@ -1089,7 +1155,7 @@ static void _blend_hue(dt_iop_colorspace_type_t cst,const float opacity,const fl
 
 
 /* color blend; blend hue and chroma, but not lightness */
-static void _blend_color(dt_iop_colorspace_type_t cst,const float opacity,const float *a, float *b,int stride, int flag)
+static void _blend_color(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
@@ -1228,7 +1294,8 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     */
     if(cst==iop_cs_RAW)
       ch = 1;
-    
+
+ 
 #ifdef _OPENMP
 #if !defined(__SUNOS__)
     #pragma omp parallel for default(none) shared(in,roi_out,out,blend,d,stderr,ch)
@@ -1239,7 +1306,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 #endif
     for (int y=0; y<roi_out->height; y++) {
         int index = (ch*y*roi_out->width);
-        blend(cst, opacity, in+index, out+index, roi_out->width*ch, blendflag);
+        blend(cst, d->blendif, d->blendif_parameters, opacity, in+index, out+index, roi_out->width*ch, blendflag);
     }
   }
   else
@@ -1334,16 +1401,16 @@ dt_develop_blend_version(void)
 
 /** update blendop params from older versions */
 int
-dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int lenght)
+dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int length)
 {
-#if 0
+
   if(old_version == 1 && new_version == 2)
   {
-    if(length != sizeof(dt_develop_blend_1_params)) return 1;
+    if(length != sizeof(dt_develop_blend_1_params_t)) return 1;
 
     dt_develop_blend_1_params_t *o = (dt_develop_blend_1_params_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)modules->default_blendop_params;
+    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
     *n = *d;  // start with a fresh copy of default parameters
     n->mode = o->mode;
@@ -1351,7 +1418,6 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     n->mask_id = o->mask_id;
     return 0;
   }
-#endif
 
   return 1;
 }

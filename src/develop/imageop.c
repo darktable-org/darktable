@@ -52,6 +52,10 @@ typedef struct _iop_gui_blend_data_t
 _iop_gui_blend_data_t;
 
 
+static dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED, 100.0, 0, 0,
+                                                          { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                                                            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f } };
+
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   const void *op_params = NULL;
@@ -59,7 +63,6 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   memcpy(module->default_params, module->factory_params, module->params_size);
   module->default_enabled = module->factory_enabled;
 
-  dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
@@ -378,7 +381,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
   module->default_blendop_params=g_malloc(sizeof(dt_develop_blend_params_t));
   memset(module->blend_params, 0, sizeof(dt_develop_blend_params_t));
-  dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
+  // dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
@@ -397,7 +400,7 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
   module->init_pipe(module, pipe, piece);
   piece->blendop_data = malloc(sizeof(dt_develop_blend_params_t));
   memset(piece->blendop_data, 0, sizeof(dt_develop_blend_params_t));
-  dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
+  //dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &default_blendop_params, sizeof(dt_develop_blend_params_t));
