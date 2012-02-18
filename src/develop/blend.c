@@ -1356,8 +1356,13 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int mode = d->mode;
   const int width = roi_in->width;
   const int height = roi_in->height;
+  const unsigned blendif = d->blendif;
+
 
   size_t sizes[] = { ROUNDUP(width, 4), ROUNDUP(height, 4), 1};
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_MAX, d->blendif_parameters);
+  if (dev_m == NULL) goto error;
+
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
@@ -1366,6 +1371,8 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&mode);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), (void *)&opacity);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(unsigned), (void *)&blendif);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), (void *)&dev_m);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);

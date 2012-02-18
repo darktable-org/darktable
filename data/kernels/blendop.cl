@@ -45,6 +45,74 @@
 const sampler_t sampleri =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
 
 
+typedef enum iop_cs_t 
+{
+  iop_cs_Lab, 
+  iop_cs_rgb, 
+  iop_cs_RAW
+} iop_cs_t;
+
+
+float blendif_factor(iop_cs_t cst, const float4 lower, float4 upper, const unsigned int blendif, constant float *parameters)
+{
+  float result = 1.0f;
+  float scaled[16];
+
+  if(blendif == 0) return 1.0f;
+
+  switch(cst)
+  {
+    case iop_cs_Lab:
+      scaled[0] = lower.x / 100.0f;			// L scaled to 0..1
+      scaled[1] = (lower.y + 128.0f)/256.0f;		// a scaled to 0..1
+      scaled[2] = (lower.z + 128.0f)/256.0f;		// b scaled to 0..1
+      scaled[3] = 0.0f;					// dummy
+      scaled[4] = upper.x / 100.0f;			// L scaled to 0..1
+      scaled[5] = (upper.y + 128.0f)/256.0f;		// a scaled to 0..1
+      scaled[6] = (upper.z + 128.0f)/256.0f;		// b scaled to 0..1
+      scaled[7] = 0.0f;					// dummy
+    break;
+    case iop_cs_rgb:
+      scaled[0] = 0.3f*lower.x + 0.59f*lower.y + 0.11f*lower.z;	        // Gray scaled to 0..1
+      scaled[1] = lower.x;						// Red
+      scaled[2] = lower.y;						// Green
+      scaled[3] = lower.z;						// Blue
+      scaled[4] = 0.3f*upper.x + 0.59f*upper.y + 0.11f*upper.z;	        // Gray scaled to 0..1
+      scaled[5] = upper.x;						// Red
+      scaled[6] = upper.y;						// Green
+      scaled[7] = upper.z;						// Blue
+    break;
+    default:
+      return 1.0f;					// not implemented for other color spaces
+  }
+
+
+  for(int ch=0; ch<8; ch++)
+  {
+    if((blendif & (1<<ch)) == 0) continue;
+    if(result == 0.0f) break;				// no need to continue if we are already at zero
+
+    float factor;
+    if      (scaled[ch] >= parameters[4*ch+1] && scaled[ch] <= parameters[4*ch+2])
+    {
+      factor = 1.0f;
+    }
+    else if (scaled[ch] >  parameters[4*ch+0] && scaled[ch] <  parameters[4*ch+1])
+    {
+      factor = (scaled[ch] - parameters[4*ch+0])/fmax(0.01f, parameters[4*ch+1]-parameters[4*ch+0]);
+    }
+    else if (scaled[ch] >  parameters[4*ch+2] && scaled[ch] <  parameters[4*ch+3])
+    {
+      factor = (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
+    }
+    else factor = 0.0f;
+
+    result *= factor;
+  }
+
+  return result;
+}
+
 
 float4 RGB_2_HSL(const float4 RGB)
 {
@@ -154,7 +222,8 @@ float4 LCH_2_Lab(const float4 LCH)
 
 
 __kernel void
-blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height, const int mode, const float opacity, const int blendflag)
+blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height, 
+             const int mode, const float gopacity, const int blendflag, const int blendif, constant float *blendif_parameters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -167,6 +236,8 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+
+  float opacity = gopacity * blendif_factor(iop_cs_Lab, a, b, blendif, blendif_parameters);
 
   /* save before scaling (for later use) */
   float ay = a.y;
@@ -387,10 +458,13 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 
 __kernel void
-blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity, const int blendflag)
+blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height,
+             const int mode, const float opacity, const int blendflag, const int blendif, constant float *blendif_parameters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float o;
 
@@ -496,10 +570,13 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 
 __kernel void
-blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity, const int blendflag)
+blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height,
+             const int mode, const float gopacity, const int blendflag, const int blendif, constant float *blendif_parameters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 o;
   float4 ta, tb, to;
@@ -507,6 +584,8 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+
+  float opacity = gopacity * blendif_factor(iop_cs_Lab, a, b, blendif, blendif_parameters);
 
   const float4 min = (float4)(0.0f, 0.0f, 0.0f, 1.0f);
   const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);
