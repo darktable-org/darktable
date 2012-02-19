@@ -266,8 +266,15 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         case DT_MODULEGROUP_NONE:
           {
-            /* show all */
-            gtk_widget_show(w);
+            /* show all exept hidden ones */
+            if((!module->showhide || (module->showhide && dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide))) || module->enabled) &&
+                (!(module->flags() & IOP_FLAGS_DEPRECATED)))
+              gtk_widget_show(w);
+            else
+            {
+              if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
+              gtk_widget_hide(w);
+            }
           } break;
 
         default:
