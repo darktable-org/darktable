@@ -18,6 +18,10 @@
 
 #include "bauhaus/bauhaus.h"
 
+// new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
+G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA);
+
+
 static void
 dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 
@@ -68,7 +72,7 @@ window_show(GtkWidget *w, gpointer user_data)
   {
     // never happened so far:
     /* ...wait a while and try again */
-    fprintf(stderr, "failed to get keyboard focus for popup window!\n");
+    fprintf(stderr, "[bauhaus] failed to get keyboard focus for popup window!\n");
     // struct timeval s;
     // s.tv_sec = 0;
     // s.tv_usec = 5000;
@@ -77,11 +81,35 @@ window_show(GtkWidget *w, gpointer user_data)
   }
 }
 
+static void
+dt_bh_init(DtBauhausWidget *class)
+{
+  // not sure if we want to use this instead of our code in *_new()
+  // TODO: the common code from bauhaus_widget_init() could go here.
+}
+
+static void
+dt_bh_class_init(DtBauhausWidgetClass *class)
+{
+  darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL] =
+    g_signal_new ("value-changed",
+        G_TYPE_FROM_CLASS (class),
+        G_SIGNAL_RUN_LAST,
+        0,
+        NULL, NULL,
+        g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  // TODO: could init callbacks once per class for more efficiency:
+  // GtkWidgetClass *widget_class;
+  // widget_class = GTK_WIDGET_CLASS (class);
+  // widget_class->expose_event = dt_bauhaus_expose;
+}
+
 void
 dt_bauhaus_init()
 {
   darktable.bauhaus = (dt_bauhaus_t *)malloc(sizeof(dt_bauhaus_t));
-  memset(darktable.bauhaus->keys, 0, 64);
+  memset(darktable.bauhaus, 0, sizeof(dt_bauhaus_t));
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
@@ -133,6 +161,7 @@ dt_bauhaus_init()
 void
 dt_bauhaus_cleanup()
 {
+  // TODO: destroy popup window and resources
 }
 
 // fwd declare a few callbacks
@@ -154,6 +183,10 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 // end static init/cleanup
 // =================================================
 
+
+
+
+
 // common initialization
 static void
 dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
@@ -162,23 +195,30 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
   // dt_gui_key_accel_block_on_focus(w->area);
   w->module = self;
 
-  gtk_widget_set_size_request(w->area, 260, 18);
+  // TODO: check this size, and all other sizes/borders (and colors)
+  gtk_widget_set_size_request(GTK_WIDGET(w), 260, 18);
   // TODO: encapsulate that for widgets, switch on widget type and add some descriptions (right click for slider + type etc)
-  g_object_set (GTK_OBJECT(w->area), "tooltip-text", _("smart tooltip"), (char *)NULL);
+  g_object_set (GTK_OBJECT(w), "tooltip-text", _("smart tooltip"), (char *)NULL);
 
-  gtk_widget_add_events(GTK_WIDGET(w->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect (G_OBJECT (w->area), "expose-event",
-                    G_CALLBACK (dt_bauhaus_expose), w);
+  gtk_widget_add_events(GTK_WIDGET(w),
+      GDK_POINTER_MOTION_MASK |
+      GDK_POINTER_MOTION_HINT_MASK |
+      GDK_BUTTON_PRESS_MASK |
+      GDK_BUTTON_RELEASE_MASK |
+      GDK_LEAVE_NOTIFY_MASK);
+
+  g_signal_connect (G_OBJECT (w), "expose-event",
+                    G_CALLBACK (dt_bauhaus_expose), NULL);
 }
 
-// TODO: don't alloc, but init to avoid fragmentation (can't with dynamic struct sizes..)
-dt_bauhaus_widget_t*
+GtkWidget*
 dt_bauhaus_slider_new(dt_iop_module_t *self)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)malloc(sizeof(dt_bauhaus_widget_t) + sizeof(dt_bauhaus_slider_data_t));
+  dt_bauhaus_widget_t* w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
+  dt_bauhaus_widget_init(w, self);
   w->type = DT_BAUHAUS_SLIDER;
   dt_bauhaus_widget_init(w, self);
-  dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
   d->pos = 0.5f;
   d->scale = 0.05f;
   snprintf(d->format, 8, "%%.03f");
@@ -189,18 +229,21 @@ dt_bauhaus_slider_new(dt_iop_module_t *self)
                     G_CALLBACK (dt_bauhaus_slider_motion_notify), w);
   g_signal_connect (G_OBJECT (w->area), "leave-notify-event",
                     G_CALLBACK (dt_bauhaus_slider_leave_notify), w);
-  return w;
+  // TODO: implement destroy signal to get rid of dynamically alloc'ed strings!
+  // (might be the label..?)
+  return GTK_WIDGET(w);
 }
 
-dt_bauhaus_widget_t*
+GtkWidget*
 dt_bauhaus_combobox_new(dt_iop_module_t *self)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)malloc(sizeof(dt_bauhaus_widget_t) + sizeof(dt_bauhaus_combobox_data_t));
+  dt_bauhaus_widget_t* w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
   w->type = DT_BAUHAUS_COMBOBOX;
   dt_bauhaus_widget_init(w, self);
   g_signal_connect (G_OBJECT (w->area), "button-press-event",
                     G_CALLBACK (dt_bauhaus_combobox_button_press), w);
-  return w;
+  // TODO: implement destroy signal to get rid of dynamically alloc'ed strings!
+  return GTK_WIDGET(w);
 }
 
 
@@ -327,7 +370,7 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       break;
     case DT_BAUHAUS_SLIDER:
       {
-        dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
         const float mouse_off = get_slider_line_offset(
             d->pos, d->scale, darktable.bauhaus->end_mouse_x/width, darktable.bauhaus->end_mouse_y/height, w->area->allocation.height/(float)height);
         d->pos = CLAMP(d->pos + mouse_off, 0.0f, 1.0f);
@@ -345,7 +388,8 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   // dimensions of the popup
   int width = widget->allocation.width, height = widget->allocation.height;
   // dimensions of the original line
-  int wd = w->area->allocation.width, ht = w->area->allocation.height;
+  GtkWidget *current = GTK_WIDGET(w);
+  int wd = current->allocation.width, ht = current->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -368,7 +412,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   {
     case DT_BAUHAUS_SLIDER:
       {
-        dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
         cairo_save(cr);
         cairo_set_line_width(cr, 1.);
         cairo_set_source_rgb(cr, .1, .1, .1);
@@ -465,9 +509,6 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         cairo_restore(cr);
       }
       break;
-    case DT_BAUHAUS_CHECKBOX:
-      break;
-      // TODO: color slider: could include chromaticity diagram
     default:
       // yell
       break;
@@ -486,7 +527,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
 static gboolean
 dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)user_data;
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   const int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
@@ -515,7 +556,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       break;
     case DT_BAUHAUS_SLIDER:
       {
-        dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
 
 #if 0
         // line for orientation? looks crappy:
@@ -603,7 +644,7 @@ dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpoin
 static void
 dt_bauhaus_slider_set(dt_bauhaus_widget_t *w, float pos)
 {
-  dt_bauhaus_slider_data_t *d = (dt_bauhaus_slider_data_t *)&w->data;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
   d->pos = CLAMP(pos, 0.0f, 1.0f);
   gtk_widget_queue_draw(w->area);
 }

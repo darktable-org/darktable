@@ -53,10 +53,9 @@ dt_iop_bauhaus_params_t;
 
 typedef struct dt_iop_bauhaus_gui_data_t
 {
-  // TODO: glib ref counting + new/destroy!
-  dt_bauhaus_widget_t *combobox;
-  dt_bauhaus_widget_t *slider;
-  dt_bauhaus_widget_t *slider2;
+  GtkWidget *combobox;
+  GtkWidget *slider;
+  GtkWidget *slider2;
 }
 dt_iop_bauhaus_gui_data_t;
 
@@ -125,13 +124,13 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, 15);//DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   c->slider = dt_bauhaus_slider_new(self);
-  gtk_box_pack_start(GTK_BOX(self->widget), c->slider->area, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->slider, TRUE, TRUE, 0);
 
   c->slider2 = dt_bauhaus_slider_new(self);
-  gtk_box_pack_start(GTK_BOX(self->widget), c->slider2->area, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->slider2, TRUE, TRUE, 0);
 
   c->combobox = dt_bauhaus_combobox_new(self);
-  gtk_box_pack_start(GTK_BOX(self->widget), c->combobox->area, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->combobox, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
