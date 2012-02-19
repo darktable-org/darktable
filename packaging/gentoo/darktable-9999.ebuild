@@ -45,7 +45,6 @@ src_configure() {
 		"$(cmake-utils_use_use openmp OPENMP)"
 		"$(cmake-utils_use_use gconf GCONF_BACKEND)"
 		"$(cmake-utils_use_use gphoto CAMERA_SUPPORT)"
-		"-DDONT_INSTALL_GCONF_SCHEMAS=ON"
 		"-DINSTALL_IOP_EXPERIMENTAL=ON"
 		"-DINSTALL_IOP_LEGACY=ON" )
 	cmake-utils_src_configure

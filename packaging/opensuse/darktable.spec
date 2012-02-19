@@ -55,7 +55,7 @@ export CFLAGS="$CXXFLAGS"
 mkdir -p build
 cd build
 
-cmake -DCMAKE_INSTALL_PREFIX=%prefix -DCMAKE_BUILD_TYPE=Release -DDONT_INSTALL_GCONF_SCHEMAS=ON \
+cmake -DCMAKE_INSTALL_PREFIX=%prefix -DCMAKE_BUILD_TYPE=Release \
 	-DINSTALL_IOP_EXPERIMENTAL=OFF -DINSTALL_IOP_LEGACY=ON ..
 
 make %{?jobs:-j %jobs} 
