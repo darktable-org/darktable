@@ -146,18 +146,16 @@ finalize_store(dt_imageio_module_storage_t *self, void *params)
   gchar uri[4096]= {0};
   gchar body[4096]= {0};
   gchar attachments[4096]= {0};
-  gchar *defaultHandler=NULL;
   gchar *uriFormat=NULL;
   gchar *subject="images exported from darktable";
   gchar *imageBodyFormat="%s %s\n"; // filename, exif oneliner
   gchar *attachmentFormat=NULL;
   gchar *attachmentSeparator="";
 
+#if 0  
+  gchar *defaultHandler=NULL;
   if(  strlen( defaultHandler = dt_conf_get_string("plugins/imageio/storage/email/client") ) <= 0 )
   {
-#ifdef HAVE_GCONF
-    defaultHandler = gconf_client_get_string (darktable.conf->gconf, "/desktop/gnome/url-handlers/mailto/command", NULL);
-#endif
   }
 
   if( defaultHandler )
@@ -186,12 +184,14 @@ finalize_store(dt_imageio_module_storage_t *self, void *params)
       goto proceed;
     }
   }
+#endif
+
 
   // If no default handler detected above, we use gtk_show_uri with mailto:// and hopes things goes right..
   uriFormat="mailto:?subject=%s&body=%s%s";   // subject, body, and list of attachments with format &attachment=<filename>
   attachmentFormat="&attachment=file://%s";
 
-proceed: ; // Let's build up uri / command
+//proceed: ; // Let's build up uri / command
   while( d->images )
   {
     gchar exif[256]= {0};
