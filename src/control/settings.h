@@ -119,16 +119,6 @@ typedef enum dt_lib_filter_t
 }
 dt_lib_filter_t;
 
-typedef enum dt_lib_sort_t
-{
-  DT_LIB_SORT_FILENAME = 0,
-  DT_LIB_SORT_DATETIME,
-  DT_LIB_SORT_RATING,
-  DT_LIB_SORT_ID,
-  DT_LIB_SORT_COLOR
-}
-dt_lib_sort_t;
-
 typedef struct dt_ctl_settings_t
 {
   // TODO: remove most of these options, maybe the whole struct?
