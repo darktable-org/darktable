@@ -1649,7 +1649,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>password storage backend to use</short>
-        <long>the storage backend for password storage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring</long>
+        <long>the storage backend for password storage: 0 - none, 2 - kwallet, 3 - gnome keyring</long>
       </locale>
     </schema>
     

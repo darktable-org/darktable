@@ -239,7 +239,7 @@ set_storage_by_name (dt_lib_export_t *d, const char *name)
     }
 
     // Check if plugin recommends a max dimension and set
-    // if not implemnted the stored gconf values are used..
+    // if not implemnted the stored conf values are used..
     uint32_t w=0,h=0;
     w = dt_conf_get_int("plugins/lighttable/export/width");
     h = dt_conf_get_int("plugins/lighttable/export/height");

@@ -258,7 +258,7 @@ void gui_cleanup (dt_imageio_module_format_t *self)
 
 void gui_reset   (dt_imageio_module_format_t *self)
 {
-  // TODO: reset to gconf? reset to factory defaults?
+  // TODO: reset to conf? reset to factory defaults?
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

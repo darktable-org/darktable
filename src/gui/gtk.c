@@ -694,7 +694,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accelerators);
 
-  // set constant width from gconf key
+  // set constant width from conf key
   int panel_width = dt_conf_get_int("panel_width");
   if(panel_width < 20 || panel_width > 500)
   {

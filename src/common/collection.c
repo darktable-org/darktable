@@ -325,7 +325,7 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
 static int
 _dt_collection_store (const dt_collection_t *collection, gchar *query)
 {
-  /* store flags to gconf */
+  /* store flags to conf */
   if (collection == darktable.collection)
   {
     dt_conf_set_int ("plugins/collection/query_flags",collection->params.query_flags);
