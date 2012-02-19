@@ -249,7 +249,6 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     if(dev->image_force_reload) dt_dev_pixelpipe_flush_caches(dev->pipe);
-    dev->image_loading = 0;
     dev->image_dirty = 1;
     dev->image_force_reload = 0;
     if(dev->gui_attached)
@@ -309,6 +308,7 @@ restart:
 
   // cool, we got a new image!
   dev->image_dirty = 0;
+  dev->image_loading = 0;
 
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   dt_control_queue_redraw_center();
