@@ -211,10 +211,6 @@ if(LENSFUN_FOUND)
   add_definitions("-DHAVE_LENSFUN")
 endif(LENSFUN_FOUND)
 
-if(GCONF2_FOUND)
-  add_definitions("-DHAVE_GCONF")
-endif(GCONF2_FOUND)
-
 if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
 endif(OPENEXR_FOUND)
