@@ -569,6 +569,7 @@ film_strip_activated(const int imgid, void *data)
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_change_image(dev, imgid);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // force redraw
   dt_control_queue_redraw();
 }
@@ -619,8 +620,10 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
         return;
       }
 
+      if (!dev->image_loading) {
+        dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+      }
       dt_dev_change_image(dev, imgid);
-      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
 
     }
     sqlite3_finalize(stmt);

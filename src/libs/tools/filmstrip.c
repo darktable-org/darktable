@@ -509,7 +509,11 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   const int img_pointerx = (int)fmodf(pointerx, wd);
   const int img_pointery = (int)pointery;
 
-  const int max_cols = (int)(1+width/(float)wd);
+  const int max_cols = (int)(width/(float)wd);
+  const int col_start = max_cols/2 - strip->offset;
+  const int empty_edge = (width - (max_cols * wd))/2;
+  int step_res = SQLITE_ROW;
+
   sqlite3_stmt *stmt = NULL;
 
   /* get the count of current collection */
@@ -521,18 +525,28 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
     return FALSE;
 
   if(offset < 0)                strip->offset = offset = 0;
-  if(offset > count-max_cols+1) strip->offset = offset = count-max_cols+1;
+  if(offset > count-1) strip->offset = offset = count-1;
   // dt_view_set_scrollbar(self, offset, count, max_cols, 0, 1, 1);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset - max_cols/2);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
   
 
   cairo_save(cr);
+  cairo_translate(cr, empty_edge, 0.0f);
   for(int col = 0; col < max_cols; col++)
   {
-    if(sqlite3_step(stmt) == SQLITE_ROW)
+    if(col < col_start) {
+      cairo_translate(cr, wd, 0.0f);
+      continue;
+    }
+
+    if(step_res != SQLITE_DONE) {
+      step_res = sqlite3_step(stmt);
+    }
+
+    if(step_res == SQLITE_ROW)
     {
       int id = sqlite3_column_int(stmt, 0);
       // set mouse over id
@@ -547,6 +561,9 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
       cairo_get_matrix(cr, &m);
       dt_view_image_expose(&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery);
       cairo_restore(cr);
+    }
+    else if (step_res == SQLITE_DONE) {
+      /* do nothing, just add some empty thumb frames */
     }
     else goto failure;
     cairo_translate(cr, wd, 0.0f);
