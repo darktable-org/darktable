@@ -94,6 +94,6 @@ else()
   # first of all install darktablerc file into share as template
   # postinst script should copy this into users homedirectory 
   # $HOME/.config/darktable/darktable.rc
-  install(FILES darktablerc DESTINATION ${SHARE_INSTALL}/)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/)
   
 endif()
