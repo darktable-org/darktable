@@ -88,8 +88,6 @@ typedef struct dt_bauhaus_widget_t
   GtkDrawingArea parent;
   // which type of control
   dt_bauhaus_type_t type;
-  // associated drawing area in gtk
-  GtkWidget *area;
   // associated image operation module (to handle focus and such)
   dt_iop_module_t *module;
   // TODO: callbacks for user signals?
