@@ -17,10 +17,9 @@ URL:		http://www.darktable.org/
 Group:		Productivity/Graphics/Viewers
 Source0:	%{name}-%{version}.tar.gz
 BuildRequires:	gcc-c++ libglade2-devel libtiff-devel cairo-devel libexiv2-devel
-BuildRequires:	gconf2-devel >= 2.26 sqlite3-devel lensfun-devel liblcms-devel
+BuildRequires:	sqlite3-devel lensfun-devel liblcms-devel
 BuildRequires:	intltool update-desktop-files fdupes
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
-%gconf_schemas_prereq
 
 %description
 darktable is a virtual lighttable and darkroom for photographers: it manages
@@ -67,7 +66,6 @@ make install DESTDIR="$RPM_BUILD_ROOT"
 
 mkdir -p %{buildroot}/usr/share/doc/packages
 %{__mv} %{buildroot}%{_datadir}/doc/%{name} %{buildroot}/usr/share/doc/packages
-%find_gconf_schemas
 %find_lang %{name}
 %suse_update_desktop_file -i %{name}
 %fdupes -s %{buildroot}%{_datadir}

@@ -8,7 +8,7 @@ Homepage: http://www.darktable.org/
 
 Package: darktable
 Architecture: any
-Depends: ${shlibs:Depends}, libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data, libgconf2-4
+Depends: ${shlibs:Depends}, libgtk2.0-0, libsqlite3-0, libglade2-0, libgegl-0.0-0, libcairo2, libexiv2-5, liblcms1, libjpeg62, libpng12-0, liblensfun0, liblensfun-data
 Description: utility to organize and develop raw images
  .
  darktable is a virtual lighttable and darkroom for photographers. it manages your digital negatives in a database and lets you view them through a zoomable lighttable. it also enables you to develop raw images and enhance them.
