@@ -435,10 +435,8 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       break;
 
     case DEVELOP_BLEND_INVERSE:
-    default:
       o =  (a * opacity) + (b * (1.0f - opacity));
       break;
-
 
     /* fallback to normal blend */
     case DEVELOP_BLEND_NORMAL:
@@ -564,7 +562,6 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       break;
 
     case DEVELOP_BLEND_INVERSE:
-    default:
       o =  (a * opacity) + (b * (1.0f - opacity));
       break;
 
@@ -709,7 +706,6 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
       break;
 
     case DEVELOP_BLEND_INVERSE:
-    default:
       o =  (a * opacity) + (b * (1.0f - opacity));
       break;
 
