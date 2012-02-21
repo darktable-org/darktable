@@ -22,6 +22,13 @@
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA);
 
 
+// fwd declare
+static void dt_bauhaus_hide_popup();
+static void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);
+static gboolean
+dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean
+dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 static void
 dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 
@@ -39,7 +46,7 @@ static gboolean
 dt_bauhaus_popup_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   // TODO: make popup disappear, send accept signal or don't?
-  // gtk_widget_hide(darktable.bauhaus->popup_window);
+  // dt_bauhaus_hide_popup();
   return TRUE;
 }
 
@@ -54,15 +61,9 @@ dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton *event, gpointer
     dt_bauhaus_widget_accept(darktable.bauhaus->current);
   }
   // dt_control_key_accelerators_on(darktable.control);
-  gtk_widget_hide(darktable.bauhaus->popup_window);
+  dt_bauhaus_hide_popup();
   return TRUE;
 }
-
-// fwd declare
-static gboolean
-dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
-static gboolean
-dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
 static void
 window_show(GtkWidget *w, gpointer user_data)
@@ -613,12 +614,22 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 }
 
 static void
-dt_bauhaus_show_popup()
+dt_bauhaus_hide_popup()
 {
+  gtk_widget_hide(darktable.bauhaus->popup_window);
+  darktable.bauhaus->current = NULL;
+  // TODO: give focus to center view? do in accept() as well?
+}
+
+static void
+dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
+{
+  if(darktable.bauhaus->current)
+    dt_bauhaus_hide_popup();
+  darktable.bauhaus->current = w;
   darktable.bauhaus->keys_cnt = 0;
   memset(darktable.bauhaus->keys, 0, 64);
 
-  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
   dt_iop_request_focus(w->module);
 
   gint wx, wy;
@@ -636,10 +647,9 @@ static gboolean
 dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-  darktable.bauhaus->current = w;
   darktable.bauhaus->mouse_x = event->x;
   darktable.bauhaus->mouse_y = event->y;
-  dt_bauhaus_show_popup();
+  dt_bauhaus_show_popup(w);
   return TRUE;
 }
 
@@ -678,8 +688,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         dt_bauhaus_slider_set(darktable.bauhaus->current, atof(darktable.bauhaus->keys));
         darktable.bauhaus->keys_cnt = 0;
         memset(darktable.bauhaus->keys, 0, 64);
-        // TODO: encapsulate that as well, if there's some more work to be done here.
-        gtk_widget_hide(darktable.bauhaus->popup_window);
+        dt_bauhaus_hide_popup();
       }
       return TRUE;
     }
@@ -697,10 +706,9 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   if(event->button == 3)
   {
-    darktable.bauhaus->current = w;
     darktable.bauhaus->mouse_x = event->x;
     darktable.bauhaus->mouse_y = event->y;
-    dt_bauhaus_show_popup();
+    dt_bauhaus_show_popup(w);
     return TRUE;
   }
   else if(event->button == 1)
@@ -743,7 +751,7 @@ static gboolean
 dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-  gtk_widget_hide(darktable.bauhaus->popup_window);
+  dt_bauhaus_hide_popup();
   return TRUE;
 }
 #endif
