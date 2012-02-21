@@ -318,8 +318,9 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
   {
     int vx=gwidth*DTGTK_GRADIENT_SLIDER(widget)->position[k];
     int mk=DTGTK_GRADIENT_SLIDER(widget)->marker[k];
-    cairo_move_to(cr,vx,2);
-    cairo_line_to(cr,vx,height-2);
+    int sz=(mk & (1<<3)) ? 12 : 5;
+    cairo_move_to(cr,vx,sz < 10 ? 2 : 3);
+    cairo_line_to(cr,vx,sz < 10 ? height-2 : height-3);
     cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
     cairo_set_line_width(cr,1.0);
     cairo_stroke(cr);
@@ -328,17 +329,17 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     if(mk & 0x04) /* upper arrow */
     {
       if (mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_arrow(cr, vx-2,1,5,5,CPF_DIRECTION_DOWN);
+        dtgtk_cairo_paint_solid_arrow(cr, vx-sz/2, sz < 10 ? 1 : 0,sz,sz,CPF_DIRECTION_DOWN);
       else
-        dtgtk_cairo_paint_arrow(cr, vx-2,1,5,5,CPF_DIRECTION_DOWN);
+        dtgtk_cairo_paint_arrow(cr, vx-sz/2, sz < 10 ? 1 : 0,sz,sz,CPF_DIRECTION_DOWN);
     }
 
     if(mk & 0x02) /* lower arrow */
     {
       if (mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_arrow(cr, vx-2,height-6,5,5,CPF_DIRECTION_UP);
+        dtgtk_cairo_paint_solid_arrow(cr, vx-sz/2,sz < 10 ? height-6 : height-7,sz,sz,CPF_DIRECTION_UP);
       else
-        dtgtk_cairo_paint_arrow(cr, vx-2,height-6,5,5,CPF_DIRECTION_UP);
+        dtgtk_cairo_paint_arrow(cr, vx-sz/2,sz < 10 ? height-6 : height-7,sz,sz,CPF_DIRECTION_UP);
     }
   }
 

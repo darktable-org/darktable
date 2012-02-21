@@ -27,6 +27,10 @@ G_BEGIN_DECLS
 #define DTGTK_GRADIENT_SLIDER_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSliderClass)
 #define DTGTK_IS_GRADIENT_SLIDER(obj) GTK_CHECK_TYPE(obj, dtgtk_gradient_slider_get_type())
 #define DTGTK_IS_GRADIENT_SLIDER_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_get_type())
+#define DTGTK_GRADIENT_SLIDER_MULTIVALUE(obj) GTK_CHECK_CAST(obj, dtgtk_gradient_slider_multivalue_get_type (), GtkDarktableGradientSlider)
+#define DTGTK_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_multivalue_get_type(), GtkDarktableGradientSliderClass)
+#define DTGTK_IS_GRADIENT_SLIDER_MULTIVALUE(obj) GTK_CHECK_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
+#define DTGTK_IS_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
 
 enum
 {
@@ -35,15 +39,22 @@ enum
 };
 
 
-/** bitfields for marker: bit-0 open/filled, bit-1 lower off/on, bit-2 upper off/on */
+/** bitfields for marker: bit-0 open/filled, bit-1 lower off/on, bit-2 upper off/on, bit-3 size small/big */
 enum
 {
-  GRADIENT_SLIDER_MARKER_DOUBLE_OPEN   = 0x06,
-  GRADIENT_SLIDER_MARKER_DOUBLE_FILLED = 0x07,
-  GRADIENT_SLIDER_MARKER_UPPER_OPEN    = 0x04,
-  GRADIENT_SLIDER_MARKER_UPPER_FILLED  = 0x05,
-  GRADIENT_SLIDER_MARKER_LOWER_OPEN    = 0x02,
-  GRADIENT_SLIDER_MARKER_LOWER_FILLED  = 0x03
+  GRADIENT_SLIDER_MARKER_DOUBLE_OPEN       = 0x06,
+  GRADIENT_SLIDER_MARKER_DOUBLE_FILLED     = 0x07,
+  GRADIENT_SLIDER_MARKER_UPPER_OPEN        = 0x04,
+  GRADIENT_SLIDER_MARKER_UPPER_FILLED      = 0x05,
+  GRADIENT_SLIDER_MARKER_LOWER_OPEN        = 0x02,
+  GRADIENT_SLIDER_MARKER_LOWER_FILLED      = 0x03,
+
+  GRADIENT_SLIDER_MARKER_DOUBLE_OPEN_BIG   = 0x0e,
+  GRADIENT_SLIDER_MARKER_DOUBLE_FILLED_BIG = 0x0f,
+  GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG    = 0x0c,
+  GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG  = 0x0d,
+  GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG    = 0x0a,
+  GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG  = 0x0b
 };
 
 
@@ -67,6 +78,7 @@ typedef struct _GtkDarktableGradientSliderClass
 } GtkDarktableGradientSliderClass;
 
 GType dtgtk_gradient_slider_get_type (void);
+GType dtgtk_gradient_slider_multivalue_get_type (void);
 
 /** Instansiate a new darktable gradient slider control */
 GtkWidget* dtgtk_gradient_slider_new();

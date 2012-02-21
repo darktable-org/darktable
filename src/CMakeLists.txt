@@ -51,6 +51,7 @@ FILE(GLOB SOURCE_FILES
   "develop/imageop.c"
   "develop/pixelpipe.c"
   "develop/blend.c"
+  "develop/blend_gui.c"
   "develop/tiling.c"
   "dtgtk/button.c"
   "dtgtk/icon.c"

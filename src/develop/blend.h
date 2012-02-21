@@ -19,6 +19,12 @@
 #ifndef DT_DEVELOP_BLEND_H
 #define DT_DEVELOP_BLEND_H
 
+#include "dtgtk/button.h"
+#include "dtgtk/icon.h"
+#include "dtgtk/tristatebutton.h"
+#include "dtgtk/slider.h"
+#include "dtgtk/tristatebutton.h"
+#include "dtgtk/gradientslider.h"
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
@@ -108,6 +114,33 @@ typedef struct dt_develop_blend_1_params_t
 } dt_develop_blend_1_params_t;
 
 
+/** blend gui data */
+typedef struct dt_iop_gui_blend_data_t
+{
+  int blendif_support;
+  dt_iop_colorspace_type_t csp;
+  dt_iop_module_t *module;
+  GtkWidget *iopw;
+  GtkToggleButton *enable;
+  GtkToggleButton *blendif_enable;
+  GtkVBox *box;
+  GtkVBox *blendif_box;
+  GtkDarktableGradientSlider *upper_slider;
+  GtkDarktableGradientSlider *lower_slider;
+  GtkLabel *upper_label[4];
+  GtkLabel *lower_label[4];
+  void (*scale_print[4])(float value, char *string);
+  GtkComboBox *blend_modes_combo;
+  GtkWidget *opacity_slider;
+  int channel;
+  GtkNotebook* channel_tabs;
+  GdkColor colors[4][3];
+}
+dt_iop_gui_blend_data_t;
+
+
+
+
 #define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)
 
 /** global init of blendops */
@@ -121,6 +154,12 @@ int dt_develop_blend_version (void);
 
 /** update blendop params from older versions */
 int dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int lenght);
+
+/** gui related stuff */
+void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module);
+void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module);
+void dt_iop_gui_update_blendif(dt_iop_module_t *module);
+
 
 #ifdef HAVE_OPENCL
 /** apply blend for opencl modules*/
