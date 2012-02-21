@@ -31,7 +31,7 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *lo
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_MAX];
 
-  if(blendif == 0) return 1.0f;
+  if((blendif & (1<<31)) == 0) return 1.0f;
 
   switch(cst)
   {

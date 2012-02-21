@@ -58,7 +58,7 @@ float blendif_factor(iop_cs_t cst, const float4 lower, float4 upper, const unsig
   float result = 1.0f;
   float scaled[16];
 
-  if(blendif == 0) return 1.0f;
+  if((blendif & (1<<31))== 0) return 1.0f;
 
   switch(cst)
   {
