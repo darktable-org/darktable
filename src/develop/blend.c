@@ -1256,7 +1256,39 @@ static void _blend_color(dt_iop_colorspace_type_t cst,const unsigned int blendif
   }
 }
 
+/* inverse blend */
+static void _blend_inverse(dt_iop_colorspace_type_t cst,const unsigned int blendif,const float *blendif_parameters,const float opacity,const float *a, float *b,int stride, int flag)
+{
+  float ta[3], tb[3];
+  int channels = _blend_colorspace_channels(cst);
+  for(int j=0;j<stride;j+=4)
+  {
+    float local_opacity = 1.0f - opacity*_blendif_factor(cst,&a[j],&b[j],blendif,blendif_parameters);
 
+    if(cst==iop_cs_Lab)
+    {
+       _blend_Lab_scale(&a[j], ta); _blend_Lab_scale(&b[j], tb);
+
+       tb[0] =  (ta[0] * (1.0 - local_opacity)) + tb[0] * local_opacity;
+
+       if (flag == 0)
+       {
+         tb[1] =  (ta[1] * (1.0 - local_opacity)) + tb[1] * local_opacity;
+         tb[2] =  (ta[2] * (1.0 - local_opacity)) + tb[2] * local_opacity;
+       }
+       else
+       {
+         tb[1] = ta[1];
+         tb[2] = ta[2];
+       }
+
+       _blend_Lab_rescale(tb, &b[j]);
+    }
+    else
+      for(int k=0;k<channels;k++)
+        b[j+k] =  (a[j+k] * (1.0 - local_opacity)) + b[j+k] * local_opacity;
+  }
+}
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
@@ -1326,6 +1358,10 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     case DEVELOP_BLEND_COLOR:
       blend = _blend_color;
       break;
+    case DEVELOP_BLEND_INVERSE:
+      blend = _blend_inverse;
+      break;
+
 
       /* fallback to normal blend */
     case DEVELOP_BLEND_NORMAL:

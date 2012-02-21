@@ -69,6 +69,9 @@ _iop_gui_blendif_colorstop_t;
 
 
 
+
+
+
 static void
 _blendif_scale_print_L(float value, char *string)
 {
@@ -86,7 +89,6 @@ _blendif_scale_print_rgb(float value, char *string)
 {
   sprintf(string, "%-4.0f", value*255.0f);
 }
-
 
 
 static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,dt_iop_gui_blend_data_t *data)
@@ -480,6 +482,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("chroma"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("hue"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("color"));
+    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("inverse"));
 
     gtk_combo_box_set_active(bd->blend_modes_combo,0);
 

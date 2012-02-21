@@ -52,6 +52,7 @@
 #define DEVELOP_BLEND_CHROMA				0x11
 #define DEVELOP_BLEND_HUE				0x12
 #define DEVELOP_BLEND_COLOR				0x13
+#define DEVELOP_BLEND_INVERSE				0x14
 
 
 typedef enum dt_develop_blendif_channels_t
