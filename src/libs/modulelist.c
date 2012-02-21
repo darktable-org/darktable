@@ -90,7 +90,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
   gboolean expand = FALSE;
   if(state==0)
   {
-    /* module is hidden lets set gconf values */
+    /* module is hidden lets set conf values */
     gtk_widget_hide(GTK_WIDGET(module->expander));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, FALSE);
@@ -102,7 +102,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
   }
   else if(state==1)
   {
-    /* module is shown lets set gconf values */
+    /* module is shown lets set conf values */
     // FIXME
     // dt_gui_iop_modulegroups_switch(module->groups());
     gtk_widget_show(GTK_WIDGET(module->expander));
@@ -118,7 +118,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
   }
   else if(state==2)
   {
-    /* module is shown and favorite lets set gconf values */
+    /* module is shown and favorite lets set conf values */
     // FIXME
     // dt_gui_iop_modulegroups_switch(module->groups());
     gtk_widget_show(GTK_WIDGET(module->expander));

@@ -86,7 +86,6 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_string ("capture/camera/storage/namepattern", "$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)");
   dt_conf_set_string ("capture/camera/import/jobcode", "noname");
 
-  // avoid crashes for malicious gconf installs:
   dt_conf_set_int  ("plugins/collection/film_id",           1);
   dt_conf_set_int  ("plugins/collection/filter_flags",      3);
   dt_conf_set_int  ("plugins/collection/query_flags",       3);

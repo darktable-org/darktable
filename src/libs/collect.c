@@ -136,7 +136,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
-  /* update gconf settings from params */
+  /* update conf settings from params */
   dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
   char confname[200];
   

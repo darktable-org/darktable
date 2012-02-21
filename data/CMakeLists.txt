@@ -44,22 +44,8 @@ install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/watermarks)
 install(FILES gdb_commands DESTINATION ${SHARE_INSTALL})
 
 #
-# Install gconf schema.
-#
-
-if(USE_GCONF_BACKEND)
-  if(NOT DONT_INSTALL_GCONF_SCHEMAS)
-    install (CODE "set(ENV{GCONF_CONFIG_SOURCE} ${DT_GCONF_SCHEMA_DIR})
-        execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET COMMAND gconftool-2 --makefile-install-rule darktable.schemas)")
-    install (CODE "message(\"-- Installing: gconf schemas to '${DT_GCONF_SCHEMA_DIR}'\")")
-    install (CODE "execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET COMMAND killall -HUP gconfd-2)")
-    install (CODE "message(\"-- Installing: restarting gconfd-2\")")
-  else()
-    install(FILES darktable.schemas DESTINATION /etc/gconf/schemas)
-  endif(NOT DONT_INSTALL_GCONF_SCHEMAS)
-else()
- # Setup some custom commands to generate a darktablerc template
- # out of the darktable.schemas file.
+# Setup some custom commands to generate a darktablerc template
+# out of the darktable.schemas file.
  add_custom_command (
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys
     COMMAND 
@@ -94,6 +80,5 @@ else()
   # first of all install darktablerc file into share as template
   # postinst script should copy this into users homedirectory 
   # $HOME/.config/darktable/darktable.rc
-  install(FILES darktablerc DESTINATION ${SHARE_INSTALL}/)
-  
-endif()
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${SHARE_INSTALL}/)
+

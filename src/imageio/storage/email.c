@@ -146,52 +146,16 @@ finalize_store(dt_imageio_module_storage_t *self, void *params)
   gchar uri[4096]= {0};
   gchar body[4096]= {0};
   gchar attachments[4096]= {0};
-  gchar *defaultHandler=NULL;
   gchar *uriFormat=NULL;
   gchar *subject="images exported from darktable";
-  gchar *imageBodyFormat="%s %s\n"; // filename, exif oneliner
+  gchar *imageBodyFormat="%s %s"; // filename, exif oneliner
   gchar *attachmentFormat=NULL;
   gchar *attachmentSeparator="";
 
-  if(  strlen( defaultHandler = dt_conf_get_string("plugins/imageio/storage/email/client") ) <= 0 )
-  {
-#ifdef HAVE_GCONF
-    defaultHandler = gconf_client_get_string (darktable.conf->gconf, "/desktop/gnome/url-handlers/mailto/command", NULL);
-#endif
-  }
-
-  if( defaultHandler )
-  {
-    // Detected a default handler let's do special case handling for each email client..
-    if( g_strrstr(defaultHandler,"thunderbird") )
-    {
-      uriFormat="thunderbird -compose \"to='',subject='%s',body='%s',attachment='%s'\"";   // subject, body, and list of attachments with format "<filename>,"
-      attachmentFormat="%s";
-      attachmentSeparator=",";
-      goto proceed;
-    }
-    else if( g_strrstr(defaultHandler,"kmail") )
-    {
-      // When I enter the mailto:... in konqueror everything is ok, yet from dt we have no attachements. WTF?
-      // So we launch it directly.
-      uriFormat="kmail --composer --subject \"%s\" --body \"%s\" --attach \"%s\"";   // subject, body, and list of attachments with format "--attach <filename> "
-      attachmentFormat="%s";
-      attachmentSeparator="\" --attach \"";
-      goto proceed;
-    }
-    else if( g_strrstr(defaultHandler,"evolution") )
-    {
-      uriFormat="evolution \"mailto:?subject=%s&body=%s%s\"";   // subject, body, and list of attachments with format "--attach <filename> "
-      attachmentFormat="&attachment=file://%s";
-      goto proceed;
-    }
-  }
-
   // If no default handler detected above, we use gtk_show_uri with mailto:// and hopes things goes right..
-  uriFormat="mailto:?subject=%s&body=%s%s";   // subject, body, and list of attachments with format &attachment=<filename>
-  attachmentFormat="&attachment=file://%s";
+  uriFormat="xdg-email --subject \"%s\" --body \"%s\" %s &";   // subject, body, and list of attachments with format:
+  attachmentFormat=" --attach \"%s\"";
 
-proceed: ; // Let's build up uri / command
   while( d->images )
   {
     gchar exif[256]= {0};
@@ -214,11 +178,13 @@ proceed: ; // Let's build up uri / command
   // build uri and launch before we quit...
   g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
 
-  // So what should we do...
-  if( strncmp( uri, "mailto:", 7) == 0 )
-    gtk_show_uri(NULL,uri,GDK_CURRENT_TIME,NULL);
-  else // Launch subprocess
-    if(system( uri ) < 0) fprintf(stderr, "[email] could not launch subprocess!\n");
+  fprintf(stderr, "[email] launching `%s'\n", uri);
+  if(system( uri ) < 0)
+  {
+    // TODO: after string freeze is broken again, report to ui:
+    // dt_control_log(_("could not launch email client!"));
+    fprintf(stderr, "[email] could not launch subprocess!\n");
+  }
 }
 
 int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_module_format_t *format)

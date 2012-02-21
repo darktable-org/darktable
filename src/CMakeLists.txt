@@ -112,16 +112,6 @@ list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
 
-# Check for gconf2 / broken cmake module can't be included in the foreach() below
-if(USE_GCONF_BACKEND)
-  find_package(GConf2)
-  include_directories(${GConf2_INCLUDE_DIRS})
-  list(APPEND LIBS ${GConf2_LIBRARIES})
-  add_definitions(${GConf2_DEFINITIONS})
-endif(USE_GCONF_BACKEND)
-
-
-
 if(USE_CAMERA_SUPPORT)
   find_package(Gphoto2)
   include_directories(${Gphoto2_INCLUDE_DIRS})
@@ -221,10 +211,6 @@ endif(INOTIFY_FOUND)
 if(LENSFUN_FOUND)
   add_definitions("-DHAVE_LENSFUN")
 endif(LENSFUN_FOUND)
-
-if(GCONF2_FOUND)
-  add_definitions("-DHAVE_GCONF")
-endif(GCONF2_FOUND)
 
 if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
