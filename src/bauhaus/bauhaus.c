@@ -684,14 +684,31 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
       else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
              (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
       {
+        // accept input
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
         dt_bauhaus_slider_set(darktable.bauhaus->current, atof(darktable.bauhaus->keys));
         darktable.bauhaus->keys_cnt = 0;
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
       }
+      else if(event->keyval == GDK_KEY_Escape)
+      {
+        // discard input and close popup
+        darktable.bauhaus->keys_cnt = 0;
+        memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_hide_popup();
+      }
       return TRUE;
     }
+    case DT_BAUHAUS_COMBOBOX:
+      if(event->keyval == GDK_KEY_Escape)
+      {
+        // discard input and close popup
+        darktable.bauhaus->keys_cnt = 0;
+        memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_hide_popup();
+      }
+      return TRUE;
     default:
       return FALSE;
   }
