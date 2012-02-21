@@ -218,6 +218,8 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
   dt_iop_gui_blend_data_t *data = module->blend_data;
   dt_develop_blend_params_t *bp = module->blend_params;
 
+  if (!data->blendif_support) return;
+
   float *iparameters = &(bp->blendif_parameters[4*data->channel]);
   float *oparameters = &(bp->blendif_parameters[16+4*data->channel]);
   char text[256];
@@ -299,19 +301,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     char **labels = NULL;
     char **tooltips = NULL;
 
-    bd->blendif_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
-    GtkWidget *biftb = gtk_hbox_new(FALSE,5);
-    GtkWidget *bifnb = gtk_hbox_new(FALSE,10);
-    GtkWidget *dummybox1 = gtk_hbox_new(FALSE,0);
-    GtkWidget *dummybox2 = gtk_hbox_new(FALSE,0);
-    GtkWidget *uplabel = gtk_hbox_new(FALSE,0);
-    GtkWidget *lowlabel = gtk_hbox_new(FALSE,0);
 
-    bd->blendif_enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend if ...")));
-    gtk_toggle_button_set_active(bd->blendif_enable, 0);
-
-
-    bd->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
     switch(bd->csp)
     {
@@ -339,6 +329,21 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
         assert(FALSE);		// blendif not supported for RAW, which is already catched upstream; we should not get here
     }
 
+
+    bd->blendif_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
+    GtkWidget *vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+    GtkWidget *biftb = gtk_hbox_new(FALSE,5);
+    GtkWidget *bifnb = gtk_hbox_new(FALSE,10);
+    GtkWidget *dummybox1 = gtk_hbox_new(FALSE,0);
+    GtkWidget *dummybox2 = gtk_hbox_new(FALSE,0);
+    GtkWidget *uplabel = gtk_hbox_new(FALSE,0);
+    GtkWidget *lowlabel = gtk_hbox_new(FALSE,0);
+
+    bd->blendif_enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend if ...")));
+    gtk_toggle_button_set_active(bd->blendif_enable, 0);
+
+    bd->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+
     for(int ch=0; ch<maxchannels; ch++)
     {
       gtk_notebook_append_page(GTK_NOTEBOOK(bd->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(labels[ch]));
@@ -350,7 +355,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_object_set(G_OBJECT(bd->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
 
-    GtkWidget *vbox = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
     bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
 
@@ -394,15 +399,8 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);      
     }
 
-
     GtkWidget *spacer = gtk_hbox_new(TRUE, 0);
 
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->channel_tabs), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->upper_slider), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(spacer), TRUE, FALSE, 5);   
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->lower_slider), TRUE, FALSE, 0);
 
     gtk_object_set(GTK_OBJECT(bd->blendif_enable), "tooltip-text", _("enable conditional blending"), (char *)NULL);
 
@@ -419,6 +417,13 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
                       G_CALLBACK (_blendop_blendif_lower_callback), bd);
 
 
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->channel_tabs), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->upper_slider), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(spacer), TRUE, FALSE, 5);   
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->lower_slider), TRUE, FALSE, 0);
+
     gtk_box_pack_start(GTK_BOX(biftb), GTK_WIDGET(bd->blendif_enable), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(biftb), GTK_WIDGET(gtk_hseparator_new()), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(dummybox1), biftb, TRUE, TRUE, 5);
@@ -430,8 +435,6 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     gtk_box_pack_end(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_box),TRUE,TRUE,0);
     gtk_box_pack_end(GTK_BOX(blendw), dummybox1,TRUE,TRUE,0);
-
-
   }
 }
 
