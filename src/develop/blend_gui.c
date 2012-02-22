@@ -217,11 +217,14 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
   dt_iop_gui_blend_data_t *data = module->blend_data;
   dt_develop_blend_params_t *bp = module->blend_params;
+  dt_develop_blend_params_t *dp = module->default_blendop_params;
 
   if (!data->blendif_support) return;
 
   float *iparameters = &(bp->blendif_parameters[4*data->channel]);
   float *oparameters = &(bp->blendif_parameters[16+4*data->channel]);
+  float *idefaults = &(dp->blendif_parameters[4*data->channel]);
+  float *odefaults = &(dp->blendif_parameters[16+4*data->channel]);
   char text[256];
 
   int reset = darktable.gui->reset;
@@ -231,6 +234,8 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
   {
     dtgtk_gradient_slider_multivalue_set_value(data->lower_slider, iparameters[k], k);
     dtgtk_gradient_slider_multivalue_set_value(data->upper_slider, oparameters[k], k);
+    dtgtk_gradient_slider_multivalue_set_resetvalue(data->lower_slider, idefaults[k], k);
+    dtgtk_gradient_slider_multivalue_set_resetvalue(data->upper_slider, odefaults[k], k);
   }
 
   for(int k=0; k < 4 ; k++)
@@ -294,7 +299,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
                                    (GdkColor){ 0,0,0,0 }, (GdkColor){ 0,0,0,lightness/2 }, (GdkColor){ 0,0,0,lightness }
                                   } };
 
-    char *ttsliders = _("use two inner markers (upper filled triangles) and\ntwo outer markers (lower open triangles) for adjustments.\nrange between inner markers: fully blended, range outside\nof outer marker: not blended at all, between adjacent\ninner/outer markers: gradually blended.");
+    char *ttsliders = _("use two inner markers (upper filled triangles) and\ntwo outer markers (lower open triangles) for adjustments.\nrange between inner markers: fully blended, range outside\nof outer marker: not blended at all, between adjacent\ninner/outer markers: gradually blended. double click to reset.");
 
     bd->channel = 0;
 
