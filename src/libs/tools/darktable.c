@@ -117,7 +117,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   cairo_paint(cr);
 
   /* paint icon image */
-  cairo_set_source_surface(cr, d->image, 0, 10);
+  cairo_set_source_surface(cr, d->image, 0, 7);
   cairo_rectangle(cr,0,0,48,48);
   cairo_fill(cr);
 
@@ -126,7 +126,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout (widget,NULL); 
   pango_font_description_set_weight (style->font_desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size (style->font_desc, 32 * PANGO_SCALE);
+  pango_font_description_set_absolute_size (style->font_desc, 25 * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc); 
   
   pango_layout_set_text (layout,PACKAGE_NAME,-1);
@@ -138,7 +138,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   pango_font_description_set_absolute_size (style->font_desc, 10 * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc);
   pango_layout_set_text (layout,PACKAGE_VERSION,-1);
-  cairo_move_to (cr, 44.0, 36.0);
+  cairo_move_to (cr, 44.0, 30.0);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
   pango_cairo_show_layout (cr, layout);
 
