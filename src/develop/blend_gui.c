@@ -294,7 +294,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
                                    (GdkColor){ 0,0,0,0 }, (GdkColor){ 0,0,0,lightness/2 }, (GdkColor){ 0,0,0,lightness }
                                   } };
 
-    char *ttsliders = _("adjust with two inner markers (upper filled triangles)\nand two out markers (lower open triangles). between\ninner markers: fully included, outside of outer marker:\nfully excluded, between adjacent inner/outer markers:\ngradually included.");
+    char *ttsliders = _("use two inner markers (upper filled triangles) and\ntwo outer markers (lower open triangles) for adjustments.\nrange between inner markers: fully blended, range outside\nof outer marker: not blended at all, between adjacent\ninner/outer markers: gradually blended.");
 
     bd->channel = 0;
 
@@ -406,8 +406,8 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_object_set(GTK_OBJECT(bd->blendif_enable), "tooltip-text", _("enable conditional blending"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->lower_slider), "tooltip-text", ttsliders, (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->upper_slider), "tooltip-text", ttsliders, (char *)NULL);
-    gtk_object_set(GTK_OBJECT(output), "tooltip-text", _("adjustment based on image\nmodule would output without\nblending"), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(input), "tooltip-text", _("adjustment based on image\nmodule receives as input"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(output), "tooltip-text", _("adjustment based on data, that this\nmodule would output without blending"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(input), "tooltip-text", _("adjustment based on data, that this\nmodule receives as input"), (char *)NULL);
 
     g_signal_connect (G_OBJECT (bd->blendif_enable), "toggled",
                       G_CALLBACK (_blendop_blendif_callback), bd);
