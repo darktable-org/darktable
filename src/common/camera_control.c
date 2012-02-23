@@ -18,10 +18,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "common/camera_control.h"
+
 #include <unistd.h>
 #include <stdlib.h>
+#if defined(__SUNOS__)
+#include <fcntl.h>
+#endif
 #include <sys/fcntl.h>
-#include "common/camera_control.h"
 
 /***/
 typedef enum _camctl_camera_job_type_t

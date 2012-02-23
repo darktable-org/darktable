@@ -2,18 +2,17 @@ project(darktable CXX C)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
-option(USE_GCONF_BACKEND "Detect and use gconf backend if available." OFF)
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
 option(USE_FLICKR "Enable Flickr support" ON)
 option(USE_KWALLET "Build kwallet password storage backend" ON)
 option(USE_GNOME_KEYRING "Build gnome-keyring password storage backend" ON)
+option(USE_UNITY "Use libunity to report progress in the launcher" OFF)
 option(BUILD_SLIDESHOW "Build the opengl slideshow viewer" ON)
 option(USE_OPENMP "Use openmp threading support." ON)
 option(USE_OPENCL "Use OpenCL support." ON)
 option(USE_DARKTABLE_PROFILING OFF)
 option(DONT_USE_RAWSPEED "Dont compile rawspeed backend." OFF)
-option(DONT_INSTALL_GCONF_SCHEMAS "Dont install gconf schemas, usefull for package creation." OFF)
 option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
 option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and likely-to-change-soon plugins." OFF)
 option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
@@ -33,9 +32,8 @@ endif()
 #
 if(APPLE)
 	message("-- Mac OSX build detected, setting default features")
-	set(USE_GCONF_BACKEND OFF) 
 	set(USE_OPENCL OFF)
-	set(USE_CAMERA_SUPPORT OFF)
+	set(USE_CAMERA_SUPPORT ON)
 	set(BUILD_SLIDESHOW OFF)
 
 	# setup mac ports path...
@@ -51,7 +49,6 @@ endif(APPLE)
 
 if(WIN32)
  message("-- Win32 build detected, setting default features")
-  set(USE_GCONF_BACKEND OFF) 
   set(USE_CAMERA_SUPPORT OFF)
 endif(WIN32)
 
@@ -178,16 +175,12 @@ endif(USE_OPENCL)
 # 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-m${USE_SSE_SET}")
 # endif(USE_SSE_SET)
 
-# Path to install gconf schemas into.
-if(NOT DT_GCONF_SCHEMA_DIR)
-  # a home install would use: "xml:readwrite:${HOME}/.gconf"
-  # default gconftool-2 path (gconftool-2 --get-default-source), mostly "xml:merged:/etc/gconf/gconf.xml.defaults"
-  execute_process (COMMAND gconftool-2 --get-default-source OUTPUT_VARIABLE DT_GCONF_SCHEMA_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif(NOT DT_GCONF_SCHEMA_DIR)
-
 # setup some theme specific variables
 set(THEME hicolor)
 set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
+
+# we need some specific functions:
+add_definitions("-D_XOPEN_SOURCE=700")
 
 # lets continue into build directories
 add_subdirectory(src)

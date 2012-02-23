@@ -37,8 +37,9 @@ struct dt_develop_tiling_t;
 #define	IOP_GROUP_COLOR    2
 #define	IOP_GROUP_CORRECT  4
 #define	IOP_GROUP_EFFECT   8
-#define	IOP_SPECIAL_GROUP_ACTIVE_PIPE 16
-#define	IOP_SPECIAL_GROUP_USER_DEFINED 32
+#define	IOP_GROUP_TONE    16
+#define	IOP_SPECIAL_GROUP_ACTIVE_PIPE  32
+#define	IOP_SPECIAL_GROUP_USER_DEFINED 64
 
 #define IOP_TAG_DISTORT       1
 #define IOP_TAG_DECORATION    2
@@ -52,9 +53,10 @@ struct dt_develop_tiling_t;
 /** Flag for the iop module to be enabled/included by default when creating a style */
 #define	IOP_FLAGS_INCLUDE_IN_STYLES	1
 #define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
-#define	IOP_FLAGS_DEPRECATED	4
+#define	IOP_FLAGS_DEPRECATED	        4
 #define IOP_FLAGS_BLEND_ONLY_LIGHTNESS	8			// Does only blend with L-channel in Lab space. Keeps a, b of original image.
 #define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (currently only via opencl)
+#define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
 
 typedef struct dt_iop_params_t
 {
@@ -96,6 +98,7 @@ typedef struct dt_iop_module_so_t
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
+  void (*gui_reset)       (struct dt_iop_module_t *self);
   void (*gui_update)      (struct dt_iop_module_t *self);
   void (*gui_init)        (struct dt_iop_module_t *self);
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
@@ -213,6 +216,8 @@ typedef struct dt_iop_module_t
   /** callback methods for gui. */
   /** synch gtk interface with gui params, if necessary. */
   void (*gui_update)      (struct dt_iop_module_t *self);
+  /** reset ui to defaults */
+  void (*gui_reset)       (struct dt_iop_module_t *self);
   /** construct widget. */
   void (*gui_init)        (struct dt_iop_module_t *self);
   /** destroy widget. */
@@ -274,8 +279,12 @@ GList *dt_iop_load_modules(struct dt_develop_t *dev);
 void dt_iop_cleanup_module(dt_iop_module_t *module);
 /** initialize pipe. */
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+/** checks if iop do have an ui */
+gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
+/** reset the ui to its defaults */
+void dt_iop_gui_reset(dt_iop_module_t *module);
 /** set expanded state of iop */
 void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded);
 

@@ -44,7 +44,7 @@ const char *name()
 int
 groups ()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_TONE;
 }
 
 int
@@ -103,16 +103,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 }
 
-void init_presets (dt_iop_module_so_t *self)
-{
-  dt_iop_levels_params_t p;
-  p.levels_preset = 0;
-
-  p.levels[0] = 0;
-  p.levels[1] = 0.5;
-  p.levels[2] = 1;
-  dt_gui_presets_add_generic(_("unmodified"), self->op, self->version(), &p, sizeof(p), 1);
-}
+//void init_presets (dt_iop_module_so_t *self)
+//{
+//  dt_iop_levels_params_t p;
+//  p.levels_preset = 0;
+//
+//  p.levels[0] = 0;
+//  p.levels[1] = 0.5;
+//  p.levels[2] = 1;
+//  dt_gui_presets_add_generic(_("unmodified"), self->op, self->version(), &p, sizeof(p), 1);
+//}
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1,
                     dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -161,7 +161,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_enabled = 0;
-  module->priority = 604; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 620; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_levels_params_t);
   module->gui_data = NULL;
   dt_iop_levels_params_t tmp = (dt_iop_levels_params_t)

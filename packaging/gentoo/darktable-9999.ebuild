@@ -1,8 +1,7 @@
 # Copyright 1999-2010 Gentoo Foundation
-# Distributed under the terms of the GNU General Public License v2
+# Distributed under the terms of the GNU General Public License v3
 
 EAPI="2"
-GCONF_DEBUG="no"
 inherit gnome2 cmake-utils git
 unset SRC_URI
 
@@ -17,10 +16,9 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-IUSE="gconf gphoto openmp gnome-keyring"
+IUSE="gphoto openmp gnome-keyring"
 RDEPEND="dev-db/sqlite:3
 	dev-libs/libxml2:2
-	gconf? ( gnome-base/gconf )
 	gnome-base/libglade:2.0
 	gnome-keyring? ( gnome-base/gnome-keyring )
 	media-gfx/exiv2
@@ -43,9 +41,7 @@ DEPEND="${RDEPEND}
 src_configure() {
 	mycmakeargs=(
 		"$(cmake-utils_use_use openmp OPENMP)"
-		"$(cmake-utils_use_use gconf GCONF_BACKEND)"
 		"$(cmake-utils_use_use gphoto CAMERA_SUPPORT)"
-		"-DDONT_INSTALL_GCONF_SCHEMAS=ON"
 		"-DINSTALL_IOP_EXPERIMENTAL=ON"
 		"-DINSTALL_IOP_LEGACY=ON" )
 	cmake-utils_src_configure

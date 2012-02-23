@@ -168,7 +168,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->priority = 187; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 180; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
   dt_iop_exposure_params_t tmp = (dt_iop_exposure_params_t)
@@ -286,8 +286,14 @@ static void
 autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) 
+    return;
+  
   self->request_color_pick = gtk_toggle_button_get_active(button);
+
+  if (self->request_color_pick)
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+
   dt_iop_request_focus(self);
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
 }

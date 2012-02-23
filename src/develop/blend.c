@@ -1230,7 +1230,12 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       ch = 1;
     
 #ifdef _OPENMP
+#if !defined(__SUNOS__)
     #pragma omp parallel for default(none) shared(in,roi_out,out,blend,d,stderr,ch)
+#else
+    #pragma omp parallel for shared(in,roi_out,out,blend,d,ch)
+#endif
+    
 #endif
     for (int y=0; y<roi_out->height; y++) {
         int index = (ch*y*roi_out->width);

@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/film.h"
+#include "common/collection.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "control/control.h"
@@ -35,8 +36,10 @@ DT_MODULE(1)
 // #ifdef HAVE_GPHOTO2
 
 
+#ifdef HAVE_GPHOTO2
 /** helper function to update ui with available cameras and ther actionbuttons */
 static void _lib_import_ui_devices_update(dt_lib_module_t *self);
+#endif
 
 
 typedef struct dt_lib_import_t
@@ -140,7 +143,7 @@ static void _lib_import_tethered_callback(GtkToggleButton *button,gpointer data)
 
 
 /** update the device list */
-static void _lib_import_ui_devices_update(dt_lib_module_t *self)
+void _lib_import_ui_devices_update(dt_lib_module_t *self)
 {
 
   dt_lib_import_t *d = (dt_lib_import_t*)self->data;
@@ -411,22 +414,32 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
     dt_conf_set_bool("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ignore_jpeg)));
     dt_conf_set_string("ui_last/import_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
 
-    char *filename;
+    char *filename = NULL, *first_filename = NULL;
     GSList *list = gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (filechooser));
     GSList *it = list;
-    int id = 0;
+
+    /* for each selected folder add import job */
     while(it)
     {
       filename = (char *)it->data;
-      id = dt_film_import(filename);
+      dt_film_import(filename);
+      if (!first_filename)
+	first_filename = dt_util_dstrcat(g_strdup(filename), "%%");
       g_free (filename);
       it = g_slist_next(it);
     }
-    if(id)
+
+    /* update collection to view import */
+    if (first_filename)
     {
-      dt_film_open(id);
-      dt_ctl_switch_mode_to(DT_LIBRARY);
+	dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+	dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+	dt_conf_set_string("plugins/lighttable/collect/string0",first_filename);
+	dt_collection_update_query(darktable.collection);
+	g_free(first_filename);
     }
+
+
     g_slist_free (list);
   }
   gtk_widget_destroy(recursive);
@@ -487,9 +500,8 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 { 
-  dt_lib_import_t *d = (dt_lib_import_t*)self->data;
-
 #ifdef HAVE_GPHOTO2
+  dt_lib_import_t *d = (dt_lib_import_t*)self->data;
   /* unregister camctl listener */
   dt_camctl_unregister_listener(darktable.camctl, &d->camctl_listener );
 #endif

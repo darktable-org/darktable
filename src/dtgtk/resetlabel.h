@@ -18,8 +18,8 @@
 #ifndef DTGTK_RESET_LABEL_H
 #define DTGTK_RESET_LABEL_H
 
-#include <gtk/gtk.h>
 #include "develop/imageop.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 #define DTGTK_RESET_LABEL(obj) GTK_CHECK_CAST(obj, dtgtk_reset_label_get_type(), GtkDarktableResetLabel)

@@ -18,6 +18,7 @@
 #ifndef DT_COLORSPACES_H
 #define DT_COLORSPACES_H
 
+#include "common/darktable.h"
 #include <lcms2.h>
 
 /** create the lab profile. */

@@ -141,6 +141,7 @@ static void _slider_init (GtkDarktableSlider *slider)
   dt_gui_key_accel_block_on_focus (slider->entry);
 }
 
+#if 0 // Deprecated the delayed value thingy
 static gboolean _slider_postponed_value_change(gpointer data)
 {
   gboolean i_own_lock = dt_control_gdk_lock();
@@ -156,6 +157,8 @@ static gboolean _slider_postponed_value_change(gpointer data)
 
   return DTGTK_SLIDER(data)->is_dragging;	// This is called by the gtk mainloop and is threadsafe
 }
+
+#endif
 
 static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
 {
@@ -195,7 +198,9 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       slider->is_dragging=TRUE;
       slider->prev_x_root=event->x_root;
       if( slider->type==DARKTABLE_SLIDER_BAR) slider->is_changed=TRUE;
-      g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change,widget);
+#if 0 // Deprecate
+      g_timeout_add(DTGTK_SLIDER_VALUE_CHANGED_DELAY, _slider_postponed_value_change, widget);
+#endif
     }
   }
   else if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
@@ -242,6 +247,7 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
       }
     }
     slider->is_dragging=FALSE;
+    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
   }
   return TRUE;
 }
@@ -348,6 +354,7 @@ static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
       }
     }
 
+    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
     gtk_widget_draw(widget,NULL);
     slider->prev_x_root = event->x_root;

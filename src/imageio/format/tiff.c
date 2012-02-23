@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson and johannes hanika
+    copyright (c) 2010--2011 Henrik Andersson and johannes hanika
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -229,6 +229,9 @@ radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", bpp);
 }
 
+void init(dt_imageio_module_format_t *self) {}
+void cleanup(dt_imageio_module_format_t *self) {}
+
 // TODO: some quality/compression stuff?
 void gui_init (dt_imageio_module_format_t *self)
 {
@@ -255,7 +258,7 @@ void gui_cleanup (dt_imageio_module_format_t *self)
 
 void gui_reset   (dt_imageio_module_format_t *self)
 {
-  // TODO: reset to gconf? reset to factory defaults?
+  // TODO: reset to conf? reset to factory defaults?
 }
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

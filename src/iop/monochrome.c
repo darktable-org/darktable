@@ -27,6 +27,7 @@
 #include "control/control.h"
 #include "dtgtk/slider.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "develop/imageop.h"
 
 DT_MODULE(1)
@@ -73,7 +74,28 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+void init_presets (dt_iop_module_so_t *self)
+{
+  dt_iop_monochrome_params_t p;
 
+  p.size = 2.3f;
+
+  p.a = 32.0f;
+  p.b = 64.0f;
+  dt_gui_presets_add_generic(_("red filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // p.a = 64.0f;
+  // p.b = -32.0f;
+  // dt_gui_presets_add_generic(_("purple filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // p.a = -32.0f;
+  // p.b = -64.0f;
+  // dt_gui_presets_add_generic(_("blue filter"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // p.a = -64.0f;
+  // p.b = 32.0f;
+  // dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
+}
 
 static float
 color_filter(const float L, const float ai, const float bi, const float a, const float b, const float size)
@@ -133,7 +155,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_enabled = 0;
-  module->priority = 541; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 560; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_monochrome_params_t);
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t)
@@ -241,6 +263,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     p->a = 128.0f*(mouse_x - width  * 0.5f)/(float)width;
     p->b = 128.0f*(mouse_y - height * 0.5f)/(float)height;
     g->dragging = 1;
+    gtk_widget_queue_draw(self->widget);
     return TRUE;
   }
   return FALSE;

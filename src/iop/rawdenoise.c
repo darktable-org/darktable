@@ -281,7 +281,7 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
 
   // can't be switched on for non-raw images:
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW) module->hide_enable_button = 0;
+  if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
 }
 
@@ -293,7 +293,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 83; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 80; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }
@@ -331,12 +331,9 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
-  if (self->dev->image_storage.flags & DT_IMAGE_RAW)
-  {
-    dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-    dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)module->params;
-    dtgtk_slider_set_value(g->threshold, p->threshold);
-  }
+  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
+  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)module->params;
+  dtgtk_slider_set_value(g->threshold, p->threshold);
 }
 
 static void

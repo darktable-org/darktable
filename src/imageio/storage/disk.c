@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/exif.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
@@ -221,6 +222,9 @@ failed:
 
   /* export image to file */
   dt_imageio_export(imgid, filename, format, fdata);
+
+  /* now write xmp into that container, if possible */
+  dt_exif_xmp_attach(imgid, filename);
 
   printf("[export_job] exported to `%s'\n", filename);
   char *trunc = filename + strlen(filename) - 32;

@@ -18,15 +18,15 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/darktable.h"
+#include "common/dynload.h"
+#include "common/dlopencl.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
-
-#include "common/dynload.h"
-#include "common/dlopencl.h"
-#include "common/darktable.h"
 
 /* only for debugging: default noop function for all unassigned function pointers */
 void dt_dlopencl_noop(void)

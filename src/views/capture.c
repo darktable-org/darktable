@@ -1,6 +1,6 @@
 /*
 		This file is part of darktable,
-		copyright (c) 2010 henrik andersson.
+		copyright (c) 2010-2011 henrik andersson.
 
 		darktable is free software: you can redistribute it and/or modify
 		it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ typedef struct dt_capture_t
   /** The current image activated in capture view, either latest tethered shoot
   	or manually picked from filmstrip view...
   */
-  uint32_t image_id;
+  int32_t image_id;
 
   dt_view_image_over_t image_over;
 
@@ -89,6 +89,12 @@ dt_capture_t;
 /* signal handler for filmstrip image switching */
 static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer user_data);
 
+static const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char *filename);
+static const gchar *_capture_view_get_session_path(const dt_view_t *view);
+static uint32_t _capture_view_get_film_id(const dt_view_t *view);
+static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
+static const char *_capture_view_get_jobcode(const dt_view_t *view);
+
 const char *name(dt_view_t *self)
 {
   return _("tethering");
@@ -99,18 +105,11 @@ uint32_t view(dt_view_t *self)
   return DT_VIEW_TETHERING;
 }
 
-static void
-film_strip_activated(const int imgid, void *data)
-{
-  dt_view_filmstrip_set_active_image(darktable.view_manager,imgid);
-  dt_view_filmstrip_prefetch();
-}
-
 static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer user_data)
 {
-  int32_t imgid = 0;
-  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager))>0)
-    film_strip_activated(imgid,user_data);
+  int32_t imgid = -1;
+  if ((imgid=dt_view_filmstrip_get_activated_imgid(darktable.view_manager)) >= 0)
+    dt_control_queue_redraw_center();
 }
 
 void capture_view_switch_key_accel(void *p)
@@ -151,11 +150,17 @@ void init(dt_view_t *self)
   lib->subdirectory = dt_conf_get_string("plugins/capture/storage/subpath");
   lib->filenamepattern = dt_conf_get_string("plugins/capture/storage/namepattern");
 
-  /* connect signal for fimlstrip image activate */
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-			    G_CALLBACK(_view_capture_filmstrip_activate_callback),
-			    self);
+  // prefetch next few from first selected image on.
+  dt_view_filmstrip_prefetch();
+
+
+  /* setup the tethering view proxy */
+  darktable.view_manager->proxy.tethering.view = self;
+  darktable.view_manager->proxy.tethering.get_film_id = _capture_view_get_film_id;
+  darktable.view_manager->proxy.tethering.get_session_filename = _capture_view_get_session_filename;
+  darktable.view_manager->proxy.tethering.get_session_path = _capture_view_get_session_path;
+  darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
+  darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
 
 }
 
@@ -164,7 +169,8 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-uint32_t dt_capture_view_get_film_id(const dt_view_t *view)
+
+uint32_t _capture_view_get_film_id(const dt_view_t *view)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
@@ -175,14 +181,15 @@ uint32_t dt_capture_view_get_film_id(const dt_view_t *view)
   return 1;
 }
 
-const gchar *dt_capture_view_get_session_path(const dt_view_t *view)
+
+const gchar *_capture_view_get_session_path(const dt_view_t *view)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
   return cv->film->dirname;
 }
 
-const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const char *filename)
+const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char *filename)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
@@ -191,31 +198,36 @@ const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const ch
 
   gchar* fixed_path=dt_util_fix_path(cv->path);
   g_free(cv->path);
-  cv->path=fixed_path;
+  cv->path = fixed_path;
   dt_variables_expand( cv->vp, cv->path, FALSE );
-  const gchar *storage=dt_variables_get_result(cv->vp);
+  gchar *storage = g_strdup(dt_variables_get_result(cv->vp));
 
   dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
-  const gchar *file = dt_variables_get_result(cv->vp);
+  gchar *file = g_strdup(dt_variables_get_result(cv->vp));
 
   // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
-  gchar *fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
+  gchar *fullfile = g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
+  
   if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
   {
     do
     {
       g_free(fullfile);
+      g_free(file);
       dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
-      file = dt_variables_get_result(cv->vp);
+      file = g_strdup(dt_variables_get_result(cv->vp));
       fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
     }
     while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
   }
 
+  g_free(fullfile);
+  g_free(storage);
+
   return file;
 }
 
-void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name)
+void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
@@ -291,7 +303,7 @@ void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name)
 
 }
 
-const char *dt_capture_view_get_jobcode(const dt_view_t *view)
+const char *_capture_view_get_jobcode(const dt_view_t *view)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
@@ -304,21 +316,20 @@ void configure(dt_view_t *self, int wd, int ht)
   //dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
-#define TOP_MARGIN		20
-#define BOTTOM_MARGIN	20
+#define MARGIN	20
 void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_capture_t *lib=(dt_capture_t*)self->data;
   lib->image_over = DT_VIEW_DESERT;
-  lib->image_id=dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  lib->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
 
   // First of all draw image if availble
   if( lib->image_id >= 0 )
   {
-    const float wd = width/1.0;
-    cairo_translate(cr,0.0f, TOP_MARGIN);
-    dt_view_image_expose(&(lib->image_over), lib->image_id, cr, wd, height-TOP_MARGIN-BOTTOM_MARGIN, 1, pointerx, pointery);
-    cairo_translate(cr,0.0f, -BOTTOM_MARGIN);
+    cairo_translate(cr,MARGIN, MARGIN);
+    dt_view_image_expose(&(lib->image_over), lib->image_id, 
+			 cr, width-(MARGIN*2.0f), height-(MARGIN*2.0f), 1, 
+			 pointerx, pointery);
   }
 }
 
@@ -341,6 +352,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
 
   // Mode dependent expose of center view
+  cairo_save(cri);
   switch(lib->mode)
   {
     case DT_CAPTURE_MODE_TETHERED: // tethered mode
@@ -348,6 +360,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
       _expose_tethered_mode(self, cri, width, height, pointerx, pointery);
       break;
   }
+  cairo_restore(cri);
 
   // post expose to modules
   GList *modules = darktable.lib->plugins;
@@ -376,18 +389,37 @@ int try_enter(dt_view_t *self)
   return 1;
 }
 
+static void _capture_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+}
+
+
 void enter(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
 
   lib->mode = dt_conf_get_int("plugins/capture/mode");
 
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id);
-  
+  /* connect signal for mipmap update for a redraw */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+			    G_CALLBACK(_capture_mipamps_updated_signal_callback), 
+          (gpointer)self);
+
+
+  /* connect signal for fimlstrip image activate */
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+			    G_CALLBACK(_view_capture_filmstrip_activate_callback),
+			    self);
+
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id, TRUE);
+
+
   // initialize a default session...
   char* tmp = dt_conf_get_string("plugins/capture/jobcode");
-  dt_capture_view_set_jobcode(self, tmp);
-  free(tmp);
+  _capture_view_set_jobcode(self, tmp);
+  g_free(tmp);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -415,119 +447,9 @@ void reset(dt_view_t *self)
   //DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 }
 
-
-void mouse_leave(dt_view_t *self)
-{
-  /*dt_library_t *lib = (dt_library_t *)self->data;
-  if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
-  {
-  	DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  	dt_control_queue_draw_all(); // remove focus
-  }*/
-}
-
-
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
-  // update stars/etc :(
-  //dt_control_queue_draw_all();
-}
-
-
-int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
-{
-  /*dt_library_t *lib = (dt_library_t *)self->data;
-  lib->pan = 0;
-  if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);*/
-  return 1;
-}
-
-
-int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
-{
-  /*dt_library_t *lib = (dt_library_t *)self->data;
-  lib->modifiers = state;
-  lib->button = which;
-  lib->select_offset_x = lib->zoom_x;
-  lib->select_offset_y = lib->zoom_y;
-  lib->select_offset_x += x;
-  lib->select_offset_y += y;
-  lib->pan = 1;
-  if(which == 1) dt_control_change_cursor(GDK_HAND1);
-  if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;
-  // image button pressed?
-  switch(lib->image_over)
-  {
-  	case DT_LIB_DESERT: break;
-  	case DT_LIB_STAR_1: case DT_LIB_STAR_2: case DT_LIB_STAR_3: case DT_LIB_STAR_4:
-  	{
-  		int32_t mouse_over_id;
-  		DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  		dt_image_t *image = dt_image_cache_get(mouse_over_id, 'r');
-  		image->dirty = 1;
-  		if(lib->image_over == DT_LIB_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
-  		else
-  		{
-  			image->flags &= ~0x7;
-  			image->flags |= lib->image_over;
-  		}
-  		dt_image_cache_flush(image);
-  		dt_image_cache_release(image, 'r');
-  		break;
-  	}
-  	default:
-  		return 0;
-  }*/
-  return 1;
-}
-
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
-  return 1;
-}
-
-void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
-{
-  /*dt_library_t *lib = (dt_library_t *)view->data;
-  if(which == 0 || which == 1)
-  {
-  	if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
-  	else   lib->track =  DT_LIBRARY_MAX_ZOOM;
-  }
-  else if(which == 2 || which == 3)
-  {
-  	if(up) lib->track = -1;
-  	else   lib->track =  1;
-  }*/
-  dt_control_queue_redraw();
-}
-
-void scrolled(dt_view_t *view, double x, double y, int up)
-{
-  /*dt_library_t *lib = (dt_library_t *)view->data;
-  GtkWidget *widget = darktable.gui->widgets.lighttable_zoom_spinbutton;
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == 1)
-  {
-  	if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
-  	else   lib->track =  DT_LIBRARY_MAX_ZOOM;
-  }
-  else
-  { // zoom
-  	int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  	if(up)
-  	{
-  		zoom--;
-  		if(zoom < 1) zoom = 1;
-  	}
-  	else
-  	{
-  		zoom++;
-  		if(zoom > 2*DT_LIBRARY_MAX_ZOOM) zoom = 2*DT_LIBRARY_MAX_ZOOM;
-  	}
-  	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), zoom);
-  }*/
+  dt_control_queue_redraw_center();
 }
 
 void init_key_accels(dt_view_t *self)

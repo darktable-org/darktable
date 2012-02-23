@@ -32,9 +32,12 @@ Cr2Decoder::Cr2Decoder(TiffIFD *rootIFD, FileMap* file) :
 }
 
 Cr2Decoder::~Cr2Decoder(void) {
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
-RawImage Cr2Decoder::decodeRaw() {
+RawImage Cr2Decoder::decodeRawInternal() {
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
 
@@ -113,12 +116,12 @@ RawImage Cr2Decoder::decodeRaw() {
       l.addSlices(s_width);
       l.mUseBigtable = true;
       l.startDecoder(slice.offset, slice.count, 0, offY);
-    } catch (RawDecoderException e) {
+    } catch (RawDecoderException &e) {
       if (i == 0)
         throw;
       // These may just be single slice error - store the error and move on
       errors.push_back(_strdup(e.what()));
-    } catch (IOException e) {
+    } catch (IOException &e) {
       // Let's try to ignore this - it might be truncated data, so something might be useful.
       errors.push_back(_strdup(e.what()));
     }
@@ -141,6 +144,7 @@ void Cr2Decoder::checkSupport(CameraMetaData *meta) {
 }
 
 void Cr2Decoder::decodeMetaData(CameraMetaData *meta) {
+  int iso = 0;
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
@@ -157,7 +161,10 @@ void Cr2Decoder::decodeMetaData(CameraMetaData *meta) {
   if (mRaw->subsampling.y == 1 && mRaw->subsampling.x == 2)
     mode = "sRaw2";
 
-  setMetaData(meta, make, model, mode);
+  if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
+    iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
+  setMetaData(meta, make, model, mode, iso);
 
 }
 

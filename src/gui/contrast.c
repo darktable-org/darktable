@@ -15,12 +15,13 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <math.h>
+#include "common/darktable.h"
+#include "control/conf.h"
+
 #include "gui/gtk.h"
 #include "gui/contrast.h"
 
-#include "common/darktable.h"
-#include "control/conf.h"
+#include <math.h>
 
 #define CONTRAST_STEP 0.1
 #define CONTRAST_AMOUNT 0.4

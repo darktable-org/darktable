@@ -168,6 +168,14 @@ lookup_unbounded(read_only image2d_t lut, const float x, constant float *a)
   else return x;
 }
 
+float
+lookup(read_only image2d_t lut, const float x)
+{
+  int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+  int2 p = (int2)((xi & 0xff), (xi >> 8));
+  return read_imagef(lut, sampleri, p).x;
+}
+
 /* kernel for the basecurve plugin. */
 kernel void
 basecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
@@ -244,10 +252,11 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-/* kernel for the tonecurve plugin. */
+/* kernel for the tonecurve plugin version 2 */
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-           read_only image2d_t table, constant float *a)
+           read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b,
+           const int autoscale_ab, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -257,8 +266,15 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float L_in = pixel.x/100.0f;
   // use lut or extrapolation:
-  const float L = lookup_unbounded(table, L_in, a);
-  if(pixel.x > 0.01f)
+  const float L = lookup_unbounded(table_L, L_in, a);
+  if (autoscale_ab == 0)
+  {
+    const float a_in = (pixel.y + 128.0f) / 256.0f;
+    const float b_in = (pixel.z + 128.0f) / 256.0f;
+    pixel.y = lookup(table_a, a_in);
+    pixel.z = lookup(table_b, b_in);
+  }
+  else if(pixel.x > 0.01f)
   {
     pixel.y *= L/pixel.x;
     pixel.z *= L/pixel.x;
@@ -271,6 +287,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   pixel.x = L;
   write_imagef (out, (int2)(x, y), pixel);
 }
+
 
 #if 0
 /* kernel for the colorcorrection plugin. */

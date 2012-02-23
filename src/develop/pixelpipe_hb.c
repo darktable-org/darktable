@@ -98,6 +98,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
 {
+  // FIXME: either this or all process() -> gdk mutices have to be changed!
+  //        (this is a circular dependency on busy_mutex and the gdk mutex)
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   pipe->shutdown = 1;
   // destroy all nodes
@@ -1040,7 +1042,8 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
+    if(dev->gui_attached && !dev->gui_leaving && 
+       pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
       uint8_t *pixel = (uint8_t *)*output;
       float box[4];
@@ -1109,7 +1112,7 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
       /* if gui attached, lets raise pipe finish signal */
-      if (dev->gui_attached && strcmp(module->op, "gamma") == 0)
+      if (dev->gui_attached && !dev->gui_leaving && strcmp(module->op, "gamma") == 0)
 	dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
 	
     }
@@ -1187,6 +1190,12 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->devid = pipe->opencl_enabled ? dt_opencl_lock_device(-1) : -1;  // try to get/lock opencl resource
 
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
+
+  if(darktable.unmuted & DT_DEBUG_MEMORY)
+  {
+    fprintf(stderr, "[memory] before pixelpipe process\n");
+    dt_print_mem_usage();
+  }
 
   if(pipe->devid >= 0) dt_opencl_events_reset(pipe->devid);
 

@@ -18,7 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <gtk/gtk.h>
 #include "common/darktable.h"
 #include "common/styles.h"
 #include "common/history.h"

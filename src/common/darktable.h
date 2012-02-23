@@ -18,11 +18,12 @@
 #ifndef DARKTABLE_H
 #define DARKTABLE_H
 
+// just to be sure. the build system should set this for us already:
 #ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 700 // for localtime_r and dprintf
+  #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 #include "common/dtpthread.h"
 #include "common/database.h"
@@ -30,11 +31,16 @@
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <stdio.h>
 #include <inttypes.h>
 #include <sqlite3.h>
 #include <glib/gi18n.h>
 #include <glib.h>
 #include <math.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+
 #ifdef _OPENMP
 #include <omp.h>
 #else
@@ -42,9 +48,9 @@
 #define omp_get_thread_num() 0
 #endif
 
-#define DT_MODULE_VERSION 4   // version of dt's module interface
+#define DT_MODULE_VERSION 6   // version of dt's module interface
 #define DT_VERSION 36         // version of dt's database tables
-#define DT_CONFIG_VERSION 34  // dt gconf var version
+#define DT_CONFIG_VERSION 34  // dt conf var version
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -108,6 +114,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PWSTORAGE = 64,
   DT_DEBUG_OPENCL = 128,
   DT_DEBUG_SQL = 256,
+  DT_DEBUG_MEMORY = 512,
 }
 dt_debug_thread_t;
 
@@ -138,6 +145,7 @@ typedef struct darktable_t
   const struct dt_pwstorage_t    *pwstorage;
   const struct dt_camctl_t       *camctl;
   const struct dt_collection_t   *collection;
+  struct dt_selection_t          *selection;
   struct dt_points_t             *points;
   struct dt_imageio_t            *imageio;
   struct dt_opencl_t             *opencl;
@@ -229,5 +237,59 @@ static inline float dt_fast_expf(const float x)
   const float f = *(const float *)&k;
   return f;
 }
+
+static inline void dt_print_mem_usage()
+{
+  char *line = NULL;
+  size_t len = 128;
+  char vmsize[64];
+  char vmpeak[64];
+  char vmrss[64];
+  char vmhwm[64];
+  FILE *f;
+
+  char pidstatus[128];
+  snprintf(pidstatus, 128, "/proc/%u/status", (uint32_t)getpid());
+
+  f = fopen(pidstatus, "r");
+  if (!f) return;
+
+  /* read memory size data from /proc/pid/status */
+  while (getline(&line, &len, f) != -1)
+  {
+    if (!strncmp(line, "VmPeak:", 7))
+      strncpy(vmpeak, line + 8, 64);
+    else if (!strncmp(line, "VmSize:", 7))
+      strncpy(vmsize, line + 8, 64);
+    else if (!strncmp(line, "VmRSS:", 6))
+      strncpy(vmrss, line + 8, 64);
+    else if (!strncmp(line, "VmHWM:", 6))
+      strncpy(vmhwm, line + 8, 64);
+  }
+  free(line);
+  fclose(f);
+
+  fprintf(stderr, "[memory] max address space (vmpeak): %15s"
+                  "[memory] cur address space (vmsize): %15s"
+                  "[memory] max used memory   (vmhwm ): %15s"
+                  "[memory] cur used memory   (vmrss ): %15s",
+                  vmpeak, vmsize, vmhwm, vmrss);
+}
+
+static inline size_t
+dt_get_total_memory()
+{
+  FILE *f = fopen("/proc/meminfo", "rb");
+  if(!f) return 0;
+  size_t mem = 0;
+  char *line = NULL;
+  size_t len = 128;
+  if(getline(&line, &len, f) != -1)
+    mem = atol(line + 10);
+  fclose(f);
+  return mem;
+}
+
+void dt_configure_defaults();
 
 #endif

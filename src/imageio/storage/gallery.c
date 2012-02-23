@@ -198,9 +198,13 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
 
+    char tmp_dir[1024];
+    dt_variables_expand(d->vp, d->filename, TRUE);
+    g_strlcpy(tmp_dir, dt_variables_get_result(d->vp), 1024);
+
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-    if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "$(FILE_NAME)");
+    if ( g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename)-1)[0]=='/' || (d->filename+strlen(d->filename)-1)[0]=='\\') )
+      snprintf (d->filename+strlen(d->filename), 1024-strlen(d->filename), "/$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
@@ -294,11 +298,53 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
+    char subfilename[1024], relsubfilename[256];
+    snprintf(subfilename, 1024, "%s", d->cached_dirname);
+    char* sc = subfilename + strlen(subfilename);
+    sprintf(sc, "/img_%d.html", num);
+    sprintf(relsubfilename, "img_%d.html", num);
+
     snprintf(pair->line, 4096,
              "\n"
-             "      <div><a href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
+             "      <div><a class=\"dia\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
              "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "      %s<br/><span class=\"tags\">%s</span></div>\n", relsubfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+
+    char next[256];
+    sprintf(next, "img_%d.html", (num)%total+1);
+
+    char prev[256];
+    sprintf(prev, "img_%d.html", (num==1)?total:num-1);
+
+    FILE* subfile = fopen(subfilename, "wb");
+    fprintf(subfile,
+          "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
+          "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
+          "  <head>\n"
+          "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
+          "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
+          "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
+          "    <title>%s</title>\n"
+          "  </head>\n"
+          "  <body>\n"
+          "    <div class=\"title\"><a href=\"index.html\">%s</a></div>\n"
+          "    <div class=\"page\">\n"
+          "      <div style=\"width: 692px; max-width: 692px; height: 10px;\">\n"
+          "        <a style=\"float: left;\" href=\"%s\"><h1>prev</h1></a>\n" 
+          "        <a style=\"float: right;\"href=\"%s\"><h1>next</h1></a>\n"
+          "      </div>\n"
+          "      <a href=\"%s\"><img src=\"%s\" width=\"692\" class=\"img\"/></a>\n"
+          "      %s<br/><span class=\"tags\">%s</span></div>\n"
+          "      <p style=\"clear:both;\"></p>\n"
+          "    </div>\n"
+          "    <div class=\"footer\">\n"
+          "      created with darktable "PACKAGE_VERSION"\n"
+          "    </div>\n"
+          "  </body>\n"
+          "</html>\n",
+          relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
+    fclose(subfile);
+
     pair->pos = num;
     g_free(title);
     g_free(description);

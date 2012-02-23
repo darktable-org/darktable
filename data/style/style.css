@@ -66,7 +66,7 @@ body.navbody{
   margin-bottom:30px;
 }
 
-.page a{
+.page .dia{
   background-color:#5a5858;
   margin-right:10pt;
   margin-bottom:10pt;
@@ -92,7 +92,7 @@ body.navbody{
 /**/
 
 
-.page a *{
+.page .dia *{
   max-width:200px;
   max-height:200px;
   border-style:none;

@@ -32,9 +32,12 @@ NefDecoder::NefDecoder(TiffIFD *rootIFD, FileMap* file) :
 }
 
 NefDecoder::~NefDecoder(void) {
+  if (mRootIFD)
+    delete mRootIFD;
+  mRootIFD = NULL;
 }
 
-RawImage NefDecoder::decodeRaw() {
+RawImage NefDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
 
   if (data.empty())
@@ -121,7 +124,7 @@ RawImage NefDecoder::decodeRaw() {
     decompressor.DecompressNikon(metastream, width, height, bitPerPixel, offsets->getInt(), counts->getInt());
 
     delete metastream;
-  } catch (IOException e) {
+  } catch (IOException &e) {
     errors.push_back(_strdup(e.what()));
     // Let's ignore it, it may have delivered somewhat useful data.
   }
@@ -336,6 +339,7 @@ void NefDecoder::checkSupport(CameraMetaData *meta) {
 }
 
 void NefDecoder::decodeMetaData(CameraMetaData *meta) {
+  int iso = 0;
   mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
@@ -349,7 +353,10 @@ void NefDecoder::decodeMetaData(CameraMetaData *meta) {
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
 
-  setMetaData(meta, make, model, "");
+  if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
+    iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
+  setMetaData(meta, make, model, "", iso);
 
   if (white != 65536)
     mRaw->whitePoint = white;

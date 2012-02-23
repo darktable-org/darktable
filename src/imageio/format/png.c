@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -383,6 +384,9 @@ radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
     dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
 }
+
+void init(dt_imageio_module_format_t *self) {}
+void cleanup(dt_imageio_module_format_t *self) {}
 
 // TODO: some quality/compression stuff?
 void gui_init (dt_imageio_module_format_t *self)

@@ -17,6 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
+#include "common/darktable.h"
 #include "common/collection.h"
 #include "views/view.h"
 #include "develop/develop.h"
@@ -523,9 +524,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(strcmp(module->op, "gamma"))
-      dt_iop_reload_defaults(module);
-
+    dt_iop_reload_defaults(module);
     modules = g_list_previous(modules);
   }
 
@@ -614,7 +613,7 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       }
 
       dt_dev_change_image(dev, imgid);
-      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid);
+      dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
 
     }
     sqlite3_finalize(stmt);
@@ -706,8 +705,14 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
 {
   /* create favorites menu and popup */
   dt_gui_favorite_presets_menu_show();
-  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+  
+  /* if we got any styles, lets popup menu for selection */
+  if (darktable.gui->presets_popup_menu)
+  {
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
+    gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+  }
+  else dt_control_log(_("no userdefined presets for favorite modules were found"));
 }
 
 static void _darkroom_ui_apply_style_activate_callback(gchar *name)
@@ -775,7 +780,7 @@ void enter(dt_view_t *self)
    */
 
   /* create favorite plugin preset popup tool */
-  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT);
+  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(G_OBJECT(favorite_presets), "tooltip-text", _("quick access to presets of your favorites"),
                (char *)NULL);
   g_signal_connect (G_OBJECT (favorite_presets), "clicked",
@@ -786,7 +791,7 @@ void enter(dt_view_t *self)
   /* add IOP modules to plugin list */
 
   /* create quick styles popup menu tool */
-  GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT);
+  GtkWidget *styles = dtgtk_button_new (dtgtk_cairo_paint_styles,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect (G_OBJECT (styles), "clicked", 
 		    G_CALLBACK (_darkroom_ui_apply_style_popupmenu),
 		    NULL);
@@ -804,20 +809,26 @@ void enter(dt_view_t *self)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    module->gui_init(module);
+
+    /* initialize gui if iop have one defined */
+    if (!dt_iop_is_hidden(module))
+    {
+      module->gui_init(module);
     
-    /* add module to right panel */
-    GtkWidget *expander = dt_iop_gui_get_expander(module);
+      /* add module to right panel */
+      GtkWidget *expander = dt_iop_gui_get_expander(module);
+      dt_ui_container_add_widget(darktable.gui->ui,
+                               DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+
+      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+      dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
+    }
+
+    /* setup key accelerators */
     module->accel_closures = NULL;
     if(module->connect_key_accels)
       module->connect_key_accels(module);
     dt_iop_connect_common_accels(module);
-
-    dt_ui_container_add_widget(darktable.gui->ui,
-                               DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
-
-    snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-    dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
 
     modules = g_list_previous(modules);
   }
@@ -831,7 +842,7 @@ void enter(dt_view_t *self)
   dt_dev_pop_history_items(dev, dev->history_end);
 
   /* ensure that filmstrip shows current image */
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id);
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, dev->image_storage.id, FALSE);
 
   // switch on groups as they where last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
@@ -928,7 +939,9 @@ void leave(dt_view_t *self)
   while(dev->iop)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
-    module->gui_cleanup(module);
+    if (!dt_iop_is_hidden(module))
+      module->gui_cleanup(module);
+ 
     dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;
     dt_iop_cleanup_module(module) ;

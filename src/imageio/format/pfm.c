@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -89,6 +90,8 @@ name ()
   return _("float pfm");
 }
 
+void init(dt_imageio_module_format_t *self) {}
+void cleanup(dt_imageio_module_format_t *self) {}
 void gui_init    (dt_imageio_module_format_t *self) {}
 void gui_cleanup (dt_imageio_module_format_t *self) {}
 void gui_reset   (dt_imageio_module_format_t *self) {}

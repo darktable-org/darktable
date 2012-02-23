@@ -18,10 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -32,8 +28,13 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 /** Crazy presets b&w ...
   Film Type			R		G		B						R	G	B
@@ -316,7 +317,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 812; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 820; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t)

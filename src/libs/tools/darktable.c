@@ -85,8 +85,7 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_darktable_button_press_callback), self);
   
   /* set size of draw area */
-  int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, panel_width*2, 48);
+  gtk_widget_set_size_request(self->widget, 220, 48);
 
   /* create a cairo surface of dt icon */
   d->image = cairo_image_surface_create_from_png(DARKTABLE_DATADIR"/pixmaps/idbutton.png");
@@ -118,7 +117,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   cairo_paint(cr);
 
   /* paint icon image */
-  cairo_set_source_surface(cr, d->image, 0, 10);
+  cairo_set_source_surface(cr, d->image, 0, 7);
   cairo_rectangle(cr,0,0,48,48);
   cairo_fill(cr);
 
@@ -127,7 +126,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout (widget,NULL); 
   pango_font_description_set_weight (style->font_desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size (style->font_desc, 32 * PANGO_SCALE);
+  pango_font_description_set_absolute_size (style->font_desc, 25 * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc); 
   
   pango_layout_set_text (layout,PACKAGE_NAME,-1);
@@ -139,7 +138,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   pango_font_description_set_absolute_size (style->font_desc, 10 * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc);
   pango_layout_set_text (layout,PACKAGE_VERSION,-1);
-  cairo_move_to (cr, 44.0, 36.0);
+  cairo_move_to (cr, 44.0, 30.0);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
   pango_cairo_show_layout (cr, layout);
 
@@ -162,7 +161,7 @@ static void _lib_darktable_show_about_dialog()
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, tobias ellinghaus et al. 2009-2011");
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) johannes hanika, henrik andersson, tobias ellinghaus et al. 2009-2012");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://www.darktable.org/");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
@@ -175,6 +174,9 @@ static void _lib_darktable_show_about_dialog()
       "",
       _("* ubuntu packaging, color management, video tutorials *"),
       "Pascal de Bruijn",
+      "",
+      _("* opencl pipeline: *"),
+      "Ulrich Pegelow",
       "",
       _("* networking, battle testing, translation expert *"),
       "Alexandre Prokoudine",

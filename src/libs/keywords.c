@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
+#include "common/collection.h"
+#include "control/conf.h"
 #include "libs/lib.h"
 
 DT_MODULE(1)
@@ -48,6 +50,10 @@ static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
 						 guint info,
 						 guint time,
 						 gpointer user_data);
+
+/* add keyword to collection rules */
+static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp,
+					      GtkTreeViewColumn *tvc, gpointer user_data);
 
 const char* name()
 {
@@ -117,6 +123,7 @@ void gui_init(dt_lib_module_t *self)
       /* adding a uncategorized tag */
       gtk_tree_store_insert(store, &temp, &uncategorized,0);
       gtk_tree_store_set(store, &temp, 0, sqlite3_column_text(stmt, 0), -1); 
+
     }
     else
     {
@@ -180,21 +187,26 @@ void gui_init(dt_lib_module_t *self)
   /* setup dnd source and destination within treeview */
   static const GtkTargetEntry dnd_target = { "keywords-reorganize",
 					     GTK_TARGET_SAME_WIDGET, 0};
-
+  
   gtk_tree_view_enable_model_drag_source(d->view, 
 					 GDK_BUTTON1_MASK, 
 					 &dnd_target, 1, GDK_ACTION_MOVE);
   
   gtk_tree_view_enable_model_drag_dest(d->view, &dnd_target, 1, GDK_ACTION_MOVE);
-
+  
   /* setup drag and drop signals */
   g_signal_connect(G_OBJECT(d->view),"drag-data-received",
-			  G_CALLBACK(_lib_keywords_drag_data_received_callback),
-			  self);
+		   G_CALLBACK(_lib_keywords_drag_data_received_callback),
+		   self);
+  
+  g_signal_connect(G_OBJECT(d->view),"drag-data-get",
+		   G_CALLBACK(_lib_keywords_drag_data_get_callback),
+		   self);
 
-    g_signal_connect(G_OBJECT(d->view),"drag-data-get",
-			  G_CALLBACK(_lib_keywords_drag_data_get_callback),
-			  self);
+  /* add callback when keyword is activated */
+  g_signal_connect(G_OBJECT(d->view), "row-activated", 
+		   G_CALLBACK(_lib_keywords_add_collection_rule), self); 
+
 
 
   /* free store, treeview has its own storage now */
@@ -311,6 +323,9 @@ static void _lib_keywords_string_from_path(char *dest,size_t ds,
 
   /* build the tag string from components */
   int dcs = 0;
+
+  if(g_list_length(components) == 0) dcs += g_snprintf(dest+dcs, ds-dcs," ");
+		      
   for(int i=0;i<g_list_length(components);i++) 
   {
     dcs += g_snprintf(dest+dcs, ds-dcs,
@@ -318,7 +333,7 @@ static void _lib_keywords_string_from_path(char *dest,size_t ds,
 		      (gchar *)g_list_nth_data(components, i),
 		      (i < g_list_length(components)-1) ? "|" : "");
   }
-
+  
   /* free data */
   gtk_tree_path_free(wp);
   
@@ -353,8 +368,8 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
       
       _lib_keywords_string_from_path(dtag, 1024, model, dpath);
       _lib_keywords_string_from_path(stag, 1024, model, spath);
-      
-      /* updated tags in database */
+
+       /* updated tags in database */
       dt_tag_reorganize(stag,dtag);
 
       /* lets move the source iter into dest iter */
@@ -374,4 +389,38 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
  
   /* reject drop */
   gtk_drag_finish (dctx, FALSE, FALSE, time);
+}
+
+
+static void _lib_keywords_add_collection_rule(GtkTreeView *view, GtkTreePath *tp,
+					      GtkTreeViewColumn *tvc, gpointer user_data)
+{
+  char kw[1024]={0};
+  _lib_keywords_string_from_path(kw, 1024, gtk_tree_view_get_model(view), tp);
+  
+  /*
+   * add a collection rule
+   * TODO: move this into a dt_collection_xxx API to be used
+   *       from other places
+   */
+
+  int rule = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  char confname[200] = {0};
+
+  /* set mode to AND */
+  snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", rule);
+  dt_conf_set_int(confname, 0);
+
+  /* set tag string */
+  snprintf(confname, 200, "plugins/lighttable/collect/string%1d", rule);
+  dt_conf_set_string(confname, kw);
+
+  /* set tag rule type */
+  snprintf(confname, 200, "plugins/lighttable/collect/item%1d", rule);
+  dt_conf_set_int(confname, 2);
+  
+  dt_conf_set_int("plugins/lighttable/collect/num_rules", rule+1);
+
+  dt_view_collection_update(darktable.view_manager);
+  dt_collection_update_query(darktable.collection);
 }

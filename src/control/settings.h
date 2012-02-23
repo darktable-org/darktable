@@ -18,8 +18,11 @@
 #ifndef DT_CTL_SETTINGS_H
 #define DT_CTL_SETTINGS_H
 
+#include "common/darktable.h"
 #include "control/signal.h"
 #include "common/dtpthread.h"
+
+#include <inttypes.h>
 
 // thread-safe interface between core and gui.
 // also serves to store user settings.
@@ -115,16 +118,6 @@ typedef enum dt_lib_filter_t
   DT_LIB_FILTER_REJECT = 7
 }
 dt_lib_filter_t;
-
-typedef enum dt_lib_sort_t
-{
-  DT_LIB_SORT_FILENAME = 0,
-  DT_LIB_SORT_DATETIME = 1,
-  DT_LIB_SORT_RATING = 2,
-  DT_LIB_SORT_ID = 3,
-  DT_LIB_SORT_COLOR = 4
-}
-dt_lib_sort_t;
 
 typedef struct dt_ctl_settings_t
 {

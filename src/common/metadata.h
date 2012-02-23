@@ -19,8 +19,8 @@
 #ifndef __METADATA_H__
 #define __METADATA_H__
 
-#include "gui/gtk.h"
 #include "common/darktable.h"
+#include "gui/gtk.h"
 #include "metadata_gen.h"
 
 /** Set metadata for a specific image, or all selected for id == -1. */

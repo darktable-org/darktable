@@ -373,7 +373,7 @@ void gui_update (struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *module)
 {
   // raw images need wb (to convert from uint16_t to float):
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&module->dev->image_storage))
   {
     module->default_enabled = 1;
     module->hide_enable_button = 1;
@@ -388,7 +388,7 @@ void reload_defaults(dt_iop_module_t *module)
   char filename[1024];
   int ret=0;
   /* check if file is raw / hdr */
-  if (! (module->dev->image_storage.flags & DT_IMAGE_LDR))
+  if(dt_image_is_raw(&module->dev->image_storage))
   {
     dt_image_full_path(module->dev->image_storage.id, filename, 1024);
     libraw_data_t *raw = libraw_init(0);
@@ -434,7 +434,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 41; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 40; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
@@ -704,6 +704,11 @@ apply_preset(dt_iop_module_t *self)
       for(int k=0; k<3; k++) p->coeffs[k] = fp->coeffs[k];
       dt_iop_request_focus(self);
       self->request_color_pick = 1;
+
+      /* set the area sample size*/
+      if (self->request_color_pick)
+	dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+
       break;
     case 2: // passthrough mode, raw data
       for(int k=0; k<3; k++) p->coeffs[k] = 1.0;

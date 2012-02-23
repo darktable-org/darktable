@@ -157,10 +157,16 @@ typedef struct dt_view_manager_t
       void (*add)(struct dt_lib_module_t *,GtkWidget *);
     } module_toolbox;
 
+    /* module collection proxy object */
+    struct {
+      struct dt_lib_module_t *module;
+      void (*update)(struct dt_lib_module_t *);
+    } module_collect;
+
     /* filmstrip proxy object */
     struct {
       struct dt_lib_module_t *module;
-      void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid);
+      void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid, gboolean activate);
       int32_t (*activated_image)(struct dt_lib_module_t *);
     } filmstrip;
 
@@ -170,6 +176,15 @@ typedef struct dt_view_manager_t
       void (*set_zoom)(struct dt_lib_module_t *module, gint zoom);
     } lighttable;
 
+    /* tethering view proxy object */
+    struct {
+      struct dt_view_t *view;
+      uint32_t (*get_film_id)(const dt_view_t *view);
+      const char *(*get_session_filename)(const dt_view_t *view, const char *filename);
+      const char *(*get_session_path)(const dt_view_t *view);
+      const char *(*get_job_code)(const dt_view_t *view);
+      void (*set_job_code)(const dt_view_t *view, const char *name);
+    } tethering;
 
   } proxy;
 
@@ -217,12 +232,28 @@ void dt_view_unload_module(dt_view_t *view);
 /** set scrollbar positions, gui method. */
 void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize, float vwinsize);
 
+/*
+ * Tethering View PROXY
+ */
+/** get the current filmroll id for tethering session */
+int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm);
+/** get the current session path for tethering session */
+const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm);
+/** get the current session filename for tethering session */
+const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, const char *filename);
+/** set the current jobcode for tethering session */
+void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name);
+/** get the current jobcode for tethering session */
+const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
+
+/** update the collection module */
+void dt_view_collection_update(const dt_view_manager_t *vm);
 
 /*
  * NEW filmstrip api
  */
 /** scrolls filmstrip to the specified image */
-void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid);
+void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate);
 /** get the imageid from last filmstrip activate request */
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
 

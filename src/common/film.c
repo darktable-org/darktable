@@ -1,6 +1,7 @@
 /*
    This file is part of darktable,
    copyright (c) 2009--2010 johannes hanika.
+   copyright (c) 2011-2012 henrik andersson.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/darktable.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
@@ -120,9 +122,6 @@ int dt_film_open(const int32_t id)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    // FIXME: this is a hack to synch the duplicate gui elements all film rolls/collect by film roll:
-    dt_conf_set_string("plugins/lighttable/collect/string", (gchar *)sqlite3_column_text(stmt, 1));
-    dt_conf_set_int ("plugins/lighttable/collect/item", 0);
     sqlite3_finalize(stmt);
     char datetime[20];
     dt_gettime(datetime);
@@ -211,32 +210,45 @@ void dt_film_image_import(dt_film_t *film,const char *filename, gboolean overrid
 static int
 dt_film_import_blocking(const char *dirname, const int blocking)
 {
-  // init film and give each thread a pointer, last one cleans up.
+  int rc;
+  sqlite3_stmt *stmt;
+
+  /* intialize a film object*/
   dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
   dt_film_init(film);
   film->id = -1;
-  int rc;
-  sqlite3_stmt *stmt;
+ 
+  /* lookup if film exists and reuse id */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from film_rolls where folder = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, strlen(dirname), SQLITE_STATIC);
-  if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
+  if(sqlite3_step(stmt) == SQLITE_ROW) 
+    film->id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
+
+  /* if we didnt find a id, lets instansiate a new filmroll */
   if(film->id <= 0)
   {
-    // insert timestamp
     char datetime[20];
     dt_gettime(datetime);
+    /* insert a new film roll into database */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into film_rolls (id, datetime_accessed, folder) values (null, ?1, ?2)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, strlen(datetime), SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dirname, strlen(dirname), SQLITE_STATIC);
     rc = sqlite3_step(stmt);
-    if(rc != SQLITE_DONE) fprintf(stderr, "[film_import] failed to insert film roll! %s\n", sqlite3_errmsg(dt_database_get(darktable.db)));
+    if(rc != SQLITE_DONE) 
+      fprintf(stderr, "[film_import] failed to insert film roll! %s\n", 
+	      sqlite3_errmsg(dt_database_get(darktable.db)));
     sqlite3_finalize(stmt);
+    
+    /* requery for filmroll and fetch new id */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from film_rolls where folder=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, strlen(dirname), SQLITE_STATIC);
-    if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW) 
+      film->id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
   }
+
+  /* bail out if we got troubles */
   if(film->id <= 0)
   {
     dt_film_cleanup(film);
@@ -244,47 +256,15 @@ dt_film_import_blocking(const char *dirname, const int blocking)
     return 0;
   }
 
+  /* at last put import film job on queue */
+  dt_job_t j;
   film->last_loaded = 0;
   g_strlcpy(film->dirname, dirname, 512);
   film->dir = g_dir_open(film->dirname, 0, NULL);
-
-  const uint32_t filmid = film->id;
-
-  dt_job_t j;
   dt_film_import1_init(&j, film);
   dt_control_add_job(darktable.control, &j);
 
-
-  return filmid;
-
-#if 0
-  // TODO: set film->num_images for progress bar!
-
-  const int ret = film->id;
-  if(blocking)
-  {
-    dt_film_import1(film);
-    dt_film_cleanup(film);
-    free(film);
-  }
-  else
-  {
-    // darktable.control->progress = .001f;
-    // not more than one job: recursive import is not thread-safe, and multiple
-    // threads accessing the harddisk at once is not a good idea performance wise.
-    // for(int k=0;k<MAX(1,dt_ctl_get_num_procs());k++)
-    {
-      // last job will destroy film struct.
-      dt_job_t j;
-      dt_film_import1_init(&j, film);
-      dt_control_add_job(darktable.control, &j);
-    }
-  }
-
-  return ret;
-
-#endif
-
+  return film->id;
 }
 
 
@@ -354,8 +334,6 @@ void dt_film_import1(dt_film_t *film)
   /* we got ourself a list of images, lets sort and start import */
   images = g_list_sort(images,(GCompareFunc)_film_filename_cmp);
 
-  /* lets create a list of */
-
   /* let's start import of images */
   gchar message[512] = {0};
   double fraction = 0;
@@ -399,56 +377,9 @@ void dt_film_import1(dt_film_t *film)
 
 }
 
-
-#if 0 // OLD IMPLEMENTATION
-//FIXME: recursion messes up the progress counter.
-void dt_film_import1(dt_film_t *film)
-{
-  const gchar *d_name;
-  char filename[1024];
-
-  gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
-
-  while(1)
-  {
-    dt_pthread_mutex_lock(&film->images_mutex);
-    if (film->dir && (d_name = g_dir_read_name(film->dir)) && dt_control_running())
-    {
-      snprintf(filename, 1024, "%s/%s", film->dirname, d_name);
-      film->last_loaded++;
-    }
-    else
-    {
-      if(film->dir)
-      {
-        g_dir_close(film->dir);
-        film->dir = NULL;
-      }
-      darktable.control->progress = 200.0f;
-      dt_pthread_mutex_unlock(&film->images_mutex);
-      return;
-    }
-    dt_pthread_mutex_unlock(&film->images_mutex);
-
-    if(recursive && g_file_test(filename, G_FILE_TEST_IS_DIR))
-    {
-      // import in this thread (recursive import is not thread-safe):
-      dt_film_import_blocking(filename, 1);
-    }
-    else if(dt_image_import(film->id, filename, FALSE))
-    {
-      dt_pthread_mutex_lock(&film->images_mutex);
-      darktable.control->progress = 100.0f*film->last_loaded/(float)film->num_images;
-      dt_pthread_mutex_unlock(&film->images_mutex);
-      dt_control_queue_redraw_center();
-    } // else not an image.
-  }
-}
-#endif
-
 int dt_film_import(const char *dirname)
 {
-  return dt_film_import_blocking(dirname, 0);
+  return dt_film_import_blocking(dirname,0);
 }
 
 void dt_film_remove_empty()

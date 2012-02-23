@@ -58,13 +58,13 @@ dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
   const int ret = pthread_mutex_destroy(&(mutex->mutex));
 
-  printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
-  printf("[mutex] total time locked: %.3f secs\n", mutex->time_sum_locked);
-  printf("[mutex] total wait time  : %.3f secs\n", mutex->time_sum_wait);
-  printf("[mutex] top %d lockers   :\n", TOPN);
-  for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_locked_sum[k], mutex->top_locked_name[k]);
-  printf("[mutex] top %d waiters   :\n", TOPN);
-  for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_wait_sum[k], mutex->top_wait_name[k]);
+  //printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
+  //printf("[mutex] total time locked: %.3f secs\n", mutex->time_sum_locked);
+  //printf("[mutex] total wait time  : %.3f secs\n", mutex->time_sum_wait);
+  //printf("[mutex] top %d lockers   :\n", TOPN);
+  //for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_locked_sum[k], mutex->top_locked_name[k]);
+  //printf("[mutex] top %d waiters   :\n", TOPN);
+  //for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_wait_sum[k], mutex->top_wait_name[k]);
 
   return ret;
 }

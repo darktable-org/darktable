@@ -19,6 +19,12 @@
 #include "config.h"
 #endif
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
+#include "common/image.h"
+#include "common/fswatch.h"
+#include "develop/develop.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -28,10 +34,6 @@
 #include <sys/inotify.h>
 #endif
 
-#include "common/dtpthread.h"
-#include "common/image.h"
-#include "common/fswatch.h"
-#include "develop/develop.h"
 
 typedef struct _watch_t
 {

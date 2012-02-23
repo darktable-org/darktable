@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2011-2012 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,13 +30,18 @@ DT_MODULE(1)
 
 #define PADDING 2
 
+/* the defined modules groups, the specific order here sets the order 
+   of buttons in modulegroup buttonrow 
+*/
 typedef enum dt_lib_modulegroup_t
 {
-  DT_MODULEGROUP_FAVORITES,
   DT_MODULEGROUP_ACTIVE_PIPE,
+  DT_MODULEGROUP_FAVORITES,
+
   DT_MODULEGROUP_BASIC,
-  DT_MODULEGROUP_CORRECT,
+  DT_MODULEGROUP_TONE,
   DT_MODULEGROUP_COLOR,
+  DT_MODULEGROUP_CORRECT,
   DT_MODULEGROUP_EFFECT,
 
   /* dont touch the following */
@@ -112,35 +117,42 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   memset(d,0,sizeof(dt_lib_modulegroups_t));
 
-  self->widget = gtk_table_new(2, 4, TRUE);
+  self->widget = gtk_hbox_new(TRUE,2);
+
+  dtgtk_cairo_paint_flags_t pf = CPF_NONE;
 
   /* favorites */
-  d->buttons[DT_MODULEGROUP_FAVORITES] = gtk_toggle_button_new_with_label(_("favorites"));
+  d->buttons[DT_MODULEGROUP_FAVORITES] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_favorites, pf);
   g_signal_connect (d->buttons[DT_MODULEGROUP_FAVORITES], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
   g_object_set (d->buttons[DT_MODULEGROUP_FAVORITES],"tooltip-text",_("show modules explicit specified by user"),(char *)NULL);
 
   /* active */
-  d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = gtk_toggle_button_new_with_label(_("active"));
+  d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf);
   g_signal_connect (d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
   g_object_set (d->buttons[DT_MODULEGROUP_ACTIVE_PIPE],"tooltip-text",_("the modules used in active pipe"),(char *)NULL);
 
   /* basic */
-  d->buttons[DT_MODULEGROUP_BASIC] = gtk_toggle_button_new_with_label(_("basic"));
+  d->buttons[DT_MODULEGROUP_BASIC] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basic, pf);
   g_signal_connect (d->buttons[DT_MODULEGROUP_BASIC], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
   g_object_set (d->buttons[DT_MODULEGROUP_BASIC],"tooltip-text",_("basic group"),(char *)NULL);
 
   /* correct */
-  d->buttons[DT_MODULEGROUP_CORRECT] = gtk_toggle_button_new_with_label(_("correct"));
+  d->buttons[DT_MODULEGROUP_CORRECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_correct, pf);
   g_signal_connect (d->buttons[DT_MODULEGROUP_CORRECT], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
   g_object_set (d->buttons[DT_MODULEGROUP_CORRECT],"tooltip-text",_("correction group"),(char *)NULL);
 
   /* color */
-  d->buttons[DT_MODULEGROUP_COLOR] = gtk_toggle_button_new_with_label(_("color"));
+  d->buttons[DT_MODULEGROUP_COLOR] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_color, pf);
   g_signal_connect (d->buttons[DT_MODULEGROUP_COLOR], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
   g_object_set (d->buttons[DT_MODULEGROUP_COLOR],"tooltip-text",_("color group"),(char *)NULL);
   
+  /* tone */
+  d->buttons[DT_MODULEGROUP_TONE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_tone, pf);
+  g_signal_connect (d->buttons[DT_MODULEGROUP_TONE], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
+  g_object_set (d->buttons[DT_MODULEGROUP_TONE],"tooltip-text",_("tone group"),(char *)NULL);
+  
   /* effect */
-  d->buttons[DT_MODULEGROUP_EFFECT] = gtk_toggle_button_new_with_label(_("effect"));
+  d->buttons[DT_MODULEGROUP_EFFECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf);
   g_signal_connect (d->buttons[DT_MODULEGROUP_EFFECT], "toggled", G_CALLBACK (_lib_modulegroups_toggle),self);
   g_object_set (d->buttons[DT_MODULEGROUP_EFFECT],"tooltip-text",_("effect group"),(char *)NULL);
 
@@ -148,19 +160,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget,-1,-1);
 
   /*
-   * Attach buttons to table
+   * layout button row
    */
-  /* first row */
-  GtkWidget *table = self->widget;
-  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_ACTIVE_PIPE],0,1,0,1,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
-  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_FAVORITES],1,2,0,1,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
-
-  /* second row */
-  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_BASIC],0,1,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
-  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_COLOR],1,2,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
-  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_CORRECT],2,3,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
-  gtk_table_attach(GTK_TABLE(table),d->buttons[DT_MODULEGROUP_EFFECT],3,4,1,2,GTK_EXPAND|GTK_FILL,0,PADDING,PADDING);
-
+  int iconsize = 28;
+  GtkWidget *br = self->widget;
+  for (int k=0; k<DT_MODULEGROUP_SIZE; k++)
+  {
+    gtk_widget_set_size_request(d->buttons[k], iconsize, iconsize);
+    gtk_box_pack_start(GTK_BOX(br), d->buttons[k], TRUE, TRUE, 0);
+  }
   gtk_widget_show_all(self->widget);
 
   /*
@@ -205,6 +213,7 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, ui
   if      (iop_group & IOP_SPECIAL_GROUP_ACTIVE_PIPE && group == DT_MODULEGROUP_ACTIVE_PIPE) return TRUE;
   else if (iop_group & IOP_SPECIAL_GROUP_USER_DEFINED && group == DT_MODULEGROUP_FAVORITES) return TRUE;
   else if (iop_group & IOP_GROUP_BASIC && group == DT_MODULEGROUP_BASIC) return TRUE;
+  else if (iop_group & IOP_GROUP_TONE && group == DT_MODULEGROUP_TONE) return TRUE;
   else if (iop_group & IOP_GROUP_COLOR && group == DT_MODULEGROUP_COLOR) return TRUE;
   else if (iop_group & IOP_GROUP_CORRECT && group == DT_MODULEGROUP_CORRECT) return TRUE;
   else if (iop_group & IOP_GROUP_EFFECT && group == DT_MODULEGROUP_EFFECT) return TRUE;
@@ -227,8 +236,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       dt_iop_module_t *module = (dt_iop_module_t*)modules->data;
       GtkWidget *w = module->expander;
       
-      /* exclude gamma module */
-      if(!strcmp(module->op, "gamma")) continue;
+      /* skip modules without an gui */
+      if(dt_iop_is_hidden(module)) continue;
 
       /* lets show/hide modules dependent on current group*/
       switch(d->current)
@@ -238,7 +247,10 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
             if(module->enabled)
               gtk_widget_show(w);
             else
+            {
+              if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
               gtk_widget_hide(w);
+            }
           } break;
 
         case DT_MODULEGROUP_FAVORITES:
@@ -246,13 +258,23 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
             if(module->showhide && dtgtk_tristatebutton_get_state (DTGTK_TRISTATEBUTTON(module->showhide))==2)
               gtk_widget_show(w);
             else
+            {
+              if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
               gtk_widget_hide(w);
+            }
           } break;
 
         case DT_MODULEGROUP_NONE:
           {
-            /* show all */
-            gtk_widget_show(w);
+            /* show all exept hidden ones */
+            if((!module->showhide || (module->showhide && dtgtk_tristatebutton_get_state(DTGTK_TRISTATEBUTTON(module->showhide))) || module->enabled) &&
+                (!(module->flags() & IOP_FLAGS_DEPRECATED)))
+              gtk_widget_show(w);
+            else
+            {
+              if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
+              gtk_widget_hide(w);
+            }
           } break;
 
         default:
@@ -262,7 +284,10 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                 (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
               gtk_widget_show(w);
             else
+            {
+              if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
               gtk_widget_hide(w);
+            }
           }
       }
     } while((modules = g_list_next(modules))!=NULL);

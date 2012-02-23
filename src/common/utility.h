@@ -22,6 +22,9 @@
 #include <string.h>
 #include <gtk/gtk.h>
 
+/** dynamically allocate and concatenate string */
+gchar *dt_util_dstrcat(gchar *str,const gchar *format, ... );
+
 /** replace all occurences of pattern by substitute. the returned value has to be freed after use. */
 gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gchar* substitute);
 /** count the number of occurences of needle in haystack */

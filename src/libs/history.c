@@ -176,7 +176,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* add default which always should be */
   long int num = -1;
-  gtk_box_pack_start(GTK_BOX(d->history_box),_lib_history_create_button(self,num, _("orginal"),FALSE),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(d->history_box),_lib_history_create_button(self,num, _("original"),FALSE),TRUE,TRUE,0);
   num++;
 
   /* lock history mutex */

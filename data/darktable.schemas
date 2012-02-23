@@ -8,34 +8,8 @@
       <default>library.db</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>database file</short>
+        <short>database location</short>
         <long>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</long>
-      </locale>
-    </schema>
-
-    <schema><!--tab:core-->
-      <key>/schemas/apps/darktable/cachefile</key>
-      <applyto>/apps/darktable/cachefile</applyto>
-      <owner>darktable</owner>
-      <type>string</type>
-      <default>mipmaps</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>image cache file</short>
-        <long>filename relative to ~/.cache/darktable or starting with a slash (needs a restart).</long>
-      </locale>
-    </schema>
-    
-    <schema><!--tab:core-->
-      <key>/schemas/apps/darktable/cachefile_backup</key>
-      <applyto>/apps/darktable/cachefile_backup</applyto>
-      <owner>darktable</owner>
-      <type>bool</type>
-      <default>true</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short>image cache file backup</short>
-        <long>creates backup of cachefile to prevent loss of thumbnails generated at crashes etc (needs a restart).</long>
       </locale>
     </schema>
 
@@ -60,7 +34,7 @@
       <default>300</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>size of the side panels in pixels</short>
+        <short>width of the side panels in pixels</short>
         <long> (needs a restart)</long>
       </locale>
     </schema>
@@ -75,6 +49,19 @@
       <locale name="C">
         <short>memory in bytes to use for mipmap cache</short>
         <long> (needs a restart) </long>
+      </locale>
+    </schema>
+
+    <schema><!--tab:core-->
+      <key>/schemas/apps/darktable/worker_threads</key>
+      <applyto>/apps/darktable/worker_threads</applyto>
+      <owner>darktable</owner>
+      <type>int</type>
+      <default>2</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short>number of background threads</short>
+        <long>this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart).</long>
       </locale>
     </schema>
 
@@ -126,7 +113,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>amount of opencl memory (in MB) which we assume as being reserved for the driver</short>
-        <long>this amount of memory (in MB) will be substracted from total gpu memory in order to calculate the available opencl memory. too low values will lead to out-of-memory situations in opencl processing. too high values will lead to unnecessary tiling. needs a restart.</long>
+        <long>this amount of memory (in MB) will be substracted from total gpu memory in order to calculate the available opencl memory. too low values will lead to out-of-memory situations in opencl processing. too high values will lead to unnecessary tiling (needs a restart).</long>
       </locale>
     </schema>
 
@@ -139,8 +126,8 @@
       <default>false</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>don't use embedded preview jpeg, always use half-size raw</short>
-        <long></long>
+        <short>don't use embedded preview jpeg but half-size raw</short>
+        <long>check this option to not use the embedded jpeg from the raw file but process the raw data. this is slower but gives you color managed thumbnails.</long>
       </locale>
     </schema>
 
@@ -152,8 +139,8 @@
       <default>true</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>write a redundant sidecar file for each image</short>
-        <long>these files can later be re-imported into a different database, preserving your changes to the image.</long>
+        <short>write sidecar file for each image</short>
+        <long>these redundant files can later be re-imported into a different database, preserving your changes to the image.</long>
       </locale>
     </schema>
 
@@ -165,8 +152,8 @@
       <default>flase</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>activate OpenCL support (experimental)</short>
-        <long>if found, use OpenCL runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to forum darktable-devel at sourceforge.net</long>
+        <short>activate opencl support (experimental)</short>
+        <long>if found, use opencl runtime on your system for improved processing speed. this code is still experimental and not complete. please report crashes to the mailinglist darktable-devel at lists.sourceforge.net</long>
       </locale>
     </schema>
 
@@ -204,7 +191,7 @@
       <default>true</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>ask before removing images</short>
+        <short>ask before removing images from database</short>
         <long>always ask the user before any image is removed from db.</long>
       </locale>
     </schema>
@@ -217,7 +204,7 @@
       <default>true</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>ask before deleting images</short>
+        <short>ask before erasing images from disk</short>
         <long>always ask the user before any image file is deleted.</long>
       </locale>
     </schema>
@@ -620,8 +607,8 @@
       <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>initial rating when importing filmrolls</short>
-        <long></long>
+        <short>initial import rating</short>
+        <long>initial star rating for all images when importing a filmroll</long>
       </locale>
     </schema>
 
@@ -646,8 +633,8 @@
       <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>enable filmstrip in darkroom mode</short>
-        <long></long>
+        <short>enable filmstrip</short>
+        <long>enable the filmstrip in darkroom and tethering modes.</long>
       </locale>
     </schema>
     
@@ -660,7 +647,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>height of filmstrip</short>
-        <long></long>
+        <long>height of the filmstrip in pixels</long>
       </locale>
     </schema>
     
@@ -672,8 +659,8 @@
       <default>1300</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>maximum width of lighttable thumbnails</short>
-        <long>maximum lighttable width of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
+        <short>maximum width of image drawing area</short>
+        <long>maximum width of the image drawing area in darkroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
 
@@ -685,8 +672,8 @@
       <default>1000</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>maximum height of lighttable thumbnails</short>
-        <long>maximum lighttable height of thumbnails. adjust to your screen.\n(needs a restart and will invalidate current thumbnail caches).</long>
+        <short>maximum height of image drawing area</short>
+        <long>maximum height of the image drawing area in dakroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</long>
       </locale>
     </schema>
 
@@ -712,8 +699,8 @@
       <default>1</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>which layout should lighttable mode show</short>
-        <long>select a layout for the lighttable: 0 - zoomable or 1 - file manager.</long>
+        <short>lighttable layout mode</short>
+        <long>select a layout for the lighttable: 0 - zoomable lighttable or 1 - file manager.</long>
       </locale>
     </schema>
     
@@ -725,7 +712,7 @@
       <default>7</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>how many images are in one row</short>
+        <short>images per row</short>
         <long></long>
       </locale>
     </schema>
@@ -1497,32 +1484,6 @@
       </locale>
     </schema>
     
-    <schema>
-      <key>/schemas/apps/darktable/ui_last/combo_sort</key>
-      <applyto>/apps/darktable/ui_last/combo_sort</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>0</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-    
-    <schema>
-      <key>/schemas/apps/darktable/ui_last/combo_filter</key>
-      <applyto>/apps/darktable/ui_last/combo_filter</applyto>
-      <owner>darktable</owner>
-      <type>int</type>
-      <default>2</default>
-      <gettext_domain>darktable</gettext_domain>
-      <locale name="C">
-        <short></short>
-        <long></long>
-      </locale>
-    </schema>
-
     <schema><!--tab:core-->
       <key>/schemas/apps/darktable/plugins/lighttable/export/force_lcms2</key>
       <applyto>/apps/darktable/plugins/lighttable/export/force_lcms2</applyto>
@@ -1531,7 +1492,7 @@
       <default>FALSE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>always use lcms2 during export</short>
+        <short>always use littlecms2 during export</short>
         <long>this is about 28x as slow as the default.</long>
       </locale>
     </schema>
@@ -1635,7 +1596,7 @@
       <default></default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
-        <short>default client to use, this overrides detection of default client.</short>
+        <short>client to use, this overrides detection of default client.</short>
         <long></long>
       </locale>
     </schema>
@@ -1688,7 +1649,7 @@
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short>password storage backend to use</short>
-        <long>the storage backend for pwstorage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring</long>
+        <long>the storage backend for password storage: 0 - none, 2 - kwallet, 3 - gnome keyring</long>
       </locale>
     </schema>
     
@@ -1775,7 +1736,7 @@
       <applyto>/apps/darktable/plugins/darkroom/colorin/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>TRUE</default>
+      <default>FALSE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1866,7 +1827,7 @@
       <applyto>/apps/darktable/plugins/darkroom/lens/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1905,7 +1866,7 @@
       <applyto>/apps/darktable/plugins/darkroom/tonecurve/visible</applyto>
       <owner>darktable</owner>
       <type>bool</type>
-      <default>FALSE</default>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>
@@ -1945,6 +1906,110 @@
       <owner>darktable</owner>
       <type>bool</type>
       <default>FALSE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/grain/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/grain/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/borders/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/borders/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+    
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/velvia/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/velvia/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/soften/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/soften/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/levels/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/levels/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+        
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/zonesystem/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/zonesystem/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/nlmeans/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/nlmeans/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <gettext_domain>darktable</gettext_domain>
+      <locale name="C">
+        <short></short>
+        <long></long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/darktable/plugins/darkroom/graduatednd/visible</key>
+      <applyto>/apps/darktable/plugins/darkroom/graduatednd/visible</applyto>
+      <owner>darktable</owner>
+      <type>bool</type>
+      <default>TRUE</default>
       <gettext_domain>darktable</gettext_domain>
       <locale name="C">
         <short></short>

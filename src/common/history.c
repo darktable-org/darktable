@@ -17,9 +17,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/darktable.h"
 #include "develop/develop.h"
 #include "control/control.h"
-#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/history.h"
@@ -139,6 +139,9 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   /* if current image in develop reload history */
   if (dt_dev_is_current_image(darktable.develop, dest_imgid))
     dt_dev_reload_history_items (darktable.develop);
+
+  /* update xmp file */
+  dt_image_synch_xmp(dest_imgid);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
 

@@ -118,7 +118,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, -1, panel_width*.5);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_CONTROL_REDRAW_ALL, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 }
 
@@ -141,11 +141,8 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
 
   dt_develop_t *dev = darktable.develop;
 
-  /* bail out if dirty */
-  if(dev->preview_dirty) return FALSE;
+  if (dev->preview_dirty) return FALSE;
 
-  /* generate image into cairo surface*/
-  
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);

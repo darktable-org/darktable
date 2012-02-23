@@ -27,6 +27,7 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "libs/collect.h"
+#include "views/view.h"
 
 DT_MODULE(1)
 
@@ -69,12 +70,13 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_TEXT=0,
   DT_LIB_COLLECT_COL_ID,
   DT_LIB_COLLECT_COL_TOOLTIP,
+  DT_LIB_COLLECT_COL_PATH,
   DT_LIB_COLLECT_NUM_COLS
 }
 dt_lib_collect_cols_t;
 
 
-static void _lib_collect_gui_update (dt_lib_collect_t *d);
+static void _lib_collect_gui_update (dt_lib_module_t *d);
 
 
 const char*
@@ -134,7 +136,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
-  /* update gconf settings from params */
+  /* update conf settings from params */
   dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
   char confname[200];
   
@@ -157,7 +159,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   dt_conf_set_int(confname, p->rules);
   
   /* update ui */
-  _lib_collect_gui_update((dt_lib_collect_t*)self->data);
+  _lib_collect_gui_update(self);
 
   /* update view */
   dt_collection_update_query(darktable.collection);
@@ -184,7 +186,7 @@ get_collect (dt_lib_collect_rule_t *r)
 }
 
 static gboolean
-entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
+changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
 {
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
@@ -208,10 +210,10 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
   switch(property)
   {
     case 0: // film roll
-      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by id", escaped_text);
       break;
     case 1: // camera
-      snprintf(query, 1024, "select distinct maker || ' ' || model, 1 from images where maker || ' ' || model like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct maker || ' ' || model as model, 1 from images where maker || ' ' || model like '%%%s%%' order by model", escaped_text);
       break;
     case 2: // tag
       snprintf(query, 1024, "select distinct name, id from tags where name like '%%%s%%'", escaped_text);
@@ -297,6 +299,10 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
     case 13: // aperature
       snprintf(query, 1024, "select distinct round(aperture,1), 1 from images where aperture like '%%%s%%'", escaped_text);
       break;
+    case 14: // filename
+      snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%'", escaped_text);
+      break;
+
     default: // case 3: // day
       snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", escaped_text);
       break;
@@ -317,6 +323,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
                         DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
                         DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
+                        DT_LIB_COLLECT_COL_PATH, value,
                         -1);
   }
   sqlite3_finalize(stmt);
@@ -328,8 +335,10 @@ entry_key_press_exit:
 }
 
 static void
-_lib_collect_gui_update (dt_lib_collect_t *d)
+_lib_collect_gui_update (dt_lib_module_t *self)
 {
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+
   const int old = darktable.gui->reset;
   darktable.gui->reset = 1;
   const int active = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1, 0, (MAX_RULES-1));
@@ -377,7 +386,7 @@ _lib_collect_gui_update (dt_lib_collect_t *d)
     }
   }
   // update list of proposals
-  entry_key_press (NULL, NULL, d->rule + d->active_rule);
+  changed_callback(NULL, d->rule + d->active_rule);
   darktable.gui->reset = old;
 }
 
@@ -398,7 +407,7 @@ combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  entry_key_press (NULL, NULL, d);
+  changed_callback(NULL, d);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -413,12 +422,12 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
   const int active = d->active_rule;
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   if(item == 0) // get full path for film rolls:
-    gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TOOLTIP, &text, -1);
+    gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
   else
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   g_free(text);
-  entry_key_press (NULL, NULL, d->rule + active);
+  changed_callback(NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -426,7 +435,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
 static void
 entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
-  entry_key_press (NULL, NULL, d);
+  changed_callback(NULL, d);
   dt_lib_collect_t *c = get_collect(d);
   GtkTreeView *view = c->view;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
@@ -439,12 +448,12 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
       gchar *text;
       const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
       if(item == 0) // get full path for film rolls:
-        gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TOOLTIP, &text, -1);
+        gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
       else
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
       gtk_entry_set_text(GTK_ENTRY(d->text), text);
       g_free(text);
-      entry_key_press (NULL, NULL, d);
+      changed_callback(NULL, d);
     }
   }
   dt_collection_update_query(darktable.collection);
@@ -461,7 +470,7 @@ entry_focus_in_callback (GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule
 {
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  entry_key_press (NULL, NULL, c->rule + c->active_rule);
+  changed_callback(NULL, c->rule + c->active_rule);
 }
 
 #if 0
@@ -585,9 +594,9 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
 }
 
 static void
-collection_updated(gpointer instance,gpointer d)
+collection_updated(gpointer instance,gpointer self)
 {
-  _lib_collect_gui_update((dt_lib_collect_t *)d);
+  _lib_collect_gui_update((dt_lib_module_t *)self);
 }
 
 
@@ -685,16 +694,16 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)malloc(sizeof(dt_lib_collect_t));
 
-  dt_control_signal_connect(darktable.signals, 
-			    DT_SIGNAL_COLLECTION_CHANGED,
-			    G_CALLBACK(collection_updated),
-			    (gpointer)d);
-
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
   gtk_widget_set_size_request(self->widget, 100, -1);
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t*)malloc(sizeof(dt_lib_collect_params_t));
+
+  dt_control_signal_connect(darktable.signals, 
+			    DT_SIGNAL_COLLECTION_CHANGED,
+			    G_CALLBACK(collection_updated),
+			    self);
   
   GtkBox *box;
   GtkWidget *w;
@@ -724,7 +733,7 @@ gui_init (dt_lib_module_t *self)
     /* xgettext:no-c-format */
     g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(entry_key_press), d->rule + i);
+    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(changed_callback), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
@@ -740,7 +749,7 @@ gui_init (dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
   gtk_tree_view_set_headers_visible(view, FALSE);
-  liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+  liststore = gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
@@ -751,13 +760,18 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
 
-  _lib_collect_gui_update(d);
+  /* setup proxy */
+  darktable.view_manager->proxy.module_collect.module = self;
+  darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
+
+  _lib_collect_gui_update(self);
 }
 
 void
 gui_cleanup (dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self->data);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
+  darktable.view_manager->proxy.module_collect.module = NULL;
   free(((dt_lib_collect_t*)self->data)->params);
   free(self->data);
   self->data = NULL;

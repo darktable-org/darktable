@@ -21,9 +21,10 @@
 #include "config.h"
 #endif
 
+#include "common/darktable.h"
+#include "common/dtpthread.h"
 #include <glib.h>
 #include <inttypes.h>
-#include "common/dtpthread.h"
 
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256
@@ -62,8 +63,8 @@ dt_image_flags_t;
 
 typedef struct dt_image_raw_parameters_t
 {
-  unsigned legacy : 24;
-  int8_t user_flip; // +8 = 32 bits.
+  unsigned legacy    : 24;
+  unsigned user_flip : 8; // +8 = 32 bits.
 }
 dt_image_raw_parameters_t;
 
@@ -96,6 +97,8 @@ typedef struct dt_image_t
 
   uint32_t filters;  // demosaic pattern
   int32_t bpp;       // bytes per pixel
+ 
+  dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
 }
 dt_image_t;
 
@@ -104,6 +107,10 @@ dt_image_t;
 void dt_image_init(dt_image_t *img);
 /** returns non-zero if the image contains low-dynamic range data. */
 int dt_image_is_ldr(const dt_image_t *img);
+/** returns non-zero if the image contains mosaic data. */
+int dt_image_is_raw(const dt_image_t *img);
+/** returns non-zero if the image contains float data. */
+int dt_image_is_hdr(const dt_image_t *img);
 /** returns the full path name where the image was imported from. */
 void dt_image_full_path(const int imgid, char *pathname, int len);
 /** returns the portion of the path used for the film roll name. */
@@ -121,14 +128,13 @@ void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database. */
 int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */
-// FIXME: re-implement the right way!
-// void dt_image_flip(const int32_t imgid, const int32_t cw);
+void dt_image_flip(const int32_t imgid, const int32_t cw);
+void dt_image_set_flip(const int32_t imgid, const int32_t user_flip);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image, exif or user override, if set. */
 static inline int dt_image_orientation(const dt_image_t *img)
 {
-  // return img->user_flip > 0 ? img->user_flip : (img->orientation > 0 ?img->orientation : 0);
   return img->orientation > 0 ? img->orientation : 0;
 }
 /** returns the (flipped) filter string for the demosaic pattern. */

@@ -13,14 +13,13 @@ Version:	0.8
 Release:	1.1
 License:	GPLv3+
 Summary:	Raw Photo Viewer and Organiser
-URL:		http://darktable.sourceforge.net/
+URL:		http://www.darktable.org/
 Group:		Productivity/Graphics/Viewers
 Source0:	%{name}-%{version}.tar.gz
 BuildRequires:	gcc-c++ libglade2-devel libtiff-devel cairo-devel libexiv2-devel
-BuildRequires:	gconf2-devel >= 2.26 sqlite3-devel lensfun-devel liblcms-devel
+BuildRequires:	sqlite3-devel lensfun-devel liblcms-devel
 BuildRequires:	intltool update-desktop-files fdupes
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
-%gconf_schemas_prereq
 
 %description
 darktable is a virtual lighttable and darkroom for photographers: it manages
@@ -55,7 +54,7 @@ export CFLAGS="$CXXFLAGS"
 mkdir -p build
 cd build
 
-cmake -DCMAKE_INSTALL_PREFIX=%prefix -DCMAKE_BUILD_TYPE=Release -DDONT_INSTALL_GCONF_SCHEMAS=ON \
+cmake -DCMAKE_INSTALL_PREFIX=%prefix -DCMAKE_BUILD_TYPE=Release \
 	-DINSTALL_IOP_EXPERIMENTAL=OFF -DINSTALL_IOP_LEGACY=ON ..
 
 make %{?jobs:-j %jobs} 
@@ -67,7 +66,6 @@ make install DESTDIR="$RPM_BUILD_ROOT"
 
 mkdir -p %{buildroot}/usr/share/doc/packages
 %{__mv} %{buildroot}%{_datadir}/doc/%{name} %{buildroot}/usr/share/doc/packages
-%find_gconf_schemas
 %find_lang %{name}
 %suse_update_desktop_file -i %{name}
 %fdupes -s %{buildroot}%{_datadir}

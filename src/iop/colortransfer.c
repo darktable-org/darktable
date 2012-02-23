@@ -18,15 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <strings.h>
-#include <gtk/gtk.h>
-#include <inttypes.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -36,6 +27,12 @@
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <strings.h>
+#include <gtk/gtk.h>
+#include <inttypes.h>
 
 /**
  * color transfer somewhat based on the glorious paper `color transfer between images'
@@ -551,7 +548,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
-  module->priority = 416; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 440; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;

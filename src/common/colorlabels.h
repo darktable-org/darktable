@@ -1,6 +1,7 @@
 #ifndef DT_COMMON_COLORLABELS_H
 #define DT_COMMON_COLORLABELS_H
 
+#include "common/darktable.h"
 #include <gtk/gtk.h>
 
 /** remove assigned colorlabels of selected images*/

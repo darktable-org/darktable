@@ -81,7 +81,7 @@ extern "C"
   int
   groups ()
   {
-    return IOP_GROUP_BASIC;
+    return IOP_GROUP_TONE;
   }
  
   int
@@ -262,7 +262,7 @@ void connect_key_accels(dt_iop_module_t *self)
 
   void reload_defaults(dt_iop_module_t *module)
   {
-    if(module->dev->image_storage.flags & DT_IMAGE_HDR)
+    if(dt_image_is_hdr(&module->dev->image_storage))
       module->default_enabled = 1;
     else
       module->default_enabled = 0;
@@ -281,7 +281,7 @@ void connect_key_accels(dt_iop_module_t *self)
     module->params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_params = (dt_iop_params_t*)malloc(sizeof(dt_iop_tonemapping_params_t));
     module->default_enabled = 1;
-  module->priority = 166; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 160; // module order created by iop_dependencies.py, do not edit!
     module->params_size = sizeof(dt_iop_tonemapping_params_t);
     module->gui_data = NULL;
   }

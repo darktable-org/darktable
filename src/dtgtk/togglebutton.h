@@ -18,8 +18,8 @@
 #ifndef DTGTK_TOGGLEBUTTON_H
 #define DTGTK_TOGGLEBUTTON_H
 
-#include <gtk/gtk.h>
 #include "paint.h"
+#include <gtk/gtk.h>
 G_BEGIN_DECLS
 #define DTGTK_TOGGLEBUTTON(obj) GTK_CHECK_CAST(obj, dtgtk_togglebutton_get_type (), GtkDarktableToggleButton)
 #define DTGTK_TOGGLEBUTTON_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_togglebutton_get_type(), GtkDarktableToggleButtonClass)
@@ -40,8 +40,13 @@ typedef struct _GtkDarktableToggleButtonClass
 
 GType dtgtk_togglebutton_get_type (void);
 
-/** Instansiate a new darktable slider control passing adjustment as range */
+/** Instansiate a new darktable toggle button */
 GtkWidget* dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflag);
 GtkWidget* dtgtk_togglebutton_new_with_label (const gchar *label,DTGTKCairoPaintIconFunc paint, gint paintflag);
+
+/** Set the paint function and paint flags */
+void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button,
+                            DTGTKCairoPaintIconFunc paint,
+                            gint paintflags);
 G_END_DECLS
 #endif

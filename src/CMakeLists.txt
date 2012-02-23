@@ -32,6 +32,7 @@ FILE(GLOB SOURCE_FILES
   "common/mipmap_cache.c"
   "common/styles.c" 
   "common/similarity.c" 
+  "common/selection.c"
   "common/tags.c" 
   "common/utility.c" 
   "common/variables.c" 
@@ -111,16 +112,6 @@ list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
 
-# Check for gconf2 / broken cmake module can't be included in the foreach() below
-if(USE_GCONF_BACKEND)
-  find_package(GConf2)
-  include_directories(${GConf2_INCLUDE_DIRS})
-  list(APPEND LIBS ${GConf2_LIBRARIES})
-  add_definitions(${GConf2_DEFINITIONS})
-endif(USE_GCONF_BACKEND)
-
-
-
 if(USE_CAMERA_SUPPORT)
   find_package(Gphoto2)
   include_directories(${Gphoto2_INCLUDE_DIRS})
@@ -183,6 +174,15 @@ endif(USE_GNOME_KEYRING)
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
 
+if(USE_UNITY)
+  find_package(Unity)
+  if(UNITY_FOUND)
+    add_definitions(-DHAVE_UNITY)
+    include_directories(${UNITY_INCLUDE_DIRS})
+    list(APPEND LIBS ${UNITY_LIBRARIES})
+  endif(UNITY_FOUND)
+endif(USE_UNITY)
+
 # build opengl slideshow viewer?
 if(BUILD_SLIDESHOW) 
   find_package(SDL)
@@ -211,10 +211,6 @@ endif(INOTIFY_FOUND)
 if(LENSFUN_FOUND)
   add_definitions("-DHAVE_LENSFUN")
 endif(LENSFUN_FOUND)
-
-if(GCONF2_FOUND)
-  add_definitions("-DHAVE_GCONF")
-endif(GCONF2_FOUND)
 
 if(OPENEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")

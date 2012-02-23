@@ -25,8 +25,9 @@
 #include "config.h"
 #endif
 
-#include <CL/cl.h>
 #include "common/dynload.h"
+
+#include <CL/cl.h>
 
 #ifdef WIN32
 #define DT_OPENCL_LIBRARY "OpenCL"

@@ -90,7 +90,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
   gboolean expand = FALSE;
   if(state==0)
   {
-    /* module is hidden lets set gconf values */
+    /* module is hidden lets set conf values */
     gtk_widget_hide(GTK_WIDGET(module->expander));
     snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, FALSE);
@@ -102,7 +102,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
   }
   else if(state==1)
   {
-    /* module is shown lets set gconf values */
+    /* module is shown lets set conf values */
     // FIXME
     // dt_gui_iop_modulegroups_switch(module->groups());
     gtk_widget_show(GTK_WIDGET(module->expander));
@@ -118,7 +118,7 @@ static gboolean _lib_modulelist_tristate_set_state(GtkWidget *w,gint state,dt_io
   }
   else if(state==2)
   {
-    /* module is shown and favorite lets set gconf values */
+    /* module is shown and favorite lets set conf values */
     // FIXME
     // dt_gui_iop_modulegroups_switch(module->groups());
     gtk_widget_show(GTK_WIDGET(module->expander));
@@ -147,7 +147,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(strcmp(module->op, "gamma") && !(module->flags() & IOP_FLAGS_DEPRECATED))
+    if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       module->showhide = dtgtk_tristatebutton_new(NULL,0);
       char filename[1024], datadir[1024];
@@ -182,10 +182,6 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 		       0, 0);
       if(ti < 5) ti++;
       else { ti = 0; tj ++; }
-    }
-    else
-    {
-      gtk_widget_hide_all(GTK_WIDGET(module->expander));
     }
 
     modules = g_list_previous(modules);

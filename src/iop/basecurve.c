@@ -18,10 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -32,6 +28,10 @@
 #include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
@@ -300,7 +300,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 229; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 280; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t)
@@ -582,9 +582,6 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     if(c->selected == 4) c->selected_min = 1.0 - 0.7*(1.0 - c->selected_min);
   }
   gtk_widget_queue_draw(widget);
-
-  gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
 

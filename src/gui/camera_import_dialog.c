@@ -16,9 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _XOPEN_SOURCE // for strptime
-
-#include <time.h>
+#include "common/darktable.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -30,6 +28,8 @@
 #include "dtgtk/button.h"
 #include "dtgtk/label.h"
 #include "gui/camera_import_dialog.h"
+
+#include <time.h>
 
 /*
 

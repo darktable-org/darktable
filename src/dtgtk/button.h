@@ -53,6 +53,5 @@ GtkWidget* dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFu
 void dtgtk_button_set_paint(GtkDarktableButton *button,
                             DTGTKCairoPaintIconFunc paint,
                             gint paintflags);
-
 G_END_DECLS
 #endif

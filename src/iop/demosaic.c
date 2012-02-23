@@ -991,7 +991,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 124; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 120; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
@@ -1181,7 +1181,7 @@ void gui_init     (struct dt_iop_module_t *self)
   gtk_combo_box_append_text(g->greeneq, _("local average"));
   gtk_combo_box_append_text(g->greeneq, _("full average"));
   gtk_combo_box_append_text(g->greeneq, _("full and local average"));
-  g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("green channels mathing method"), (char *)NULL);
+  g_object_set(G_OBJECT(g->greeneq), "tooltip-text", _("green channels matching method"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(g->greeneq), 1, 2, 3, 4, GTK_FILL|GTK_EXPAND, 0, 0, 0);
   ////////////////////////////
 

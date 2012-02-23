@@ -60,14 +60,25 @@ def add_edges(gr):
   # inversion should be really early in the pipe
   gr.add_edge(('temperature', 'invert'))
 
-  # these need to be in camera color space (input rgb):
+  # these need to be in camera color space (linear input rgb):
   gr.add_edge(('colorin', 'exposure'))
   gr.add_edge(('colorin', 'highlights'))
   gr.add_edge(('colorin', 'graduatednd'))
   gr.add_edge(('colorin', 'basecurve'))
   gr.add_edge(('colorin', 'lens'))
   gr.add_edge(('colorin', 'profile_gamma'))
+  gr.add_edge(('colorin', 'shrecovery'))
   
+  # flip is a distortion plugin, and as such has to go after spot removal
+  # and lens correction, which depend on original input buffers.
+  # and after buffer has been downscaled/demosaiced
+  gr.add_edge(('flip', 'demosaic'))
+  gr.add_edge(('flip', 'lens'))
+  gr.add_edge(('flip', 'spots'))
+  # plus, it confuses crop/rotate, vignetting and graduated density
+  gr.add_edge(('clipping', 'flip'))
+  gr.add_edge(('graduatednd', 'flip'))
+  gr.add_edge(('vignette', 'flip'))
   # handle highlights correctly:
   # we want highlights as early as possible, to avoid
   # pink highlights in plugins (happens only before highlight clipping)
@@ -77,6 +88,10 @@ def add_edges(gr):
   gr.add_edge(('basecurve', 'highlights'))
   gr.add_edge(('lens', 'highlights'))
   gr.add_edge(('tonemap', 'highlights'))
+  gr.add_edge(('shrecovery', 'highlights'))
+  # gives the ability to change the space of shadow recovery fusion.
+  # maybe this has to go the other way round, let's see what experience shows!
+  gr.add_edge(('shrecovery', 'basecurve'))
   
   # this evil hack for nikon crap profiles needs to come
   # as late as possible before the input profile:
@@ -85,6 +100,8 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'graduatednd'))
   gr.add_edge(('profile_gamma', 'basecurve'))
   gr.add_edge(('profile_gamma', 'lens'))
+  gr.add_edge(('profile_gamma', 'shrecovery'))
+  gr.add_edge(('profile_gamma', 'bilateral'))
   
   # these need Lab (between color in/out): 
   gr.add_edge(('colorout', 'bloom'))
@@ -103,6 +120,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'grain'))
   gr.add_edge(('colorout', 'anlfyeni'))
   gr.add_edge(('colorout', 'lowpass'))
+  gr.add_edge(('colorout', 'shadhi'))
   gr.add_edge(('colorout', 'highpass'))
   gr.add_edge(('colorout', 'colorcontrast'))
   gr.add_edge(('colorout', 'colorize'))
@@ -122,6 +140,7 @@ def add_edges(gr):
   gr.add_edge(('grain', 'colorin'))
   gr.add_edge(('anlfyeni', 'colorin'))
   gr.add_edge(('lowpass', 'colorin'))
+  gr.add_edge(('shadhi', 'colorin'))
   gr.add_edge(('highpass', 'colorin'))
   gr.add_edge(('colorcontrast', 'colorin'))
   gr.add_edge(('colorize', 'colorin'))
@@ -154,6 +173,7 @@ def add_edges(gr):
   gr.add_edge(('sharpen', 'nlmeans'))
   gr.add_edge(('anlfyeni', 'nlmeans'))
   gr.add_edge(('lowpass', 'nlmeans'))
+  gr.add_edge(('shadhi', 'nlmeans'))
   gr.add_edge(('highpass', 'nlmeans'))
   gr.add_edge(('zonesystem', 'nlmeans'))
   gr.add_edge(('tonecurve', 'nlmeans'))
@@ -229,6 +249,7 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'colortransfer'))
   gr.add_edge(('relight', 'colortransfer'))
   gr.add_edge(('lowpass', 'colortransfer'))
+  gr.add_edge(('shadhi', 'colortransfer'))
   gr.add_edge(('highpass', 'colortransfer'))
   gr.add_edge(('anlfyeni', 'colortransfer'))
   gr.add_edge(('lowlight', 'colortransfer'))
@@ -242,7 +263,14 @@ def add_edges(gr):
   # want to do highpass filtering after lowpass:
   gr.add_edge(('highpass', 'lowpass'))
 
-  # deprecated:
+  # want to do shadows&highlights before tonecurve etc.
+  gr.add_edge(('tonecurve', 'shadhi'))
+  gr.add_edge(('atrous', 'shadhi'))
+  gr.add_edge(('levels', 'shadhi'))
+  gr.add_edge(('zonesystem', 'shadhi'))
+  gr.add_edge(('relight', 'shadhi'))
+
+  # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
   gr.add_edge(('bilateral', 'demosaic'))
   gr.add_edge(('colorout', 'equalizer'))
@@ -251,15 +279,15 @@ def add_edges(gr):
 
 gr = digraph()
 gr.add_nodes([
-'anlfyeni',
+'anlfyeni', # deprecated
 'atrous',
 'basecurve',
-'bilateral', # deprecated
+'bilateral',
 'bloom',
 'borders',
 'cacorrect',
 'channelmixer',
-'clahe',
+'clahe', # deprecated
 'clipping',
 'colorcorrection',
 'colorin',
@@ -271,6 +299,7 @@ gr.add_nodes([
 'demosaic',
 'equalizer', # deprecated
 'exposure',
+'flip',
 'gamma',
 'graduatednd',
 'grain',
@@ -288,7 +317,9 @@ gr.add_nodes([
 'profile_gamma',
 'rawdenoise',
 'relight',
+'shadhi',
 'sharpen',
+'shrecovery',
 'soften',
 'splittoning',
 'spots',
@@ -321,7 +352,8 @@ for n in sorted_nodes:
   if not os.path.isfile(filename):
     filename="../src/iop/%s.cc"%n
   if not os.path.isfile(filename):
-    print "could not find file `%s', maybe you're not running inside tools/?"%filename
+    if not n == "rawspeed":
+      print "could not find file `%s', maybe you're not running inside tools/?"%filename
     continue
   replace_all(filename, "( )*?(module->priority)( )*?(=).*?(;).*\n", "  module->priority = %d; // module order created by iop_dependencies.py, do not edit!\n"%priority)
   priority -= 1000.0/(length-1.0)

@@ -16,12 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "iop/colorout.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/colorlabels.h"
 #include "common/darktable.h"
+#include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
@@ -39,6 +38,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "iop/colorout.h"
 #include "libraw/libraw.h"
 
 #include <inttypes.h>
@@ -163,7 +163,7 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
-    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
+    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[j*stride + ch*i +k]-black)*scale;
     return;
   }
   int ii = 0, jj = 0;
@@ -263,7 +263,7 @@ dt_imageio_open_raw(
   raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
-  raw->params.user_flip = 0;
+  raw->params.user_flip = -1;
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
@@ -405,16 +405,9 @@ dt_imageio_open_ldr(
 
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
-  if(orientation & 4)
-  {
-    img->width  = jpg.height;
-    img->height = jpg.width;
-  }
-  else
-  {
-    img->width  = jpg.width;
-    img->height = jpg.height;
-  }
+  img->width  = (orientation & 4) ? jpg.height : jpg.width;
+  img->height = (orientation & 4) ? jpg.width  : jpg.height;
+
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
@@ -430,10 +423,7 @@ dt_imageio_open_ldr(
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
-  const int wd2 = orientation & 4 ? img->height : img->width;
-
-  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, wd2, ht2, wd2, ht2, wd2, orientation);
+  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width, jpg.height, 4*jpg.width, orientation);
 
   free(tmp);
 
@@ -513,9 +503,6 @@ int dt_imageio_export_with_flags(
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
   dt_show_times(&start, "[export] creating pixelpipe", NULL);
-
-  assert(((uint32_t *)buf.buf)[-4] == img->width);
-  assert(((uint32_t *)buf.buf)[-3] == img->height);
 
   // find output color profile for this image:
   int sRGB = 1;

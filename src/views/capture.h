@@ -20,15 +20,5 @@
 
 #include "views/view.h"
 
-/** Set's the jobcode name for the capture view */
-void dt_capture_view_set_jobcode(const dt_view_t *view, const char *name);
 
-/** Retreives the jobcode name for the capture */
-const char *dt_capture_view_get_jobcode(const dt_view_t *view);
-
-/** Get the film id of capture session */
-uint32_t dt_capture_view_get_film_id(const dt_view_t *view);
-
-const gchar *dt_capture_view_get_session_path(const dt_view_t *view);
-const gchar *dt_capture_view_get_session_filename(const dt_view_t *view,const char *filename);
 #endif

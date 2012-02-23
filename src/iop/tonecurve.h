@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2009--2012 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,24 +20,61 @@
 
 #include "develop/imageop.h"
 #include "gui/draw.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
 #define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_MAXNODES 20
+
+typedef enum tonecurve_channel_t
+{
+  ch_L    = 0,
+  ch_a    = 1,
+  ch_b    = 2,
+  ch_max  = 3
+}
+tonecurve_channel_t;
+
+typedef struct dt_iop_tonecurve_node_t
+{
+  float x;
+  float y;
+}
+dt_iop_tonecurve_node_t;
 
 typedef struct dt_iop_tonecurve_params_t
 {
-  float tonecurve_x[6], tonecurve_y[6];
+  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];  // three curves (L, a, b) with max number of nodes
+  int tonecurve_nodes[3];
+  int tonecurve_type[3];
+  int tonecurve_autoscale_ab;
   int tonecurve_preset;
 }
 dt_iop_tonecurve_params_t;
 
+
+// parameter structure of tonecurve 1st version, needed for use in legacy_params()
+typedef struct dt_iop_tonecurve_1_params_t
+{
+  float tonecurve_x[6], tonecurve_y[6];
+  int tonecurve_preset;
+}
+dt_iop_tonecurve_1_params_t;
+
+
 typedef struct dt_iop_tonecurve_gui_data_t
 {
-  dt_draw_curve_t *minmax_curve;        // curve for gui to draw
+  dt_draw_curve_t *minmax_curve[3];        // curves for gui to draw
+  int minmax_curve_nodes[3];
+  int minmax_curve_type[3];
   GtkHBox *hbox;
   GtkDrawingArea *area;
+  GtkSizeGroup *sizegroup;
   GtkLabel *label;
+  GtkToggleButton *autoscale_ab;
+  GtkNotebook* channel_tabs;
+  tonecurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected, dragging, x_move;
   double selected_offset, selected_y, selected_min, selected_max;
@@ -49,9 +86,12 @@ dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
 {
-  dt_draw_curve_t *curve;      // curve for gegl nodes and pixel processing
-  float table[0x10000];        // precomputed look-up table for tone curve
-  float unbounded_coeffs[2];   // approximation for extrapolation
+  dt_draw_curve_t *curve[3];   // curves for gegl nodes and pixel processing
+  int curve_nodes[3];          // number of nodes
+  int curve_type[3];           // curve style (e.g. CUBIC_SPLINE)
+  float table[3][0x10000];     // precomputed look-up tables for tone curve
+  float unbounded_coeffs[2];   // approximation for extrapolation of L
+  int autoscale_ab;
 }
 dt_iop_tonecurve_data_t;
 

@@ -15,9 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <glib.h>
-#include <glib/gstdio.h>
-
+#include "common/darktable.h"
 #include "common/collection.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -28,14 +26,16 @@
 #include "common/exif.h"
 #include "common/film.h"
 #include "common/imageio_module.h"
-#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
-#include "develop/develop.h"
 
 #include "gui/gtk.h"
+
+#include <glib.h>
+#include <glib/gstdio.h>
+
 
 void dt_control_write_sidecar_files()
 {
@@ -175,6 +175,9 @@ int32_t dt_control_indexer_job_run(dt_job_t *job)
 	/* get a mipmap of image to analyse */
 	dt_mipmap_buffer_t buf;
 	dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, idximg->id, DT_MIPMAP_2, DT_MIPMAP_BLOCKING);
+
+	if (!(buf.width * buf.height))
+	  continue;
 
 	/*
 	 * Generate similarity histogram data if requested
@@ -339,14 +342,16 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(t)
   {
     imgid = (long int)t->data;
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, img->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
-    if(img->filters == 0 || img->bpp != sizeof(uint16_t))
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+    // just take a copy. also do it after blocking read, so filters and bpp will make sense.
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_t image = *img;
+    dt_image_cache_read_release(darktable.image_cache, img);
+    if(image.filters == 0 || image.bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
@@ -354,9 +359,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     filter = dt_image_flipped_filter(img);
     if(buf.size != DT_MIPMAP_FULL)
     {
-      dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
+      dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-      dt_image_cache_read_release(darktable.image_cache, img);
       free(pixels);
       free(weight);
       goto error;
@@ -365,29 +369,28 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     if(!pixels)
     {
       first_imgid = imgid;
-      pixels = (float *)malloc(sizeof(float)*img->width*img->height);
-      weight = (float *)malloc(sizeof(float)*img->width*img->height);
-      memset(pixels, 0x0, sizeof(float)*img->width*img->height);
-      memset(weight, 0x0, sizeof(float)*img->width*img->height);
-      wd = img->width;
-      ht = img->height;
+      pixels = (float *)malloc(sizeof(float)*image.width*image.height);
+      weight = (float *)malloc(sizeof(float)*image.width*image.height);
+      memset(pixels, 0x0, sizeof(float)*image.width*image.height);
+      memset(weight, 0x0, sizeof(float)*image.width*image.height);
+      wd = image.width;
+      ht = image.height;
     }
-    else if(img->width != wd || img->height != ht)
+    else if(image.width != wd || image.height != ht)
     {
       dt_control_log(_("images have to be of same size!"));
       free(pixels);
       free(weight);
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-      dt_image_cache_read_release(darktable.image_cache, img);
       goto error;
     }
     // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in the system => f/22
-    const float eap = img->exif_aperture > 0.0f ? img->exif_aperture : 22.0f;
-    const float efl = img->exif_focal_length > 0.0f ? img->exif_focal_length : 8.0f;
+    const float eap = image.exif_aperture > 0.0f ? image.exif_aperture : 22.0f;
+    const float efl = image.exif_focal_length > 0.0f ? image.exif_focal_length : 8.0f;
     const float rad = .5f * efl/eap;
     const float aperture = M_PI * rad * rad;
-    const float iso = img->exif_iso > 0.0f ? img->exif_iso : 100.0f;
-    const float exp = img->exif_exposure > 0.0f ? img->exif_exposure : 1.0f;
+    const float iso = image.exif_iso > 0.0f ? image.exif_iso : 100.0f;
+    const float exp = image.exif_exposure > 0.0f ? image.exif_exposure : 1.0f;
     const float cal = 100.0f/(aperture*exp*iso);
     whitelevel = fmaxf(whitelevel, cal);
 #ifdef _OPENMP
@@ -408,7 +411,6 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
 
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-    dt_image_cache_read_release(darktable.image_cache, img);
   }
   // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
 #ifdef _OPENMP
@@ -469,29 +471,24 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 
 int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
-#if 0
-  // FIXME: replace with proper crop/rotate history stack pasting
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  // const int cw = t1->flag;
+  const int cw = t1->flag;
   GList *t = t1->index;
   int total = g_list_length(t);
   double fraction=0;
-  // char message[512]= {0};
-  // snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
-  // const guint jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
-  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, "flipping has been disabled!");
+  char message[512]= {0};
+  snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
     imgid = (long int)t->data;
-    // FIXME: disabled for now!
-    // dt_image_flip(imgid, cw);
+    dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
-#endif
   return 0;
 }
 
@@ -511,7 +508,6 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
   dt_collection_update(darktable.collection);
-  dt_control_queue_redraw();
 
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = NULL;
@@ -565,7 +561,6 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
   dt_collection_update(darktable.collection);
-  dt_control_queue_redraw();
 
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = NULL;
@@ -770,8 +765,8 @@ void dt_control_delete_images()
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
                                     GTK_BUTTONS_YES_NO,
-                                    ngettext("do you really want to PHYSICALLY delete %d selected image from disk?",
-                                             "do you really want to PHYSICALLY delete %d selected images from disk?", number), number);
+                                    ngettext("do you really want to physically delete %d selected image from disk?",
+                                             "do you really want to physically delete %d selected images from disk?", number), number);
 
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -831,7 +826,11 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
-#pragma omp parallel default(none) private(imgid, size) shared(control, fraction, stderr, w, h, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
+#if !defined(__SUNOS__)
+#pragma omp parallel default(none) private(imgid, size) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
+#else
+#pragma omp parallel private(imgid, size) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable) num_threads(num_threads) if(num_threads > 1)
+#endif
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):

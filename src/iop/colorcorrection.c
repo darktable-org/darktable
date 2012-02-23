@@ -18,13 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
 #include "iop/colorcorrection.h"
 #include "develop/develop.h"
@@ -33,6 +26,11 @@
 #include "gui/gtk.h"
 #include "develop/imageop.h"
 #include "dtgtk/resetlabel.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 DT_MODULE(1)
 
@@ -138,7 +136,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorcorrection_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorcorrection_params_t));
   module->default_enabled = 0;
-  module->priority = 645; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 660; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcorrection_params_t);
   module->gui_data = NULL;
   dt_iop_colorcorrection_params_t tmp = (dt_iop_colorcorrection_params_t)
@@ -368,8 +366,6 @@ static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEvent
     g->press_params = *p;
   }
   gtk_widget_queue_draw(self->widget);
-  gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
 

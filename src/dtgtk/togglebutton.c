@@ -134,6 +134,11 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   else
     flags &=~(CPF_ACTIVE);
 
+  /* prelight */
+  if (state == GTK_STATE_PRELIGHT)
+    flags |= CPF_PRELIGHT;
+  else
+    flags &=~CPF_PRELIGHT;
 
   /* begin cairo drawing */
   cairo_t *cr;
@@ -256,4 +261,12 @@ GtkType dtgtk_togglebutton_get_type()
   return dtgtk_togglebutton_type;
 }
 
+
+void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button,
+                            DTGTKCairoPaintIconFunc paint,
+                            gint paintflags)
+{
+  button->icon = paint;
+  button->icon_flags = paintflags;
+}
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

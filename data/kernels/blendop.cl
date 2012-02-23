@@ -387,10 +387,12 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 
 __kernel void
-blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity, const int blendflag)
+blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height, const int mode, const float opacity, const int blendflag)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float o;
 
@@ -496,10 +498,12 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 
 __kernel void
-blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int mode, const float opacity, const int blendflag)
+blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height, const int mode, const float opacity, const int blendflag)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
 
   float4 o;
   float4 ta, tb, to;

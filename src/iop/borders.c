@@ -18,12 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <gtk/gtk.h>
-#include <inttypes.h>
-#include <gdk/gdkkeysyms.h>
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -38,6 +32,13 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <gtk/gtk.h>
+#include <inttypes.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -128,8 +129,8 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   }
 
   // sanity check.
-  if(roi_out->width  < 1) roi_out->width  = 1;
-  if(roi_out->height < 1) roi_out->height = 1;
+  roi_out->width = CLAMP(roi_out->width, 1, 2*roi_in->width);
+  roi_out->height = CLAMP(roi_out->height, 1, 2*roi_in->height);
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -167,7 +168,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int by = MAX(bh/2 - roi_out->y, 0);
 
   // sse-friendly color copy (stupidly copy whole buffer, /me lazy ass)
-  const float col[4] = {d->color[0], d->color[1], d->color[2], 0.0f};
+  const float col[4] = {d->color[0], d->color[1], d->color[2], 1.0f};
   float *buf = (float *)ovoid;
   for(int k=0;k<roi_out->width*roi_out->height;k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
   // blit image inside border and fill border with bg color
@@ -202,11 +203,11 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_borders_params_t p = (dt_iop_borders_params_t)
   {
-    {0.0f, 0.0f, 0.0f}, 3.0f/2.0f, 0.1f
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, 0.1f
   };
-  dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, self->version(), &p, sizeof(p), 1);
-  p.color[0] = p.color[1] = p.color[2] = 1.0f;
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, self->version(), &p, sizeof(p), 1);
+  p.color[0] = p.color[1] = p.color[2] = 0.0f;
+  dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 static void
@@ -214,6 +215,11 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
+  
+  /* use point sample */
+  if (self->request_color_pick)
+    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 }
@@ -365,7 +371,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_borders_params_t);
   module->gui_data = NULL;
-  module->priority = 937; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 940; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -408,6 +414,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("DIN"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("16:9"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(g->aspect), _("constant border"));
+  dt_gui_key_accel_block_on_focus(gtk_bin_get_child(GTK_BIN(g->aspect)));
 
   g_signal_connect (G_OBJECT (g->aspect), "changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("set the aspect ratio (w:h)\npress ctrl-x to swap sides"), (char *)NULL);
@@ -451,7 +458,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
   {
-    {0.0f, 0.0f, 0.0f}, 3.0f/2.0f, 0.1f
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, 0.1f
   };
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   if(self->dev->gui_attached && g)

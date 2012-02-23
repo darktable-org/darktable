@@ -238,9 +238,10 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "operation_tags_filter",  (gpointer)&(module->operation_tags_filter)))  module->operation_tags_filter = _default_operation_tags_filter;
   if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = _default_output_bpp;
   if(!g_module_symbol(module->module, "tiling_callback",        (gpointer)&(module->tiling_callback)))        module->tiling_callback = default_tiling_callback;
-  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             goto error;
-  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
-  if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
+  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             module->gui_update = NULL;
+  if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
+  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               module->gui_init = NULL;
+  if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            module->gui_cleanup = NULL;
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
   if(!g_module_symbol(module->module, "gui_focus",              (gpointer)&(module->gui_focus)))              module->gui_focus = NULL;
@@ -315,6 +316,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->output_bpp  = so->output_bpp;
   module->tiling_callback = so->tiling_callback;
   module->gui_update  = so->gui_update;
+  module->gui_reset  = so->gui_reset;
   module->gui_init    = so->gui_init;
   module->gui_cleanup = so->gui_cleanup;
 
@@ -402,6 +404,20 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
+gboolean dt_iop_is_hidden(dt_iop_module_t *module)
+{
+  gboolean is_hidden = TRUE;
+  if ( !(module->flags() & IOP_FLAGS_HIDDEN) )
+  {
+    if(!module->gui_init)
+      g_debug("Module '%s' is not hidden and lacks implementation of gui_init()...", module->op);
+    else if (!module->gui_cleanup)
+      g_debug("Module '%s' is not hidden and lacks implementation of gui_cleanup()...", module->op);
+    else
+      is_hidden = FALSE;
+  }
+  return is_hidden;
+}
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
 {
@@ -551,7 +567,7 @@ static void init_key_accels(dt_iop_module_so_t *module)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char path[1024];
-    snprintf(path,1024,"preset/%s",(const char *)sqlite3_column_text(stmt, 0));
+    snprintf(path,1024,"%s/%s",_("preset"),(const char *)sqlite3_column_text(stmt, 0));
     dt_accel_register_iop(module, FALSE, NC_("accel", path), 0, 0);
 
   }
@@ -717,16 +733,28 @@ void dt_iop_gui_update(dt_iop_module_t *module)
 {
   int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
-  module->gui_update(module);
-  if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+  if (!dt_iop_is_hidden(module))
   {
-    _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
-
-    gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode - 1);
-    gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
-    dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
+    module->gui_update(module);
+    if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    {
+      _iop_gui_blend_data_t *bd = (_iop_gui_blend_data_t*)module->blend_data;
+      
+      gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode - 1);
+      gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
+      dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
+    }
+    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+  darktable.gui->reset = reset;
+}
+
+void dt_iop_gui_reset(dt_iop_module_t *module)
+{
+  int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+  if (module->gui_reset && !dt_iop_is_hidden(module))
+    module->gui_reset(module);
   darktable.gui->reset = reset;
 }
 
@@ -774,12 +802,20 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 static void
 dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  // module->enabled = module->default_enabled; // will not propagate correctly anyways ;)
+  /* reset to default params */
   memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+
+  /* reset ui to its defaults */
+  dt_iop_gui_reset(module);
+
+  /* update ui to default params*/
   dt_iop_gui_update(module);
+
   dt_dev_add_history_item(module->dev, module, TRUE);
 }
+
+
 
 static void
 _preset_popup_position(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
@@ -804,9 +840,9 @@ popup_callback(GtkButton *button, dt_iop_module_t *module)
 
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset || (darktable.develop->gui_module == module)) return;
 
-  /* lets loose the focus of previous focus module*/
+  /* lets lose the focus of previous focus module*/
   if (darktable.develop->gui_module)
   {
     if (darktable.develop->gui_module->gui_focus) 
@@ -1905,8 +1941,9 @@ static void enable_module_callback(GtkAccelGroup *accel_group,
 
 void dt_iop_connect_common_accels(dt_iop_module_t *module)
 {
-  GClosure* closure = NULL;
 
+  GClosure* closure = NULL;
+  if(module->flags() & IOP_FLAGS_DEPRECATED) return;
   // Connecting the (optional) module show accelerator
   closure = g_cclosure_new(G_CALLBACK(show_module_callback),
                            module, NULL);

@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2010--2011 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,8 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/collection.h"
 #include "common/darktable.h"
+#include "common/collection.h"
+#include "common/selection.h"
 #include "common/debug.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -54,50 +56,23 @@ typedef struct dt_lib_select_t
 static void
 button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  char fullq[2048];
-
-  /* create a copy of darktable collection */
-  const dt_collection_t *collection = dt_collection_new (darktable.collection);
-
-  /* set query flags to not include order or limit part */
-  dt_collection_set_query_flags (collection, (dt_collection_get_query_flags(collection)&(~(COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT))));
-  dt_collection_update (collection);
-  snprintf (fullq, 2048, "insert into selected_images %s", dt_collection_get_query (collection));
-
   switch((long int)user_data)
   {
-    case 0: // all
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
+    case 0:  // all 
+      dt_selection_select_all(darktable.selection);
       break;
     case 1: // none
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
+      dt_selection_clear(darktable.selection);
       break;
     case 2: // invert
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into memory.tmp_selection select imgid from selected_images", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images where imgid in (select imgid from memory.tmp_selection)", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.tmp_selection", NULL, NULL, NULL);
+      dt_selection_invert(darktable.selection);
       break;
     case 4: // untouched
-      dt_collection_set_filter_flags (collection, (dt_collection_get_filter_flags(collection)|COLLECTION_FILTER_UNALTERED));
-      dt_collection_update (collection);
-      snprintf (fullq, 2048, "insert into selected_images %s", dt_collection_get_query (collection));
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
+      dt_selection_select_unaltered(darktable.selection);
       break;
     default: // case 3: same film roll
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "create temp table memory.tmp_selection (imgid integer)", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into memory.tmp_selection select imgid from selected_images", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "insert into selected_images select id from images where film_id in (select film_id from images as a join memory.tmp_selection as b on a.id = b.imgid)", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.tmp_selection", NULL, NULL, NULL);
-      break;
+      dt_selection_select_filmroll(darktable.selection);
   }
-
-  /* free temporary collection and redraw visual*/
-  dt_collection_free(collection);
 
   dt_control_queue_redraw_center();
 }

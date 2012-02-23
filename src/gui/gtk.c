@@ -16,17 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 600 // for setenv
-#endif
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <math.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-#include <pthread.h>
-
 #include "common/darktable.h"
 #ifdef HAVE_GPHOTO2
 #   include "common/camera_control.h"
@@ -49,6 +38,16 @@
 #include "control/conf.h"
 #include "control/signal.h"
 #include "views/view.h"
+#include "common/styles.h"
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <math.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+#include <pthread.h>
+
 
 /*                                                                                         
  * NEW UI API                                                             
@@ -651,7 +650,11 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   /* lets zero mem */
   memset(gui,0,sizeof(dt_gui_gtk_t));
 
+#if GLIB_MAJOR_VERSION <= 2
+#if GLIB_MINOR_VERSION < 31
   if (!g_thread_supported ()) g_thread_init(NULL);
+#endif
+#endif
   gdk_threads_init();
 
   gdk_threads_enter();
@@ -691,7 +694,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accelerators);
 
-  // set constant width from gconf key
+  // set constant width from conf key
   int panel_width = dt_conf_get_int("panel_width");
   if(panel_width < 20 || panel_width > 500)
   {
@@ -783,6 +786,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
       g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                      (gpointer)DT_GUI_VIEW_SWITCH_TO_DARKROOM, NULL));
 
+  // register_keys for applying styles
+  init_styles_key_accels();
+  connect_styles_key_accels();
   // register ctrl-q to quit:
   dt_accel_register_global(NC_("accel", "quit"), GDK_q, GDK_CONTROL_MASK);
 
@@ -1332,18 +1338,15 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
 
   /* add container for top left */
   ui->containers[DT_UI_CONTAINER_PANEL_TOP_LEFT] = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_LEFT], FALSE, FALSE, 10);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_LEFT], FALSE, FALSE,  DT_UI_PANEL_MODULE_SPACING);
 
   /* add container for top center */
   ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER] = gtk_hbox_new(TRUE,0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER], TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER], TRUE, TRUE, DT_UI_PANEL_MODULE_SPACING);
 
-  /* add a filler to top center widget */
-  gtk_box_pack_start(GTK_BOX(ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER]), gtk_event_box_new(), TRUE,TRUE,0);
-  
   /* add container for top right */
   ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT] = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT], FALSE, FALSE, 10);
+  gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_TOP_RIGHT], FALSE, FALSE, DT_UI_PANEL_MODULE_SPACING);
 
 }
 
@@ -1358,8 +1361,9 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
 
   /* add the container */
   ui->containers[DT_UI_CONTAINER_PANEL_BOTTOM] = gtk_hbox_new(TRUE,0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_BOTTOM], TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_BOTTOM], TRUE, TRUE,  DT_UI_PANEL_MODULE_SPACING);
 }
+
 
 static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
 {
@@ -1371,15 +1375,15 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
 
   /* add container for center top left */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT] = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT], TRUE, TRUE, 10);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT], FALSE, FALSE, DT_UI_PANEL_MODULE_SPACING);
 
   /* add container for center top center */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER] = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER], FALSE, FALSE, 10);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER], TRUE, TRUE, DT_UI_PANEL_MODULE_SPACING);
 
   /* add container for center top right */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT] = gtk_hbox_new(FALSE,0);
-  gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT], TRUE, TRUE, 10);
+  gtk_box_pack_end(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT], FALSE, FALSE, DT_UI_PANEL_MODULE_SPACING);
 
 }
 
@@ -1393,15 +1397,15 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 
   /* adding the center bottom left toolbox */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT] = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT], TRUE, TRUE, 10);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT], TRUE, TRUE, DT_UI_PANEL_MODULE_SPACING);
   
   /* adding the center box */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER], FALSE, TRUE, 10);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER], FALSE, TRUE, DT_UI_PANEL_MODULE_SPACING);
 
   /* adding the right toolbox */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT] = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT], TRUE, TRUE, 10);
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT], TRUE, TRUE, DT_UI_PANEL_MODULE_SPACING);
 
 }
 

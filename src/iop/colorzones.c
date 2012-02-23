@@ -18,10 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-#include <inttypes.h>
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -31,6 +27,11 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <inttypes.h>
 
 DT_MODULE(1)
 
@@ -234,7 +235,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 499; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 520; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;
@@ -714,8 +715,6 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
     c->x_move = -1;
   }
   gtk_widget_queue_draw(widget);
-  gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
 }
 
@@ -812,6 +811,11 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   self->request_color_pick = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
+  
+  /* set the area sample size*/
+  if (self->request_color_pick)
+    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 }

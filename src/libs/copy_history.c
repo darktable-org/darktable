@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/darktable.h"
 #include "common/history.h"
 #include "common/debug.h"
 #include "control/control.h"
@@ -258,7 +259,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "copy"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "load sidecar file"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "write sidecar files"), 0, 0);
 }
 

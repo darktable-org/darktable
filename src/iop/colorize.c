@@ -18,13 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "common/colorspaces.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -36,8 +29,13 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
 
 
 DT_MODULE(1)
@@ -98,8 +96,8 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t*)self->gui_data;
 
   dt_accel_connect_button_iop(self, "pick color", GTK_WIDGET(g->colorpick1));
-  dt_accel_connect_button_iop(self, "lightness", GTK_WIDGET(g->scale1));
-  dt_accel_connect_button_iop(self, "source mix", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->scale1));
+  dt_accel_connect_slider_iop(self, "source mix", GTK_WIDGET(g->scale2));
 }
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -355,7 +353,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorize_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorize_params_t));
   module->default_enabled = 0;
-  module->priority = 395; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 420; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorize_params_t);
   module->gui_data = NULL;
   dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t)

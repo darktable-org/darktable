@@ -1,9 +1,16 @@
 * developers:
 Henrik Andersson,
-Johannes Hanika.
+Johannes Hanika,
+Tobias Ellinghaus.
 
 * ubuntu packaging, color management, video tutorials:
 Pascal de Bruijn.
+
+* opencl pipeline:
+Ulrich Pegelow.
+
+* networking, battle testing, translation expert:
+Alexandre Prokoudine.
 
 * translation:
 Alexandre Prokoudine,
@@ -19,33 +26,38 @@ Sebastien Delcoigne,
 Thomas Costis,
 Tobias Ellinghaus.
 
-
 * contributors:
-Alexandre Prokoudine,
-Alexander Rabtchevich,
-Andrea Purracchio,
-Andrey Kaminsky,
-Anton Blanchard,
-Bernhard Schneider,
-Bruce Guenter,
-Christian Fuchs,
-Christian Himpel,
-Daniele Giorgis,
-David Bremner,
-Gregor Quade,
-Jan Rinze,
-Jose Carlos Garcia Sogo,
-Mikko Ruohola,
-Nao Nakashima,
-Olivier Tribout,
-Pascal de Bruijn,
-Richard Hughes,
-Robert Park,        
-Stephen van den Berg,
-Stuart Henderson,
-Thierry Leconte,
-Tobias Ellinghaus,
-Wyatt Olson,
-Xavier Besse,
-Zeus Panchenko.
-
+Alexander Rabtchevich
+Andrea Purracchio
+Andrey Kaminsky
+Anton Blanchard
+Bernhard Schneider
+Boucman
+Brian Teague
+Bruce Guenter
+Christian Fuchs
+Christian Himpel
+Daniele Giorgis
+David Bremner
+Ger Siemerink
+Gianluigi Calcaterra
+Gregor Quade
+Jan Rinze
+Jochen Schroeder
+Jose Carlos Garcia Sogo
+Karl Mikaelsson
+Klaus Staedtler
+Mikko Ruohola
+Nao Nakashima
+Olivier Tribout
+Pascal de Bruijn
+Pascal Obry
+Robert Park
+Richard Hughes
+Simon Spannagel
+Stephen van den Berg
+Stuart Henderson
+Thierry Leconte
+Wyatt Olson
+Xavier Besse
+Zeus Panchenko

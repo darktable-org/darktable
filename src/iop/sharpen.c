@@ -266,7 +266,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
   __attribute__((aligned(16))) float mat[wd4*4];
 
-  bzero(mat,sizeof(mat));
+  memset(mat, 0, sizeof(mat));
 
   const float sigma2 = (1.0f/(2.5*2.5))*(data->radius*roi_in->scale/piece->iscale)*(data->radius*roi_in->scale/piece->iscale);
   float weight = 0.0f;
@@ -499,12 +499,12 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_sharpen_params_t));
   module->default_params = malloc(sizeof(dt_iop_sharpen_params_t));
   module->default_enabled = 1;
-  module->priority = 666; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 680; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_sharpen_params_t);
   module->gui_data = NULL;
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t)
   {
-    2.0, 0.5, 0.004
+    2.0, 0.5, 0.5
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_sharpen_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_sharpen_params_t));

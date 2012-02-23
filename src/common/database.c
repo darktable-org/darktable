@@ -16,14 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <sqlite3.h>
-#include <glib.h>
-#include <gio/gio.h>
-
+#include "common/darktable.h"
 #include "common/debug.h"
 #include "common/database.h"
 #include "control/control.h"
 #include "control/conf.h"
+
+#include <sqlite3.h>
+#include <glib.h>
+#include <gio/gio.h>
 
 typedef struct dt_database_t
 {
@@ -33,18 +34,15 @@ typedef struct dt_database_t
   gchar *dbfilename;
 
   /* ondisk DB */
-  sqlite3 *ondisk_handle;
-
-  /* working copy */
-  sqlite3 *working_handle;
+  sqlite3 *handle;
 } dt_database_t;
 
 
 /* migrates database from old place to new */
 static void _database_migrate_to_xdg_structure();
 
-/* copies a db into another */
-static int _database_backup(sqlite3 *dst, sqlite3 *src);
+/* delete old mipmaps files */
+static void _database_delete_mipmaps_files();
 
 gboolean dt_database_is_new(const dt_database_t *db)
 {
@@ -55,6 +53,9 @@ dt_database_t *dt_database_init(char *alternative)
 {
   /* migrate default database location to new default */
   _database_migrate_to_xdg_structure();
+
+  /* delete old mipmaps files */
+  _database_delete_mipmaps_files();
 
   /* lets construct the db filename  */
   gchar * dbname = NULL;
@@ -87,67 +88,46 @@ dt_database_t *dt_database_init(char *alternative)
     db->is_new_database = TRUE;
 
   /* opening / creating database */
-  if(sqlite3_open(db->dbfilename, &db->ondisk_handle))
+  if(sqlite3_open(db->dbfilename, &db->handle))
   {
     fprintf(stderr, "[init] could not find database ");
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
     else       fprintf(stderr, "\n");
-#ifndef HAVE_GCONF
     fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
     dt_util_get_datadir(dbfilename, 512);
     fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
-#else
-    fprintf(stderr, "[init] check your /apps/darktable/database gconf entry!\n");
-#endif
-    if (dbname != NULL) g_free(dbname);
+    g_free(dbname);
+    g_free(db);
     return NULL;
-  }
-
-  if (sqlite3_open(":memory:", &db->working_handle))
-  {
-    db->working_handle = db->ondisk_handle;
-  }
-  else
-  {
-    if (_database_backup(db->working_handle, db->ondisk_handle))
-    {
-      sqlite3_close(db->working_handle);
-      db->working_handle = db->ondisk_handle;
-    }
-  }
-
-  if (db->working_handle == db->ondisk_handle)
-  {
-    fprintf(stderr, "[init] could not create an in memory db for faster collection processing. expect some slow io on your hdd\n");
   }
 
   /* attach a memory database to db connection for use with temporary tables
      used during instance life time, which is discarded on exit.
   */
-  sqlite3_exec(db->working_handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
+  sqlite3_exec(db->handle, "attach database ':memory:' as memory",NULL,NULL,NULL);
   
+  sqlite3_exec(db->handle, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
+
+  g_free(dbname);
   return db;
 }
 
 void dt_database_destroy(const dt_database_t *db)
 {
-  if (db->working_handle != db->ondisk_handle)
-  {
-    if (_database_backup(db->ondisk_handle, db->working_handle))
-    {
-      fprintf(stderr, "[close] could not write back in memory db to disk. your session work is only in the xmp, back them up!");
-    }
-    sqlite3_close(db->working_handle);
-  }
-  sqlite3_close(db->ondisk_handle);
+  sqlite3_close(db->handle);
   g_free((dt_database_t *)db);
 }
 
 sqlite3 *dt_database_get(const dt_database_t *db)
 {
-  return db->working_handle;
+  return db->handle;
 }
 
+const gchar *dt_database_get_path(const struct dt_database_t *db)
+{
+  return db->dbfilename;
+}
 
 static void _database_migrate_to_xdg_structure()
 {
@@ -172,24 +152,31 @@ static void _database_migrate_to_xdg_structure()
 	dt_conf_set_string("database","library.db");
       }
     }
-    g_free(conf_db);
   }
+
+  g_free(conf_db);
 }
 
-static int _database_backup(sqlite3 *dst, sqlite3 *src)
+/* delete old mipmaps files */
+static void _database_delete_mipmaps_files()
 {
-  sqlite3_backup *backup;
+  /* This migration is intended to be run only from 0.9.x to new cache in 1.0 */
 
-  backup = sqlite3_backup_init(dst, "main", src, "main");
-  if (!backup)
+  // Directory
+  char cachedir[1024], mipmapfilename[1024];
+  dt_util_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+  snprintf(mipmapfilename, 1024, "%s/mipmaps", cachedir);
+
+  if(access(mipmapfilename, F_OK) != -1)
   {
-    return -1;
+    fprintf(stderr, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
+    unlink(mipmapfilename);
+
+    snprintf(mipmapfilename, 1024, "%s/mipmaps.fallback", cachedir);
+    
+    if(access(mipmapfilename, F_OK) != -1)
+      unlink(mipmapfilename);
   }
-
-  int ret = sqlite3_backup_step(backup, -1);
-  ret = !(SQLITE_DONE == ret);
-
-  sqlite3_backup_finish(backup);
-
-  return ret;
 }
+

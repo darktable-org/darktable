@@ -19,11 +19,11 @@
 #ifndef DT_CAMERA_CONTROL_H
 #define DT_CAMERA_CONTROL_H
 
-#include <glib.h>
-#include <gtk/gtk.h>
+#include "common/darktable.h"
 
 #include <gphoto2/gphoto2.h>
-#include "common/darktable.h"
+#include <glib.h>
+#include <gtk/gtk.h>
 
 
 /** A camera object used for camera actions and callbacks */

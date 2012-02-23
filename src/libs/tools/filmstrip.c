@@ -55,7 +55,7 @@ typedef struct dt_lib_filmstrip_t
 dt_lib_filmstrip_t;
 
 /* proxy function to center filmstrip on imgid */
-static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid);
+static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate);
 /* proxy function for retrieving last activate request image id */
 static int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self);
 
@@ -242,7 +242,8 @@ void gui_init(dt_lib_module_t *self)
 
   d->last_selected_id = -1;
   d->history_copy_imgid = -1;
-  
+  d->activated_image = -1;
+
   /* create drawingarea */
   self->widget = gtk_vbox_new(FALSE,0);
   
@@ -340,7 +341,15 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, strip->activated_image);
+
+  /* suppress mouse over highlight upon leave */
+  strip->pointery = -1;
+  gtk_widget_queue_draw(self->widget);
+
   return TRUE;
 }
 
@@ -498,7 +507,8 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   const float wd = height;
   const float ht = height;
 
-  const int seli = pointerx / (float)wd;
+  /* mouse over image position in filmstrip */
+  const int seli = (pointery > 0 && pointery <= ht) ? pointerx / (float)wd : -1;
 
   const int img_pointerx = (int)fmodf(pointerx, wd);
   const int img_pointery = (int)pointery;
@@ -572,12 +582,14 @@ static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpoint
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid)
+static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
  
   /* if no imgid just bail out */
   if(imgid <= 0) return;
+
+  strip->activated_image = imgid;
 
   char query[1024];
   const gchar *qin = dt_collection_get_query (darktable.collection);
@@ -594,6 +606,13 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid)
       strip->offset = sqlite3_column_int(stmt, 0) - 1;
     }
     sqlite3_finalize(stmt);
+  }
+
+  /* activate the image if requested */
+  if (activate)
+  {
+    strip->activated_image = imgid;
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE);
   }
 
   /* redraw filmstrip */

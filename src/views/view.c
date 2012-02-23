@@ -17,8 +17,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/collection.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/debug.h"
@@ -30,6 +30,7 @@
 #include "views/view.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <glib.h>
@@ -177,7 +178,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-      if (!plugin && !plugin->views)
+      if (!plugin->views)
         fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
 
       /* does this module belong to current view ?*/
@@ -228,7 +229,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       {
         dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-        if (!plugin && !plugin->views)
+        if (!plugin->views)
           fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
 
         /* does this module belong to current view ?*/
@@ -398,7 +399,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
       
-      if (!plugin && !plugin->views)
+      if (!plugin->views)
         fprintf(stderr,"module %s doesnt have views flags\n",plugin->name());
 	  
       /* does this module belong to current view ?*/
@@ -625,7 +626,7 @@ dt_view_image_expose(
     int32_t py)
 {
   cairo_save (cr);
-  float bgcol = 0.4, fontcol = 0.5, bordercol = 0.1, outlinecol = 0.2;
+  float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   // if(img->flags & DT_IMAGE_SELECTED) selected = 1;
@@ -1036,13 +1037,13 @@ void dt_view_toggle_selection(int imgid)
   }
 }
 
-void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid)
+void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate )
 {
   //g_return_if_fail(vm->proxy.filmstrip.module!=NULL); // This can happend here for debugging
   //g_return_if_fail(vm->proxy.filmstrip.scroll_to_image!=NULL);
 
   if(vm->proxy.filmstrip.module && vm->proxy.filmstrip.scroll_to_image)
-    vm->proxy.filmstrip.scroll_to_image(vm->proxy.filmstrip.module, imgid);
+    vm->proxy.filmstrip.scroll_to_image(vm->proxy.filmstrip.module, imgid, activate);
 }
 
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm)
@@ -1069,7 +1070,7 @@ void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid)
   DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.make_selected, 1, iid);
   sqlite3_step(darktable.view_manager->statements.make_selected);
 
-  dt_view_filmstrip_scroll_to_image(vm,iid);
+  dt_view_filmstrip_scroll_to_image(vm, iid, TRUE);
 }
 
 void dt_view_filmstrip_prefetch()
@@ -1130,5 +1131,46 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
     vm->proxy.lighttable.set_zoom(vm->proxy.lighttable.module, zoom);
 }
 
+void dt_view_collection_update(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.module_collect.module)
+    vm->proxy.module_collect.update(vm->proxy.module_collect.module);
+}
+
+int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_film_id(vm->proxy.tethering.view);
+
+  return -1;
+}
+
+
+const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_session_path(vm->proxy.tethering.view);
+  return NULL;
+}
+
+const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, const char *filename)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_session_filename(vm->proxy.tethering.view, filename);
+  return NULL;
+}
+
+void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name)
+{
+  if (vm->proxy.tethering.view)
+    vm->proxy.tethering.set_job_code(vm->proxy.tethering.view, name);
+}
+
+const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
+{
+  if (vm->proxy.tethering.view)
+    return vm->proxy.tethering.get_job_code(vm->proxy.tethering.view);
+  return NULL;
+}
 
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

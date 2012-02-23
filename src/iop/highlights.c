@@ -98,7 +98,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend L"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend C"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend h"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blend H"));
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend L");
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend C");
 //  dtgtk_slider_init_accel(darktable.control->accels_darkroom,"<Darktable>/darkroom/plugins/highlights/blend h");
@@ -368,7 +368,7 @@ void gui_update(struct dt_iop_module_t *self)
 void reload_defaults(dt_iop_module_t *module)
 {
   // only on for raw images:
-  if(module->dev->image_storage.flags & DT_IMAGE_RAW)
+  if(dt_image_is_raw(&module->dev->image_storage))
     module->default_enabled = 1;
   else
     module->default_enabled = 0;
@@ -386,7 +386,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_highlights_data_t));
   module->params = malloc(sizeof(dt_iop_highlights_params_t));
   module->default_params = malloc(sizeof(dt_iop_highlights_params_t));
-  module->priority = 145; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 140; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);
   module->gui_data = NULL;

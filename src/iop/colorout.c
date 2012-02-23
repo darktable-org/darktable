@@ -19,13 +19,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-#include <string.h>
-#include <gdk/gdkkeysyms.h>
-#include "iop/colorout.h"
 #include "develop/develop.h"
+#include "iop/colorout.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/accelerators.h"
@@ -33,7 +28,13 @@
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 #include "dtgtk/resetlabel.h"
+
 #include <xmmintrin.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <string.h>
+#include <gdk/gdkkeysyms.h>
 
 #define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
 
@@ -651,7 +652,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 791; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 800; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t)
     {"sRGB", "X profile", DT_INTENT_PERCEPTUAL, DT_INTENT_PERCEPTUAL,

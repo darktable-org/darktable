@@ -95,7 +95,7 @@ int flags()
 int
 groups ()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_TONE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -160,6 +160,10 @@ picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
   {
     dt_iop_request_focus (self);
     self->request_color_pick = 1;
+    
+    /* set the area sample size*/
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    
   }
   else
     self->request_color_pick = 0;
@@ -258,7 +262,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_enabled = 0;
-  module->priority = 624; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 640; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t)

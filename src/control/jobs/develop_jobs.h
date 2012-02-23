@@ -18,9 +18,10 @@
 #ifndef DT_CONTROL_JOBS_DEVELOP_H
 #define DT_CONTROL_JOBS_DEVELOP_H
 
-#include <inttypes.h>
 #include "control/control.h"
 #include "develop/develop.h"
+
+#include <inttypes.h>
 
 typedef struct dt_dev_process_t
 {
