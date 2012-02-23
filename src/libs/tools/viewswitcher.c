@@ -73,7 +73,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   memset(d,0,sizeof(dt_lib_viewswitcher_t));
 
-  self->widget = gtk_hbox_new(FALSE,10);
+  self->widget = gtk_hbox_new(FALSE,5);
   
   for (int k=0;k<darktable.view_manager->num_views;k++)
   {
@@ -87,8 +87,8 @@ void gui_init(dt_lib_module_t *self)
       /* create space if more views */
       if (k < darktable.view_manager->num_views-1)
       {
-        GtkWidget *w = gtk_label_new("<span color=\"#7f7f7f\"><big><big><big><b>|</b></big></big></big></span>");
-        gtk_misc_set_alignment(GTK_MISC(w), 0, 0.9);
+        GtkWidget *w = gtk_label_new("<span color=\"#7f7f7f\"><big><big><b>|</b></big></big></span>");
+        gtk_misc_set_alignment(GTK_MISC(w), 0, 0.4);
         gtk_label_set_use_markup(GTK_LABEL(w), TRUE);
         gtk_box_pack_start(GTK_BOX(self->widget),w,FALSE,FALSE,5);
       }
@@ -107,9 +107,9 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-#define LABEL_HIGHLIGHTED  "<span color=\"#a0a0a0\"><big><big><big><b>%s</b></big></big></big></span>"
-#define LABEL_SELECTED     "<span color=\"#afafaf\"><big><big><big><b>%s</b></big></big></big></span>"
-#define LABEL_DEFAULT      "<span color=\"#7f7f7f\"><big><big><big><b>%s</b></big></big></big></span>"
+#define LABEL_HIGHLIGHTED  "<span color=\"#a0a0a0\"><big><big><b>%s</b></big></big></span>"
+#define LABEL_SELECTED     "<span color=\"#afafaf\"><big><big><b>%s</b></big></big></span>"
+#define LABEL_DEFAULT      "<span color=\"#7f7f7f\"><big><big><b>%s</b></big></big></span>"
 
 
 static void _lib_viewswitcher_enter_notify_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
@@ -186,7 +186,7 @@ static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *v)
   GtkWidget *b = gtk_label_new(label);
   gtk_container_add(GTK_CONTAINER(eb),b);
   /*setup label*/
-  gtk_misc_set_alignment(GTK_MISC(b), 0, 1.0);
+  gtk_misc_set_alignment(GTK_MISC(b), 0, 0.5);
   g_object_set_data(G_OBJECT(b),"view-label",(gchar *)v->name(v));
   g_object_set_data(G_OBJECT(eb),"view-label",(gchar *)v->name(v));
   gtk_label_set_use_markup(GTK_LABEL(b), TRUE);

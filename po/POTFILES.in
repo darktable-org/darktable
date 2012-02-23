@@ -128,4 +128,16 @@ src/views/capture.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/view.c
+src/common/ratings.c
+src/common/colorspaces.c
+src/common/mipmap_cache.c
+src/common/debug.h
+src/common/points.h
+src/libs/tools/hinter.c
+src/libs/tools/global_toolbox.c
+src/iop/shadhi.c
+src/iop/amaze_demosaic_RT.cc
+src/iop/shrecovery.c
+src/gegl-operations/dt-gamma.c
+src/gegl-operations/dt-contrast-curve.c
 
