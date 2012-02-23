@@ -107,8 +107,8 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-#define LABEL_HIGHLIGHTED  "<span color=\"#a0a0a0\"><big><big><b>%s</b></big></big></big></span>"
-#define LABEL_SELECTED     "<span color=\"#afafaf\"><big><big><b>%s</b></big></big></big></span>"
+#define LABEL_HIGHLIGHTED  "<span color=\"#a0a0a0\"><big><big><b>%s</b></big></big></span>"
+#define LABEL_SELECTED     "<span color=\"#afafaf\"><big><big><b>%s</b></big></big></span>"
 #define LABEL_DEFAULT      "<span color=\"#7f7f7f\"><big><big><b>%s</b></big></big></span>"
 
 
