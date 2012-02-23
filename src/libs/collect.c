@@ -210,10 +210,10 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
   switch(property)
   {
     case 0: // film roll
-      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by id", escaped_text);
       break;
     case 1: // camera
-      snprintf(query, 1024, "select distinct maker || ' ' || model, 1 from images where maker || ' ' || model like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct maker || ' ' || model as model, 1 from images where maker || ' ' || model like '%%%s%%' order by model", escaped_text);
       break;
     case 2: // tag
       snprintf(query, 1024, "select distinct name, id from tags where name like '%%%s%%'", escaped_text);
