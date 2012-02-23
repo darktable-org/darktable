@@ -299,15 +299,16 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
                                    (GdkColor){ 0,0,0,0 }, (GdkColor){ 0,0,0,lightness/2 }, (GdkColor){ 0,0,0,lightness }
                                   } };
 
-    char *ttsliders = _("use two inner markers (upper filled triangles) and\ntwo outer markers (lower open triangles) for adjustments.\nrange between inner markers: fully blended, range outside\nof outer marker: not blended at all, between adjacent\ninner/outer markers: gradually blended. double click to reset.");
+    char *ttinput = _("adjustment based on input received by this module:\n* range between inner markers (upper filled triangles): blend fully\n* range outside of outer markers (lower open triangles): do not blend at all\n* range between adjacent inner/outer markers: blend gradually");
+
+    char *ttoutput = _("adjustment based on unblended output of this module:\n* range between inner markers (upper filled triangles): blend fully\n* range outside of outer markers (lower open triangles): do not blend at all\n* range between adjacent inner/outer markers: blend gradually");
+
 
     bd->channel = 0;
 
     int maxchannels = 0;
     char **labels = NULL;
     char **tooltips = NULL;
-
-
 
     switch(bd->csp)
     {
@@ -409,10 +410,10 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
 
     gtk_object_set(GTK_OBJECT(bd->blendif_enable), "tooltip-text", _("enable conditional blending"), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(bd->lower_slider), "tooltip-text", ttsliders, (char *)NULL);
-    gtk_object_set(GTK_OBJECT(bd->upper_slider), "tooltip-text", ttsliders, (char *)NULL);
-    gtk_object_set(GTK_OBJECT(output), "tooltip-text", _("adjustment based on data, that this\nmodule would output without blending"), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(input), "tooltip-text", _("adjustment based on data, that this\nmodule receives as input"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(bd->lower_slider), "tooltip-text", _("double click to reset"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(bd->upper_slider), "tooltip-text", _("double click to reset"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(output), "tooltip-text", ttoutput, (char *)NULL);
+    gtk_object_set(GTK_OBJECT(input), "tooltip-text", ttinput, (char *)NULL);
 
     g_signal_connect (G_OBJECT (bd->blendif_enable), "toggled",
                       G_CALLBACK (_blendop_blendif_callback), bd);
