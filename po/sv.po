@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-20 19:11+0100\n"
-"PO-Revision-Date: 2012-02-20 19:27+0100\n"
+"POT-Creation-Date: 2012-02-23 22:11+0100\n"
+"PO-Revision-Date: 2012-02-23 22:23+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -172,7 +172,7 @@ msgstr "antal bakgrundstrådar"
 
 #: ../build/src/preferences_gen.h:619
 msgid "this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart)."
-msgstr ""
+msgstr "detta styr hur många trådar som används för att skapa miniatyr bilder under importering, detta kräver mer minne och en omstart av darktable för att ändras. "
 
 #: ../build/src/preferences_gen.h:624
 msgid "export multiple images in parallel"
@@ -184,7 +184,7 @@ msgstr "välj antal trådar för parallel exporting av bilder, varje tråd komme
 
 #: ../build/src/preferences_gen.h:641
 msgid "host memory limit (in MB) for tiling"
-msgstr ""
+msgstr "host minnesbegränsning i MB för tiling"
 
 #: ../build/src/preferences_gen.h:653
 msgid "this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart."
@@ -243,14 +243,14 @@ msgstr "lagringsmetod att använda för pwstorage: 0 - ingen, 1 - gconf (do not 
 #: ../src/iop/channelmixer.c:354
 #: ../src/iop/channelmixer.c:371
 #: ../src/iop/temperature.c:529
-#: ../src/libs/collect.c:240
-#: ../src/libs/collect.c:242
+#: ../src/libs/collect.c:241
+#: ../src/libs/collect.c:243
 msgid "red"
 msgstr "röd"
 
 #: ../src/common/collection.c:432
-#: ../src/libs/collect.c:246
-#: ../src/libs/collect.c:248
+#: ../src/libs/collect.c:247
+#: ../src/libs/collect.c:249
 msgid "yellow"
 msgstr "gul"
 
@@ -259,8 +259,8 @@ msgstr "gul"
 #: ../src/iop/channelmixer.c:355
 #: ../src/iop/channelmixer.c:374
 #: ../src/iop/temperature.c:530
-#: ../src/libs/collect.c:252
-#: ../src/libs/collect.c:254
+#: ../src/libs/collect.c:253
+#: ../src/libs/collect.c:255
 msgid "green"
 msgstr "grön"
 
@@ -269,21 +269,21 @@ msgstr "grön"
 #: ../src/iop/channelmixer.c:356
 #: ../src/iop/channelmixer.c:377
 #: ../src/iop/temperature.c:531
-#: ../src/libs/collect.c:258
-#: ../src/libs/collect.c:260
+#: ../src/libs/collect.c:259
+#: ../src/libs/collect.c:261
 msgid "blue"
 msgstr "blå"
 
 #: ../src/common/collection.c:435
-#: ../src/libs/collect.c:264
-#: ../src/libs/collect.c:266
+#: ../src/libs/collect.c:265
+#: ../src/libs/collect.c:267
 msgid "purple"
 msgstr "lila"
 
 #. history
 #: ../src/common/collection.c:441
-#: ../src/libs/collect.c:224
-#: ../src/libs/collect.c:226
+#: ../src/libs/collect.c:225
+#: ../src/libs/collect.c:227
 msgid "altered"
 msgstr "förändrad"
 
@@ -380,6 +380,7 @@ msgid "failed to allocate memory for export, please lower the threads used for e
 msgstr ""
 
 #: ../src/common/imageio.c:496
+#: ../src/common/mipmap_cache.c:873
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "bild `%s' är inte tillgänglig"
@@ -1562,7 +1563,7 @@ msgstr "bildsamling"
 
 #: ../src/imageio/storage/flickr.c:507
 msgid "visible to"
-msgstr ""
+msgstr "visas för"
 
 #: ../src/imageio/storage/flickr.c:510
 msgid "click login button to start"
@@ -1616,15 +1617,15 @@ msgstr "du"
 
 #: ../src/imageio/storage/flickr.c:579
 msgid "friends"
-msgstr ""
+msgstr "vänner"
 
 #: ../src/imageio/storage/flickr.c:580
 msgid "family"
-msgstr ""
+msgstr "familj"
 
 #: ../src/imageio/storage/flickr.c:581
 msgid "friends + family"
-msgstr ""
+msgstr "vänner och familj"
 
 #: ../src/imageio/storage/flickr.c:582
 msgid "everyone"
@@ -1770,6 +1771,7 @@ msgstr "styrkan av lokal contrast"
 #: ../src/iop/bloom.c:344
 #: ../src/iop/grain.c:524
 #: ../src/iop/hotpixels.c:292
+#: ../src/iop/shrecovery.c:435
 msgid "strength"
 msgstr "styrka"
 
@@ -1977,6 +1979,7 @@ msgstr "brusreducering (bilateral filter)"
 #: ../src/iop/bilateral.cc:91
 #: ../src/iop/lowpass.c:114
 #: ../src/iop/sharpen.c:94
+#: ../src/iop/shadhi.c:117
 msgctxt "accel"
 msgid "radius"
 msgstr "radie"
@@ -2022,6 +2025,7 @@ msgstr "mängd av oskärp att applicera på blå kanal"
 #: ../src/iop/clahe.c:342
 #: ../src/iop/lowpass.c:715
 #: ../src/iop/sharpen.c:553
+#: ../src/iop/shadhi.c:819
 msgid "radius"
 msgstr "radie"
 
@@ -2041,6 +2045,7 @@ msgstr "tröskel"
 #: ../src/iop/bloom.c:85
 #: ../src/iop/grain.c:341
 #: ../src/iop/hotpixels.c:79
+#: ../src/iop/shrecovery.c:94
 msgctxt "accel"
 msgid "strength"
 msgstr "styrka"
@@ -2595,7 +2600,7 @@ msgstr "färgens ljushet"
 
 #: ../src/iop/colorize.c:460
 msgid "mix value of source lightness"
-msgstr ""
+msgstr "blandningsvärde för källljus"
 
 #: ../src/iop/colorout.c:48
 msgid "output color profile"
@@ -3742,6 +3747,7 @@ msgid "balance"
 msgstr "balans"
 
 #: ../src/iop/splittoning.c:100
+#: ../src/iop/shadhi.c:118
 msgctxt "accel"
 msgid "compress"
 msgstr "komprimera"
@@ -3780,6 +3786,7 @@ msgstr "chockladbrun"
 
 #. Shadows
 #: ../src/iop/splittoning.c:482
+#: ../src/iop/shadhi.c:817
 msgid "shadows"
 msgstr "skuggor"
 
@@ -3789,6 +3796,7 @@ msgstr "välj färgton för mörka partier"
 
 #. Highlights
 #: ../src/iop/splittoning.c:541
+#: ../src/iop/shadhi.c:818
 msgid "highlights"
 msgstr "högdagrar"
 
@@ -3805,6 +3813,7 @@ msgid "balance"
 msgstr "balans"
 
 #: ../src/iop/splittoning.c:614
+#: ../src/iop/shadhi.c:820
 msgid "compress"
 msgstr "komprimera"
 
@@ -3964,6 +3973,7 @@ msgid "contrast compression"
 msgstr "kontrast komprimering"
 
 #: ../src/iop/tonemap.cc:314
+#: ../src/iop/shadhi.c:832
 msgid "spatial extent"
 msgstr "rumsbestämd utrsträckning"
 
@@ -4429,46 +4439,46 @@ msgstr "skapa"
 msgid "collect images"
 msgstr "samling av bilder"
 
-#: ../src/libs/collect.c:230
-#: ../src/libs/collect.c:232
+#: ../src/libs/collect.c:231
+#: ../src/libs/collect.c:233
 msgid "not altered"
 msgstr "oförändrad"
 
-#: ../src/libs/collect.c:371
-#: ../src/libs/collect.c:385
-#: ../src/libs/collect.c:652
+#: ../src/libs/collect.c:372
+#: ../src/libs/collect.c:386
+#: ../src/libs/collect.c:653
 msgid "clear this rule"
 msgstr "ta bort denna regel"
 
-#: ../src/libs/collect.c:376
+#: ../src/libs/collect.c:377
 msgid "clear this rule or add new rules"
 msgstr "rensa denna regel eller skapa en ny"
 
-#: ../src/libs/collect.c:658
+#: ../src/libs/collect.c:659
 msgid "narrow down search"
 msgstr "smalna av sökning"
 
-#: ../src/libs/collect.c:662
+#: ../src/libs/collect.c:663
 msgid "add more images"
 msgstr "lägg till fler bilder"
 
-#: ../src/libs/collect.c:666
+#: ../src/libs/collect.c:667
 msgid "exclude images"
 msgstr "exkludera bilder"
 
-#: ../src/libs/collect.c:672
+#: ../src/libs/collect.c:673
 msgid "change to: and"
 msgstr "ändra till: och"
 
-#: ../src/libs/collect.c:676
+#: ../src/libs/collect.c:677
 msgid "change to: or"
 msgstr "ändra till: eller"
 
-#: ../src/libs/collect.c:680
+#: ../src/libs/collect.c:681
 msgid "change to: except"
 msgstr "ändra till: för utom"
 
-#: ../src/libs/collect.c:733
+#: ../src/libs/collect.c:734
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "type your query, use `%' as wildcard"
@@ -4548,6 +4558,7 @@ msgstr "yta"
 
 #: ../src/libs/colorpicker.c:522
 #: ../src/libs/colorpicker.c:574
+#: ../src/iop/shrecovery.c:436
 msgid "mean"
 msgstr "medel"
 
@@ -5757,7 +5768,7 @@ msgstr "betyg"
 
 #: ../src/libs/tools/view_toolbox.c:36
 msgid "view toolbox"
-msgstr ""
+msgstr "vy verktygslåda"
 
 #: ../src/libs/tools/viewswitcher.c:46
 msgid "viewswitcher"
@@ -5800,7 +5811,7 @@ msgstr "inga bilder valda!"
 
 #: ../src/views/darkroom.c:715
 msgid "no userdefined presets for favorite modules were found"
-msgstr ""
+msgstr "inga förinställningar skapad av användare för favorit moduler hittades"
 
 #: ../src/views/darkroom.c:720
 #, c-format
@@ -5918,6 +5929,144 @@ msgstr "centrera"
 msgctxt "accel"
 msgid "preview"
 msgstr "förhandsvisning"
+
+#: ../src/common/ratings.c:32
+#, c-format
+msgid "applying rating %d to %d image"
+msgid_plural "applying rating %d to %d images"
+msgstr[0] "applicerar betyg %d på %d bild"
+msgstr[1] "applicerar betyg %d på %d bilder"
+
+#: ../src/common/ratings.c:60
+msgid "no images selected to apply rating"
+msgstr "inga bilder valda för applicering av betyg"
+
+#: ../src/libs/tools/hinter.c:42
+msgid "hinter"
+msgstr "tipsare"
+
+#: ../src/libs/tools/global_toolbox.c:36
+msgid "preferences"
+msgstr "inställningar"
+
+#: ../src/libs/tools/global_toolbox.c:75
+msgid "show global preferences"
+msgstr "visa globala inställningar"
+
+#: ../src/iop/shadhi.c:99
+msgid "shadows and highlights"
+msgstr "skuggor och högdagrar"
+
+#: ../src/iop/shadhi.c:115
+msgctxt "accel"
+msgid "shadows"
+msgstr "skuggor"
+
+#: ../src/iop/shadhi.c:116
+msgctxt "accel"
+msgid "highlights"
+msgstr "högdagrar"
+
+#: ../src/iop/shadhi.c:830
+msgid "lighten shadows"
+msgstr "lyft skugga"
+
+#: ../src/iop/shadhi.c:831
+msgid "darken highlights"
+msgstr "sänk högdagrar"
+
+#: ../src/iop/shadhi.c:833
+msgid ""
+"compress the effect on shadows/highlights and\n"
+"preserve midtones"
+msgstr ""
+"komprimera effekten mot ljus och mörka partier och\n"
+"bevara mellantoner"
+
+#: ../src/iop/shrecovery.c:78
+msgid "shadow recovery (experimental)"
+msgstr "återskapa skuggor (experimentell)"
+
+#: ../src/iop/shrecovery.c:95
+msgctxt "accel"
+msgid "mu"
+msgstr ""
+
+#: ../src/iop/shrecovery.c:96
+msgctxt "accel"
+msgid "sigma"
+msgstr "sigma"
+
+#: ../src/iop/shrecovery.c:97
+msgctxt "accel"
+msgid "size_limit"
+msgstr ""
+
+#: ../src/iop/shrecovery.c:437
+#, fuzzy
+msgid "deviation"
+msgstr "navigera"
+
+#: ../src/iop/shrecovery.c:438
+msgid "minimal pyramid limit"
+msgstr ""
+
+#: ../src/iop/shrecovery.c:444
+#, fuzzy
+msgid "the strength of lighten"
+msgstr "styrkan av applicerat ljus"
+
+#: ../src/iop/shrecovery.c:445
+msgid "optimal exposedness"
+msgstr "optimal exponering"
+
+#: ../src/iop/shrecovery.c:446
+msgid "exposedness deviation"
+msgstr ""
+
+#: ../src/iop/shrecovery.c:447
+msgid "minimal pyramid limit size"
+msgstr ""
+
+#: ../src/gegl-operations/dt-gamma.c:46
+msgid "Gamma Value"
+msgstr "gamma value"
+
+#: ../src/gegl-operations/dt-gamma.c:46
+msgid "gamma value"
+msgstr "gamma värde"
+
+#: ../src/gegl-operations/dt-gamma.c:47
+msgid "Linear Value"
+msgstr "linjärt värde"
+
+#: ../src/gegl-operations/dt-gamma.c:47
+msgid "linear value"
+msgstr "linjärt värde"
+
+#: ../src/gegl-operations/dt-gamma.c:168
+msgid "Linear/Gamma conversion curve."
+msgstr "linjär/gamma konverterings kruva"
+
+#: ../src/gegl-operations/dt-contrast-curve.c:42
+msgid "Sample points"
+msgstr "samplingspunkter"
+
+#: ../src/gegl-operations/dt-contrast-curve.c:43
+msgid "Number of curve sampling points.  0 for exact calculation."
+msgstr "antal samplingspunkter, 0 för exact beräkning"
+
+#: ../src/gegl-operations/dt-contrast-curve.c:44
+msgid "Curve"
+msgstr "kurva"
+
+#: ../src/gegl-operations/dt-contrast-curve.c:44
+msgid "The contrast curve."
+msgstr "kontrast kurva"
+
+#: ../src/gegl-operations/dt-contrast-curve.c:146
+msgid "Adjusts the contrast of the image according to a curve, for each RGB channel separately."
+msgstr "ändra kontrasten av bilden utifrån kurvan, för vardera enskild färg kanal (röd/grön/blå) "
 
 #~ msgid "ask before deleting images"
 #~ msgstr "fråga innan en bild raderas"
@@ -6069,9 +6218,6 @@ msgstr "förhandsvisning"
 
 #~ msgid "images sorted by"
 #~ msgstr "bilder sorteras efter"
-
-#~ msgid "show global preferences"
-#~ msgstr "visa globala inställningar"
 
 #~ msgid "f-length"
 #~ msgstr "brännvidd"
@@ -6765,9 +6911,6 @@ msgstr "förhandsvisning"
 
 #~ msgid "the the strength of applied grain"
 #~ msgstr "ange styrkan av bruset "
-
-#~ msgid "sigma g"
-#~ msgstr "sigma g"
 
 #~ msgid ""
 #~ "demosaic treating RGGB as\n"
