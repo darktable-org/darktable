@@ -382,6 +382,7 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
     default:
       break;
   }
+  g_signal_emit_by_name(G_OBJECT(w), "value-changed");
 }
 
 static gboolean
@@ -690,6 +691,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         darktable.bauhaus->keys_cnt = 0;
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
+        dt_bauhaus_widget_accept(darktable.bauhaus->current);
       }
       else if(event->keyval == GDK_KEY_Escape)
       {
