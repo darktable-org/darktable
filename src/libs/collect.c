@@ -186,7 +186,7 @@ get_collect (dt_lib_collect_rule_t *r)
 }
 
 static gboolean
-entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
+changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
 {
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
@@ -200,6 +200,7 @@ entry_key_press (GtkEntry *entry, GdkEventKey *event, dt_lib_collect_rule_t *dr)
   char query[1024];
   int property = gtk_combo_box_get_active(dr->combo);
   const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
+  fprintf(stderr,"text: '%s'\n", text);
   gchar *escaped_text = dt_util_str_replace(text, "'", "''");
   char confname[200];
   snprintf(confname, 200, "plugins/lighttable/collect/string%1ld", dr->num);
@@ -386,7 +387,7 @@ _lib_collect_gui_update (dt_lib_module_t *self)
     }
   }
   // update list of proposals
-  entry_key_press (NULL, NULL, d->rule + d->active_rule);
+  changed_callback(NULL, d->rule + d->active_rule);
   darktable.gui->reset = old;
 }
 
@@ -406,7 +407,7 @@ combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  entry_key_press (NULL, NULL, d);
+  changed_callback(NULL, d);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -426,7 +427,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
   g_free(text);
-  entry_key_press (NULL, NULL, d->rule + active);
+  changed_callback(NULL, d->rule + active);
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
 }
@@ -434,7 +435,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
 static void
 entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
-  entry_key_press (NULL, NULL, d);
+  changed_callback(NULL, d);
   dt_lib_collect_t *c = get_collect(d);
   GtkTreeView *view = c->view;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
@@ -452,7 +453,7 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
       gtk_entry_set_text(GTK_ENTRY(d->text), text);
       g_free(text);
-      entry_key_press (NULL, NULL, d);
+      changed_callback(NULL, d);
     }
   }
   dt_collection_update_query(darktable.collection);
@@ -469,7 +470,7 @@ entry_focus_in_callback (GtkWidget *w, GdkEventFocus *event, dt_lib_collect_rule
 {
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
-  entry_key_press (NULL, NULL, c->rule + c->active_rule);
+  changed_callback(NULL, c->rule + c->active_rule);
 }
 
 #if 0
@@ -732,7 +733,7 @@ gui_init (dt_lib_module_t *self)
     /* xgettext:no-c-format */
     g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(entry_key_press), d->rule + i);
+    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(changed_callback), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
