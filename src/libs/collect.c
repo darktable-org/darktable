@@ -200,7 +200,6 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
   char query[1024];
   int property = gtk_combo_box_get_active(dr->combo);
   const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
-  fprintf(stderr,"text: '%s'\n", text);
   gchar *escaped_text = dt_util_str_replace(text, "'", "''");
   char confname[200];
   snprintf(confname, 200, "plugins/lighttable/collect/string%1ld", dr->num);
