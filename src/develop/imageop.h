@@ -151,8 +151,10 @@ typedef struct dt_iop_module_t
   float color_picker_box[4];
   /** single point to pick if in point mode */
   float color_picker_point[2];
-  /** place to store the picked color. */
+  /** place to store the picked color of module input. */
   float picked_color[3], picked_color_min[3], picked_color_max[3];
+  /** place to store the picked color of module output (before blending). */
+  float picked_output_color[3], picked_output_color_min[3], picked_output_color_max[3];
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */

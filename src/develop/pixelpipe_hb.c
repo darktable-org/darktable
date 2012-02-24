@@ -245,6 +245,59 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
 }
 
 
+// helper for color picking
+static void
+pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *roi, 
+                       float *picked_color, float *picked_color_min, float *picked_color_max)
+{
+  int box[4];
+  int point[2];
+  float Lab[3];
+
+  for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
+  for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
+
+  for(int k=0; k<3; k++) Lab[k] = 0.0f;
+
+  // Initializing bounds of colorpicker box
+  for(int k=0; k<4; k+=2) box[k] = MIN(roi->width -1, MAX(0, module->color_picker_box[k]*roi->width));
+  for(int k=1; k<4; k+=2) box[k] = MIN(roi->height-1, MAX(0, module->color_picker_box[k]*roi->height));
+
+  // Initializing bounds of colorpicker point
+  point[0] = MIN(roi->width - 1, MAX(0, module->color_picker_point[0] * roi->width));
+  point[1] = MIN(roi->height - 1, MAX(0, module->color_picker_point[1] * roi->height));
+
+  if(darktable.lib->proxy.colorpicker.size)
+  {
+    const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
+    for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+    {
+      const float L = img[4*(roi->width*j + i) + 0];
+      const float a = img[4*(roi->width*j + i) + 1];
+      const float b = img[4*(roi->width*j + i) + 2];
+      Lab[0] += w*L;
+      Lab[1] += w*a;
+      Lab[2] += w*b;
+      picked_color_min[0] = fminf(picked_color_min[0], L);
+      picked_color_min[1] = fminf(picked_color_min[1], a);
+      picked_color_min[2] = fminf(picked_color_min[2], b);
+      picked_color_max[0] = fmaxf(picked_color_max[0], L);
+      picked_color_max[1] = fmaxf(picked_color_max[1], a);
+      picked_color_max[2] = fmaxf(picked_color_max[2], b);
+      for(int k=0; k<3; k++) picked_color[k] = Lab[k];
+    }
+  }
+  else
+  {
+    for(int i = 0; i < 3; i++)
+      picked_color[i]
+        = picked_color_min[i]
+          = picked_color_max[i]
+             = img[4*(roi->width*point[1] + point[0]) + i];
+  }
+}
+
+
 // recursive helper for process:
 static int
 dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output, void **cl_mem_output, int *out_bpp,
@@ -448,49 +501,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
         module->request_color_pick) // and they need to want to pick ;)
     {
-      for(int k=0; k<3; k++) module->picked_color_min[k] =  666.0f;
-      for(int k=0; k<3; k++) module->picked_color_max[k] = -666.0f;
-      int box[4];
-      int point[2];
-      float Lab[3], *in = (float *)input;
-      for(int k=0; k<3; k++) Lab[k] = 0.0f;
-
-      // Initializing bounds of colorpicker box
-      for(int k=0; k<4; k+=2) box[k] = MIN(roi_in.width -1, MAX(0, module->color_picker_box[k]*roi_in.width));
-      for(int k=1; k<4; k+=2) box[k] = MIN(roi_in.height-1, MAX(0, module->color_picker_box[k]*roi_in.height));
-
-      // Initializing bounds of colorpicker point
-      point[0] = MIN(roi_in.width - 1, MAX(0, module->color_picker_point[0] * roi_in.width));
-      point[1] = MIN(roi_in.height - 1, MAX(0, module->color_picker_point[1] * roi_in.height));
-
-      if(darktable.lib->proxy.colorpicker.size)
-      {
-        const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-        for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
-        {
-          const float L = in[4*(roi_in.width*j + i) + 0];
-          const float a = in[4*(roi_in.width*j + i) + 1];
-          const float b = in[4*(roi_in.width*j + i) + 2];
-          Lab[0] += w*L;
-          Lab[1] += w*a;
-          Lab[2] += w*b;
-          module->picked_color_min[0] = fminf(module->picked_color_min[0], L);
-          module->picked_color_min[1] = fminf(module->picked_color_min[1], a);
-          module->picked_color_min[2] = fminf(module->picked_color_min[2], b);
-          module->picked_color_max[0] = fmaxf(module->picked_color_max[0], L);
-          module->picked_color_max[1] = fmaxf(module->picked_color_max[1], a);
-          module->picked_color_max[2] = fmaxf(module->picked_color_max[2], b);
-          for(int k=0; k<3; k++) module->picked_color[k] = Lab[k];
-        }
-      }
-      else
-      {
-        for(int i = 0; i < 3; i++)
-          module->picked_color[i]
-              = module->picked_color_min[i]
-                = module->picked_color_max[i]
-                  = in[4*(roi_in.width*point[1] + point[0]) + i];
-      }
+      pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -737,6 +748,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       else
         module->process(module, piece, input, *output, &roi_in, roi_out);
 
+      // Lab color picking for module output
+      if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
+        module == dev->gui_module && // only modules with focus can pick
+        module->request_color_pick) // and they need to want to pick ;)
+      {
+        pixelpipe_picker(module, (float *)input, roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+      }
+
       /* process blending */
       dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
     } 
@@ -748,6 +767,15 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
     else
       module->process(module, piece, input, *output, &roi_in, roi_out);
+
+    // Lab color picking for module output
+    if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
+      module == dev->gui_module && // only modules with focus can pick
+      module->request_color_pick) // and they need to want to pick ;)
+    {
+      pixelpipe_picker(module, (float *)input, roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+    }
+
 
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
