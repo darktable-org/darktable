@@ -496,6 +496,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       return 1;
     }
 
+#if 0
     // Lab color picking for module
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
         (module == dev->gui_module || !strcmp(module->op, "colorout")) && // only modules with focus or colorout for bottom panel can pick
@@ -510,14 +511,19 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       if (i_own_lock) dt_control_gdk_unlock();
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
+#else
+    dt_pthread_mutex_unlock(&pipe->busy_mutex);
+#endif
 
     // actual pixel processing done by module
     dt_pthread_mutex_lock(&pipe->busy_mutex);
+
     if(pipe->shutdown)
     {
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
+
     dt_times_t start;
     dt_get_times(&start);
 
@@ -748,12 +754,27 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       else
         module->process(module, piece, input, *output, &roi_in, roi_out);
 
-      // Lab color picking for module output
+      // Lab color picking for module
       if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
         module == dev->gui_module && // only modules with focus can pick
         module->request_color_pick) // and they need to want to pick ;)
       {
-        pixelpipe_picker(module, (float *)input, roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+        pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
+        pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+        gboolean i_own_lock = dt_control_gdk_lock();      
+        gtk_widget_queue_draw(module->widget);
+        if (i_own_lock) dt_control_gdk_unlock();
+
+        dt_pthread_mutex_lock(&pipe->busy_mutex);
+      }
+
+      if(pipe->shutdown)
+      {
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+        return 1;
       }
 
       /* process blending */
@@ -768,14 +789,28 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     else
       module->process(module, piece, input, *output, &roi_in, roi_out);
 
-    // Lab color picking for module output
+    // Lab color picking for module
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
       module == dev->gui_module && // only modules with focus can pick
       module->request_color_pick) // and they need to want to pick ;)
     {
-      pixelpipe_picker(module, (float *)input, roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+      pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
+      pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+      gboolean i_own_lock = dt_control_gdk_lock();      
+      gtk_widget_queue_draw(module->widget);
+      if (i_own_lock) dt_control_gdk_unlock();
+
+      dt_pthread_mutex_lock(&pipe->busy_mutex);
     }
 
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
 
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
