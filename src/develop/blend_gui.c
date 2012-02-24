@@ -45,6 +45,7 @@
 #include <xmmintrin.h>
 
 
+#define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
 
 typedef enum _iop_gui_blendif_channel_t
 {
@@ -69,7 +70,27 @@ _iop_gui_blendif_colorstop_t;
 
 
 
-
+static void
+_blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float *out)
+{
+  switch(cst)
+  {
+    case iop_cs_Lab:
+      out[0] = CLAMP_RANGE(in[0] / 100.0f, 0.0f, 1.0f);
+      out[1] = CLAMP_RANGE((in[1] + 128.0f)/256.0f, 0.0f, 1.0f);
+      out[2] = CLAMP_RANGE((in[2] + 128.0f)/256.0f, 0.0f, 1.0f);
+      out[3] = -1.0f;
+    break;
+    case iop_cs_rgb:
+      out[0] = CLAMP_RANGE(0.3f*in[0] + 0.59f*in[1] + 0.11f*in[2], 0.0f, 1.0f);
+      out[1] = CLAMP_RANGE(in[0], 0.0f, 1.0f);
+      out[2] = CLAMP_RANGE(in[1], 0.0f, 1.0f);
+      out[3] = CLAMP_RANGE(in[2], 0.0f, 1.0f);
+    break;
+    default:
+      out[0] = out[1] = out[2] = out[3] = -1.0f;
+  }
+}
 
 
 static void
@@ -211,6 +232,55 @@ _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkNotebookPage *notebook_pag
 }
 
 
+static void
+_blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
+{
+  module->request_color_pick = gtk_toggle_button_get_active(togglebutton);
+  if(darktable.gui->reset) return;
+
+  
+  /* set the area sample size*/
+  if (module->request_color_pick)
+    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+  
+  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+  dt_iop_request_focus(module);
+}
+
+
+
+static gboolean
+_blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return FALSE;
+
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+
+  float picker[4];
+  float *raw;
+
+  if(widget == GTK_WIDGET(data->lower_slider))
+    raw = module->picked_color;
+  else
+    raw = module->picked_output_color;
+
+  darktable.gui->reset = 1;
+  if(module->request_color_pick)
+  {
+    _blendif_scale(data->csp, raw, picker);
+
+    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), picker[data->channel]);
+  }
+  else
+  {
+    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), -1.0f);
+  }
+  darktable.gui->reset = 0;
+
+  return FALSE;
+}
+
+
 void
 dt_iop_gui_update_blendif(dt_iop_module_t *module)
 {
@@ -245,6 +315,8 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
     (data->scale_print[data->channel])(oparameters[k], text);
     gtk_label_set_text(data->upper_label[k], text);
   }
+
+
 
   dtgtk_gradient_slider_multivalue_set_stop(data->lower_slider, 0.0f, data->colors[data->channel][0]);
   dtgtk_gradient_slider_multivalue_set_stop(data->lower_slider, 0.5f, data->colors[data->channel][1]);
@@ -345,6 +417,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     GtkWidget *dummybox2 = gtk_hbox_new(FALSE,0);
     GtkWidget *uplabel = gtk_hbox_new(FALSE,0);
     GtkWidget *lowlabel = gtk_hbox_new(FALSE,0);
+    GtkWidget *notebook = gtk_hbox_new(FALSE,0);
 
     bd->blendif_enable = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("blend if ...")));
     gtk_toggle_button_set_active(bd->blendif_enable, 0);
@@ -361,6 +434,12 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_notebook_set_current_page(GTK_NOTEBOOK(bd->channel_tabs), bd->channel);
     g_object_set(G_OBJECT(bd->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
+    GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+    g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+
+
+    gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(bd->channel_tabs), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(notebook), GTK_WIDGET(tb), FALSE, FALSE, 0);
 
 
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
@@ -415,6 +494,13 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_object_set(GTK_OBJECT(output), "tooltip-text", ttoutput, (char *)NULL);
     gtk_object_set(GTK_OBJECT(input), "tooltip-text", ttinput, (char *)NULL);
 
+
+    g_signal_connect (G_OBJECT (bd->lower_slider), "expose-event",
+                      G_CALLBACK (_blendop_blendif_expose), module);
+
+    g_signal_connect (G_OBJECT (bd->upper_slider), "expose-event",
+                      G_CALLBACK (_blendop_blendif_expose), module);
+
     g_signal_connect (G_OBJECT (bd->blendif_enable), "toggled",
                       G_CALLBACK (_blendop_blendif_callback), bd);
 
@@ -427,8 +513,11 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->lower_slider), "value-changed",
                       G_CALLBACK (_blendop_blendif_lower_callback), bd);
 
+    g_signal_connect (G_OBJECT(tb), "toggled", 
+                      G_CALLBACK (_blendop_blendif_pick_toggled), module);
 
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->channel_tabs), TRUE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(notebook), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(uplabel), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(bd->upper_slider), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(spacer), TRUE, FALSE, 5);   
