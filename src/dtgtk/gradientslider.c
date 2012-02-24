@@ -335,7 +335,7 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_move_to(cr,vx,2);
     cairo_line_to(cr,vx,height-2);
     cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
-    cairo_set_line_width(cr,3.0);
+    cairo_set_line_width(cr,1.0);
     cairo_stroke(cr);
   }
 
