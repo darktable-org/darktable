@@ -10,10 +10,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: git-bd1547418\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-22 23:58+0800\n"
-"PO-Revision-Date: 2012-02-23 15:38+0800\n"
+"POT-Creation-Date: 2012-02-24 23:45+0800\n"
+"PO-Revision-Date: 2012-02-25 04:57+0800\n"
 "Last-Translator: Cherrot Luo <admin@cherrot.com>\n"
-"Language-Team: 汉语 <i18n-zh@googlegroups.com>\n"
+"Language-Team: Chinese <i18n-zh@googlegroups.com>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,7 +22,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:356
 msgid "gui options"
-msgstr "界面选项"
+msgstr "GUI选项"
 
 #: ../build/src/preferences_gen.h:358
 msgid "filename of your custom theme in share/darktable/"
@@ -57,18 +57,16 @@ msgid " (needs a restart)"
 msgstr " (需要重启生效)"
 
 #: ../build/src/preferences_gen.h:391
-#, fuzzy
 msgid "don't use embedded preview jpeg but half-size raw"
-msgstr "don't use embedded preview jpeg but half-size raw"
+msgstr "不使用嵌入JPEG预览的RAW，而是使用一半尺寸的RAW"
 
 #: ../build/src/preferences_gen.h:402
-#, fuzzy
 msgid ""
 "check this option to not use the embedded jpeg from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
-"check this option to not use the embedded jpeg from the raw file but process "
-"the raw data. this is slower but gives you color managed thumbnails."
+"勾选此项将不会使用RAW文件中嵌入的JPEG，而是用RAW数据创建，这样会更慢，但是缩"
+"略图更精确。"
 
 #: ../build/src/preferences_gen.h:407
 msgid "ask before removing images from database"
@@ -91,21 +89,18 @@ msgid "number of folder levels to show in lists"
 msgstr "列表中要显示的文件夹级别"
 
 #: ../build/src/preferences_gen.h:451
-#, fuzzy
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
-msgstr ""
-"the number of folder levels to show in film roll names, starting from the "
-"right"
+msgstr "指定胶卷名称中要显示的文件夹层数，从右边开始"
 
 #: ../build/src/preferences_gen.h:456
 msgid "initial import rating"
-msgstr "初始星级评定导入"
+msgstr "导入星级初始评定"
 
 #: ../build/src/preferences_gen.h:468
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "在导入胶卷时对所有图象使用初始星级评定"
+msgstr "对所有导入图象的初始星级评定"
 
 #: ../build/src/preferences_gen.h:473
 msgid "enable filmstrip"
@@ -179,15 +174,13 @@ msgid "number of background threads"
 msgstr "后台线程数量"
 
 #: ../build/src/preferences_gen.h:619
-#, fuzzy
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
 "during import. the cache will grow to a maximum of twice this number of full "
 "resolution image buffers (needs a restart)."
 msgstr ""
-"该项控制了比如有多少线程将用于在导入时创建缩略图。the cache will grow to a "
-"maximum of twice this number of full resolution image buffers (needs a "
-"restart)."
+"此项控制后台导入使用创造缩略图需要的线程数量，缓存会涨到最高2倍于这个全分辨率"
+"图片的数量（需要重新启动应用此项变动）"
 
 #: ../build/src/preferences_gen.h:624
 msgid "export multiple images in parallel"
@@ -231,11 +224,9 @@ msgstr ""
 "如果设置为正值，该变量定义了分块时单个图像缓冲区的最小内存容量（MB）。比基于"
 "主机内存限制自动探测的值有更高优先级。需重启生效。"
 
-# What does "sidecar" mean ?
 #: ../build/src/preferences_gen.h:675
-#, fuzzy
 msgid "write sidecar file for each image"
-msgstr "write sidecar file for each image"
+msgstr "为每个图片写入附属文件"
 
 #: ../build/src/preferences_gen.h:686
 msgid ""
@@ -259,12 +250,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:707
 msgid "always use littlecms2 during export"
-msgstr "导出时总是使用 littlecms2"
+msgstr "导出时总是使用 cms2 "
 
 #: ../build/src/preferences_gen.h:718
-#, fuzzy
 msgid "this is about 28x as slow as the default."
-msgstr "this is about 28x as slow as the default."
+msgstr "28b倍慢"
 
 #: ../build/src/preferences_gen.h:723
 msgid "do high quality resampling during export"
@@ -287,9 +277,7 @@ msgstr "保存密码所用后端服务"
 msgid ""
 "the storage backend for password storage: 0 - none, 2 - kwallet, 3 - gnome "
 "keyring"
-msgstr ""
-"用于保存密码的后端服务：0 - 没有， 1 - gconf（不要使用）， 2 - kwallet，3 - "
-"gnome 密钥环"
+msgstr "用于保存密码的后端服务：0 - 没有， 2 - kwallet，3 - gnome keyring"
 
 #: ../src/common/collection.c:431 ../src/iop/bilateral.cc:366
 #: ../src/iop/channelmixer.c:354 ../src/iop/channelmixer.c:371
@@ -402,10 +390,8 @@ msgstr[0] "导入 %d 张图像"
 msgstr[1] "导入 %d 张图像"
 
 #: ../src/common/history.c:109
-#, fuzzy
 msgid "you need to copy history from an image before you paste it onto another"
-msgstr ""
-"you need to copy history from an image before you paste it onto another"
+msgstr "你需要复制一张图片的历史，然后才能用在另一张上"
 
 #: ../src/common/history.c:163 ../src/common/history.c:174
 #: ../src/common/styles.c:270 ../src/develop/develop.c:778
@@ -523,12 +509,12 @@ msgstr[1] "合并 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:102
 msgid "exposure bracketing only works on raw images"
-msgstr "包围曝光（exposure bracketing）只在raw图像上有作用"
+msgstr "包围曝光只能用于RAW图像"
 
 #: ../src/control/jobs/control_jobs.c:111
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "从图像 `%s'获取raw缓冲区失败"
+msgstr "无法从图像 `%s'获取RAW缓冲区"
 
 #: ../src/control/jobs/control_jobs.c:130
 msgid "images have to be of same size!"
@@ -537,7 +523,7 @@ msgstr "图像尺寸必须相同！"
 #: ../src/control/jobs/control_jobs.c:183
 #, c-format
 msgid "wrote merged hdr `%s'"
-msgstr "已写入合并的 hdr `%s'"
+msgstr "写入为融合而成的 hdr `%s'"
 
 #: ../src/control/jobs/control_jobs.c:207
 #, c-format
@@ -639,7 +625,6 @@ msgid "preset"
 msgstr "预置"
 
 #: ../src/develop/imageop.c:611
-#, fuzzy
 msgctxt "accel"
 msgid "fusion"
 msgstr "融合(fusion)"
@@ -696,19 +681,19 @@ msgstr "正片叠底(multiply)"
 
 #: ../src/develop/imageop.c:1092
 msgid "average"
-msgstr "平均值"
+msgstr "平均(average)"
 
 #: ../src/develop/imageop.c:1093
 msgid "addition"
-msgstr "增加"
+msgstr "增加(addition)"
 
 #: ../src/develop/imageop.c:1094
 msgid "subtract"
-msgstr "减去"
+msgstr "减去(subtract)"
 
 #: ../src/develop/imageop.c:1095
 msgid "difference"
-msgstr "差异"
+msgstr "差异(difference)"
 
 #: ../src/develop/imageop.c:1096
 msgid "screen"
@@ -742,12 +727,12 @@ msgstr "小光源(pinlight)"
 #: ../src/iop/colorize.c:448 ../src/iop/colorzones.c:850
 #: ../src/iop/colorzones.c:866
 msgid "lightness"
-msgstr "亮度"
+msgstr "明度"
 
 #: ../src/develop/imageop.c:1104 ../src/iop/atrous.c:1376
 #: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:454
 msgid "chroma"
-msgstr "饱和度"
+msgstr "色度(chroma)"
 
 #. adding the labels
 #: ../src/develop/imageop.c:1105 ../src/iop/channelmixer.c:351
@@ -755,7 +740,7 @@ msgstr "饱和度"
 #: ../src/iop/colorzones.c:868 ../src/iop/graduatednd.c:586
 #: ../src/iop/splittoning.c:495 ../src/iop/splittoning.c:554
 msgid "hue"
-msgstr "色调"
+msgstr "色调(hue)"
 
 #: ../src/develop/imageop.c:1106
 msgid "color"
@@ -856,9 +841,8 @@ msgid "import"
 msgstr "导入"
 
 #: ../src/gui/camera_import_dialog.c:275
-#, fuzzy
 msgid "my jobcode"
-msgstr "my jobcode"
+msgstr "我的任务代码"
 
 #. Top info
 #: ../src/gui/camera_import_dialog.c:283
@@ -867,9 +851,8 @@ msgstr "正在从相机预读取图像缩略图，请稍等..."
 
 #. jobcode
 #: ../src/gui/camera_import_dialog.c:289 ../src/libs/capture.c:109
-#, fuzzy
 msgid "jobcode"
-msgstr "jobcode"
+msgstr "任务代码"
 
 #: ../src/gui/camera_import_dialog.c:301
 msgid "thumbnail"
@@ -894,7 +877,7 @@ msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
 msgstr ""
-"不载入扩展名为 .jpg 或 .jpeg 的文件。当raw和jpeg图像存在于同一个目录时，使用"
+"不载入扩展名为 .jpg 或 .jpeg 的文件。当RAW和JPEG图像存在于同一个目录时，使用"
 "该选项很有效。"
 
 #: ../src/gui/camera_import_dialog.c:333
@@ -908,20 +891,17 @@ msgid ""
 msgstr "如果您想在导入图像至计算机后删除相机中的原件，请勾选此项"
 
 #: ../src/gui/camera_import_dialog.c:341
-#, fuzzy
 msgid "override today's date"
-msgstr "override today's date"
+msgstr "覆盖本日日期"
 
 #: ../src/gui/camera_import_dialog.c:343
-#, fuzzy
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 msgstr ""
-"check this, if you want to override the timestamp used when expanding "
-"variables:\n"
+"如果你需要覆盖拍摄时间，选择此项:\n"
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
@@ -969,9 +949,9 @@ msgid ""
 "used as basedirectory in the above storage structure and when a image are "
 "downloaded from camera it is replicated to found backup destinations."
 msgstr ""
-"外部备份选项用于自动将导入的图像备份到其他物理位置，当该选项被激活时它会在系"
-"统已挂载的设备上寻找指定的备份文件夹名称...每个已发现的文件夹将被用作以上存储"
-"结构的基目录，而且从相机上下载图像时，它将保存副本到已发现的备份目的地。"
+"外部备份是一个自动进行的备份选项，将导入的图片放置于另一个位置，激活此项后自"
+"动搜索指定的备份目录（要求已经挂载）每次找到的目录作为基础目录，从相机下载到"
+"的图片将复制一份存储于此。"
 
 #: ../src/gui/camera_import_dialog.c:391
 msgid "enable backup"
@@ -1001,8 +981,8 @@ msgid ""
 "if such a folder is found in any mounter media it is used as a backup "
 "destination."
 msgstr ""
-"这是备份目的地的文件夹名称，\n"
-"任何挂载媒体上发现该文件夹都将作为一个备份目的地。"
+"这是文件夹名称，指定为备份的目的地。\n"
+"如果这样一个文件夹在属于已挂载存储媒介，那么会被用作备份地点。"
 
 #: ../src/gui/camera_import_dialog.c:417
 msgid "images"
@@ -1032,9 +1012,8 @@ msgid "please set the filenamepattern settings before importing"
 msgstr "在导入前请设定文件名模式设置"
 
 #: ../src/gui/camera_import_dialog.c:656
-#, fuzzy
 msgid "please use YYYY-MM-DD format for date override"
-msgstr "please use YYYY-MM-DD format for date override"
+msgstr "日期覆盖请用 YYYY-MM-DD 格式"
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:772
@@ -1045,7 +1024,7 @@ msgstr "捕获视图"
 #: ../src/gui/gtk.c:773
 msgctxt "accel"
 msgid "lighttable view"
-msgstr "Lighttable视图"
+msgstr "亮光桌视图"
 
 #: ../src/gui/gtk.c:774
 msgctxt "accel"
@@ -1221,9 +1200,9 @@ msgid ""
 msgstr "你确定要恢复默认键盘绑定？这将会抹掉你所做的任何修改。"
 
 #: ../src/gui/preferences.c:1210 ../src/gui/presets.c:267
-#, fuzzy, c-format
+#, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "edit `%s' for module `%s'"
+msgstr "编辑 `%s' --针对模块 `%s'"
 
 #: ../src/gui/preferences.c:1239 ../src/gui/presets.c:298
 #: ../src/libs/lib.c:162
@@ -1245,17 +1224,17 @@ msgid ""
 msgstr "小心勾选此项。这有可能是你最后一次看到你的预设。"
 
 #: ../src/gui/preferences.c:1259 ../src/gui/presets.c:318
-#, fuzzy, c-format
+#, c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "匹配模型字符串（使用 % 作为通配符）"
 
 #: ../src/gui/preferences.c:1266 ../src/gui/presets.c:325
-#, fuzzy, c-format
+#, c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "匹配作者的字符串（使用 % 作为通配符）"
 
 #: ../src/gui/preferences.c:1273 ../src/gui/presets.c:332
-#, fuzzy, c-format
+#, c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "匹配镜头的字符串（使用 % 作为通配符）"
 
@@ -1380,52 +1359,52 @@ msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
 msgstr ""
-"对选择的文件进行 1:1 复制.\n"
-"下面的全局选项不会应用！"
+"1:1的复制选定的图像。\n"
+"以下全局选项是不适用的！"
 
 #: ../src/imageio/format/exr.cc:169
 msgid "openexr"
-msgstr "openexr"
+msgstr "OpenEXR"
 
 #: ../src/imageio/format/jpeg.c:634
 msgid "8-bit jpg"
-msgstr "8位 jpg"
+msgstr "8-bit jpg"
 
 #: ../src/imageio/format/jpeg.c:654 ../src/libs/camera.c:580
 msgid "quality"
-msgstr "质量"
+msgstr "quality品质"
 
 #: ../src/imageio/format/pfm.c:90
 msgid "float pfm"
-msgstr "浮动 pfm"
+msgstr "float pfm"
 
 #: ../src/imageio/format/png.c:377
 msgid "8/16-bit png"
-msgstr "8/16位 png"
+msgstr "8/16-bit png"
 
 #: ../src/imageio/format/png.c:398 ../src/imageio/format/tiff.c:242
 msgid "8-bit"
-msgstr "8位"
+msgstr "8-bit"
 
 #: ../src/imageio/format/png.c:403 ../src/imageio/format/tiff.c:247
 msgid "16-bit"
-msgstr "16位"
+msgstr "16-bit"
 
 #: ../src/imageio/format/ppm.c:96
 msgid "16-bit ppm"
-msgstr "16位 ppm"
+msgstr "16-bit ppm"
 
 #: ../src/imageio/format/rgbe.c:529
 msgid "float hdr"
-msgstr "浮动 hdr"
+msgstr "float HDR"
 
 #: ../src/imageio/format/tiff.c:221
 msgid "8/16-bit tiff"
-msgstr "8/16位 tiff"
+msgstr "8/16-bit tiff"
 
 #: ../src/imageio/storage/disk.c:56
 msgid "file on disk"
-msgstr "磁盘文件"
+msgstr "磁盘上的文件"
 
 #: ../src/imageio/storage/disk.c:64 ../src/imageio/storage/disk.c:133
 #: ../src/imageio/storage/gallery.c:77 ../src/imageio/storage/gallery.c:148
@@ -1460,11 +1439,11 @@ msgid ""
 "$(DESKTOP_FOLDER) - desktop folder"
 msgstr ""
 "键入导出图片所在的目录：\n"
-"$(ROLL_NAME) - 原图像的胶卷名\n"
-"$(FILE_DIRECTORY) - 原图像所在目录\n"
-"$(FILE_NAME) - 原图像文件名\n"
-"$(FILE_EXTENSION) - 原图像扩展名\n"
-"$(SEQUENCE) -  序列号码\n"
+"$(ROLL_NAME) - 表示输入图像的胶卷名\n"
+"$(FILE_DIRECTORY) - 表示输入图像的目录\n"
+"$(FILE_NAME) - 表示输入图像的文件名\n"
+"$(FILE_EXTENSION) - 表示输入图像的扩展名\n"
+"$(SEQUENCE) -  顺序号码\n"
 "$(YEAR) - 年\n"
 "$(MONTH) - 月\n"
 "$(DAY) - 日\n"
@@ -1537,7 +1516,7 @@ msgstr "已授权"
 #. Add standard action
 #: ../src/imageio/storage/flickr.c:419
 msgid "without album"
-msgstr "不在相册中"
+msgstr "没有相册"
 
 #. Add standard action
 #: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/flickr.c:448
@@ -1559,7 +1538,7 @@ msgstr "可见性"
 
 #: ../src/imageio/storage/flickr.c:510
 msgid "click login button to start"
-msgstr "点击登入按钮以开始"
+msgstr "要开始，点击”登录“按钮"
 
 #. xmp
 #: ../src/imageio/storage/flickr.c:512 ../src/imageio/storage/gallery.c:154
@@ -1624,11 +1603,11 @@ msgstr "%d/%d 已被导出至flickr在线相册"
 
 #: ../src/imageio/storage/flickr.c:877
 msgid "Flickr account not authenticated"
-msgstr "Flickr 账户未被授权"
+msgstr "Flickr 平台没有认证"
 
 #: ../src/imageio/storage/gallery.c:69
 msgid "website gallery"
-msgstr "网站画廊"
+msgstr "网站展示"
 
 #: ../src/imageio/storage/gallery.c:122
 msgid ""
@@ -1656,29 +1635,29 @@ msgid ""
 "$(HOME_FOLDER) - home folder\n"
 "$(DESKTOP_FOLDER) - desktop folder"
 msgstr ""
-"输入创建网站画廊的路径：\n"
-"$(ROLL_NAME) - 原图像的胶卷名\n"
-"$(FILE_DIRECTORY) - 原图像所在目录\n"
-"$(FILE_NAME) - 原图像文件名\n"
-"$(FILE_EXTENSION) - 原图像扩展名\n"
-"$(SEQUENCE) - 序列号码\n"
-"$(YEAR) - 年\n"
-"$(MONTH) - 月\n"
+"键入生成图片展示网站的路径：\n"
+"$(ROLL_NAME) - 表示输入图片所在胶卷\n"
+"$(FILE_DIRECTORY) - 表示输入图片的来源\n"
+"$(FILE_NAME) - 表示输入图片的文件名\n"
+"$(FILE_EXTENSION) - 表示输入图片的扩展名\n"
+"$(SEQUENCE) - 顺序号码\n"
+"$(YEAR) - 年份\n"
+"$(MONTH) - 月份\n"
 "$(DAY) - 日\n"
-"$(HOUR) - 时\n"
-"$(MINUTE) - 分\n"
-"$(SECOND) - 秒\n"
-"$(EXIF_YEAR) - EXIF年\n"
-"$(EXIF_MONTH) - EXIF月\n"
-"$(EXIF_DAY) - EXIF日\n"
-"$(EXIF_HOUR) - EXIF时\n"
-"$(EXIF_MINUTE) - EXIF分\n"
-"$(EXIF_SECOND) - EXIF秒\n"
-"$(STARS) - 星级评定\n"
-"$(LABELS) - 颜色标记\n"
-"$(PICTURES_FOLDER) - 图片文件夹\n"
-"$(HOME_FOLDER) - 家文件夹\n"
-"$(DESKTOP_FOLDER) - 桌面文件夹"
+"$(HOUR) - 小时\n"
+"$(MINUTE) - 分钟\n"
+"$(SECOND) - 秒种\n"
+"$(EXIF_YEAR) - exif 年份\n"
+"$(EXIF_MONTH) - exif 月份\n"
+"$(EXIF_DAY) - exif 日\n"
+"$(EXIF_HOUR) - exif 小时\n"
+"$(EXIF_MINUTE) - exif 分钟\n"
+"$(EXIF_SECOND) - exif 秒钟\n"
+"$(STARS) - 星级\n"
+"$(LABELS) - 彩色标识\n"
+"$(PICTURES_FOLDER) - 图片目录\n"
+"$(HOME_FOLDER) - 家目录\n"
+"$(DESKTOP_FOLDER) - 桌面目录"
 
 #: ../src/imageio/storage/gallery.c:160
 msgid "enter the title of the website"
@@ -1686,16 +1665,16 @@ msgstr "输入网站标题"
 
 #: ../src/imageio/storage/picasa.c:604
 msgid "picasa webalbum"
-msgstr "picasa在线相册"
+msgstr "picasa 网络相册"
 
 #. Failed to authenticated, let's notify somehow...
 #: ../src/imageio/storage/picasa.c:696
 msgid "authentication failed"
-msgstr "授权失败"
+msgstr "获取认证失败"
 
 #: ../src/imageio/storage/picasa.c:763
 msgid "user"
-msgstr "用户名 "
+msgstr "用户"
 
 #: ../src/imageio/storage/picasa.c:764
 msgid "password"
@@ -1703,12 +1682,12 @@ msgstr "密码"
 
 #: ../src/imageio/storage/picasa.c:765
 msgid "albums"
-msgstr "相册"
+msgstr "分辨率"
 
 #: ../src/imageio/storage/picasa.c:769 ../src/libs/collect.h:40
 #: ../src/libs/metadata.c:350
 msgid "rights"
-msgstr "权限"
+msgstr "权利"
 
 #: ../src/imageio/storage/picasa.c:808
 msgid "my new album"
@@ -1716,12 +1695,12 @@ msgstr "我的新相册"
 
 #: ../src/imageio/storage/picasa.c:833
 msgid "public album"
-msgstr "公开相册"
+msgstr "公共相册"
 
 #: ../src/imageio/storage/picasa.c:986
 #, c-format
 msgid "%d/%d exported to picasa webalbum"
-msgstr "%d/%d 导出到picasa在线相册"
+msgstr "%d/%d 导出到 picasa 网络相册"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/anlfyeni.c:81
@@ -1730,30 +1709,29 @@ msgstr "局部对比 2"
 
 #: ../src/iop/anlfyeni.c:290
 msgid "sensitivity of edge detection"
-msgstr "边缘检测灵敏度"
+msgstr "边缘检测的灵敏度"
 
 #: ../src/iop/anlfyeni.c:291
 msgid "sensitivity"
 msgstr "灵敏度"
 
 #: ../src/iop/anlfyeni.c:294
-#, fuzzy
 msgid "spatial extent of the effect around edges"
-msgstr "spatial extent of the effect around edges"
+msgstr "周边效果的的空间范围"
 
 #: ../src/iop/anlfyeni.c:295 ../src/iop/lens.c:1406 ../src/iop/vignette.c:883
 #: ../src/iop/watermark.c:716
 msgid "scale"
-msgstr "比例缩放"
+msgstr "拉伸"
 
 #: ../src/iop/anlfyeni.c:298
 msgid "strength of the local contrast"
-msgstr "局部对比强度"
+msgstr "局部对比的力度"
 
 #: ../src/iop/anlfyeni.c:299 ../src/iop/bloom.c:344 ../src/iop/grain.c:524
 #: ../src/iop/hotpixels.c:292 ../src/iop/shrecovery.c:435
 msgid "strength"
-msgstr "强度"
+msgstr "力度"
 
 #: ../src/iop/atrous.c:116
 msgid "equalizer"
@@ -1766,11 +1744,11 @@ msgstr "混合"
 
 #: ../src/iop/atrous.c:760
 msgid "enhance coarse"
-msgstr "加强粗糙的"
+msgstr ""
 
 #: ../src/iop/atrous.c:774
 msgid "sharpen and denoise (strong)"
-msgstr "锐化并降噪（强）"
+msgstr "锐化并降噪(强)"
 
 #: ../src/iop/atrous.c:788
 msgid "sharpen and denoise"
@@ -1778,7 +1756,7 @@ msgstr "锐化并降噪"
 
 #: ../src/iop/atrous.c:802 ../src/iop/equalizer.c:259
 msgid "sharpen (strong)"
-msgstr "锐化（强）"
+msgstr "锐化(强)"
 
 #: ../src/iop/atrous.c:816
 msgctxt "atrous"
@@ -1787,7 +1765,7 @@ msgstr "锐化"
 
 #: ../src/iop/atrous.c:830
 msgid "chroma denoise"
-msgstr "饱和度降噪"
+msgstr "彩色(chroma)降噪"
 
 #: ../src/iop/atrous.c:844 ../src/iop/equalizer.c:285
 msgid "denoise"
@@ -1795,76 +1773,70 @@ msgstr "降噪"
 
 #: ../src/iop/atrous.c:860 ../src/iop/equalizer.c:295
 msgid "denoise (strong)"
-msgstr "降噪（强）"
+msgstr "降噪(强)"
 
 #: ../src/iop/atrous.c:875 ../src/iop/bloom.c:66
-#, fuzzy
 msgid "bloom"
-msgstr "bloom"
+msgstr ""
 
 #: ../src/iop/atrous.c:889
 msgid "clarity (subtle)"
-msgstr "清晰（微调）"
+msgstr "清晰度(小)"
 
 #: ../src/iop/atrous.c:903
 msgid "clarity"
-msgstr "清晰"
+msgstr "清晰度"
 
 #: ../src/iop/atrous.c:1151 ../src/iop/atrous.c:1155
+#, fuzzy
 msgid "coarse"
-msgstr "粗糙的"
+msgstr "粗"
 
 #: ../src/iop/atrous.c:1157 ../src/iop/atrous.c:1161
 msgid "fine"
-msgstr "精细的"
+msgstr "精细"
 
 #: ../src/iop/atrous.c:1168
 msgid "contrasty"
-msgstr "对比强烈的"
+msgstr "强对比"
 
 #: ../src/iop/atrous.c:1169 ../src/iop/atrous.c:1173
 msgid "smooth"
-msgstr "平滑的"
+msgstr "平滑"
 
 #: ../src/iop/atrous.c:1174
 msgid "noisy"
-msgstr "噪点的"
+msgstr "噪声化"
 
 #. case atrous_s:
 #: ../src/iop/atrous.c:1177
-#, fuzzy
 msgid "bold"
-msgstr "bold"
+msgstr "加重(bold)"
 
 #: ../src/iop/atrous.c:1178
-#, fuzzy
 msgid "dull"
-msgstr "dull"
+msgstr "减轻(dull)"
 
 #: ../src/iop/atrous.c:1374 ../src/iop/equalizer.c:342
 #: ../src/iop/nlmeans.c:452
-#, fuzzy
 msgid "luma"
-msgstr "luma"
+msgstr "亮度(luma)"
 
 #: ../src/iop/atrous.c:1375
-#, fuzzy
 msgid "change lightness at each feature size"
-msgstr "change lightness at each feature size"
+msgstr "以每个特性大小改变明度"
 
 #: ../src/iop/atrous.c:1377
-#, fuzzy
 msgid "change color saturation at each feature size"
-msgstr "change color saturation at each feature size"
+msgstr "以每个特性大小改变颜色饱和度"
 
 #: ../src/iop/atrous.c:1378 ../src/iop/highpass.c:498
 msgid "sharpness"
-msgstr "锐利"
+msgstr "锐度"
 
 #: ../src/iop/atrous.c:1379
-#, fuzzy
 msgid "sharpness of edges at each feature size"
-msgstr "sharpness of edges at each feature size"
+msgstr "边缘的锐度每个特性的尺寸"
 
 #: ../src/iop/atrous.c:1415 ../src/iop/soften.c:370
 msgid "mix"
@@ -1872,64 +1844,64 @@ msgstr "混合"
 
 #: ../src/iop/atrous.c:1416
 msgid "make effect stronger or weaker"
-msgstr "使效果更强或更弱"
+msgstr "使得效果增强或削弱"
 
 #: ../src/iop/basecurve.c:51 ../src/iop/profile_gamma.c:199
 #: ../src/iop/tonecurve.c:214
 msgid "linear"
-msgstr "线性的"
+msgstr "线性"
 
 #: ../src/iop/basecurve.c:52
 msgid "dark contrast"
-msgstr "暗对比"
+msgstr "暗对比度"
 
 #: ../src/iop/basecurve.c:53
 msgid "canon eos like"
-msgstr "佳能EOS"
+msgstr "佳能 EOS 样式的"
 
 #: ../src/iop/basecurve.c:54
 msgid "nikon like"
-msgstr "尼康"
+msgstr "尼康 样式的"
 
 #: ../src/iop/basecurve.c:55
 msgid "sony alpha like"
-msgstr "索尼alpha"
+msgstr "索尼alpha 样式的"
 
 #: ../src/iop/basecurve.c:56
 msgid "pentax like"
-msgstr "宾得"
+msgstr "宾得 样式的"
 
 #: ../src/iop/basecurve.c:57
 msgid "olympus like"
-msgstr "奥林巴斯"
+msgstr "奥林巴斯 样式的"
 
 #: ../src/iop/basecurve.c:58
 msgid "panasonic like"
-msgstr "松下"
+msgstr "松下 样式的"
 
 #: ../src/iop/basecurve.c:59
 msgid "leica like"
-msgstr "莱卡"
+msgstr "理光 样式的"
 
 #: ../src/iop/basecurve.c:60
 msgid "kodak easyshare like"
-msgstr "柯达easyshare"
+msgstr "柯达 样式的"
 
 #: ../src/iop/basecurve.c:61
 msgid "konica minolta like"
-msgstr "konica minolta"
+msgstr "柯尼卡 样式的"
 
 #: ../src/iop/basecurve.c:62
 msgid "samsung like"
-msgstr "三星"
+msgstr "三星 样式的"
 
 #: ../src/iop/basecurve.c:63
 msgid "fujifilm like"
-msgstr "富士"
+msgstr "富士 样式的"
 
 #: ../src/iop/basecurve.c:64
 msgid "fotogenetic (point & shoot)"
-msgstr "fotogenetic (point & shoot)"
+msgstr "fotogenetic(袖珍相机)"
 
 #: ../src/iop/basecurve.c:65
 msgid "fotogenetic (EV3)"
@@ -1937,19 +1909,19 @@ msgstr "fotogenetic (EV3)"
 
 #: ../src/iop/basecurve.c:141
 msgid "base curve"
-msgstr "基准曲线"
+msgstr "基础曲线"
 
 #: ../src/iop/basecurve.c:630
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on RGB channels"
 msgstr ""
-"横坐标：输入，纵坐标：输出。\n"
+"横轴：输入，纵轴：输出\n"
 "作用于RGB通道"
 
 #: ../src/iop/bilateral.cc:75
 msgid "denoise (bilateral filter)"
-msgstr "降噪（bilateral filter）"
+msgstr "降噪(双边滤镜)"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/lowpass.c:114 ../src/iop/sharpen.c:94
 #: ../src/iop/shadhi.c:117
@@ -1976,24 +1948,20 @@ msgid "blue"
 msgstr "蓝"
 
 #: ../src/iop/bilateral.cc:360
-#, fuzzy
 msgid "spatial extent of the gaussian"
-msgstr "spatial extent of the gaussian"
+msgstr "高斯空间范围"
 
 #: ../src/iop/bilateral.cc:361
-#, fuzzy
 msgid "how much to blur red"
-msgstr "how much to blur red"
+msgstr "红色的模糊量"
 
 #: ../src/iop/bilateral.cc:362
-#, fuzzy
 msgid "how much to blur green"
-msgstr "how much to blur green"
+msgstr "绿色的模糊量"
 
 #: ../src/iop/bilateral.cc:363
-#, fuzzy
 msgid "how much to blur blue"
-msgstr "how much to blur blue"
+msgstr "蓝色的模糊量"
 
 #: ../src/iop/bilateral.cc:365 ../src/iop/clahe.c:342 ../src/iop/lowpass.c:715
 #: ../src/iop/sharpen.c:553 ../src/iop/shadhi.c:819
@@ -2014,7 +1982,7 @@ msgstr "阈值"
 #: ../src/iop/shrecovery.c:94
 msgctxt "accel"
 msgid "strength"
-msgstr "强度"
+msgstr "力度"
 
 #: ../src/iop/bloom.c:340 ../src/iop/soften.c:363 ../src/libs/camera.c:590
 msgid "size"
@@ -2025,70 +1993,64 @@ msgid "threshold"
 msgstr "阈值"
 
 #: ../src/iop/bloom.c:350
-#, fuzzy
 msgid "the size of bloom"
-msgstr "the size of bloom"
+msgstr ""
 
 #: ../src/iop/bloom.c:351
-#, fuzzy
 msgid "the threshold of light"
-msgstr "the threshold of light"
+msgstr "光阈值"
 
 #: ../src/iop/bloom.c:352
-#, fuzzy
 msgid "the strength of bloom"
-msgstr "the strength of bloom"
+msgstr ""
 
 #: ../src/iop/borders.c:67
-#, fuzzy
 msgid "framing"
-msgstr "framing"
+msgstr "加相框"
 
 #: ../src/iop/borders.c:84
 msgctxt "accel"
 msgid "swap aspect ratio"
-msgstr "交换纵横比"
+msgstr "对调宽高比"
 
 #: ../src/iop/borders.c:86
 msgctxt "accel"
 msgid "border size"
-msgstr "边界尺寸"
+msgstr "边框的大小"
 
 #: ../src/iop/borders.c:87
 msgctxt "accel"
 msgid "pick gui color from image"
-msgstr "从图像选取GUI颜色"
+msgstr "从图像中选择GUI颜色"
 
 #: ../src/iop/borders.c:208
 msgid "15:10 postcard white"
-msgstr "15:10白色明信片"
+msgstr "15:10 明信片 白色"
 
 #: ../src/iop/borders.c:210
 msgid "15:10 postcard black"
-msgstr "15:10黑色明信片"
+msgstr "15:10 明信片 黑色"
 
 #: ../src/iop/borders.c:312
-#, fuzzy
 msgid "select frame color"
-msgstr "选择框架颜色"
+msgstr "选择相框颜色"
 
 #: ../src/iop/borders.c:398
 msgid "border size"
-msgstr "边界尺寸"
+msgstr "边框尺寸"
 
 #: ../src/iop/borders.c:401
 msgid "size of the border in percent of the full image"
-msgstr "全图百分比表示的边界尺寸"
+msgstr "边框的尺寸(以全图尺寸百分比表示)"
 
 #: ../src/iop/borders.c:404 ../src/iop/clipping.c:923
-#, fuzzy
 msgid "aspect"
-msgstr "aspect"
+msgstr "宽高比"
 
 #. add import singel image buttons
 #: ../src/iop/borders.c:408 ../src/iop/clipping.c:929 ../src/libs/import.c:461
 msgid "image"
-msgstr "图像"
+msgstr "相片"
 
 #: ../src/iop/borders.c:409 ../src/iop/clipping.c:930
 msgid "golden cut"
@@ -2108,7 +2070,7 @@ msgstr "4:3"
 
 #: ../src/iop/borders.c:413 ../src/iop/clipping.c:935
 msgid "square"
-msgstr "方形"
+msgstr "正方形"
 
 #: ../src/iop/borders.c:414 ../src/iop/clipping.c:936
 msgid "DIN"
@@ -2120,30 +2082,29 @@ msgstr "16:9"
 
 #: ../src/iop/borders.c:416
 msgid "constant border"
-msgstr "定边界"
+msgstr "定长边框"
 
 #: ../src/iop/borders.c:420 ../src/iop/clipping.c:948
 msgid ""
 "set the aspect ratio (w:h)\n"
 "press ctrl-x to swap sides"
 msgstr ""
-"设置宽高比（宽:高）\n"
-"按 Ctrl-x 交换两边"
+"设置宽高比(w:h)\n"
+"按Ctrl+x对调边"
 
 #. TODO: what about this?
 #. g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (aspect_flip), self);
 #: ../src/iop/borders.c:427
 msgid "swap the aspect ratio"
-msgstr "交换宽高比"
+msgstr "对调宽高比"
 
 #: ../src/iop/borders.c:432
-#, fuzzy
 msgid "frame color"
-msgstr "框架颜色"
+msgstr "相框颜色"
 
 #: ../src/iop/borders.c:437 ../src/iop/colorzones.c:855
 msgid "pick gui color from image"
-msgstr "从图像中选取GUI颜色"
+msgstr "从图片选取GUI颜色"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:57
@@ -2152,15 +2113,15 @@ msgstr "色差"
 
 #: ../src/iop/cacorrect.c:1203
 msgid "automatic chromatic aberration correction"
-msgstr "自动色差修正"
+msgstr "自动色差校正"
 
 #: ../src/iop/cacorrect.c:1205
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
 msgstr ""
-"自动色差修正\n"
-"只对RAW图像工作"
+"自动色差校正\n"
+"只作用于RAW图像"
 
 #: ../src/iop/channelmixer.c:109
 msgid "channel mixer"
@@ -2189,55 +2150,56 @@ msgstr "源通道"
 
 #: ../src/iop/channelmixer.c:370
 msgid "amount of red channel in the output channel"
-msgstr "输出通道中红色通道的数量"
+msgstr "输出通道中红色通道的应用量"
 
 #: ../src/iop/channelmixer.c:373
 msgid "amount of green channel in the output channel"
-msgstr "输出通道中绿色通道的数量"
+msgstr "输出通道中绿色通道的应用量"
 
 #: ../src/iop/channelmixer.c:376
 msgid "amount of blue channel in the output channel"
-msgstr "输出通道中蓝色通道的数量"
+msgstr "输出通道中蓝色通道的应用量"
 
 #: ../src/iop/channelmixer.c:398
 msgid "swap R and B"
-msgstr "交换R和B"
+msgstr "对调 红和蓝"
 
 #: ../src/iop/channelmixer.c:404
 msgid "swap G and B"
-msgstr "交换G和B"
+msgstr "对调 绿和蓝"
 
 #: ../src/iop/channelmixer.c:410
 msgid "color contrast boost"
-msgstr ""
+msgstr "色彩对比增加"
 
 #: ../src/iop/channelmixer.c:416
 msgid "color details boost"
-msgstr ""
+msgstr "色彩细节增加"
 
 #: ../src/iop/channelmixer.c:422
 msgid "color artifacts boost"
-msgstr ""
+msgstr "色彩伪影增加"
 
 #: ../src/iop/channelmixer.c:428
 msgid "b/w"
-msgstr ""
+msgstr "b/w"
 
 #: ../src/iop/channelmixer.c:434
 msgid "b/w artifacts boost"
-msgstr ""
+msgstr "b/w 伪影增加"
 
 #: ../src/iop/channelmixer.c:440
+#, fuzzy
 msgid "b/w smooth skin"
-msgstr ""
+msgstr "b/w 平滑皮肤"
 
 #: ../src/iop/channelmixer.c:446
 msgid "b/w blue artifacts reduce"
-msgstr ""
+msgstr "b/w 蓝色伪影减小"
 
 #: ../src/iop/clahe.c:66
 msgid "local contrast"
-msgstr "局部对比"
+msgstr "局部对比度"
 
 #: ../src/iop/clahe.c:344 ../src/iop/sharpen.c:556
 msgid "amount"
@@ -2245,11 +2207,11 @@ msgstr "总量"
 
 #: ../src/iop/clahe.c:353
 msgid "size of features to preserve"
-msgstr ""
+msgstr "保持特性大小"
 
 #: ../src/iop/clahe.c:354
 msgid "strength of the effect"
-msgstr ""
+msgstr "效果的强度"
 
 #: ../src/iop/clipping.c:162
 msgid "crop and rotate"
@@ -2274,27 +2236,27 @@ msgstr "角度"
 
 #: ../src/iop/clipping.c:905
 msgid "right-click and drag a line on the image to drag a straight line"
-msgstr "右击并拖一条线在图像上以拉一条直线"
+msgstr "右击在图像上拖线可以得到一条直线"
 
 #: ../src/iop/clipping.c:910
 msgid "keystone h"
-msgstr ""
+msgstr "水平梯形校正"
 
 #: ../src/iop/clipping.c:911
 msgid "adjust perspective for horizontal keystone distortion"
-msgstr ""
+msgstr "设置水平梯形失真的角度"
 
 #: ../src/iop/clipping.c:917
 msgid "keystone v"
-msgstr ""
+msgstr "垂直梯形校正"
 
 #: ../src/iop/clipping.c:918
 msgid "adjust perspective for vertical keystone distortion"
-msgstr ""
+msgstr "设置垂直梯形失真的角度"
 
 #: ../src/iop/clipping.c:928
 msgid "free"
-msgstr "自由"
+msgstr "免费"
 
 #: ../src/iop/clipping.c:934
 msgid "5:4"
@@ -2302,7 +2264,7 @@ msgstr "5:4"
 
 #: ../src/iop/clipping.c:955
 msgid "swap the aspect ratio (ctrl-x)"
-msgstr "改变比例 (ctrl-x)"
+msgstr "对调宽高比 (ctrl-x)"
 
 #: ../src/iop/clipping.c:962
 msgid "guides"
@@ -2314,7 +2276,7 @@ msgstr "方格"
 
 #: ../src/iop/clipping.c:967
 msgid "rules of thirds"
-msgstr "三分法则"
+msgstr "三分法"
 
 #: ../src/iop/clipping.c:968
 msgid "diagonal method"
@@ -2322,7 +2284,7 @@ msgstr "45度角"
 
 #: ../src/iop/clipping.c:969
 msgid "harmonious triangles"
-msgstr "和谐三角"
+msgstr "均衡三角形"
 
 #: ../src/iop/clipping.c:970
 msgid "golden mean"
@@ -2336,7 +2298,7 @@ msgstr "开启此项目显示参考线帮助"
 
 #: ../src/iop/clipping.c:976
 msgid "type"
-msgstr "种类"
+msgstr "类型"
 
 #: ../src/iop/clipping.c:989
 msgid "flip guides horizontally"
@@ -2349,15 +2311,15 @@ msgstr "垂直翻转参考线"
 #. -------------------------------------------
 #: ../src/iop/clipping.c:992
 msgid "golden sections"
-msgstr "黄金××部分"
+msgstr "黄金分割部分"
 
 #: ../src/iop/clipping.c:994
 msgid "enable this option to show golden sections."
-msgstr "开启此项目显示黄金××部分"
+msgstr "开启此项目显示黄金分割部分"
 
 #: ../src/iop/clipping.c:997
 msgid "spiral sections"
-msgstr "螺线部分"
+msgstr "螺线分割部分"
 
 #: ../src/iop/clipping.c:998
 msgid "enable this option to show golden spiral sections."
@@ -2382,12 +2344,12 @@ msgstr "开启此项目显示黄金三角形"
 #: ../src/iop/clipping.c:1657
 msgctxt "accel"
 msgid "commit"
-msgstr ""
+msgstr "提交"
 
 #: ../src/iop/clipping.c:1659
 msgctxt "accel"
 msgid "swap the aspect ratio"
-msgstr "交换宽高比"
+msgstr "切换比例"
 
 #: ../src/iop/clipping.c:1661
 msgctxt "accel"
@@ -2397,12 +2359,12 @@ msgstr "角度"
 #: ../src/iop/clipping.c:1662
 msgctxt "accel"
 msgid "keystone h"
-msgstr ""
+msgstr "水平梯度校正"
 
 #: ../src/iop/clipping.c:1663
 msgctxt "accel"
 msgid "keystone v"
-msgstr ""
+msgstr "垂直梯度校正"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/colorcontrast.c:86
@@ -2446,12 +2408,13 @@ msgid "saturation"
 msgstr "饱和度"
 
 #: ../src/iop/colorcorrection.c:181
+#, fuzzy
 msgid "draw a rectangle to give a tint"
 msgstr "绘制长方形给予淡色调"
 
 #: ../src/iop/colorcorrection.c:202
 msgid "set the global saturation"
-msgstr "设定全局色度"
+msgstr "设定全局饱和度"
 
 #: ../src/iop/colorin.c:51
 msgid "input color profile"
@@ -2459,19 +2422,17 @@ msgstr "导入色彩档案文件"
 
 #: ../src/iop/colorin.c:425
 msgid "unsupported input profile has been replaced by linear rgb!"
-msgstr ""
+msgstr "不支持的输入档案已经用 线性rgb取代！"
 
 #: ../src/iop/colorin.c:651 ../src/libs/export.c:520
 msgid "profile"
 msgstr "档案"
 
 #: ../src/iop/colorin.c:659
-#, fuzzy
 msgid "standard color matrix"
 msgstr "标准颜色矩阵"
 
 #: ../src/iop/colorin.c:661
-#, fuzzy
 msgid "enhanced color matrix"
 msgstr "增强颜色矩阵"
 
@@ -2489,23 +2450,22 @@ msgstr "Adobe RGB"
 #: ../src/iop/colorout.c:805 ../src/iop/colorout.c:806
 #: ../src/libs/export.c:482
 msgid "linear RGB"
-msgstr "linear RGB"
+msgstr "线性RGB"
 
 #: ../src/iop/colorin.c:669
 msgid "linear infrared BGR"
-msgstr "linear infrared BGR"
+msgstr "线性红外BGR"
 
 #: ../src/iop/colorin.c:671
 msgid "linear XYZ"
-msgstr "linear XYZ"
+msgstr "线性 XYZ"
 
 #: ../src/iop/colorin.c:680
 #, c-format
 msgid "icc profiles in %s/color/in or %s/color/in"
-msgstr ""
+msgstr "icc 档案在 %s/color/in 或 %s/color/in"
 
 #: ../src/iop/colorize.c:73
-#, fuzzy
 msgid "colorize"
 msgstr "色彩化"
 
@@ -2517,37 +2477,36 @@ msgstr "取色"
 #: ../src/iop/colorize.c:90
 msgctxt "accel"
 msgid "lightness"
-msgstr "光度"
+msgstr "明度"
 
 #: ../src/iop/colorize.c:91
-#, fuzzy
 msgctxt "accel"
 msgid "source mix"
 msgstr "来源混合"
 
 #: ../src/iop/colorize.c:250 ../src/iop/splittoning.c:340
 msgid "select tone color"
-msgstr ""
+msgstr "选择色调的色彩"
 
 #: ../src/iop/colorize.c:428
 msgid "select the hue tone"
-msgstr ""
+msgstr "选择色相的色调"
 
 #: ../src/iop/colorize.c:438 ../src/iop/splittoning.c:538
 msgid "select the saturation shadow tone"
-msgstr ""
+msgstr "选择阴影色调的饱和度"
 
 #: ../src/iop/colorize.c:454
 msgid "source mix"
-msgstr ""
+msgstr "来源混合"
 
 #: ../src/iop/colorize.c:459
 msgid "lightness of color"
-msgstr "颜色亮度"
+msgstr "色彩明度"
 
 #: ../src/iop/colorize.c:460
 msgid "mix value of source lightness"
-msgstr ""
+msgstr "源明度的混合值"
 
 #: ../src/iop/colorout.c:48
 msgid "output color profile"
@@ -2559,32 +2518,32 @@ msgstr "不支持的导出色彩档案用sRGB 替代了！"
 
 #: ../src/iop/colorout.c:678 ../src/iop/colorout.c:685
 msgid "soft proof"
-msgstr ""
+msgstr "软打样(soft proof)"
 
 #: ../src/iop/colorout.c:768
 msgid "output intent"
-msgstr ""
+msgstr "输出目的"
 
 #: ../src/iop/colorout.c:769
 msgid "output profile"
-msgstr ""
+msgstr "输出配置"
 
 #: ../src/iop/colorout.c:770
 msgid "softproof profile"
-msgstr ""
+msgstr "软打样配置"
 
 #: ../src/iop/colorout.c:772
 msgid "display intent"
-msgstr ""
+msgstr "显示目的"
 
 #: ../src/iop/colorout.c:773
 msgid "display profile"
-msgstr "显示用色彩档案"
+msgstr "显示配置"
 
 #: ../src/iop/colorout.c:780 ../src/iop/colorout.c:785
 #: ../src/libs/export.c:453
 msgid "perceptual"
-msgstr ""
+msgstr "可感知度"
 
 #: ../src/iop/colorout.c:781 ../src/iop/colorout.c:786
 #: ../src/libs/export.c:454
@@ -2609,33 +2568,32 @@ msgstr "系统显示配置"
 
 #: ../src/iop/colorout.c:810 ../src/iop/colorout.c:811
 #: ../src/iop/colorout.c:812 ../src/libs/export.c:463
-#, fuzzy
 msgid "sRGB (web-safe)"
-msgstr "sRGB（web安全）"
+msgstr "sRGB (网络安全色)"
 
 #: ../src/iop/colorout.c:841
 msgid "rendering intent"
-msgstr ""
+msgstr "渲染目的"
 
 #: ../src/iop/colorout.c:842
 #, c-format
 msgid "icc profiles in %s/color/out or %s/color/out"
-msgstr ""
+msgstr "在 %s/color/out 或 %s/color/out 的icc配置"
 
 #: ../src/iop/colorout.c:844
 #, c-format
 msgid "display icc profiles in %s/color/out or %s/color/out"
-msgstr ""
+msgstr "在 %s/color/out 或 %s/color/out 显示icc配置"
 
 #: ../src/iop/colorout.c:846
 #, c-format
 msgid "softproof icc profiles in %s/color/out or %s/color/out"
-msgstr ""
+msgstr "在 %s/color/out 或 %s/color/out 的软打样icc配置"
 
 #: ../src/iop/colorout.c:880
 msgctxt "accel"
 msgid "toggle softproofing"
-msgstr ""
+msgstr "切换软打样"
 
 #: ../src/iop/colortransfer.c:105
 msgid "color transfer"
@@ -2657,7 +2615,7 @@ msgstr "图象中发现的聚簇数量"
 
 #: ../src/iop/colortransfer.c:660
 msgid "acquire"
-msgstr ""
+msgstr "获取"
 
 #: ../src/iop/colortransfer.c:662
 msgid "analyze this image"
@@ -2669,7 +2627,7 @@ msgstr "应用"
 
 #: ../src/iop/colortransfer.c:667
 msgid "apply previously analyzed image look to this image"
-msgstr ""
+msgstr "应用之前分析的图片概括到此图皮"
 
 #: ../src/iop/colorzones.c:94
 msgid "color zones"
@@ -2680,7 +2638,6 @@ msgid "red black white"
 msgstr "红 黑 白"
 
 #: ../src/iop/colorzones.c:295
-#, fuzzy
 msgid "black white and skin tones"
 msgstr "黑白和皮肤色调"
 
@@ -2715,7 +2672,6 @@ msgid "method"
 msgstr "方法"
 
 #: ../src/iop/demosaic.c:1155
-#, fuzzy
 msgid "ppg"
 msgstr "ppg"
 
@@ -2725,7 +2681,7 @@ msgstr "AMaZE"
 
 #: ../src/iop/demosaic.c:1157
 msgid "demosaicing raw data method"
-msgstr "raw数据去马赛克方法"
+msgstr "RAW数据去马赛克方法"
 
 #: ../src/iop/demosaic.c:1162
 msgid ""
@@ -2733,6 +2689,9 @@ msgid ""
 "set to 0.0 to switch off.\n"
 "set to 1.0 to ignore edges."
 msgstr ""
+"边缘阀值中值\n"
+"0.0为关闭\n"
+"1.0为忽略边缘"
 
 #: ../src/iop/demosaic.c:1163
 msgid "edge threshold"
@@ -2744,11 +2703,10 @@ msgstr "颜色平滑"
 
 #: ../src/iop/demosaic.c:1173
 msgid "how many color smoothing median steps after demosaicing"
-msgstr ""
+msgstr "计数去马赛克后色彩平滑的中间步骤"
 
 #. //////////////////////////
 #: ../src/iop/demosaic.c:1177
-#, fuzzy
 msgid "match greens"
 msgstr "匹配绿色"
 
@@ -2791,6 +2749,9 @@ msgid ""
 "and is only here so you can switch it off\n"
 "and move to the new equalizer."
 msgstr ""
+"该模块未来将被移除\n"
+"请关掉该模块\n"
+"并使用新的均衡器"
 
 #: ../src/iop/exposure.c:60
 msgctxt "accel"
@@ -2927,9 +2888,8 @@ msgid "brown ND4 (soft)"
 msgstr "灰色ND4（软）"
 
 #: ../src/iop/graduatednd.c:137
-#, fuzzy
 msgid "graduated density"
-msgstr "增长密度"
+msgstr "渐变密度"
 
 #: ../src/iop/graduatednd.c:153
 msgctxt "accel"
@@ -3005,19 +2965,19 @@ msgstr "粗糙"
 
 #: ../src/iop/grain.c:520
 msgid "the grain size (~iso of the film)"
-msgstr "颗粒大小（~胶卷的ISO感光读）"
+msgstr "颗粒大小（~胶片的ISO感光度）"
 
 #: ../src/iop/grain.c:521
 msgid "the strength of applied grain"
-msgstr ""
+msgstr "应用颗粒的强度"
 
 #: ../src/iop/grain.c:522
 msgid "coarseness"
-msgstr "粗糙"
+msgstr "颗粒度"
 
 #: ../src/iop/highlights.c:82
 msgid "highlight reconstruction"
-msgstr "高光重建"
+msgstr "高亮修复"
 
 #: ../src/iop/highlights.c:99
 msgctxt "accel"
@@ -3036,19 +2996,19 @@ msgstr "混合H"
 
 #: ../src/iop/highlights.c:416
 msgid "clip highlights"
-msgstr ""
+msgstr "截取高亮"
 
 #: ../src/iop/highlights.c:417
 msgid "reconstruct in LCh"
-msgstr "重建LCH"
+msgstr "重建LCh"
 
 #: ../src/iop/highlights.c:418
 msgid "highlight reconstruction method"
-msgstr "高光重建方法"
+msgstr "高亮修复方法"
 
 #: ../src/iop/highlights.c:428
 msgid "blend lightness (0 is same as clipping)"
-msgstr "混合亮度（0等同于裁剪）"
+msgstr "混合明度（0等同于裁剪）"
 
 #: ../src/iop/highlights.c:429
 msgid "blend colorness (0 is same as clipping)"
@@ -3072,7 +3032,7 @@ msgstr "混合H"
 
 #: ../src/iop/highpass.c:84
 msgid "highpass"
-msgstr "高通"
+msgstr "高通滤镜"
 
 #: ../src/iop/highpass.c:100
 msgctxt "accel"
@@ -3090,11 +3050,11 @@ msgstr "对比度提升"
 
 #: ../src/iop/highpass.c:505
 msgid "the sharpness of highpass filter"
-msgstr "高通滤波器的锐度"
+msgstr "高通滤镜的锐度"
 
 #: ../src/iop/highpass.c:506
 msgid "the contrast of highpass filter"
-msgstr "高通滤波器的对比度"
+msgstr "高通滤镜的对比度"
 
 #: ../src/iop/hotpixels.c:67
 msgid "hot pixels"
@@ -3103,24 +3063,23 @@ msgstr "热像素"
 #: ../src/iop/hotpixels.c:166
 #, c-format
 msgid "fixed %d pixels"
-msgstr ""
+msgstr "修复了 %d 个像素"
 
 #: ../src/iop/hotpixels.c:286
 msgid "lower threshold for hot pixel"
-msgstr "减少热像素的阈值"
+msgstr "减小热像素的阈值"
 
 #: ../src/iop/hotpixels.c:293
-#, fuzzy
 msgid "strength of hot pixel correction"
 msgstr "热像素校正强度"
 
 #: ../src/iop/hotpixels.c:298
 msgid "detect by 3 neighbours"
-msgstr ""
+msgstr "由3个邻居检测"
 
 #: ../src/iop/hotpixels.c:305
 msgid "mark fixed pixels"
-msgstr "标记固定像素"
+msgstr "标记修复的像素"
 
 #: ../src/iop/invert.c:54
 msgid "invert"
@@ -3129,23 +3088,23 @@ msgstr "反转"
 #: ../src/iop/invert.c:66
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr ""
+msgstr "从图像中选取胶片材料的颜色"
 
 #: ../src/iop/invert.c:137
 msgid "select color of film material"
-msgstr ""
+msgstr "选择胶片材料的颜色"
 
 #: ../src/iop/invert.c:305
 msgid "this doesn't work for raw/hdr images."
-msgstr ""
+msgstr "对RAW/HDR图像不起作用"
 
 #: ../src/iop/invert.c:310
 msgid "color of film material"
-msgstr ""
+msgstr "胶片材料的颜色"
 
 #: ../src/iop/invert.c:342
 msgid "pick color of film material from image"
-msgstr ""
+msgstr "从图像中选取胶片材料的颜色"
 
 #: ../src/iop/lens.c:46
 msgid "lens correction"
@@ -3191,6 +3150,7 @@ msgctxt "accel"
 msgid "lens model"
 msgstr "镜头型号"
 
+# mount 翻译不确定
 #: ../src/iop/lens.c:754
 #, c-format
 msgid ""
@@ -3199,6 +3159,10 @@ msgid ""
 "mount:\t\t%s\n"
 "crop factor:\t%.1f"
 msgstr ""
+"作者:\t\t%s\n"
+"型号:\t\t%s%s\n"
+"挂载:\t\t%s\n"
+"裁切系数:\t%.1f"
 
 #: ../src/iop/lens.c:1050
 #, c-format
@@ -3211,6 +3175,13 @@ msgid ""
 "type:\t\t%s\n"
 "mounts:\t\t%s"
 msgstr ""
+"作者:\t\t%s\n"
+"型号:\t\t%s\n"
+"对焦范围:\t%s\n"
+"光圈:\t\t%s\n"
+"裁切系数:\t%.1f\n"
+"类型:\t\t%s\n"
+"挂载:\t\t%s"
 
 #: ../src/iop/lens.c:1080
 msgid "mm"
@@ -3230,7 +3201,7 @@ msgstr "f/"
 
 #: ../src/iop/lens.c:1095
 msgid "f-number (aperture)"
-msgstr "光圈号数"
+msgstr "F值(光圈)"
 
 #: ../src/iop/lens.c:1106
 msgid "d"
@@ -3238,7 +3209,7 @@ msgstr "d"
 
 #: ../src/iop/lens.c:1106
 msgid "distance to subject"
-msgstr "到主体的距离(景深)"
+msgstr "到主体的距离"
 
 #: ../src/iop/lens.c:1341
 msgid "find camera"
@@ -3251,7 +3222,7 @@ msgstr "寻找镜头"
 #. target geometry
 #: ../src/iop/lens.c:1386
 msgid "geometry"
-msgstr "几何"
+msgstr "几何校正"
 
 #: ../src/iop/lens.c:1391
 msgid "target geometry"
@@ -3271,62 +3242,62 @@ msgstr "全景"
 
 #: ../src/iop/lens.c:1395
 msgid "equirectangular"
-msgstr "equirectangular 八边多棱（用于球形全景图）"
+msgstr "equirectangular 八边多棱(用于球形全景图)"
 
 #: ../src/iop/lens.c:1413
 msgid "auto scale"
-msgstr "自动拉伸"
+msgstr "自动缩放"
 
 #. reverse direction
 #: ../src/iop/lens.c:1420
-#, fuzzy
 msgid "reverse"
-msgstr "预留"
+msgstr "逆转"
 
 #: ../src/iop/lens.c:1421
-#, fuzzy
 msgid "apply distortions instead of correcting them"
-msgstr "应用扭曲(不纠正)"
+msgstr "应用畸变而非矫正"
 
 #: ../src/iop/lens.c:1430
 msgid "tca R"
-msgstr "tca R"
+msgstr "横向色差(tca) 红"
 
 #: ../src/iop/lens.c:1431
 msgid "tca B"
-msgstr "tca B"
+msgstr "横向色差(tca) 蓝"
 
 #: ../src/iop/lens.c:1436
 msgid ""
 "override transversal chromatic aberration correction for red channel\n"
 "leave at 1.0 for defaults"
 msgstr ""
+"对红色通道覆盖横向色差校正\n"
+"默认为1.0"
 
 #: ../src/iop/lens.c:1437
 msgid ""
 "override transversal chromatic aberration correction for blue channel\n"
 "leave at 1.0 for defaults"
 msgstr ""
+"对蓝色通道覆盖横向色差校正\n"
+"默认为1.0"
 
 #: ../src/iop/levels.c:40
 msgid "levels"
-msgstr "色阶"
+msgstr "级别"
 
 #: ../src/iop/levels.c:213
-#, fuzzy
 msgid ""
 "drag handles to set black, grey, and white points.  operates on L channel."
-msgstr "拖动滑块设置黑色、棕色、白色点 ... 操作于 L channel"
+msgstr "拖动滑块设置黑色、棕色、白色点。 在L通道上操作。"
 
 #: ../src/iop/lowlight.c:79
-#, fuzzy
 msgid "lowlight vision"
 msgstr "低光成像"
 
 #: ../src/iop/lowlight.c:96
 msgctxt "accel"
 msgid "blue shift"
-msgstr ""
+msgstr "蓝移"
 
 #: ../src/iop/lowlight.c:260
 msgid "daylight"
@@ -3373,28 +3344,24 @@ msgid "bright"
 msgstr "亮处"
 
 #: ../src/iop/lowlight.c:559 ../src/iop/lowlight.c:561
-#, fuzzy
 msgid "day vision"
 msgstr "日间成像"
 
 #: ../src/iop/lowlight.c:563 ../src/iop/lowlight.c:565
-#, fuzzy
 msgid "night vision"
 msgstr "夜间成像"
 
 #: ../src/iop/lowlight.c:746
 msgid "blue shift"
-msgstr ""
+msgstr "蓝移"
 
 #: ../src/iop/lowlight.c:749
-#, fuzzy
 msgid "blueness in shadows"
 msgstr "发蓝阴影"
 
 #: ../src/iop/lowpass.c:97
-#, fuzzy
 msgid "lowpass"
-msgstr "低光过滤"
+msgstr "低通滤镜"
 
 #: ../src/iop/lowpass.c:115
 msgctxt "accel"
@@ -3406,32 +3373,28 @@ msgid "local contrast mask"
 msgstr "局部对比蒙板"
 
 #: ../src/iop/lowpass.c:702
-#, fuzzy
 msgid "filter order"
-msgstr "过滤顺序"
+msgstr "滤镜阶数"
 
 #: ../src/iop/lowpass.c:705
-#, fuzzy
 msgid "0th order"
-msgstr "0"
+msgstr "0阶"
 
 #: ../src/iop/lowpass.c:706
-#, fuzzy
 msgid "1st order"
-msgstr "1"
+msgstr "1阶"
 
 #: ../src/iop/lowpass.c:707
-#, fuzzy
 msgid "2nd order"
-msgstr "2"
+msgstr "2阶"
 
 #: ../src/iop/lowpass.c:708
 msgid "filter order of gaussian blur"
-msgstr "高斯模糊过滤顺序"
+msgstr "高斯模糊过滤阶数"
 
 #: ../src/iop/lowpass.c:716
 msgid "contrast"
-msgstr "对比度"
+msgstr "对比"
 
 #: ../src/iop/lowpass.c:722
 msgid "the radius of gaussian blur"
@@ -3439,45 +3402,45 @@ msgstr "高斯模糊半径"
 
 #: ../src/iop/lowpass.c:723
 msgid "the contrast of lowpass filter"
-msgstr "低通滤波器的对比度"
+msgstr "低通滤镜的对比度"
 
 #: ../src/iop/lowpass.c:724
 msgid "the color saturation of lowpass filter"
-msgstr "低通滤波器的颜色饱和度"
+msgstr "低通滤镜的颜色饱和度"
 
 #: ../src/iop/monochrome.c:63
 msgid "monochrome"
-msgstr "单色光"
+msgstr "单色"
 
 #: ../src/iop/monochrome.c:85
 msgid "red filter"
-msgstr ""
+msgstr "红色滤镜"
 
 #: ../src/iop/monochrome.c:317
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
-msgstr ""
+msgstr "拖动并滚动鼠标滚轮调整虚拟色彩滤镜"
 
 #: ../src/iop/nlmeans.c:62
 msgid "denoise (non-local means)"
-msgstr ""
+msgstr "去噪点(非局部均)"
 
 #: ../src/iop/nlmeans.c:79
 msgctxt "accel"
 msgid "luma"
-msgstr "luma"
+msgstr "亮度(luma)"
 
 #: ../src/iop/nlmeans.c:80
 msgctxt "accel"
 msgid "chroma"
-msgstr "饱和度"
+msgstr "色度(chroma)"
 
 #: ../src/iop/nlmeans.c:456
 msgid "how much to smooth brightness"
-msgstr ""
+msgstr "平滑亮度的程度"
 
 #: ../src/iop/nlmeans.c:457
 msgid "how much to smooth colors"
-msgstr ""
+msgstr "平滑色彩的程度"
 
 #: ../src/iop/overexposed.c:61
 msgid "overexposed"
@@ -3503,20 +3466,19 @@ msgstr "增加阈值"
 
 #: ../src/iop/overexposed.c:295
 msgid "threshold of what shall be considered underexposed"
-msgstr ""
+msgstr "应被作为曝光不足部分的阈值"
 
 #: ../src/iop/overexposed.c:296
 msgid "threshold of what shall be considered overexposed"
-msgstr ""
+msgstr "应被作为曝光过度部分的阈值"
 
 #: ../src/iop/overexposed.c:303
 msgid "toggle over/under exposed indication"
-msgstr ""
+msgstr "切换曝光不足/过量的指示"
 
 #: ../src/iop/profile_gamma.c:38
-#, fuzzy
 msgid "unbreak input profile"
-msgstr "不破输入的档案"
+msgstr "修复输入配置"
 
 #: ../src/iop/profile_gamma.c:49
 msgctxt "accel"
@@ -3541,9 +3503,8 @@ msgid "gamma"
 msgstr "伽马"
 
 #: ../src/iop/rawdenoise.c:58
-#, fuzzy
 msgid "raw denoise"
-msgstr "raw降噪"
+msgstr "RAW降噪"
 
 #: ../src/iop/rawdenoise.c:80
 msgctxt "accel"
@@ -3556,15 +3517,15 @@ msgstr "噪点阈值"
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
-msgstr ""
+msgstr "4区域曝光补偿 0.25EV "
 
 #: ../src/iop/relight.c:59
 msgid "fill-shadow -0.25EV with 4 zones"
-msgstr ""
+msgstr "4区域阴影补偿 -0.25EV"
 
 #: ../src/iop/relight.c:87
 msgid "fill light"
-msgstr "补光"
+msgstr "曝光补偿"
 
 #: ../src/iop/relight.c:104
 msgctxt "accel"
@@ -3577,20 +3538,20 @@ msgstr "宽度"
 
 #: ../src/iop/relight.c:337
 msgid "select the center of fill-light"
-msgstr "选择补光的中心位置"
+msgstr "选择曝光补偿的中心位置"
 
 #: ../src/iop/relight.c:355
 msgid "toggle tool for picking median lightness in image"
-msgstr ""
+msgstr "用于选取图像明度中值的切换工具"
 
 #: ../src/iop/relight.c:356
 msgid "the fill-light in EV"
-msgstr "曝光补偿/补充光(曝光值)"
+msgstr "曝光补偿(EV)"
 
 #: ../src/iop/relight.c:358
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr ""
+msgstr "补光区域宽度"
 
 #: ../src/iop/sharpen.c:75
 msgctxt "sharpen"
@@ -3600,12 +3561,11 @@ msgstr "锐化"
 #: ../src/iop/sharpen.c:95
 msgctxt "accel"
 msgid "amount"
-msgstr "总量"
+msgstr "应用量"
 
 #: ../src/iop/sharpen.c:552
-#, fuzzy
 msgid "spatial extent of the unblurring"
-msgstr "三角范围去除模糊"
+msgstr "去模糊的空间范围"
 
 #: ../src/iop/sharpen.c:555
 msgid "strength of the sharpen"
@@ -3613,10 +3573,9 @@ msgstr "锐化强度"
 
 #: ../src/iop/sharpen.c:558
 msgid "threshold to activate sharpen"
-msgstr "阀值激活锐化"
+msgstr "激活锐化阀值"
 
 #: ../src/iop/soften.c:72
-#, fuzzy
 msgid "soften"
 msgstr "柔化"
 
@@ -3635,7 +3594,7 @@ msgstr "模糊尺寸"
 
 #: ../src/iop/soften.c:381
 msgid "the saturation of blur"
-msgstr "色度模糊"
+msgstr "模糊的饱和度"
 
 #: ../src/iop/soften.c:382
 msgid "the brightness of blur"
@@ -3650,16 +3609,14 @@ msgid "split toning"
 msgstr "分割色调"
 
 #: ../src/iop/splittoning.c:94
-#, fuzzy
 msgctxt "accel"
 msgid "pick primary color"
-msgstr "取首要色"
+msgstr "选取首要颜色"
 
 #: ../src/iop/splittoning.c:96
-#, fuzzy
 msgctxt "accel"
 msgid "pick secondary color"
-msgstr "取第二色"
+msgstr "选取次要颜色"
 
 #: ../src/iop/splittoning.c:99
 msgctxt "accel"
@@ -3709,9 +3666,8 @@ msgid "shadows"
 msgstr "阴影"
 
 #: ../src/iop/splittoning.c:528
-#, fuzzy
 msgid "select the hue tone for shadows"
-msgstr "阴影选择 hue 色调"
+msgstr "选择阴影色调"
 
 #. Highlights
 #: ../src/iop/splittoning.c:541 ../src/iop/shadhi.c:818
@@ -3719,13 +3675,12 @@ msgid "highlights"
 msgstr "高亮"
 
 #: ../src/iop/splittoning.c:588
-#, fuzzy
 msgid "select the hue tone for highlights"
-msgstr "高亮选择 hue 色调"
+msgstr "选择高亮色调"
 
 #: ../src/iop/splittoning.c:598
 msgid "select the saturation highlights tone"
-msgstr "选择色度高亮区域色调"
+msgstr "选择饱和高亮的色调"
 
 #: ../src/iop/splittoning.c:608
 msgid "balance"
@@ -3737,21 +3692,19 @@ msgstr "压缩"
 
 #: ../src/iop/splittoning.c:619
 msgid "the balance of center of splittoning"
-msgstr ""
+msgstr "分割中心的平衡"
 
 #: ../src/iop/splittoning.c:620
-#, fuzzy
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
 msgstr ""
-"压缩这种效果，应用在高亮/阴影处\n"
-"保留中色调"
+"压缩高亮/阴影处的效果\n"
+"并保留中间色调"
 
 #: ../src/iop/spots.c:64
-#, fuzzy
 msgid "spot removal"
-msgstr "除去点"
+msgstr "去污点"
 
 #: ../src/iop/spots.c:185
 msgid ""
@@ -3759,15 +3712,17 @@ msgid ""
 "use the mouse wheel to adjust size.\n"
 "right click to remove a stroke."
 msgstr ""
+"点击一个污点并在画布上拖动鼠标以修复。\n"
+"使用鼠标滚轮调整大小。\n"
+"右击以除去一个笔画。"
 
 #: ../src/iop/spots.c:189
 msgid "number of strokes:"
-msgstr ""
+msgstr "笔画数目"
 
 #: ../src/iop/spots.c:346
-#, fuzzy
 msgid "spot removal only supports up to 32 spots"
-msgstr "点去除的上限为 32个"
+msgstr "最多只能去除32个污点"
 
 #: ../src/iop/temperature.c:90
 msgctxt "modulename"
@@ -3775,55 +3730,47 @@ msgid "white balance"
 msgstr "白平衡"
 
 #: ../src/iop/temperature.c:108
-#, fuzzy
 msgctxt "accel"
 msgid "tint"
 msgstr "淡色(掺入白色)"
 
 #: ../src/iop/temperature.c:109
-#, fuzzy
 msgctxt "accel"
 msgid "temperature in"
-msgstr "色温提升"
+msgstr "入色温"
 
 #: ../src/iop/temperature.c:110
-#, fuzzy
 msgctxt "accel"
 msgid "temperature out"
-msgstr "色温降低"
+msgstr "出色温"
 
 #: ../src/iop/temperature.c:524
-#, fuzzy
 msgid "tint"
-msgstr "淡色调(掺入白色)"
+msgstr "淡色(掺入白色)"
 
 #: ../src/iop/temperature.c:525
-#, fuzzy
 msgid "temperature in"
-msgstr "色温提升"
+msgstr "入色温"
 
 #: ../src/iop/temperature.c:527
-#, fuzzy
 msgid "temperature out"
-msgstr "色温降低"
+msgstr "出色温"
 
 #: ../src/iop/temperature.c:550
 msgid "camera white balance"
 msgstr "相机白平衡"
 
 #: ../src/iop/temperature.c:551
-#, fuzzy
 msgid "spot white balance"
 msgstr "点白平衡"
 
 #: ../src/iop/temperature.c:552
-#, fuzzy
 msgid "passthrough"
-msgstr "passthrough通过"
+msgstr "直通"
 
 #: ../src/iop/temperature.c:578
 msgid "fine tune white balance preset"
-msgstr "精细调节白平衡预设"
+msgstr "微调白平衡预设"
 
 #: ../src/iop/tonecurve.c:41
 msgid "tone curve"
@@ -3846,36 +3793,32 @@ msgid "  L  "
 msgstr "  L  "
 
 #: ../src/iop/tonecurve.c:417
-#, fuzzy
 msgid "tonecurve for L channel"
-msgstr "L 色调曲线"
+msgstr "L通道色调曲线"
 
 #: ../src/iop/tonecurve.c:418
 msgid "  a  "
 msgstr "  a  "
 
 #: ../src/iop/tonecurve.c:419
-#, fuzzy
 msgid "tonecurve for a channel"
-msgstr "a 色调曲线"
+msgstr "a通道色调曲线"
 
 #: ../src/iop/tonecurve.c:420
 msgid "  b  "
 msgstr "  b  "
 
 #: ../src/iop/tonecurve.c:421
-#, fuzzy
 msgid "tonecurve for b channel"
-msgstr "b 色调曲线"
+msgstr "b通道色调曲线"
 
 #: ../src/iop/tonecurve.c:440
 msgid "double click to reset curve"
 msgstr "双击重置曲线"
 
 #: ../src/iop/tonecurve.c:454
-#, fuzzy
 msgid "auto scale chroma"
-msgstr "自动扩展色饱和度"
+msgstr "自动调整色度"
 
 #: ../src/iop/tonecurve.c:459
 msgid ""
@@ -3883,13 +3826,15 @@ msgid ""
 "not displayed. chroma values (a and b) of each pixel\n"
 "are then adjusted based on L curve data."
 msgstr ""
+"如果启用本项目，a和b曲线将无效\n"
+"并且不再显示。每个像素的色度值(a和b)\n"
+"基于L曲线数据自动调整"
 
 #: ../src/iop/tonemap.cc:77
 msgid "tone mapping"
 msgstr "色调映射"
 
 #: ../src/iop/tonemap.cc:96
-#, fuzzy
 msgctxt "accel"
 msgid "contrast compression"
 msgstr "对比度压缩"
@@ -3897,34 +3842,34 @@ msgstr "对比度压缩"
 #: ../src/iop/tonemap.cc:97
 msgctxt "accel"
 msgid "spatial extent"
-msgstr ""
+msgstr "空间范围"
 
 #: ../src/iop/tonemap.cc:309
-#, fuzzy
 msgid "contrast compression"
 msgstr "对比度压缩"
 
 #: ../src/iop/tonemap.cc:314 ../src/iop/shadhi.c:832
 msgid "spatial extent"
-msgstr ""
+msgstr "空间范围"
 
 #: ../src/iop/velvia.c:77
+#, fuzzy
 msgid "velvia"
-msgstr ""
+msgstr "velvia"
 
 #: ../src/iop/velvia.c:94 ../src/iop/vibrance.c:80
 msgctxt "accel"
 msgid "vibrance"
-msgstr ""
+msgstr "自然饱和度(vibrance)"
 
 #: ../src/iop/velvia.c:95
 msgctxt "accel"
 msgid "mid-tones bias"
-msgstr ""
+msgstr "中间色调偏差"
 
 #: ../src/iop/velvia.c:274 ../src/iop/vibrance.c:63 ../src/iop/vibrance.c:196
 msgid "vibrance"
-msgstr ""
+msgstr "自然饱和度"
 
 #: ../src/iop/velvia.c:278
 msgid "mid-tones bias"
@@ -3932,15 +3877,15 @@ msgstr "中间调偏色"
 
 #: ../src/iop/velvia.c:282
 msgid "the strength of saturation boost"
-msgstr ""
+msgstr "饱和度增加的强度"
 
 #: ../src/iop/velvia.c:283
 msgid "how much to spare highlights and shadows"
-msgstr ""
+msgstr "高亮和阴影的量"
 
 #: ../src/iop/vibrance.c:201
 msgid "the amount of vibrance"
-msgstr ""
+msgstr "自然饱和的量"
 
 #: ../src/iop/vignette.c:110
 msgid "vignetting"
@@ -3949,7 +3894,7 @@ msgstr "暗角"
 #: ../src/iop/vignette.c:127
 msgctxt "accel"
 msgid "fall-off strength"
-msgstr ""
+msgstr "减小强度"
 
 #: ../src/iop/vignette.c:130
 msgctxt "accel"
@@ -3969,7 +3914,7 @@ msgstr "形状"
 #: ../src/iop/vignette.c:133
 msgctxt "accel"
 msgid "width-height ratio"
-msgstr "宽高比"
+msgstr "宽高比例"
 
 #: ../src/iop/vignette.c:871
 msgid "automatic ratio"
@@ -3979,9 +3924,10 @@ msgstr "自动比例"
 msgid "automatic"
 msgstr "自动化"
 
+# 根据日语版本猜测
 #: ../src/iop/vignette.c:885
 msgid "fall-off strength"
-msgstr ""
+msgstr "光衰减强度"
 
 #: ../src/iop/vignette.c:889
 msgid "horizontal center"
@@ -4001,27 +3947,27 @@ msgstr "宽/高比例"
 
 #: ../src/iop/vignette.c:910
 msgid "the radii scale of vignette for start of fall-off"
-msgstr ""
+msgstr "暗角图像起始光衰减的比例半径"
 
 #: ../src/iop/vignette.c:911
 msgid "the radii scale of vignette for end of fall-off"
-msgstr ""
+msgstr "暗角图像结束光衰减的比例半径"
 
 #: ../src/iop/vignette.c:912
 msgid "strength of effect on brightness"
-msgstr ""
+msgstr "亮度效果的强度"
 
 #: ../src/iop/vignette.c:913
 msgid "strength of effect on saturation"
-msgstr ""
+msgstr "饱和度效果的强度"
 
 #: ../src/iop/vignette.c:914
 msgid "horizontal offset of center of the effect"
-msgstr ""
+msgstr "效果中心的横向偏移量"
 
 #: ../src/iop/vignette.c:915
 msgid "vertical offset of center of the effect"
-msgstr ""
+msgstr "效果中心的纵向偏移量"
 
 #: ../src/iop/vignette.c:916
 msgid ""
@@ -4030,18 +3976,18 @@ msgid ""
 "1 produces a circle or elipse\n"
 "2 produces a diamond"
 msgstr ""
-"形状要素\n"
+"形状系数\n"
 "0 产生长方形\n"
 "1 产生环或椭圆\n"
-"2 产生六边形"
+"2 产生菱形"
 
 #: ../src/iop/vignette.c:917
 msgid "enable to have the ratio automatically follow the image size"
-msgstr "开启比例自动跟随图片尺寸"
+msgstr "启用以随图片尺寸自动调整比例"
 
 #: ../src/iop/vignette.c:918
 msgid "width-to-height ratio"
-msgstr "宽高比"
+msgstr "宽高比例"
 
 #: ../src/iop/watermark.c:90
 msgid "watermark"
@@ -4124,58 +4070,58 @@ msgstr "阴影"
 
 #: ../src/iop/wb_presets.c:51
 msgid "Incandescent"
-msgstr ""
+msgstr "白炽灯"
 
 #: ../src/iop/wb_presets.c:52
 msgid "Incandescent warm"
-msgstr ""
+msgstr "暖白炽灯"
 
 #. Same as "Incandescent":
 #: ../src/iop/wb_presets.c:54
 msgid "Tungsten"
-msgstr ""
+msgstr "钨丝灯"
 
 #: ../src/iop/wb_presets.c:55
 msgid "Fluorescent"
-msgstr ""
+msgstr "荧光灯"
 
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:57
 msgid "Fluorescent high"
-msgstr ""
+msgstr "荧光灯H"
 
 #: ../src/iop/wb_presets.c:58
 msgid "Cool white fluorescent"
-msgstr ""
+msgstr "冷白荧光灯"
 
 #: ../src/iop/wb_presets.c:59
 msgid "Warm white fluorescent"
-msgstr ""
+msgstr "暖白荧光灯"
 
 #: ../src/iop/wb_presets.c:60
 msgid "Daylight fluorescent"
-msgstr ""
+msgstr "日光灯"
 
 #: ../src/iop/wb_presets.c:61
 msgid "Neutral fluorescent"
-msgstr ""
+msgstr "中性荧光灯"
 
 #: ../src/iop/wb_presets.c:62
 msgid "White fluorescent"
-msgstr ""
+msgstr "白荧光灯"
 
 #. In some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:64
 msgid "Sodium-vapor fluorescent"
-msgstr ""
+msgstr "钠蒸气荧光灯"
 
 #: ../src/iop/wb_presets.c:65
 msgid "Day white fluorescent"
-msgstr ""
+msgstr "昼白荧光灯"
 
 #: ../src/iop/wb_presets.c:66
 msgid "High temp. mercury-vapor fluorescent"
-msgstr ""
+msgstr "高温汞蒸气荧光灯"
 
 #: ../src/iop/wb_presets.c:68
 msgid "Flash"
@@ -4187,7 +4133,6 @@ msgid "Flash (auto mode)"
 msgstr "闪光(自动)"
 
 #: ../src/iop/wb_presets.c:71
-#, fuzzy
 msgid "Evening sun"
 msgstr "夕阳"
 
@@ -4204,7 +4149,6 @@ msgid "Manual WB"
 msgstr "手动白平衡"
 
 #: ../src/iop/wb_presets.c:77
-#, fuzzy
 msgid "Camera WB"
 msgstr "相机白平衡"
 
@@ -4215,24 +4159,23 @@ msgstr "自动白平衡"
 #: ../src/iop/zonesystem.c:86
 #, fuzzy
 msgid "zone system"
-msgstr "分区曝光"
+msgstr "分区曝光系统"
 
 #: ../src/iop/zonesystem.c:372
-#, fuzzy
 msgid ""
 "lightness zones\n"
 "use mouse scrollwheel to change the number of zones\n"
 "left-click on a border to create a marker\n"
 "right-click on a marker to delete it"
 msgstr ""
-"亮度区域\n"
+"明度区域\n"
 "使用鼠标滚轮改变区域数量\n"
-"左键在边界创建一个标记\n"
-"右键点击标记删除之"
+"在边框左击创建一个标记\n"
+"右击标记删除"
 
 #: ../src/libs/backgroundjobs.c:68
 msgid "background jobs"
-msgstr "后台任务"
+msgstr "后台作业"
 
 #: ../src/libs/camera.c:80
 msgid "camera settings"
@@ -4277,14 +4220,12 @@ msgid "count"
 msgstr "统计"
 
 #: ../src/libs/camera.c:446
-#, fuzzy
 msgid "brackets"
-msgstr "多重样式取景"
+msgstr "包围曝光"
 
 #: ../src/libs/camera.c:447
-#, fuzzy
 msgid "bkt. steps"
-msgstr "多重步骤取景"
+msgstr "包围曝光步级"
 
 #: ../src/libs/camera.c:483
 msgid "capture image(s)"
@@ -4296,15 +4237,15 @@ msgstr "切换延迟拍摄模式"
 
 #: ../src/libs/camera.c:487
 msgid "toggle sequenced capture mode"
-msgstr "序列摄影"
+msgstr "切换连续拍摄模式"
 
 #: ../src/libs/camera.c:488
 msgid "toggle bracketed capture mode"
-msgstr "切换多重样式拍摄模式"
+msgstr "切换包围曝光拍摄模式"
 
 #: ../src/libs/camera.c:489
 msgid "the count of seconds before actually doing a capture"
-msgstr ""
+msgstr "实际拍照前等待秒数"
 
 #: ../src/libs/camera.c:490
 msgid ""
@@ -4312,24 +4253,28 @@ msgid ""
 "you can use this in conjuction with delayed mode to create stop-motion "
 "sequences."
 msgstr ""
+"连续拍摄图片张数，\n"
+"你可以结合使用延迟拍摄模式创建停-动序列"
 
 #: ../src/libs/camera.c:491
-#, fuzzy
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
-msgstr "样式每个中心视角拍摄，得到图片的总数 = (样式数*2)+1"
+msgstr "中心图像每边的包围曝光数量。得到相片总数 = (包围曝光量数*2)+1"
 
 #: ../src/libs/camera.c:492
+#, fuzzy
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 "
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
+"包围曝光步级，步级是相机中可设置的，通常每级3步\n"
+"也就是说，在两次包围曝光之间1EV曝光步为3步"
 
 #: ../src/libs/camera.c:506
 msgid "properties"
-msgstr "配置"
+msgstr "属性"
 
 #: ../src/libs/camera.c:510
 msgid "program"
@@ -4350,7 +4295,7 @@ msgstr "白平衡"
 #. user specified properties
 #: ../src/libs/camera.c:639
 msgid "additional properties"
-msgstr "额外设置"
+msgstr "额外属性"
 
 #: ../src/libs/camera.c:643
 msgid "label"
@@ -4358,11 +4303,11 @@ msgstr "标识"
 
 #: ../src/libs/camera.c:649
 msgid "property"
-msgstr "设置"
+msgstr "属性"
 
 #: ../src/libs/camera.c:661
 msgid "add user property"
-msgstr "添加用户设置"
+msgstr "添加用户属性"
 
 #: ../src/libs/capture.c:52
 msgid "session"
@@ -4420,7 +4365,7 @@ msgstr "输入你的请求，使用 `%' 作为未知替代"
 
 #: ../src/libs/collect.h:30
 msgid "film roll"
-msgstr "图片卷"
+msgstr "胶卷"
 
 #: ../src/libs/collect.h:31
 msgid "camera"
@@ -4508,23 +4453,23 @@ msgstr "Lab"
 
 #: ../src/libs/colorpicker.c:557
 msgid "restrict histogram to selection"
-msgstr ""
+msgstr "限制为选择部分的直方图"
 
 #: ../src/libs/colorpicker.c:614
 msgid "display sample areas on image"
-msgstr ""
+msgstr "在图像上显示样品区域"
 
 #: ../src/libs/copy_history.c:47
 msgid "history stack"
-msgstr "历史重叠"
+msgstr "历史记录栈"
 
 #: ../src/libs/copy_history.c:70
 msgid "open sidecar file"
-msgstr ""
+msgstr "打开附属文件"
 
 #: ../src/libs/copy_history.c:80
 msgid "xmp sidecar files"
-msgstr "xmp 辅助文件"
+msgstr "xmp 附属文件"
 
 #: ../src/libs/copy_history.c:85 ../src/libs/import.c:326
 #: ../src/libs/styles.c:262
@@ -4575,26 +4520,28 @@ msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
 msgstr ""
-"粘贴历史纪录栈\n"
+"粘贴历史记录栈\n"
 "到全部选定的图片 (ctrl-v)"
 
 #: ../src/libs/copy_history.c:223
 msgid "load sidecar file"
-msgstr ""
+msgstr "载入附属文件"
 
 #: ../src/libs/copy_history.c:225
 msgid ""
 "open an xmp sidecar file\n"
 "and apply it to selected images"
 msgstr ""
+"打开一个xmp附属文件\n"
+"并且应用到已选图像"
 
 #: ../src/libs/copy_history.c:228
 msgid "write sidecar files"
-msgstr ""
+msgstr "写入附属文件"
 
 #: ../src/libs/copy_history.c:230
 msgid "write history stack and tags to xmp sidecar files"
-msgstr ""
+msgstr "将历史记录栈和标签写入xmp附属文件"
 
 #: ../src/libs/copy_history.c:259
 msgctxt "accel"
@@ -4614,12 +4561,12 @@ msgstr "粘贴"
 #: ../src/libs/copy_history.c:262
 msgctxt "accel"
 msgid "load sidecar files"
-msgstr ""
+msgstr "载入附属文件"
 
 #: ../src/libs/copy_history.c:263
 msgctxt "accel"
 msgid "write sidecar files"
-msgstr ""
+msgstr "写入附属文件"
 
 #: ../src/libs/export.c:69
 msgid "export selected"
@@ -4712,22 +4659,33 @@ msgid ""
 "rm <file>\t\t\tdelete <file>\n"
 "rmdir <dir>\t\t\tdelete empty directory"
 msgstr ""
+"ls\t\t\t\t\t列出目录内容\n"
+"cd <dir>\t\t\t更改目录\n"
+"mkdir <dir>\t\t\t创建目录\n"
+"mv <src> <dst>\t移动 <src> 到 <dst>\n"
+"cp <src> <dst>\t\t复制 <src> 到 <dst>\n"
+"rm <file>\t\t\t删除 <file>\n"
+"rmdir <dir>\t\t\t删除空目录"
 
 #: ../src/libs/histogram.c:52
 msgid "histogram"
-msgstr ""
+msgstr "直方图"
 
 #: ../src/libs/histogram.c:102 ../src/libs/histogram.c:279
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
 msgstr ""
+"拖动以更改曝光，\n"
+"双击重置"
 
 #: ../src/libs/histogram.c:274
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
 msgstr ""
+"拖动以更改黑点\n"
+"双击重置"
 
 #: ../src/libs/history.c:75
 msgctxt "accel"
@@ -4782,7 +4740,7 @@ msgstr "文件删除"
 
 #: ../src/libs/image.c:102
 msgid "create hdr"
-msgstr "制作 HDR (高动态范围成像)"
+msgstr "创建HDR(高动态范围成像)"
 
 #: ../src/libs/image.c:106
 msgid "create a high dynamic range image from selected shots"
@@ -4921,7 +4879,7 @@ msgstr "导入分离"
 #: ../src/libs/import.c:396
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
-msgstr "将子文件夹分隔作为图片卷导入。"
+msgstr "递归导入子目录，每个目录将作为一个新的胶卷。"
 
 #: ../src/libs/import.c:464
 msgid "select one or more images to import"
@@ -5030,7 +4988,7 @@ msgstr "保留所有权利"
 #. internal
 #: ../src/libs/metadata_view.c:64
 msgid "filmroll"
-msgstr "胶卷（作图片卷）"
+msgstr "胶卷"
 
 #: ../src/libs/metadata_view.c:65
 msgid "image id"
@@ -5100,20 +5058,19 @@ msgstr "显示 %s"
 
 #. construct tooltip text into option
 #: ../src/libs/modulelist.c:117
-#, fuzzy, c-format
+#, c-format
 msgid "%s as favorite"
 msgstr "%s 作为最爱"
 
 #. construct tooltip text into option
 #: ../src/libs/modulelist.c:133
-#, fuzzy, c-format
+#, c-format
 msgid "hide %s"
 msgstr "隐蔽 %s"
 
 #: ../src/libs/navigation.c:55
-#, fuzzy
 msgid "navigation"
-msgstr "查看"
+msgstr "导航"
 
 #: ../src/libs/recentcollect.c:50
 msgid "recently used collections"
@@ -5166,9 +5123,8 @@ msgid ""
 msgstr "选择当前集合中未选择的图片 (ctrl-!)"
 
 #: ../src/libs/select.c:117
-#, fuzzy
 msgid "select film roll"
-msgstr "选择图像卷"
+msgstr "选择胶卷"
 
 #: ../src/libs/select.c:119
 msgid ""
@@ -5206,7 +5162,7 @@ msgstr "反转选择"
 #: ../src/libs/select.c:150
 msgctxt "accel"
 msgid "select film roll"
-msgstr "选择图片卷"
+msgstr "选择胶卷"
 
 #: ../src/libs/select.c:151
 msgctxt "accel"
@@ -5331,8 +5287,10 @@ msgid_plural ""
 "%d images are assigned this tag!"
 msgstr[0] ""
 "真的要删除标签`%s'？\n"
-"%d 张图片正在使用！"
+"%d 张图片正在使用此标签！"
 msgstr[1] ""
+"真的要删除标签`%s'？\n"
+"%d 张图片正在使用此标签！"
 
 #: ../src/libs/tagging.c:305
 msgid "delete tag?"
@@ -5679,10 +5637,9 @@ msgstr "没有相机支持连机拍摄..."
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:458 ../src/views/darkroom.c:1248
-#, fuzzy
 msgctxt "accel"
 msgid "toggle film strip"
-msgstr "切换幻灯电影"
+msgstr "开关胶片条"
 
 #: ../src/views/darkroom.c:75
 msgid "darkroom"
@@ -5815,19 +5772,17 @@ msgid "preview"
 msgstr "预览"
 
 #: ../src/common/ratings.c:32
-#, fuzzy, c-format
+#, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
-msgstr[0] "复制 %d 张图像"
-msgstr[1] "复制 %d 张图像"
+msgstr[0] "应用评级 %d 到 %d 张图像"
+msgstr[1] "应用评级 %d 到 %d 张图像"
 
 #: ../src/common/ratings.c:60
-#, fuzzy
 msgid "no images selected to apply rating"
-msgstr "没有选中图片"
+msgstr "没有选中任何图片应用评级"
 
 #: ../src/libs/tools/hinter.c:42
-#, fuzzy
 msgid "hinter"
 msgstr "意图"
 
@@ -5837,88 +5792,82 @@ msgstr "首选项"
 
 #: ../src/libs/tools/global_toolbox.c:75
 msgid "show global preferences"
-msgstr "现实全局首选项"
+msgstr "显示全局首选项"
 
 #: ../src/iop/shadhi.c:99
-#, fuzzy
 msgid "shadows and highlights"
-msgstr "高亮"
+msgstr "阴影和高亮"
 
 #: ../src/iop/shadhi.c:115
-#, fuzzy
 msgctxt "accel"
 msgid "shadows"
 msgstr "阴影"
 
 #: ../src/iop/shadhi.c:116
-#, fuzzy
 msgctxt "accel"
 msgid "highlights"
 msgstr "高亮"
 
 #: ../src/iop/shadhi.c:830
-#, fuzzy
 msgid "lighten shadows"
-msgstr "亮度"
+msgstr "阴影加亮"
 
 #: ../src/iop/shadhi.c:831
-#, fuzzy
 msgid "darken highlights"
-msgstr "高亮"
+msgstr "高亮减暗"
 
 #: ../src/iop/shadhi.c:833
-#, fuzzy
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
 msgstr ""
-"压缩这种效果，应用在高亮/阴影处\n"
-"保留中色调"
+"压缩在高亮/阴影处的效果\n"
+"并保留中间色调"
 
 #: ../src/iop/shrecovery.c:78
 msgid "shadow recovery (experimental)"
-msgstr "阴影修复（实验性的）"
+msgstr "启用opencl支持（实验性的）"
 
 #: ../src/iop/shrecovery.c:95
 msgctxt "accel"
 msgid "mu"
-msgstr ""
+msgstr "mu"
 
 #: ../src/iop/shrecovery.c:96
 msgctxt "accel"
 msgid "sigma"
-msgstr ""
+msgstr "sigama"
 
 #: ../src/iop/shrecovery.c:97
 msgctxt "accel"
 msgid "size_limit"
-msgstr ""
+msgstr "尺寸限制"
 
 #: ../src/iop/shrecovery.c:437
-#, fuzzy
 msgid "deviation"
-msgstr "查看"
+msgstr "误差"
 
 #: ../src/iop/shrecovery.c:438
 msgid "minimal pyramid limit"
-msgstr ""
+msgstr "最小角锥限制"
 
 #: ../src/iop/shrecovery.c:444
-#, fuzzy
 msgid "the strength of lighten"
-msgstr "锐化强度"
+msgstr "加亮强度"
 
 #: ../src/iop/shrecovery.c:445
+#, fuzzy
 msgid "optimal exposedness"
-msgstr ""
+msgstr "最佳曝光"
 
 #: ../src/iop/shrecovery.c:446
+#, fuzzy
 msgid "exposedness deviation"
-msgstr ""
+msgstr "曝光误差"
 
 #: ../src/iop/shrecovery.c:447
 msgid "minimal pyramid limit size"
-msgstr ""
+msgstr "最小角锥限制大小"
 
 #: ../src/gegl-operations/dt-gamma.c:46
 msgid "Gamma Value"
@@ -5929,38 +5878,35 @@ msgid "gamma value"
 msgstr "伽马值"
 
 #: ../src/gegl-operations/dt-gamma.c:47
-#, fuzzy
 msgid "Linear Value"
-msgstr "线性部分"
+msgstr "线性值"
 
 #: ../src/gegl-operations/dt-gamma.c:47
-#, fuzzy
 msgid "linear value"
-msgstr "线性部分"
+msgstr "线性值"
 
 #: ../src/gegl-operations/dt-gamma.c:168
 msgid "Linear/Gamma conversion curve."
-msgstr ""
+msgstr "线性/伽马 转换曲线"
 
 #: ../src/gegl-operations/dt-contrast-curve.c:42
 msgid "Sample points"
-msgstr ""
+msgstr "采样点"
 
 #: ../src/gegl-operations/dt-contrast-curve.c:43
 msgid "Number of curve sampling points.  0 for exact calculation."
-msgstr ""
+msgstr "曲线采样点数目。 0为精确计算"
 
 #: ../src/gegl-operations/dt-contrast-curve.c:44
 msgid "Curve"
-msgstr ""
+msgstr "曲线"
 
 #: ../src/gegl-operations/dt-contrast-curve.c:44
-#, fuzzy
 msgid "The contrast curve."
-msgstr "中对比度"
+msgstr "对比度曲线"
 
 #: ../src/gegl-operations/dt-contrast-curve.c:146
 msgid ""
 "Adjusts the contrast of the image according to a curve, for each RGB channel "
 "separately."
-msgstr ""
+msgstr "根据曲线，分别对每个RGB通道调整图像对比度。"
