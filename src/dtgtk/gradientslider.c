@@ -315,6 +315,8 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_stroke(cr);
   }
 
+
+
   // Lets draw position arrows
 
   cairo_set_source_rgba(cr,
@@ -323,6 +325,20 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
                         style->fg[state].blue/65535.0,
                         1.0
                        );
+
+
+  // do we have a picker value to draw?
+  float picker = DTGTK_GRADIENT_SLIDER(widget)->picker;
+  if(picker >= 0.0 && picker <= 1.0)
+  {
+    int vx=gwidth*picker;
+    cairo_move_to(cr,vx,2);
+    cairo_line_to(cr,vx,height-2);
+    cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
+    cairo_set_line_width(cr,3.0);
+    cairo_stroke(cr);
+  }
+
 
   for(int k=0; k<DTGTK_GRADIENT_SLIDER(widget)->positions; k++)
   {
@@ -372,6 +388,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new(gint positions)
   gslider = gtk_type_new(dtgtk_gradient_slider_get_type());
   gslider->positions=positions;
   gslider->is_resettable = FALSE;
+  gslider->picker = -1.0;
   for(int k=0; k<positions; k++) gslider->position[k] = 0.0;
   for(int k=0; k<positions; k++) gslider->resetvalue[k] = 0.0;
   for(int k=0; k<positions; k++) gslider->marker[k] = GRADIENT_SLIDER_MARKER_DOUBLE_OPEN;
@@ -387,6 +404,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start,GdkCol
   gslider = gtk_type_new(dtgtk_gradient_slider_get_type());
   gslider->positions=positions;
   gslider->is_resettable = FALSE;
+  gslider->picker = -1.0;
   for(int k=0; k<positions; k++) gslider->position[k] = 0.0;
   for(int k=0; k<positions; k++) gslider->resetvalue[k] = 0.0;
   for(int k=0; k<positions; k++) gslider->marker[k] = GRADIENT_SLIDER_MARKER_DOUBLE_OPEN;
@@ -505,6 +523,11 @@ void dtgtk_gradient_slider_multivalue_set_resetvalues(GtkDarktableGradientSlider
   gslider->is_resettable = TRUE;
 }
 
+void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider,gdouble value)
+{
+  gslider->picker = value;
+}
+
 
 gboolean dtgtk_gradient_slider_multivalue_is_dragging(GtkDarktableGradientSlider *gslider)
 {
@@ -555,6 +578,11 @@ void dtgtk_gradient_slider_set_marker(GtkDarktableGradientSlider *gslider,gint m
 void dtgtk_gradient_slider_set_resetvalue(GtkDarktableGradientSlider *gslider,gdouble value)
 {
   dtgtk_gradient_slider_multivalue_set_resetvalue(gslider, value, 0);
+}
+
+void dtgtk_gradient_slider_set_picker(GtkDarktableGradientSlider *gslider,gdouble value)
+{
+  gslider->picker = value;
 }
 
 gboolean dtgtk_gradient_slider_is_dragging(GtkDarktableGradientSlider *gslider)
