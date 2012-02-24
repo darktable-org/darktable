@@ -42,9 +42,6 @@ DT_MODULE(1)
 
 
 
-// ====================================================
-// iop stuff:
-
 typedef struct dt_iop_bauhaus_params_t
 {
   int nothing;
@@ -116,6 +113,12 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+static void
+value_changed(GtkWidget *widget, gpointer user_data)
+{
+  fprintf(stderr, "value changed!\n");
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_bauhaus_gui_data_t));
@@ -128,6 +131,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->slider2 = dt_bauhaus_slider_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), c->slider2, TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(c->slider2), "value-changed", G_CALLBACK(value_changed), (gpointer)NULL);
 
   c->combobox = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), c->combobox, TRUE, TRUE, 0);

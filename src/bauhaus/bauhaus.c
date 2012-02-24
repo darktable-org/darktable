@@ -31,6 +31,8 @@ static gboolean
 dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 static void
 dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
+static void
+dt_bauhaus_slider_set(dt_bauhaus_widget_t *w, float pos);
 
 static gboolean
 dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -39,6 +41,7 @@ dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointe
   darktable.bauhaus->mouse_x = event->x;
   darktable.bauhaus->mouse_y = event->y;
   gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+  gdk_event_request_motions(event);
   return TRUE;
 }
 
@@ -376,7 +379,8 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
         dt_bauhaus_slider_data_t *d = &w->data.slider;
         const float mouse_off = get_slider_line_offset(
             d->pos, d->scale, darktable.bauhaus->end_mouse_x/width, darktable.bauhaus->end_mouse_y/height, widget->allocation.height/(float)height);
-        d->pos = CLAMP(d->pos + mouse_off, 0.0f, 1.0f);
+        const float pos = CLAMP(d->pos + mouse_off, 0.0f, 1.0f);
+        dt_bauhaus_slider_set(w, pos);
       }
       break;
     default:
@@ -754,6 +758,7 @@ dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpoint
     gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
     dt_bauhaus_slider_set(w, event->x/tmp.width);
   }
+  gdk_event_request_motions(event);
   return TRUE;
 }
 
