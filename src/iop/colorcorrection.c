@@ -396,8 +396,6 @@ static gboolean dt_iop_colorcorrection_button_release(GtkWidget *widget, GdkEven
 static gboolean dt_iop_colorcorrection_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  g->selected = g->dragging = 0;
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
