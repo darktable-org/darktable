@@ -66,14 +66,25 @@ install(FILES gdb_commands DESTINATION ${SHARE_INSTALL})
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys
   )
  
-  add_custom_command (
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-    COMMAND 
-      join -1 1 -2 1 -o 1.2 2.2 ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
-      sed -e 's/ /=/g' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-      
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values
-  )
+  if(NOT APPLE)
+    add_custom_command (
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+        COMMAND 
+          join -1 1 -2 1 -o 1.2 2.2 ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
+          sed -e 's/ /=/g' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+        
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values
+    )
+  else()
+    add_custom_command (
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+        COMMAND 
+          join -1 1 -2 1 -o '1.2 2.2' ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_keys ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values | 
+          sed -e 's/ /=/g' > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+        
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc_values
+    )
+  endif(NOT APPLE)
  
   add_custom_target(darktablerc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc)
  
