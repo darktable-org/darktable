@@ -144,18 +144,20 @@ void dt_similarity_match_image(uint32_t imgid,dt_similarity_t *data)
   if (all_ok_for_match) 
   {
     char query[4096]={0};
+
+    /* add target image with 100.0 in score into result to ensure it always shown in top */
+    sprintf(query,"insert into similar_images(id,score) values(%d,%f)",imgid,100.0);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
     
+
     /* set an extended collection query for viewing the result of match */
     dt_collection_set_extended_where(darktable.collection, ", similar_images where images.id = similar_images.id order by similar_images.score desc");
     dt_collection_set_query_flags( darktable.collection, 
             dt_collection_get_query_flags(darktable.collection) | COLLECTION_QUERY_USE_ONLY_WHERE_EXT);
     dt_collection_update(darktable.collection);
-    
-    /* add target image with 100.0 in score into result to ensure it always shown in top */
-    sprintf(query,"insert into similar_images(id,score) values(%d,%f)",imgid,100.0);
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-    dt_control_queue_redraw_center();
-    
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);  
+
+        
     /* loop thru images and generate score table */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id,histogram,lightmap from images", -1, &stmt, NULL);
     while (sqlite3_step(stmt) == SQLITE_ROW)
