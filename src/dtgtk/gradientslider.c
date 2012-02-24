@@ -328,7 +328,7 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
   {
     int vx=gwidth*DTGTK_GRADIENT_SLIDER(widget)->position[k];
     int mk=DTGTK_GRADIENT_SLIDER(widget)->marker[k];
-    int sz=(mk & (1<<3)) ? 15 : 5;  // big or small marker?
+    int sz=(mk & (1<<3)) ? 13 : 5;  // big or small marker?
 
     if(sz < 10)
     {
@@ -353,9 +353,9 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     if(mk & 0x02) /* lower arrow */
     {
       if (mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_triangle(cr, vx-sz/2,sz < 10 ? height-6 : height-13,sz,sz,CPF_DIRECTION_UP);
+        dtgtk_cairo_paint_solid_triangle(cr, vx-sz/2,sz < 10 ? height-6 : height-11,sz,sz,CPF_DIRECTION_UP);
       else
-        dtgtk_cairo_paint_triangle(cr, vx-sz/2,sz < 10 ? height-6 : height-13,sz,sz,CPF_DIRECTION_UP);
+        dtgtk_cairo_paint_triangle(cr, vx-sz/2,sz < 10 ? height-6 : height-11,sz,sz,CPF_DIRECTION_UP);
     }
   }
 
