@@ -92,6 +92,29 @@ _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float *out)
   }
 }
 
+static void
+_blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *out)
+{
+  switch(cst)
+  {
+    case iop_cs_Lab:
+      out[0] = in[0];
+      out[1] = in[1];
+      out[2] = in[2];
+      out[3] = -1.0f;
+    break;
+    case iop_cs_rgb:
+      out[0] = (0.3f*in[0] + 0.59f*in[1] + 0.11f*in[2])*255.0f;
+      out[1] = in[0]*255.0f;
+      out[2] = in[1]*255.0f;
+      out[3] = in[2]*255.0f;
+    break;
+    default:
+      out[0] = out[1] = out[2] = out[3] = -1.0f;
+  }
+}
+
+
 
 static void
 _blendif_scale_print_L(float value, char *string)
@@ -257,23 +280,37 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
   float picker[4];
+  float cooked[4];
   float *raw;
+  char text[256];
+  GtkLabel *label;
 
   if(widget == GTK_WIDGET(data->lower_slider))
+  {
     raw = module->picked_color;
+    label = data->lower_picker_label;
+  }
   else
+  {
     raw = module->picked_output_color;
+    label = data->upper_picker_label;
+  }
 
   darktable.gui->reset = 1;
   if(module->request_color_pick)
   {
     _blendif_scale(data->csp, raw, picker);
+    _blendif_cook(data->csp, raw, cooked);
+
+    sprintf(text, "(%.1f)", cooked[data->channel]);
 
     dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), picker[data->channel]);
+    gtk_label_set_text(label, text);
   }
   else
   {
     dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), -1.0f);
+    gtk_label_set_text(label, "");
   }
   darktable.gui->reset = 0;
 
@@ -464,9 +501,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     dtgtk_gradient_slider_multivalue_set_stop(bd->upper_slider, 1.0f, bd->colors[bd->channel][2]);
 
     GtkWidget *output = gtk_label_new(_("output"));
-    GtkWidget *fill1 = gtk_hbox_new(FALSE, 0);
+    bd->upper_picker_label = GTK_LABEL(gtk_label_new(""));
     gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(output), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(uplabel), fill1, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_picker_label), TRUE, TRUE, 0);
     for(int k=0; k < 4 ; k++)
     {
       bd->upper_label[k] = GTK_LABEL(gtk_label_new(NULL));
@@ -475,9 +512,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     }
 
     GtkWidget *input = gtk_label_new(_("input"));
-    GtkWidget *fill2 = gtk_hbox_new(FALSE, 0);
+    bd->lower_picker_label = GTK_LABEL(gtk_label_new(""));
     gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(input), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(lowlabel), fill2, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_picker_label), TRUE, TRUE, 0);
     for(int k=0; k < 4 ; k++)
     {
       bd->lower_label[k] = GTK_LABEL(gtk_label_new(NULL));

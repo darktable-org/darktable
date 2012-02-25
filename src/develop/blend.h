@@ -130,6 +130,8 @@ typedef struct dt_iop_gui_blend_data_t
   GtkDarktableGradientSlider *lower_slider;
   GtkLabel *upper_label[4];
   GtkLabel *lower_label[4];
+  GtkLabel *upper_picker_label;
+  GtkLabel *lower_picker_label;
   void (*scale_print[4])(float value, char *string);
   GtkComboBox *blend_modes_combo;
   GtkWidget *opacity_slider;
