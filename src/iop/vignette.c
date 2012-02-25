@@ -664,7 +664,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if( weight > 0 )
       {
         // Then apply falloff vignette
-        float falloff=(data->brightness<=0)?(1.0+(weight*data->brightness)):(weight*data->brightness);
+        float falloff=(data->brightness<0)?(1.0+(weight*data->brightness)):(weight*data->brightness);
         col0=CLIP( ((data->brightness<0)? col0*falloff: col0+falloff) );
         col1=CLIP( ((data->brightness<0)? col1*falloff: col1+falloff) );
         col2=CLIP( ((data->brightness<0)? col2*falloff: col2+falloff) );

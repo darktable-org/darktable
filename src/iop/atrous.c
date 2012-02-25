@@ -929,7 +929,7 @@ area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_x = c->mouse_y = -1.0;
+  if(!c->dragging) c->mouse_y = -1.0;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
