@@ -386,10 +386,10 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
                                    (GdkColor){ 0,0,0,0 }, (GdkColor){ 0,lightness/2,lightness/2,lightness/2 }, (GdkColor){ 0,lightness,lightness,lightness }
                                   },
                                   { /* a channel */
-                                   (GdkColor){ 0,0,0.34*lightness,0.27*lightness }, (GdkColor){ 0,lightness,lightness,lightness }, (GdkColor){ 0,0.53*lightness,0.08*lightness,0.28*lightness }
+                                   (GdkColor){ 0,0,0.34*lightness*2,0.27*lightness*2 }, (GdkColor){ 0,lightness,lightness,lightness }, (GdkColor){ 0,0.53*lightness*2,0.08*lightness*2,0.28*lightness*2 }
                                   },
                                   { /* b channel */
-                                   (GdkColor){ 0,0,0.27*lightness,0.58*lightness }, (GdkColor){ 0,lightness,lightness,lightness }, (GdkColor){ 0,0.81*lightness,0.66*lightness,0 }
+                                   (GdkColor){ 0,0,0.27*lightness*2,0.58*lightness*2 }, (GdkColor){ 0,lightness,lightness,lightness }, (GdkColor){ 0,0.81*lightness*2,0.66*lightness*2,0 }
                                   },
                                   { /* not used */
                                    (GdkColor){ 0,0,0,0 }, (GdkColor){ 0,0,0,0 }, (GdkColor){ 0,0,0,0 }
