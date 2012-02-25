@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-02-23 22:11+0100\n"
-"PO-Revision-Date: 2012-02-23 22:23+0100\n"
+"PO-Revision-Date: 2012-02-25 12:45+0100\n"
 "Last-Translator: Henrik Andersson <hean01@users.sourceforge.net>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -192,7 +192,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:658
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
-msgstr ""
+msgstr "mängd av minne (MB) för en enkelt buffer vid tiling"
 
 #: ../build/src/preferences_gen.h:670
 msgid "if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit. needs a restart."
@@ -377,7 +377,7 @@ msgstr "anonyma bilder"
 
 #: ../src/common/imageio.c:487
 msgid "failed to allocate memory for export, please lower the threads used for export or buy more memory."
-msgstr ""
+msgstr "fallerade att allokera minne för exportering, var god och minska antalet trådar som används för export ellerköp mer minne."
 
 #: ../src/common/imageio.c:496
 #: ../src/common/mipmap_cache.c:873
@@ -6003,16 +6003,14 @@ msgid "size_limit"
 msgstr ""
 
 #: ../src/iop/shrecovery.c:437
-#, fuzzy
 msgid "deviation"
-msgstr "navigera"
+msgstr "avvilkelse"
 
 #: ../src/iop/shrecovery.c:438
 msgid "minimal pyramid limit"
 msgstr ""
 
 #: ../src/iop/shrecovery.c:444
-#, fuzzy
 msgid "the strength of lighten"
 msgstr "styrkan av applicerat ljus"
 
