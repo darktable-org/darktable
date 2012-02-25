@@ -57,6 +57,14 @@ enum
   GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG  = 0x0b
 };
 
+enum
+{
+  GRADIENT_SLIDER_MARGINS_DEFAULT          = 6,
+  GRADIENT_SLIDER_MARGINS_ZERO             = 0,
+  GRADIENT_SLIDER_MARGINS_SMALL            = 2,
+  GRADIENT_SLIDER_MARGINS_BIG              = 6
+};
+
 
 typedef struct _GtkDarktableGradientSlider
 {
@@ -70,6 +78,7 @@ typedef struct _GtkDarktableGradientSlider
   gint marker[GRADIENT_SLIDER_MAX_POSITIONS];
   gdouble picker;
   gint prev_x_root;
+  gint margins;
   gboolean is_dragging;
   gboolean is_changed;
   gboolean is_resettable;
@@ -105,6 +114,10 @@ void dtgtk_gradient_slider_set_resetvalue(GtkDarktableGradientSlider *gslider,gd
 /** Set a picker */
 void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider,gdouble value);
 
+/** Set left/right margins */
+void dtgtk_gradient_slider_set_margins(GtkDarktableGradientSlider *gslider,gint value);
+
+
 /** Instansiate a new darktable gradient slider multivalue control */
 GtkWidget* dtgtk_gradient_slider_multivalue_new(gint positions);
 GtkWidget* dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start,GdkColor end, gint positions);
@@ -129,5 +142,9 @@ void dtgtk_gradient_slider_multivalue_set_resetvalues(GtkDarktableGradientSlider
 
 /** Set a picker for multivalue control */
 void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider,gdouble value);
+
+/** Set left/right margins */
+void dtgtk_gradient_slider_multivalue_set_margins(GtkDarktableGradientSlider *gslider,gint value);
+
 G_END_DECLS
 #endif
