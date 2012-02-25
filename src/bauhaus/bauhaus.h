@@ -54,6 +54,8 @@ dt_bauhaus_type_t;
 typedef struct dt_bauhaus_slider_data_t
 {
   float pos;
+  float oldpos;
+  float defpos;
   float scale;
   char format[8];
 }
@@ -137,5 +139,9 @@ void dt_bauhaus_cleanup();
 
 GtkWidget* dt_bauhaus_slider_new(dt_iop_module_t *self);
 GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);
+
+// outside doesn't see the real type, we cast it internally.
+void dt_bauhaus_slider_set(GtkWidget *w, float pos);
+float dt_bauhaus_slider_get(GtkWidget *w);
 
 #endif

@@ -116,7 +116,7 @@ void cleanup(dt_iop_module_t *module)
 static void
 value_changed(GtkWidget *widget, gpointer user_data)
 {
-  fprintf(stderr, "value changed!\n");
+  fprintf(stderr, "value changed to %f!\n", dt_bauhaus_slider_get(widget));
 }
 
 void gui_init(struct dt_iop_module_t *self)
