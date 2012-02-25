@@ -753,7 +753,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
       
-      gtk_combo_box_set_active(bd->blend_modes_combo,module->blend_params->mode - 1);
+      gtk_combo_box_set_active(bd->blend_modes_combo, dt_iop_gui_blending_mode_seq(bd, module->blend_params->mode));
       gtk_toggle_button_set_active(bd->enable, (module->blend_params->mode != DEVELOP_BLEND_DISABLED)?TRUE:FALSE);
       dtgtk_slider_set_value(DTGTK_SLIDER(bd->opacity_slider), module->blend_params->opacity);
       if(bd->blendif_support)

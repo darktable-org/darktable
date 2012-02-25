@@ -69,7 +69,6 @@ typedef struct _iop_gui_blendif_colorstop_t
 _iop_gui_blendif_colorstop_t;
 
 
-
 static void
 _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float *out)
 {
@@ -139,12 +138,12 @@ static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,dt_iop_gui_blend_data_t
 {
   if (gtk_toggle_button_get_active(b))
   {
-    data->module->blend_params->mode = 1+gtk_combo_box_get_active(data->blend_modes_combo);
+    data->module->blend_params->mode = data->modes[gtk_combo_box_get_active(data->blend_modes_combo)].mode;
     // FIXME: quite hacky, but it works (TM)
     if(data->module->blend_params->mode == DEVELOP_BLEND_DISABLED)
     {
       data->module->blend_params->mode = DEVELOP_BLEND_NORMAL;
-      gtk_combo_box_set_active(data->blend_modes_combo, 0);
+      gtk_combo_box_set_active(data->blend_modes_combo, dt_iop_gui_blending_mode_seq(data, DEVELOP_BLEND_NORMAL));
     }
     gtk_widget_show(GTK_WIDGET(data->box));
   }
@@ -159,7 +158,7 @@ static void _iop_gui_enabled_blend_cb(GtkToggleButton *b,dt_iop_gui_blend_data_t
 static void
 _blendop_mode_callback (GtkComboBox *combo, dt_iop_gui_blend_data_t *data)
 {
-  data->module->blend_params->mode = 1+gtk_combo_box_get_active(data->blend_modes_combo);
+  data->module->blend_params->mode = data->modes[gtk_combo_box_get_active(data->blend_modes_combo)].mode;
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
@@ -367,6 +366,20 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
 }
 
+
+/** get the sequence number (in combo box) of a blend mode */
+int dt_iop_gui_blending_mode_seq(dt_iop_gui_blend_data_t *bd, int mode)
+{
+  int result = 0;
+  for (int k=0; k < bd->number_modes; k++)
+    if (bd->modes[k].mode == mode)
+    {
+      result = k;
+      break;
+    }
+
+  return result;
+}
 
 
 void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
@@ -584,6 +597,32 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
   {
     module->blend_data = g_malloc(sizeof(dt_iop_gui_blend_data_t));
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
+
+    dt_iop_gui_blendop_modes_t modes[20]; /* number must fit exactly!!! */
+    modes[0].mode  = DEVELOP_BLEND_NORMAL;            modes[0].name  = _("normal");
+    modes[1].mode  = DEVELOP_BLEND_INVERSE;           modes[1].name  = _("inverse");
+    modes[2].mode  = DEVELOP_BLEND_LIGHTEN;           modes[2].name  = _("lighten");
+    modes[3].mode  = DEVELOP_BLEND_DARKEN;            modes[3].name  = _("darken");
+    modes[4].mode  = DEVELOP_BLEND_MULTIPLY;          modes[4].name  = _("multiply");
+    modes[5].mode  = DEVELOP_BLEND_AVERAGE;           modes[5].name  = _("average");
+    modes[6].mode  = DEVELOP_BLEND_ADD;               modes[6].name  = _("addition");
+    modes[7].mode  = DEVELOP_BLEND_SUBSTRACT;         modes[7].name  = _("subtract");
+    modes[8].mode  = DEVELOP_BLEND_DIFFERENCE;        modes[8].name  = _("difference");
+    modes[9].mode  = DEVELOP_BLEND_SCREEN;            modes[9].name  = _("screen");
+    modes[10].mode = DEVELOP_BLEND_OVERLAY;           modes[10].name = _("overlay");
+    modes[11].mode = DEVELOP_BLEND_SOFTLIGHT;         modes[11].name = _("softlight");
+    modes[12].mode = DEVELOP_BLEND_HARDLIGHT;         modes[12].name = _("hardlight");
+    modes[13].mode = DEVELOP_BLEND_VIVIDLIGHT;        modes[13].name = _("vividlight");
+    modes[14].mode = DEVELOP_BLEND_LINEARLIGHT;       modes[14].name = _("linearlight");
+    modes[15].mode = DEVELOP_BLEND_PINLIGHT;          modes[15].name = _("pinlight");
+    modes[16].mode = DEVELOP_BLEND_LIGHTNESS;         modes[16].name = _("lightness");
+    modes[17].mode = DEVELOP_BLEND_CHROMA;            modes[17].name = _("chroma");
+    modes[18].mode = DEVELOP_BLEND_HUE;               modes[18].name = _("hue");
+    modes[19].mode = DEVELOP_BLEND_COLOR;             modes[19].name = _("color");
+
+
+    bd->number_modes = sizeof(modes) / sizeof(dt_iop_gui_blendop_modes_t);
+    memcpy(bd->modes, modes, bd->number_modes * sizeof(dt_iop_gui_blendop_modes_t));
     bd->iopw = iopw;
     bd->module = module;
     bd->csp = dt_iop_module_colorspace(module);
@@ -603,28 +642,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dtgtk_slider_set_label(DTGTK_SLIDER(bd->opacity_slider),_("opacity"));
     dtgtk_slider_set_unit(DTGTK_SLIDER(bd->opacity_slider),"%");
 
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("normal"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("lighten"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("darken"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("multiply"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("average"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("addition"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("subtract"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("difference"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("screen"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("overlay"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("softlight"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("hardlight"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("vividlight"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("linearlight"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("pinlight"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("lightness"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("chroma"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("hue"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("color"));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), _("inverse"));
 
-    gtk_combo_box_set_active(bd->blend_modes_combo,0);
+    for(int k = 0; k < bd->number_modes; k++)
+      gtk_combo_box_append_text(GTK_COMBO_BOX(bd->blend_modes_combo), bd->modes[k].name);    
+    
+    gtk_combo_box_set_active(bd->blend_modes_combo, dt_iop_gui_blending_mode_seq(bd, DEVELOP_BLEND_NORMAL));
 
     gtk_object_set(GTK_OBJECT(bd->enable), "tooltip-text", _("enable blending"), (char *)NULL);
     gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);

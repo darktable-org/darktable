@@ -115,12 +115,23 @@ typedef struct dt_develop_blend_1_params_t
 } dt_develop_blend_1_params_t;
 
 
+typedef struct dt_iop_gui_blendop_modes_t
+{
+  int mode;
+  char *name;
+}
+dt_iop_gui_blendop_modes_t;
+
+
+
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
   int blendif_support;
   dt_iop_colorspace_type_t csp;
   dt_iop_module_t *module;
+  dt_iop_gui_blendop_modes_t modes[30];
+  int number_modes;
   GtkWidget *iopw;
   GtkToggleButton *enable;
   GtkToggleButton *blendif_enable;
@@ -162,6 +173,9 @@ int dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const o
 void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module);
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module);
 void dt_iop_gui_update_blendif(dt_iop_module_t *module);
+
+/** routine to translate from mode id to sequence in option list */
+int dt_iop_gui_blending_mode_seq(dt_iop_gui_blend_data_t *bd, int mode);
 
 
 #ifdef HAVE_OPENCL
