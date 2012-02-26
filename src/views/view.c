@@ -511,7 +511,7 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
 
   /* if not handled by any plugin let pass to view handler*/
   if(!handled && v->button_pressed) 
-    v->button_pressed(v, x, y, which,type,state);
+    return v->button_pressed(v, x, y, which,type,state);
 
   return 0;
 }
