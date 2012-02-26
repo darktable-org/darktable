@@ -130,10 +130,6 @@ typedef struct dt_bauhaus_t
 }
 dt_bauhaus_t;
 
-// FIXME: into darktable.h
-dt_bauhaus_t bauhaus;
-
-
 void dt_bauhaus_init();
 void dt_bauhaus_cleanup();
 
