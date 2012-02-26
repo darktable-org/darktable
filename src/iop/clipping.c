@@ -1627,6 +1627,12 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
+  // avoid unexpected back to lt mode:
+  if(type == GDK_2BUTTON_PRESS && which == 1)
+  {
+    dt_iop_request_focus(NULL);
+    return 1;
+  }
   if(which == 3 || which == 1)
   {
     if (self->off) 
