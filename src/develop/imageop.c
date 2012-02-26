@@ -1181,12 +1181,12 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add the blending ui if supported */
   GtkWidget * iopw = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
-  dt_iop_gui_init_blending(iopw,module);
+  dt_iop_gui_init_blending(iopw, module);
   
 
   /* add module widget into an alignment */
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 8);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 16);
   gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), iopw);
 
