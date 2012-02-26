@@ -316,9 +316,13 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
   w->type = DT_BAUHAUS_SLIDER;
   dt_bauhaus_widget_init(w, self);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  d->defpos = defval;
+  d->min = min;
+  d->max = max;
+  // normalize default:
+  d->defpos = (defval-min)/(max-min);
   d->pos = d->defpos;
   d->oldpos = d->defpos;
+  // TODO: normalize, too?
   d->scale = step;
   snprintf(d->format, 8, "%%.0%df", digits);
 
@@ -556,7 +560,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         snprintf(text, 256, d->format, 0.0f);
         cairo_text_extents (cr, text, &ext);
         cairo_move_to (cr, wd-4-ht-ext.width, ht*0.8);
-        snprintf(text, 256, d->format, d->oldpos+mouse_off);
+        snprintf(text, 256, d->format, d->min + (d->oldpos+mouse_off)*(d->max-d->min));
         cairo_show_text(cr, text);
         cairo_restore(cr);
 
@@ -679,7 +683,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         cairo_text_extents (cr, text, &ext);
         cairo_set_source_rgb(cr, 1., 1., 1.);
         cairo_move_to (cr, width-4-height-ext.width, height*0.8);
-        snprintf(text, 256, d->format, d->pos);
+        snprintf(text, 256, d->format, d->min + d->pos*(d->max-d->min));
         cairo_show_text(cr, text);
       }
       break;
@@ -757,14 +761,17 @@ dt_bauhaus_slider_get(GtkWidget *widget)
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(!w->type == DT_BAUHAUS_SLIDER) return -1.0f;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  return d->pos;
+  return (d->pos+d->min)*(d->max-d->min);
 }
 
 void
-dt_bauhaus_slider_set(GtkWidget *w, float pos)
+dt_bauhaus_slider_set(GtkWidget *widget, float pos)
 {
-  // TODO: this is the public interface function, translate by bounds and call set_normalized!
-  dt_bauhaus_slider_set_normalized((dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(w), pos);
+  // this is the public interface function, translate by bounds and call set_normalized
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  dt_bauhaus_slider_set_normalized(w, (pos-d->min)/(d->max-d->min));
 }
 
 static void

@@ -53,11 +53,12 @@ dt_bauhaus_type_t;
 // data portion for a slider
 typedef struct dt_bauhaus_slider_data_t
 {
-  float pos;
-  float oldpos;
-  float defpos;
-  float scale;
-  char format[8];
+  float pos;      // normalized slider value
+  float oldpos;   // sider value before entering finetune mode (normalized)
+  float defpos;   // default value (normalized)
+  float min, max; // min and max range
+  float scale;    // step width for loupe mode
+  char format[8]; // numeric value is printed with this string
 }
 dt_bauhaus_slider_data_t;
 
