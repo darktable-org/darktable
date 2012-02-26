@@ -147,6 +147,7 @@ GtkWidget* dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, fl
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
+void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 
 // combobox:
 GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);

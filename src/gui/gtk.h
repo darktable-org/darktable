@@ -21,7 +21,7 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 
-#define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
+#define DT_GUI_IOP_MODULE_CONTROL_SPACING 15
 
 #define DT_GUI_VIEW_SWITCH_TO_TETHERING	1
 #define DT_GUI_VIEW_SWITCH_TO_LIBRARY   2
