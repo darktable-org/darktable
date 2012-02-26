@@ -92,7 +92,8 @@ typedef struct dt_bauhaus_widget_t
   dt_bauhaus_type_t type;
   // associated image operation module (to handle focus and such)
   dt_iop_module_t *module;
-  // TODO: callbacks for user signals?
+  // label text, short
+  char label[256];
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
@@ -133,11 +134,17 @@ dt_bauhaus_t;
 void dt_bauhaus_init();
 void dt_bauhaus_cleanup();
 
+void dt_bauhaus_widget_set_label(GtkWidget *w, const char *text);
+
+// slider:
 GtkWidget* dt_bauhaus_slider_new(dt_iop_module_t *self);
-GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);
+GtkWidget* dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, float step, float defval, int digits);
 
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
+
+// combobox:
+GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);
 
 #endif

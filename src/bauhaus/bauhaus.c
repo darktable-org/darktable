@@ -296,19 +296,31 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
                     G_CALLBACK (dt_bauhaus_expose), NULL);
 }
 
+void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  strncpy(w->label, text, 256);
+}
+
 GtkWidget*
 dt_bauhaus_slider_new(dt_iop_module_t *self)
+{
+  return dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.1, 0.5, 3);
+}
+
+GtkWidget*
+dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, float step, float defval, int digits)
 {
   dt_bauhaus_widget_t* w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
   dt_bauhaus_widget_init(w, self);
   w->type = DT_BAUHAUS_SLIDER;
   dt_bauhaus_widget_init(w, self);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  d->defpos = 0.5f;
+  d->defpos = defval;
   d->pos = d->defpos;
   d->oldpos = d->defpos;
-  d->scale = 0.05f;
-  snprintf(d->format, 8, "%%.03f");
+  d->scale = step;
+  snprintf(d->format, 8, "%%.0%df", digits);
 
   g_signal_connect (G_OBJECT (w), "button-press-event",
                     G_CALLBACK (dt_bauhaus_slider_button_press), (gpointer)NULL);
@@ -405,18 +417,7 @@ dt_bauhaus_draw_label(dt_bauhaus_widget_t *w, cairo_t *cr)
   cairo_move_to(cr, 2, height*0.8);
   cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, .8*height);
-  switch(w->type)
-  {
-    case DT_BAUHAUS_COMBOBOX:
-      cairo_show_text(cr, _("combobox label"));
-      break;
-    case DT_BAUHAUS_SLIDER:
-      cairo_show_text(cr, _("slider label"));
-      break;
-    default:
-      cairo_show_text(cr, _("label"));
-      break;
-  }
+  cairo_show_text(cr, w->label);
   cairo_restore(cr);
 }
 
@@ -866,7 +867,7 @@ static gboolean
 dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   // remember mouse position for motion effects in draw
-  if(event->state & GDK_BUTTON1_MASK)
+  if(event->state & GDK_BUTTON1_MASK && event->type != GDK_2BUTTON_PRESS)
   {
     dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
     GtkAllocation tmp;

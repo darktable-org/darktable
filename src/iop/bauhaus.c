@@ -127,14 +127,17 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, 15);//DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   c->slider = dt_bauhaus_slider_new(self);
+  dt_bauhaus_widget_set_label(c->slider, _("slider label"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->slider, TRUE, TRUE, 0);
 
   c->slider2 = dt_bauhaus_slider_new(self);
+  dt_bauhaus_widget_set_label(c->slider2, _("another slider label"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->slider2, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(c->slider2), "value-changed", G_CALLBACK(value_changed), (gpointer)NULL);
 
   c->combobox = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->combobox, _("combobox label"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->combobox, TRUE, TRUE, 0);
 }
 

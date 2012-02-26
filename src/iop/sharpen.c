@@ -28,8 +28,7 @@
 #include "develop/tiling.h"
 #include "control/control.h"
 #include "common/opencl.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -50,8 +49,7 @@ dt_iop_sharpen_params_t;
 
 typedef struct dt_iop_sharpen_gui_data_t
 {
-  GtkVBox   *vbox;
-  GtkDarktableSlider *scale1, *scale2, *scale3;
+  GtkWidget *scale1, *scale2, *scale3;
 }
 dt_iop_sharpen_gui_data_t;
 
@@ -100,9 +98,9 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "amount", GTK_WIDGET(g->scale2));
-  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->scale3));
+  dt_accel_connect_slider_iop(self, "radius", g->scale1);
+  dt_accel_connect_slider_iop(self, "amount", g->scale2);
+  dt_accel_connect_slider_iop(self, "threshold", g->scale3);
 }
 
 #ifdef HAVE_OPENCL
@@ -417,32 +415,32 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 }
     
 static void
-radius_callback (GtkDarktableSlider *slider, gpointer user_data)
+radius_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
-  p->radius = dtgtk_slider_get_value(slider);
+  p->radius = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-amount_callback (GtkDarktableSlider *slider, gpointer user_data)
+amount_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
-  p->amount = dtgtk_slider_get_value(slider);
+  p->amount = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-threshold_callback (GtkDarktableSlider *slider, gpointer user_data)
+threshold_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
-  p->threshold = dtgtk_slider_get_value(slider);
+  p->threshold = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -488,9 +486,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t *)self->gui_data;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->radius);
-  dtgtk_slider_set_value(g->scale2, p->amount);
-  dtgtk_slider_set_value(g->scale3, p->threshold);
+  dt_bauhaus_slider_set(g->scale1, p->radius);
+  dt_bauhaus_slider_set(g->scale2, p->amount);
+  dt_bauhaus_slider_set(g->scale3, p->threshold);
 }
 
 void init(dt_iop_module_t *module)
@@ -545,21 +543,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
 
   self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox), TRUE, TRUE, 5);
+  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 15));//DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 8.0000, 0.100, p->radius, 3));
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0000, 0.100, p->radius, 3);
   g_object_set (GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the unblurring"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale1,_("radius"));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 2.0000, 0.010, p->amount, 3));
+  dt_bauhaus_widget_set_label(g->scale1,_("radius"));
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,0.0, 2.0000, 0.010, p->amount, 3);
   g_object_set (GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the sharpen"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale2,_("amount"));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.0, 100.00, 0.100, p->threshold, 3));
+  dt_bauhaus_widget_set_label(g->scale2,_("amount"));
+  g->scale3 = dt_bauhaus_slider_new_with_range(self,0.0, 100.00, 0.100, p->threshold, 3);
   g_object_set (GTK_OBJECT(g->scale3), "tooltip-text", _("threshold to activate sharpen"), (char *)NULL);
-  dtgtk_slider_set_label(g->scale3,_("threshold"));
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->scale3,_("threshold"));
+  gtk_box_pack_start(GTK_BOX(vbox), g->scale1, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), g->scale2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), g->scale3, TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (radius_callback), self);
