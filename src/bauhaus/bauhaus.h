@@ -47,6 +47,7 @@ typedef enum dt_bauhaus_type_t
 {
   DT_BAUHAUS_SLIDER = 1,
   DT_BAUHAUS_COMBOBOX = 2,
+  // TODO: all the fancy color sliders..
 }
 dt_bauhaus_type_t;
 
@@ -65,9 +66,10 @@ dt_bauhaus_slider_data_t;
 // data portion for a combobox
 typedef struct dt_bauhaus_combobox_data_t
 {
-  // list of strings, probably
-  // TODO:
-  // could be one char ** and dynamic malloc.
+  int num_labels; // number of elements
+  int active;     // currently active element
+  int defpos;     // default position
+  GList *labels;  // list of elements
 }
 dt_bauhaus_combobox_data_t;
 
@@ -135,6 +137,7 @@ dt_bauhaus_t;
 void dt_bauhaus_init();
 void dt_bauhaus_cleanup();
 
+// common functions:
 void dt_bauhaus_widget_set_label(GtkWidget *w, const char *text);
 
 // slider:
@@ -147,5 +150,9 @@ float dt_bauhaus_slider_get(GtkWidget *w);
 
 // combobox:
 GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);
+
+void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text);
+void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
+int  dt_bauhaus_combobox_get(GtkWidget *w);
 
 #endif

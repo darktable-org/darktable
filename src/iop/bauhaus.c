@@ -138,6 +138,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->combobox, _("combobox label"));
+  dt_bauhaus_combobox_add(c->combobox, _("one setting"));
+  dt_bauhaus_combobox_add(c->combobox, _("but also try this"));
+  dt_bauhaus_combobox_add(c->combobox, _(".. or this"));
+  dt_bauhaus_combobox_add(c->combobox, _("or just to confuse you"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->combobox, TRUE, TRUE, 0);
 }
 
