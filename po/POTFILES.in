@@ -39,7 +39,6 @@ src/imageio/storage/email.c
 src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
 src/imageio/storage/picasa.c
-src/iop/anlfyeni.c
 src/iop/atrous.c
 src/iop/basecurve.c
 src/iop/bilateral.cc
@@ -137,7 +136,4 @@ src/libs/tools/hinter.c
 src/libs/tools/global_toolbox.c
 src/iop/shadhi.c
 src/iop/amaze_demosaic_RT.cc
-src/iop/shrecovery.c
-src/gegl-operations/dt-gamma.c
-src/gegl-operations/dt-contrast-curve.c
 
