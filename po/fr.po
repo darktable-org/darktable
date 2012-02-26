@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-02-24 00:32+0100\n"
-"PO-Revision-Date: 2012-02-24 01:08+0100\n"
+"PO-Revision-Date: 2012-02-26 14:23+0100\n"
 "Last-Translator: Olivier TRIBOUT <olivier.tribout@noos.fr>\n"
 "Language-Team: \n"
 "Language: \n"
@@ -5459,7 +5459,7 @@ msgstr "entrez un style"
 
 #: ../src/libs/styles.c:351
 msgid "create duplicate"
-msgstr "cloner"
+msgstr "cloner l'image et appliquer le style"
 
 #: ../src/libs/styles.c:355
 msgid "creates a duplicate of the image before applying style"
@@ -5482,7 +5482,7 @@ msgstr "exporte le style sélectionné dans un fichier"
 #: ../src/libs/styles.c:379
 msgctxt "styles"
 msgid "import"
-msgstr "importe"
+msgstr "importer"
 
 #: ../src/libs/styles.c:381
 msgid "import style from a style file"
@@ -5772,7 +5772,7 @@ msgstr "filtre"
 #. list label
 #: ../src/libs/tools/filter.c:92
 msgid "view"
-msgstr "vue"
+msgstr "afficher"
 
 #: ../src/libs/tools/filter.c:98
 msgid "all"
