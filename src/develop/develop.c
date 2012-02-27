@@ -690,13 +690,13 @@ void dt_dev_read_history(dt_develop_t *dev)
     {
       memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     }
-    else if (!blendop_params || dt_develop_blend_legacy_params(hist->module, blendop_params, blendop_version, hist->blend_params, dt_develop_blend_version(), bl_length))
+    else if (blendop_params && dt_develop_blend_legacy_params(hist->module, blendop_params, blendop_version, hist->blend_params, dt_develop_blend_version(), bl_length) == 0)
     {
-      memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+      // do nothing
     }
     else
     {
-      assert(FALSE); // should not happen
+      memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
     }
 
     // memcpy(hist->module->params, hist->params, hist->module->params_size);

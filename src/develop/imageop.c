@@ -120,13 +120,13 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
       {
         memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
       }
-      else if (!bl_params || dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length))
+      else if (bl_params)
       {
-        // do nothing
+        bl_params = dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length) == 0 ? bl_params : (void *)1;
       }
       else
       {
-        assert(FALSE); // should not happen
+        bl_params = (void *)1;
       }
     }
     else
@@ -157,13 +157,13 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
         {
           memcpy(module->default_blendop_params, bl_params, sizeof(dt_develop_blend_params_t));
         }
-        else if (!bl_params || dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length))
+        else if (bl_params)
         {
-          // do nothing
+           bl_params = dt_develop_blend_legacy_params(module, bl_params, bl_version, module->default_blendop_params, dt_develop_blend_version(), bl_length) == 0 ? bl_params : (void *)1;
         }
         else
         {
-          assert(FALSE); // should not happen
+          bl_params = (void *)1;
         }
       }
       else
