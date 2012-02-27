@@ -39,7 +39,10 @@ if(APPLE)
 	# setup mac ports path...
 	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
 	set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
-	
+
+	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE)
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE)
+
 	set(LIBS ${LIBS} -Wl,-framework -Wl,Carbon)
 
 	if(USE_OPENCL)
