@@ -1057,7 +1057,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend mode"));
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
     dt_bauhaus_widget_set_label(bd->opacity_slider, _("opacity"));
-    dt_bauhaus_slider_set_format(bd->opacity_slider, "%3.0f%%");
+    dt_bauhaus_slider_set_format(bd->opacity_slider, "%.0f%%");
     module->fusion_slider = bd->opacity_slider;
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("off"));
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("normal"));
@@ -1179,14 +1179,14 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);    
 
   /* add the blending ui if supported */
-  GtkWidget * iopw = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  GtkWidget * iopw = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
   
 
   /* add module widget into an alignment */
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 16);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 16, 8, 8);
   gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), iopw);
 
