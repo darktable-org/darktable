@@ -22,9 +22,6 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#ifdef HAVE_GEGL
-#include <gegl.h>
-#endif
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
@@ -32,8 +29,7 @@
 #include "common/debug.h"
 #include "common/opencl.h"
 #include "dtgtk/togglebutton.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/resetlabel.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -70,7 +66,7 @@ dt_iop_shadhi_params_t;
 
 typedef struct dt_iop_shadhi_gui_data_t
 {
-  GtkDarktableSlider *scale1,*scale2,*scale3,*scale4;       // shadows, highlights, radius, compress
+  GtkWidget *scale1,*scale2,*scale3,*scale4;       // shadows, highlights, radius, compress
 }
 dt_iop_shadhi_gui_data_t;
 
@@ -107,9 +103,10 @@ int flags()
 int
 groups ()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_TONE;
 }
 
+#if 0 // TODO: port slider key accels to bauhaus slider
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
@@ -127,6 +124,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->scale3));
   dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->scale4));
 }
+#endif
 
 
 static 
@@ -664,42 +662,42 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
 
 static void
-radius_callback (GtkDarktableSlider *slider, gpointer user_data)
+radius_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->radius= dtgtk_slider_get_value(slider);
+  p->radius= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-shadows_callback (GtkDarktableSlider *slider, gpointer user_data)
+shadows_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->shadows = dtgtk_slider_get_value(slider);
+  p->shadows = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-highlights_callback (GtkDarktableSlider *slider, gpointer user_data)
+highlights_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->highlights = dtgtk_slider_get_value(slider);
+  p->highlights = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void
-compress_callback (GtkDarktableSlider *slider, gpointer user_data)
+compress_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->compress = dtgtk_slider_get_value(slider);
+  p->compress = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -724,25 +722,14 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // create part of the gegl pipeline
-  piece->data = NULL;
-#else
   piece->data = malloc(sizeof(dt_iop_shadhi_data_t));
   memset(piece->data,0,sizeof(dt_iop_shadhi_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
-#endif
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-#ifdef HAVE_GEGL
-  // clean up everything again.
-  (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // no free necessary, no data is alloc'ed
-#else
   free(piece->data);
-#endif
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -750,10 +737,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->shadows);
-  dtgtk_slider_set_value(g->scale2, p->highlights);
-  dtgtk_slider_set_value(g->scale3, p->radius);
-  dtgtk_slider_set_value(g->scale4, p->compress);
+  dt_bauhaus_slider_set(g->scale1, p->shadows);
+  dt_bauhaus_slider_set(g->scale2, p->highlights);
+  dt_bauhaus_slider_set(g->scale3, p->radius);
+  dt_bauhaus_slider_set(g->scale4, p->compress);
 }
 
 void init(dt_iop_module_t *module)
@@ -808,24 +795,25 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 200.0, 0.1, p->shadows, 2));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 200.0, 0.1, p->highlights, 2));
-  g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.1, 200.0, 0.1, p->radius, 2));
-  g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0, 100.0, 0.1, p->compress, 2));
-  dtgtk_slider_set_label(g->scale1,_("shadows"));
-  dtgtk_slider_set_label(g->scale2,_("highlights"));
-  dtgtk_slider_set_label(g->scale3,_("radius"));
-  dtgtk_slider_set_label(g->scale4,_("compress"));
-  dtgtk_slider_set_unit(g->scale1,"%");
-  dtgtk_slider_set_unit(g->scale2,"%");
-  dtgtk_slider_set_unit(g->scale4,"%");
+  g->scale1 = dt_bauhaus_slider_new_with_range(self,0, 200.0, 0.1, p->shadows, 2);
+  g->scale2 = dt_bauhaus_slider_new_with_range(self,0, 200.0, 0.1, p->highlights, 2);
+  g->scale3 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 0.1, p->radius, 2);
+  g->scale4 = dt_bauhaus_slider_new_with_range(self,0, 100.0, 0.1, p->compress, 2);
+  dt_bauhaus_widget_set_label(g->scale1,_("shadows"));
+  dt_bauhaus_widget_set_label(g->scale2,_("highlights"));
+  dt_bauhaus_widget_set_label(g->scale3,_("radius"));
+  dt_bauhaus_widget_set_label(g->scale4,_("compress"));
+  dt_bauhaus_slider_set_format(g->scale1,"%.02f%%");
+  dt_bauhaus_slider_set_format(g->scale2,"%.02f%%");
+  dt_bauhaus_slider_set_format(g->scale3,"%.02f%%");
+  dt_bauhaus_slider_set_format(g->scale4,"%.02f%%");
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale3, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->scale4, TRUE, TRUE, 0);
 
   gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("lighten shadows"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("darken highlights"), (char *)NULL);
@@ -840,7 +828,6 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (radius_callback), self);
   g_signal_connect (G_OBJECT (g->scale4), "value-changed",
                     G_CALLBACK (compress_callback), self);
-
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -848,3 +835,4 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
+
