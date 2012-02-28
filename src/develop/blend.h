@@ -143,7 +143,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkLabel *lower_label[4];
   GtkLabel *upper_picker_label;
   GtkLabel *lower_picker_label;
-  void (*scale_print[4])(float value, char *string);
+  void (*scale_print[4])(float value, char *string, int n);
   GtkComboBox *blend_modes_combo;
   GtkWidget *opacity_slider;
   int channel;

@@ -116,21 +116,21 @@ _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *out)
 
 
 static void
-_blendif_scale_print_L(float value, char *string)
+_blendif_scale_print_L(float value, char *string, int n)
 {
-  sprintf(string, "%-4.0f", value*100.0f);
+  snprintf(string, n, "%-4.0f", value*100.0f);
 }
 
 static void
-_blendif_scale_print_ab(float value, char *string)
+_blendif_scale_print_ab(float value, char *string, int n)
 {
-  sprintf(string, "%-4.0f", value*256.0f-128.0f);
+  snprintf(string, n, "%-4.0f", value*256.0f-128.0f);
 }
 
 static void
-_blendif_scale_print_rgb(float value, char *string)
+_blendif_scale_print_rgb(float value, char *string, int n)
 {
-  sprintf(string, "%-4.0f", value*255.0f);
+  snprintf(string, n, "%-4.0f", value*255.0f);
 }
 
 
@@ -201,7 +201,7 @@ _blendop_blendif_upper_callback (GtkDarktableGradientSlider *slider, dt_iop_gui_
   for(int k=0; k < 4 ; k++)
   {
     char text[256];
-    (data->scale_print[ch])(parameters[k], text);
+    (data->scale_print[ch])(parameters[k], text, 256);
     gtk_label_set_text(data->upper_label[k], text);
   }
 
@@ -230,7 +230,7 @@ _blendop_blendif_lower_callback (GtkDarktableGradientSlider *slider, dt_iop_gui_
   for(int k=0; k < 4 ; k++)
   {
     char text[256];
-    (data->scale_print[ch])(parameters[k], text);
+    (data->scale_print[ch])(parameters[k], text, 256);
     gtk_label_set_text(data->lower_label[k], text);
   }
 
@@ -301,7 +301,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
     _blendif_scale(data->csp, raw, picker);
     _blendif_cook(data->csp, raw, cooked);
 
-    sprintf(text, "(%.1f)", cooked[data->channel]);
+    snprintf(text, 256, "(%.1f)", cooked[data->channel]);
 
     dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), picker[data->channel]);
     gtk_label_set_text(label, text);
@@ -346,9 +346,9 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
   for(int k=0; k < 4 ; k++)
   {
-    (data->scale_print[data->channel])(iparameters[k], text);
+    (data->scale_print[data->channel])(iparameters[k], text, 256);
     gtk_label_set_text(data->lower_label[k], text);
-    (data->scale_print[data->channel])(oparameters[k], text);
+    (data->scale_print[data->channel])(oparameters[k], text, 256);
     gtk_label_set_text(data->upper_label[k], text);
   }
 
