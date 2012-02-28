@@ -205,7 +205,6 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data)
 {
-  _lib_modulegroups_set(data, DT_MODULEGROUP_BASIC);
 }
 
 static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, uint32_t iop_group)
