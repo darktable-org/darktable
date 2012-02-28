@@ -14,3 +14,5 @@ src/gegl-operations/dt-gamma.c
 darktable.glade
 src/imageio/format/rgbe.c
 src/iop/useless.c
+src/iop/shrecovery.c
+src/iop/anlfyeni.c
