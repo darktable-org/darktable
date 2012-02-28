@@ -1186,7 +1186,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* add module widget into an alignment */
   GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 16, 8, 8);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 24, 8, 8);
   gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), iopw);
 

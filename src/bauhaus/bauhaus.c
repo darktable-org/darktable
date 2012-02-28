@@ -502,8 +502,29 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
   {
     case DT_BAUHAUS_COMBOBOX:
     {
+      // only set to what's in the filtered list.
+      dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       int active = darktable.bauhaus->end_mouse_y / (widget->allocation.height + 10);
-      dt_bauhaus_combobox_set(widget, active);
+      GList *it = d->labels;
+      int k = 0, i = 0, kk = 0;
+      while(it)
+      {
+        gchar *text = (gchar *)it->data;
+        if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
+        {
+          if(active == k)
+          {
+            dt_bauhaus_combobox_set(widget, i);
+            return;
+          }
+          kk = i; // remember for down there
+          k++;
+        }
+        i++;
+        it = g_list_next(it);
+      }
+      // didn't find it, but had only one choice?
+      if(k == 1) dt_bauhaus_combobox_set(widget, kk);
       break;
     }
     case DT_BAUHAUS_SLIDER:
@@ -630,20 +651,6 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         snprintf(text, 256, d->format, f);
         cairo_show_text(cr, text);
         cairo_restore(cr);
-
-        // draw currently typed text
-        if(darktable.bauhaus->keys_cnt)
-        {
-          cairo_save(cr);
-          cairo_text_extents_t ext;
-          cairo_set_source_rgb(cr, 1., 1., 1.);
-          cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-          cairo_set_font_size (cr, .2*height);
-          cairo_text_extents (cr, darktable.bauhaus->keys, &ext);
-          cairo_move_to (cr, wd-4-ht-ext.width, height*0.5);
-          cairo_show_text(cr, darktable.bauhaus->keys);
-          cairo_restore(cr);
-        }
       }
       break;
     case DT_BAUHAUS_COMBOBOX:
@@ -661,11 +668,14 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
         while(it)
         {
           gchar *text = (gchar *)it->data;
-          cairo_text_extents (cr, text, &ext);
-          cairo_move_to (cr, wd-4-ht-ext.width, ht*0.8 + (10+ht)*k);
-          cairo_show_text(cr, text);
+          if(!strncmp(text, darktable.bauhaus->keys, darktable.bauhaus->keys_cnt))
+          {
+            cairo_text_extents (cr, text, &ext);
+            cairo_move_to (cr, wd-4-ht-ext.width, ht*0.8 + (10+ht)*k);
+            cairo_show_text(cr, text);
+            k++;
+          }
           it = g_list_next(it);
-          k++;
         }
         cairo_restore(cr);
       }
@@ -673,6 +683,21 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     default:
       // yell
       break;
+  }
+
+  // draw currently typed text. if a type doesn't want this, it should not
+  // allow stuff to be written here in the key callback.
+  if(darktable.bauhaus->keys_cnt)
+  {
+    cairo_save(cr);
+    cairo_text_extents_t ext;
+    cairo_set_source_rgb(cr, 1., 1., 1.);
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size (cr, .2*height);
+    cairo_text_extents (cr, darktable.bauhaus->keys, &ext);
+    cairo_move_to (cr, wd-4-ht-ext.width, height*0.5);
+    cairo_show_text(cr, darktable.bauhaus->keys);
+    cairo_restore(cr);
   }
 
   cairo_destroy(cr);
@@ -985,7 +1010,31 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
       return TRUE;
     }
     case DT_BAUHAUS_COMBOBOX:
-      if(event->keyval == GDK_KEY_Escape)
+    {
+      if(darktable.bauhaus->keys_cnt + 2 < 64 &&
+        (event->string[0] >= 32 && event->string[0] <= 126))
+      {
+        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = event->string[0];
+        gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+      }
+      else if(darktable.bauhaus->keys_cnt > 0 &&
+             (event->keyval == GDK_KEY_BackSpace || event->keyval == GDK_KEY_Delete))
+      {
+        darktable.bauhaus->keys[--darktable.bauhaus->keys_cnt] = 0;
+        gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+      }
+      else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
+             (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
+      {
+        // accept first line:
+        darktable.bauhaus->end_mouse_y = 0;
+        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
+        dt_bauhaus_widget_accept(darktable.bauhaus->current);
+        darktable.bauhaus->keys_cnt = 0;
+        memset(darktable.bauhaus->keys, 0, 64);
+        dt_bauhaus_hide_popup();
+      }
+      else if(event->keyval == GDK_KEY_Escape)
       {
         // discard input and close popup
         darktable.bauhaus->keys_cnt = 0;
@@ -993,6 +1042,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         dt_bauhaus_hide_popup();
       }
       return TRUE;
+    }
     default:
       return FALSE;
   }
