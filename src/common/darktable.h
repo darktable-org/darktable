@@ -240,6 +240,12 @@ static inline float dt_fast_expf(const float x)
 
 static inline void dt_print_mem_usage()
 {
+#ifdef __APPLE__
+  fprintf(stderr, "[memory] max address space (vmpeak): (unknown)"
+                  "[memory] cur address space (vmsize): (unknown)"
+                  "[memory] max used memory   (vmhwm ): (unknown)"
+                  "[memory] cur used memory   (vmrss ): (unknown)");
+#else
   char *line = NULL;
   size_t len = 128;
   char vmsize[64];
@@ -274,6 +280,7 @@ static inline void dt_print_mem_usage()
                   "[memory] max used memory   (vmhwm ): %15s"
                   "[memory] cur used memory   (vmrss ): %15s",
                   vmpeak, vmsize, vmhwm, vmrss);
+#endif
 }
 
 static inline size_t
