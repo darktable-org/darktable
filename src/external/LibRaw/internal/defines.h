@@ -79,6 +79,10 @@ it under the terms of the one of three licenses as you choose:
 #include <netinet/in.h>
 #endif
 
+#ifdef __APPLE__
+#include <strings.h>		/* For strcasecmp */
+#endif
+
 #ifdef LJPEG_DECODE
 #error Please compile dcraw.c by itself.
 #error Do not link it with ljpeg_decode.

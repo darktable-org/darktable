@@ -240,6 +240,12 @@ static inline float dt_fast_expf(const float x)
 
 static inline void dt_print_mem_usage()
 {
+#ifdef __APPLE__
+  fprintf(stderr, "[memory] max address space (vmpeak): (unknown)"
+                  "[memory] cur address space (vmsize): (unknown)"
+                  "[memory] max used memory   (vmhwm ): (unknown)"
+                  "[memory] cur used memory   (vmrss ): (unknown)");
+#else
   char *line = NULL;
   size_t len = 128;
   char vmsize[64];
@@ -274,11 +280,16 @@ static inline void dt_print_mem_usage()
                   "[memory] max used memory   (vmhwm ): %15s"
                   "[memory] cur used memory   (vmrss ): %15s",
                   vmpeak, vmsize, vmhwm, vmrss);
+#endif
 }
 
 static inline size_t
 dt_get_total_memory()
 {
+#ifdef __APPLE__
+  // assume 2GB until we have a better solution.
+  return 2097152;
+#else
   FILE *f = fopen("/proc/meminfo", "rb");
   if(!f) return 0;
   size_t mem = 0;
@@ -288,6 +299,7 @@ dt_get_total_memory()
     mem = atol(line + 10);
   fclose(f);
   return mem;
+#endif
 }
 
 void dt_configure_defaults();

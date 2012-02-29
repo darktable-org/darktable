@@ -89,6 +89,10 @@ typedef long long INT64;
 typedef unsigned long long UINT64;
 #endif
 
+#ifdef __APPLE__
+#include <strings.h>		/* For strcasecmp */
+#endif
+
 #ifdef LJPEG_DECODE
 #error Please compile dcraw.c by itself.
 #error Do not link it with ljpeg_decode.

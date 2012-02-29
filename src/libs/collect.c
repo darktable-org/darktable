@@ -271,40 +271,40 @@ changed_callback (GtkEntry *entry, dt_lib_collect_rule_t *dr)
       // TODO: Add empty string for metadata?
       // TODO: Autogenerate this code?
     case 6: // title
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_TITLE, escaped_text);
       break;
     case 7: // description
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
       break;
     case 8: // creator
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_CREATOR, escaped_text);
       break;
     case 9: // publisher
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
       break;
     case 10: // rights
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'",
+      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'order by value ",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
     case 11: // lens
-      snprintf(query, 1024, "select distinct lens, 1 from images where lens like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
       break;
     case 12: // iso
-      snprintf(query, 1024, "select distinct cast(iso as integer), 1 from images where iso like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso", escaped_text);
       break;
     case 13: // aperature
-      snprintf(query, 1024, "select distinct round(aperture,1), 1 from images where aperture like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture like '%%%s%%' order by aperture", escaped_text);
       break;
     case 14: // filename
-      snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%' order by filename", escaped_text);
       break;
 
     default: // case 3: // day
-      snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%'", escaped_text);
+      snprintf(query, 1024, "select distinct datetime_taken, 1 from images where datetime_taken like '%%%s%%' order by datetime_taken", escaped_text);
       break;
   }
   g_free(escaped_text);
