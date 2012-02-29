@@ -976,6 +976,8 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
   {
     case DT_BAUHAUS_SLIDER:
     {
+      // if(event->string[0] == 'p') return system("scrot");
+      // else
       if(darktable.bauhaus->keys_cnt + 2 < 64 &&
         (event->string[0] == 46 ||
         (event->string[0] >= 48 && event->string[0] <= 57)))
@@ -1007,10 +1009,13 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
       }
+      else return FALSE;
       return TRUE;
     }
     case DT_BAUHAUS_COMBOBOX:
     {
+      // if(event->string[0] == 'p') return system("scrot");
+      // else
       if(darktable.bauhaus->keys_cnt + 2 < 64 &&
         (event->string[0] >= 32 && event->string[0] <= 126))
       {
@@ -1041,6 +1046,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
       }
+      else return FALSE;
       return TRUE;
     }
     default:
