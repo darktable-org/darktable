@@ -83,6 +83,7 @@ typedef struct _GtkDarktableGradientSlider
   gboolean is_changed;
   gboolean is_resettable;
   gboolean do_reset;
+  gboolean is_entered;
 } GtkDarktableGradientSlider;
 
 typedef struct _GtkDarktableGradientSliderClass
