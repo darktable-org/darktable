@@ -110,6 +110,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
   {
     gslider->is_dragging=FALSE;
     gslider->do_reset=TRUE;
+    gslider->selected=-1;
     for(int k=0; k<gslider->positions; k++) gslider->position[k] = gslider->resetvalue[k];
     gtk_widget_draw(widget,NULL);
     g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
@@ -117,8 +118,8 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
   else if((event->button==1 || event->button==3) && event->type == GDK_BUTTON_PRESS)
   {
     gint lselected = -1;
-    gdouble lmin;
-    gdouble lmax;
+    gdouble lmin = 0.0;
+    gdouble lmax = 1.0;
     gdouble newposition = _screen_to_scale(widget, event->x);
     gslider->prev_x_root=event->x_root;
 
