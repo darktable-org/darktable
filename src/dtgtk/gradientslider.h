@@ -76,6 +76,7 @@ typedef struct _GtkDarktableGradientSlider
   gdouble position[GRADIENT_SLIDER_MAX_POSITIONS];
   gdouble resetvalue[GRADIENT_SLIDER_MAX_POSITIONS];
   gint marker[GRADIENT_SLIDER_MAX_POSITIONS];
+  gdouble increment;
   gdouble picker;
   gint prev_x_root;
   gint margins;
@@ -113,10 +114,13 @@ void dtgtk_gradient_slider_set_marker(GtkDarktableGradientSlider *gslider,gint m
 void dtgtk_gradient_slider_set_resetvalue(GtkDarktableGradientSlider *gslider,gdouble value);
 
 /** Set a picker */
-void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider,gdouble value);
+void dtgtk_gradient_slider_set_picker(GtkDarktableGradientSlider *gslider,gdouble value);
 
 /** Set left/right margins */
 void dtgtk_gradient_slider_set_margins(GtkDarktableGradientSlider *gslider,gint value);
+
+/** set increment for scroll action */
+void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider,gdouble value);
 
 
 /** Instansiate a new darktable gradient slider multivalue control */
@@ -146,6 +150,10 @@ void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gsl
 
 /** Set left/right margins */
 void dtgtk_gradient_slider_multivalue_set_margins(GtkDarktableGradientSlider *gslider,gint value);
+
+/** set increment for scroll action */
+void dtgtk_gradient_slider_multivalue_set_increment(GtkDarktableGradientSlider *gslider,gdouble value);
+
 
 G_END_DECLS
 #endif

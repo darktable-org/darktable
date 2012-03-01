@@ -24,6 +24,7 @@
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
 
 //#define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY 250
+#define DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT 0.01
 
 typedef struct _gradient_slider_stop_t
 {
@@ -45,6 +46,7 @@ static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventC
 static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton *event);
 static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButton *event);
 static gboolean _gradient_slider_motion_notify(GtkWidget *widget, GdkEventMotion *event);
+static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll *event);
 
 enum {
   VALUE_CHANGED,
@@ -221,6 +223,24 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
   return TRUE;
 }
 
+static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll *event)
+{
+  GtkDarktableGradientSlider *gslider=DTGTK_GRADIENT_SLIDER(widget);
+  if (gslider->selected != -1)
+  {
+    gdouble inc = gslider->increment;
+
+    gdouble newvalue = gslider->position[gslider->selected] + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT) ? inc : -inc);
+
+    gslider->position[gslider->selected] = newvalue > gslider->max ? gslider->max : (newvalue < gslider->min ? gslider->min : newvalue);    
+
+    gtk_widget_draw( widget, NULL);
+    g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
+  }
+  return TRUE;
+}
+
+
 static void _gradient_slider_class_init (GtkDarktableGradientSliderClass *klass)
 {
   GtkWidgetClass *widget_class=(GtkWidgetClass *) klass;
@@ -236,6 +256,7 @@ static void _gradient_slider_class_init (GtkDarktableGradientSliderClass *klass)
   widget_class->button_press_event = _gradient_slider_button_press;
   widget_class->button_release_event = _gradient_slider_button_release;
   widget_class->motion_notify_event = _gradient_slider_motion_notify;
+  widget_class->scroll_event = _gradient_slider_scroll_event;
 
   _signals[VALUE_CHANGED] = g_signal_new(
    "value-changed",
@@ -471,6 +492,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new(gint positions)
   gslider->is_entered = FALSE;
   gslider->picker = -1.0;
   gslider->selected = -1;
+  gslider->increment = DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT;
   gslider->margins = GRADIENT_SLIDER_MARGINS_DEFAULT;
   for(int k=0; k<positions; k++) gslider->position[k] = 0.0;
   for(int k=0; k<positions; k++) gslider->resetvalue[k] = 0.0;
@@ -490,6 +512,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start,GdkCol
   gslider->is_entered = FALSE;
   gslider->picker = -1.0;
   gslider->selected = -1;
+  gslider->increment = DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT;
   gslider->margins = GRADIENT_SLIDER_MARGINS_DEFAULT;
   for(int k=0; k<positions; k++) gslider->position[k] = 0.0;
   for(int k=0; k<positions; k++) gslider->resetvalue[k] = 0.0;
@@ -625,6 +648,11 @@ gboolean dtgtk_gradient_slider_multivalue_is_dragging(GtkDarktableGradientSlider
   return gslider->is_dragging;
 }
 
+void dtgtk_gradient_slider_multivalue_set_increment(GtkDarktableGradientSlider *gslider,gdouble value)
+{
+  gslider->increment = value;
+}
+
 // Public functions for single value type
 GtkWidget* dtgtk_gradient_slider_new()
 {
@@ -685,4 +713,10 @@ gboolean dtgtk_gradient_slider_is_dragging(GtkDarktableGradientSlider *gslider)
 {
   return gslider->is_dragging;
 }
+
+void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider,gdouble value)
+{
+  gslider->increment = value;
+}
+
 

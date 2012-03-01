@@ -362,6 +362,9 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
   dtgtk_gradient_slider_multivalue_set_stop(data->upper_slider, 0.5f, data->colors[data->channel][1]);
   dtgtk_gradient_slider_multivalue_set_stop(data->upper_slider, 1.0f, data->colors[data->channel][2]);
 
+  dtgtk_gradient_slider_multivalue_set_increment(data->lower_slider, data->increments[data->channel]);
+  dtgtk_gradient_slider_multivalue_set_increment(data->upper_slider, data->increments[data->channel]);
+
   darktable.gui->reset = reset;
 
 }
@@ -443,6 +446,10 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
         bd->scale_print[1] = _blendif_scale_print_ab;
         bd->scale_print[2] = _blendif_scale_print_ab;
         bd->scale_print[3] = NULL;
+        bd->increments[0] = 1.0f/100.0f;
+        bd->increments[1] = 1.0f/256.0f;
+        bd->increments[2] = 1.0f/256.0f;
+        bd->increments[3] = 1.0f;
         break;
       case iop_cs_rgb:
         maxchannels = 4;
@@ -453,6 +460,10 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
         bd->scale_print[1] = _blendif_scale_print_rgb;
         bd->scale_print[2] = _blendif_scale_print_rgb;
         bd->scale_print[3] = _blendif_scale_print_rgb;
+        bd->increments[0] = 1.0f/255.0f;
+        bd->increments[1] = 1.0f/255.0f;
+        bd->increments[2] = 1.0f/255.0f;
+        bd->increments[3] = 1.0f/255.0f;
         break;
       default:
         assert(FALSE);		// blendif not supported for RAW, which is already catched upstream; we should not get here

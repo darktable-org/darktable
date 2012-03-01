@@ -149,6 +149,7 @@ typedef struct dt_iop_gui_blend_data_t
   int channel;
   GtkNotebook* channel_tabs;
   GdkColor colors[4][3];
+  float increments[4];
 }
 dt_iop_gui_blend_data_t;
 
