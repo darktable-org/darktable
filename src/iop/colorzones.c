@@ -764,11 +764,22 @@ colorzones_button_release(GtkWidget *widget, GdkEventButton *event, gpointer use
 }
 
 static gboolean
+colorzones_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  c->mouse_y = fabsf(c->mouse_y);
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
+static gboolean
 colorzones_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  c->mouse_y = -1.0;
+  // for fluxbox
+  c->mouse_y = -fabsf(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -894,6 +905,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (colorzones_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (colorzones_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "enter-notify-event",
+                    G_CALLBACK (colorzones_enter_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (colorzones_scrolled), self);
 
