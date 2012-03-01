@@ -37,7 +37,7 @@ highpass_invert(read_only image2d_t in, write_only image2d_t out, const int widt
 
 
 kernel void 
-highpass_hblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
+highpass_hblur(read_only image2d_t in, write_only image2d_t out, global float *m, const int rad,
       const int width, const int height, const int blocksize, local float *buffer)
 {
   const int lid = get_local_id(0);
@@ -98,7 +98,7 @@ highpass_hblur(read_only image2d_t in, write_only image2d_t out, constant float 
 
 
 kernel void 
-highpass_vblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
+highpass_vblur(read_only image2d_t in, write_only image2d_t out, global float *m, const int rad,
       const int width, const int height, const int blocksize, local float *buffer)
 {
   const int lid = get_local_id(1);

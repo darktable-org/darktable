@@ -1247,7 +1247,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
 {
   pipe->processing = 1;
   pipe->opencl_enabled = dt_opencl_update_enabled(); // update enabled flag from preferences
-  pipe->devid = pipe->opencl_enabled ? dt_opencl_lock_device(-1) : -1;  // try to get/lock opencl resource
+  pipe->devid = (pipe->opencl_enabled && (pipe->type != DT_DEV_PIXELPIPE_PREVIEW)) ? dt_opencl_lock_device(-1) : -1;  // try to get/lock opencl resource but not for preview pipe
 
   dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", pipe->type == DT_DEV_PIXELPIPE_PREVIEW ? "preview" : (pipe->type == DT_DEV_PIXELPIPE_FULL ? "full" : "export"), pipe->devid);
 

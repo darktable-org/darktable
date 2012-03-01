@@ -486,7 +486,7 @@ menuitem_new_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
   char path[1024];
-  snprintf(path,1024,"preset/%s",_("new preset"));
+  snprintf(path,1024,"%s/%s",_("preset"),_("new preset"));
   dt_accel_register_iop(module->so,FALSE,path,0,0);
   dt_accel_connect_preset_iop(module,_("new preset"));
   // then show edit dialog

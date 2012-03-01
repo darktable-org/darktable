@@ -450,6 +450,8 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_tonecurve_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
                     G_CALLBACK (dt_iop_tonecurve_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "enter-notify-event",
+                    G_CALLBACK (dt_iop_tonecurve_enter_notify), self);
 
   c->autoscale_ab  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("auto scale chroma")));
   gtk_toggle_button_set_active(c->autoscale_ab, p->tonecurve_autoscale_ab);
@@ -479,11 +481,23 @@ void gui_cleanup(struct dt_iop_module_t *self)
 }
 
 
+static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  c->mouse_x = fabsf(c->mouse_x);
+  c->mouse_y = fabsf(c->mouse_y);
+  gtk_widget_queue_draw(widget);
+  return TRUE;
+}
+
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = c->mouse_y = -1.0;
+  // weird sign dance for fluxbox:
+  c->mouse_x = -fabsf(c->mouse_x);
+  c->mouse_y = -fabsf(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }

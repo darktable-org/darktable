@@ -41,6 +41,7 @@ typedef struct dt_lib_filmstrip_t
 
   /* state vars */
   int32_t last_selected_id;
+  int32_t mouse_over_id;
   int32_t offset;
   int32_t history_copy_imgid;
   gdouble pointerx,pointery;
@@ -243,6 +244,7 @@ void gui_init(dt_lib_module_t *self)
   d->last_selected_id = -1;
   d->history_copy_imgid = -1;
   d->activated_image = -1;
+  d->mouse_over_id = -1;
 
   /* create drawingarea */
   self->widget = gtk_vbox_new(FALSE,0);
@@ -429,8 +431,7 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  int32_t mouse_over_id = -1;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  int32_t mouse_over_id = strip->mouse_over_id;
 
   /* is this an activation of image */
   if (e->button == 1 && e->type == GDK_2BUTTON_PRESS)
@@ -491,8 +492,6 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
     darktable.gui->center_tooltip++;
 
   strip->image_over = DT_VIEW_DESERT;
-  int32_t mouse_over_id;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
   /* create cairo surface */
@@ -542,8 +541,8 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
       // set mouse over id
       if(seli == col)
       {
-        mouse_over_id = id;
-        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+        strip->mouse_over_id = id;
+        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, strip->mouse_over_id);
       }
       cairo_save(cr);
       // FIXME find out where the y translation is done, how big the value is and use it directly instead of getting it from the matrix ...

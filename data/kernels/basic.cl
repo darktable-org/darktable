@@ -27,7 +27,7 @@ FC(const int row, const int col, const unsigned int filters)
 
 
 kernel void
-whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, constant float *coeffs,
+whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
     const unsigned int filters, const int rx, const int ry)
 {
   const int x = get_global_id(0);
@@ -38,7 +38,7 @@ whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int wid
 }
 
 kernel void
-whitebalance_4f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, constant float *coeffs)
+whitebalance_4f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -151,7 +151,7 @@ highlights (read_only image2d_t in, write_only image2d_t out, const int width, c
 }
 
 float
-lookup_unbounded(read_only image2d_t lut, const float x, constant float *a)
+lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -179,7 +179,7 @@ lookup(read_only image2d_t lut, const float x)
 /* kernel for the basecurve plugin. */
 kernel void
 basecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-           read_only image2d_t table, constant float *a)
+           read_only image2d_t table, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -210,9 +210,9 @@ XYZ_to_Lab(float *xyz, float *lab)
 /* kernel for the plugin colorin */
 kernel void
 colorin (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-         constant float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+         global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
          const int map_blues,
-         constant float *a)
+         global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -256,7 +256,7 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b,
-           const int autoscale_ab, constant float *a)
+           const int autoscale_ab, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -377,8 +377,8 @@ Lab_to_XYZ(float *Lab, float *XYZ)
 /* kernel for the plugin colorout, fast matrix + shaper path only */
 kernel void
 colorout (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-          constant float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
-          constant float *a)
+          global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+          global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
