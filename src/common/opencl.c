@@ -55,7 +55,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       exclude_opencl = 1;
     }
 
-  if(exclude_opencl) return;
+  if(exclude_opencl) goto finally;
 
 
   // look for explicit definition of opencl_runtime library in preferences
@@ -66,7 +66,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   if(!dt_dlopencl_init(library, &cl->dlocl))
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
-      return;
+      goto finally;
     }
     else
     {
@@ -81,7 +81,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get platforms: %d\n", err);
-    return;
+    goto finally;
   }
   platform = all_platforms[0];
 
@@ -92,7 +92,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
-    return;
+    goto finally;
   }
 
   // create the device list
@@ -102,7 +102,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
-    return;
+    goto finally;
   }
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d devices\n", num_devices);
   int dev = 0;
@@ -216,7 +216,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         if(dt_opencl_build_program(k, prog))
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
-          return;
+          goto finally;
         }
       }
       fclose(f);
@@ -224,7 +224,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     else
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
-      return;
+      goto finally;
     }
     ++dev;
   }
@@ -232,7 +232,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   if(dev > 0)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] successfully initialized.\n");
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", prefs ? "ON" : "OFF");
     cl->num_devs = dev;
     cl->inited = 1;
     cl->enabled = prefs;
@@ -243,6 +242,10 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] no suitable devices found.\n");
   }
+
+finally:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] FINALLY: opencl is %sAVAILABLE on this system.\n", cl->inited ? "" : "NOT ");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] initial status of opencl enabled flag is %s.\n", cl->enabled ? "ON" : "OFF");
   return;
 }
 

@@ -21,7 +21,7 @@ const sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_E
 
 
 kernel void 
-sharpen_hblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
+sharpen_hblur(read_only image2d_t in, write_only image2d_t out, global const float *m, const int rad,
       const int width, const int height, const int blocksize, local float *buffer)
 {
   const int lid = get_local_id(0);
@@ -81,7 +81,7 @@ sharpen_hblur(read_only image2d_t in, write_only image2d_t out, constant float *
 
 
 kernel void 
-sharpen_vblur(read_only image2d_t in, write_only image2d_t out, constant float *m, const int rad,
+sharpen_vblur(read_only image2d_t in, write_only image2d_t out, global const float *m, const int rad,
       const int width, const int height, const int blocksize, local float *buffer)
 {
   const int lid = get_local_id(1);
