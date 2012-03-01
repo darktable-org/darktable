@@ -54,7 +54,7 @@ typedef enum iop_cs_t
 } iop_cs_t;
 
 
-float blendif_factor(iop_cs_t cst, const float4 lower, float4 upper, const unsigned int blendif, constant float *parameters)
+float blendif_factor(iop_cs_t cst, const float4 lower, float4 upper, const unsigned int blendif, global const float *parameters)
 {
   float result = 1.0f;
   float scaled[16];
@@ -224,7 +224,7 @@ float4 LCH_2_Lab(const float4 LCH)
 
 __kernel void
 blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height, 
-             const int mode, const float gopacity, const int blendflag, const int blendif, constant float *blendif_parameters)
+             const int mode, const float gopacity, const int blendflag, const int blendif, global const float *blendif_parameters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -462,7 +462,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 __kernel void
 blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height,
-             const int mode, const float opacity, const int blendflag, const int blendif, constant float *blendif_parameters)
+             const int mode, const float opacity, const int blendflag, const int blendif, global const float *blendif_parameters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -578,7 +578,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_onl
 
 __kernel void
 blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height,
-             const int mode, const float gopacity, const int blendflag, const int blendif, constant float *blendif_parameters)
+             const int mode, const float gopacity, const int blendflag, const int blendif, global const float *blendif_parameters)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
