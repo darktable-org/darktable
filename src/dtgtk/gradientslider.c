@@ -418,15 +418,19 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_stroke(cr);
   }
 
+  int indirect[GRADIENT_SLIDER_MAX_POSITIONS];
+  for(int k=0; k<gslider->positions; k++)
+    indirect[k] = gslider->selected == -1 ? k : (gslider->selected + 1 + k) % gslider->positions;
 
 
   for(int k=0; k<gslider->positions; k++)
   {
-    int vx=_scale_to_screen(widget, gslider->position[k]);
-    int mk=gslider->marker[k];
+    int l = indirect[k];
+    int vx=_scale_to_screen(widget, gslider->position[l]);
+    int mk=gslider->marker[l];
     int sz=(mk & (1<<3)) ? 13 : 5;  // big or small marker?
 
-    if(k == gslider->selected && (gslider->is_entered == TRUE || gslider->is_dragging == TRUE))
+    if(l == gslider->selected && (gslider->is_entered == TRUE || gslider->is_dragging == TRUE))
     {
       cairo_set_source_rgba(cr,
                         style->fg[state].red/65535.0,
