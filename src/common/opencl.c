@@ -174,14 +174,14 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context for device %d: %d\n", k, err);
-      return;
+      goto finally;
     }
     // create a command queue for first device the context reported
     cl->dev[dev].cmd_queue = (cl->dlocl->symbols->dt_clCreateCommandQueue)(cl->dev[dev].context, devid, (darktable.unmuted & DT_DEBUG_PERF) ? CL_QUEUE_PROFILING_ENABLE : 0, &err);
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
-      return;
+      goto finally;
     }
     char dtpath[1024], filename[1024], programname[1024];
     dt_util_get_datadir(dtpath, 1024);
