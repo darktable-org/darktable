@@ -641,7 +641,7 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
   cairo_translate(cr, inset, inset);
 
   dt_pthread_mutex_lock(&g->lock);
-  if( g->preview_buffer )
+  if( g->preview_buffer && self->enabled)
   {
     /* calculate the zonemap */
     float zonemap[MAX_ZONE_SYSTEM_SIZE]= {-1};
