@@ -140,7 +140,7 @@ void init(dt_view_t *self)
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_idx = -1;
   lib->selection_origin_idx = -1;
-  lib->first_visible_zoomable = lib->first_visible_filemanager = 0;
+  lib->first_visible_zoomable = lib->first_visible_filemanager = -1;
   lib->button = 0;
   lib->modifiers = 0;
   lib->center = lib->pan = lib->track = 0;
@@ -321,7 +321,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         id = sqlite3_column_int(lib->statements.main_query, 0);
 
         if (iir == 1 && row) 
-	  continue;
+          continue;
 
         /* set mouse over id if pointer is in current row / col */
         if(pi == col && pj == row)
@@ -330,18 +330,18 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
           DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
         }
 
-	/* handle mouse click on current row / col 
-	   this could easily and preferable be moved to button_pressed()
-	 */
-	if (clicked1 && (pi == col && pj == row))
-	{
-	  if ((lib->modifiers & (GDK_SHIFT_MASK|GDK_CONTROL_MASK)) == 0)
-	    dt_selection_select_single(darktable.selection, id);
-	  else if ((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
-	    dt_selection_toggle(darktable.selection, id);
-	  else if ((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
-	    dt_selection_select_range(darktable.selection, id);
-	}
+        /* handle mouse click on current row / col 
+           this could easily and preferable be moved to button_pressed()
+         */
+        if (clicked1 && (pi == col && pj == row))
+        {
+          if ((lib->modifiers & (GDK_SHIFT_MASK|GDK_CONTROL_MASK)) == 0)
+            dt_selection_select_single(darktable.selection, id);
+          else if ((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+            dt_selection_toggle(darktable.selection, id);
+          else if ((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+            dt_selection_select_range(darktable.selection, id);
+        }
 
 
         cairo_save(cr);
@@ -350,8 +350,8 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
         cairo_restore(cr);
       }
       else 
-	goto failure;
-      
+        goto failure;
+
       cairo_translate(cr, wd, 0.0f);
     }
     cairo_translate(cr, -max_cols*wd, ht);
@@ -361,18 +361,18 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if (offset_changed)
   {
     int32_t imgids_num = 0;
-    int32_t imgids[lib->collection_count];
+    const int prefetchrows = .5*max_rows+1;
+    int32_t imgids[prefetchrows*iir];
     /* clear and reset main query */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
     DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
     
     /* setup offest and row for prefetch */
-    const int prefetchrows = .5*max_rows+1;
     DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset + max_rows*iir);
     DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, prefetchrows*iir);
 
     // prefetch jobs in inverse order: supersede previous jobs: most important last
-    while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+    while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW && imgids_num < prefetchrows*iir)
       imgids[imgids_num++] = sqlite3_column_int(lib->statements.main_query, 0);
 
     float imgwd = iir == 1 ? 0.97 : 0.8;
@@ -394,7 +394,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
 
 failure:
-
   oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
@@ -405,6 +404,7 @@ failure:
     g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", "", (char *)NULL);
   }
 }
+
 
 // TODO: this is also defined in lib/tools/lighttable.c
 //       fix so this value is shared.. DT_CTL_SET maybe ?
@@ -417,6 +417,9 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   dt_library_t *lib = (dt_library_t *)self->data;
   float zoom, zoom_x, zoom_y;
   int32_t mouse_over_id, pan, track, center;
+  /* query new collection count */
+  lib->collection_count = dt_collection_get_count (darktable.collection);
+
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
   zoom   = dt_conf_get_int("plugins/lighttable/images_in_row");
   zoom_x = lib->zoom_x;
@@ -528,6 +531,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
       zoom_y =  ht*lib->collection_count/MIN(DT_LIBRARY_MAX_ZOOM, zoom)-ht;
   }
 
+
   int offset_i = (int)(zoom_x/wd);
   int offset_j = (int)(zoom_y/ht);
   if(lib->first_visible_filemanager >= 0)
@@ -538,12 +542,12 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   lib->first_visible_filemanager = -1;
   lib->first_visible_zoomable = offset_i + DT_LIBRARY_MAX_ZOOM*offset_j;
   // arbitrary 1000 to avoid bug due to round towards zero using (int)
-  int seli = zoom == 1 ? 0 : (int)(1000 + (pointerx + zoom_x)/wd) - MAX(offset_i, 0) - 1000;
-  int selj = zoom == 1 ? 0 : (int)(1000 + (pointery + zoom_y)/ht) - offset_j         - 1000;
-  float offset_x = zoom == 1 ? 0.0 : zoom_x/wd - (int)(zoom_x/wd);
-  float offset_y = zoom == 1 ? 0.0 : zoom_y/ht - (int)(zoom_y/ht);
-  const int max_rows = zoom == 1 ? 1 : 2 + (int)((height)/ht + .5);
-  const int max_cols = zoom == 1 ? 1 : MIN(DT_LIBRARY_MAX_ZOOM - MAX(0, offset_i), 1 + (int)(zoom+.5));
+  int seli = zoom == 1 ? 0 : ((int)(1000 + (pointerx + zoom_x)/wd) - MAX(offset_i, 0) - 1000);
+  int selj = zoom == 1 ? 0 : ((int)(1000 + (pointery + zoom_y)/ht) - offset_j         - 1000);
+  float offset_x = (zoom == 1) ? 0.0 : (zoom_x/wd - (int)(zoom_x/wd));
+  float offset_y = (zoom == 1) ? 0.0 : (zoom_y/ht - (int)(zoom_y/ht));
+  const int max_rows = (zoom == 1) ? 1 : (2 + (int)((height)/ht + .5));
+  const int max_cols = (zoom == 1) ? 1 : (MIN(DT_LIBRARY_MAX_ZOOM - MAX(0, offset_i), 1 + (int)(zoom+.5)));
 
   int offset = MAX(0, offset_i) + DT_LIBRARY_MAX_ZOOM*offset_j;
   int img_pointerx = zoom == 1 ? pointerx : fmodf(pointerx + zoom_x, wd);
@@ -599,11 +603,11 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         {
           if((lib->modifiers & GDK_SHIFT_MASK) == 0 && (lib->modifiers & GDK_CONTROL_MASK) == 0 && seli == col && selj == row)
           {
-	    /* clear selection except id */
+            /* clear selection except id */
 
-	    /* clear and resest statement */
-	    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
-	    DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg); 
+            /* clear and resest statement */
+            DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.delete_except_arg);
+            DT_DEBUG_SQLITE3_RESET(lib->statements.delete_except_arg); 
 
             /* reuse statment */
             DT_DEBUG_SQLITE3_BIND_INT(lib->statements.delete_except_arg, 1, id);
@@ -854,27 +858,27 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
   if(layout == 1 && state == 0)
-    {
-      if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
-      else   lib->track =  DT_LIBRARY_MAX_ZOOM;
-    }
+  {
+    if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else   lib->track =  DT_LIBRARY_MAX_ZOOM;
+  }
   else
+  {
+    int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+    if(up)
     {
-      int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-      if(up)
-	{
-	  zoom--;
-	  if(zoom < 1)
-	    zoom = 1;
-	}
-      else
-	{
-	  zoom++;
-	  if(zoom > 2*DT_LIBRARY_MAX_ZOOM)
-	    zoom = 2*DT_LIBRARY_MAX_ZOOM;
-	}
-      dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
+      zoom--;
+      if(zoom < 1)
+        zoom = 1;
     }
+    else
+    {
+      zoom++;
+      if(zoom > 2*DT_LIBRARY_MAX_ZOOM)
+        zoom = 2*DT_LIBRARY_MAX_ZOOM;
+    }
+    dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
+  }
   return 0;
 }
 

@@ -484,7 +484,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       for(int k=3; k<4*64; k+=4) histogram_pre[k] = logf(1.0 +histogram_pre[k]);
       for(int k=19; k<4*64; k+=4) *histogram_pre_max = *histogram_pre_max > histogram_pre[k] ? *histogram_pre_max : histogram_pre[k];
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      dt_control_queue_redraw_widget(module->widget);
+      if(module->widget) dt_control_queue_redraw_widget(module->widget);
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -507,7 +507,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
       gboolean i_own_lock = dt_control_gdk_lock();      
-      gtk_widget_queue_draw(module->widget);
+      if(module->widget) gtk_widget_queue_draw(module->widget);
       if (i_own_lock) dt_control_gdk_unlock();
     }
     else dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -1090,7 +1090,7 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       
       gboolean i_own_lock = dt_control_gdk_lock();
-      gtk_widget_queue_draw(module->widget);
+      if(module->widget) gtk_widget_queue_draw(module->widget);
       if (i_own_lock) dt_control_gdk_unlock();
 
     }
