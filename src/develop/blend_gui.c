@@ -278,32 +278,38 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
 
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  float picker[4];
+  float picker_mean[4], picker_min[4], picker_max[4];
   float cooked[4];
-  float *raw;
+  float *raw_mean, *raw_min, *raw_max;
   char text[256];
   GtkLabel *label;
 
   if(widget == GTK_WIDGET(data->lower_slider))
   {
-    raw = module->picked_color;
+    raw_mean = module->picked_color;
+    raw_min = module->picked_color_min;
+    raw_max = module->picked_color_max;
     label = data->lower_picker_label;
   }
   else
   {
-    raw = module->picked_output_color;
+    raw_mean = module->picked_output_color;
+    raw_min = module->picked_output_color_min;
+    raw_max = module->picked_output_color_max;
     label = data->upper_picker_label;
   }
 
   darktable.gui->reset = 1;
   if(module->request_color_pick)
   {
-    _blendif_scale(data->csp, raw, picker);
-    _blendif_cook(data->csp, raw, cooked);
+    _blendif_scale(data->csp, raw_mean, picker_mean);
+    _blendif_scale(data->csp, raw_min, picker_min);
+    _blendif_scale(data->csp, raw_max, picker_max);
+    _blendif_cook(data->csp, raw_mean, cooked);
 
     snprintf(text, 256, "(%.1f)", cooked[data->channel]);
 
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), picker[data->channel]);
+    dtgtk_gradient_slider_multivalue_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(widget), picker_mean[data->channel], picker_min[data->channel], picker_max[data->channel]);
     gtk_label_set_text(label, text);
   }
   else

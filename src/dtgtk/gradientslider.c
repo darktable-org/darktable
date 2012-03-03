@@ -17,6 +17,7 @@
 */
 
 #include <string.h>
+#include <math.h>
 #include <assert.h>
 
 #include "gradientslider.h"
@@ -389,7 +390,7 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_set_line_width(cr,0.1);
     cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
     cairo_set_source(cr,gradient);
-    cairo_rectangle(cr,margins,gheight-(gheight/2.0),gwidth,gheight);
+    cairo_rectangle(cr,margins,(height-gheight)/2.0,gwidth,gheight);
     cairo_fill(cr);
     cairo_stroke(cr);
   }
@@ -407,12 +408,32 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
 
 
   // do we have a picker value to draw?
-  float picker = gslider->picker;
-  if(picker >= 0.0 && picker <= 1.0)
+  gdouble *picker = gslider->picker;
+  if(picker[0] >= 0.0 && picker[0] <= 1.0)
   {
-    int vx=_scale_to_screen(widget, picker);
-    cairo_move_to(cr,vx,2);
-    cairo_line_to(cr,vx,height-2);
+    int vx_min=_scale_to_screen(widget, picker[1]);
+    int vx_max=_scale_to_screen(widget, picker[2]);
+    int vx_avg=_scale_to_screen(widget, picker[0]);
+
+    cairo_set_source_rgba(cr,
+                        style->fg[state].red/65535.0,
+                        style->fg[state].green/65535.0,
+                        style->fg[state].blue/65535.0,
+                        0.33
+                       );
+
+    cairo_rectangle(cr,vx_min,(height-gheight)/2.0,fmax((float)vx_max-vx_min, 0.0f),gheight);
+    cairo_fill(cr);
+
+    cairo_set_source_rgba(cr,
+                        style->fg[state].red/65535.0,
+                        style->fg[state].green/65535.0,
+                        style->fg[state].blue/65535.0,
+                        1.0
+                       );
+
+    cairo_move_to(cr,vx_avg,(height-gheight)/2.0);
+    cairo_line_to(cr,vx_avg,(height+gheight)/2.0);
     cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
     cairo_set_line_width(cr,1.0);
     cairo_stroke(cr);
@@ -495,7 +516,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new(gint positions)
   gslider->positions=positions;
   gslider->is_resettable = FALSE;
   gslider->is_entered = FALSE;
-  gslider->picker = -1.0;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = -1.0;
   gslider->selected = -1;
   gslider->increment = DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT;
   gslider->margins = GRADIENT_SLIDER_MARGINS_DEFAULT;
@@ -515,7 +536,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start,GdkCol
   gslider->positions=positions;
   gslider->is_resettable = FALSE;
   gslider->is_entered = FALSE;
-  gslider->picker = -1.0;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = -1.0;
   gslider->selected = -1;
   gslider->increment = DTGTK_GRADIENT_SLIDER_DEFAULT_INCREMENT;
   gslider->margins = GRADIENT_SLIDER_MARGINS_DEFAULT;
@@ -639,7 +660,14 @@ void dtgtk_gradient_slider_multivalue_set_resetvalues(GtkDarktableGradientSlider
 
 void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider,gdouble value)
 {
-  gslider->picker = value;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = value;
+}
+
+void dtgtk_gradient_slider_multivalue_set_picker_meanminmax(GtkDarktableGradientSlider *gslider,gdouble mean, gdouble min, gdouble max)
+{
+  gslider->picker[0] = mean;
+  gslider->picker[1] = min;
+  gslider->picker[2] = max;
 }
 
 void dtgtk_gradient_slider_multivalue_set_margins(GtkDarktableGradientSlider *gslider,gint value)
@@ -706,7 +734,14 @@ void dtgtk_gradient_slider_set_resetvalue(GtkDarktableGradientSlider *gslider,gd
 
 void dtgtk_gradient_slider_set_picker(GtkDarktableGradientSlider *gslider,gdouble value)
 {
-  gslider->picker = value;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = value;
+}
+
+void dtgtk_gradient_slider_set_picker_meanminmax(GtkDarktableGradientSlider *gslider,gdouble mean, gdouble min, gdouble max)
+{
+  gslider->picker[0] = mean;
+  gslider->picker[1] = min;
+  gslider->picker[2] = max;
 }
 
 void dtgtk_gradient_slider_set_margins(GtkDarktableGradientSlider *gslider,gint value)
