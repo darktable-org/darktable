@@ -32,6 +32,7 @@
 #include "dtgtk/tristatebutton.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/tristatebutton.h"
+#include "libs/modulegroups.h"
 
 #include <strings.h>
 #include <assert.h>
@@ -1028,7 +1029,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
         dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
         uint32_t additional_flags=0;
 
-        /* add special group flag for moduel in active pipe */
+        /* add special group flag for module in active pipe */
         if(module->enabled)
           additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
 
@@ -1039,7 +1040,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
         /* if module is the current, always expand it */
         if (m == module)
           dt_iop_gui_set_expanded(m, TRUE);
-        else if ((current_group == 7 || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+        else if ((current_group == DT_MODULEGROUP_NONE || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
           dt_iop_gui_set_expanded(m, FALSE);
 
         iop = g_list_next(iop);

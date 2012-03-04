@@ -30,26 +30,7 @@ DT_MODULE(1)
 
 #define PADDING 2
 
-/* the defined modules groups, the specific order here sets the order 
-   of buttons in modulegroup buttonrow 
-*/
-typedef enum dt_lib_modulegroup_t
-{
-  DT_MODULEGROUP_ACTIVE_PIPE,
-  DT_MODULEGROUP_FAVORITES,
-
-  DT_MODULEGROUP_BASIC,
-  DT_MODULEGROUP_TONE,
-  DT_MODULEGROUP_COLOR,
-  DT_MODULEGROUP_CORRECT,
-  DT_MODULEGROUP_EFFECT,
-
-  /* dont touch the following */
-  DT_MODULEGROUP_SIZE,
-
-  DT_MODULEGROUP_NONE
-
-} dt_lib_modulegroup_t;
+#include "modulegroups.h"
 
 typedef struct dt_lib_modulegroups_t
 {
