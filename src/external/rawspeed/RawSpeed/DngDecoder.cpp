@@ -167,7 +167,8 @@ RawImage DngDecoder::decodeRawInternal() {
         if (!mRaw->isCFA)
         {
           uint32 cpp = raw->getEntry(SAMPLESPERPIXEL)->getInt();
-          ThrowRDE("DNG Decoder: More than 4 samples per pixel is not supported.");
+          if (cpp > 4)
+            ThrowRDE("DNG Decoder: More than 4 samples per pixel is not supported.");
           mRaw->setCpp(cpp);
         }
         uint32 nslices = raw->getEntry(STRIPOFFSETS)->count;

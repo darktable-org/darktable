@@ -460,6 +460,20 @@
     <Crop x="0" y="0" width="0" height="0"/>
     <Sensor black="0" white="16383"/>
   </Camera>
+  <Camera make="Canon" model="Canon PowerShot G1 X">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="82" y="52" width="-14" height="0"/>
+    <Sensor black="0" white="16383"/>
+	<BlackAreas>
+		<Vertical x="0" width="68"/>
+		<Horizontal y="0" height="46"/>
+	</BlackAreas>
+  </Camera>
   <Camera make="Canon" model="Canon PowerShot G12">
     <CFA width="2" height="2">
       <Color x="0" y="0">RED</Color>
@@ -1461,7 +1475,7 @@
       <Color x="0" y="0">GREEN</Color><Color x="1" y="0">RED</Color>
       <Color x="0" y="1">BLUE</Color><Color x="1" y="1">GREEN</Color>
     </CFA>
-    <Crop x="0" y="0" width="-154" height="0"/>
+    <Crop x="0" y="0" width="-172" height="0"/>
     <Sensor black="150" white="4096"/>
   </Camera>
   <Camera make="Panasonic" model = "DMC-GF3">
@@ -2041,6 +2055,16 @@
     </CFA>
     <Crop x="0" y="0" width="-12" height="0"/>
     <Sensor black="520" white="16596"/>
+  </Camera>
+  <Camera make="SONY" model="NEX-7" supported="yes">
+    <CFA width="2" height="2">
+      <Color x="0" y="0">RED</Color>
+      <Color x="1" y="0">GREEN</Color>
+      <Color x="0" y="1">GREEN</Color>
+      <Color x="1" y="1">BLUE</Color>
+    </CFA>
+    <Crop x="0" y="0" width="-12" height="0"/>
+    <Sensor black="520" white="16383"/>
   </Camera>
   <Camera make="SONY" model="NEX-C3" supported="yes">
     <CFA width="2" height="2">

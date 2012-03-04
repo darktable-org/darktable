@@ -59,6 +59,7 @@ Camera::Camera(xmlDocPtr doc, xmlNodePtr cur) {
   key = xmlGetProp(cur, (const xmlChar *)"decoder_version");
   if (key) {
     decoderVersion = getAttributeAsInt(cur, cur->name, "decoder_version");
+    xmlFree(key);
   } else {
     decoderVersion = 0;
   }
@@ -183,7 +184,6 @@ void Camera::parseCFA(xmlDocPtr doc, xmlNodePtr cur) {
       cfa.setColorAt(iPoint2D(x, y), CFA_BLUE);
 
     xmlFree(key);
-
   }
 }
 
@@ -239,9 +239,17 @@ int Camera::getAttributeAsInt(xmlNodePtr cur , const xmlChar *tag, const char* a
   if (!key)
     ThrowCME("Could not find attribute %s in tag %s, in camera %s %s.", attribute, tag, make.c_str(), model.c_str());
 
-  int i = StringToInt(key, tag, attribute);
+  try {
+    int i = StringToInt(key, tag, attribute);
+    xmlFree(key);
+    return i;
+  } catch (CameraMetadataException &e) {
+    xmlFree(key);
+    throw e;
+  }
 
-  return i;
+ /* Never actually reachable */
+  return 0;
 }
 
 void Camera::parseAlias( xmlDocPtr doc, xmlNodePtr cur )
@@ -262,14 +270,18 @@ void Camera::parseHint( xmlDocPtr doc, xmlNodePtr cur )
     xmlChar *key;
     string hint_name, hint_value;
     key = xmlGetProp(cur, (const xmlChar *)"name");
-    if (key)
+    if (key) {
       hint_name = string((const char*)key);
+      xmlFree(key);
+    }
     else 
       ThrowCME("CameraMetadata: Could not find name for hint for %s %s camera.", make.c_str(), model.c_str());
 
     key = xmlGetProp(cur, (const xmlChar *)"value");
-    if (key)
+    if (key) {
       hint_value = string((const char*)key);
+      xmlFree(key);
+    }
     else 
       ThrowCME("CameraMetadata: Could not find value for hint %s for %s %s camera.", hint_name.c_str(), make.c_str(), model.c_str());
 
@@ -285,13 +297,16 @@ void Camera::parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur )
   int white = getAttributeAsInt(cur, cur->name, "white");
 
   xmlChar *key = xmlGetProp(cur, (const xmlChar *)"iso_min");
-  if (key)
+  if (key) {
     min_iso = StringToInt(key, cur->name, "iso_min");
+    xmlFree(key);
+  }
 
   key = xmlGetProp(cur, (const xmlChar *)"iso_max");
-  if (key)
+  if (key) {
     max_iso = StringToInt(key, cur->name, "iso_max");
-
+    xmlFree(key);
+  }
   sensorInfo.push_back(CameraSensorInfo(black, white, min_iso, max_iso));
 }
 
