@@ -169,6 +169,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_size_request(d->buttons[k], iconsize, iconsize);
     gtk_box_pack_start(GTK_BOX(br), d->buttons[k], TRUE, TRUE, 0);
   }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[d->current]), TRUE);
   gtk_widget_show_all(self->widget);
 
   /*
@@ -184,7 +185,6 @@ void gui_init(dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals,
 			    DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, 
 			    G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
-
 
 }
 
