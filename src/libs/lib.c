@@ -620,8 +620,30 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     /* bail out if module is static */
     if(!module->expandable()) return FALSE;
 
-    /* toggle view of header */
-    dt_lib_gui_set_expanded(module, !gtk_widget_get_visible(module->widget));
+    /* handle shiftclick on expander, hide all except this */
+    if ((e->state & GDK_SHIFT_MASK))
+    {
+      GList *it = g_list_first(darktable.lib->plugins);
+      uint32_t container = module->container();
+      dt_view_t *v = darktable.view_manager->view + darktable.view_manager->current_view;
+      while (it)
+      {
+        dt_lib_module_t *m = (dt_lib_module_t *)it->data;
+
+        /* if module is the current, always expand it */
+        if (m == module)
+          dt_lib_gui_set_expanded(m, TRUE);
+        else if(container == m->container() && m->expandable() && (m->views() & v->view(v)))
+          dt_lib_gui_set_expanded(m, FALSE);
+
+        it = g_list_next(it);
+      }
+    }
+    else
+    {
+      /* else just toggle */
+      dt_lib_gui_set_expanded(module, !gtk_widget_get_visible(module->widget));
+    }
 
     return TRUE;
   }
