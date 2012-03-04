@@ -10,5 +10,6 @@ else
     branch=$1
 fi
 
-echo dt_decoration=$(git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;') > $dir/version.sh
+# replace rc with ~rc, so debian thinks it's smaller.
+echo dt_decoration=$(git describe --tags $branch | sed 's,^release-,,;s,-,+,;s,-,~,;' | sed 's/rc/~rc/') > $dir/version.sh
 echo dt_sha1sum=$(git rev-parse --short $branch) >> $dir/version.sh
