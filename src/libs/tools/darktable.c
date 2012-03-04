@@ -214,7 +214,7 @@ static void _lib_darktable_show_about_dialog()
       "Ulrich Pegelow",
       "jan",
       "maigl",
-      "And all those of you that made possible previous releases",
+      "And all those of you that made previous releases possible",
     NULL
     };
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
