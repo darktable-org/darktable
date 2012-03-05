@@ -1400,9 +1400,9 @@ void gui_init (struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "motion-notify-event",
                     G_CALLBACK (area_motion_notify), self);
   g_signal_connect (G_OBJECT (c->area), "leave-notify-event",
-                    G_CALLBACK (area_enter_notify), self);
-  g_signal_connect (G_OBJECT (c->area), "enter-notify-event",
                     G_CALLBACK (area_leave_notify), self);
+  g_signal_connect (G_OBJECT (c->area), "enter-notify-event",
+                    G_CALLBACK (area_enter_notify), self);
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (area_scrolled), self);
 
