@@ -30,26 +30,7 @@ DT_MODULE(1)
 
 #define PADDING 2
 
-/* the defined modules groups, the specific order here sets the order 
-   of buttons in modulegroup buttonrow 
-*/
-typedef enum dt_lib_modulegroup_t
-{
-  DT_MODULEGROUP_ACTIVE_PIPE,
-  DT_MODULEGROUP_FAVORITES,
-
-  DT_MODULEGROUP_BASIC,
-  DT_MODULEGROUP_TONE,
-  DT_MODULEGROUP_COLOR,
-  DT_MODULEGROUP_CORRECT,
-  DT_MODULEGROUP_EFFECT,
-
-  /* dont touch the following */
-  DT_MODULEGROUP_SIZE,
-
-  DT_MODULEGROUP_NONE
-
-} dt_lib_modulegroup_t;
+#include "modulegroups.h"
 
 typedef struct dt_lib_modulegroups_t
 {
@@ -169,6 +150,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_size_request(d->buttons[k], iconsize, iconsize);
     gtk_box_pack_start(GTK_BOX(br), d->buttons[k], TRUE, TRUE, 0);
   }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[d->current]), TRUE);
   gtk_widget_show_all(self->widget);
 
   /*
@@ -184,7 +166,6 @@ void gui_init(dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals,
 			    DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, 
 			    G_CALLBACK(_lib_modulegroups_viewchanged_callback), self);
-
 
 }
 

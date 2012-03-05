@@ -24,12 +24,12 @@ it under the terms of the one of three licenses as you choose:
 #define __VERSION_H
 
 #define LIBRAW_MAJOR_VERSION  0
-#define LIBRAW_MINOR_VERSION  13
-#define LIBRAW_PATCH_VERSION  8
+#define LIBRAW_MINOR_VERSION  14
+#define LIBRAW_PATCH_VERSION  5
 #define LIBRAW_VERSION_TAIL   Release
 
-#define LIBRAW_SHLIB_CURRENT  	2
-#define LIBRAW_SHLIB_REVISION 	6
+#define LIBRAW_SHLIB_CURRENT  	5
+#define LIBRAW_SHLIB_REVISION 	0
 #define LIBRAW_SHLIB_AGE     	0
 
 #define _LIBRAW_VERSION_MAKE(a,b,c,d) #a"."#b"."#c"-"#d
@@ -45,6 +45,18 @@ it under the terms of the one of three licenses as you choose:
 
 #define LIBRAW_CHECK_VERSION(major,minor,patch) \
     ( LibRaw::versionNumber() >= LIBRAW_MAKE_VERSION(major,minor,patch) )
+
+#define LIBRAW_RUNTIME_CHECK_VERSION_EXACT() \
+    ( (LibRaw::versionNumber() & 0xffff00) == LIBRAW_MAKE_VERSION(LIBRAW_MAJOR_VERSION,LIBRAW_MINOR_VERSION,0) )
+
+#define LIBRAW_RUNTIME_CHECK_VERSION_NOTLESS() \
+    ( (LibRaw::versionNumber() & 0xffff00) >= LIBRAW_MAKE_VERSION(LIBRAW_MAJOR_VERSION,LIBRAW_MINOR_VERSION,0) )
+
+#define LIBRAW_COMPILE_CHECK_VERSION(major,minor) \
+    (LIBRAW_MAKE_VERSION(major,minor,0) == (LIBRAW_VERSION & 0xffff00))
+
+#define LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(major,minor) \
+    (LIBRAW_MAKE_VERSION(major,minor,0) <= (LIBRAW_VERSION & 0xffff00))
 
 
 #endif
