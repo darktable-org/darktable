@@ -388,7 +388,7 @@ void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  d->active = CLAMP(pos, 0, d->num_labels-1);
+  d->active = CLAMP(pos, -1, d->num_labels-1);
   g_signal_emit_by_name(G_OBJECT(w), "value-changed");
 }
 
@@ -468,7 +468,10 @@ dt_bauhaus_draw_label(dt_bauhaus_widget_t *w, cairo_t *cr)
   GtkWidget *widget = GTK_WIDGET(w);
   const int height = widget->allocation.height;
   cairo_save(cr);
-  cairo_set_source_rgb(cr, 1., 1., 1.);
+  if(gtk_widget_is_sensitive(widget))
+    cairo_set_source_rgb(cr, 1., 1., 1.);
+  else
+    cairo_set_source_rgba(cr, 1., 1., 1., .2);
   cairo_move_to(cr, 2, height*0.8);
   cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, .8*height);
@@ -730,16 +733,20 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   switch(w->type)
   {
     case DT_BAUHAUS_COMBOBOX:
+      if(gtk_widget_is_sensitive(widget))
       {
         dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-        cairo_text_extents_t ext;
-        cairo_set_source_rgb(cr, 1., 1., 1.);
-        cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size (cr, .8*height);
-        gchar *text = (gchar *)g_list_nth_data(d->labels, d->active);
-        cairo_text_extents (cr, text, &ext);
-        cairo_move_to (cr, width-4-height-ext.width, height*0.8);
-        cairo_show_text(cr, text);
+        if(d->active >= 0)
+        {
+          cairo_text_extents_t ext;
+          cairo_set_source_rgb(cr, 1., 1., 1.);
+          cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+          cairo_set_font_size (cr, .8*height);
+          gchar *text = (gchar *)g_list_nth_data(d->labels, d->active);
+          cairo_text_extents (cr, text, &ext);
+          cairo_move_to (cr, width-4-height-ext.width, height*0.8);
+          cairo_show_text(cr, text);
+        }
       }
       break;
     case DT_BAUHAUS_SLIDER:
@@ -757,34 +764,37 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         cairo_restore(cr);
 #endif
 
-        // draw scale indicator
-        cairo_save(cr);
-        const float l = 4.0f/width;
-        const float r = 1.0f-(height+4.0f)/width;
-        cairo_set_source_rgb(cr, .6, .6, .6);
-        cairo_translate(cr, (l + d->pos*(r-l))*width, height*.8f);
-        cairo_scale(cr, 1.0f, -1.0f);
-        draw_equilateral_triangle(cr, height*0.35f); // 0.3
-        // cairo_fill(cr);
-        cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 1.);
-        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-        cairo_stroke(cr);
-        cairo_restore(cr);
+        if(gtk_widget_is_sensitive(widget))
+        {
+          // draw scale indicator
+          cairo_save(cr);
+          const float l = 4.0f/width;
+          const float r = 1.0f-(height+4.0f)/width;
+          cairo_set_source_rgb(cr, .6, .6, .6);
+          cairo_translate(cr, (l + d->pos*(r-l))*width, height*.8f);
+          cairo_scale(cr, 1.0f, -1.0f);
+          draw_equilateral_triangle(cr, height*0.35f); // 0.3
+          // cairo_fill(cr);
+          cairo_fill_preserve(cr);
+          cairo_set_line_width(cr, 1.);
+          cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+          cairo_stroke(cr);
+          cairo_restore(cr);
 
-        // TODO: merge that text with combo
-        char text[256];
-        const float f = d->min + d->pos*(d->max-d->min);
-        const float fint = (int)f;
-        snprintf(text, 256, d->format, fint);
-        cairo_text_extents_t ext;
-        cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size (cr, .8*height);
-        cairo_text_extents (cr, text, &ext);
-        cairo_set_source_rgb(cr, 1., 1., 1.);
-        cairo_move_to (cr, width-4-height-ext.x_advance, height*0.8);
-        snprintf(text, 256, d->format, f);
-        cairo_show_text(cr, text);
+          // TODO: merge that text with combo
+          char text[256];
+          const float f = d->min + d->pos*(d->max-d->min);
+          const float fint = (int)f;
+          snprintf(text, 256, d->format, fint);
+          cairo_text_extents_t ext;
+          cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+          cairo_set_font_size (cr, .8*height);
+          cairo_text_extents (cr, text, &ext);
+          cairo_set_source_rgb(cr, 1., 1., 1.);
+          cairo_move_to (cr, width-4-height-ext.x_advance, height*0.8);
+          snprintf(text, 256, d->format, f);
+          cairo_show_text(cr, text);
+        }
       }
       break;
     default:
