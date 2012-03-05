@@ -326,7 +326,7 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
   d->defpos = (defval-min)/(max-min);
   d->pos = d->defpos;
   d->oldpos = d->defpos;
-  d->scale = (5*step-min)/(max-min);
+  d->scale = 5.0f*step/(max-min);
   snprintf(d->format, 8, "%%.0%df", digits);
 
   g_signal_connect (G_OBJECT (w), "button-press-event",
@@ -938,7 +938,7 @@ dt_bauhaus_slider_get(GtkWidget *widget)
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(!w->type == DT_BAUHAUS_SLIDER) return -1.0f;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  return (d->pos+d->min)*(d->max-d->min);
+  return d->min + d->pos*(d->max-d->min);
 }
 
 void
