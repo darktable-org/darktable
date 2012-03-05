@@ -1,13 +1,13 @@
 #
 # updated 2011-11-19 a3novy <a3novy01@gmail.com>
-# updated 2012-02-19 a3novy <a3novy01@gmail.com>
+# updated 2012-02-19,03-04 a3novy <a3novy01@gmail.com>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-18 16:50+0900\n"
-"PO-Revision-Date: 2012-02-19 12:44+0900\n"
+"POT-Creation-Date: 2012-03-04 22:37+0900\n"
+"PO-Revision-Date: 2012-03-04 22:51+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: Japanese\n"
@@ -243,8 +243,8 @@ msgid "password storage backend to use"
 msgstr "バックエンド・ストレージ用のパスワード"
 
 #: ../build/src/preferences_gen.h:751
-msgid "the storage backend for password storage: 0 - none, 1 - gconf (do not use), 2 - kwallet, 3 - gnome keyring"
-msgstr "バックエンド・ストレージ用のパスワード：0- 無, 1 - gconf (使用しない), 2 - Kwallet, 3 - gnome keyring"
+msgid "the storage backend for password storage: 0 - none, 2 - kwallet, 3 - gnome keyring"
+msgstr "パスワード保存用のバックエンド・ストレージ：0- 無, 1 - gconf (使用しない), 2 - Kwallet, 3 - gnome keyring"
 
 #: ../src/common/collection.c:431
 #: ../src/iop/bilateral.cc:366
@@ -341,16 +341,16 @@ msgid "file `%s' has unknown format!"
 msgstr "ファイル `%s' は不明な形式です！"
 
 #: ../src/common/darktable.c:609
-#: ../src/libs/import.c:344
+#: ../src/libs/import.c:345
 #, c-format
 msgid "error loading file `%s'"
 msgstr "ファイル `%s' 読み込みエラー"
 
-#: ../src/common/film.c:351
+#: ../src/common/film.c:330
 msgid "no supported images was found to be imported"
 msgstr "サポートされていない画像をインポートしようとしました"
 
-#: ../src/common/film.c:364
+#: ../src/common/film.c:341
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
@@ -386,6 +386,7 @@ msgid "failed to allocate memory for export, please lower the threads used for e
 msgstr "エクスポートのメモリ割り当てに失敗しました。エクスポートに使用されるスレッドを下げてください。または、もっとメモリを搭載してください"
 
 #: ../src/common/imageio.c:496
+#: ../src/common/mipmap_cache.c:873
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "画像 `%s' は使用不可能です"
@@ -421,12 +422,12 @@ msgstr "スタイル  '%s' は正常にインポートされました"
 msgid "none"
 msgstr "なし"
 
-#: ../src/control/control.c:935
-#: ../src/control/control.c:938
+#: ../src/control/control.c:934
+#: ../src/control/control.c:937
 msgid "working.."
 msgstr "処理中.."
 
-#: ../src/control/control.c:1018
+#: ../src/control/control.c:1017
 #, c-format
 msgid "switch to %s mode"
 msgstr "クリックで %s モードに切り替え"
@@ -567,7 +568,7 @@ msgstr[1] "%d の画像を %sにエクスポートしています"
 
 #: ../src/control/jobs/control_jobs.c:592
 #: ../src/control/jobs/control_jobs.c:593
-#: ../src/views/darkroom.c:439
+#: ../src/views/darkroom.c:446
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "画像 `%s' は現在使用できません"
@@ -596,6 +597,7 @@ msgstr "%s は スイッチオフ"
 #: ../src/gui/accelerators.c:829
 #: ../src/gui/presets.c:175
 #: ../src/gui/presets.c:202
+#: ../src/gui/presets.c:482
 #: ../src/libs/lib.c:209
 #: ../src/libs/lib.c:229
 #: ../src/libs/lib.c:828
@@ -707,13 +709,13 @@ msgstr "ピンライト"
 #: ../src/develop/imageop.c:1103
 #: ../src/iop/channelmixer.c:353
 #: ../src/iop/colorize.c:448
-#: ../src/iop/colorzones.c:850
-#: ../src/iop/colorzones.c:866
+#: ../src/iop/colorzones.c:861
+#: ../src/iop/colorzones.c:877
 msgid "lightness"
 msgstr "明度"
 
 #: ../src/develop/imageop.c:1104
-#: ../src/iop/atrous.c:1376
+#: ../src/iop/atrous.c:1386
 #: ../src/iop/equalizer.c:343
 #: ../src/iop/nlmeans.c:454
 msgid "chroma"
@@ -723,8 +725,8 @@ msgstr "彩度"
 #: ../src/develop/imageop.c:1105
 #: ../src/iop/channelmixer.c:351
 #: ../src/iop/colorize.c:394
-#: ../src/iop/colorzones.c:848
-#: ../src/iop/colorzones.c:868
+#: ../src/iop/colorzones.c:859
+#: ../src/iop/colorzones.c:879
 #: ../src/iop/graduatednd.c:586
 #: ../src/iop/splittoning.c:495
 #: ../src/iop/splittoning.c:554
@@ -874,12 +876,12 @@ msgstr "一般"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
 #: ../src/gui/camera_import_dialog.c:327
-#: ../src/libs/import.c:402
+#: ../src/libs/import.c:403
 msgid "ignore jpeg files"
 msgstr "jpegファイルを無視します"
 
 #: ../src/gui/camera_import_dialog.c:328
-#: ../src/libs/import.c:403
+#: ../src/libs/import.c:404
 msgid "do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."
 msgstr ".jpgや.jpegファイルを読み込まない.　ディレクトリに raw+jpeg がある場合に便利です"
 
@@ -1742,41 +1744,6 @@ msgstr "公開アルバム"
 msgid "%d/%d exported to picasa webalbum"
 msgstr "%d/%d を Picasa ウェブ アルバムにエクスポートしました"
 
-#. make sure you put all your translatable strings into _() !
-#: ../src/iop/anlfyeni.c:81
-msgid "local contrast 2"
-msgstr "ローカルコントラスト 2"
-
-#: ../src/iop/anlfyeni.c:290
-msgid "sensitivity of edge detection"
-msgstr "エッジ検出の感度"
-
-#: ../src/iop/anlfyeni.c:291
-msgid "sensitivity"
-msgstr "感度"
-
-#: ../src/iop/anlfyeni.c:294
-msgid "spatial extent of the effect around edges"
-msgstr "エッジ周り効果の範囲"
-
-#: ../src/iop/anlfyeni.c:295
-#: ../src/iop/lens.c:1406
-#: ../src/iop/vignette.c:883
-#: ../src/iop/watermark.c:716
-msgid "scale"
-msgstr "スケール"
-
-#: ../src/iop/anlfyeni.c:298
-msgid "strength of the local contrast"
-msgstr "ローカルコントラストの適用量"
-
-#: ../src/iop/anlfyeni.c:299
-#: ../src/iop/bloom.c:344
-#: ../src/iop/grain.c:524
-#: ../src/iop/hotpixels.c:292
-msgid "strength"
-msgstr "適用量"
-
 #: ../src/iop/atrous.c:116
 msgid "equalizer"
 msgstr "イコライザ"
@@ -1830,73 +1797,73 @@ msgstr "ブルーム"
 
 #: ../src/iop/atrous.c:889
 msgid "clarity (subtle)"
-msgstr "明瞭化（少）"
+msgstr "明瞭化（微妙）"
 
 #: ../src/iop/atrous.c:903
 msgid "clarity"
 msgstr "明瞭化"
 
-#: ../src/iop/atrous.c:1151
-#: ../src/iop/atrous.c:1155
+#: ../src/iop/atrous.c:1161
+#: ../src/iop/atrous.c:1165
 msgid "coarse"
 msgstr "粗い"
 
-#: ../src/iop/atrous.c:1157
-#: ../src/iop/atrous.c:1161
+#: ../src/iop/atrous.c:1167
+#: ../src/iop/atrous.c:1171
 msgid "fine"
 msgstr "細かい"
 
-#: ../src/iop/atrous.c:1168
+#: ../src/iop/atrous.c:1178
 msgid "contrasty"
 msgstr "コントラスト強"
 
-#: ../src/iop/atrous.c:1169
-#: ../src/iop/atrous.c:1173
+#: ../src/iop/atrous.c:1179
+#: ../src/iop/atrous.c:1183
 msgid "smooth"
 msgstr "平滑化"
 
-#: ../src/iop/atrous.c:1174
+#: ../src/iop/atrous.c:1184
 msgid "noisy"
 msgstr "ノイズ化"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1177
+#: ../src/iop/atrous.c:1187
 msgid "bold"
 msgstr "はっきり"
 
-#: ../src/iop/atrous.c:1178
+#: ../src/iop/atrous.c:1188
 msgid "dull"
 msgstr "ぼんやり"
 
-#: ../src/iop/atrous.c:1374
+#: ../src/iop/atrous.c:1384
 #: ../src/iop/equalizer.c:342
 #: ../src/iop/nlmeans.c:452
 msgid "luma"
 msgstr "輝度"
 
-#: ../src/iop/atrous.c:1375
+#: ../src/iop/atrous.c:1385
 msgid "change lightness at each feature size"
 msgstr "各サイズの明度を変更します"
 
-#: ../src/iop/atrous.c:1377
+#: ../src/iop/atrous.c:1387
 msgid "change color saturation at each feature size"
 msgstr "各サイズの彩度を変更します"
 
-#: ../src/iop/atrous.c:1378
+#: ../src/iop/atrous.c:1388
 #: ../src/iop/highpass.c:498
 msgid "sharpness"
 msgstr "シャープネス"
 
-#: ../src/iop/atrous.c:1379
+#: ../src/iop/atrous.c:1389
 msgid "sharpness of edges at each feature size"
 msgstr "各サイズのシャープネスを調整します"
 
-#: ../src/iop/atrous.c:1415
+#: ../src/iop/atrous.c:1427
 #: ../src/iop/soften.c:370
 msgid "mix"
 msgstr "混合"
 
-#: ../src/iop/atrous.c:1416
+#: ../src/iop/atrous.c:1428
 msgid "make effect stronger or weaker"
 msgstr "強/弱の効果を加える"
 
@@ -1966,7 +1933,7 @@ msgstr "fotogenetic (EV3)"
 msgid "base curve"
 msgstr "ベースカーブ"
 
-#: ../src/iop/basecurve.c:630
+#: ../src/iop/basecurve.c:643
 msgid ""
 "abscissa: input, ordinate: output \n"
 "works on RGB channels"
@@ -1981,6 +1948,7 @@ msgstr "ノイズ低減（エッジ保持平滑化）"
 #: ../src/iop/bilateral.cc:91
 #: ../src/iop/lowpass.c:114
 #: ../src/iop/sharpen.c:94
+#: ../src/iop/shadhi.c:117
 msgctxt "accel"
 msgid "radius"
 msgstr "半径"
@@ -2025,8 +1993,8 @@ msgstr "ブルーのボカシ量"
 #: ../src/iop/bilateral.cc:365
 #: ../src/iop/clahe.c:342
 #: ../src/iop/lowpass.c:715
-#: ../src/iop/shadhi.c:800
 #: ../src/iop/sharpen.c:553
+#: ../src/iop/shadhi.c:819
 msgid "radius"
 msgstr "半径"
 
@@ -2061,6 +2029,12 @@ msgstr "サイズ"
 #: ../src/iop/sharpen.c:559
 msgid "threshold"
 msgstr "しきい値"
+
+#: ../src/iop/bloom.c:344
+#: ../src/iop/grain.c:524
+#: ../src/iop/hotpixels.c:292
+msgid "strength"
+msgstr "適用量"
 
 #: ../src/iop/bloom.c:350
 msgid "the size of bloom"
@@ -2121,7 +2095,7 @@ msgstr "アスペクト比"
 #. add import singel image buttons
 #: ../src/iop/borders.c:408
 #: ../src/iop/clipping.c:929
-#: ../src/libs/import.c:450
+#: ../src/libs/import.c:461
 msgid "image"
 msgstr "画像"
 
@@ -2184,7 +2158,7 @@ msgid "frame color"
 msgstr "フレームカラー"
 
 #: ../src/iop/borders.c:437
-#: ../src/iop/colorzones.c:855
+#: ../src/iop/colorzones.c:866
 msgid "pick gui color from image"
 msgstr "画像からGUIカラーを選択"
 
@@ -2216,8 +2190,8 @@ msgstr "出力チャンネル"
 #: ../src/iop/channelmixer.c:352
 #: ../src/iop/colorcorrection.c:203
 #: ../src/iop/colorize.c:395
-#: ../src/iop/colorzones.c:849
-#: ../src/iop/colorzones.c:867
+#: ../src/iop/colorzones.c:860
+#: ../src/iop/colorzones.c:878
 #: ../src/iop/graduatednd.c:587
 #: ../src/iop/lowpass.c:717
 #: ../src/iop/soften.c:365
@@ -2437,27 +2411,27 @@ msgstr ""
 "黄金三角形を表示するには、\n"
 "このオプションを有効にします"
 
-#: ../src/iop/clipping.c:1657
+#: ../src/iop/clipping.c:1663
 msgctxt "accel"
 msgid "commit"
 msgstr "コミット"
 
-#: ../src/iop/clipping.c:1659
+#: ../src/iop/clipping.c:1665
 msgctxt "accel"
 msgid "swap the aspect ratio"
 msgstr "アスペクト比を入れ替える"
 
-#: ../src/iop/clipping.c:1661
+#: ../src/iop/clipping.c:1667
 msgctxt "accel"
 msgid "angle"
 msgstr "角度"
 
-#: ../src/iop/clipping.c:1662
+#: ../src/iop/clipping.c:1668
 msgctxt "accel"
 msgid "keystone h"
 msgstr "キーストーン水平補正"
 
-#: ../src/iop/clipping.c:1663
+#: ../src/iop/clipping.c:1669
 msgctxt "accel"
 msgid "keystone v"
 msgstr "キーストーン垂直補正"
@@ -2768,7 +2742,7 @@ msgstr "自然な肌色トーン"
 msgid "black & white film"
 msgstr "モノクロフィルム"
 
-#: ../src/iop/colorzones.c:844
+#: ../src/iop/colorzones.c:855
 msgid "select by"
 msgstr "種類"
 
@@ -3366,6 +3340,12 @@ msgstr "パノラマ"
 msgid "equirectangular"
 msgstr "エクイレクタングラー"
 
+#: ../src/iop/lens.c:1406
+#: ../src/iop/vignette.c:883
+#: ../src/iop/watermark.c:716
+msgid "scale"
+msgstr "スケール"
+
 #: ../src/iop/lens.c:1413
 msgid "auto scale"
 msgstr "オートスケール"
@@ -3407,7 +3387,7 @@ msgstr ""
 msgid "levels"
 msgstr "レベル"
 
-#: ../src/iop/levels.c:213
+#: ../src/iop/levels.c:218
 msgid "drag handles to set black, grey, and white points.  operates on L channel."
 msgstr "ドラッグで、黒、グレイ、およびホワイトポイントを設定します。 Lチャネルで動作します"
 
@@ -3679,48 +3659,6 @@ msgstr "フィルライト .EV"
 msgid "width of fill-light area defined in zones"
 msgstr "ゾーンに定義されたフィルライトエリアの幅"
 
-#: ../src/iop/shadhi.c:98
-msgid "shadows and highlights"
-msgstr "シャドウとハイライト"
-
-#. Shadows
-#: ../src/iop/shadhi.c:798
-#: ../src/iop/splittoning.c:482
-msgid "shadows"
-msgstr "シャドウ"
-
-#. Highlights
-#: ../src/iop/shadhi.c:799
-#: ../src/iop/splittoning.c:541
-msgid "highlights"
-msgstr "ハイライト"
-
-#: ../src/iop/shadhi.c:801
-#: ../src/iop/splittoning.c:614
-msgid "compress"
-msgstr "圧縮"
-
-#: ../src/iop/shadhi.c:811
-msgid "lighten shadows"
-msgstr "シャドウを明るく"
-
-#: ../src/iop/shadhi.c:812
-msgid "darken highlights"
-msgstr "ハイライトを暗く"
-
-#: ../src/iop/shadhi.c:813
-#: ../src/iop/tonemap.cc:314
-msgid "spatial extent"
-msgstr "範囲"
-
-#: ../src/iop/shadhi.c:814
-msgid ""
-"compress the effect on shadows/highlights and\n"
-"preserve midtones"
-msgstr ""
-"ハイライト/シャドウでの効果を圧縮し\n"
-"中間トーンを保持します"
-
 #: ../src/iop/sharpen.c:75
 msgctxt "sharpen"
 msgid "sharpen"
@@ -3794,6 +3732,7 @@ msgid "balance"
 msgstr "バランス"
 
 #: ../src/iop/splittoning.c:100
+#: ../src/iop/shadhi.c:118
 msgctxt "accel"
 msgid "compress"
 msgstr "圧縮"
@@ -3830,9 +3769,21 @@ msgstr "伝統的なプラチナプリント"
 msgid "chocolate brown"
 msgstr "チョコレートブラウン"
 
+#. Shadows
+#: ../src/iop/splittoning.c:482
+#: ../src/iop/shadhi.c:817
+msgid "shadows"
+msgstr "シャドウ"
+
 #: ../src/iop/splittoning.c:528
 msgid "select the hue tone for shadows"
 msgstr "シャドウの色相トーンを選択"
+
+#. Highlights
+#: ../src/iop/splittoning.c:541
+#: ../src/iop/shadhi.c:818
+msgid "highlights"
+msgstr "ハイライト"
 
 #: ../src/iop/splittoning.c:588
 msgid "select the hue tone for highlights"
@@ -3845,6 +3796,11 @@ msgstr "ハイライトの彩度トーンを選択"
 #: ../src/iop/splittoning.c:608
 msgid "balance"
 msgstr "バランス"
+
+#: ../src/iop/splittoning.c:614
+#: ../src/iop/shadhi.c:820
+msgid "compress"
+msgstr "圧縮"
 
 #: ../src/iop/splittoning.c:619
 msgid "the balance of center of splittoning"
@@ -3972,11 +3928,11 @@ msgstr "bチャンネルのトーンカーブ"
 msgid "double click to reset curve"
 msgstr "ダブルクリックでカーブのリセット"
 
-#: ../src/iop/tonecurve.c:454
+#: ../src/iop/tonecurve.c:456
 msgid "auto scale chroma"
 msgstr "彩度 自動調整"
 
-#: ../src/iop/tonecurve.c:459
+#: ../src/iop/tonecurve.c:461
 msgid ""
 "if checked a and b curves have no effect and are\n"
 "not displayed. chroma values (a and b) of each pixel\n"
@@ -4002,6 +3958,11 @@ msgstr "範囲"
 #: ../src/iop/tonemap.cc:309
 msgid "contrast compression"
 msgstr "コントラスト圧縮"
+
+#: ../src/iop/tonemap.cc:314
+#: ../src/iop/shadhi.c:832
+msgid "spatial extent"
+msgstr "範囲"
 
 #: ../src/iop/velvia.c:77
 msgid "velvia"
@@ -4630,7 +4591,7 @@ msgid "xmp sidecar files"
 msgstr "xmpサイドカーファイル"
 
 #: ../src/libs/copy_history.c:85
-#: ../src/libs/import.c:325
+#: ../src/libs/import.c:326
 #: ../src/libs/styles.c:262
 msgid "all files"
 msgstr "全てのファイル"
@@ -4799,7 +4760,7 @@ msgstr "現在の設定でエクスポート (ctrl-e)"
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:759
 #: ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1260
+#: ../src/views/darkroom.c:1267
 msgctxt "accel"
 msgid "export"
 msgstr "エクスポート"
@@ -4973,91 +4934,91 @@ msgctxt "accel"
 msgid "reset rotation"
 msgstr "回転をリセット"
 
-#: ../src/libs/import.c:59
+#: ../src/libs/import.c:60
 msgid "import"
 msgstr "インポート"
 
-#: ../src/libs/import.c:80
+#: ../src/libs/import.c:81
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "デバイスをスキャン"
 
-#: ../src/libs/import.c:81
+#: ../src/libs/import.c:82
 msgctxt "accel"
 msgid "import from camera"
 msgstr "カメラからインポート"
 
-#: ../src/libs/import.c:82
+#: ../src/libs/import.c:83
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "テザー撮影"
 
-#: ../src/libs/import.c:83
+#: ../src/libs/import.c:84
 msgctxt "accel"
 msgid "import image"
 msgstr "画像をインポート"
 
 #. add the rescan button
-#: ../src/libs/import.c:162
+#: ../src/libs/import.c:163
 msgid "scan for devices"
 msgstr "デバイスをスキャン"
 
-#: ../src/libs/import.c:165
+#: ../src/libs/import.c:166
 msgid "scan for newly attached devices"
 msgstr "新しく接続されたデバイスをスキャンします"
 
-#: ../src/libs/import.c:192
+#: ../src/libs/import.c:193
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "デバイス \"%s\"  ポート \"%s\"に 接続."
 
-#: ../src/libs/import.c:200
+#: ../src/libs/import.c:201
 msgid "import from camera"
 msgstr "カメラからインポート"
 
-#: ../src/libs/import.c:204
+#: ../src/libs/import.c:205
 msgid "tethered shoot"
 msgstr "テザー撮影"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:226
+#: ../src/libs/import.c:227
 msgid "no supported devices found"
 msgstr "サポートされたデバイスが見つかりません"
 
-#: ../src/libs/import.c:295
+#: ../src/libs/import.c:296
 msgid "import image"
 msgstr "画像をインポート"
 
-#: ../src/libs/import.c:320
+#: ../src/libs/import.c:321
 msgid "supported images"
 msgstr "サポートされている画像"
 
-#: ../src/libs/import.c:358
+#: ../src/libs/import.c:359
 msgid "file has unknown format!"
 msgstr "ファイル `%s' は不明な形式です！"
 
-#: ../src/libs/import.c:375
+#: ../src/libs/import.c:376
 msgid "import film"
 msgstr "フィルムをインポート"
 
-#: ../src/libs/import.c:394
+#: ../src/libs/import.c:395
 msgid "import directories recursively"
 msgstr "ディレクトリを再帰的にインポート"
 
-#: ../src/libs/import.c:395
+#: ../src/libs/import.c:396
 msgid "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "サブディレクトリを再帰的にインポート。各ディレクトリは、新しいフィルムロールに入ります"
 
-#: ../src/libs/import.c:453
+#: ../src/libs/import.c:464
 msgid "select one or more images to import"
 msgstr "インポートする１個または複数の画像を選択します"
 
 #. adding the import folder button
-#: ../src/libs/import.c:462
+#: ../src/libs/import.c:473
 msgid "folder"
 msgstr "フォルダ"
 
-#: ../src/libs/import.c:466
+#: ../src/libs/import.c:477
 msgid "select a folder to import as film roll"
 msgstr "フィルムロールとしてインポートするフォルダを選択します"
 
@@ -5595,103 +5556,103 @@ msgstr "* networking, battle testing, translation expert *"
 msgid "* contributors *"
 msgstr "* 貢献者 *"
 
-#: ../src/libs/tools/darktable.c:224
+#: ../src/libs/tools/darktable.c:222
 msgid "translator-credits"
 msgstr "翻訳者 - クレジット"
 
-#: ../src/libs/tools/filmstrip.c:98
+#: ../src/libs/tools/filmstrip.c:99
 msgid "filmstrip"
 msgstr "フィルムストリップ"
 
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:124
-#: ../src/views/lighttable.c:1071
+#: ../src/libs/tools/filmstrip.c:125
+#: ../src/views/lighttable.c:1075
 msgctxt "accel"
 msgid "rate desert"
 msgstr "星なし"
 
-#: ../src/libs/tools/filmstrip.c:125
-#: ../src/views/lighttable.c:1072
+#: ../src/libs/tools/filmstrip.c:126
+#: ../src/views/lighttable.c:1076
 msgctxt "accel"
 msgid "rate 1"
 msgstr "星一つ"
 
-#: ../src/libs/tools/filmstrip.c:126
-#: ../src/views/lighttable.c:1073
+#: ../src/libs/tools/filmstrip.c:127
+#: ../src/views/lighttable.c:1077
 msgctxt "accel"
 msgid "rate 2"
 msgstr "星二つ"
 
-#: ../src/libs/tools/filmstrip.c:127
-#: ../src/views/lighttable.c:1074
+#: ../src/libs/tools/filmstrip.c:128
+#: ../src/views/lighttable.c:1078
 msgctxt "accel"
 msgid "rate 3"
 msgstr "星三つ"
 
-#: ../src/libs/tools/filmstrip.c:128
-#: ../src/views/lighttable.c:1075
+#: ../src/libs/tools/filmstrip.c:129
+#: ../src/views/lighttable.c:1079
 msgctxt "accel"
 msgid "rate 4"
 msgstr "星四つ"
 
-#: ../src/libs/tools/filmstrip.c:129
-#: ../src/views/lighttable.c:1076
+#: ../src/libs/tools/filmstrip.c:130
+#: ../src/views/lighttable.c:1080
 msgctxt "accel"
 msgid "rate 5"
 msgstr "星五つ"
 
-#: ../src/libs/tools/filmstrip.c:130
-#: ../src/views/lighttable.c:1077
+#: ../src/libs/tools/filmstrip.c:131
+#: ../src/views/lighttable.c:1081
 msgctxt "accel"
 msgid "rate reject"
 msgstr "評価除外"
 
 #. setup history key accelerators
-#: ../src/libs/tools/filmstrip.c:134
+#: ../src/libs/tools/filmstrip.c:135
 msgctxt "accel"
 msgid "copy history"
 msgstr "履歴のコピー"
 
-#: ../src/libs/tools/filmstrip.c:136
+#: ../src/libs/tools/filmstrip.c:137
 msgctxt "accel"
 msgid "paste history"
 msgstr "履歴の貼り付け"
 
-#: ../src/libs/tools/filmstrip.c:138
+#: ../src/libs/tools/filmstrip.c:139
 msgctxt "accel"
 msgid "discard history"
 msgstr "履歴を破棄"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:144
-#: ../src/views/lighttable.c:1090
+#: ../src/libs/tools/filmstrip.c:145
+#: ../src/views/lighttable.c:1094
 msgctxt "accel"
 msgid "color red"
 msgstr "カラー レッド"
 
-#: ../src/libs/tools/filmstrip.c:145
-#: ../src/views/lighttable.c:1091
+#: ../src/libs/tools/filmstrip.c:146
+#: ../src/views/lighttable.c:1095
 msgctxt "accel"
 msgid "color yellow"
 msgstr "カラー イエロー"
 
-#: ../src/libs/tools/filmstrip.c:146
-#: ../src/views/lighttable.c:1092
+#: ../src/libs/tools/filmstrip.c:147
+#: ../src/views/lighttable.c:1096
 msgctxt "accel"
 msgid "color green"
 msgstr "カラー グリーン"
 
-#: ../src/libs/tools/filmstrip.c:147
-#: ../src/views/lighttable.c:1093
+#: ../src/libs/tools/filmstrip.c:148
+#: ../src/views/lighttable.c:1097
 msgctxt "accel"
 msgid "color blue"
 msgstr "カラー ブルー"
 
-#: ../src/libs/tools/filmstrip.c:148
-#: ../src/views/lighttable.c:1094
+#: ../src/libs/tools/filmstrip.c:149
+#: ../src/views/lighttable.c:1098
 msgctxt "accel"
 msgid "color purple"
 msgstr "カラー パープル"
@@ -5820,7 +5781,7 @@ msgstr "テザリングをサポートするカメラがありません..."
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:458
-#: ../src/views/darkroom.c:1248
+#: ../src/views/darkroom.c:1255
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "フィルムストリップ切り換え"
@@ -5830,54 +5791,54 @@ msgid "darkroom"
 msgstr "ダークルーム"
 
 #. fail :(
-#: ../src/views/darkroom.c:428
+#: ../src/views/darkroom.c:435
 msgid "no image selected!"
 msgstr "画像が選択されていません！"
 
-#: ../src/views/darkroom.c:715
+#: ../src/views/darkroom.c:722
 msgid "no userdefined presets for favorite modules were found"
 msgstr "「お気に入り」モジュールのユーザ定義プリセットが見つかりませんでした"
 
-#: ../src/views/darkroom.c:720
+#: ../src/views/darkroom.c:727
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "この画像に `%s'スタイル適用します"
 
-#: ../src/views/darkroom.c:752
+#: ../src/views/darkroom.c:759
 msgid "no styles have been created yet"
 msgstr "スタイルはまだ作成されていません"
 
-#: ../src/views/darkroom.c:784
+#: ../src/views/darkroom.c:791
 msgid "quick access to presets of your favorites"
 msgstr "お気に入りのプリセットに素早くアクセスします"
 
-#: ../src/views/darkroom.c:798
+#: ../src/views/darkroom.c:805
 msgid "quick access for applying any of your styles"
 msgstr "スタイルの適用に素早くアクセスします"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1252
+#: ../src/views/darkroom.c:1259
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "ズームアップ"
 
-#: ../src/views/darkroom.c:1254
+#: ../src/views/darkroom.c:1261
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "ズーム フィル"
 
-#: ../src/views/darkroom.c:1256
+#: ../src/views/darkroom.c:1263
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "ズーム フィット"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1264
+#: ../src/views/darkroom.c:1271
 msgctxt "accel"
 msgid "image forward"
 msgstr "次の画像"
 
-#: ../src/views/darkroom.c:1266
+#: ../src/views/darkroom.c:1273
 msgctxt "accel"
 msgid "image back"
 msgstr "前の画像"
@@ -5903,57 +5864,125 @@ msgid "or in the collection plugin in the left panel."
 msgstr "または左側パネルのコレクション・プラグイン"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1080
+#: ../src/views/lighttable.c:1084
 msgctxt "accel"
 msgid "navigate up"
 msgstr "ナビゲート 上"
 
-#: ../src/views/lighttable.c:1082
+#: ../src/views/lighttable.c:1086
 msgctxt "accel"
 msgid "navigate down"
 msgstr "ナビゲート 下"
 
-#: ../src/views/lighttable.c:1084
+#: ../src/views/lighttable.c:1088
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "ナビゲート ページ・アップ"
 
-#: ../src/views/lighttable.c:1086
+#: ../src/views/lighttable.c:1090
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "ナビゲート ページ・ダウン"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1097
+#: ../src/views/lighttable.c:1101
 msgctxt "accel"
 msgid "scroll up"
 msgstr "スクロール アップ"
 
-#: ../src/views/lighttable.c:1099
+#: ../src/views/lighttable.c:1103
 msgctxt "accel"
 msgid "scroll down"
 msgstr "スクロール ダウン"
 
-#: ../src/views/lighttable.c:1101
+#: ../src/views/lighttable.c:1105
 msgctxt "accel"
 msgid "scroll left"
 msgstr "スクロール 左"
 
-#: ../src/views/lighttable.c:1103
+#: ../src/views/lighttable.c:1107
 msgctxt "accel"
 msgid "scroll right"
 msgstr "スクロール 右"
 
-#: ../src/views/lighttable.c:1105
+#: ../src/views/lighttable.c:1109
 msgctxt "accel"
 msgid "scroll center"
 msgstr "スクロール 中央"
 
 #. Preview key
-#: ../src/views/lighttable.c:1109
+#: ../src/views/lighttable.c:1113
 msgctxt "accel"
 msgid "preview"
 msgstr "プレビュー"
+
+#: ../src/common/ratings.c:32
+#, c-format
+msgid "applying rating %d to %d image"
+msgid_plural "applying rating %d to %d images"
+msgstr[0] "%d 個の画像に評価 ％d を適用しています"
+msgstr[1] " %d 画像を複製しています"
+
+#: ../src/common/ratings.c:60
+msgid "no images selected to apply rating"
+msgstr "評価を適用する選択画像がありません"
+
+#: ../src/libs/tools/hinter.c:42
+msgid "hinter"
+msgstr "hinter"
+
+#: ../src/libs/tools/global_toolbox.c:36
+msgid "preferences"
+msgstr "設定"
+
+#: ../src/libs/tools/global_toolbox.c:75
+msgid "show global preferences"
+msgstr "グローバル設定を表示"
+
+#: ../src/iop/shadhi.c:99
+msgid "shadows and highlights"
+msgstr "シャドウとハイライト"
+
+#: ../src/iop/shadhi.c:115
+msgctxt "accel"
+msgid "shadows"
+msgstr "シャドウ"
+
+#: ../src/iop/shadhi.c:116
+msgctxt "accel"
+msgid "highlights"
+msgstr "ハイライト"
+
+#: ../src/iop/shadhi.c:830
+msgid "lighten shadows"
+msgstr "シャドウを明るく"
+
+#: ../src/iop/shadhi.c:831
+msgid "darken highlights"
+msgstr "ハイライトを暗く"
+
+#: ../src/iop/shadhi.c:833
+msgid ""
+"compress the effect on shadows/highlights and\n"
+"preserve midtones"
+msgstr ""
+"ハイライト/シャドウでの効果を圧縮し\n"
+"中間トーンを保持します"
+
+#~ msgid "local contrast 2"
+#~ msgstr "ローカルコントラスト 2"
+
+#~ msgid "sensitivity of edge detection"
+#~ msgstr "エッジ検出の感度"
+
+#~ msgid "sensitivity"
+#~ msgstr "感度"
+
+#~ msgid "spatial extent of the effect around edges"
+#~ msgstr "エッジ周り効果の範囲"
+
+#~ msgid "strength of the local contrast"
+#~ msgstr "ローカルコントラストの適用量"
 
 #~ msgid "image cache file backup"
 #~ msgstr "画像キャッシュ・ファイルのバックアップ"
@@ -6024,9 +6053,6 @@ msgstr "プレビュー"
 
 #~ msgid "images sorted by"
 #~ msgstr "画像ソート"
-
-#~ msgid "show global preferences"
-#~ msgstr "グローバル設定を表示"
 
 #~ msgid "system default"
 #~ msgstr "システム・デフォルト"
