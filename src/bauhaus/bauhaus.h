@@ -60,7 +60,7 @@ typedef struct dt_bauhaus_slider_data_t
   float defpos;   // default value (normalized)
   float min, max; // min and max range
   float scale;    // step width for loupe mode
-  char format[8]; // numeric value is printed with this string
+  char format[24];// numeric value is printed with this string
 }
 dt_bauhaus_slider_data_t;
 

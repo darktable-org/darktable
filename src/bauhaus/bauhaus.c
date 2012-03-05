@@ -327,7 +327,7 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
   d->pos = d->defpos;
   d->oldpos = d->defpos;
   d->scale = 5.0f*step/(max-min);
-  snprintf(d->format, 8, "%%.0%df", digits);
+  snprintf(d->format, 24, "%%.0%df", digits);
 
   g_signal_connect (G_OBJECT (w), "button-press-event",
                     G_CALLBACK (dt_bauhaus_slider_button_press), (gpointer)NULL);
