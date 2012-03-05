@@ -1906,7 +1906,7 @@ void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a)
   mat4mulv(a, X_inv, y);
 }
 
-static void show_module_callback(GtkAccelGroup *accel_group,
+static gboolean show_module_callback(GtkAccelGroup *accel_group,
                                  GObject *acceleratable,
                                  guint keyval, GdkModifierType modifier,
                                  gpointer data)
@@ -1925,9 +1925,10 @@ static void show_module_callback(GtkAccelGroup *accel_group,
   //dt_gui_iop_modulegroups_switch(module->groups());
   dt_iop_gui_set_expanded(module, TRUE);
   dt_iop_request_focus(module);
+  return TRUE;
 }
 
-static void enable_module_callback(GtkAccelGroup *accel_group,
+static gboolean enable_module_callback(GtkAccelGroup *accel_group,
                                    GObject *acceleratable,
                                    guint keyval, GdkModifierType modifier,
                                    gpointer data)
@@ -1936,6 +1937,7 @@ static void enable_module_callback(GtkAccelGroup *accel_group,
   dt_iop_module_t *module = (dt_iop_module_t*)data;
   gboolean active= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
+  return TRUE;
 }
 
 
