@@ -286,8 +286,6 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
 
   // TODO: check this size, and all other sizes/borders (and colors)
   gtk_widget_set_size_request(GTK_WIDGET(w), 260, 18);
-  // TODO: encapsulate that for widgets, switch on widget type and add some descriptions (right click for slider + type etc)
-  g_object_set (GTK_OBJECT(w), "tooltip-text", _("smart tooltip"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(w),
       GDK_POINTER_MOTION_MASK |
