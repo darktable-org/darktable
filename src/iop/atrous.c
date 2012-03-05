@@ -24,7 +24,7 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "gui/gtk.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include <memory.h>
 #include <stdlib.h>
@@ -76,7 +76,6 @@ typedef struct dt_iop_atrous_gui_data_t
 {
   GtkWidget *mix;
   GtkDrawingArea *area;
-  GtkComboBox *presets;
   GtkNotebook* channel_tabs;
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
@@ -126,17 +125,6 @@ int
 flags ()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_accel_connect_slider_iop(self ,"mix",
-                              ((dt_iop_atrous_gui_data_t*)self->gui_data)->mix);
 }
 
 #define ALIGNED(a) __attribute__((aligned(a)))
@@ -911,7 +899,7 @@ reset_mix (dt_iop_module_t *self)
   c->drag_params = *(dt_iop_atrous_params_t *)self->params;
   const int old = self->dt->gui->reset;
   self->dt->gui->reset = 1;
-  dtgtk_slider_set_value(DTGTK_SLIDER(c->mix), 1.0f);
+  dt_bauhaus_slider_set(c->mix, 1.0f);
   self->dt->gui->reset = old;
 }
 
@@ -1341,14 +1329,14 @@ tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointe
 }
 
 static void
-mix_callback (GtkDarktableSlider *slider, gpointer user_data)
+mix_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->factory_params;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  const float mix = dtgtk_slider_get_value(slider);
+  const float mix = dt_bauhaus_slider_get(slider);
   for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)
     {
       p->x[ch][k] = fminf(1.0f, fmaxf(0.0f, d->x[ch][k] + mix * (c->drag_params.x[ch][k] - d->x[ch][k])));
@@ -1374,10 +1362,9 @@ void gui_init (struct dt_iop_module_t *self)
   c->dragging = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0/BANDS;
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-
-  // tabs
-  GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, 0));
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -1401,7 +1388,6 @@ void gui_init (struct dt_iop_module_t *self)
   // graph
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_drawing_area_size(c->area, 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -1421,12 +1407,10 @@ void gui_init (struct dt_iop_module_t *self)
                     G_CALLBACK (area_scrolled), self);
 
   // mix slider
-  c->mix = dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, -2.0f, 2.0f, 0.1f, 1.0f, 3);
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 5);
-  dtgtk_slider_set_label(DTGTK_SLIDER(c->mix), _("mix"));
+  c->mix = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.1f, 1.0f, 3);
+  dt_bauhaus_widget_set_label(c->mix, _("mix"));
   g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(hbox), c->mix, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);
 }
 
