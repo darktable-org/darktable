@@ -891,15 +891,6 @@ dt_view_image_expose(
       //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
       if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
       {
-        if(darktable.gui->center_tooltip == 0) // no tooltip yet, so add one
-        {
-          char* tooltip = dt_history_get_items_as_string(img->id);
-          if(tooltip != NULL)
-          {
-            g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", tooltip, (char *)NULL);
-            g_free(tooltip);
-          }
-        }
         darktable.gui->center_tooltip = 1;
       }
     }

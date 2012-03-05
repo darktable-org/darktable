@@ -558,10 +558,18 @@ failure:
   cairo_restore(cr);
   sqlite3_finalize(stmt);
 
-  if(darktable.gui->center_tooltip == 2) // not set in this round
+  if(darktable.gui->center_tooltip == 1) // set in this round
+  {
+    char* tooltip = dt_history_get_items_as_string(strip->mouse_over_id);
+    if(tooltip != NULL)
+    {
+      g_object_set(G_OBJECT(strip->filmstrip), "tooltip-text", tooltip, (char *)NULL);
+      g_free(tooltip);
+    }
+  } else if(darktable.gui->center_tooltip == 2) // not set in this round
   {
     darktable.gui->center_tooltip = 0;
-    g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", "", (char *)NULL);
+    g_object_set(G_OBJECT(strip->filmstrip), "tooltip-text", "", (char *)NULL);
   }
 
 #ifdef _DEBUG
