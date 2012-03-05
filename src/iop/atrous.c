@@ -1090,18 +1090,21 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_fill(cr);
   }
 
-  // draw dots on knots
-  cairo_save(cr);
-  if(ch != ch2) cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-  else          cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-  cairo_set_line_width(cr, 1.);
-  for(int k=0; k<BANDS; k++)
+  if(c->mouse_y > 0 || c->dragging)
   {
-    cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], 3.0, 0.0, 2.0*M_PI);
-    if(c->x_move == k) cairo_fill(cr);
-    else               cairo_stroke(cr);
+    // draw dots on knots
+    cairo_save(cr);
+    if(ch != ch2) cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+    else          cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+    cairo_set_line_width(cr, 1.);
+    for(int k=0; k<BANDS; k++)
+    {
+      cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], 3.0, 0.0, 2.0*M_PI);
+      if(c->x_move == k) cairo_fill(cr);
+      else               cairo_stroke(cr);
+    }
+    cairo_restore(cr);
   }
-  cairo_restore(cr);
 
   if(c->mouse_y > 0 || c->dragging)
   {
@@ -1141,40 +1144,44 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   }
 
   cairo_restore(cr);
-  // draw labels:
-  cairo_text_extents_t ext;
-  cairo_set_source_rgb(cr, .1, .1, .1);
-  cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size (cr, .06*height);
-  cairo_text_extents (cr, _("coarse"), &ext);
-  cairo_move_to (cr, .02*width+ext.height, .14*height+ext.width);
-  cairo_save (cr);
-  cairo_rotate (cr, -M_PI*.5f);
-  cairo_show_text(cr, _("coarse"));
-  cairo_restore (cr);
-  cairo_text_extents (cr, _("fine"), &ext);
-  cairo_move_to (cr, .98*width, .14*height+ext.width);
-  cairo_save (cr);
-  cairo_rotate (cr, -M_PI*.5f);
-  cairo_show_text(cr, _("fine"));
-  cairo_restore (cr);
 
-  switch(c->channel2)
+  if(c->mouse_y > 0 || c->dragging)
   {
-    case atrous_L:
-    case atrous_c:
-      dt_atrous_show_upper_label(cr, _("contrasty"), ext);
-      dt_atrous_show_lower_label(cr, _("smooth"), ext);
-      break;
-    case atrous_Lt:
-    case atrous_ct:
-      dt_atrous_show_upper_label(cr, _("smooth"), ext);
-      dt_atrous_show_lower_label(cr, _("noisy"), ext);
-      break;
-    default: //case atrous_s:
-      dt_atrous_show_upper_label(cr, _("bold"), ext);
-      dt_atrous_show_lower_label(cr, _("dull"), ext);
-      break;
+    // draw labels:
+    cairo_text_extents_t ext;
+    cairo_set_source_rgb(cr, .1, .1, .1);
+    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size (cr, .06*height);
+    cairo_text_extents (cr, _("coarse"), &ext);
+    cairo_move_to (cr, .02*width+ext.height, .14*height+ext.width);
+    cairo_save (cr);
+    cairo_rotate (cr, -M_PI*.5f);
+    cairo_show_text(cr, _("coarse"));
+    cairo_restore (cr);
+    cairo_text_extents (cr, _("fine"), &ext);
+    cairo_move_to (cr, .98*width, .14*height+ext.width);
+    cairo_save (cr);
+    cairo_rotate (cr, -M_PI*.5f);
+    cairo_show_text(cr, _("fine"));
+    cairo_restore (cr);
+
+    switch(c->channel2)
+    {
+      case atrous_L:
+      case atrous_c:
+        dt_atrous_show_upper_label(cr, _("contrasty"), ext);
+        dt_atrous_show_lower_label(cr, _("smooth"), ext);
+        break;
+      case atrous_Lt:
+      case atrous_ct:
+        dt_atrous_show_upper_label(cr, _("smooth"), ext);
+        dt_atrous_show_lower_label(cr, _("noisy"), ext);
+        break;
+      default: //case atrous_s:
+        dt_atrous_show_upper_label(cr, _("bold"), ext);
+        dt_atrous_show_lower_label(cr, _("dull"), ext);
+        break;
+    }
   }
 
 
