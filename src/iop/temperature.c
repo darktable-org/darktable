@@ -714,7 +714,7 @@ void gui_init (struct dt_iop_module_t *self)
 
   g->finetune = dt_bauhaus_slider_new_with_range(self,-9.0, 9.0, 1.0, 0.0, 0);
   dt_bauhaus_widget_set_label(g->finetune, _("finetune"));
-  dt_bauhaus_slider_set_format(g->finetune, _("%.1f mired"));
+  dt_bauhaus_slider_set_format(g->finetune, _("%.0f mired"));
   // initially doesn't have fine tuning stuff (camera wb)
   gtk_widget_set_sensitive(g->finetune, FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->finetune, TRUE, TRUE, 0);

@@ -965,7 +965,7 @@ dt_bauhaus_slider_set_format(GtkWidget *widget, const char *format)
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  strncpy(d->format, format, 8);
+  strncpy(d->format, format, 24);
 }
 
 static void
