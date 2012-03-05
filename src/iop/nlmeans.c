@@ -19,7 +19,7 @@
 #include "config.h"
 #endif
 #include "develop/imageop.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -44,8 +44,8 @@ dt_iop_nlmeans_params_t;
 
 typedef struct dt_iop_nlmeans_gui_data_t
 {
-  GtkDarktableSlider *luma;
-  GtkDarktableSlider *chroma;
+  GtkWidget *luma;
+  GtkWidget *chroma;
 }
 dt_iop_nlmeans_gui_data_t;
 
@@ -72,20 +72,6 @@ int
 flags ()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "chroma"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "luma", GTK_WIDGET(g->luma));
-  dt_accel_connect_slider_iop(self, "chroma", GTK_WIDGET(g->chroma));
 }
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
@@ -411,7 +397,7 @@ luma_callback(GtkRange *range, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->luma = dtgtk_slider_get_value(g->luma)*(1.0f/100.0f);
+  p->luma = dt_bauhaus_slider_get(g->luma)*(1.0f/100.0f);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -422,7 +408,7 @@ chroma_callback(GtkRange *range, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  p->chroma = dtgtk_slider_get_value(g->chroma)*(1.0f/100.0f);
+  p->chroma = dt_bauhaus_slider_get(g->chroma)*(1.0f/100.0f);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -432,8 +418,8 @@ void gui_update    (dt_iop_module_t *self)
   // let gui slider match current parameters:
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  dtgtk_slider_set_value(g->luma,   p->luma   * 100.f);
-  dtgtk_slider_set_value(g->chroma, p->chroma * 100.f);
+  dt_bauhaus_slider_set(g->luma,   p->luma   * 100.f);
+  dt_bauhaus_slider_set(g->chroma, p->chroma * 100.f);
 }
 
 void gui_init     (dt_iop_module_t *self)
@@ -441,18 +427,15 @@ void gui_init     (dt_iop_module_t *self)
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
-  self->widget = gtk_vbox_new(TRUE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  // TODO: adjust defaults:
-  g->luma   = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 100.0f, 1., 50.f, 0));
-  g->chroma = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0f, 100.0f, 1., 50.f, 0));
-  dtgtk_slider_set_default_value(g->luma,   10.f);
-  dtgtk_slider_set_default_value(g->chroma, 30.f);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->luma), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma), TRUE, TRUE, 0);
-  dtgtk_slider_set_label(g->luma, _("luma"));
-  dtgtk_slider_set_unit (g->luma, "%");
-  dtgtk_slider_set_label(g->chroma, _("chroma"));
-  dtgtk_slider_set_unit (g->chroma, "%");
+  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+  g->luma   = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 10.f, 0);
+  g->chroma = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 1., 30.f, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->luma, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->chroma, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(g->luma, _("luma"));
+  dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
+  dt_bauhaus_widget_set_label(g->chroma, _("chroma"));
+  dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
   g_object_set (GTK_OBJECT(g->luma),   "tooltip-text", _("how much to smooth brightness"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->chroma), "tooltip-text", _("how much to smooth colors"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->luma),   "value-changed", G_CALLBACK (luma_callback),   self);
