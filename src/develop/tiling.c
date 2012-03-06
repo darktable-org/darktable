@@ -503,10 +503,11 @@ default_process_tiling_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpipe
     /* non-blocking memory transfer: opencl/device tile -> host output buffer */
     err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_FALSE);
     if(err != CL_SUCCESS) goto error;
-  }
 
-  /* block until opencl queue has finished */
-  dt_opencl_finish(devid);
+    /* block until opencl queue has finished to free all used event handlers. needed here as with
+       some OpenCL implementations we would otherwise run out of them */
+    dt_opencl_finish(devid);
+  }
 
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
