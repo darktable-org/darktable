@@ -30,6 +30,7 @@ it under the terms of the one of three licenses as you choose:
 #include "internal/defines.h"
 #include "internal/var_defines.h"
 #include "internal/libraw_bytebuffer.h"
+#include <unistd.h>
 
 #ifndef __GLIBC__
 char *my_memmem (char *haystack, size_t haystacklen,

@@ -180,7 +180,11 @@ set(THEME hicolor)
 set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
 
 # we need some specific functions:
+IF(CMAKE_SYSTEM MATCHES "SunOS.*")
+add_definitions("-D_XOPEN_SOURCE=600")
+else(CMAKE_SYSTEM MATCHES "SunOS.*")
 add_definitions("-D_XOPEN_SOURCE=700")
+endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 
 # lets continue into build directories
 add_subdirectory(src)

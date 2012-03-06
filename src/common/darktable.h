@@ -240,6 +240,7 @@ static inline float dt_fast_expf(const float x)
 
 static inline void dt_print_mem_usage()
 {
+#if !defined(__SUNOS__)
 #ifdef __APPLE__
   fprintf(stderr, "[memory] max address space (vmpeak): (unknown)"
                   "[memory] cur address space (vmsize): (unknown)"
@@ -281,12 +282,15 @@ static inline void dt_print_mem_usage()
                   "[memory] cur used memory   (vmrss ): %15s",
                   vmpeak, vmsize, vmhwm, vmrss);
 #endif
+#else
+  fprintf(stderr, "dt_print_mem_usage() currently unsupported on Solaris\n");
+#endif
 }
 
 static inline size_t
 dt_get_total_memory()
 {
-#ifdef __APPLE__
+#if (defined(__APPLE_) || defined(__SUNOS__))
   // assume 2GB until we have a better solution.
   return 2097152;
 #else
